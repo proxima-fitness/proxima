@@ -12,8 +12,10 @@ interface IProps {
 export const ProgramsSlugLayout: React.FC<IProps> = async (props) => {
 
     const { id } = props;
-    const program  = await useProgramByIdSSR(id);
+    const program: TProgramPage  = await useProgramByIdSSR(id);
     const fullName = await useUserFullNameSSR(id, "program");
+    console.log(program);
+
     return (
         <>
         <div className="grid grid-cols-3 gap-12">
@@ -87,6 +89,11 @@ export const ProgramsSlugLayout: React.FC<IProps> = async (props) => {
                         </div>
                     </div>
                 </Card>
+                { program.schedule[0].schedule_workouts.map((week) => (
+                    <Card key={ "week " + week.nthWeek + "day " + week.nthDay + " " }>
+                        <>{"week " + week.nthWeek + "day " + week.nthDay + " "}</>
+                    </Card>
+                ) ) }
             </div>
             <div className="rounded-xl bg-gray-900 h-[500px] border-l border-gray-300 flex flex-col text-center justify-center items-center px-8">
                 <div className="flex flex-col">

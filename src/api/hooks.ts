@@ -65,7 +65,7 @@ export const useProgramThumbnail = (id: string) => {
 // FETCHES A PROGRAM BY PROGRAM ID USING SSR
 export const useProgramByIdSSR = async (program_id: string) => {
 
-    const programOverview = {
+    const programOverview: TProgramPage = {
         program: await getProgramByID(program_id),
         thumbnail: await getProgramThumbnailByID(program_id),
         schedule: await getExplorePageProgramDetails(program_id),

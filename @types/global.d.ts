@@ -1,3 +1,8 @@
+type TProgramPage = {
+    program: TProgram[];
+    thumbnail: Blob;
+    schedule: TProgramDetails[];
+}
 
 type TProgram = {
     id: string;

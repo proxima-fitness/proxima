@@ -98,7 +98,6 @@ export const getProgramByID = async (program_id: string) => {
         if (error) {
             console.error('Error fetching explore page programs:', error);
         } else if (data && data.length > 0 ) {
-            console.log("data",data);
             return data as unknown as TProgram[];
         }
     } catch (error: unknown) {

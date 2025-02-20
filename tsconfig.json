@@ -51,9 +51,12 @@
     "src/custom.d.ts",
     ".next/types/**/*.ts"
   ],
-  "exclude": [
-    "./node_modules"
-  ],
+    "exclude": [
+        "node_modules",
+        ".next",
+        "dist",
+        "coverage"
+    ],
   "references": [
     {
       "path": "./tsconfig.app.json"
