@@ -55,3 +55,21 @@ export const getUserFullName = async (id: string, id_type: "program" | "user") =
         }
     }
 };
+
+// GETS ALL USER METADATA
+export const getUserMetaData = async (id: string) => {
+    try {
+        const { data: metaData, error: metaDataError } = await supabase.
+        from("users")
+        .select("first_name,last_name,username,bio")
+        .eq("id",id);
+
+        if (metaDataError) {
+            console.error('Error fetching users metadata', metaDataError);
+        } else {
+           return metaData[0] as TUserDetails;
+        }
+    } catch (error) {
+        console.error("Error fetching users metadata", error);
+    }
+};

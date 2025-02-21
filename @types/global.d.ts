@@ -99,3 +99,10 @@ type TBlog = {
     media_url: string; // just the filename (icon.png)
     image_url?: string; // the public url e.g. (https://api.blog.co/icon.png)
 }
+
+type TUserDetails = {
+    first_name: string;
+    last_name: string;
+    username: string;
+    bio: string;
+}
