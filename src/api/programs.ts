@@ -66,11 +66,17 @@ export const getExplorePageProgramDetails = async (program_id: string) => {
 };
 
 // GET THE PROGRAMS DISPLAYED ON THE PROGRAMS PAGE INCLUDING THUMBNAILS
-export const getPrograms = async (limit: number) => {
+export const getPrograms = async (limit?: number) => {
     try {
-        const { data: programs, error } = await supabase
-        .from('programs')
-        .select('id,title,details,program_length,workout_duration,equipment,specialization,difficulty,user_id').eq('explore', true).limit(limit);
+        let query = supabase
+            .from('programs')
+            .select('id,title,details,program_length,workout_duration,equipment,specialization,difficulty,user_id').eq('explore', true);
+
+        if (limit !== undefined) {
+            query = query.limit(limit);
+        }
+        const { data: programs, error } = await query;
+
         if (error) {
             console.error('Error fetching explore page programs:', error);
         } else if (programs && programs.length > 0 ) {

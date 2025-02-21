@@ -28,7 +28,7 @@ export const ProgramCard: React.FC<IProps> = (props) => {
                         <div className="uppercase text-sm overflow-hidden text-ellipsis line-clamp-1">
                             Program By <FullName id={ program.id } id_type={"program"} />
                         </div>
-                        <h3 className="text-xl font-semibold overflow-hidden text-ellipsis line-clamp-1">{ program.title }</h3>
+                        <h3 className="text-xl font-main overflow-hidden text-ellipsis line-clamp-1">{ program.title }</h3>
                         <div className="flex items-center justify-start gap-2">
                             <Badge className="text-[10px] text-white hover:bg-[#37BCCF] p-1 bg-[#37BCCF] overflow-hidden text-ellipsis line-clamp-1">{ program.difficulty.map((level: string ) => level).join(' - ') }</Badge>
                             <Badge className="text-[10px] text-white hover:bg-[#37BCCF] p-1 bg-[#37BCCF] overflow-hidden text-ellipsis line-clamp-1 ">{ program.equipment }</Badge>
