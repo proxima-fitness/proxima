@@ -20,7 +20,7 @@ export const metadata = {
 
     return (
         <>
-            <div className={ `bg-white flex items-center justify-center flex-col px-12 py-6` }>
+            <div className={ `bg-white flex items-center justify-center flex-col px-12 max-sm:px-2 py-6` }>
                 <ProgramsSlugLayout id={ slug[0] } />
             </div>
         </>

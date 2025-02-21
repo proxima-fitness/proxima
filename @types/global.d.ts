@@ -20,13 +20,29 @@ type TProgram = {
 type TProgramDetails = {
     id?: string;
     title?: string;
-    schedule_workouts: {
-        nthDay: number;
-        nthWeek: number;
-        day_title?: string;
-        program_workout_exercises: TSavedWorkoutExercise[];
-    }[];
+    schedule_workouts: TScheduleWorkouts[];
 }
+
+type TScheduleWorkouts = {
+    nthDay: number;
+    nthWeek: number;
+    day_title?: string;
+    program_workout_exercises: TSavedWorkoutExercise[];
+}
+
+type TAPIProgramWorkoutExercises = {
+    reps?: number[];
+    weights?: number[];
+    reps_max?: number[];
+    reps_range?: number[][] ;
+    rpe?: number[];
+    rpe_range?: number[][];
+    time_taken?: number[];
+    time_range?: number[][];
+    amrap?: string[];
+    percent_rm?: number[];
+    exercises: TExercise;
+};
 
 type TSavedWorkoutExercise = {
     reps?: number[];

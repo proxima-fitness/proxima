@@ -1,6 +1,23 @@
 import { people03, people02, people01, people04, people05, people06, instagram, linkedin, star, reddit, twitter } from "public";
+import humanizeDuration from "humanize-duration";
 
 const filterGroups: TFilterGroup[] = [{ title: "Program Length", value: "program_length"}, { title: "Workout Duration", value: "workout_duration"}, { title: "Equipment", value: "equipment"}, { title: "Specialization", value: "specialization"}, { title: "Difficulty", value: "difficulty"}];
+
+export const shortEnglishHumanizer = humanizeDuration.humanizer({
+    language: "shortEn",
+    languages: {
+      shortEn: {
+        y: () => "Yrs",
+        mo: () => "Mnths",
+        w: () => "Wks",
+        d: () => "Days",
+        h: () => "Hrs",
+        m: () => "Mins",
+        s: () => "Secs",
+        ms: () => "mSecs",
+      },
+    },
+} );
 
 const filteGroupOptions: TFilterGroupOption[] = [
     {
