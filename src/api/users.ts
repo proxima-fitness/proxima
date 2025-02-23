@@ -1,24 +1,41 @@
 import { supabase } from ".";
 
+
+export const getOpUserId = async (program_id: string) => {
+    try {
+        const { data: userId, error: userIdError } = await supabase.
+            from("programs")
+            .select("user_id")
+            .eq("id",program_id);
+
+        if (userIdError) {
+            console.error("Error fetching program creator user id",userIdError);
+        } else {
+            return userId[0].user_id as string;
+        }
+    } catch (error: unknown) {
+        console.error("Error fetching program creator user id",error);
+    }
+}
 // Gets the users full name
 export const getUserFullName = async (id: string, id_type: "program" | "user") => {
     if (id_type === "program") {
         try {
 
-            const { data: userID, error: userIDError } = await
+            const { data: userId, error: userIdError } = await
                 supabase.from("programs").
                 select("user_id").
                 eq("id",id);
 
-            if (userIDError) {
-                console.error("Error fetching users userID", userIDError);
+            if (userIdError) {
+                console.error("Error fetching users userID", userIdError);
             }
 
-            if (userID) {
+            if (userId) {
                 const { data: fullName, error: fullNameError } = await
                     supabase.from("users").
                     select("first_name,last_name").
-                    eq("id",userID[0].user_id);
+                    eq("id",userId[0].user_id);
 
                 if (fullNameError) {
                     console.error("Error fetching users full name", fullNameError);
@@ -61,7 +78,7 @@ export const getUserMetaData = async (id: string) => {
     try {
         const { data: metaData, error: metaDataError } = await supabase.
         from("users")
-        .select("first_name,last_name,username,bio")
+        .select("first_name,last_name,username,bio,created_at")
         .eq("id",id);
 
         if (metaDataError) {

@@ -77,15 +77,11 @@ type TProgramFilters = {
     title?: string;
 };
 
-type TFilterGroup = {
-    title: "Program Length" | "Workout Duration" | "Equipment" | "Specialization" | "Difficulty";
-    value: "program_length" | "workout_duration" | "equipment" | "specialization" | "difficulty";
-}
-
 type TFilterGroupOption = {
-    type: "badge" | "slider" | "combobox";
-    group: "program_length" | "workout_duration" | "equipment" | "specialization" | "difficulty";
-    value: string[];
+    component: "badge" | "slider" | "combobox";
+    type: "program_length" | "workout_duration" | "equipment" | "specialization" | "difficulty";
+    title: "Program Length" | "Workout Duration" | "Equipment" | "Specialization" | "Difficulty";
+    values: string[];
 }
 
 type TBlog = {
@@ -105,4 +101,5 @@ type TUserDetails = {
     last_name: string;
     username: string;
     bio: string;
+    created_at: string;
 }

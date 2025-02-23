@@ -6,7 +6,7 @@ import { motion } from "motion/react";
 import { ViewModeThumbnails } from "./ViewModeThumbnails";
 import Link from "next/link";
 import { ProgramCard } from "../programs/ProgramCard";
-import { usePrograms } from "@/api/hooks";
+import { useProgramsSection } from "@/api/hooks";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const FeatureCard = ({id, title, workout_duration, difficulty, equipment }: any) => (
@@ -33,7 +33,7 @@ const FeatureCard = ({id, title, workout_duration, difficulty, equipment }: any)
 
 export const ProgramsSection: React.FC = () => {
 
-    const { data: programs } = usePrograms(6);
+    const { data: programs } = useProgramsSection(6);
 
     return (
         <section id="programs" className={ layout.sectionTop } data-aos="fade-up"

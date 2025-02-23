@@ -1,8 +1,6 @@
 import { people03, people02, people01, people04, people05, people06, instagram, linkedin, star, reddit, twitter } from "public";
 import humanizeDuration from "humanize-duration";
 
-const filterGroups: TFilterGroup[] = [{ title: "Program Length", value: "program_length"}, { title: "Workout Duration", value: "workout_duration"}, { title: "Equipment", value: "equipment"}, { title: "Specialization", value: "specialization"}, { title: "Difficulty", value: "difficulty"}];
-
 export const shortEnglishHumanizer = humanizeDuration.humanizer({
     language: "shortEn",
     languages: {
@@ -19,46 +17,38 @@ export const shortEnglishHumanizer = humanizeDuration.humanizer({
     },
 } );
 
-const filteGroupOptions: TFilterGroupOption[] = [
+export const filterGroupOptions: TFilterGroupOption[] = [
     {
-        type: "combobox",
-        group: "program_length",
-        value: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+        component: "combobox",
+        type: "program_length",
+        title: "Program Length",
+        values: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
     },
     {
-        type: "combobox",
-        group: "workout_duration",
-        value: Array.from({ length: 18 }, (_, i) => (i * 10 + 10).toString()),
+        component: "combobox",
+        type: "workout_duration",
+        title: "Workout Duration",
+        values: Array.from({ length: 18 }, (_, i) => (i * 10 + 10).toString()),
     },
     {
-        type: "badge",
-        group: "equipment",
-        value: ["Full Gym", "Garage Gym", "Dumbbells Only", "Bodyweight"],
+        component: "badge",
+        type: "equipment",
+        title: "Equipment",
+        values: ["Full Gym", "Garage Gym", "Dumbbells Only", "Bodyweight"],
     },
     {
-        type: "badge",
-        group: "specialization",
-        value: ["Bodybuilding", "Powerbuilding", "Powerlifting", "Athletics", "Bodyweight Training", "Olympic Weightlifting", "Calisthenics"],
+        component: "badge",
+        type: "specialization",
+        title: "Specialization",
+        values: ["Bodybuilding", "Powerbuilding", "Powerlifting", "Athletics", "Bodyweight Training", "Olympic Weightlifting", "Calisthenics"],
     },
     {
-        type: "badge",
-        group: "difficulty",
-        value: ["Beginner", "Novice", "Intermediate", "Advanced"],
+        component: "badge",
+        type: "difficulty",
+        title: "Difficulty",
+        values: ["Beginner", "Novice", "Intermediate", "Advanced"],
     },
 ];
-
-export const filterGroupMap = filterGroups.reduce((acc, group) => {
-    const matchedOption = filteGroupOptions.find(option => option.group === group.value);
-    if (matchedOption) {
-        acc[group.value] = {
-            title: group.title,
-            type: matchedOption.type,
-            values: matchedOption.value
-        };
-    }
-    return acc;
-}, {} as Record<string, { title: "Program Length" | "Workout Duration" | "Equipment" | "Specialization" | "Difficulty"; type: "badge" | "combobox" | "slider"; values: string[] }>);
-
 
 export const navLinks = [
     {

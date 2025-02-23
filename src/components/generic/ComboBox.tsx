@@ -23,14 +23,16 @@ import {
 interface IProps {
     options: string[];
     title: "Program Length" | "Workout Duration" | "Equipment" | "Specialization" | "Difficulty";
+    handleSelectedFilters: (filterKey: string) => void;
+    value: string;
 }
 
 export const ComboBox: React.FC<IProps> = (props) => {
 
-    const { options, title } = props;
+    const { options, title, handleSelectedFilters, value } = props;
 
     const [open, setOpen] = React.useState(false)
-    const [value, setValue] = React.useState("")
+    // const [value, setValue] = React.useState("")
 
     return (
         <>
@@ -70,7 +72,8 @@ export const ComboBox: React.FC<IProps> = (props) => {
                         key={option}
                         value={option}
                         onSelect={(currentValue) => {
-                            setValue(currentValue === value ? "" : currentValue)
+                            handleSelectedFilters(currentValue === value ? "" : currentValue)
+                            // setValue(currentValue === value ? "" : currentValue)
                             setOpen(false)
                         }}
                     >
@@ -101,7 +104,7 @@ export const ComboBox: React.FC<IProps> = (props) => {
             </Command>
         </PopoverContent>
         </Popover>
-        { value !== "" && <Button onClick={ () => setValue("") } className={ "text-[#37BCCF]" } variant="ghost">Reset</Button> }
+        { value !== undefined && <Button onClick={ () => { handleSelectedFilters(undefined); } } className={ "text-[#37BCCF]" } variant="ghost">Reset</Button> }
         </>
     )
 };

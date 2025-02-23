@@ -19,8 +19,8 @@ export const ProgramCard: React.FC<IProps> = (props) => {
             <div className="w-full max-w-md mx-auto">
                 <div className="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl dark:bg-gray-950">
                     <img
-                        src={ URL.createObjectURL(program.thumbnail) ?? proxima_logo_black}
-                        alt="Product Image"
+                        src={ program.thumbnail instanceof Blob ? URL.createObjectURL(program.thumbnail) : proxima_logo_black}
+                        alt="Program Thumbnail"
                         className="w-full h-[200px] object-cover"
                         style={{ objectFit: "cover" }}
                     />

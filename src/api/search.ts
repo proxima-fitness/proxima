@@ -1,9 +1,10 @@
 import { supabase } from ".";
+import { getProgramThumbnailByID } from "./programs";
 
 /***** GET REQUESTS *****/
 
 // GET SEARCH RESULTS FOR PROGRAMS
-export const getProgramsSearchResults = async (searchQuery: string) => {
+export const getProgramsSearchResultsWithThumbnail = async (searchQuery: string) => {
     try {
         const { data: searchResults, error: searchError } = await supabase
             .rpc('search_programs_by_prefix', { prefix: searchQuery.trim() });
@@ -11,7 +12,20 @@ export const getProgramsSearchResults = async (searchQuery: string) => {
             console.error("Error fetching program search results", searchError);
             return [];
         }
-        return searchResults;
+
+        if (!searchResults || searchResults.length === 0) {
+            return [];
+        }
+
+        const programsWithThumbnails = await Promise.all(
+            searchResults.map(async (program) => {
+                const thumbnail = await getProgramThumbnailByID(program.id);
+                return { ...program, thumbnail };
+            })
+        );
+
+        return programsWithThumbnails;
+
     } catch (error: unknown) {
         console.error("Error fetching program search results", error);
         return [];

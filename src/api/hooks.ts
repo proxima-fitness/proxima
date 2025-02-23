@@ -2,7 +2,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { getBlogById, getBlogs } from "./blog";
 import { getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID } from "./programs";
-import { getUserFullName } from "./users";
+import { getOpUserId, getUserFullName, getUserMetaData } from "./users";
+import { getProfilePicByID } from "./storage";
 
 /*********************************/
 /** CLIENT SIDE RENDERED HOOKS **/
@@ -41,6 +42,23 @@ export const usePrograms = (limit?: number) => {
     });
 };
 
+// FETCHES THE PROGRAM NAMES DISPLAYED ON THE PROGRAMS SECTIOn WITH THUMBNAILS
+export const useProgramsSection = (limit?: number) => {
+    return useQuery({
+        queryKey: ['programs-section'],
+        queryFn: () => getPrograms(limit),
+    });
+};
+
+// FETCHES THE USER METADATA BY AN ID
+export const useUserMetadata = (id: string) => {
+    return useQuery({
+        queryKey: ['user-metadata', id],
+        queryFn: () => getUserMetaData(id),
+        enabled: !!id,
+    })
+}
+
 // FETCHES A PROGRAM BY PROGRAM ID
 export const useProgramById = (program_id: string) => {
     return useQuery({
@@ -56,6 +74,15 @@ export const useProgramThumbnail = (id: string) => {
         queryFn: () => getProgramThumbnailByID(id),
     });
 };
+
+// FETCHES A PROFILE PICTURE BY ID
+export const useProfilePictureByID = (id: string) => {
+    return useQuery({
+        queryKey: ["profile-picture", id],
+        queryFn: () => getProfilePicByID(id),
+    });
+};
+
 
 
 /*********************************/
@@ -76,11 +103,29 @@ export const useProgramByIdSSR = async (program_id: string) => {
 
 // FETCHES THE FULL NAME OF A USER BY ID USING SSR
 export const useUserFullNameSSR = (id: string, id_type: "program" | "user") => {
-    const fullName = getUserFullName(id, id_type);
-    return fullName;
+    return getUserFullName(id, id_type);
 };
 
+// FETCHES THE USER METADATA BY ID USING SSR
+export const useUserMetadataSSR = (id: string) => {
+    return getUserMetaData(id);
+};
 
+// FETCHES THE OP USER METADATA BY ID USING SSR
+export const useOpUserMetadataSSR = async (id: string) => {
+    const userId = await getOpUserId(id);
+    return getUserMetaData(userId);
+};
+
+// FETCHES THE USER ID OF THE OP OF A WORKOUT PROGRAM
+export const useProgramOpUserId = (program_id: string) => {
+    return getOpUserId(program_id);
+}
+
+export const useOpProfilePictureByIdSSR = async (id: string) => {
+    const userId = await getOpUserId(id);
+    return await getProfilePicByID(userId);
+}
 // GET BLOG BY ID
 export const useBlogByIdSSR = async (id: string) => {
     const blog = await getBlogById(Number(id));
