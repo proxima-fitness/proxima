@@ -1,5 +1,6 @@
 import { people03, people02, people01, people04, people05, people06, instagram, linkedin, star, reddit, twitter } from "public";
 import humanizeDuration from "humanize-duration";
+import { Option } from '@/components/ui/multi-select';
 
 export const shortEnglishHumanizer = humanizeDuration.humanizer({
     language: "shortEn",
@@ -230,3 +231,113 @@ export const socialMedia = [
   },
 ];
 
+export const sexOptions: Option[] = [
+    { label: "Male", value: "male"},
+    { label: "Female", value: "female"}
+];
+
+export const ageOptions: Option[] = Array.from({ length: 100 - 14 + 1 }, (_, i) => {
+    const age = (i + 14).toString();
+    return { label: age, value: age };
+} );
+
+export const dayPerWeekOptions: Option[] = [
+    { label: "1x per week", value: "1"},
+    { label: "2x per week", value: "2" },
+    { label: "3x per week", value: "3" },
+    { label: "4x per week", value: "4" },
+    { label: "5x per week", value: "5" },
+    { label: "6x per week", value: "6" },
+    { label: "7x per week", value: "7" },
+];
+
+export const specificDaysOptions: Option[] = [
+    { label: "Mon", value: "monday"},
+    { label: "Tue", value: "tuesday" },
+    { label: "Wed", value: "wednesday" },
+    { label: "Thu", value: "thursday" },
+    { label: "Fri", value: "friday" },
+    { label: "Sat", value: "saturday" },
+    { label: "Sun", value: "sunday" },
+];
+
+export const programLengthOptions: Option[] = Array.from({ length: 12 }, (_, i) => {
+    const programLength = (i).toString();
+    return { label: programLength, value: programLength };
+} );
+
+export const workoutDurationOptions: Option[] = Array.from({ length: 17 }, (_, i) => {
+    const duration = (i*10).toString();
+    return { label: duration, value: duration };
+} );
+
+export const activityLevelOptions: Option[] = [
+    { label: "Sedentary", value: "sedentary"},
+    { label: "Light activity", value: "light activity" },
+    { label: "Moderate activity", value: "moderate activity" },
+    { label: "High activity", value: "high activity" },
+    { label: "Extreme activity", value: "extreme activity" },
+];
+
+export const goalsOptions: Option[] = [
+    { label: "Build muscle", value: "build muscle"},
+    { label: "Improve fitness", value: "improve fitness" },
+    { label: "Reduce back pain", value: "reduce back pain" },
+    { label: "Agility", value: "agility" },
+    { label: "Optimize workouts", value: "optmimize workouts" },
+    { label: "Relieve stress", value: "relieve stress" },
+    { label: "Balance", value: "balance" },
+    { label: "Weight loss", value: "weight loss" },
+    { label: "Boost libido", value: "boost libido" },
+    { label: "Boost mental strength", value: "boost mental strength" },
+    { label: "Flexibility", value: "flexibility" },
+    { label: "Increase endurance", value: "increase endurance" },
+    { label: "Burn fat", value: "burn fat" },
+];
+
+export const specializationOptions: Option[] = [
+    { label: "Bodybuilding", value: "bodybuilding"},
+    { label: "Powerbuilding", value: "powerbuilding" },
+    { label: "Athletics", value: "athletics" },
+    { label: "Bodyweight training", value: "bodyweight training" },
+    { label: "Olympic weightlifting", value: "olympic weightlifting" },
+    { label: "Calisthenics", value: "calisthenics" },
+];
+
+export const equipmentOptions: Option[] = [
+    { label: "Barbell", value: "barbell"},
+    { label: "Dumbbell", value: "dumbbell"},
+    { label: "Kettlebell", value: "kettlebell"},
+    { label: "Machine", value: "machine"},
+    { label: "Bodyweight", value: "bodyweight"},
+    { label: "Smith machine", value: "smith machine"},
+    { label: "Cable", value: "cable"},
+    { label: "Cardio", value: "cardio"},
+];
+
+export const focusAreasOptions: Option[] = [
+    { label: "Back", value: "back"},
+    { label: "Arms", value: "arms"},
+    { label: "Shoulders", value: "shoulders"},
+    { label: "Abs", value: "abs"},
+    { label: "Chest", value: "chest"},
+    { label: "Legs", value: "legs"},
+    { label: "Glutes", value: "glutes"},
+    { label: "Full body", value: "full body"},
+];
+
+export const difficultyOptions: Option[] = [
+    { label: "Beginner", value: "beginner"},
+    { label: "Novice", value: "novice"},
+    { label: "Intermediate", value: "intermediate"},
+    { label: "Advanced", value: "advanced"},
+];
+
+export const healthIssuesOptions: Option[] = [
+    { label: "Post-covid recovery", value: "post-covid recovery"},
+    { label: "Cannot jump", value: "cannot jump"},
+    { label: "Back or hernia", value: "back or hernia"},
+    { label: "Arms and shoulders", value: "arms and shoulders"},
+    { label: "Hip joints", value: "hip joints"},
+    { label: "Knee injuries", value: "knee injuries"},
+];
