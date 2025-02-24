@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { AiSearchDialog } from "@/components/program-builder/AiSearchDialog";
 import styles from "@/style";
 
@@ -10,7 +9,7 @@ export const metadata = {
 
   export default function AiProgramBuilder() {
     return (
-        <div className={ `bg-white ${styles.paddingX} ${styles.flexCenter} flex-col` }>
+        <div className={ `bg-white ${styles.flexCenter} flex-col` }>
         <div className={ `${styles.boxWidth}` }>
             <AiSearchDialog />
         </div>

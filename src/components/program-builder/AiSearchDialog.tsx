@@ -9,7 +9,7 @@ import {
   } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import  { Button } from "@/components/ui/button";
-import { SearchIcon, SparklesIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import { SearchIcon, SparklesIcon, ChevronDownIcon, ChevronUpIcon, PlayIcon } from "lucide-react";
 import {
     Select,
     SelectContent,
@@ -28,36 +28,38 @@ export const AiSearchDialog: React.FC = () => {
 
     return (
         <Dialog>
-            <DialogTrigger>Open</DialogTrigger>
+            <span className="flex items-center justify-center">
+                <DialogTrigger className="my-[450px] h-[60px] text-white rounded-xl w-[200px] bg-lightSecondary font-main uppercase flex items-center justify-center gap-4"><PlayIcon />Start</DialogTrigger>
+            </span>
             <DialogContent hideClose className="max-w-5xl w-full">
                 <DialogTitle>
-                    <div className="flex flex-row gap-2">
+                    <span className="flex flex-row gap-2">
                         <Input startIcon={ SearchIcon } placeholder="Tell me about your ideal program..." />
                         <Button className="w-[auto] h-[auto] bg-[#33bbcf] text-white">
                             <SparklesIcon /> Build
                         </Button>
-                    </div>
+                    </span>
                 </DialogTitle>
                 <DialogDescription className="flex flex-row justify-between items-center">
                     <Button onClick={ () => toggleAdvancedSettingsOpen() } variant="ghost" className="w-[auto] h-[auto]">
                         Advanced settings { advancedSettingsOpen ? <ChevronUpIcon /> : <ChevronDownIcon /> }
                     </Button>
                     { advancedSettingsOpen &&
-                        <div className="font-bold flex justify-start">
+                        <span className="font-bold flex justify-start">
                             Exclude
-                        </div>
+                        </span>
                     }
                 </DialogDescription>
                 { advancedSettingsOpen &&
-                    <div className="flex flex-row justify-between gap-5">
-                        <div className="grid grid-cols-2 gap-5 flex-grow-[2] basis-2/3 pr-4 border-r-2">
+                    <span className="flex flex-row justify-between gap-5">
+                        <span className="grid grid-cols-2 gap-5 flex-grow-[2] basis-2/3 pr-4 border-r-2">
                             <Select>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Sex" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     { sexOptions.map((sex) => (
-                                        <SelectItem value={ sex.value }>{ sex.label }</SelectItem>
+                                        <SelectItem key={ sex.value } value={ sex.value }>{ sex.label }</SelectItem>
 
                                     ))}
                                 </SelectContent>
@@ -68,7 +70,7 @@ export const AiSearchDialog: React.FC = () => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     { ageOptions.map((age) => (
-                                        <SelectItem value={ age.value }>{ age.label }</SelectItem>
+                                        <SelectItem key={ age.value } value={ age.value }>{ age.label }</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
@@ -78,7 +80,7 @@ export const AiSearchDialog: React.FC = () => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     { dayPerWeekOptions.map((days) => (
-                                        <SelectItem value={ days.value }>{ days.label }</SelectItem>
+                                        <SelectItem key={ days.value } value={ days.value }>{ days.label }</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
@@ -98,7 +100,7 @@ export const AiSearchDialog: React.FC = () => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     { programLengthOptions.map((length) => (
-                                        <SelectItem value={ length.value }>{ length.label }</SelectItem>
+                                        <SelectItem key={ length.value } value={ length.value }>{ length.label }</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
@@ -108,7 +110,7 @@ export const AiSearchDialog: React.FC = () => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     { workoutDurationOptions.map((duration) => (
-                                        <SelectItem value={ duration.value }>{ duration.label }</SelectItem>
+                                        <SelectItem key={ duration.value } value={ duration.value }>{ duration.label }</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
@@ -118,7 +120,7 @@ export const AiSearchDialog: React.FC = () => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     { activityLevelOptions.map((act) => (
-                                        <SelectItem value={ act.value }>{ act.label }</SelectItem>
+                                        <SelectItem key={ act.value} value={ act.value }>{ act.label }</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
@@ -172,8 +174,8 @@ export const AiSearchDialog: React.FC = () => {
                                 </p>
                                 }
                             />
-                        </div>
-                        <div className="grid grid-cols-1 flex-grow basis-1/3 ">
+                        </span>
+                        <span className="grid grid-cols-1 flex-grow basis-1/3 ">
                             <MultiSelect
                                 badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                                 defaultOptions={focusAreasOptions}
@@ -214,10 +216,10 @@ export const AiSearchDialog: React.FC = () => {
                                 </p>
                                 }
                             />
-                        </div>
-                    </div>
+                        </span>
+                    </span>
                 }
-                <div className="flex flex-row justify-end items-center">
+                <span className="flex flex-row justify-end items-center">
                     <Select onValueChange={ (value) => setWorkoutSchema(value)} value={ workoutSchema }>
                         <SelectTrigger className="w-[180px]">
                             <SelectValue placeholder="Workout Schema" />
@@ -228,7 +230,7 @@ export const AiSearchDialog: React.FC = () => {
                             {/* <SelectItem value="pdf">PDF</SelectItem> */}
                         </SelectContent>
                     </Select>
-                </div>
+                </span>
             </DialogContent>
         </Dialog>
     );
