@@ -27,8 +27,8 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
     const commandRef = useRef<HTMLInputElement>(null);
 
     const [filteredPrograms, setFilteredPrograms] = useState(programs);
-    const [filterGroups, setFilterGroups] = useState(filterGroupOptions);
 
+    const [searchQuery, setSearchQuery] = useState("");
     const [appliedProgramLengthFilter, setAppliedProgramLengthFilter] = useState<string>(); // casting the number to string
     const [appliedWorkoutDurationFilter, setAppliedWorkoutDurationFilter] = useState<string>(); // casting the number to string
     const [appliedEquipmentFilter, setAppliedEquipmentFilter] = useState<string[]>([]);
@@ -139,7 +139,7 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
                             <div className="flex-1"></div>
                             <div className="w-[60%] max-sm:w-full">
                                 <Command>
-                                    <CommandInput onInput={ (e) => handleSearch((e.target as HTMLInputElement).value) } ref={ commandRef } placeholder="Search for a program or coach... [Ctrl + k]" />
+                                    <CommandInput onInput={ (e) => handleSearch((e.target as HTMLInputElement).value) } ref={ commandRef } placeholder="Search for a program... [Ctrl + k]" />
                                 </Command>
                             </div>
                             { appliedProgramLengthFilter || appliedWorkoutDurationFilter || (appliedEquipmentFilter && appliedEquipmentFilter.length > 0) || (appliedSpecializationFilter && appliedSpecializationFilter.length > 0) || (appliedDifficultyFilter && appliedDifficultyFilter.length > 0) ?
@@ -152,7 +152,7 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
                             }
                         </div>
                         <div className="grid grid-cols-3 max-sm:grid-cols-1">
-                            { filterGroups.map((group) => (
+                            { filterGroupOptions.map((group) => (
                                 <ProgramFilterGroup
                                     key={ group.type }
                                     filter={ group }
