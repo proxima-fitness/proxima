@@ -62,26 +62,28 @@ export const AiSearchDialog: React.FC = () => {
                                     ))}
                                 </SelectContent>
                             </Select>
+                            <Select>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Age" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    { ageOptions.map((age) => (
+                                        <SelectItem value={ age.value }>{ age.label }</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Select>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="How many days per week?" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    { dayPerWeekOptions.map((days) => (
+                                        <SelectItem value={ days.value }>{ days.label }</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                             <MultiSelect
                                 badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                defaultOptions={ageOptions}
-                                placeholder="Age"
-                                emptyIndicator={
-                                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                    no results found.
-                                </p>
-                                }
-                            />
-                            <MultiSelect
-                                defaultOptions={dayPerWeekOptions}
-                                placeholder="How many days per week?"
-                                emptyIndicator={
-                                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                    no results found.
-                                </p>
-                                }
-                            />
-                            <MultiSelect
                                 defaultOptions={specificDaysOptions}
                                 placeholder="Select specific days"
                                 emptyIndicator={
@@ -90,34 +92,38 @@ export const AiSearchDialog: React.FC = () => {
                                 </p>
                                 }
                             />
+                            <Select>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Program length" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    { programLengthOptions.map((length) => (
+                                        <SelectItem value={ length.value }>{ length.label }</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Select>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Workout duration" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    { workoutDurationOptions.map((duration) => (
+                                        <SelectItem value={ duration.value }>{ duration.label }</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Select>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Activity level" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    { activityLevelOptions.map((act) => (
+                                        <SelectItem value={ act.value }>{ act.label }</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                             <MultiSelect
-                                defaultOptions={programLengthOptions}
-                                placeholder="Program length"
-                                emptyIndicator={
-                                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                    no results found.
-                                </p>
-                                }
-                            />
-                            <MultiSelect
-                                defaultOptions={workoutDurationOptions}
-                                placeholder="Workout duration"
-                                emptyIndicator={
-                                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                    no results found.
-                                </p>
-                                }
-                            />
-                            <MultiSelect
-                                defaultOptions={activityLevelOptions}
-                                placeholder="Activity level"
-                                emptyIndicator={
-                                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                    no results found.
-                                </p>
-                                }
-                            />
-                            <MultiSelect
+                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                                 defaultOptions={goalsOptions}
                                 placeholder="Goals"
                                 emptyIndicator={
@@ -127,6 +133,7 @@ export const AiSearchDialog: React.FC = () => {
                                 }
                             />
                             <MultiSelect
+                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                                 defaultOptions={specializationOptions}
                                 placeholder="Specialization"
                                 emptyIndicator={
@@ -136,6 +143,7 @@ export const AiSearchDialog: React.FC = () => {
                                 }
                             />
                             <MultiSelect
+                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                                 defaultOptions={equipmentOptions}
                                 placeholder="Equipment"
                                 emptyIndicator={
@@ -145,6 +153,7 @@ export const AiSearchDialog: React.FC = () => {
                                 }
                             />
                             <MultiSelect
+                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                                 defaultOptions={focusAreasOptions}
                                 placeholder="Focus areas"
                                 emptyIndicator={
@@ -154,6 +163,7 @@ export const AiSearchDialog: React.FC = () => {
                                 }
                             />
                             <MultiSelect
+                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                                 defaultOptions={difficultyOptions}
                                 placeholder="Difficulty"
                                 emptyIndicator={
@@ -165,6 +175,7 @@ export const AiSearchDialog: React.FC = () => {
                         </div>
                         <div className="grid grid-cols-1 flex-grow basis-1/3 ">
                             <MultiSelect
+                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                                 defaultOptions={focusAreasOptions}
                                 placeholder="Focus areas"
                                 emptyIndicator={
@@ -174,6 +185,7 @@ export const AiSearchDialog: React.FC = () => {
                                 }
                             />
                             <MultiSelect
+                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                                 defaultOptions={equipmentOptions}
                                 placeholder="Equipment"
                                 emptyIndicator={
@@ -183,6 +195,7 @@ export const AiSearchDialog: React.FC = () => {
                                 }
                             />
                             <MultiSelect
+                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                                 defaultOptions={specializationOptions}
                                 placeholder="Specialization"
                                 emptyIndicator={
@@ -192,6 +205,7 @@ export const AiSearchDialog: React.FC = () => {
                                 }
                             />
                             <MultiSelect
+                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                                 defaultOptions={healthIssuesOptions}
                                 placeholder="Health Issues"
                                 emptyIndicator={

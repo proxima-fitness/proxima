@@ -262,13 +262,13 @@ export const specificDaysOptions: Option[] = [
 ];
 
 export const programLengthOptions: Option[] = Array.from({ length: 12 }, (_, i) => {
-    const programLength = (i).toString();
-    return { label: programLength, value: programLength };
+    const programLength = (i + 1).toString();
+    return { label: `${programLength} Week${programLength === "1" ? "": "s"}`, value: programLength };
 } );
 
-export const workoutDurationOptions: Option[] = Array.from({ length: 17 }, (_, i) => {
-    const duration = (i*10).toString();
-    return { label: duration, value: duration };
+export const workoutDurationOptions: Option[] = Array.from({ length: 18 }, (_, i) => {
+    const duration = ((i+1)*10).toString();
+    return { label: `${duration} Mins`, value: duration };
 } );
 
 export const activityLevelOptions: Option[] = [
