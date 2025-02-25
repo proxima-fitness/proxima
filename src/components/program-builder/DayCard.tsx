@@ -10,15 +10,15 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
+    DropdownMenuShortcut,
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu"
 
 interface IProps {
     day: number;
-    days: number[]; // total number of days for the week
+    days: number[];
     week: number;
+    weeks: number[];
 }
 
 export const DayCard: React.FC<IProps> = (props) => {
@@ -27,6 +27,7 @@ export const DayCard: React.FC<IProps> = (props) => {
         day,
         days,
         week,
+        weeks,
     } = props;
 
     const [duplicateDayOpen, setDuplicateDayOpen] = useState(false);
@@ -53,9 +54,18 @@ export const DayCard: React.FC<IProps> = (props) => {
                             <EllipsisIcon />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" side="bottom">
-                            <DropdownMenuItem>Delete</DropdownMenuItem>
-                            <DropdownMenuItem>Edit Title</DropdownMenuItem>
-                            <DropdownMenuItem>Generate Day</DropdownMenuItem>
+                            <DropdownMenuItem>
+                                Delete
+                                <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                                Edit Title
+                                <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                                Generate Day
+                                <DropdownMenuShortcut>⌘G</DropdownMenuShortcut>
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                     <TooltipProvider>
@@ -99,7 +109,7 @@ export const DayCard: React.FC<IProps> = (props) => {
                 <Button variant="ghost" className="pt-6 w-44 font-bold uppercase h-12 rounded-[40px] text-black"><PlusIcon />Add Exercise</Button>
             </div>
         </Card>
-        <DuplicateDay week={ week } day={ day } days={ days } duplicateDayOpen={ duplicateDayOpen } setDuplicateDayOpen={ setDuplicateDayOpen } />
+        <DuplicateDay weeks={ weeks } week={ week } day={ day } days={ days } duplicateDayOpen={ duplicateDayOpen } setDuplicateDayOpen={ setDuplicateDayOpen } />
         </>
     );
 };

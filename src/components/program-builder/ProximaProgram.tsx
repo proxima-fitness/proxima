@@ -17,7 +17,7 @@ export const ProximaProgram: React.FC = () => {
                     <div key={ week } className="flex flex-col min-w-[440px] max-w-[440px] gap-8 items-center">
                         <WeeksBar week={ week } weeks={ weeks } />
                     { days.map((day) => (
-                        <DayCard key={ day } day={ day } days={ days } week={ week } />
+                        <DayCard key={ day } day={ day } days={ days } week={ week } weeks={ weeks } />
                     ))}
                     <Button className="mb-4 w-44 font-bold uppercase h-12 rounded-[40px] bg-lightSecondary hover:bg-lightSecondary text-white"><PlusIcon />Add Day</Button>
                     </div>

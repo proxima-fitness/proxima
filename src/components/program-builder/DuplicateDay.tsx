@@ -1,13 +1,15 @@
 "use client";
 
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { DialogBadge } from "@/components/ui/dialog-badge";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import MultiSelect, { Option } from "@/components/ui/multi-select";
 import { Button } from "@/components/ui/button";
 
 interface IProps {
     day: number;
     days: number[];
     week: number;
+    weeks: number[];
     duplicateDayOpen: boolean;
     setDuplicateDayOpen: (duplicateDayOpen: boolean) => void;
 }
@@ -18,9 +20,12 @@ export const DuplicateDay: React.FC<IProps> = (props) => {
         day,
         days,
         week,
+        weeks,
         duplicateDayOpen,
         setDuplicateDayOpen,
     } = props;
+
+    const daysOptions: Option[] = days.filter((d) => d !== day).map((d) => ({ label: `Day ${d}`, value: String(d)}));
 
     return (
         <>
@@ -29,19 +34,30 @@ export const DuplicateDay: React.FC<IProps> = (props) => {
                     <DialogTitle className="font-bold flex items-center justify-center pb-4 border-b-2">
                         Duplicate Week {week} Day {day} to
                     </DialogTitle>
-                    <DialogDescription className="flex flex-row justify-between items-center">
-                        <span className="grid grid-cols-6 gap-6 p-8 w-full ">
-                            <DialogBadge key={ "select-all" } className={`flex items-center justify-center p-2 cursor-pointer ${ false ? "bg-[#37BCCF] hover:bg-[#37BCCF] text-white hover:text-white" : "bg-lightGray hover:bg-lightGray"}  `}>Select All</DialogBadge>
-                            { days.map((d) => {
-                                if ((d + 1) !== day) {
+                    <span className="flex flex-row p-8 gap-8 w-full">
+                        <Select defaultValue={ String(week) }>
+                            <SelectTrigger className="h-10">
+                                <SelectValue placeholder="Week" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                { weeks.map((wk) => {
                                     return (
-                                        <DialogBadge key={ d + 1 } className={`flex items-center justify-center p-2 cursor-pointer ${ false ? "bg-[#37BCCF] hover:bg-[#37BCCF] text-white hover:text-white" : "bg-lightGray hover:bg-lightGray"}  `}>Day { d + 1}</DialogBadge>
-                                    );
-                                }
+                                        <SelectItem key={ wk } value={ String(wk) }>Week {wk}</SelectItem>
+                                    )
+                                })}
+                            </SelectContent>
+                        </Select>
+                        <MultiSelect
+                            badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
+                            defaultOptions={ daysOptions }
+                            placeholder="Day"
+                            emptyIndicator={
+                            <span className="text-center h-6 text-sm text-gray-600 dark:text-gray-400">
+                                no results found.
+                            </span>
                             }
-                            )}
-                        </span>
-                    </DialogDescription>
+                            />
+                    </span>
                     <span className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4">
                         <span className="w-full flex items-center justify-center">
                             <Button onClick={ () => setDuplicateDayOpen(false) } variant="ghost" className="w-full h-12">

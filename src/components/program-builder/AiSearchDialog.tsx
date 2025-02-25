@@ -63,7 +63,7 @@ export const AiSearchDialog: React.FC = () => {
                     <span className="flex flex-row justify-between gap-5">
                         <span className="grid grid-cols-2 gap-5 flex-grow-[2] basis-2/3 pr-4 border-r-2">
                             <Select>
-                                <SelectTrigger>
+                                <SelectTrigger autoFocus className="h-10">
                                     <SelectValue placeholder="Sex" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -74,7 +74,7 @@ export const AiSearchDialog: React.FC = () => {
                                 </SelectContent>
                             </Select>
                             <Select>
-                                <SelectTrigger>
+                                <SelectTrigger autoFocus className="h-10">
                                     <SelectValue placeholder="Age" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -84,7 +84,7 @@ export const AiSearchDialog: React.FC = () => {
                                 </SelectContent>
                             </Select>
                             <Select>
-                                <SelectTrigger>
+                                <SelectTrigger autoFocus className="h-10">
                                     <SelectValue placeholder="How many days per week?" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -104,7 +104,7 @@ export const AiSearchDialog: React.FC = () => {
                                 }
                             />
                             <Select>
-                                <SelectTrigger>
+                                <SelectTrigger autoFocus className="h-10">
                                     <SelectValue placeholder="Program length" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -114,7 +114,7 @@ export const AiSearchDialog: React.FC = () => {
                                 </SelectContent>
                             </Select>
                             <Select>
-                                <SelectTrigger>
+                                <SelectTrigger autoFocus className="h-10">
                                     <SelectValue placeholder="Workout duration" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -124,7 +124,7 @@ export const AiSearchDialog: React.FC = () => {
                                 </SelectContent>
                             </Select>
                             <Select>
-                                <SelectTrigger>
+                                <SelectTrigger autoFocus className="h-10">
                                     <SelectValue placeholder="Activity level" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -230,7 +230,7 @@ export const AiSearchDialog: React.FC = () => {
                 }
                 <span className="flex flex-row justify-end items-center">
                     <Select onValueChange={ (value) => setWorkoutSchema(value)} value={ workoutSchema }>
-                        <SelectTrigger className="w-[180px]">
+                        <SelectTrigger autoFocus className="h-10 w-[180px]">
                             <SelectValue placeholder="Workout Schema" />
                         </SelectTrigger>
                         <SelectContent>
