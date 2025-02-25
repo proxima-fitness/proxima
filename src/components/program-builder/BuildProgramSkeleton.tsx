@@ -38,32 +38,32 @@ export const BuildProgramSkeleton: React.FC = () => {
 
         <div className="px-4 pb-4 flex flex-row flex-nowrap gap-2 overflow-hidden">
             <div className="min-w-[440px] max-w-[440px] h-[400px]">
-                <Skeleton className="w-[100%] h-[100%] rounded-lg text-center flex items-center justify-center" >
+                <Skeleton className="italic w-[100%] h-[100%] rounded-lg text-center flex items-center justify-center" >
                     <RandomQuote />
                 </Skeleton>
             </div>
             <div className="min-w-[440px] max-w-[440px] h-[400px]">
-                <Skeleton className="w-[100%] h-[100%] rounded-lg text-center flex items-center justify-center" >
+                <Skeleton className="italic w-[100%] h-[100%] rounded-lg text-center flex items-center justify-center" >
                     <RandomQuote />
                 </Skeleton>
             </div>
             <div className="min-w-[440px] max-w-[440px] h-[400px]">
-                <Skeleton className="w-[100%] h-[100%] rounded-lg text-center flex items-center justify-center" >
+                <Skeleton className="italic w-[100%] h-[100%] rounded-lg text-center flex items-center justify-center" >
                     <RandomQuote />
                 </Skeleton>
             </div>
             <div className="min-w-[440px] max-w-[440px] h-[400px]">
-                <Skeleton className="w-[100%] h-[100%] rounded-lg text-center flex items-center justify-center" >
+                <Skeleton className="italic w-[100%] h-[100%] rounded-lg text-center flex items-center justify-center" >
                     <RandomQuote />
                 </Skeleton>
             </div>
             <div className="min-w-[440px] max-w-[440px] h-[400px]">
-                <Skeleton className="w-[100%] h-[100%] rounded-lg text-center flex items-center justify-center" >
+                <Skeleton className="italic w-[100%] h-[100%] rounded-lg text-center flex items-center justify-center" >
                     <RandomQuote />
                 </Skeleton>
             </div>
             <div className="min-w-[440px] max-w-[440px] h-[400px]">
-                <Skeleton className="w-[100%] h-[100%] rounded-lg text-center flex items-center justify-center" >
+                <Skeleton className="italic w-[100%] h-[100%] rounded-lg text-center flex items-center justify-center" >
                     <RandomQuote />
                 </Skeleton>
             </div>

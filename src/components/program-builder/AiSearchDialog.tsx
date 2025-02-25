@@ -48,11 +48,13 @@ export const AiSearchDialog: React.FC = () => {
                     </span>
                 </DialogTitle>
                 <DialogDescription className="flex flex-row justify-between items-center">
-                    <Button onClick={ () => toggleAdvancedSettingsOpen() } variant="ghost" className="w-[auto] h-[auto]">
-                        Advanced settings { advancedSettingsOpen ? <ChevronUpIcon /> : <ChevronDownIcon /> }
-                    </Button>
+                    <span className="w-[66%]">
+                        <Button onClick={ () => toggleAdvancedSettingsOpen() } variant="ghost" className="w-[auto] h-[auto]">
+                            Advanced settings { advancedSettingsOpen ? <ChevronUpIcon /> : <ChevronDownIcon /> }
+                        </Button>
+                    </span>
                     { advancedSettingsOpen &&
-                        <span className="font-bold flex justify-start">
+                        <span className="font-bold w-[33%] flex justify-center">
                             Exclude
                         </span>
                     }
