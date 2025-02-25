@@ -4,6 +4,11 @@ module.exports = {
     darkMode: ["class"],
     content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
   mode: "jit",
+  variants: {
+	extend: {
+		display: ["group-hover"],
+	}
+  },
   theme: {
 	extend: {
 		colors: {
