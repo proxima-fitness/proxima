@@ -4,12 +4,18 @@ module.exports = {
     darkMode: ["class"],
     content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
   mode: "jit",
+  variants: {
+	extend: {
+		display: ["group-hover"],
+	}
+  },
   theme: {
 	extend: {
 		colors: {
 			primary: "#00040f",
 			secondary: "#00f6ff",
 			lightSecondary: "#33bbcf",
+			lightGray: "#f5f5f5",
 			// primary: {
 			// 	DEFAULT: 'hsl(var(--primary))',
 			// 	foreground: 'hsl(var(--primary-foreground))'

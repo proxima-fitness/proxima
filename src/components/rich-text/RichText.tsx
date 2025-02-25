@@ -1,14 +1,5 @@
-// import { type JSXConvertersFunction, RichText as RichTextConverter } from '@payloadcms/richtext-lexical/react'
 import { getMediaPublicUrl } from '@/api/blog';
 import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
-
-// const jsxConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
-//     ...defaultConverters,
-//     blocks: {
-//         // mediaBlock is the slug of the block
-//         mediaBlock: ({ node }) => <div style={{ backgroundColor: 'red' }}>{node.fields.text}</div>,
-//     },
-// } );
 
 interface IProps {
     data: SerializedEditorState;
@@ -64,8 +55,3 @@ export const RichText: React.FC<IProps> = (props) => {
 
     return <div>{data.root.children.map(renderNode)}</div>;
 };
-
-// <RichTextConverter
-//     // converters={jsxConverters}
-//     data={data as SerializedEditorState}
-// />

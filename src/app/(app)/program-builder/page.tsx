@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { AiSearchDialog } from "@/components/program-builder/AiSearchDialog";
+import styles from "@/style";
 
 export const metadata = {
     title: "AI Program Builder | Proxima Fitness",
@@ -7,8 +9,11 @@ export const metadata = {
 
   export default function AiProgramBuilder() {
     return (
-        <>
-            This will be the AI Program Builder page
-        </>
+        <div className={ `bg-white ${styles.flexCenter} flex-col` }>
+        <div className={ `${styles.boxWidth}` }>
+            <AiSearchDialog />
+        </div>
+    </div>
+
     );
 }

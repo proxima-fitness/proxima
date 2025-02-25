@@ -17,6 +17,11 @@ type TProgram = {
     thumbnail?: Blob;
 }
 
+type TQuote = {
+    quote: string;
+    author: string;
+}
+
 type TProgramDetails = {
     id?: string;
     title?: string;

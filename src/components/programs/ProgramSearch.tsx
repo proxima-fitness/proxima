@@ -28,7 +28,6 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
 
     const [filteredPrograms, setFilteredPrograms] = useState(programs);
 
-    const [searchQuery, setSearchQuery] = useState("");
     const [appliedProgramLengthFilter, setAppliedProgramLengthFilter] = useState<string>(); // casting the number to string
     const [appliedWorkoutDurationFilter, setAppliedWorkoutDurationFilter] = useState<string>(); // casting the number to string
     const [appliedEquipmentFilter, setAppliedEquipmentFilter] = useState<string[]>([]);
