@@ -231,6 +231,34 @@ export const socialMedia = [
   },
 ];
 
+export const coolQuotes: TQuote[] = [
+    { quote: "We take on the strength of that which we overcome", author: "Unknown" },
+    { quote: "Don't be bitter, be better", author: "Unknown"},
+    { quote: "The results come days after you stop counting", author: "Unknown"},
+    { quote: "There's no final victory and no final defeat, only the same fight to be fought again and again and again.", author: "Unknown"},
+    { quote: "It's a good idea to ask - what am I not doing?", author: "Unknown"},
+    { quote: "Everybody wants to be a bodybuilder, but nobody wants to lift no heavy-ass weights.", author: "Ronnie Coleman"},
+    { quote: "Light weight BABY!!!", author: "Ronnie Coleman"},
+    { quote: "Yeah Buddy!", author: "Ronnie Coleman"},
+    { quote: "Ain't nothin but a peanut", author: "Ronnie Coleman"},
+    { quote: "A well built physique is a status symbol. It reflects you worked hard for it. No money can buy it. You cannot borrow it, you cannot inherit it, you cannot steal it. You cannot hold onto it without constant work. It shows discipline, it shows self respect, it shows patience, work ethic, and passion. That is why I do what I do.", author: "Arnold Schwarzenegger"},
+    { quote: "No citizen has a right to be an amateur in the matter of physical training... what a disgrace it is for a man to grow old without ever seeing the beauty and strength of which his body is capable.", author: "Socrates"},
+    { quote: "Lifting isn’t a hobby, it’s a journey. And that journey often begins with feelings of inadequacy and ends with feelings of inadequacy but now you can’t wear jeans and you sink in pools.", author: "Casually Explained"},
+    { quote: "GOOOOOOOOD F*@#ING MORNING", author: "Dom Mazetti"},
+    { quote: "The day you start lifting is the day you become forever smol, because you will never be as big as you want to be.", author: "Dom Mazetti"},
+    { quote: "You can't climb the ladder of success with your hands in your pockets", author: "Unknown"},
+    { quote: "Swole is the goal, size is the prize, it's gain o'clock MF ... LET'S GO", author: "Robert Frank"},
+    { quote: "Be a sick c*nt not a sad c*nt", author: "Zyzz (RIP)"},
+    { quote: "The Iron never lies to you. You can walk outside and listen to all kinds of talk, get told that you're a god or a total bastard. The Iron will always kick you the real deal. The Iron is the great reference point, the all-knowing perspective giver. Always there like a beacon in the pitch black. I have found the Iron to be my greatest friend. It never freaks out on me, never runs. Friends may come and go. But two hundred pounds is always two hundred pounds.", author: "Henry Rollins"},
+    { quote: "You can't sculpt a pebble", author: "Unknown" },
+    { quote: "If you're gonna wear gloves while you lift, just make sure they match your purse", author: "Unkown"},
+    { quote: "Don't move the weight, work the muscle", author: "Unknown"},
+    { quote: "Live an extraordinary life… Don’t settle for an ordinary life… It’s easy to be ordinary anybody can do that. Find your magnificent obsession. Whatever it is and let nothing or no one tell you that you can’t do it. Tell them to sit back and watch me. Just sit back and watch me do it. Find your obsession go after that… I could care less what anybody else says and don’t let anything stop you from getting it.", author: "CT Fletcher"},
+    { quote: "Man cannot remake himself without Suffering, for he is both the Marble and the Sculptor", author: "Alexis Carrel" },
+    { quote: "I hated every minute of training, but I said, ‘Don’t Quit. Suffer now and live the rest of your life as a Champion!", author: "Muhammad Ali"},
+    { quote: "U mirin brah ?", author: "Zyzz (RIP)"}
+];
+
 export const sexOptions: Option[] = [
     { label: "Male", value: "male"},
     { label: "Female", value: "female"}

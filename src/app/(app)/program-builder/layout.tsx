@@ -10,7 +10,7 @@ export default function ProgramBuilderLayout({
     children: React.ReactNode
 }) {
     return (
-        <section>
+        <div>
             <div className="p-2 bg-lightGray flex flex-row items-center justify-between text-xl text-black">
                 <Breadcrumb className="w-[33%]">
                     <BreadcrumbList>
@@ -39,6 +39,6 @@ export default function ProgramBuilderLayout({
                 </div>
             </div>
             {children}
-        </section>
+        </div>
     )
 }

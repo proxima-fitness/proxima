@@ -20,6 +20,7 @@ import {
 import { useReducer, useState } from "react";
 import MultiSelect from '@/components/ui/multi-select';
 import { activityLevelOptions, ageOptions, dayPerWeekOptions, difficultyOptions, equipmentOptions, focusAreasOptions, goalsOptions, healthIssuesOptions, programLengthOptions, sexOptions, specializationOptions, specificDaysOptions, workoutDurationOptions } from "@/assets/constants";
+import Link from "next/link";
 
 export const AiSearchDialog: React.FC = () => {
 
@@ -35,9 +36,15 @@ export const AiSearchDialog: React.FC = () => {
                 <DialogTitle>
                     <span className="flex flex-row gap-2">
                         <Input startIcon={ SearchIcon } placeholder="Tell me about your ideal program..." />
-                        <Button className="w-[auto] h-[auto] bg-[#33bbcf] text-white">
-                            <SparklesIcon /> Build
-                        </Button>
+                        <Link
+                            target="_self"
+                            rel="noopener noreferrer"
+                            href={"/program-builder/build-program"}
+                            >
+                            <Button className="w-[auto] h-[auto] bg-[#33bbcf] text-white">
+                                <SparklesIcon /> Build
+                            </Button>
+                        </Link>
                     </span>
                 </DialogTitle>
                 <DialogDescription className="flex flex-row justify-between items-center">
