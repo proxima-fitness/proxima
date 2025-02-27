@@ -18,8 +18,10 @@ import {
 interface IProps {
     day: TProgramCreatorDay;
     days: number;
-    week: number;
+    weekIndex: number;
     programLength: number;
+    handleDeleteDay: (currentWeek: number, currentDay: number) => void;
+    handleAddExerciseDialog: (addExercise: TAddExerciseDialog) => void;
 }
 
 export const DayCard: React.FC<IProps> = (props) => {
@@ -27,8 +29,10 @@ export const DayCard: React.FC<IProps> = (props) => {
     const {
         day,
         days,
-        week,
+        weekIndex,
         programLength,
+        handleDeleteDay,
+        handleAddExerciseDialog,
     } = props;
 
     const [duplicateDayOpen, setDuplicateDayOpen] = useState(false);
@@ -43,7 +47,6 @@ export const DayCard: React.FC<IProps> = (props) => {
         <Card className="group py-4 px-4 min-w-[440px] max-w-[440px] bg-lightGray">
             <div className="flex flex-row justify-between items-center">
                 <div className="font-main text-xl flex flex-row gap-4">
-                    <MenuIcon />
                     Day {day.order}
                 </div>
                 <div className="flex flex-row gap-4">
@@ -55,7 +58,7 @@ export const DayCard: React.FC<IProps> = (props) => {
                             <EllipsisIcon />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" side="bottom">
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={ () => handleDeleteDay(weekIndex, Number(day.order))}>
                                 Delete
                                 <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
                             </DropdownMenuItem>
@@ -106,11 +109,11 @@ export const DayCard: React.FC<IProps> = (props) => {
                     </div>
                 </div>
             </div>
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center" onClick={ () => handleAddExerciseDialog({currentWeek: weekIndex, currentDay: Number(day.order), isOpen: true}) }>
                 <Button variant="ghost" className="pt-6 w-44 font-bold uppercase h-12 rounded-[40px] text-black"><PlusIcon />Add Exercise</Button>
             </div>
         </Card>
-        <DuplicateDay programLength={ programLength } week={ week } day={ day } days={ days } duplicateDayOpen={ duplicateDayOpen } setDuplicateDayOpen={ setDuplicateDayOpen } />
+        <DuplicateDay programLength={ programLength } weekIndex={ weekIndex } day={ day } days={ days } duplicateDayOpen={ duplicateDayOpen } setDuplicateDayOpen={ setDuplicateDayOpen } />
         </>
     );
 };

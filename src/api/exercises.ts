@@ -25,11 +25,10 @@ export const getExerciseID = async (user:User, name: string, language: "english"
 };
 
 // GET EXISTING EXERCISES STORED BY PROXIMA FITNESS (CACHES IN LOCALSTORAGE)
-export const getExercises = async (user: User) => {
+export const getExercises = async () => {
     const cacheKey = 'existing-exercises';
 
     try {
-        if (user) {
             const cachedData = localStorage.getItem(cacheKey);
 
             if (cachedData && cachedData.length > 0) {
@@ -55,13 +54,10 @@ export const getExercises = async (user: User) => {
                 JSON.stringify({ exercises, timestamp: new Date().getTime() }),
             );
 
-
             return exercises as TExercise[];
-        }
     } catch (error) {
         console.error('Error fetching existing exercises:', error);
     }
-
     return [];
 };
 

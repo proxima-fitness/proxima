@@ -2,6 +2,54 @@ import { people03, people02, people01, people04, people05, people06, instagram, 
 import humanizeDuration from "humanize-duration";
 import { Option } from '@/components/ui/multi-select';
 
+export const programLengths = ["1","2","3","4","5","6","7","8","9","10","11","12"];
+export const repMaxes = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"];
+export const durations = ["0","10","20","30","40","50","60","70","80","90","100","110","120","130","140","150","160","170", "180"];
+export const rep_types = [{label: "Reps", value: "reps"},{label: "Reps Max", value: "reps_max"},{label: "Reps Range", value: "reps_range"},{label: "Time", value: "time_taken"},{label: "Time Range", value:"time_range"},{label: "AMRAP", value: "amrap"}];
+export const intensities = [{label: "RPE", value: "rpe"},{ label: "% 1RM", value: "percent_rm" },{ label: "RPE Range", value: "rpe_range" }, {label: "Weights", value: "weights" }];
+export const lightColours = ["#DCF9C2", "#F4D1BD", "#E2F2F2", "#E0E1B9", "#D7FEC5", "#EEDACA", "#C5E0EA", "#EADEB5", "#CAC8D9", "#C2EAE6"];
+
+export const MuscleGroups = [
+    { label: "All", value: "All Muscle Groups" },
+    { label: "Chest", value: "Chest" },
+    { label: "Front Delts", value: "Front Delts" },
+    { label: "Middle Delts", value: "Middle Delts" },
+    { label: "Rear Delts", value:"Rear Delts" },
+    { label: "Biceps", value: "Biceps" },
+    { label: "Triceps", value: "Triceps" },
+    { label: "Forearms", value: "Forearms" },
+    { label: "Lats", value: "Lats" },
+    { label: "Upper Back", value: "Upper Back" },
+    { label: "Lower Back", value: "Lower Back" },
+    { label: "Neck", value: "Neck" },
+    { label: "Abs", value: "Abs" },
+    { label: "Glutes", value: "Glutes" },
+    { label: "Hamstrings", value: "Hamstrings" },
+    { label: "Quadriceps", value: "Quadriceps" },
+    { label: "Abductors", value: "Abductors" },
+    { label: "Adductors", value: "Adductors" },
+    { label: "Calves", value: "Calves" },
+    { label: "Olympic", value: "Olympic" },
+    { label: "Full Body", value: "Full Body" },
+    { label: "Plyometrics", value: "Plyometrics" },
+    { label: "Stretching", value: "Stretching" },
+    { label: "Cardio", value: "Cardio" },
+    { label: "Other", value: "Other" },
+];
+
+export const Equipment = [
+    { label: "All Equipment", value: "All Equipment" },
+    { label: "Barbell", value: "Barbell" },
+    { label: "Dumbbell", value: "Dumbbell" },
+    { label: "Kettlebell", value: "Kettlebell" },
+    { label: "Machine", value:"Machine" },
+    { label: "Bodyweight", value: "Bodyweight" },
+    { label: "Smith Machine", value: "Smith Machine" },
+    { label: "Cable", value: "Cable" },
+    { label: "Cardio", value: "Cardio" },
+    { label: "Other", value: "Other" },
+];
+
 
 export const exampleProximaProgram: TProgramCreatorDay[][] = [
     [

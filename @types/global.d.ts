@@ -67,6 +67,22 @@ type TProgram = {
     thumbnail?: Blob;
 }
 
+type TAddExerciseDialog = {
+    currentWeek: number;
+    currentDay: number;
+    isOpen: boolean;
+}
+
+type TAddExercise = {
+    id: string;
+    repTypeValue: "reps" | "reps_max" | "reps_range" | "time" | "time_range" | "amrap" ;
+    intensityValue: "percent_rm" | "rpe_range" | "rpe";
+    reps: number[]; // DATA for any rep type that is not a range
+    intensityData: number[]; // DATA for any intensity that is not a range
+    repsWithTimeAndRepRange: number[][]; // DATA for rep/time range
+    intensityDataWithRPERange: number[][]; // DATA for rpe range
+}
+
 type TQuote = {
     quote: string;
     author: string;

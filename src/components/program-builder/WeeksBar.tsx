@@ -11,14 +11,14 @@ import { useState } from "react";
 import { DuplicateWeek } from "./DuplicateWeek";
 
 interface IProps {
-    week: number;
+    weekIndex: number;
     programLength: number;
 }
 
 export const WeeksBar: React.FC<IProps> = (props) => {
 
     const {
-        week,
+        weekIndex,
         programLength,
     } = props;
 
@@ -35,13 +35,13 @@ export const WeeksBar: React.FC<IProps> = (props) => {
         <div className="pt-2 px-4 flex flex-row flex-nowrap gap-2">
             <div className="px-2 min-w-[440px] max-w-[440px] h-[40px] flex flex-row justify-between items-center">
                 <div className="">
-                    Week {week}
+                    Week {weekIndex + 1}
                 </div>
                 <div className="flex flex-row gap-4">
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger className="">
-                                <div onClick={ () => handleDuplicateWeekOpen(week, true) }>
+                                <div onClick={ () => handleDuplicateWeekOpen(weekIndex, true) }>
                                     <CopyIcon />
                                 </div>
                             </TooltipTrigger>
@@ -53,7 +53,7 @@ export const WeeksBar: React.FC<IProps> = (props) => {
                 </div>
             </div>
         </div>
-        <DuplicateWeek week={ selectedWeek } programLength={ programLength } duplicateWeekOpen={ duplicateWeekOpen } setDuplicateWeekOpen={ setDuplicateWeekOpen } />
+        <DuplicateWeek weekIndex={ selectedWeek } programLength={ programLength } duplicateWeekOpen={ duplicateWeekOpen } setDuplicateWeekOpen={ setDuplicateWeekOpen } />
         </>
     )
 }

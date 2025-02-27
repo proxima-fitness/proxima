@@ -48,7 +48,7 @@ export const getProgramThumbnailStatus = async (id?: string) => {
 };
 
 // EXERCISE GIF
-export const getExerciseGif = async (user: User, gif_id: string, resolution: "180" | "360", file_type: "jpg" | "gif") => {
+export const getExerciseGif = async (gif_id: string, resolution: "180" | "360", file_type: "jpg" | "gif") => {
     let filePath = "";
     if (file_type === "jpg") {
         filePath = `${resolution}/${gif_id}/1.jpg`;
@@ -57,15 +57,13 @@ export const getExerciseGif = async (user: User, gif_id: string, resolution: "18
     }
     if (!gif_id || gif_id === "") return null;
     try {
-        if (user) {
-                const { data, error } = await supabase.storage.from('exercises').download(filePath);
-                if (error) {
-                    console.error('Error fetching exercise GIF:', error);
-                    return null;
-                } else {
-                    return data ?? null;
-                }
-            }
+        const { data, error } = await supabase.storage.from('exercises').download(filePath);
+        if (error) {
+            console.error('Error fetching exercise GIF:', error);
+            return null;
+        } else {
+            return data ?? null;
+        }
     } catch (error: unknown) {
         console.error('Error fetching exercise GIF:', error);
         return null;

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 interface IProps {
     day: TProgramCreatorDay;
     days: number;
-    week: number;
+    weekIndex: number;
     programLength: number;
     duplicateDayOpen: boolean;
     setDuplicateDayOpen: (duplicateDayOpen: boolean) => void;
@@ -19,7 +19,7 @@ export const DuplicateDay: React.FC<IProps> = (props) => {
     const {
         day,
         days,
-        week,
+        weekIndex,
         programLength,
         duplicateDayOpen,
         setDuplicateDayOpen,
@@ -34,10 +34,10 @@ export const DuplicateDay: React.FC<IProps> = (props) => {
             <Dialog open={ duplicateDayOpen } onOpenChange={ () => setDuplicateDayOpen(false) }>
                 <DialogContent hideClose className="max-w-3xl w-full">
                     <DialogTitle className="font-bold flex items-center justify-center pb-4 border-b-2">
-                        Duplicate Week {week} Day {day.order} to
+                        Duplicate Week {weekIndex + 1} Day {day.order} to
                     </DialogTitle>
                     <span className="flex flex-row p-8 gap-8 w-full">
-                        <Select defaultValue={ String(week) }>
+                        <Select defaultValue={ String(weekIndex + 1) }>
                             <SelectTrigger className="h-10">
                                 <SelectValue placeholder="Week" />
                             </SelectTrigger>

@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { getBlogById, getBlogs } from "./blog";
 import { getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID } from "./programs";
 import { getOpUserId, getUserFullName, getUserMetaData } from "./users";
-import { getProfilePicByID } from "./storage";
+import { getExerciseGif, getProfilePicByID } from "./storage";
+import { getExercises } from "./exercises";
 
 /*********************************/
 /** CLIENT SIDE RENDERED HOOKS **/
@@ -83,6 +84,21 @@ export const useProfilePictureByID = (id: string) => {
     });
 };
 
+// FETCH EXERCISES
+export const useExercises = () => {
+    return useQuery({
+        queryKey: ["existing-exercises"],
+        queryFn: () => getExercises(),
+    })
+};
+
+// FETCHES EITHER A GIF OR IMG AT A PARTICULAR RESOLUTION FROM STORAGE BUCKET FOR AN EXERCISE
+export const useExerciseGif = (gif_id: string, resolution: "180" | "360", file_type: "gif" | "jpg", exercise_name: string) => {
+    return useQuery({
+        queryKey: [ "exercise-gif", exercise_name, gif_id, resolution, file_type ],
+        queryFn: () => getExerciseGif(gif_id, resolution, file_type),
+    });
+};
 
 
 /*********************************/

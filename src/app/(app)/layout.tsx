@@ -5,6 +5,7 @@ import { Navbar } from '@/components/header/Navbar';
 import QueryProvider from '@/utils/QueryProvider';
 import styles from '@/style';
 import type { Metadata } from 'next';
+import { Toaster } from "@/components/ui/sonner"
 
 export const metadata: Metadata = {
   title: 'Proxima Fitness | AI Workout Builder & Program Directory',
@@ -34,6 +35,7 @@ export default function RootLayout({
                     <main id="root">
                         <QueryProvider>
                             {children}
+                            <Toaster />
                         </QueryProvider>
                     </main>
                     <div className={ `bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
