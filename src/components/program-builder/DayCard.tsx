@@ -5,20 +5,21 @@ import { MenuIcon, EllipsisIcon, CopyIcon, PlusIcon } from "lucide-react";
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "../ui/button";
 import { DuplicateDay } from "./DuplicateDay";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuShortcut,
     DropdownMenuTrigger,
-  } from "@/components/ui/dropdown-menu"
+  } from "@/components/ui/dropdown-menu";
+
 
 interface IProps {
-    day: number;
-    days: number[];
+    day: TProgramCreatorDay;
+    days: number;
     week: number;
-    weeks: number[];
+    programLength: number;
 }
 
 export const DayCard: React.FC<IProps> = (props) => {
@@ -27,7 +28,7 @@ export const DayCard: React.FC<IProps> = (props) => {
         day,
         days,
         week,
-        weeks,
+        programLength,
     } = props;
 
     const [duplicateDayOpen, setDuplicateDayOpen] = useState(false);
@@ -43,7 +44,7 @@ export const DayCard: React.FC<IProps> = (props) => {
             <div className="flex flex-row justify-between items-center">
                 <div className="font-main text-xl flex flex-row gap-4">
                     <MenuIcon />
-                    Day {day}
+                    Day {day.order}
                 </div>
                 <div className="flex flex-row gap-4">
                     <DropdownMenu>
@@ -109,7 +110,7 @@ export const DayCard: React.FC<IProps> = (props) => {
                 <Button variant="ghost" className="pt-6 w-44 font-bold uppercase h-12 rounded-[40px] text-black"><PlusIcon />Add Exercise</Button>
             </div>
         </Card>
-        <DuplicateDay weeks={ weeks } week={ week } day={ day } days={ days } duplicateDayOpen={ duplicateDayOpen } setDuplicateDayOpen={ setDuplicateDayOpen } />
+        <DuplicateDay programLength={ programLength } week={ week } day={ day } days={ days } duplicateDayOpen={ duplicateDayOpen } setDuplicateDayOpen={ setDuplicateDayOpen } />
         </>
     );
 };

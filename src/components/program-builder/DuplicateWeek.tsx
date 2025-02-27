@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 
 interface IProps {
     week: number;
-    weeks: number[];
+    programLength: number;
     duplicateWeekOpen: boolean;
     setDuplicateWeekOpen: (duplicateWeekOpen: boolean) => void;
 }
@@ -15,10 +15,12 @@ export const DuplicateWeek: React.FC<IProps> = (props) => {
 
     const {
         week,
-        weeks,
+        programLength,
         duplicateWeekOpen,
         setDuplicateWeekOpen,
     } = props;
+
+    const programLengthArray = Array.from({ length: programLength }, (_, index) => index + 1);
 
     return (
         <>
@@ -30,7 +32,7 @@ export const DuplicateWeek: React.FC<IProps> = (props) => {
                     <DialogDescription className="flex flex-row justify-between items-center">
                         <span className="grid grid-cols-6 gap-6 p-8 w-full ">
                             <DialogBadge key={ "select-all" } className={`flex items-center justify-center p-2 cursor-pointer ${ false ? "bg-[#37BCCF] hover:bg-[#37BCCF] text-white hover:text-white" : "bg-lightGray hover:bg-lightGray"}  `}>Select All</DialogBadge>
-                            { weeks.map((wk) => {
+                            { programLengthArray.map((wk) => {
                                 if ((wk) !== week) {
                                     return (
                                         <DialogBadge key={ wk } className={`flex items-center justify-center p-2 cursor-pointer ${ false ? "bg-[#37BCCF] hover:bg-[#37BCCF] text-white hover:text-white" : "bg-lightGray hover:bg-lightGray"}  `}>Week { wk }</DialogBadge>

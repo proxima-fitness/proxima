@@ -1,3 +1,53 @@
+/** A Proxima Program in the Program Builder is defined as: */
+/***********************************************************/
+type TProgramCreatorDay = {
+    order: string,
+    day_title?: string;
+    exercises?: TProgramCreatorExercise[];
+}
+
+type TProgramCreatorExercise = {
+    exercise?: TExercise;
+    sets?: number;
+    reps_type?: TRepsTypes;
+    intensity?: TIntensityTypes;
+}
+
+type TIntensityTypes = {
+    rpe?: number[];
+    rpe_range?: number[][];
+    percent_rm?: number[];
+    weights?: number[];
+}
+
+type TRepsTypes = {
+    reps?: number[];
+    reps_range?: number[][];
+    reps_max?: number[];
+    amrap?: string[];
+    time_taken?: number[];
+    time_range?: number[][];
+}
+
+type TExercise = {
+    id: string;
+    gif_id?: string;
+    instructions?: string[];
+    name_english: string;
+    name_espanol: string;
+    name_portugues: string;
+    name_francais: string;
+}
+
+/** A Hevy Routine in the Program Builder is defined as: */
+/***********************************************************/
+
+type THevyRoutineDay = {
+
+}
+
+/***********************************************************/
+
 type TProgramPage = {
     program: TProgram[];
     thumbnail: Blob;
@@ -61,16 +111,6 @@ type TSavedWorkoutExercise = {
     percent_rm?: number[];
     weights?: number[];
     exercises?: TExercise;
-}
-
-type TExercise = {
-    id: string;
-    gif_id?: string;
-    instructions?: string[];
-    name_english: string;
-    name_espanol: string;
-    name_portugues: string;
-    name_francais: string;
 }
 
 type TProgramFilters = {

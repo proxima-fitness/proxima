@@ -2,6 +2,4907 @@ import { people03, people02, people01, people04, people05, people06, instagram, 
 import humanizeDuration from "humanize-duration";
 import { Option } from '@/components/ui/multi-select';
 
+
+export const exampleProximaProgram: TProgramCreatorDay[][] = [
+    [
+        {
+            "order": "1",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "order": "2",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    [
+        {
+            "order": "1",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "order": "2",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    [
+        {
+            "order": "1",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "order": "2",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    [
+        {
+            "order": "1",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "order": "2",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    [
+        {
+            "order": "1",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "order": "2",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    [
+        {
+            "order": "1",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "order": "2",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    [
+        {
+            "order": "1",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "order": "2",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    [
+        {
+            "order": "1",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "order": "2",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    [
+        {
+            "order": "1",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "order": "2",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    [
+        {
+            "order": "1",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "order": "2",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    [
+        {
+            "order": "1",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "order": "2",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    [
+        {
+            "order": "1",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "order": "2",
+            "exercises": [
+                {
+                    "exercise": {
+                        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+                        "name_english": "21s (EZ Bar)",
+                        "name_espanol": "21s (EZ Bar)",
+                        "name_portugues": "21s (EZ Bar)",
+                        "name_francais": "21s (EZ Bar)",
+                        "gif_id": "2404"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+                        "name_english": "Arm Circle",
+                        "name_espanol": "Círculos de Brazo",
+                        "name_portugues": "Círculo de braço",
+                        "name_francais": "Cercle de Bras",
+                        "gif_id": "1428"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_max": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "percent_rm": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+                        "name_english": "Chest Fly (Cable)",
+                        "name_espanol": "Fly de Pecho (Cable)",
+                        "name_portugues": "Voador de Peito (Cabo)",
+                        "name_francais": "Écarté de Poitrine (Câble)",
+                        "gif_id": "0227"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "reps_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe_range": [
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ],
+                            [
+                                9,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+                        "name_english": "Front Lever",
+                        "name_espanol": "Levantamiento Frontal",
+                        "name_portugues": "Alavanca Frontal",
+                        "name_francais": "Front Lever",
+                        "gif_id": "3296"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_taken": [
+                            8,
+                            8,
+                            8,
+                            8
+                        ]
+                    },
+                    "intensity": {
+                        "weights": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "957bd715-f994-4031-8b67-5871c805715d",
+                        "name_english": "Kettlebell Swing",
+                        "name_espanol": "Swing con Kettlebell",
+                        "name_portugues": "Swing com Kettlebell",
+                        "name_francais": "Swing avec Kettlebell",
+                        "gif_id": "0549"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "time_range": [
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ],
+                            [
+                                8,
+                                12
+                            ]
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                },
+                {
+                    "exercise": {
+                        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+                        "name_english": "Behind The Neck Press (Smith Machine)",
+                        "name_espanol": "Prensa Trasera (Máquina Smith)",
+                        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+                        "name_francais": "Développé Nuque (Smith Machine)",
+                        "gif_id": "0747"
+                    },
+                    "sets": 4,
+                    "reps_type": {
+                        "amrap": [
+                            "amrap",
+                            "amrap",
+                            "amrap",
+                            "amrap"
+                        ]
+                    },
+                    "intensity": {
+                        "rpe": [
+                            9,
+                            9,
+                            9,
+                            9
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+];
+
+
 export const shortEnglishHumanizer = humanizeDuration.humanizer({
     language: "shortEn",
     languages: {

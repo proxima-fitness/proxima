@@ -6,10 +6,10 @@ import MultiSelect, { Option } from "@/components/ui/multi-select";
 import { Button } from "@/components/ui/button";
 
 interface IProps {
-    day: number;
-    days: number[];
+    day: TProgramCreatorDay;
+    days: number;
     week: number;
-    weeks: number[];
+    programLength: number;
     duplicateDayOpen: boolean;
     setDuplicateDayOpen: (duplicateDayOpen: boolean) => void;
 }
@@ -20,19 +20,21 @@ export const DuplicateDay: React.FC<IProps> = (props) => {
         day,
         days,
         week,
-        weeks,
+        programLength,
         duplicateDayOpen,
         setDuplicateDayOpen,
     } = props;
 
-    const daysOptions: Option[] = days.filter((d) => d !== day).map((d) => ({ label: `Day ${d}`, value: String(d)}));
+    const programLengthArray = Array.from({ length: programLength }, (_, index) => index + 1);
+    const daysArray = Array.from({length: days }, (_, index) => index + 1);
+    const daysOptions: Option[] = daysArray.filter((d) => String(d) !== day.order).map((d) => ({ label: `Day ${d}`, value: String(d)}));
 
     return (
         <>
             <Dialog open={ duplicateDayOpen } onOpenChange={ () => setDuplicateDayOpen(false) }>
                 <DialogContent hideClose className="max-w-3xl w-full">
                     <DialogTitle className="font-bold flex items-center justify-center pb-4 border-b-2">
-                        Duplicate Week {week} Day {day} to
+                        Duplicate Week {week} Day {day.order} to
                     </DialogTitle>
                     <span className="flex flex-row p-8 gap-8 w-full">
                         <Select defaultValue={ String(week) }>
@@ -40,7 +42,7 @@ export const DuplicateDay: React.FC<IProps> = (props) => {
                                 <SelectValue placeholder="Week" />
                             </SelectTrigger>
                             <SelectContent>
-                                { weeks.map((wk) => {
+                                { programLengthArray.map((wk) => {
                                     return (
                                         <SelectItem key={ wk } value={ String(wk) }>Week {wk}</SelectItem>
                                     )

@@ -1,6 +1,6 @@
 "use client";
 
-import { EllipsisIcon, CopyIcon } from "lucide-react";
+import { CopyIcon } from "lucide-react";
 import {
     Tooltip,
     TooltipContent,
@@ -9,22 +9,17 @@ import {
 } from "@/components/ui/tooltip"
 import { useState } from "react";
 import { DuplicateWeek } from "./DuplicateWeek";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-  } from "@/components/ui/popover"
 
 interface IProps {
     week: number;
-    weeks: number[];
+    programLength: number;
 }
 
 export const WeeksBar: React.FC<IProps> = (props) => {
 
     const {
         week,
-        weeks,
+        programLength,
     } = props;
 
     const [selectedWeek, setSelectedWeek] = useState<number>();
@@ -43,25 +38,6 @@ export const WeeksBar: React.FC<IProps> = (props) => {
                     Week {week}
                 </div>
                 <div className="flex flex-row gap-4">
-                    {/* <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger>
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <EllipsisIcon />
-                                    </PopoverTrigger>
-                                    <PopoverContent>
-                                        <div>
-                                            Day Title
-                                        </div>
-                                    </PopoverContent>
-                                </Popover>
-                            </TooltipTrigger>
-                            <TooltipContent className="bg-gray-600 text-white rounded-lg">
-                            <p>More</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider> */}
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger className="">
@@ -77,7 +53,7 @@ export const WeeksBar: React.FC<IProps> = (props) => {
                 </div>
             </div>
         </div>
-        <DuplicateWeek week={ selectedWeek } weeks={ weeks } duplicateWeekOpen={ duplicateWeekOpen } setDuplicateWeekOpen={ setDuplicateWeekOpen } />
+        <DuplicateWeek week={ selectedWeek } programLength={ programLength } duplicateWeekOpen={ duplicateWeekOpen } setDuplicateWeekOpen={ setDuplicateWeekOpen } />
         </>
     )
 }
