@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { proxima_logo, qr_code, starGold,apple, google } from "public";
+import { qr_code, starGold,apple, google, proxima_logo_small } from "public";
 
 interface IProps {
     isOpen: boolean;
@@ -47,12 +47,12 @@ export const DownloadPopup: React.FC<IProps> = (props) => {
                             </a>
                         </span>
                 :
-                        <Button className="sm:w-[90%] h-[110px] my-6 bg-cyan-600">
-                            <img src={ (proxima_logo as any).src } alt="Proxima Logo" className="w-auto h-[400px]" />
+                        <Button className="cursor-default sm:w-[90%] bg-lightSecondary h-[90px] my-6 hover:bg-lightSecondary">
+                            <img src={ (proxima_logo_small as any).src } alt="Proxima Logo" />
                         </Button>
             }
 
-                    <DialogTitle className="text-3xl pb-4">DOWNLOAD THE APP FOR <span className="text-cyan-600">FREE</span></DialogTitle>
+                    <DialogTitle className="text-3xl pb-4">DOWNLOAD THE APP FOR <span className="text-lightSecondary">FREE</span></DialogTitle>
                     <DialogDescription className={ `flex ${ isMobile ? "flex-col" : "flex-row" } justify-between items-start` }>
                         <span className="w-[100%] flex flex-col items-center">
                             { !isMobile &&

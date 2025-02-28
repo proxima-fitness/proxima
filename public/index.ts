@@ -1,6 +1,7 @@
 import add from "./add.svg";
 import apple from "./apple.svg";
-import proxima_logo from "./proxima_logo_blue-04.svg"
+import proxima_logo from "./proxima_logo_blue-04.svg";
+import proxima_logo_small from "./proxima_logo_blue_small.svg";
 import arnold from "./arnold.jpg";
 import google from "./google.svg";
 import arrow_up from "./arrow-up.svg";
@@ -82,5 +83,5 @@ export {
     programs_dark_device,
     twitter,
     reddit,
-
+    proxima_logo_small,
 }
