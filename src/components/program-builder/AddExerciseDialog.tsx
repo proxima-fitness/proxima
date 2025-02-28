@@ -26,6 +26,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
     } = props;
 
     const { data: exercises }  = useExercises();
+    // console.log(exercises);
 
     const [title, setTitle] = useState<string>();
     const [ editedExercise, setEditedExercise ] = useState<TAddExercise | undefined>();
@@ -168,10 +169,6 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                 <DialogTitle className="font-bold flex items-center justify-center pb-4 border-b-2">
                     Add Exercise to Week {addExerciseDialog.currentWeek + 1} Day {addExerciseDialog.currentDay}
                 </DialogTitle>
-                <DialogDescription className="flex flex-row justify-between items-center">
-                    <span className="grid grid-cols-6 gap-6 p-8 w-full ">
-                    </span>
-                </DialogDescription>
                 <div className={ "modal-content__centered" }>
                     <ExerciseSearchBar
                         title={ "Exercise" }
@@ -346,14 +343,6 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                             Plus icon here
                         </Button>
                     </div>
-                    <div className='generic-centered-container generic-centered-container__safe-padding'>
-                        <Button
-                            onClick={ () => handleSave() }
-                            className="w-full normal-case mt-[10px] flex items-center justify-center rounded-[8px]"
-                        >
-                            OK
-                        </Button>
-                    </div>
                 </div>
                 <span className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4">
                     <span className="w-full flex items-center justify-center">
@@ -362,7 +351,11 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                         </Button>
                     </span>
                     <span className="w-full flex items-center justify-center">
-                        <Button variant="ghost" className="bg-lightSecondary text-white hover:bg-lightSecondary w-full h-12">
+                        <Button
+                            onClick={ () => handleSave() }
+                            variant="ghost"
+                            className="bg-lightSecondary text-white hover:bg-lightSecondary w-full h-12"
+                        >
                                 Add
                         </Button>
                     </span>

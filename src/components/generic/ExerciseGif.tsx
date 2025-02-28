@@ -52,12 +52,12 @@ export const ExerciseGif: React.FC<IProps> = (props) => {
             { exerciseGif instanceof Blob &&
             <>
                 { thumbnailOrImage === "thmb" &&
-                    <div >
-                        <img alt="exercise GIF" src={ URL.createObjectURL(exerciseGif) } />
+                    <div className="h-14 w-14 min-w-14 min-h-14 flex items-center justify-center">
+                        <img className="rounded-xl" alt="exercise GIF" src={ URL.createObjectURL(exerciseGif) } />
                     </div>
                 }
                 { thumbnailOrImage === "img" &&
-                    <div>
+                    <div className="h-full w-full flex items-center justify-center cursor-pointer">
                         <img alt="exercise GIF" src={ URL.createObjectURL(exerciseGif) } />
                     </div>
                 }
@@ -67,7 +67,7 @@ export const ExerciseGif: React.FC<IProps> = (props) => {
             { !exerciseGif && name &&
                 <>
                     { thumbnailOrImage === "thmb" &&
-                        <div style={ { background: randomColour } }>
+                        <div className="h-14 w-16 flex items-center justify-center rounded-lg cursor-pointer" style={ { background: randomColour } }>
                             <div>{ getInitials(name) }</div>
                         </div>
                     }
@@ -77,11 +77,10 @@ export const ExerciseGif: React.FC<IProps> = (props) => {
                 </>
             }
             { !exerciseGif && !name &&
-                <div style={ { width: "100%", height: "358px", display: "flex", textAlign: "center", justifyContent: "center", alignItems: "center"} }>
-                    <div style={ { display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", fontWeight: "bold" } }>
+                <div className="w-full h-[358px] flex text-center items-center justify-center">
+                    <div className="flex flex-col font-bold items-center justify-center">
                         No Image
                     </div>
-
                 </div>
             }
         </>

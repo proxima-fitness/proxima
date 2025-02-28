@@ -93,13 +93,12 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
         const item = data.filteredItems[index];
 
         return (
-            <div>
                 <div
                     key={ item.id }
                     onClick={ () => data.selectItem(item) }
+                    className="cursor-pointer flex flex-row gap-4 py-2"
                 >
                     <ExerciseGif
-                        customClass="thumbnail"
                         thumbnailOrImage="thmb"
                         name={ item.name_english }
                         gif_id={ item?.gif_id }
@@ -107,15 +106,9 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
                         file_type="jpg"
                     />
                     <div
-                        style={ {
-                            width: '100%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'space-between',
-                            alignItems: 'flex-start',
-                        } }
+                        className="w-full flex flex-col justify-center items-start h-14"
                     >
-                        <h5>{ item.name_english }</h5>
+                        { item.name_english }
                         {/* <span style={ { fontSize: '10px' } }>
                             { item.muscleGroups.map((muscleGroup, index) => (
                                 <span key={ index }>
@@ -126,7 +119,6 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
                         </span> */}
                     </div>
                 </div>
-            </div>
         );
     };
 
@@ -135,7 +127,7 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
             { isEditing ? (
                 <>
                     <Input
-                        style={ { padding: "0" } }
+                        className="p-0"
                         autoFocus
                         placeholder={ "Search Exercises" }
                         onChange={ (event) => setAppliedSearchBarFilter(String(event.target.value)) }>
@@ -166,9 +158,9 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
                         </div>
                     </IonItem> */}
                     <List
-                        height={ 800 }
+                        height={ 500 }
                         itemCount={ filteredItems.length }
-                        itemSize={ 52 }
+                        itemSize={ 10 }
                         width={ '100%' }
                         itemData={ { filteredItems, selectItem } }
                         >
@@ -181,7 +173,7 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
                     <center><h2>{ selectedName }</h2></center>
                     { selectedGifID && selectedGifID.length > 0 &&
                         <>
-                            <ExerciseGif customClass={ "image" } thumbnailOrImage={ "img" } gif_id={ selectedGifID } resolution={ "360" } file_type={ "gif" } />
+                            <ExerciseGif name={ selectedName } thumbnailOrImage={ "img" } gif_id={ selectedGifID } resolution={ "360" } file_type={ "gif" } />
                         </>
              }
                 </div>

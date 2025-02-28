@@ -35,8 +35,6 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
         setAddExerciseDialog(addExerciseDialog);
     };
 
-    console.log(newProgram[0]);
-
     // Adds an empty day to the selected week
     const handleAddDay = (currentWeek: number) => {
 
