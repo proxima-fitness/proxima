@@ -55,6 +55,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
     [
         {
             "order": "1",
+            "day_title": "Main title yeee",
             "exercises": [
                 {
                     "exercise": {
@@ -4338,6 +4339,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
         },
         {
             "order": "2",
+            "day_title": "Test Day",
             "exercises": [
                 {
                     "exercise": {

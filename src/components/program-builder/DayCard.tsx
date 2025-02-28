@@ -1,7 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { MenuIcon, EllipsisIcon, CopyIcon, PlusIcon } from "lucide-react";
+import { EllipsisIcon, CopyIcon, PlusIcon } from "lucide-react";
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "../ui/button";
 import { DuplicateDay } from "./DuplicateDay";
@@ -14,6 +14,7 @@ import {
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu";
 import { ExerciseGif } from "../generic/ExerciseGif";
+import { Input } from "../ui/input";
 
 
 interface IProps {
@@ -21,6 +22,7 @@ interface IProps {
     days: number;
     weekIndex: number;
     programLength: number;
+    handleEditTitle: (currentWeek: number, currentDay: number, day_title: string) => void;
     handleDeleteDay: (currentWeek: number, currentDay: number) => void;
     handleAddExerciseDialog: (addExercise: TAddExerciseDialog) => void;
 }
@@ -33,10 +35,13 @@ export const DayCard: React.FC<IProps> = (props) => {
         weekIndex,
         programLength,
         handleDeleteDay,
+        handleEditTitle,
         handleAddExerciseDialog,
     } = props;
 
     const [duplicateDayOpen, setDuplicateDayOpen] = useState(false);
+    const [editTitleOpen, setEditTitleOpen] = useState(false);
+    const [currentTitle, setCurrentTitle] = useState(day.day_title ?? "");
 
     const handleDuplicateDayOpen = (day: number, duplicateDayOpen: boolean) => {
         setDuplicateDayOpen(duplicateDayOpen);
@@ -54,6 +59,29 @@ export const DayCard: React.FC<IProps> = (props) => {
                 <div className="font-main text-xl flex flex-row gap-4">
                     Day {day.order}
                 </div>
+                <div className="font-secondary text-xl">
+                    { editTitleOpen ?
+                        <Input
+                            value={ currentTitle }
+                            onInput={ (event) => setCurrentTitle(String(event.currentTarget.value) ?? "") }
+                            onBlur={ (event) => {
+                                handleEditTitle(weekIndex, Number(day.order), String(event.currentTarget.value));
+                                setEditTitleOpen(false);
+                            } }
+                            onKeyDown={ (e) => {
+                                if (e.key === 'Enter') {
+                                    handleEditTitle(weekIndex, Number(day.order), e.currentTarget.value);
+                                    setEditTitleOpen(false);
+                                }
+                            } }
+                            autoFocus
+                        />
+                        :
+                        <>
+                            {day.day_title}
+                        </>
+                    }
+                </div>
                 <div className="flex flex-row gap-4">
                     <DropdownMenu>
                         <DropdownMenuTrigger
@@ -63,15 +91,15 @@ export const DayCard: React.FC<IProps> = (props) => {
                             <EllipsisIcon />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" side="bottom">
-                            <DropdownMenuItem onClick={ () => handleDeleteDay(weekIndex, Number(day.order))}>
+                            <DropdownMenuItem className="cursor-pointer" onClick={ () => handleDeleteDay(weekIndex, Number(day.order))}>
                                 Delete
                                 <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={ () => setEditTitleOpen(true)} className="cursor-pointer">
                                 Edit Title
                                 <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer">
                                 Generate Day
                                 <DropdownMenuShortcut>⌘G</DropdownMenuShortcut>
                             </DropdownMenuItem>
@@ -116,9 +144,9 @@ export const DayCard: React.FC<IProps> = (props) => {
             </div>
             <div>
             { day?.exercises?.map((exercise : TProgramCreatorExercise, i: number) => (
-                    <div key={ "Week" + (weekIndex + 1) + "Day" + i } className="flex flex-row justify-between items-center text-xs pt-4 border-b-2 py-2 border-gray-200"onClick={ () => handleEditExercise(day, exercise) }>
+                    <div key={ "Week" + (weekIndex + 1) + "Day" + i } className="flex flex-row justify-between items-center text-sm border-b-2 py-2 border-gray-200"onClick={ () => handleEditExercise(day, exercise) }>
                         <div className="flex flex-row gap-2 items-center justify-start max-w-[50%]">
-                            <div>
+                            <div className="text-lightSecondary pr-1">
                             { i + 1}
                             </div>
                             <ExerciseGif thumbnailOrImage={ "thmb" } name={ exercise.exercise?.name_english } gif_id={ exercise.exercise?.gif_id ?? "" } resolution={ "180" } file_type={ 'jpg' } />
@@ -273,7 +301,7 @@ export const DayCard: React.FC<IProps> = (props) => {
                 ) ) }
             </div>
             <div className="flex items-center justify-center" onClick={ () => handleAddExerciseDialog({currentWeek: weekIndex, currentDay: Number(day.order), isOpen: true}) }>
-                <Button variant="ghost" className="pt-6 w-44 font-bold uppercase h-12 rounded-[40px] text-black"><PlusIcon />Add Exercise</Button>
+                <Button variant="ghost" className="mt-1 w-full font-bold uppercase h-12 hover:bg-gray-200 text-black"><PlusIcon />Add Exercise</Button>
             </div>
         </Card>
         <DuplicateDay programLength={ programLength } weekIndex={ weekIndex } day={ day } days={ days } duplicateDayOpen={ duplicateDayOpen } setDuplicateDayOpen={ setDuplicateDayOpen } />

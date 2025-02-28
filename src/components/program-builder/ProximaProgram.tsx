@@ -77,6 +77,12 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
         // construct a TProgramCreatorExercise and add it to newProgram
     };
 
+    const handleEditTitle = (currentWeek: number, currentDay: number, day_title: string) => {
+        const tmpProgram = [...newProgram];
+        tmpProgram[currentWeek][currentDay - 1].day_title = day_title;
+        setNewProgram(tmpProgram);
+    };
+
     return (
         <>
             <div className="flex flex-row gap-4">
@@ -85,7 +91,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                         <div key={ index } className="flex flex-col min-w-[440px] max-w-[440px] gap-4 items-center">
                             <WeeksBar weekIndex={ index  } programLength={ exampleProximaProgram.length } />
                             { week.map((day, idx) => (
-                                <DayCard key={ day.order } day={ day } days={ week.length } handleDeleteDay={ handleDeleteDay } weekIndex={ index } programLength={ exampleProximaProgram.length } handleAddExerciseDialog={ handleAddExerciseDialog } />
+                                <DayCard key={ day.order } day={ day } handleEditTitle={ handleEditTitle } days={ week.length } handleDeleteDay={ handleDeleteDay } weekIndex={ index } programLength={ exampleProximaProgram.length } handleAddExerciseDialog={ handleAddExerciseDialog } />
                             ) ) }
                             <Button onClick={ () => handleAddDay(index) } className="mb-4 w-44 font-bold uppercase h-12 rounded-[40px] bg-lightSecondary hover:bg-lightSecondary text-white"><PlusIcon />Add Day</Button>
                         </div>
