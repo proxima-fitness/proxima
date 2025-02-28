@@ -25,13 +25,9 @@ export const DuplicateWeek: React.FC<IProps> = (props) => {
     const [selectedWeeks, setSelectedWeeks] = useState<boolean[]>(Array(programLength).fill(false));
 
     const toWeekIndexes = () => {
-        console.log("selectedWeek:",selectedWeeks
-        .map((selected, index) => (selected ? index : undefined))
-        .filter((wk) => wk !== undefined) as number[]);
         return selectedWeeks
         .map((selected, index) => (selected ? index  : undefined))
         .filter((wk) => wk !== undefined) as number[]
-
     };
 
     const toggleWeekSelection = (wk: number) => {

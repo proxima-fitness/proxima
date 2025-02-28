@@ -9,6 +9,7 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner"
 import { AddExerciseDialog } from "./AddExerciseDialog";
 import { Option } from "@/components/ui/multi-select";
+import { GenerateDayDialog } from "./GenerateDayDialog";
 
 
 interface IProps {
@@ -21,16 +22,11 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
         program,
     } = props;
 
-
     const [newProgram, setNewProgram] = useState<TProgramCreatorDay[][]>(program);
-    const [addExerciseDialog, setAddExerciseDialog] = useState<TAddExerciseDialog>({currentWeek: undefined, currentDay: undefined, isOpen: false});
-    // const handleDuplicateWeek = (currentWeek: number, duplicatedToWeeks: number[], newProgram: TProgramCreatorDay[][]) => {
-
-    // };
-
+    const [addExerciseDialog, setAddExerciseDialog] = useState<TDialog>({currentWeek: undefined, currentDay: undefined, isOpen: false});
+    const [generateDayDialog, setGenerateDayDialog] = useState<TDialog>({currentWeek: undefined, currentDay: undefined, isOpen: false});
+    // Duplicates a whole week to another week within the program
     const handleDuplicateWeek = (fromWeekIndex: number, toWeekIndexes: number[]) => {
-        console.log("fromWeekIndex",fromWeekIndex);
-        console.log("toWeekindexes",toWeekIndexes);
         const tmpProgram = [...newProgram];
         for (let i = 0; i < toWeekIndexes.length; i++) {
             tmpProgram[Number(toWeekIndexes[i])] = tmpProgram[fromWeekIndex];
@@ -39,13 +35,25 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
         return;
     };
 
-
+    // Duplicates the selected day to other days in the program on the selected week
     const handleDuplicateDay = (fromWeekIndex: number, fromDayIndex: number, toWeekIndex: number, toDayIndexArray: Option[] ) => {
         const tmpProgram = [...newProgram];
         const toDayIndexes = toDayIndexArray.map((day) => Number(day.value) - 1);
 
         for (let i = 0; i < toDayIndexes.length; i++) {
-            tmpProgram[toWeekIndex][toDayIndexes[i]].exercises = [...(tmpProgram[fromWeekIndex][fromDayIndex].exercises || [])];
+            if (tmpProgram[toWeekIndex][toDayIndexes[i]]) {
+                tmpProgram[toWeekIndex][toDayIndexes[i]].exercises = [...(tmpProgram[fromWeekIndex][fromDayIndex].exercises || [])];
+            } else {
+                const toWeekLength = newProgram[toWeekIndex].length;
+                if (toWeekLength === 7) {
+                    return;
+                }
+                const newEmptyDay: TProgramCreatorDay = {
+                    order: String(toWeekLength + 1),
+                    exercises: [...(tmpProgram[fromWeekIndex][fromDayIndex].exercises || [])],
+                }
+                tmpProgram[toWeekIndex].push(newEmptyDay);
+            }
         };
 
         setNewProgram(tmpProgram);
@@ -53,8 +61,17 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     };
 
     // State for opening the Add Exercise Dialog with the correct week and day
-    const handleAddExerciseDialog= (addExerciseDialog: TAddExerciseDialog) => {
+    const handleAddExerciseDialog = (addExerciseDialog: TDialog) => {
         setAddExerciseDialog(addExerciseDialog);
+    };
+
+    // State for opening the Generate Day Dialog with the correct week and day
+    const handleGenerateDayDialog = (generateDayDialog: TDialog) => {
+        setGenerateDayDialog(generateDayDialog);
+    };
+
+    const handleGenerateDay = (currentWeekIndex: number, currentDayIndex:number, prompt: string) => {
+        // Do AI re-generation of a day here
     };
 
     // Adds an empty day to the selected week
@@ -127,6 +144,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                                     weekIndex={ index }
                                     programLength={ exampleProximaProgram.length }
                                     handleAddExerciseDialog={ handleAddExerciseDialog }
+                                    handleGenerateDayDialog={ handleGenerateDayDialog }
                                 />
                             ) ) }
                             <Button onClick={ () => handleAddDay(index) } className="mb-4 w-44 font-bold uppercase h-12 rounded-[40px] bg-lightSecondary hover:bg-lightSecondary text-white"><PlusIcon />Add Day</Button>
@@ -135,6 +153,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                 } ) }
             </div>
             <AddExerciseDialog addExerciseDialog={ addExerciseDialog } handleAddExercise={ handleAddExercise } handleAddExerciseDialog={ handleAddExerciseDialog } />
+            <GenerateDayDialog handleGenerateDay={ handleGenerateDay } generateDayDialog={ generateDayDialog } handleGenerateDayDialog={ handleGenerateDayDialog } />
         </>
     );
 };

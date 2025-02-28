@@ -67,7 +67,7 @@ type TProgram = {
     thumbnail?: Blob;
 }
 
-type TAddExerciseDialog = {
+type TDialog = {
     currentWeek: number;
     currentDay: number;
     isOpen: boolean;

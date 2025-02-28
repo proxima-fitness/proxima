@@ -68,6 +68,38 @@ export const BuildProgramSkeleton: React.FC = () => {
                 </Skeleton>
             </div>
         </div>
+        <div className=" pb-4 flex flex-row flex-nowrap gap-2 overflow-hidden">
+            <div className="min-w-[440px] max-w-[440px] h-[400px]">
+                <Skeleton className="italic w-[100%] h-[100%] rounded-xl text-center flex items-center justify-center" >
+                    <RandomQuote />
+                </Skeleton>
+            </div>
+            <div className="min-w-[440px] max-w-[440px] h-[400px]">
+                <Skeleton className="italic w-[100%] h-[100%] rounded-xl text-center flex items-center justify-center" >
+                    <RandomQuote />
+                </Skeleton>
+            </div>
+            <div className="min-w-[440px] max-w-[440px] h-[400px]">
+                <Skeleton className="italic w-[100%] h-[100%] rounded-xl text-center flex items-center justify-center" >
+                    <RandomQuote />
+                </Skeleton>
+            </div>
+            <div className="min-w-[440px] max-w-[440px] h-[400px]">
+                <Skeleton className="italic w-[100%] h-[100%] rounded-xl text-center flex items-center justify-center" >
+                    <RandomQuote />
+                </Skeleton>
+            </div>
+            <div className="min-w-[440px] max-w-[440px] h-[400px]">
+                <Skeleton className="italic w-[100%] h-[100%] rounded-xl text-center flex items-center justify-center" >
+                    <RandomQuote />
+                </Skeleton>
+            </div>
+            <div className="min-w-[440px] max-w-[440px] h-[400px]">
+                <Skeleton className="italic w-[100%] h-[100%] rounded-xl text-center flex items-center justify-center" >
+                    <RandomQuote />
+                </Skeleton>
+            </div>
+        </div>
         </>
     );
 };

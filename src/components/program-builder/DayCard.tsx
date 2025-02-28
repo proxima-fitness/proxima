@@ -25,8 +25,9 @@ interface IProps {
     programLength: number;
     handleEditTitle: (currentWeek: number, currentDay: number, day_title: string) => void;
     handleDeleteDay: (currentWeek: number, currentDay: number) => void;
-    handleAddExerciseDialog: (addExercise: TAddExerciseDialog) => void;
+    handleAddExerciseDialog: (addExercise: TDialog) => void;
     handleDuplicateDay: (currentWeek: number, currentDay: number, duplicatedToWeek: number, duplicatedToDays: Option[]) => void;
+    handleGenerateDayDialog: (generateDayDialog: TDialog) => void;
 }
 
 export const DayCard: React.FC<IProps> = (props) => {
@@ -40,6 +41,7 @@ export const DayCard: React.FC<IProps> = (props) => {
         handleEditTitle,
         handleAddExerciseDialog,
         handleDuplicateDay,
+        handleGenerateDayDialog,
     } = props;
 
     const [duplicateDayOpen, setDuplicateDayOpen] = useState(false);
@@ -102,7 +104,7 @@ export const DayCard: React.FC<IProps> = (props) => {
                                 Edit Title
                                 <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer">
+                            <DropdownMenuItem onClick={ () => handleGenerateDayDialog({ currentWeek: weekIndex, currentDay: Number(day.order), isOpen: true }) } className="cursor-pointer">
                                 Generate Day
                                 <DropdownMenuShortcut>⌘G</DropdownMenuShortcut>
                             </DropdownMenuItem>

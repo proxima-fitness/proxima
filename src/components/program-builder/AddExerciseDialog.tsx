@@ -13,8 +13,8 @@ import { toast } from "sonner";
 
 interface IProps {
     handleAddExercise: (currentWeek: number, currentDay: number, exercise: TProgramCreatorExercise) => void;
-    addExerciseDialog: TAddExerciseDialog;
-    handleAddExerciseDialog: (addExerciseDialog: TAddExerciseDialog) => void;
+    addExerciseDialog: TDialog;
+    handleAddExerciseDialog: (addExerciseDialog: TDialog) => void;
 }
 
 export const AddExerciseDialog: React.FC<IProps> = (props) => {
