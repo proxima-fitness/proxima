@@ -30,7 +30,7 @@ export const AiSearchDialog: React.FC = () => {
     return (
         <Dialog>
             <span className="flex items-center justify-center">
-                <DialogTrigger className="my-[450px] h-[60px] text-white rounded-xl w-[200px] bg-lightSecondary font-main uppercase flex items-center justify-center gap-4"><PlayIcon />Start</DialogTrigger>
+                <DialogTrigger className="xl:my-[450px] max-sm:my-[50px] lg:my-[250px] h-[60px] text-white rounded-xl w-[200px] bg-lightSecondary font-main uppercase flex items-center justify-center gap-4"><PlayIcon />Start</DialogTrigger>
             </span>
             <DialogContent hideClose className="max-w-5xl w-full">
                 <DialogTitle>
