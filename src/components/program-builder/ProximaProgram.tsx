@@ -8,6 +8,8 @@ import { exampleProximaProgram } from "@/assets/constants";
 import { useCallback, useState } from "react";
 import { toast } from "sonner"
 import { AddExerciseDialog } from "./AddExerciseDialog";
+import { Option } from "@/components/ui/multi-select";
+
 
 interface IProps {
     program: TProgramCreatorDay[][];
@@ -26,9 +28,29 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
 
     // };
 
-    // const handleDuplicateDay = (currentDay: number, duplicatedToDays: number[], duplicatedToWeek: number[], newProgram: TProgramCreatorDay[][]) => {
+    const handleDuplicateWeek = (fromWeekIndex: number, toWeekIndexes: number[]) => {
+        console.log("fromWeekIndex",fromWeekIndex);
+        console.log("toWeekindexes",toWeekIndexes);
+        const tmpProgram = [...newProgram];
+        for (let i = 0; i < toWeekIndexes.length; i++) {
+            tmpProgram[Number(toWeekIndexes[i])] = tmpProgram[fromWeekIndex];
+        }
+        setNewProgram(tmpProgram);
+        return;
+    };
 
-    // };
+
+    const handleDuplicateDay = (fromWeekIndex: number, fromDayIndex: number, toWeekIndex: number, toDayIndexArray: Option[] ) => {
+        const tmpProgram = [...newProgram];
+        const toDayIndexes = toDayIndexArray.map((day) => Number(day.value) - 1);
+
+        for (let i = 0; i < toDayIndexes.length; i++) {
+            tmpProgram[toWeekIndex][toDayIndexes[i]].exercises = [...(tmpProgram[fromWeekIndex][fromDayIndex].exercises || [])];
+        };
+
+        setNewProgram(tmpProgram);
+        return;
+    };
 
     // State for opening the Add Exercise Dialog with the correct week and day
     const handleAddExerciseDialog= (addExerciseDialog: TAddExerciseDialog) => {
@@ -72,8 +94,8 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     // Adds an exercise to the workout day
     const handleAddExercise = (currentWeek: number, currentDay: number, exercise: TProgramCreatorExercise) => {
 
-        console.log("Entered Handle Add Exercise week: day:", currentWeek, currentDay);
-        console.log("exercise:", exercise);
+        // console.log("Entered Handle Add Exercise week: day:", currentWeek, currentDay);
+        // console.log("exercise:", exercise);
         // construct a TProgramCreatorExercise and add it to newProgram
     };
 
@@ -89,9 +111,23 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                 { newProgram.map((week, index) => {
                     return (
                         <div key={ index } className="flex flex-col min-w-[440px] max-w-[440px] gap-4 items-center">
-                            <WeeksBar weekIndex={ index  } programLength={ exampleProximaProgram.length } />
+                            <WeeksBar
+                                weekIndex={ index  }
+                                programLength={ exampleProximaProgram.length }
+                                handleDuplicateWeek={ handleDuplicateWeek }
+                            />
                             { week.map((day, idx) => (
-                                <DayCard key={ day.order } day={ day } handleEditTitle={ handleEditTitle } days={ week.length } handleDeleteDay={ handleDeleteDay } weekIndex={ index } programLength={ exampleProximaProgram.length } handleAddExerciseDialog={ handleAddExerciseDialog } />
+                                <DayCard
+                                    key={ day.order }
+                                    day={ day }
+                                    handleDuplicateDay={ handleDuplicateDay }
+                                    handleEditTitle={ handleEditTitle }
+                                    days={ week.length }
+                                    handleDeleteDay={ handleDeleteDay }
+                                    weekIndex={ index }
+                                    programLength={ exampleProximaProgram.length }
+                                    handleAddExerciseDialog={ handleAddExerciseDialog }
+                                />
                             ) ) }
                             <Button onClick={ () => handleAddDay(index) } className="mb-4 w-44 font-bold uppercase h-12 rounded-[40px] bg-lightSecondary hover:bg-lightSecondary text-white"><PlusIcon />Add Day</Button>
                         </div>

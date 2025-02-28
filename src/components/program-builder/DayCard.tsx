@@ -5,7 +5,8 @@ import { EllipsisIcon, CopyIcon, PlusIcon } from "lucide-react";
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "../ui/button";
 import { DuplicateDay } from "./DuplicateDay";
-import { useRef, useState } from "react";
+import { useState } from "react";
+import { Option } from "@/components/ui/multi-select";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -25,6 +26,7 @@ interface IProps {
     handleEditTitle: (currentWeek: number, currentDay: number, day_title: string) => void;
     handleDeleteDay: (currentWeek: number, currentDay: number) => void;
     handleAddExerciseDialog: (addExercise: TAddExerciseDialog) => void;
+    handleDuplicateDay: (currentWeek: number, currentDay: number, duplicatedToWeek: number, duplicatedToDays: Option[]) => void;
 }
 
 export const DayCard: React.FC<IProps> = (props) => {
@@ -37,6 +39,7 @@ export const DayCard: React.FC<IProps> = (props) => {
         handleDeleteDay,
         handleEditTitle,
         handleAddExerciseDialog,
+        handleDuplicateDay,
     } = props;
 
     const [duplicateDayOpen, setDuplicateDayOpen] = useState(false);
@@ -304,7 +307,15 @@ export const DayCard: React.FC<IProps> = (props) => {
                 <Button variant="ghost" className="mt-1 w-full font-bold uppercase h-12 hover:bg-gray-200 text-black"><PlusIcon />Add Exercise</Button>
             </div>
         </Card>
-        <DuplicateDay programLength={ programLength } weekIndex={ weekIndex } day={ day } days={ days } duplicateDayOpen={ duplicateDayOpen } setDuplicateDayOpen={ setDuplicateDayOpen } />
+        <DuplicateDay
+            programLength={ programLength }
+            weekIndex={ weekIndex }
+            day={ day }
+            days={ days }
+            duplicateDayOpen={ duplicateDayOpen }
+            setDuplicateDayOpen={ setDuplicateDayOpen }
+            handleDuplicateDay={ handleDuplicateDay }
+        />
         </>
     );
 };

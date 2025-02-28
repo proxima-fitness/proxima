@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import MultiSelect, { Option } from "@/components/ui/multi-select";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 interface IProps {
     day: TProgramCreatorDay;
@@ -12,6 +13,7 @@ interface IProps {
     programLength: number;
     duplicateDayOpen: boolean;
     setDuplicateDayOpen: (duplicateDayOpen: boolean) => void;
+    handleDuplicateDay: (currentWeek: number, currentDay: number, duplicatedToWeek: number, duplicatedToDays: Option[]) => void;
 }
 
 export const DuplicateDay: React.FC<IProps> = (props) => {
@@ -23,11 +25,14 @@ export const DuplicateDay: React.FC<IProps> = (props) => {
         programLength,
         duplicateDayOpen,
         setDuplicateDayOpen,
+        handleDuplicateDay,
     } = props;
 
     const programLengthArray = Array.from({ length: programLength }, (_, index) => index + 1);
     const daysArray = Array.from({length: days }, (_, index) => index + 1);
     const daysOptions: Option[] = daysArray.filter((d) => String(d) !== day.order).map((d) => ({ label: `Day ${d}`, value: String(d)}));
+    const [selectedDays, setSelectedDays] = useState<Option[]>();
+    const [selectedWeek, setSelectedWeek ] = useState<string>(String(weekIndex + 1));
 
     return (
         <>
@@ -37,7 +42,7 @@ export const DuplicateDay: React.FC<IProps> = (props) => {
                         Duplicate Week {weekIndex + 1} Day {day.order} to
                     </DialogTitle>
                     <span className="flex flex-row p-8 gap-8 w-full">
-                        <Select defaultValue={ String(weekIndex + 1) }>
+                        <Select onValueChange={ (value) => setSelectedWeek(value) } value={ selectedWeek } defaultValue={ selectedWeek }>
                             <SelectTrigger className="h-10">
                                 <SelectValue placeholder="Week" />
                             </SelectTrigger>
@@ -52,6 +57,8 @@ export const DuplicateDay: React.FC<IProps> = (props) => {
                         <MultiSelect
                             badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                             defaultOptions={ daysOptions }
+                            onChange={ (options) => setSelectedDays(options)}
+                            value={ selectedDays }
                             placeholder="Day"
                             emptyIndicator={
                             <span className="text-center h-6 text-sm text-gray-600 dark:text-gray-400">
@@ -67,7 +74,14 @@ export const DuplicateDay: React.FC<IProps> = (props) => {
                             </Button>
                         </span>
                         <span className="w-full flex items-center justify-center">
-                            <Button variant="ghost" className="bg-lightSecondary text-white hover:bg-lightSecondary w-full h-12">
+                            <Button
+                                onClick={ () => {
+                                    handleDuplicateDay(weekIndex, Number(day.order) - 1, Number(selectedWeek) - 1, selectedDays);
+                                    setDuplicateDayOpen(false);
+                                } }
+                                variant="ghost"
+                                className="bg-lightSecondary text-white hover:bg-lightSecondary w-full h-12"
+                            >
                                     Duplicate
                             </Button>
                         </span>

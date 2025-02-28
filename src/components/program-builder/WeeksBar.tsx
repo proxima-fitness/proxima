@@ -13,6 +13,7 @@ import { DuplicateWeek } from "./DuplicateWeek";
 interface IProps {
     weekIndex: number;
     programLength: number;
+    handleDuplicateWeek: (fromWeekIndex: number, toWeekIndexes: number[]) => void;
 }
 
 export const WeeksBar: React.FC<IProps> = (props) => {
@@ -20,6 +21,7 @@ export const WeeksBar: React.FC<IProps> = (props) => {
     const {
         weekIndex,
         programLength,
+        handleDuplicateWeek,
     } = props;
 
     const [selectedWeek, setSelectedWeek] = useState<number>();
@@ -53,7 +55,13 @@ export const WeeksBar: React.FC<IProps> = (props) => {
                 </div>
             </div>
         </div>
-        <DuplicateWeek weekIndex={ selectedWeek } programLength={ programLength } duplicateWeekOpen={ duplicateWeekOpen } setDuplicateWeekOpen={ setDuplicateWeekOpen } />
+        <DuplicateWeek
+            weekIndex={ selectedWeek }
+            programLength={ programLength }
+            duplicateWeekOpen={ duplicateWeekOpen }
+            setDuplicateWeekOpen={ setDuplicateWeekOpen }
+            handleDuplicateWeek={ handleDuplicateWeek }
+        />
         </>
     )
 }

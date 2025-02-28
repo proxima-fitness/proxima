@@ -26,7 +26,6 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
     } = props;
 
     const { data: exercises }  = useExercises();
-    // console.log(exercises);
 
     const [title, setTitle] = useState<string>();
     const [ editedExercise, setEditedExercise ] = useState<TAddExercise | undefined>();

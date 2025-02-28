@@ -105,7 +105,6 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
             );
         }
 
-        // console.log("filteredItems: ",filteredItems);
         setFilteredPrograms(filteredItems);
     }, [appliedProgramLengthFilter, appliedWorkoutDurationFilter, appliedEquipmentFilter, appliedSpecializationFilter, appliedDifficultyFilter, programs]);
 
