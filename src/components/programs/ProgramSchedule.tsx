@@ -15,7 +15,7 @@ export const ProgramSchedule: React.FC<IProps> = (props) => {
         <div className="w-full pt-8">
             <div className="flex flex-row max-sm:flex-col w-full overflow-scroll p-2 gap-4">
                 { sortedWorkoutsByWeek.map((week, index) => (
-                    <div className="w-full" key={ `Week ${index}`}>
+                    <div className="w-full" key={ `Week ${index}` }>
                         <span className="bg-white p-2 font-main">Week {index + 1}</span>
                         { week.map((day) => (
                             <Card className="px-4 py-4 my-4 w-[400px] max-sm:w-[355px] bg-gray-100" key={ "week " + day.nthWeek + "day " + day.nthDay + " " }>

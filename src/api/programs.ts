@@ -85,7 +85,7 @@ export const getPrograms = async (limit?: number) => {
                 programs.map( async (program) => {
                     const thumbnail = await getProgramThumbnailByID(program.id);
                     return {...program, thumbnail};
-                })
+                }),
             );
 
             return programsWithThumbnails as unknown as TProgram[];

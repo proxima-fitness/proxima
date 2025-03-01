@@ -19,6 +19,7 @@ import LoginIcon from '@mui/icons-material/Login';
 import DownloadIcon from '@mui/icons-material/Download';
 import menu from "../../../public/menu.svg";
 import Link from "next/link";
+import Image from "next/image";
 
 type Anchor = 'top' | 'left' | 'bottom' | 'right';
 
@@ -100,13 +101,13 @@ export const NavDrawer: React.FC = () => {
         <div>
             <React.Fragment key={ "right" }>
                 <Button onClick={ toggleDrawer("right", true) }>
-                    <img
-                        src={ (menu as any).src }
+                    <Image
+                        src={ (menu as any).src } width={ 500 } height={ 500 }
                         alt="menu"
                         className="w-[28px] h-[28px] object-contain"
                     />
-                    </Button>
-                    <SwipeableDrawer
+                </Button>
+                <SwipeableDrawer
                         anchor={ "right" }
                         open={ state["right"] }
                         onClose={ toggleDrawer("right", false) }

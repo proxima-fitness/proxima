@@ -2,7 +2,7 @@ import { useBlogsSSR } from "@/api/hooks";
 import BlogLayout  from "@/components/blog/BlogLayout";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Suspense } from "react";
+// import { Suspense } from "react";
 
 export const metadata = {
     title: "Blog | Proxima Fitness",

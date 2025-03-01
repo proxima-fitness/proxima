@@ -1,6 +1,7 @@
 "use client";
 
 import { convertSupabaseDateToReadable } from "@/utils/helpers";
+import Image from "next/image";
 
 interface IProps {
     blog: TBlog;
@@ -26,7 +27,7 @@ export const BlogCard: React.FC<IProps> = (props) => {
                 </div>
             </div>
             <div className="flex-[1]">
-                <img className="h-[200px] w-[200px] rounded-lg"  src={ blog.image_url }></img>
+                <Image className="h-[200px] w-[200px] rounded-lg" src={ blog.image_url } width={ 500 } height={ 500 }></Image>
             </div>
 
         </div>

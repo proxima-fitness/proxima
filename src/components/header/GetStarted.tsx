@@ -4,6 +4,7 @@
 
 import { motion } from "motion/react";
 import { apple, google, qr_code, starGold } from "public";
+import Image from "next/image";
 
 interface IProps {
     noBorder?: boolean;
@@ -18,7 +19,7 @@ export const GetStarted: React.FC<IProps> = (props) => {
         <div>
             <div className="flex flex-row gap-4 justify-center md:justify-start lg:justify-start">
                 <div>
-                    <img src={ (qr_code as any).src } alt="Proxima Logo" className="rounded w-auto h-[120px]" />
+                    <Image src={ (qr_code as any).src } width={ 500 } height={ 500 } alt="Proxima Logo" className="rounded w-auto h-[120px]" />
                 </div>
                 <div style={ { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", gap: "10px", zIndex: "5" } }>
                     <motion.div
@@ -29,7 +30,7 @@ export const GetStarted: React.FC<IProps> = (props) => {
                     >
                         <a href="https://testflight.apple.com/join/dG4SXTTm"
                     >
-                            <img src={ (apple as any).src } alt="apple"
+                            <Image src={ (apple as any).src } alt="apple" width={ 500 } height={ 500 }
                         style={ {
                             width: "150px",
                             height: "100%",
@@ -49,7 +50,8 @@ export const GetStarted: React.FC<IProps> = (props) => {
                         onHoverEnd={ e => {} }
                     >
                         <a href="https://app.proximafitness.com/">
-                            <img src={ (google as any).src } alt="google"
+                            <Image src={ (google as any).src } alt="google"
+                            width={ 500 } height={ 500 }
                         style={ {
                             width: "150px",
                             height: "100%",
@@ -65,19 +67,19 @@ export const GetStarted: React.FC<IProps> = (props) => {
             </div>
             <span className="flex flex-row py-4 text-white">
                 <span>
-                    <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                    <Image src={ (starGold as any).src } width={ 500 } height={ 500 } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                 </span>
                 <span>
-                    <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                    <Image src={ (starGold as any).src } width={ 500 } height={ 500 } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                 </span>
                 <span>
-                    <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                    <Image src={ (starGold as any).src } width={ 500 } height={ 500 } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                 </span>
                 <span>
-                    <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                    <Image src={ (starGold as any).src } width={ 500 } height={ 500 } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                 </span>
                 <span>
-                    <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                    <Image src={ (starGold as any).src } width={ 500 } height={ 500 } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                 </span>
                 4.5 Stars on Apple App Store
             </span>

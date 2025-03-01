@@ -53,7 +53,7 @@ export const filterGroupMap = filterGroups.reduce((acc, group) => {
         acc[group.value] = {
             title: group.title,
             type: matchedOption.type,
-            values: matchedOption.value
+            values: matchedOption.value,
         };
     }
     return acc;

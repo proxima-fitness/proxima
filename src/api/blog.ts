@@ -18,11 +18,11 @@ export const getBlogs = async (limit: number = 10, offset: number = 0) => {
                     return getMediaPublicUrl(blog.media_url);
                 }
                 return undefined;
-            }))
+            }));
 
             const blogsWithImage = blogs.map((blog, index) => ({
                 ...blog,
-                image_url: imageUrls[index]
+                image_url: imageUrls[index],
             }));
 
             return blogsWithImage as TBlog[];
@@ -68,7 +68,7 @@ export const getMediaByFileName = async (filename: string) => {
     } catch (error: unknown) {
         console.error('Error fetching Media Image:', error);
     }
-}
+};
 
 // GET PUBLIC URL FOR AN IMAGE IN STORAGE
 export const getMediaPublicUrl = (filename: string) => {
@@ -82,4 +82,4 @@ export const getMediaPublicUrl = (filename: string) => {
     } catch (error: unknown) {
         console.error('Error fetching Public Url:', error);
     }
-}
+};

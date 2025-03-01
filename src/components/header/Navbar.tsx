@@ -4,13 +4,14 @@ import { Button } from "../generic/Button";
 import { NavDrawer } from "./NavDrawer";
 import { proxima_logo } from "public";
 import Link from 'next/link';
+import Image from 'next/image';
 
 export const Navbar: React.FC = () => {
 
     return (
         <nav className="w-full flex py-2 justify-between items-center navbar">
             <Link href={ "/" } >
-                <img src={ (proxima_logo as any).src } alt="Proxima Logo" className="h-[50px] w-[auto]" />
+                <Image src={ (proxima_logo as any).src } width={ 500 } height={ 500 } alt="Proxima Logo" className="h-[50px] w-[auto]" />
             </Link>
 
             <ul className="list-none sm:flex hidden justify-end items-center flex-1 z-[6]">
@@ -22,30 +23,30 @@ export const Navbar: React.FC = () => {
                                     <Button text={ "Download App" } styles={ `py-2` } />
                                 </Link>
                             : nav.id === "log-in" ?
-                            <li
+                                <li
                                 key={ nav.id }
                                 className={ `font-main font-normal cursor-pointer text-[16px] text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
                             >
-                            <a href="https://app.proximafitness.com/">Log In</a>
-                        </li>
+                                    <a href="https://app.proximafitness.com/">Log In</a>
+                                </li>
                             :
-                            <li
+                                <li
                                     key={ nav.id }
                                     className={ `font-main font-normal cursor-pointer text-[16px] text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
                                 >
-                                <Link href={ `/${nav.id}` }>{nav.title}</Link>
-                            </li>
+                                    <Link href={ `/${nav.id}` }>{nav.title}</Link>
+                                </li>
                             }
-                    </div>
+                        </div>
                     );
                 } ) }
             </ul>
             <div className="sm:hidden flex flex-1 justify-end items-center">
                 <NavDrawer />
                 <div>
+                </div>
             </div>
-        </div>
-    </nav>
+        </nav>
   );
 };
 

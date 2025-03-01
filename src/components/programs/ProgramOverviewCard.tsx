@@ -47,9 +47,9 @@ export const ProgramOverviewCard: React.FC<IProps> = (props) => {
                     <div className="w-[25%] ">
                         Equipment
                     </div>
-                        <div className="w-[75%]">
-                            { program?.program?.[0]?.equipment && program?.program?.[0]?.equipment.length > 0 ? program.program[0].equipment : "n/a" }
-                        </div>
+                    <div className="w-[75%]">
+                        { program?.program?.[0]?.equipment && program?.program?.[0]?.equipment.length > 0 ? program.program[0].equipment : "n/a" }
+                    </div>
                 </div>
                 <div className="border-b-2 border-gray-200 flex flex-row justify-start items-center">
                     <div className="w-[25%] ">

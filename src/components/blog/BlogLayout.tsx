@@ -9,7 +9,7 @@ import {
     PaginationLink,
     PaginationNext,
     PaginationPrevious,
-  } from "@/components/ui/pagination"
+  } from "@/components/ui/pagination";
 import { useBlogs } from "@/api/hooks";
 import { use, useState } from "react";
 
@@ -29,64 +29,64 @@ export default function BlogLayout({ initialBlogs }: { initialBlogs: Promise<TBl
 
     return (
         <>
-        <div className="grid grid-cols-3 gap-12 max-sm:grid-cols-1">
-            <div className="col-span-2">
-                <div>
-                    { blogs.map((blog) => {
+            <div className="grid grid-cols-3 gap-12 max-sm:grid-cols-1">
+                <div className="col-span-2">
+                    <div>
+                        { blogs.map((blog) => {
                         return (
                             <Link
                                 target="_self"
                                 rel="noopener noreferrer"
-                                href={`blog/${blog.id}/${blog.title.trim().replace(/\s+/g, '-').toLowerCase()}`} key={ blog.id }
+                                href={ `blog/${blog.id}/${blog.title.trim().replace(/\s+/g, '-').toLowerCase()}` } key={ blog.id }
                             >
-                                <BlogCard blog={ blog }/>
+                                <BlogCard blog={ blog } />
                             </Link>
                         );
                     } ) }
-                </div>
-                <Pagination className="h-[100px]">
-                    <PaginationContent>
-                        <PaginationPrevious
+                    </div>
+                    <Pagination className="h-[100px]">
+                        <PaginationContent>
+                            <PaginationPrevious
                             className="h-[45px] text-lg"
                             href="#"
-                            onClick={() => handlePageChange(Math.max(0, offset - LIMIT))}
+                            onClick={ () => handlePageChange(Math.max(0, offset - LIMIT)) }
                         />
-                        {[1, 2, 3, "...", 10].map((page, index) => (
-                            <PaginationLink
-                                key={index}
+                            {[1, 2, 3, "...", 10].map((page, index) => (
+                                <PaginationLink
+                                key={ index }
                                 className="h-[45px] text-lg"
                                 href="#"
-                                onClick={() =>
+                                onClick={ () =>
                                     typeof page === "number" ? handlePageChange((page - 1) * LIMIT) : null
                                 }
                             >
-                                {page}
-                            </PaginationLink>
+                                    {page}
+                                </PaginationLink>
                         ))}
-                        <PaginationNext
+                            <PaginationNext
                             className="h-[45px] text-lg"
                             href="#"
-                            onClick={() => handlePageChange(offset + LIMIT)}
+                            onClick={ () => handlePageChange(offset + LIMIT) }
                         />
-                    </PaginationContent>
-                </Pagination>
-            </div>
-            <div className="sm:border-l sm:border-gray-300 flex flex-col justify-start items-start px-4">
-                <span className="font-bold text-2xl pb-8">Popular Blogs</span>
-                { blogs.map((blog) => {
+                        </PaginationContent>
+                    </Pagination>
+                </div>
+                <div className="sm:border-l sm:border-gray-300 flex flex-col justify-start items-start px-4">
+                    <span className="font-bold text-2xl pb-8">Popular Blogs</span>
+                    { blogs.map((blog) => {
                     return (
                         <Link
                             key={ blog.id }
                             target="_self"
                             rel="noopener noreferrer"
-                            href={`blog/${blog.id}/${blog.title.trim().replace(/\s+/g, '-').toLowerCase()}`}
+                            href={ `blog/${blog.id}/${blog.title.trim().replace(/\s+/g, '-').toLowerCase()}` }
                         >
                             <PopularBlogCard blog={ blog }  />
                         </Link>
                     );
                 } ) }
+                </div>
             </div>
-        </div>
 
         </>
     );

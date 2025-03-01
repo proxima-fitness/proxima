@@ -69,7 +69,7 @@ export const useProgramByIdSSR = async (program_id: string) => {
         program: await getProgramByID(program_id),
         thumbnail: await getProgramThumbnailByID(program_id),
         schedule: await getExplorePageProgramDetails(program_id),
-    }
+    };
 
     return programOverview;
 };
@@ -85,7 +85,7 @@ export const useUserFullNameSSR = (id: string, id_type: "program" | "user") => {
 export const useBlogByIdSSR = async (id: string) => {
     const blog = await getBlogById(Number(id));
     return blog;
-}
+};
 
 // GET ALL BLOGS USING SSR
 export const useBlogsSSR = async () => {
@@ -100,8 +100,8 @@ export const useProgramsSSR = async () => {
         programs.map( async (program) => {
             const thumbnail = await getProgramThumbnailByID(program.id);
             return {...program, thumbnail};
-        })
+        }),
     );
 
     return programsWithThumbnails as TProgram[];
-}
+};

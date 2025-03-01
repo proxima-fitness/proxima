@@ -4,6 +4,7 @@ import styles from "../../style";
 import { SimpleSlider } from "../generic/SimpleSlider";
 import { motion } from "motion/react";
 import starGold from "../../../public/StarGold.svg";
+import Image from "next/image";
 
 export const Testimonials: React.FC = () => {
     return (
@@ -24,7 +25,7 @@ export const Testimonials: React.FC = () => {
                     <div className="flex md:flex-row flex-col justify-center items-center">
                         <div className="flex flex-row justify-center items-center">
                             4.5
-                            <img src={ (starGold as any).src } alt="star_gold" className="ml-2 mr-4 w-[50px] h-[40px] object-contain" />
+                            <Image src={ (starGold as any).src } width={ 500 } height={ 500 } alt="star_gold" className="ml-2 mr-4 w-[50px] h-[40px] object-contain" />
                         </div>
                         <div>
                             on the App Store

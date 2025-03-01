@@ -8,16 +8,16 @@ interface IProps {
 export const ProgramThumbnail: React.FC<IProps> = (props) => {
 
     const {
-        thumbnail
+        thumbnail,
     } = props;
 
     return (
         <>
-        <img
+            <Image
             className="rounded-lg object-cover h-[350px] w-full"
             alt="Program Thumbnail"
-            src={ URL.createObjectURL(thumbnail) }
+            src={ URL.createObjectURL(thumbnail) } width={ 500 } height={ 500 }
         />
         </>
-    )
-}
+    );
+};

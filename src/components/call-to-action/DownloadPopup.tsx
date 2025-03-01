@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,7 +27,8 @@ export const DownloadPopup: React.FC<IProps> = (props) => {
                     { isMobile ?
                         <span className="flex flex-row pt-6 gap-2">
                             <a href="https://testflight.apple.com/join/dG4SXTTm">
-                                <img src={ (apple as any).src } alt="apple"
+                                <Image src={ (apple as any).src } alt="apple"
+                                  width={ 500 } height={ 500 }
                     style={ {
                         width: "150px",
                         height: "100%",
@@ -36,7 +38,8 @@ export const DownloadPopup: React.FC<IProps> = (props) => {
                     />
                             </a>
                             <a href="https://app.proximafitness.com/">
-                                <img src={ (google as any).src } alt="google"
+                                <Image src={ (google as any).src } alt="google"
+                                width={ 500 } height={ 500 }
                         style={ {
                             width: "150px",
                             height: "100%",
@@ -48,7 +51,7 @@ export const DownloadPopup: React.FC<IProps> = (props) => {
                         </span>
                 :
                         <Button className="sm:w-[90%] h-[110px] my-6 bg-cyan-600">
-                            <img src={ (proxima_logo as any).src } alt="Proxima Logo" className="w-auto h-[400px]" />
+                            <Image src={ (proxima_logo as any).src } width={ 500 } height={ 500 } alt="Proxima Logo" className="w-auto h-[400px]" />
                         </Button>
             }
 
@@ -57,26 +60,26 @@ export const DownloadPopup: React.FC<IProps> = (props) => {
                         <span className="w-[100%] flex flex-col items-center">
                             { !isMobile &&
                             <>
-                                <img src={ (qr_code as any).src } alt="Proxima Logo" className="w-auto h-[200px]" />
+                                <Image src={ (qr_code as any).src } width={ 500 } height={ 500 } alt="Proxima Logo" className="w-auto h-[200px]" />
                                 <span className="font-bold">Scan QR Code to Download</span>
                             </>
                 }
 
                             <span className="flex flex-row py-4">
                                 <span>
-                                    <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                                    <Image src={ (starGold as any).src } width={ 500 } height={ 500 } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                                 </span>
                                 <span>
-                                    <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                                    <Image src={ (starGold as any).src } width={ 500 } height={ 500 } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                                 </span>
                                 <span>
-                                    <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                                    <Image src={ (starGold as any).src } width={ 500 } height={ 500 } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                                 </span>
                                 <span>
-                                    <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                                    <Image src={ (starGold as any).src } width={ 500 } height={ 500 } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                                 </span>
                                 <span>
-                                    <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                                    <Image src={ (starGold as any).src } width={ 500 } height={ 500 } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                                 </span>
                                 4.5 Stars on Apple App Store
                             </span>

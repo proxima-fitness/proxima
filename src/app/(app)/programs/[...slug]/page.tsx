@@ -15,7 +15,7 @@ export const metadata = {
   }) {
 
     const {
-        slug
+        slug,
     } = await params;
 
     return (

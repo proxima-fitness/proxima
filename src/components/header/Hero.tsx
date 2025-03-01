@@ -8,6 +8,7 @@ import program_creator_white from "../../../public/program-creator-white.png";
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { useEffect } from "react";
+import  Image  from "next/image";
 
 export const Hero: React.FC = () => {
 
@@ -33,9 +34,9 @@ export const Hero: React.FC = () => {
             </div>
 
             <div className={ `flex-1 flex ${styles.flexCenter} md:my-0 mt-24 mb-10 relative` } >
-                <img src={ (program_creator_white as any).src } alt="Program Creator Image" className="relative z-[5]" />
+                <Image src={ (program_creator_white as any).src } width={ 500 } height={ 500 } alt="Program Creator Image" className="relative z-[5]" />
                 <div className="hidden md:block">
-                    <img src={ (programs_classic_device as any).src } alt="Profile Page Image" className="absolute z-[6] max-w-[160px] h-auto -inset-10 top-24" />
+                    <Image src={ (programs_classic_device as any).src } width={ 500 } height={ 500 } alt="Profile Page Image" className="absolute z-[6] max-w-[160px] h-auto -inset-10 top-24" />
                 </div>
                 {/* gradient start */}
                 <div className="absolute z-[0] w-[40%] h-[35%] top-0 pink__gradient" />

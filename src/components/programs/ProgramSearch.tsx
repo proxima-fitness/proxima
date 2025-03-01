@@ -4,7 +4,7 @@ import {
     Command,
     CommandInput,
     CommandList,
-  } from "@/components/ui/command"
+  } from "@/components/ui/command";
 import { ProgramFilterGroup } from "./ProgramFilterGroup";
 import { filterGroupMap } from "@/assets/constants";
 import { useEffect, useRef, useState } from "react";
@@ -24,11 +24,11 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
         programs,
     } = props;
 
-    const [ filteredPrograms, setFilteredPrograms ] = useState(programs);
+    const [ filteredPrograms, _setFilteredPrograms ] = useState(programs);
     const commandRef = useRef<HTMLInputElement>(null);
     const [clearFilters, setClearFilters] = useState(false);
 
-    const [filterGroups, setFilterGroups] = useState(filterGroupMap);
+    const [filterGroups, _setFilterGroups] = useState(filterGroupMap);
 
     const handleClearFilters = (clearFilters: boolean) => {
         setClearFilters(clearFilters);
@@ -101,17 +101,17 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
                 </Card>
             </div>
             <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 py-8">
-            { filteredPrograms.map((program) => (
-                <Link
-                    key={program.id}
+                { filteredPrograms.map((program) => (
+                    <Link
+                    key={ program.id }
                     target="_self"
                     rel="noopener noreferrer"
-                    href={`programs/${program.id}/${program.title.trim().replace(/\s+/g, '-').toLowerCase()}`}
+                    href={ `programs/${program.id}/${program.title.trim().replace(/\s+/g, '-').toLowerCase()}` }
                 >
-                    <ProgramCard
+                        <ProgramCard
                         program={ program }
                     />
-                </Link>
+                    </Link>
             ))}
             </div>
         </>

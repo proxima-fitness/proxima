@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { qr_code,apple,google, starGold } from "public";
+import Image from "next/image";
 
 
 export const metadata = {
@@ -21,13 +22,14 @@ export const metadata = {
                     <div>
                         <div className="flex flex-row gap-4">
                             <div>
-                                <img src={ (qr_code as any).src } alt="Proxima Logo" className="rounded w-auto h-[120px]" />
+                                <Image src={ (qr_code as any).src } width={ 500 } height={ 500 } alt="Proxima Logo" className="rounded w-auto h-[120px]" />
                             </div>
                             <div style={ { display: "flex", flexDirection: "column", justifyContent: "flex-start", gap: "10px", zIndex: "5" } }>
 
                                 <a href="https://testflight.apple.com/join/dG4SXTTm"
                                     >
-                                    <img src={ (apple as any).src } alt="apple"
+                                    <Image src={ (apple as any).src } alt="apple"
+                                    width={ 500 } height={ 500 }
                                         style={ {
                                             width: "150px",
                                             height: "100%",
@@ -38,7 +40,8 @@ export const metadata = {
                                         />
                                 </a>
                                 <a href="https://app.proximafitness.com/">
-                                    <img src={ (google as any).src } alt="google"
+                                    <Image src={ (google as any).src } alt="google"
+                              width={ 500 } height={ 500 }
                                             style={ {
                                                 width: "150px",
                                                 height: "100%",
@@ -52,19 +55,19 @@ export const metadata = {
                         </div>
                         <span className="flex flex-row py-4 text-black">
                             <span>
-                                <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                                <Image src={ (starGold as any).src } width={ 500 } height={ 500 } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                             </span>
                             <span>
-                                <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                                <Image src={ (starGold as any).src } width={ 500 } height={ 500 } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                             </span>
                             <span>
-                                <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                                <Image src={ (starGold as any).src } width={ 500 } height={ 500 } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                             </span>
                             <span>
-                                <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                                <Image src={ (starGold as any).src } width={ 500 } height={ 500 } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                             </span>
                             <span>
-                                <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                                <Image src={ (starGold as any).src } width={ 500 } height={ 500 } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                             </span>
                             4.5 Stars on Apple App Store
                         </span>

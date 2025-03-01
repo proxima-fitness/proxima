@@ -7,8 +7,9 @@ import { useReducer } from "react";
 import { motion } from "motion/react";
 import styles from "../../style";
 import { minus, add } from "public";
+import Image from "next/image";
 
-const FAQItem = ({ question, answer }: any) => {
+const FAQItem = ({ question, answer } : any) => {
     const [isOpen, toggleIsOpen] = useReducer(prev => !prev, false);
 
     return (
@@ -25,9 +26,9 @@ const FAQItem = ({ question, answer }: any) => {
         >
                 <h4 className={ `font-second font-semibold text-white text-[18px] leading-[23.4px] mb-1` }>{question}</h4>
                 { isOpen ?
-                    <img src={ (minus as any).src } alt="star" className={ "text-white w-[25px] h-[25px] object-contain " } />
+                    <Image src={ (minus as any).src } width={ 500 } height={ 500 } alt="star" className={ "text-white w-[25px] h-[25px] object-contain " } />
                 :
-                    <img src={ (add as any).src } alt="star" className="text-white w-[25px] h-[25px] object-contain" />
+                    <Image src={ (add as any).src } width={ 500 } height={ 500 } alt="star" className="text-white w-[25px] h-[25px] object-contain" />
             }
             </div>
             { isOpen && (

@@ -3,6 +3,7 @@ import styles from "../../style";
 import { footerLinks, socialMedia } from "../../assets/constants";
 import { proxima_logo } from "public";
 import Link from "next/link";
+import Image from "next/image";
 
 export const Footer: React.FC = () => {
 
@@ -15,7 +16,7 @@ export const Footer: React.FC = () => {
                         Leave No Gains <br className="sm:block hidden" />{" "} On The Table
                     </p>
                     <div className="h-[100px] w-[200px] flex justify-start items-center">
-                        <img src={ (proxima_logo as any).src } alt="Proxima Logo" className="relative w-auto h-[180px] -ml-8 z-[1]" />
+                        <Image src={ (proxima_logo as any).src } width={ 500 } height={ 500 } alt="Proxima Logo" className="relative w-auto h-[180px] -ml-8 z-[1]" />
                     </div>
                 </div>
 
@@ -57,8 +58,8 @@ export const Footer: React.FC = () => {
                 href={ social.link }
                 key={ social.id }
             >
-                            <img
-                src={ social.icon }
+                            <Image
+                src={ social.icon } width={ 500 } height={ 500 }
                 alt={ social.id }
                 className={ `w-[21px] h-[21px] object-contain cursor-pointer ${
                 index !== socialMedia.length - 1 ? "mr-6" : "mr-0"

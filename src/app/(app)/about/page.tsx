@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CallToAction } from "@/components/call-to-action/CallToAction";
 import { jack, jack_jacked } from "public";
+import Image from "next/image";
 
 export const metadata = {
     title: "About Us | Proxima Fitness",
@@ -16,13 +17,13 @@ export const metadata = {
             <section className="mt-10 flex flex-col items-center justify-center">
                 <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1">
                     <div className="relative h-[384px] w-[384px] group">
-                        <img
-                            src={ (jack as any).src }
+                        <Image
+                            src={ (jack as any).src } width={ 500 } height={ 500 }
                             alt="Program Creator Image"
                             className="rounded-xl w-full h-full object-cover transition-opacity duration-300"
                         />
-                        <img
-                            src={ (jack_jacked as any).src }
+                        <Image
+                            src={ (jack_jacked as any).src } width={ 500 } height={ 500 }
                             alt="Jack Hanlon Jacked"
                             className="rounded-xl w-full h-full object-cover object-[center_20%] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                         />
