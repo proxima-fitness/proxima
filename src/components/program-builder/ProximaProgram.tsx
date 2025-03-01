@@ -1,16 +1,13 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { DayCard } from "./DayCard";
-import { WeeksBar } from "./WeeksBar";
-import { PlusIcon } from "lucide-react";
 import { exampleProximaProgram } from "@/assets/constants";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner"
 import { AddExerciseDialog } from "./AddExerciseDialog";
 import { Option } from "@/components/ui/multi-select";
 import { GenerateDayDialog } from "./GenerateDayDialog";
-
+import { WeekColumn } from "./WeekColumn";
+import { v4 as uuidv4 } from "uuid";
 
 interface IProps {
     program: TProgramCreatorDay[][];
@@ -25,15 +22,19 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     const [newProgram, setNewProgram] = useState<TProgramCreatorDay[][]>(program);
     const [addExerciseDialog, setAddExerciseDialog] = useState<TDialog>({currentWeek: undefined, currentDay: undefined, isOpen: false});
     const [generateDayDialog, setGenerateDayDialog] = useState<TDialog>({currentWeek: undefined, currentDay: undefined, isOpen: false});
+
     // Duplicates a whole week to another week within the program
     const handleDuplicateWeek = (fromWeekIndex: number, toWeekIndexes: number[]) => {
-        const tmpProgram = [...newProgram];
-        for (let i = 0; i < toWeekIndexes.length; i++) {
-            tmpProgram[Number(toWeekIndexes[i])] = tmpProgram[fromWeekIndex];
-        }
-        setNewProgram(tmpProgram);
-        return;
+        setNewProgram((prevProgram) => {
+            return prevProgram.map((week, idx) => {
+                if (toWeekIndexes.includes(idx)) {
+                    return JSON.parse(JSON.stringify(prevProgram[fromWeekIndex])); // Deep copy to prevent reference issues
+                }
+                return week;
+            });
+        });
     };
+
 
     // Duplicates the selected day to other days in the program on the selected week
     const handleDuplicateDay = (fromWeekIndex: number, fromDayIndex: number, toWeekIndex: number, toDayIndexArray: Option[] ) => {
@@ -104,16 +105,21 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
         }));
 
         setNewProgram(tmpProgram);
-
+        toast.error("Day deleted");
         return;
     };
 
     // Adds an exercise to the workout day
-    const handleAddExercise = (currentWeek: number, currentDay: number, exercise: TProgramCreatorExercise) => {
+    const handleAddExercise = (currentWeekIndex: number, currentDay: number, exercise: TProgramCreatorExercise) => {
+        const tmpProgram = [...newProgram];
 
-        // console.log("Entered Handle Add Exercise week: day:", currentWeek, currentDay);
-        // console.log("exercise:", exercise);
-        // construct a TProgramCreatorExercise and add it to newProgram
+        if (tmpProgram[currentWeekIndex][currentDay - 1].exercises.length === 10) {
+            toast.error("Maximum 10 Exercises per day");
+            return;
+        }
+        tmpProgram[currentWeekIndex][currentDay - 1].exercises.push(exercise);
+        setNewProgram(tmpProgram);
+        return;
     };
 
     const handleEditTitle = (currentWeek: number, currentDay: number, day_title: string) => {
@@ -127,28 +133,20 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
             <div className="flex flex-row gap-4">
                 { newProgram.map((week, index) => {
                     return (
-                        <div key={ index } className="flex flex-col min-w-[440px] max-w-[440px] gap-4 items-center">
-                            <WeeksBar
-                                weekIndex={ index  }
-                                programLength={ exampleProximaProgram.length }
-                                handleDuplicateWeek={ handleDuplicateWeek }
-                            />
-                            { week.map((day, idx) => (
-                                <DayCard
-                                    key={ day.order }
-                                    day={ day }
-                                    handleDuplicateDay={ handleDuplicateDay }
-                                    handleEditTitle={ handleEditTitle }
-                                    days={ week.length }
-                                    handleDeleteDay={ handleDeleteDay }
-                                    weekIndex={ index }
-                                    programLength={ exampleProximaProgram.length }
-                                    handleAddExerciseDialog={ handleAddExerciseDialog }
-                                    handleGenerateDayDialog={ handleGenerateDayDialog }
-                                />
-                            ) ) }
-                            <Button onClick={ () => handleAddDay(index) } className="mb-4 w-44 font-bold uppercase h-12 rounded-lg bg-lightSecondary hover:bg-lightSecondary text-white"><PlusIcon />Add Day</Button>
-                        </div>
+                        <WeekColumn
+                            key={ uuidv4() }
+                            index={ index }
+                            programLength={ exampleProximaProgram.length }
+                            handleDuplicateWeek={ handleDuplicateWeek }
+                            week={ week }
+                            handleDuplicateDay={ handleDuplicateDay }
+                            handleEditTitle={ handleEditTitle }
+                            handleDeleteDay={ handleDeleteDay }
+                            handleAddExerciseDialog={ handleAddExerciseDialog }
+                            handleGenerateDayDialog={ handleGenerateDayDialog }
+                            handleAddDay={ handleAddDay }
+                        />
+
                     )
                 } ) }
             </div>

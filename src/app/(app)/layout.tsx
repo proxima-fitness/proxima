@@ -35,7 +35,7 @@ export default function RootLayout({
                     <main id="root">
                         <QueryProvider>
                             {children}
-                            <Toaster />
+                            <Toaster richColors />
                         </QueryProvider>
                     </main>
                     <div className={ `bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>

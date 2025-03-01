@@ -254,10 +254,10 @@ export const DayCard: React.FC<IProps> = (props) => {
                                 )}
                                 { exercise.reps_type?.time_range && (
                                     exercise.reps_type.time_range.every((range, i, arr) => JSON.stringify(range) === JSON.stringify(arr[0])) ? (
-                                        <div>{ exercise.reps_type.time_range[0][0]}-{exercise.reps_type.time_range[0][1] }</div>
+                                        <div>{ exercise.reps_type.time_range[0][0]}-{exercise.reps_type.time_range[0][1] } s</div>
                                     ) : (
                                         exercise.reps_type.time_range.map((range, index) => (
-                                            <div key={ index }>{range[0]} - {range[1]}</div>
+                                            <div key={ index }>{range[0]} - {range[1]} s</div>
                                         ))
                                     )
                                 )}
@@ -283,10 +283,10 @@ export const DayCard: React.FC<IProps> = (props) => {
                                 )}
                                 { exercise.intensity?.weights && (
                                     exercise.intensity.weights.every((weightVal, i, arr) => weightVal === arr[0]) ? (
-                                        <div>{exercise.intensity.weights[0]}lbs</div>
+                                        <div>{exercise.intensity.weights[0]} lbs</div>
                                     ) : (
                                         exercise.intensity.weights.map((weightVal, index) => (
-                                            <div key={ index }>{ weightVal }lbs</div>
+                                            <div key={ index }>{ weightVal } lbs</div>
                                         ))
                                     )
                                 )}

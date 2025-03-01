@@ -53,7 +53,6 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
     } = props;
 
     const [ filteredItems, setFilteredItems ] = useState<TExercise[]>(items);
-    console.log("filteredItems",filteredItems);
 
     const [ selectedMuscleGroup, setSelectedMuscleGroup ] = useState<string>("All Muscle Groups");
     const [ selectedEquipment, setSelectedEquipment ] = useState<string>("All Equipment");
@@ -75,7 +74,6 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
                 const normalizedQuery = appliedSearchBarFilter.toLowerCase();
                 const fuse = new Fuse(filteredItems, options);
                 const fuseResults  = fuse.search(normalizedQuery);
-                console.log("fuseResults:",fuseResults);
                 filteredItems = fuseResults.map(result => result?.item);
             }
             setFilteredItems(filteredItems);
