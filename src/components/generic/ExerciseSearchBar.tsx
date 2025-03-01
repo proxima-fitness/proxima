@@ -3,6 +3,7 @@ import { FixedSizeList as List } from "react-window";
 import Fuse from "fuse.js";
 import { Input } from '../ui/input';
 import { ExerciseGif } from './ExerciseGif';
+import { SearchIcon } from 'lucide-react';
 
 // Fuse Fuzzy match options
 const options = {
@@ -12,7 +13,7 @@ const options = {
     shouldSort: true,
     threshold: 0.1,
     keys: [
-        "name",
+        "name_english",
     ],
 };
 
@@ -52,6 +53,7 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
     } = props;
 
     const [ filteredItems, setFilteredItems ] = useState<TExercise[]>(items);
+    console.log("filteredItems",filteredItems);
 
     const [ selectedMuscleGroup, setSelectedMuscleGroup ] = useState<string>("All Muscle Groups");
     const [ selectedEquipment, setSelectedEquipment ] = useState<string>("All Equipment");
@@ -73,6 +75,7 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
                 const normalizedQuery = appliedSearchBarFilter.toLowerCase();
                 const fuse = new Fuse(filteredItems, options);
                 const fuseResults  = fuse.search(normalizedQuery);
+                console.log("fuseResults:",fuseResults);
                 filteredItems = fuseResults.map(result => result?.item);
             }
             setFilteredItems(filteredItems);
@@ -93,10 +96,13 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
         const item = data.filteredItems[index];
 
         return (
+            <div
+                key={ item.id }
+                style={ style }
+            >
                 <div
-                    key={ item.id }
                     onClick={ () => data.selectItem(item) }
-                    className="cursor-pointer flex flex-row gap-4 py-2"
+                    className='h-full w-full flex flex-row gap-4 cursor-pointer items-center'
                 >
                     <ExerciseGif
                         thumbnailOrImage="thmb"
@@ -119,6 +125,7 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
                         </span> */}
                     </div>
                 </div>
+            </div>
         );
     };
 
@@ -127,7 +134,8 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
             { isEditing ? (
                 <>
                     <Input
-                        className="p-0"
+                        className="my-2"
+                        startIcon={ SearchIcon }
                         autoFocus
                         placeholder={ "Search Exercises" }
                         onChange={ (event) => setAppliedSearchBarFilter(String(event.target.value)) }>
@@ -160,7 +168,7 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
                     <List
                         height={ 500 }
                         itemCount={ filteredItems.length }
-                        itemSize={ 10 }
+                        itemSize={ 80 }
                         width={ '100%' }
                         itemData={ { filteredItems, selectItem } }
                         >

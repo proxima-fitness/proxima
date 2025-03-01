@@ -147,7 +147,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                                     handleGenerateDayDialog={ handleGenerateDayDialog }
                                 />
                             ) ) }
-                            <Button onClick={ () => handleAddDay(index) } className="mb-4 w-44 font-bold uppercase h-12 rounded-[40px] bg-lightSecondary hover:bg-lightSecondary text-white"><PlusIcon />Add Day</Button>
+                            <Button onClick={ () => handleAddDay(index) } className="mb-4 w-44 font-bold uppercase h-12 rounded-lg bg-lightSecondary hover:bg-lightSecondary text-white"><PlusIcon />Add Day</Button>
                         </div>
                     )
                 } ) }

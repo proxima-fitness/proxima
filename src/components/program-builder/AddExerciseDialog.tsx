@@ -10,6 +10,7 @@ import { ExerciseSearchBar } from "../generic/ExerciseSearchBar";
 import { Select, SelectContent, SelectItem } from "../ui/select";
 import { Input } from "../ui/input";
 import { toast } from "sonner";
+import { PlusIcon, Trash2Icon, XIcon } from "lucide-react";
 
 interface IProps {
     handleAddExercise: (currentWeek: number, currentDay: number, exercise: TProgramCreatorExercise) => void;
@@ -28,6 +29,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
     const { data: exercises }  = useExercises();
 
     const [title, setTitle] = useState<string>();
+
     const [ editedExercise, setEditedExercise ] = useState<TAddExercise | undefined>();
     const [ isEditConfirmed, setIsEditConfirmed] = useState<boolean>(false);
 
@@ -178,168 +180,167 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                         isEditing={ isEditing }
                         handleIsEditing={ handleIsEditing }
                     />
-                    <div style={ { marginTop: "30px" } }>
-                        <div>
-                            <div style={ { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: "100%" } }>
-                                <div style={ {width: "34%" } }>
-                                    <div>
+                    <div className="mt-4">
+
+                            <div className="flex flex-row justify-center gap-2 items-center w-full">
+                                <div className="flex items-start justify-start w-[10%]">
                                         Set
-                                    </div>
                                 </div>
-                                <div style={ {width: "33%" } }>
-                                    <Select value={ repTypeValue } aria-label="rep type" onValueChange={ (value) => setRepTypeValue(value) }>
+                                <div className="w-[33%]">
+                                    Reps
+                                    {/* <Select value={ repTypeValue } aria-label="rep type" onValueChange={ (value) => setRepTypeValue(value) }>
                                         <SelectContent>
                                             { rep_types.map((rep_type) => (
                                                 <SelectItem key={ rep_type.value } value={ rep_type.value }>{ rep_type.label }</SelectItem>
                                             ) ) };
                                         </SelectContent>
 
-                                    </Select>
-
+                                    </Select> */}
                                 </div>
-                                <div style={ {width: "33%" } }>
-                                    <Select value={ intensityValue } aria-label="intensity" onValueChange={ (value) => setIntensityValue(value) }>
+                                <div className="w-[33%]">
+                                    Intensity
+                                    {/* <Select value={ intensityValue } aria-label="intensity" onValueChange={ (value) => setIntensityValue(value) }>
                                         <SelectContent>
                                             { intensities.map((intensity) => (
                                                 <SelectItem key={ intensity.value } value={ intensity.value }>{ intensity.label }</SelectItem>
                                             ) ) };
                                         </SelectContent>
-                                    </Select>
+                                    </Select> */}
+                                </div>
+                                <div>
+                                    <XIcon className="opacity-0 pointer-events-none" />
                                 </div>
                             </div>
-                        </div>
 
                         { reps.map((rep: string | number, index: number) => (
-                            <div key={ "Set" + index }>
-                                    <div>
-                                        <div style={ { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: "100%" } }>
-                                            <div style={ {width: "34%" } }>
-                                                <div>
-                                                    { index + 1 }
-                                                </div>
-                                            </div>
-                                            <div style={ {width: "33%" } }>
-                                                { (repTypeValue === "time_range" || repTypeValue === "reps_range") ?
-                                                    <div style={ { display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: "5px" } }>
-                                                        <Input
-                                                            style={ { width: "80%" } }
-                                                            type="number"
-                                                            placeholder="__"
-                                                            inputMode="decimal"
-                                                            value={ repsWithTimeAndRepRange?.[index]?.[0] }
-                                                            onInput={ (event) => handleSaveRepsRange(String(event.currentTarget.value) ?? "0", index,"start") }
-                                                            onBlur={ (event) => handleSaveRepsRange(String(event.target.value) ?? "0", index,"start") }
-                                                            onKeyDown={ (e) => {
-                                                                if (e.key === 'Enter') {
-                                                                    handleSaveRepsRange((e.target as HTMLInputElement).value, index,"start");
-                                                                }
-                                                            } }
-                                                            autoFocus
-                                                        />
-                                                        <div style={ { marginRight: "20px" } }>-</div>
-                                                        <Input
-                                                            type="number"
-                                                            placeholder="__"
-                                                            inputMode="decimal"
-                                                            value={ repsWithTimeAndRepRange?.[index]?.[1] }
-                                                            onInput={ (event) => handleSaveRepsRange(String(event.currentTarget.value) ?? "0", index,"end") }
-                                                            onBlur={ (event) => handleSaveRepsRange(String(event.target.value) ?? "0", index,"end") }
-                                                            onKeyDown={ (e) => {
-                                                                if (e.key === 'Enter') {
-                                                                    handleSaveRepsRange((e.target as HTMLInputElement).value, index,"end");
-                                                                }
-                                                            } }
-                                                            autoFocus
-                                                        />
-                                                    </div> : repTypeValue === "amrap" ? (
-                                                        <Input
-                                                            disabled
-                                                            type="number"
-                                                            placeholder="AMRAP"
-                                                            autoFocus
-                                                        />
-                                                    ) :
-                                                        <Input
-                                                            type="number"
-                                                            placeholder={ (repTypeValue === "time_taken" || repTypeValue === "time_range") ? "Secs" : "Reps" }
-                                                            inputMode="decimal"
-                                                            value={ rep || '' }
-                                                            onInput={ (event) => handleSaveReps(event.currentTarget.value ?? "0", index) }
-                                                            onBlur={ (event) => handleSaveReps(event.target.value ?? "0", index) }
-                                                            onKeyDown={ (e) => {
-                                                                if (e.key === 'Enter') {
-                                                                    handleSaveReps((e.target as HTMLInputElement).value,index);
-                                                            }
-                                                            } }
-                                                            autoFocus
-                                                        />
+                            <div
+                                key={ "Set" + index }
+                                className={ `flex flex-row justify-center gap-2 items-center w-full py-2` }>
+                                <div className="flex items-center justify-start w-[10%]">
+                                    { index + 1 }
+                                </div>
+                                <div className="w-[33%]">
+                                    { (repTypeValue === "time_range" || repTypeValue === "reps_range") ?
+                                        <div className="flex flex-row items-center justify-center gap-2">
+                                            <Input
+                                                className="w-full"
+                                                // type="number"
+                                                placeholder="__"
+                                                // inputMode="decimal"
+                                                value={ repsWithTimeAndRepRange?.[index]?.[0] }
+                                                onInput={ (event) => handleSaveRepsRange(String(event.currentTarget.value) ?? "0", index,"start") }
+                                                onBlur={ (event) => handleSaveRepsRange(String(event.target.value) ?? "0", index,"start") }
+                                                onKeyDown={ (e) => {
+                                                    if (e.key === 'Enter') {
+                                                        handleSaveRepsRange((e.target as HTMLInputElement).value, index,"start");
+                                                    }
+                                                } }
+                                                autoFocus
+                                            />
+                                            <div className="mr-4">-</div>
+                                            <Input
+                                                // type="number"
+                                                placeholder="__"
+                                                // inputMode="decimal"
+                                                value={ repsWithTimeAndRepRange?.[index]?.[1] }
+                                                onInput={ (event) => handleSaveRepsRange(String(event.currentTarget.value) ?? "0", index,"end") }
+                                                onBlur={ (event) => handleSaveRepsRange(String(event.target.value) ?? "0", index,"end") }
+                                                onKeyDown={ (e) => {
+                                                    if (e.key === 'Enter') {
+                                                        handleSaveRepsRange((e.target as HTMLInputElement).value, index,"end");
+                                                    }
+                                                } }
+                                                autoFocus
+                                            />
+                                        </div> : repTypeValue === "amrap" ? (
+                                            <Input
+                                                disabled
+                                                type="number"
+                                                placeholder="AMRAP"
+                                                autoFocus
+                                            />
+                                        ) :
+                                            <Input
+                                                // type="number"
+                                                placeholder={ (repTypeValue === "time_taken" || repTypeValue === "time_range") ? "Secs" : "Reps" }
+                                                // inputMode="decimal"
+                                                value={ rep || '' }
+                                                onInput={ (event) => handleSaveReps(event.currentTarget.value ?? "0", index) }
+                                                onBlur={ (event) => handleSaveReps(event.target.value ?? "0", index) }
+                                                onKeyDown={ (e) => {
+                                                    if (e.key === 'Enter') {
+                                                        handleSaveReps((e.target as HTMLInputElement).value,index);
                                                 }
+                                                } }
+                                                autoFocus
+                                            />
+                                    }
+                                </div>
+                                <div className="w-[33%]">
+                                    { intensityValue === "rpe_range" ?
+                                        <>
+                                            <div className="flex flex-row items-center justify-center gap-2">
+
+                                                <Input
+                                                    // type="number"
+                                                    // inputMode="decimal"
+                                                    value={ intensityDataWithRPERange?.[index]?.[0] }
+                                                    onInput={ (event) => handleSaveIntensityRange(event.currentTarget.value ?? "0", index,"start") }
+                                                    onBlur={ (event) => handleSaveIntensityRange(event.target.value ?? "0", index,"start") }
+                                                    onKeyDown={ (e) => {
+                                                        if (e.key === 'Enter') {
+                                                            handleSaveIntensityRange((e.target as HTMLInputElement).value,index,"start");
+                                                    }
+                                                    } }
+                                                    autoFocus
+                                                />
+                                                <div style={ { marginRight: "20px" } }>-</div>
+                                                <Input
+                                                    // type="number"
+                                                    // inputMode="decimal"
+                                                    value={ intensityDataWithRPERange?.[index]?.[1] }
+                                                    onInput={ (event) => handleSaveIntensityRange(event.currentTarget.value ?? "0", index,"end") }
+                                                    onBlur={ (e) => handleSaveIntensityRange(e.target.value ?? "0", index,"end") }
+                                                    onKeyDown={ (e) => {
+                                                        if (e.key === 'Enter') {
+                                                            handleSaveIntensityRange((e.target as HTMLInputElement).value,index,"end");
+                                                    }
+                                                    } }
+                                                    autoFocus
+                                                />
                                             </div>
-                                            <div style={ {width: "33%" } }>
-                                                { intensityValue === "rpe_range" ?
-                                                    <>
-                                                        <div style={ { display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: "5px" } }>
+                                        </>
 
-                                                            <Input
-                                                                type="number"
-                                                                inputMode="decimal"
-                                                                value={ intensityDataWithRPERange?.[index]?.[0] }
-                                                                onInput={ (event) => handleSaveIntensityRange(event.currentTarget.value ?? "0", index,"start") }
-                                                                onBlur={ (event) => handleSaveIntensityRange(event.target.value ?? "0", index,"start") }
-                                                                onKeyDown={ (e) => {
-                                                                    if (e.key === 'Enter') {
-                                                                        handleSaveIntensityRange((e.target as HTMLInputElement).value,index,"start");
-                                                                }
-                                                                } }
-                                                                autoFocus
-                                                            />
-                                                            <div style={ { marginRight: "20px" } }>-</div>
-                                                            <Input
-                                                                type="number"
-                                                                inputMode="decimal"
-                                                                value={ intensityDataWithRPERange?.[index]?.[1] }
-                                                                onInput={ (event) => handleSaveIntensityRange(event.currentTarget.value ?? "0", index,"end") }
-                                                                onBlur={ (e) => handleSaveIntensityRange(e.target.value ?? "0", index,"end") }
-                                                                onKeyDown={ (e) => {
-                                                                    if (e.key === 'Enter') {
-                                                                        handleSaveIntensityRange((e.target as HTMLInputElement).value,index,"end");
-                                                                }
-                                                                } }
-                                                                autoFocus
-                                                            />
-                                                        </div>
-                                                    </>
-
-                                                :
-                                                    <Input
-                                                        type="number"
-                                                        inputMode="decimal"
-                                                        value={ intensityData[index] || "0" }
-                                                        onInput={ (e) => handleUpdatingIntensity(e.currentTarget.value ?? "0", index) }
-                                                        onBlur={ (e) => handleSaveIntensity(e.target.value ?? "0", index) }
-                                                        onKeyDown={ (e) => {
-                                                            if (e.key === 'Enter') {
-                                                                handleSaveIntensity((e.target as HTMLInputElement).value,index);
-                                                        }
-                                                        } }
-                                                        autoFocus
-                                                    />
+                                    :
+                                        <Input
+                                            // type="number"
+                                            // inputMode="decimal"
+                                            value={ intensityData[index] || "0" }
+                                            onInput={ (e) => handleUpdatingIntensity(e.currentTarget.value ?? "0", index) }
+                                            onBlur={ (e) => handleSaveIntensity(e.target.value ?? "0", index) }
+                                            onKeyDown={ (e) => {
+                                                if (e.key === 'Enter') {
+                                                    handleSaveIntensity((e.target as HTMLInputElement).value,index);
                                             }
+                                            } }
+                                            autoFocus
+                                        />
+                                }
 
-                                            </div>
-                                        </div>
-                                    </div>
+                                </div>
+                                <Trash2Icon className="cursor-pointer" onClick={ () => deleteSet(index) } />
                             </div>
+
                         ) ) }
                     </div>
 
-                    <div className="exer-start" onClick={ () => addSet() }>
+                    <div className="pt-4 flex justify-center items-center" onClick={ () => addSet() }>
                         <Button
-                            id="add-sets-button"
                             onClick={ () => { if (reps.length === 10) { handleMaxTenSets(); } } }
                             variant="ghost"
+                            className="w-full h-10 mx-14 uppercase"
                         >
-                            Plus icon here
+                            <PlusIcon /> Add Set
                         </Button>
                     </div>
                 </div>
