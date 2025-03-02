@@ -22,6 +22,11 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     const [newProgram, setNewProgram] = useState<TProgramCreatorDay[][]>(program);
     const [addExerciseDialog, setAddExerciseDialog] = useState<TDialog>({currentWeek: undefined, currentDay: undefined, isOpen: false});
     const [generateDayDialog, setGenerateDayDialog] = useState<TDialog>({currentWeek: undefined, currentDay: undefined, isOpen: false});
+    const [isEditExercise, setIsEditExercise] = useState(false);
+
+    const handleIsEditExercise = (isEditExercise: boolean) => {
+        setIsEditExercise(isEditExercise);
+    };
 
     // Duplicates a whole week to another week within the program
     const handleDuplicateWeek = (fromWeekIndex: number, toWeekIndexes: number[]) => {
@@ -35,23 +40,30 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
         });
     };
 
-
     // Duplicates the selected day to other days in the program on the selected week
     const handleDuplicateDay = (fromWeekIndex: number, fromDayIndex: number, toWeekIndex: number, toDayIndexArray: Option[] ) => {
-        const tmpProgram = [...newProgram];
-        const toDayIndexes = toDayIndexArray.map((day) => Number(day.value) - 1);
+        const tmpProgram = structuredClone(newProgram);
+        const toWeekLength = tmpProgram[toWeekIndex].length;
 
-        for (let i = 0; i < toDayIndexes.length; i++) {
-            if (tmpProgram[toWeekIndex][toDayIndexes[i]]) {
-                tmpProgram[toWeekIndex][toDayIndexes[i]].exercises = [...(tmpProgram[fromWeekIndex][fromDayIndex].exercises || [])];
-            } else {
-                const toWeekLength = newProgram[toWeekIndex].length;
-                if (toWeekLength === 7) {
-                    return;
-                }
-                const newEmptyDay: TProgramCreatorDay = {
-                    order: String(toWeekLength + 1),
+        const toDayIndexes = toDayIndexArray.map((day) => Number(day.value) - 1).sort((a, b) => a - b);
+        console.log(toDayIndexes);
+        const lastSelectedDayIndex = toDayIndexes[toDayIndexes.length-1];
+
+        for (let i = toWeekLength; i <= lastSelectedDayIndex; i++) {
+            if (toWeekLength === 7) {
+                return;
+            }
+
+            if (toDayIndexes.includes(i)) {
+                const duplicatedDay: TProgramCreatorDay = {
+                    order: String(i + 1),
                     exercises: [...(tmpProgram[fromWeekIndex][fromDayIndex].exercises || [])],
+                }
+                tmpProgram[toWeekIndex].push(duplicatedDay);
+            } else {
+                const newEmptyDay: TProgramCreatorDay = {
+                    order: String(i + 1),
+                    exercises: [],
                 }
                 tmpProgram[toWeekIndex].push(newEmptyDay);
             }
@@ -80,14 +92,14 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
 
         const currentWeekLength = newProgram[currentWeek].length;
         if (currentWeekLength === 7) {
-            toast("You can only add up to 7 days per week");
+            toast.error("You can only add up to 7 days per week");
             return;
         }
         const newEmptyDay: TProgramCreatorDay = {
             order: String(currentWeekLength + 1),
             exercises: [],
         }
-        const tmpProgram = [...newProgram];
+        const tmpProgram = structuredClone(newProgram);
         tmpProgram[currentWeek].push(newEmptyDay);
         setNewProgram(tmpProgram);
 
@@ -96,7 +108,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
 
     // Deletes selected day from selected week
     const handleDeleteDay = (currentWeek: number, currentDay: number) => {
-        const tmpProgram = [...newProgram];
+        const tmpProgram = structuredClone(newProgram);
 
         tmpProgram[currentWeek] = tmpProgram[currentWeek].filter((day: { order: string; }) => Number(day.order) !== currentDay)
         .map((day, index) => ({
@@ -111,7 +123,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
 
     // Adds an exercise to the workout day
     const handleAddExercise = (currentWeekIndex: number, currentDay: number, exercise: TProgramCreatorExercise) => {
-        const tmpProgram = [...newProgram];
+        const tmpProgram = structuredClone(newProgram);
 
         if (tmpProgram[currentWeekIndex][currentDay - 1].exercises.length === 10) {
             toast.error("Maximum 10 Exercises per day");
@@ -123,9 +135,27 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     };
 
     const handleEditTitle = (currentWeek: number, currentDay: number, day_title: string) => {
-        const tmpProgram = [...newProgram];
+        const tmpProgram = structuredClone(newProgram);
         tmpProgram[currentWeek][currentDay - 1].day_title = day_title;
         setNewProgram(tmpProgram);
+    };
+
+    const handleDeleteExercise = (currentWeekIndex: number, currentDay: number, exerciseIndex: number) => {
+        const tmpProgram = structuredClone(newProgram);
+
+        tmpProgram[currentWeekIndex][currentDay - 1].exercises = tmpProgram[currentWeekIndex][currentDay - 1].exercises.filter(
+            (_, index) => index !== exerciseIndex
+        );
+
+        setNewProgram(tmpProgram);
+    };
+
+    const handleEditExercise = (currentWeek: number, currentDay: number, exerciseIndex: number, exercise: TProgramCreatorExercise) => {
+        const tmpProgram = structuredClone(newProgram);
+
+        tmpProgram[currentWeek][currentDay - 1].exercises[exerciseIndex] = exercise;
+        setNewProgram(tmpProgram);
+        return;
     };
 
     return (
@@ -145,13 +175,25 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                             handleAddExerciseDialog={ handleAddExerciseDialog }
                             handleGenerateDayDialog={ handleGenerateDayDialog }
                             handleAddDay={ handleAddDay }
+                            handleDeleteExercise={ handleDeleteExercise }
+                            // handleIsEditExercise={ handleIsEditExercise }
                         />
 
                     )
                 } ) }
             </div>
-            <AddExerciseDialog addExerciseDialog={ addExerciseDialog } handleAddExercise={ handleAddExercise } handleAddExerciseDialog={ handleAddExerciseDialog } />
-            <GenerateDayDialog handleGenerateDay={ handleGenerateDay } generateDayDialog={ generateDayDialog } handleGenerateDayDialog={ handleGenerateDayDialog } />
+            <AddExerciseDialog
+                addExerciseDialog={ addExerciseDialog }
+                isEditExercise={ isEditExercise }
+                // handleEditExercise={ handleEditExercise }
+                handleAddExercise={ handleAddExercise }
+                handleAddExerciseDialog={ handleAddExerciseDialog }
+            />
+            <GenerateDayDialog
+                handleGenerateDay={ handleGenerateDay }
+                generateDayDialog={ generateDayDialog }
+                handleGenerateDayDialog={ handleGenerateDayDialog }
+            />
         </>
     );
 };

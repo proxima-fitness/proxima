@@ -17,6 +17,8 @@ interface IProps {
     handleAddExerciseDialog: (addExerciseDialog: TDialog) => void;
     handleGenerateDayDialog: (generateDayDialog: TDialog) => void;
     handleAddDay: (currentWeek: number) => void;
+    handleDeleteExercise: (currentWeekIndex: number, currentDay: number, exerciseIndex: number) => void;
+    // handleIsEditExercise: (isEditExercise: boolean) => void;
 }
 
 export const WeekColumn: React.FC<IProps> = (props) => {
@@ -31,6 +33,8 @@ export const WeekColumn: React.FC<IProps> = (props) => {
         handleAddExerciseDialog,
         handleGenerateDayDialog,
         handleAddDay,
+        handleDeleteExercise,
+        // handleIsEditExercise,
         week,
     } = props;
 
@@ -53,6 +57,8 @@ export const WeekColumn: React.FC<IProps> = (props) => {
                     programLength={ programLength }
                     handleAddExerciseDialog={ handleAddExerciseDialog }
                     handleGenerateDayDialog={ handleGenerateDayDialog }
+                    handleDeleteExercise={ handleDeleteExercise }
+                    // handleIsEditExercise={ handleIsEditExercise }
                 />
             ) ) }
             <Button

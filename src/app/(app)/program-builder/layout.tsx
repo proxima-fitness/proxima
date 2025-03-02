@@ -1,7 +1,8 @@
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowRightIcon } from "lucide-react"
+import { ArrowRightIcon, RotateCcwIcon } from "lucide-react"
+import Link from "next/link"
 
 
 export default function ProgramBuilderLayout({
@@ -34,6 +35,12 @@ export default function ProgramBuilderLayout({
                         <TabsTrigger value="proxima">Proxima Program</TabsTrigger>
                     </TabsList>
                 </Tabs>
+                <Link href={ `/program-builder` }>
+                    <div className="cursor-pointer text-sm flex flex-row justify-center items-center gap-2">
+                        Retry
+                        <RotateCcwIcon size="16" />
+                    </div>
+                </Link>
                 <div className="w-[33%] flex items-center justify-end">
                     <Button variant="ghost" className="text-black">Finish<ArrowRightIcon /></Button>
                 </div>

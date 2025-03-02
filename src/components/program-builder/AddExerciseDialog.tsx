@@ -14,8 +14,11 @@ import { PlusIcon, Trash2Icon, XIcon } from "lucide-react";
 
 interface IProps {
     handleAddExercise: (currentWeek: number, currentDay: number, exercise: TProgramCreatorExercise) => void;
+    // handleEditExercise: (currentWeek: number, currentDay: number, exerciseIndex: number, exercise: TProgramCreatorExercise) => void;
     addExerciseDialog: TDialog;
     handleAddExerciseDialog: (addExerciseDialog: TDialog) => void;
+    isEditExercise: boolean;
+    // exerciseIndex: number;
 }
 
 export const AddExerciseDialog: React.FC<IProps> = (props) => {
@@ -23,7 +26,10 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
     const {
         addExerciseDialog,
         handleAddExercise,
+        // handleEditExercise,
         handleAddExerciseDialog,
+        isEditExercise,
+        // exerciseIndex,
     } = props;
 
     const { data: exercises }  = useExercises();
@@ -34,7 +40,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
     const [ isEditConfirmed, setIsEditConfirmed] = useState<boolean>(false);
 
     const [ exerciseID, setExerciseID ] = useState<string>();
-    const [ selectedName, setSelectedName ] = useState<string>('');
+    const [ selectedName, setSelectedName ] = useState<string>("");
     const [ selectedGifID, setSelectedGifID ] = useState<string>();
     const [ isEditing, setIsEditing ] = useState(true);
 
@@ -105,10 +111,21 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
     };
 
     const handleSave = async () => {
+        if (selectedName === "") {
+            toast.error("Please select an exercise");
+            return;
+        }
+
         const id = exerciseID;
         const exerciseData = { id, repTypeValue, intensityValue, reps, intensityData, repsWithTimeAndRepRange, intensityDataWithRPERange };
         const newExercise: TProgramCreatorExercise = await addExerciseToProgramCreatorExerciseConverter(exerciseData as TAddExercise);
+
+        // if (isEditExercise) {
+        //     handleEditExercise(addExerciseDialog.currentWeek, addExerciseDialog.currentDay, exerciseIndex ,newExercise);
+        // } else {
         handleAddExercise(addExerciseDialog.currentWeek, addExerciseDialog.currentDay, newExercise);
+        //}
+
         handleAddExerciseDialog({ currentWeek: undefined, currentDay: undefined, isOpen: false});
     };
 
@@ -153,7 +170,10 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                 setSelectedGifID(exercise.gif_id);
             }
         };
-        getExercise();
+        if (isEditExercise) {
+            setIsEditing(false);
+            getExercise();
+        }
     }, [editedExercise?.id, editedExercise?.intensityData, editedExercise?.intensityDataWithRPERange, editedExercise?.intensityValue, editedExercise?.repTypeValue, editedExercise?.reps, editedExercise?.repsWithTimeAndRepRange]);
 
 
