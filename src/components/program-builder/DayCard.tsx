@@ -102,7 +102,7 @@ export const DayCard: React.FC<IProps> = (props) => {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" side="bottom">
                             <DropdownMenuItem className="cursor-pointer" onClick={ () => handleDeleteDay(weekIndex, Number(day.order))}>
-                                Delete
+                                Delete Day
                                 <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={ () => setEditTitleOpen(true)} className="cursor-pointer">
@@ -115,7 +115,7 @@ export const DayCard: React.FC<IProps> = (props) => {
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
-                    <TooltipProvider>
+                    <TooltipProvider delayDuration={0}>
                         <Tooltip>
                             <TooltipTrigger
                                 className="cursor-pointer group-hover:opacity-100 group-active:opacity-100 group-hover:pointer-events-auto group-active:pointer-events-auto opacity-0 pointer-events-none"
@@ -154,7 +154,7 @@ export const DayCard: React.FC<IProps> = (props) => {
             </div>
                     <div>
                         { day?.exercises?.map((exercise : TProgramCreatorExercise, i: number) => (
-                                <TooltipProvider key={ "Week" + (weekIndex + 1) + "Day" + i }>
+                                <TooltipProvider key={ "Week" + (weekIndex + 1) + "Day" + i } delayDuration={0}>
                                     <Tooltip>
                                         <TooltipTrigger className="w-full">
                                             <div className="flex flex-row justify-between items-center text-sm border-b-2 py-2 border-gray-200">
@@ -204,7 +204,7 @@ export const DayCard: React.FC<IProps> = (props) => {
                                                             )
                                                             )}
                                                         { exercise.reps_type?.time_range && (
-                                                            exercise.reps_type.time_range.every((reps, i, arr) => reps === arr[0]) ? (
+                                                            exercise.reps_type.time_range.every((range, i, arr) => JSON.stringify(range) === JSON.stringify(arr[0])) ? (
                                                                 `${exercise.sets}`
                                                             ) : (
                                                                 Array.from({ length: exercise.sets || 0 }, (_, index) => (

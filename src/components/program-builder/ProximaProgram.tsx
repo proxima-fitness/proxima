@@ -9,6 +9,7 @@ import { GenerateDayDialog } from "./GenerateDayDialog";
 import { WeekColumn } from "./WeekColumn";
 import { v4 as uuidv4 } from "uuid";
 import { addExerciseToProgramCreatorExerciseConverter } from "@/utils/helpers";
+import { useExercises } from "@/api/hooks";
 
 interface IProps {
     program: TProgramCreatorDay[][];
@@ -19,6 +20,8 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     const {
         program,
     } = props;
+
+    const { data: exercises }  = useExercises();
 
     const [newProgram, setNewProgram] = useState<TProgramCreatorDay[][]>(program);
     const [addExerciseDialog, setAddExerciseDialog] = useState<TDialog>({currentWeek: undefined, currentDay: undefined, isOpen: false});
@@ -47,7 +50,6 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
         const toWeekLength = tmpProgram[toWeekIndex].length;
 
         const toDayIndexes = toDayIndexArray.map((day) => Number(day.value) - 1).sort((a, b) => a - b);
-        console.log(toDayIndexes);
         const lastSelectedDayIndex = toDayIndexes[toDayIndexes.length-1];
 
         for (let i = toWeekLength; i <= lastSelectedDayIndex; i++) {
@@ -183,13 +185,15 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                     )
                 } ) }
             </div>
-            <AddExerciseDialog
+            { addExerciseDialog.isOpen &&
+                <AddExerciseDialog
                 addExerciseDialog={ addExerciseDialog }
                 isEditExercise={ isEditExercise }
                 handleEditExercise={ handleEditExercise }
                 handleAddExercise={ handleAddExercise }
                 handleAddExerciseDialog={ handleAddExerciseDialog }
             />
+            }
             <GenerateDayDialog
                 handleGenerateDay={ handleGenerateDay }
                 generateDayDialog={ generateDayDialog }

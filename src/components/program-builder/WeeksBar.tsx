@@ -40,7 +40,7 @@ export const WeeksBar: React.FC<IProps> = (props) => {
                     Week {weekIndex + 1}
                 </div>
                 <div className="flex flex-row gap-4">
-                    <TooltipProvider>
+                    <TooltipProvider delayDuration={0}>
                         <Tooltip>
                             <TooltipTrigger className="">
                                 <div onClick={ () => handleDuplicateWeekOpen(weekIndex, true) }>

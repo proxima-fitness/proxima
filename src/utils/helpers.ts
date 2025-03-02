@@ -63,12 +63,16 @@ export const getExerciseFromLocalStorageByName = async (name_english: string) =>
 export const addExerciseToProgramCreatorExerciseConverter = async (addExercise: TAddExercise) => {
     let addReps = [];
     let addIntensity = [];
+    let sets = 0;
     if (addExercise.repTypeValue === "amrap") {
         addReps = addExercise.reps.map(() => addExercise.repTypeValue);
+        sets = addExercise.reps.length;
     } else if (addExercise.repTypeValue === "reps_range" || addExercise.repTypeValue === "time_range") {
         addReps = addExercise.repsWithTimeAndRepRange;
+        sets = addExercise.repsWithTimeAndRepRange.length
     } else {
         addReps = addExercise.reps;
+        sets = addExercise.reps.length;
     }
     if (addExercise.intensityValue === "rpe_range") {
         addIntensity = addExercise.intensityDataWithRPERange;
@@ -78,7 +82,7 @@ export const addExerciseToProgramCreatorExerciseConverter = async (addExercise: 
 
     const newExercise = {
         exercise: await getExerciseFromLocalStorageByID(addExercise.id),
-        sets: addExercise.reps.length,
+        sets: sets,
         reps_type: { [ addExercise.repTypeValue ] : addReps },
         intensity: { [ addExercise.intensityValue ]: addIntensity},
     } as TProgramCreatorExercise;
@@ -100,7 +104,7 @@ export const convertProgramCreatorExerciseToAddExercise = (programCreatorExercis
       reps_type?.reps ? "reps" :
       reps_type?.reps_max ? "reps_max" :
       reps_type?.reps_range ? "reps_range" :
-      reps_type?.time_taken ? "time" :
+      reps_type?.time_taken ? "time_taken" :
       reps_type?.time_range ? "time_range" :
       reps_type?.amrap ? "amrap" :
       undefined;
@@ -114,6 +118,7 @@ export const convertProgramCreatorExerciseToAddExercise = (programCreatorExercis
       intensity?.percent_rm ? "percent_rm" :
       intensity?.rpe_range ? "rpe_range" :
       intensity?.rpe ? "rpe" :
+      intensity?.weights ? "weights" :
       undefined;
 
     if (!intensityValue) {
@@ -121,8 +126,8 @@ export const convertProgramCreatorExerciseToAddExercise = (programCreatorExercis
     }
 
     // Populate data fields
-    const reps = reps_type?.reps || reps_type?.reps_max || [];
-    const intensityData = intensity?.percent_rm || intensity?.rpe || [];
+    const reps = reps_type?.reps || reps_type?.reps_max || reps_type.time_taken || amrapAsNumber(reps_type.amrap) || []; // AMRAP NEEDS TO BE FIXED HERE
+    const intensityData = intensity?.percent_rm || intensity?.rpe || intensity.weights || [];
     const repsWithTimeAndRepRange =
       reps_type?.reps_range || reps_type?.time_range || [];
     const intensityDataWithRPERange = intensity?.rpe_range || [];
@@ -137,6 +142,10 @@ export const convertProgramCreatorExerciseToAddExercise = (programCreatorExercis
       repsWithTimeAndRepRange,
       intensityDataWithRPERange,
     };
+};
+
+const amrapAsNumber = (amrap: string[]) => {
+    return amrap.map((item) => 999); // amrap string is defined as 999
 };
 
 

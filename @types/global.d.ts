@@ -77,8 +77,8 @@ type TDialog = {
 
 type TAddExercise = {
     id: string;
-    repTypeValue: "reps" | "reps_max" | "reps_range" | "time" | "time_range" | "amrap" ;
-    intensityValue: "percent_rm" | "rpe_range" | "rpe";
+    repTypeValue: "reps" | "reps_max" | "reps_range" | "time_taken" | "time_range" | "amrap" ;
+    intensityValue: "percent_rm" | "rpe_range" | "rpe" | "weights";
     reps: number[]; // DATA for any rep type that is not a range
     intensityData: number[]; // DATA for any intensity that is not a range
     repsWithTimeAndRepRange: number[][]; // DATA for rep/time range
