@@ -84,7 +84,61 @@ export const addExerciseToProgramCreatorExerciseConverter = async (addExercise: 
     } as TProgramCreatorExercise;
 
     return newExercise;
-}
+};
+
+// Converts TProgramCreatorExercise into TAddExercise type
+export const convertProgramCreatorExerciseToAddExercise = (programCreatorExercise: TProgramCreatorExercise): TAddExercise => {
+
+    if (!programCreatorExercise.exercise) {
+      throw new Error("Missing exercise data.");
+    }
+
+    const { exercise, reps_type, intensity } = programCreatorExercise;
+
+    // Determine repTypeValue
+    const repTypeValue =
+      reps_type?.reps ? "reps" :
+      reps_type?.reps_max ? "reps_max" :
+      reps_type?.reps_range ? "reps_range" :
+      reps_type?.time_taken ? "time" :
+      reps_type?.time_range ? "time_range" :
+      reps_type?.amrap ? "amrap" :
+      undefined;
+
+    if (!repTypeValue) {
+      throw new Error("Invalid or missing reps_type.");
+    }
+
+    // Determine intensityValue
+    const intensityValue =
+      intensity?.percent_rm ? "percent_rm" :
+      intensity?.rpe_range ? "rpe_range" :
+      intensity?.rpe ? "rpe" :
+      undefined;
+
+    if (!intensityValue) {
+      throw new Error("Invalid or missing intensity.");
+    }
+
+    // Populate data fields
+    const reps = reps_type?.reps || reps_type?.reps_max || [];
+    const intensityData = intensity?.percent_rm || intensity?.rpe || [];
+    const repsWithTimeAndRepRange =
+      reps_type?.reps_range || reps_type?.time_range || [];
+    const intensityDataWithRPERange = intensity?.rpe_range || [];
+
+    // Return the mapped TAddExercise object
+    return {
+      id: exercise.id,
+      repTypeValue,
+      intensityValue,
+      reps,
+      intensityData,
+      repsWithTimeAndRepRange,
+      intensityDataWithRPERange,
+    };
+};
+
 
 // Returns the initials of an exercise
 export const getInitials = (name: string) => {

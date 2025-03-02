@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { intensities, rep_types } from "@/assets/constants";
-import { addExerciseToProgramCreatorExerciseConverter, getExerciseFromLocalStorageByID, getExerciseFromLocalStorageByName } from "@/utils/helpers";
+import { addExerciseToProgramCreatorExerciseConverter, convertProgramCreatorExerciseToAddExercise, getExerciseFromLocalStorageByID, getExerciseFromLocalStorageByName } from "@/utils/helpers";
 import { ExerciseSearchBar } from "../generic/ExerciseSearchBar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Input } from "../ui/input";
@@ -14,11 +14,10 @@ import { PlusIcon, Trash2Icon, XIcon } from "lucide-react";
 
 interface IProps {
     handleAddExercise: (currentWeek: number, currentDay: number, exercise: TProgramCreatorExercise) => void;
-    // handleEditExercise: (currentWeek: number, currentDay: number, exerciseIndex: number, exercise: TProgramCreatorExercise) => void;
+    handleEditExercise: (editExercise: TDialog) => void;
     addExerciseDialog: TDialog;
     handleAddExerciseDialog: (addExerciseDialog: TDialog) => void;
     isEditExercise: boolean;
-    // exerciseIndex: number;
 }
 
 export const AddExerciseDialog: React.FC<IProps> = (props) => {
@@ -26,17 +25,15 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
     const {
         addExerciseDialog,
         handleAddExercise,
-        // handleEditExercise,
+        handleEditExercise,
         handleAddExerciseDialog,
         isEditExercise,
-        // exerciseIndex,
     } = props;
 
     const { data: exercises }  = useExercises();
 
     const [title, setTitle] = useState<string>();
 
-    const [ editedExercise, setEditedExercise ] = useState<TAddExercise | undefined>();
     const [ isEditConfirmed, setIsEditConfirmed] = useState<boolean>(false);
 
     const [ exerciseID, setExerciseID ] = useState<string>();
@@ -120,11 +117,11 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
         const exerciseData = { id, repTypeValue, intensityValue, reps, intensityData, repsWithTimeAndRepRange, intensityDataWithRPERange };
         const newExercise: TProgramCreatorExercise = await addExerciseToProgramCreatorExerciseConverter(exerciseData as TAddExercise);
 
-        // if (isEditExercise) {
-        //     handleEditExercise(addExerciseDialog.currentWeek, addExerciseDialog.currentDay, exerciseIndex ,newExercise);
-        // } else {
-        handleAddExercise(addExerciseDialog.currentWeek, addExerciseDialog.currentDay, newExercise);
-        //}
+        if (isEditExercise) {
+            handleEditExercise({isOpen: false, currentWeek: addExerciseDialog.currentWeek, currentDay: addExerciseDialog.currentDay, exerciseIndex: addExerciseDialog.exerciseIndex ,editExercise: convertProgramCreatorExerciseToAddExercise(newExercise)});
+        } else {
+            handleAddExercise(addExerciseDialog.currentWeek, addExerciseDialog.currentDay, newExercise);
+        }
 
         handleAddExerciseDialog({ currentWeek: undefined, currentDay: undefined, isOpen: false});
     };
@@ -157,24 +154,24 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
 
     useEffect(() => {
         const getExercise = async () => {
-            const exercise = await getExerciseFromLocalStorageByID(editedExercise?.id);
-            setExerciseID(editedExercise?.id);
-            setRepsWithTimeAndRepRange(editedExercise?.repsWithTimeAndRepRange ?? [[8,12],[8,12],[8,12],[8,12]]);
-            setIntensityDataWithRPERange(editedExercise?.intensityDataWithRPERange ?? [[9,10],[9,10],[9,10],[9,10]]);
-            setReps(editedExercise?.reps ?? [8,8,8,8]);
-            setRepTypeValue(editedExercise?.repTypeValue ?? rep_types[0].value);
-            setIntensityData(editedExercise?.intensityData ?? [9,9,9,9]);
-            setIntensityValue(editedExercise?.intensityValue ?? intensities[0].value);
+            const exercise = await getExerciseFromLocalStorageByID(addExerciseDialog?.editExercise?.id);
+            setExerciseID(addExerciseDialog?.editExercise?.id);
+            setRepsWithTimeAndRepRange(addExerciseDialog?.editExercise?.repsWithTimeAndRepRange ?? [[8,12],[8,12],[8,12],[8,12]]);
+            setIntensityDataWithRPERange(addExerciseDialog?.editExercise?.intensityDataWithRPERange ?? [[9,10],[9,10],[9,10],[9,10]]);
+            setReps(addExerciseDialog?.editExercise?.reps ?? [8,8,8,8]);
+            setRepTypeValue(addExerciseDialog?.editExercise?.repTypeValue ?? rep_types[0].value);
+            setIntensityData(addExerciseDialog?.editExercise?.intensityData ?? [9,9,9,9]);
+            setIntensityValue(addExerciseDialog?.editExercise?.intensityValue ?? intensities[0].value);
             if (exercise) {
                 setSelectedName(exercise[`name_english`]);
-                setSelectedGifID(exercise.gif_id);
+                setSelectedGifID(exercise?.gif_id);
             }
         };
         if (isEditExercise) {
             setIsEditing(false);
             getExercise();
         }
-    }, [editedExercise?.id, editedExercise?.intensityData, editedExercise?.intensityDataWithRPERange, editedExercise?.intensityValue, editedExercise?.repTypeValue, editedExercise?.reps, editedExercise?.repsWithTimeAndRepRange]);
+    }, [addExerciseDialog.editExercise?.id, addExerciseDialog.editExercise?.intensityData, addExerciseDialog.editExercise?.intensityDataWithRPERange, addExerciseDialog.editExercise?.intensityValue, addExerciseDialog.editExercise?.repTypeValue, addExerciseDialog.editExercise?.reps, addExerciseDialog.editExercise?.repsWithTimeAndRepRange]);
 
 
 

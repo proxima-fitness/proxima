@@ -8,6 +8,7 @@ import { Option } from "@/components/ui/multi-select";
 import { GenerateDayDialog } from "./GenerateDayDialog";
 import { WeekColumn } from "./WeekColumn";
 import { v4 as uuidv4 } from "uuid";
+import { addExerciseToProgramCreatorExerciseConverter } from "@/utils/helpers";
 
 interface IProps {
     program: TProgramCreatorDay[][];
@@ -150,10 +151,10 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
         setNewProgram(tmpProgram);
     };
 
-    const handleEditExercise = (currentWeek: number, currentDay: number, exerciseIndex: number, exercise: TProgramCreatorExercise) => {
+    const handleEditExercise = async (editExercise: TDialog) => {
         const tmpProgram = structuredClone(newProgram);
-
-        tmpProgram[currentWeek][currentDay - 1].exercises[exerciseIndex] = exercise;
+        const convertedEditExercise = await addExerciseToProgramCreatorExerciseConverter(editExercise.editExercise);
+        tmpProgram[editExercise.currentWeek][editExercise.currentDay - 1].exercises[editExercise.exerciseIndex] = convertedEditExercise;
         setNewProgram(tmpProgram);
         return;
     };
@@ -176,7 +177,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                             handleGenerateDayDialog={ handleGenerateDayDialog }
                             handleAddDay={ handleAddDay }
                             handleDeleteExercise={ handleDeleteExercise }
-                            // handleIsEditExercise={ handleIsEditExercise }
+                            handleIsEditExercise={ handleIsEditExercise }
                         />
 
                     )
@@ -185,7 +186,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
             <AddExerciseDialog
                 addExerciseDialog={ addExerciseDialog }
                 isEditExercise={ isEditExercise }
-                // handleEditExercise={ handleEditExercise }
+                handleEditExercise={ handleEditExercise }
                 handleAddExercise={ handleAddExercise }
                 handleAddExerciseDialog={ handleAddExerciseDialog }
             />

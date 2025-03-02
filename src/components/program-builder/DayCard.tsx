@@ -16,6 +16,7 @@ import {
   } from "@/components/ui/dropdown-menu";
 import { ExerciseGif } from "../generic/ExerciseGif";
 import { Input } from "../ui/input";
+import { convertProgramCreatorExerciseToAddExercise } from "@/utils/helpers";
 
 interface IProps {
     day: TProgramCreatorDay;
@@ -28,7 +29,7 @@ interface IProps {
     handleDuplicateDay: (currentWeek: number, currentDay: number, duplicatedToWeek: number, duplicatedToDays: Option[]) => void;
     handleGenerateDayDialog: (generateDayDialog: TDialog) => void;
     handleDeleteExercise: (currentWeekIndex: number, currentDay: number, exerciseIndex: number) => void;
-    // handleIsEditExercise: (isEditExercise: boolean) => void;
+    handleIsEditExercise: (isEditExercise: boolean) => void;
 }
 
 export const DayCard: React.FC<IProps> = (props) => {
@@ -44,7 +45,7 @@ export const DayCard: React.FC<IProps> = (props) => {
         handleDuplicateDay,
         handleGenerateDayDialog,
         handleDeleteExercise,
-        // handleIsEditExercise,
+        handleIsEditExercise,
     } = props;
 
     const [duplicateDayOpen, setDuplicateDayOpen] = useState(false);
@@ -55,10 +56,10 @@ export const DayCard: React.FC<IProps> = (props) => {
         setDuplicateDayOpen(duplicateDayOpen);
     };
 
-//    const handleEdit = (currentWeek: number, currentDay: number, exerciseIndex: number, exercise: TProgramCreatorExercise ) => {
-//         handleIsEditExercise(true);
-//         handleAddExerciseDialog()
-//    };
+   const handleEdit = (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: TProgramCreatorExercise ) => {
+        handleIsEditExercise(true);
+        handleAddExerciseDialog({currentWeek: currentWeek, currentDay: currentDay, isOpen: true, exerciseIndex: exerciseIndex, editExercise: convertProgramCreatorExerciseToAddExercise(editExercise) });
+   };
 
     return (
         <>
@@ -221,7 +222,7 @@ export const DayCard: React.FC<IProps> = (props) => {
                                                             )
                                                         )}
                                                     </div>
-                                                    <div className="min-w-[33%] flex flex-row justify-center items-center">
+                                                    <div className="min-w-[33%] flex flex-col justify-center items-center">
                                                         { exercise.reps_type?.amrap && "AMRAP" }
                                                         { exercise.reps_type?.reps && (
                                                             exercise.reps_type.reps.every((reps, i, arr) => reps === arr[0]) ? (
@@ -269,7 +270,7 @@ export const DayCard: React.FC<IProps> = (props) => {
                                                             )
                                                         )}
                                                     </div>
-                                                    <div className="min-w-[33%] flex flex-row justify-center items-center">
+                                                    <div className="min-w-[33%] flex flex-col justify-center items-center">
                                                         { exercise.intensity?.percent_rm && (
                                                             exercise.intensity.percent_rm.every((perVal, i, arr) => perVal === arr[0]) ? (
                                                                 <div>{ exercise.intensity.percent_rm[0]}% 1RM</div>
@@ -312,7 +313,7 @@ export const DayCard: React.FC<IProps> = (props) => {
                                             </div>
                                         </TooltipTrigger>
                                         <TooltipContent side="right" className="bg-lightSecondary text-white flex flex-row gap-2">
-                                            {/* <SquarePenIcon className="cursor-pointer" onClick={ () => handleEdit(weekIndex, Number(day.order), ) } /> */}
+                                            <SquarePenIcon className="cursor-pointer" onClick={ () => handleEdit(weekIndex, Number(day.order), i, exercise ) } />
                                             <Trash2Icon className="cursor-pointer" onClick={ () => handleDeleteExercise(weekIndex, Number(day.order), i) }/>
                                         </TooltipContent>
                                     </Tooltip>

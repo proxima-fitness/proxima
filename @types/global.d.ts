@@ -71,6 +71,8 @@ type TDialog = {
     currentWeek: number;
     currentDay: number;
     isOpen: boolean;
+    exerciseIndex?: number; // location of exercise to be edited
+    editExercise?: TAddExercise; // current value of exercise to be edited
 }
 
 type TAddExercise = {
