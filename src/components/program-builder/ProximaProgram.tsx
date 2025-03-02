@@ -158,6 +158,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
         const convertedEditExercise = await addExerciseToProgramCreatorExerciseConverter(editExercise.editExercise);
         tmpProgram[editExercise.currentWeek][editExercise.currentDay - 1].exercises[editExercise.exerciseIndex] = convertedEditExercise;
         setNewProgram(tmpProgram);
+        setIsEditExercise(false);
         return;
     };
 
