@@ -24,10 +24,12 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
         programs,
     } = props;
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [ filteredPrograms, _setFilteredPrograms ] = useState(programs);
     const commandRef = useRef<HTMLInputElement>(null);
     const [clearFilters, setClearFilters] = useState(false);
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [filterGroups, _setFilterGroups] = useState(filterGroupMap);
 
     const handleClearFilters = (clearFilters: boolean) => {

@@ -9,7 +9,7 @@ interface IProps {
     id: string;
 }
 
-export const ProgramsSlugLayout: React.FC<IProps> = async (props) => {
+export const ProgramsSlugLayout: React.FC<IProps> = (props) => {
 
     const { id } = props;
     const program: TProgramPage  = await useProgramByIdSSR(id);

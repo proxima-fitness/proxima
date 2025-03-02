@@ -2,8 +2,6 @@
 
 import styles, { layout } from "../../style";
 import { Button } from "../generic/Button";
-import { motion } from "motion/react";
-import { ViewModeThumbnails } from "./ViewModeThumbnails";
 import Link from "next/link";
 import { ProgramCard } from "../programs/ProgramCard";
 import { usePrograms } from "@/api/hooks";
@@ -58,6 +56,7 @@ export const ProgramsSection: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 pt-14 px-24 max-sm:px-0">
               {programs && programs.length > 0 ? (
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           programs.map((program, _index) => (
             // <FeatureCard key={ program.id } { ...program } index={ index } />
               <Link

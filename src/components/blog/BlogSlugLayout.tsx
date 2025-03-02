@@ -11,7 +11,7 @@ interface IProps {
     id: string;
 }
 
-export const BlogSlugLayout: FC<IProps> = async (props) => {
+export const BlogSlugLayout: FC<IProps> = (props) => {
 
     const { id } = props;
     const blog = await useBlogByIdSSR(id);
