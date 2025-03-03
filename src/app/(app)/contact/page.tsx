@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { TestDnd } from "@/components/generic/TestDnd";
 
 export const metadata = {
     title: "Contact Us | Proxima Fitness",
@@ -7,8 +8,9 @@ export const metadata = {
 
   export default function ContactPage() {
     return (
-        <>
-            This will be the contact page
-        </>
+        <div className='h-[900px] bg-white flex flex-col items-center justify-center'>
+            <TestDnd />
+
+        </div>
     );
 }

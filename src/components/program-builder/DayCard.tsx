@@ -156,7 +156,7 @@ export const DayCard: React.FC<IProps> = (props) => {
                         { day?.exercises?.map((exercise : TProgramCreatorExercise, i: number) => (
                                 <TooltipProvider key={ "Week" + (weekIndex + 1) + "Day" + i } delayDuration={0}>
                                     <Tooltip>
-                                        <TooltipTrigger className="w-full">
+                                        <TooltipTrigger className="w-full min-h-14">
                                             <div className="flex flex-row justify-between items-center text-sm border-b-2 py-2 border-gray-200">
                                                 <div className="flex flex-row gap-2 items-center justify-start max-w-[50%]">
                                                     <div className="text-lightSecondary pr-1">
