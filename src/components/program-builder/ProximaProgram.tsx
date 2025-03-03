@@ -10,6 +10,8 @@ import { WeekColumn } from "./WeekColumn";
 import { v4 as uuidv4 } from "uuid";
 import { addExerciseToProgramCreatorExerciseConverter } from "@/utils/helpers";
 import { useExercises } from "@/api/hooks";
+import { rectSortingStrategy } from "@dnd-kit/sortable";
+import { MultipleContainers } from "../generic/MultipleContainers";
 
 interface IProps {
     program: TProgramCreatorDay[][];
@@ -165,7 +167,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     return (
         <>
             <div className="flex flex-row gap-4">
-                { newProgram.map((week, index) => {
+                {/* { newProgram.map((week, index) => {
                     return (
                         <WeekColumn
                             key={ uuidv4() }
@@ -184,16 +186,21 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                         />
 
                     )
-                } ) }
+                } ) } */}
+                <MultipleContainers
+                    itemCount={5}
+                    strategy={rectSortingStrategy}
+                    vertical={ false }
+                />
             </div>
             { addExerciseDialog.isOpen &&
                 <AddExerciseDialog
-                addExerciseDialog={ addExerciseDialog }
-                isEditExercise={ isEditExercise }
-                handleEditExercise={ handleEditExercise }
-                handleAddExercise={ handleAddExercise }
-                handleAddExerciseDialog={ handleAddExerciseDialog }
-            />
+                    addExerciseDialog={ addExerciseDialog }
+                    isEditExercise={ isEditExercise }
+                    handleEditExercise={ handleEditExercise }
+                    handleAddExercise={ handleAddExercise }
+                    handleAddExerciseDialog={ handleAddExerciseDialog }
+                />
             }
             <GenerateDayDialog
                 handleGenerateDay={ handleGenerateDay }
