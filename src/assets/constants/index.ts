@@ -258,6 +258,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
             ]
         },
         {
+            "day_title": "The other day from the first week",
             "order": "2",
             "exercises": [
                 {
@@ -463,6 +464,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
     ],
     [
         {
+            "day_title": "Originally the first day in second week",
             "order": "1",
             "exercises": [
                 {
@@ -666,6 +668,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
             ]
         },
         {
+            "day_title": "originally 2nd day 2nd week",
             "order": "2",
             "exercises": [
                 {

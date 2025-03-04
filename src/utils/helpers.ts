@@ -1,3 +1,5 @@
+import { v4 as uuidv4} from "uuid";
+
 export function convertSupabaseDateToReadable(inputDate: string | undefined): string {
 
     let formattedDate = "";
@@ -157,4 +159,36 @@ export const getInitials = (name: string) => {
         return initials.slice(0, 2).join("");
     }
     return initials.join("");
+};
+
+// Converts TProgramCreatorDay[][] into Record<string, TProgramCreatorDay[]>
+export const structureProgram = (newProgram: TProgramCreatorDay[][]): TProgramStructure => {
+    const program: TProgramStructure = {};
+
+    newProgram.forEach((week, weekIndex) => {
+        const weekKey = `${weekIndex + 1}`;
+        program[weekKey] = week;
+    });
+
+    return program;
+};
+
+
+export const destructureProgram = (program: TProgramStructure): TProgramCreatorDay[][] => {
+    return Object.keys(program)
+      .sort((a, b) => Number(a) - Number(b))
+      .map((weekKey) => program[weekKey]);
+  };
+
+
+// Used to add week order and Id to program days for the drag and drop
+export const appendWeekOrderAndIdToProgramDays = (program: TProgramCreatorDay[][]) => {
+
+    const updatedProgram = program.map((week, index) =>
+        week.map((day) => ({
+            ...day,
+            weekOrder: String(index), // Weeks are 0-indexed and days are 1-indexed. Someone please fix this monstrosity.
+            id: uuidv4(),
+        })))
+    return updatedProgram;
 };
