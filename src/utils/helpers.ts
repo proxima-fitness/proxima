@@ -1,5 +1,3 @@
-import { v4 as uuidv4} from "uuid";
-
 export function convertSupabaseDateToReadable(inputDate: string | undefined): string {
 
     let formattedDate = "";
@@ -184,11 +182,19 @@ export const destructureProgram = (program: TProgramStructure): TProgramCreatorD
 // Used to add week order and Id to program days for the drag and drop
 export const appendWeekOrderAndIdToProgramDays = (program: TProgramCreatorDay[][]) => {
 
+    let idCounter = 1;
+
     const updatedProgram = program.map((week, index) =>
         week.map((day) => ({
             ...day,
             weekOrder: String(index), // Weeks are 0-indexed and days are 1-indexed. Someone please fix this monstrosity.
-            id: uuidv4(),
+            id: String(idCounter++),
         })))
     return updatedProgram;
+};
+
+
+// Flattens program into days with weekOrder and dayOrder fields. Will then be sorted with the drag and drop and upon output will be re-constructed into the proxima_program_schema
+export const flattenProgram = (program: TProgramCreatorDay[][]) => {
+    return program.flat();
 };

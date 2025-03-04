@@ -7,29 +7,38 @@ import { CopyIcon } from "lucide-react";
 
 interface IProps {
     title: string;
-    cards: TProgramCreatorDay[];
     weekOrder: string;
-    setCards: (cards: TProgramCreatorDay[]) => void;
+    flattenedProgramDays: TProgramCreatorDay[];
+    setFlattenedProgramDays: (flattenedProgramDays: TProgramCreatorDay[]) => void;
 }
 
 export const Column: React.FC<IProps> = (props) => {
 
     const {
         title,
-        cards,
-        setCards,
+        flattenedProgramDays,
         weekOrder,
+        setFlattenedProgramDays,
     } = props;
 
     const [active, setActive] = useState(false);
 
+    // Identify the grabbed card and store it by it's uuid in event handler
     const handleDragStart = (e, card) => {
         e.dataTransfer.setData("cardId", card.id);
-      };
+    };
+
+    // Add background style while a card is being dragged and set card to active
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        highlightIndicator(e);
+
+        setActive(true);
+    };
+
 
     const handleDragEnd = (e) => {
         const cardId = e.dataTransfer.getData("cardId");
-        console.log("CardID:",cardId);
         setActive(false);
         clearHighlights();
 
@@ -37,15 +46,16 @@ export const Column: React.FC<IProps> = (props) => {
         const { element } = getNearestIndicator(e, indicators);
 
         const before = element.dataset.before || "-1";
-        console.log("before:",before);
 
         if (before !== cardId) {
-          let copy = [...cards];
+          let copy = [...flattenedProgramDays];
 
           let cardToTransfer = copy.find((c) => c.id === cardId);
-          console.log("cardToTransfer",cardToTransfer);
           if (!cardToTransfer) return;
           cardToTransfer = { ...cardToTransfer, weekOrder };
+          // just changing column name here ?
+          // actually need to assign card to different column via handleNewProgram and re-positioning
+          // it to the new weekOrder
 
           copy = copy.filter((c) => c.id !== cardId);
 
@@ -60,26 +70,22 @@ export const Column: React.FC<IProps> = (props) => {
             copy.splice(insertAtIndex, 0, cardToTransfer);
           }
 
-          setCards(copy);
+          setFlattenedProgramDays(copy);
         }
       };
 
-      const handleDragOver = (e) => {
-        e.preventDefault();
-        highlightIndicator(e);
 
-        setActive(true);
-      };
-
-      const clearHighlights = (els?: any) => {
+    /******* FUNCTIONS FOR STYLING THE DRAG EFFECT  *******/
+    /***********************************************************************************/
+    const clearHighlights = (els?: any) => {
         const indicators = els || getIndicators();
 
         indicators.forEach((i) => {
           i.style.opacity = "0";
         });
-      };
+    };
 
-      const highlightIndicator = (e) => {
+    const highlightIndicator = (e) => {
         const indicators = getIndicators();
 
         clearHighlights(indicators);
@@ -87,9 +93,9 @@ export const Column: React.FC<IProps> = (props) => {
         const el = getNearestIndicator(e, indicators);
 
         el.element.style.opacity = "1";
-      };
+    };
 
-      const getNearestIndicator = (e, indicators) => {
+    const getNearestIndicator = (e, indicators) => {
         const DISTANCE_OFFSET = 50;
 
         const el = indicators.reduce(
@@ -111,27 +117,28 @@ export const Column: React.FC<IProps> = (props) => {
         );
 
         return el;
-      };
+    };
 
-      const getIndicators = () => {
+    const getIndicators = () => {
         return Array.from(document.querySelectorAll(`[data-column="${weekOrder}"]`));
-      };
+    };
 
-      const handleDragLeave = () => {
+    const handleDragLeave = () => {
         clearHighlights();
         setActive(false);
-      };
+    };
+    /***********************************************************************************/
 
-    const filteredCards = cards.filter((c) => c.weekOrder === weekOrder);
-    if (weekOrder === "0" || weekOrder === "1") {
-        console.log(`This week/columns day cards: ${weekOrder}`,filteredCards);
-    }
+    const filteredWeek = flattenedProgramDays.filter((dy) => dy.weekOrder === weekOrder);
+    // if (weekOrder === "0" || weekOrder === "1") {
+    //     console.log(`This week/columns day cards: ${weekOrder}`,filteredWeek);
+    // }
 
     return (
       <div className="flex flex-col min-w-[440px] max-w-[440px] gap-4 items-center">
         <div className="pt-2 px-4 flex flex-row flex-nowrap gap-2">
             <div className="px-2 min-w-[440px] max-w-[440px] h-[40px] flex flex-row justify-between items-center">
-                <div className="font-main text-lg">
+                <div className="text-lg">
                     { title }
                 </div>
                 <div className="flex flex-row gap-4">
@@ -156,24 +163,24 @@ export const Column: React.FC<IProps> = (props) => {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             className={`h-full w-full transition-colors ${
-                active ? "bg-gray-200" : "bg-white"
+                active ?  "bg-gray-200" : "bg-white"
             }`}
         >
-          {filteredCards.map((card) => {
+          {filteredWeek.map((dy) => {
             return (
                 <Card
-                    key={ card.order }
-                    order={ card.order }
-                    day_title={ card.day_title }
-                    exercises={ card.exercises }
-                    weekOrder={ card.weekOrder }
-                    id={ card.id }
+                    key={ dy.id }
+                    order={ dy.order }
+                    day_title={ dy.day_title }
+                    exercises={ dy.exercises }
+                    weekOrder={ dy.weekOrder }
+                    id={ dy.id }
                     title={ title }
                     handleDragStart={handleDragStart}
                 />
           )})}
           <DropIndicator beforeId={null} weekOrder={weekOrder} />
-          <AddCard cards={ filteredCards } weekLength={ filteredCards.length } weekOrder={weekOrder} setCards={setCards} />
+          <AddCard filteredWeek={ filteredWeek } weekLength={ filteredWeek.length } weekOrder={weekOrder} />
         </div>
       </div>
     );

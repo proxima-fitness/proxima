@@ -6,16 +6,16 @@ import { v4 as uuidv4} from "uuid";
 interface IProps {
     weekOrder: string;
     weekLength: number;
-    setCards: (cards: TProgramCreatorDay[]) => void
-    cards: TProgramCreatorDay[];
+    filteredWeek: TProgramCreatorDay[];
+    // handleNewProgram: (newProgram: TProgramCreatorDay[][]) => void;
 }
 
 export const AddCard: React.FC<IProps> = (props) => {
     const {
         weekOrder,
         weekLength,
-        setCards,
-        cards,
+        filteredWeek,
+        // handleNewProgram,
     } = props;
 
     const [text, setText] = useState("");
@@ -33,7 +33,8 @@ export const AddCard: React.FC<IProps> = (props) => {
       };
 
 
-      setCards([...cards, newCard]);
+    //   setCards([...cards, newCard]);
+    // do handleNewProgram here
 
       setAdding(false);
     };

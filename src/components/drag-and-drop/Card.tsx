@@ -36,15 +36,16 @@ export const Card: React.FC<TProps> = (props) => {
 
     return (
         <>
-            <DropIndicator beforeId={order} weekOrder={weekOrder} />
+            <DropIndicator beforeId={id} weekOrder={weekOrder} />
             <motion.div
                 layout
-                layoutId={order}
+                layoutId={id}
                 draggable="true"
                 onDragStart={(e) => handleDragStart(e, cardVal)}
                 className="cursor-grab rounded border border-neutral-700 active:cursor-grabbing"
             >
-                { day_title }
+                <p>{ day_title }</p>
+                {id}
                 {/* <DayCard /> */}
             </motion.div>
         </>

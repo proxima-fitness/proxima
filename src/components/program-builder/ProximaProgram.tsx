@@ -7,7 +7,7 @@ import { Option } from "@/components/ui/multi-select";
 import { GenerateDayDialog } from "./GenerateDayDialog";
 import { WeekColumn } from "./WeekColumn";
 import { v4 as uuidv4 } from "uuid";
-import { addExerciseToProgramCreatorExerciseConverter, appendWeekOrderAndIdToProgramDays, destructureProgram, structureProgram } from "@/utils/helpers";
+import { appendWeekOrderAndIdToProgramDays, flattenProgram } from "@/utils/helpers";
 import { useExercises } from "@/api/hooks";
 import { Board } from "../drag-and-drop/Board";
 
@@ -187,7 +187,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
 
                     )
                 } ) } */}
-                <Board program={ appendWeekOrderAndIdToProgramDays(program) } />
+                <Board program={ program } />
             </div>
             {/* { addExerciseDialog.isOpen &&
                 <AddExerciseDialog
