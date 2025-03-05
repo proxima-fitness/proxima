@@ -4,6 +4,7 @@ import { AddCard } from "./AddCard";
 import { Card } from "./Card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CopyIcon } from "lucide-react";
+import { DayCard } from "../program-builder/DayCard";
 
 interface IProps {
     title: string;
@@ -48,31 +49,41 @@ export const Column: React.FC<IProps> = (props) => {
         const before = element.dataset.before || "-1";
 
         if (before !== cardId) {
-          let copy = [...flattenedProgramDays];
+            let copy = [...flattenedProgramDays];
 
-          let cardToTransfer = copy.find((c) => c.id === cardId);
-          if (!cardToTransfer) return;
-          cardToTransfer = { ...cardToTransfer, weekOrder };
-          // just changing column name here ?
-          // actually need to assign card to different column via handleNewProgram and re-positioning
-          // it to the new weekOrder
+            let cardToTransfer = copy.find((c) => c.id === cardId);
+            if (!cardToTransfer) return;
+            cardToTransfer = { ...cardToTransfer, weekOrder };
 
-          copy = copy.filter((c) => c.id !== cardId);
+            copy = copy.filter((c) => c.id !== cardId);
 
-          const moveToBack = before === "-1";
+            const moveToBack = before === "-1";
 
-          if (moveToBack) {
-            copy.push(cardToTransfer);
-          } else {
-            const insertAtIndex = copy.findIndex((el) => el.id === before);
-            if (insertAtIndex === undefined) return;
+            if (moveToBack) {
+                copy.push(cardToTransfer);
+            } else {
+                const insertAtIndex = copy.findIndex((el) => el.id === before);
+                if (insertAtIndex === undefined) return;
 
-            copy.splice(insertAtIndex, 0, cardToTransfer);
-          }
+                copy.splice(insertAtIndex, 0, cardToTransfer);
+            }
 
-          setFlattenedProgramDays(copy);
+            const groupedByWeek: Record<number, TProgramCreatorDay[]> = copy.reduce((acc, item) => {
+                if (!acc[item.weekOrder]) acc[item.weekOrder] = [];
+                acc[item.weekOrder].push(item);
+                return acc;
+            }, {} as Record<number, TProgramCreatorDay[]>);
+
+            copy = Object.values(groupedByWeek).flatMap((group) =>
+                group.map((item, index) => ({
+                    ...item,
+                    order: String(index + 1), // 1-based order per weekOrder
+                }))
+            );
+
+            setFlattenedProgramDays(copy);
         }
-      };
+    };
 
 
     /******* FUNCTIONS FOR STYLING THE DRAG EFFECT  *******/
@@ -130,9 +141,6 @@ export const Column: React.FC<IProps> = (props) => {
     /***********************************************************************************/
 
     const filteredWeek = flattenedProgramDays.filter((dy) => dy.weekOrder === weekOrder);
-    // if (weekOrder === "0" || weekOrder === "1") {
-    //     console.log(`This week/columns day cards: ${weekOrder}`,filteredWeek);
-    // }
 
     return (
       <div className="flex flex-col min-w-[440px] max-w-[440px] gap-4 items-center">
@@ -168,14 +176,11 @@ export const Column: React.FC<IProps> = (props) => {
         >
           {filteredWeek.map((dy) => {
             return (
-                <Card
+                <DayCard
                     key={ dy.id }
-                    order={ dy.order }
-                    day_title={ dy.day_title }
-                    exercises={ dy.exercises }
-                    weekOrder={ dy.weekOrder }
-                    id={ dy.id }
+                    day={ dy }
                     title={ title }
+                    weekOrder={ dy.weekOrder }
                     handleDragStart={handleDragStart}
                 />
           )})}

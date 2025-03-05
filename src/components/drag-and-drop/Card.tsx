@@ -45,6 +45,8 @@ export const Card: React.FC<TProps> = (props) => {
                 className="cursor-grab rounded border border-neutral-700 active:cursor-grabbing"
             >
                 <p>{ day_title }</p>
+                <p>Week {weekOrder}</p>
+                <p>Day {order}</p>
                 {id}
                 {/* <DayCard /> */}
             </motion.div>

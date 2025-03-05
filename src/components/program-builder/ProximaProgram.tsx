@@ -9,7 +9,7 @@ import { WeekColumn } from "./WeekColumn";
 import { v4 as uuidv4 } from "uuid";
 import { appendWeekOrderAndIdToProgramDays, flattenProgram } from "@/utils/helpers";
 import { useExercises } from "@/api/hooks";
-import { Board } from "../drag-and-drop/Board";
+import { Column } from "../drag-and-drop/Column";
 
 interface IProps {
     program: TProgramCreatorDay[][];
@@ -161,12 +161,13 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     //     setIsEditExercise(false);
     //     return;
     // };
+    const [flattenedProgramDays, setFlattenedProgramDays] = useState<TProgramCreatorDay[]>(flattenProgram(appendWeekOrderAndIdToProgramDays(program)));
 
 
 
     return (
         <>
-            <div className="flex flex-row gap-4">
+            <div className="flex flex-row gap-4 h-full w-full">
                 {/* { newProgram.map((week, index) => {
                     return (
                         <WeekColumn
@@ -187,7 +188,16 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
 
                     )
                 } ) } */}
-                <Board program={ program } />
+                { program.map((days, index) => (
+                    <Column
+                        key={ `Week ${index + 1}` }
+                        title={ `Week ${index + 1}` }
+                        flattenedProgramDays={ flattenedProgramDays }
+                        weekOrder={ String(index) }
+                        setFlattenedProgramDays={ setFlattenedProgramDays }
+                    />
+
+                ))}
             </div>
             {/* { addExerciseDialog.isOpen &&
                 <AddExerciseDialog
