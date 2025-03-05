@@ -1,16 +1,21 @@
 import { useState } from "react";
 import { DropIndicator } from "./DropIndicator";
-import { AddCard } from "./AddCard";
-import { Card } from "./Card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { CopyIcon } from "lucide-react";
+import { CopyIcon, PlusIcon } from "lucide-react";
 import { DayCard } from "../program-builder/DayCard";
-
+import { Button } from "@/components/ui/button";
+import { reorder } from "@/utils/helpers";
+import { DuplicateWeek } from "../program-builder/DuplicateWeek";
 interface IProps {
     title: string;
     weekOrder: string;
+    programLength: number;
     flattenedProgramDays: TProgramCreatorDay[];
     setFlattenedProgramDays: (flattenedProgramDays: TProgramCreatorDay[]) => void;
+    handleAddDay: (weekOrder: string) => void;
+    handleDeleteDay: (id: string) => void;
+    handleEditTitle: (id: string, day_title: string) => void;
+    handleDuplicateWeek: (fromWeekIndex: number, toWeekIndexes: number[]) => void;
 }
 
 export const Column: React.FC<IProps> = (props) => {
@@ -19,11 +24,21 @@ export const Column: React.FC<IProps> = (props) => {
         title,
         flattenedProgramDays,
         weekOrder,
+        programLength,
         setFlattenedProgramDays,
+        handleAddDay,
+        handleDeleteDay,
+        handleEditTitle,
+        handleDuplicateWeek,
     } = props;
 
     const [active, setActive] = useState(false);
 
+    const [duplicateWeekOpen, setDuplicateWeekOpen] = useState(false);
+
+    const handleDuplicateWeekOpen = (duplicateWeekOpen: boolean) => {
+        setDuplicateWeekOpen(duplicateWeekOpen);
+    };
     // Identify the grabbed card and store it by it's uuid in event handler
     const handleDragStart = (e, card) => {
         e.dataTransfer.setData("cardId", card.id);
@@ -68,19 +83,7 @@ export const Column: React.FC<IProps> = (props) => {
                 copy.splice(insertAtIndex, 0, cardToTransfer);
             }
 
-            const groupedByWeek: Record<number, TProgramCreatorDay[]> = copy.reduce((acc, item) => {
-                if (!acc[item.weekOrder]) acc[item.weekOrder] = [];
-                acc[item.weekOrder].push(item);
-                return acc;
-            }, {} as Record<number, TProgramCreatorDay[]>);
-
-            copy = Object.values(groupedByWeek).flatMap((group) =>
-                group.map((item, index) => ({
-                    ...item,
-                    order: String(index + 1), // 1-based order per weekOrder
-                }))
-            );
-
+            copy = reorder(copy);
             setFlattenedProgramDays(copy);
         }
     };
@@ -143,50 +146,67 @@ export const Column: React.FC<IProps> = (props) => {
     const filteredWeek = flattenedProgramDays.filter((dy) => dy.weekOrder === weekOrder);
 
     return (
-      <div className="flex flex-col min-w-[440px] max-w-[440px] gap-4 items-center">
-        <div className="pt-2 px-4 flex flex-row flex-nowrap gap-2">
-            <div className="px-2 min-w-[440px] max-w-[440px] h-[40px] flex flex-row justify-between items-center">
-                <div className="text-lg">
-                    { title }
-                </div>
-                <div className="flex flex-row gap-4">
-                    <TooltipProvider delayDuration={0}>
-                        <Tooltip>
-                            <TooltipTrigger className="">
-                                <div>
-                                {/* onClick={ () => handleDuplicateWeekOpen(weekIndex, true) } */}
-                                    <CopyIcon />
-                                </div>
-                            </TooltipTrigger>
-                            <TooltipContent className="bg-gray-600 text-white rounded-lg">
-                                <p>Duplicate Week</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+        <div className="flex flex-col min-w-[440px] max-w-[440px] items-center">
+            <div className="pt-2 px-4 flex flex-row flex-nowrap gap-2">
+                <div className="px-2 min-w-[440px] max-w-[440px] h-[40px] flex flex-row justify-between items-center">
+                    <div className="text-lg">
+                        { title }
+                    </div>
+                    <div className="flex flex-row gap-4">
+                        <TooltipProvider delayDuration={0}>
+                            <Tooltip>
+                                <TooltipTrigger className="">
+                                    <div
+                                        onClick={ () => handleDuplicateWeekOpen(true) }>
+                                        <CopyIcon />
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-gray-600 text-white rounded-lg">
+                                    <p>Duplicate Week</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    </div>
                 </div>
             </div>
+            <div
+                onDrop={handleDragEnd}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                className={`h-full w-full gap-4 transition-colors ${
+                    active ?  "bg-gray-200" : "bg-white"
+                }`}
+            >
+                { filteredWeek.map((dy) => {
+                    return (
+                        <DayCard
+                            key={ dy.id }
+                            day={ dy }
+                            title={ title }
+                            weekOrder={ dy.weekOrder }
+                            handleDragStart={handleDragStart}
+                            handleDeleteDay={ handleDeleteDay }
+                            handleEditTitle={ handleEditTitle }
+                        />
+                ) } ) }
+                <DropIndicator beforeId={null} weekOrder={weekOrder} />
+                <div className="flex flex-row justify-center items-center">
+                    <Button
+                        onClick={ () => handleAddDay(weekOrder) }
+                        className="mb-4 w-44 font-bold uppercase h-12 rounded-lg bg-lightSecondary hover:bg-lightSecondary text-white">
+                            <PlusIcon />
+                            Add Day
+                    </Button>
+                </div>
+            </div>
+            <DuplicateWeek
+                weekOrder={ weekOrder }
+                programLength={ programLength }
+                duplicateWeekOpen={ duplicateWeekOpen }
+                setDuplicateWeekOpen={ setDuplicateWeekOpen }
+                handleDuplicateWeek={ handleDuplicateWeek }
+            />
+
         </div>
-        <div
-            onDrop={handleDragEnd}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            className={`h-full w-full transition-colors ${
-                active ?  "bg-gray-200" : "bg-white"
-            }`}
-        >
-          {filteredWeek.map((dy) => {
-            return (
-                <DayCard
-                    key={ dy.id }
-                    day={ dy }
-                    title={ title }
-                    weekOrder={ dy.weekOrder }
-                    handleDragStart={handleDragStart}
-                />
-          )})}
-          <DropIndicator beforeId={null} weekOrder={weekOrder} />
-          <AddCard filteredWeek={ filteredWeek } weekLength={ filteredWeek.length } weekOrder={weekOrder} />
-        </div>
-      </div>
     );
   };

@@ -159,26 +159,6 @@ export const getInitials = (name: string) => {
     return initials.join("");
 };
 
-// Converts TProgramCreatorDay[][] into Record<string, TProgramCreatorDay[]>
-export const structureProgram = (newProgram: TProgramCreatorDay[][]): TProgramStructure => {
-    const program: TProgramStructure = {};
-
-    newProgram.forEach((week, weekIndex) => {
-        const weekKey = `${weekIndex + 1}`;
-        program[weekKey] = week;
-    });
-
-    return program;
-};
-
-
-export const destructureProgram = (program: TProgramStructure): TProgramCreatorDay[][] => {
-    return Object.keys(program)
-      .sort((a, b) => Number(a) - Number(b))
-      .map((weekKey) => program[weekKey]);
-  };
-
-
 // Used to add week order and Id to program days for the drag and drop
 export const appendWeekOrderAndIdToProgramDays = (program: TProgramCreatorDay[][]) => {
 
@@ -193,8 +173,26 @@ export const appendWeekOrderAndIdToProgramDays = (program: TProgramCreatorDay[][
     return updatedProgram;
 };
 
-
 // Flattens program into days with weekOrder and dayOrder fields. Will then be sorted with the drag and drop and upon output will be re-constructed into the proxima_program_schema
 export const flattenProgram = (program: TProgramCreatorDay[][]) => {
     return program.flat();
+};
+
+// Re-orders the day order field on the de-structured proxima program
+export const reorder = (days: TProgramCreatorDay[]) => {
+
+    const groupedByWeek: Record<number, TProgramCreatorDay[]> = days.reduce((acc, item) => {
+        if (!acc[item.weekOrder]) acc[item.weekOrder] = [];
+        acc[item.weekOrder].push(item);
+        return acc;
+    }, {} as Record<number, TProgramCreatorDay[]>);
+
+    days = Object.values(groupedByWeek).flatMap((group) =>
+        group.map((item, index) => ({
+            ...item,
+            order: String(index + 1), // 1-based order per weekOrder
+        }))
+    );
+
+    return days;
 };

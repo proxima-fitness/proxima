@@ -5,9 +5,8 @@ import { toast } from "sonner"
 import { AddExerciseDialog } from "./AddExerciseDialog";
 import { Option } from "@/components/ui/multi-select";
 import { GenerateDayDialog } from "./GenerateDayDialog";
-import { WeekColumn } from "./WeekColumn";
 import { v4 as uuidv4 } from "uuid";
-import { appendWeekOrderAndIdToProgramDays, flattenProgram } from "@/utils/helpers";
+import { appendWeekOrderAndIdToProgramDays, flattenProgram, reorder } from "@/utils/helpers";
 import { useExercises } from "@/api/hooks";
 import { Column } from "../drag-and-drop/Column";
 
@@ -23,7 +22,6 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
 
     const { data: exercises }  = useExercises();
 
-    // const [newProgram, setNewProgram] = useState<TProgramCreatorDay[][]>(program);
     // const [addExerciseDialog, setAddExerciseDialog] = useState<TDialog>({currentWeek: undefined, currentDay: undefined, isOpen: false});
     // const [generateDayDialog, setGenerateDayDialog] = useState<TDialog>({currentWeek: undefined, currentDay: undefined, isOpen: false});
     // const [isEditExercise, setIsEditExercise] = useState(false);
@@ -32,17 +30,26 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     //     setIsEditExercise(isEditExercise);
     // };
 
-    // // Duplicates a whole week to another week within the program
-    // const handleDuplicateWeek = (fromWeekIndex: number, toWeekIndexes: number[]) => {
-    //     setNewProgram((prevProgram) => {
-    //         return prevProgram.map((week, idx) => {
-    //             if (toWeekIndexes.includes(idx)) {
-    //                 return JSON.parse(JSON.stringify(prevProgram[fromWeekIndex])); // Deep copy to prevent reference issues
-    //             }
-    //             return week;
-    //         });
-    //     });
-    // };
+
+
+    const handleDuplicateWeek = (fromWeekIndex: number, toWeekIndexes: number[]) => {
+        setFlattenedProgramDays((prev) => {
+            const daysToCopy = prev.filter((day) => day.weekOrder === String(fromWeekIndex));
+
+            const newDays = toWeekIndexes.flatMap((week) => {
+                let newId = flattenedProgramDays.length + 1;
+                return daysToCopy.map((day) => ({
+                    ...day,
+                    id: String(newId++),
+                    weekOrder: String(week),
+                }));
+            });
+
+            console.log(newDays);
+            return [...prev, ...newDays];
+        });
+    };
+
 
     // // Duplicates the selected day to other days in the program on the selected week
     // const handleDuplicateDay = (fromWeekIndex: number, fromDayIndex: number, toWeekIndex: number, toDayIndexArray: Option[] ) => {
@@ -90,39 +97,31 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     //     // Do AI re-generation of a day here
     // };
 
-    // // Adds an empty day to the selected week
-    // const handleAddDay = (currentWeek: number) => {
 
-    //     const currentWeekLength = newProgram[currentWeek].length;
-    //     if (currentWeekLength === 7) {
-    //         toast.error("You can only add up to 7 days per week");
-    //         return;
-    //     }
-    //     const newEmptyDay: TProgramCreatorDay = {
-    //         order: String(currentWeekLength + 1),
-    //         exercises: [],
-    //     }
-    //     const tmpProgram = structuredClone(newProgram);
-    //     tmpProgram[currentWeek].push(newEmptyDay);
-    //     setNewProgram(tmpProgram);
+    // Adds an empty day to the selected week
+    const handleAddDay = (weekOrder: string) => {
+        setFlattenedProgramDays((prev) => {
+            const nthDayOrder = prev.filter((day) => day.weekOrder === weekOrder).length + 1;
 
-    //     return;
-    // };
+            const newEmptyDay: TProgramCreatorDay = {
+                id: String(flattenedProgramDays.length + 1),
+                weekOrder,
+                order: String(nthDayOrder),
+                exercises: [],
+            };
 
-    // // Deletes selected day from selected week
-    // const handleDeleteDay = (currentWeek: number, currentDay: number) => {
-    //     const tmpProgram = structuredClone(newProgram);
+            return [...prev, newEmptyDay];
+        });
+    };
 
-    //     tmpProgram[currentWeek] = tmpProgram[currentWeek].filter((day: { order: string; }) => Number(day.order) !== currentDay)
-    //     .map((day, index) => ({
-    //         ...day,
-    //         order: (index + 1).toString(),
-    //     }));
-
-    //     setNewProgram(tmpProgram);
-    //     toast.error("Day deleted");
-    //     return;
-    // };
+    // Deletes selected day from selected week by id
+    const handleDeleteDay = (id: string) => {
+        setFlattenedProgramDays((prev) => {
+            let newDays = prev.filter((day) => day.id !== id);
+            newDays = reorder(newDays);
+            return newDays;
+        });
+    };
 
     // // Adds an exercise to the workout day
     // const handleAddExercise = (currentWeekIndex: number, currentDay: number, exercise: TProgramCreatorExercise) => {
@@ -136,6 +135,14 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     //     setNewProgram(tmpProgram);
     //     return;
     // };
+
+    const handleEditTitle = (id: string, day_title: string) => {
+        setFlattenedProgramDays((prev) =>
+            prev.map((day) =>
+                day.id === id ? { ...day, day_title: day_title} : day
+            )
+        );
+    };
 
     // const handleEditTitle = (currentWeek: number, currentDay: number, day_title: string) => {
     //     const tmpProgram = structuredClone(newProgram);
@@ -168,36 +175,20 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     return (
         <>
             <div className="flex flex-row gap-4 h-full w-full">
-                {/* { newProgram.map((week, index) => {
-                    return (
-                        <WeekColumn
-                            key={ uuidv4() }
-                            index={ index }
-                            programLength={ exampleProximaProgram.length }
-                            handleDuplicateWeek={ handleDuplicateWeek }
-                            week={ week }
-                            handleDuplicateDay={ handleDuplicateDay }
-                            handleEditTitle={ handleEditTitle }
-                            handleDeleteDay={ handleDeleteDay }
-                            handleAddExerciseDialog={ handleAddExerciseDialog }
-                            handleGenerateDayDialog={ handleGenerateDayDialog }
-                            handleAddDay={ handleAddDay }
-                            handleDeleteExercise={ handleDeleteExercise }
-                            handleIsEditExercise={ handleIsEditExercise }
-                        />
-
-                    )
-                } ) } */}
                 { program.map((days, index) => (
                     <Column
                         key={ `Week ${index + 1}` }
                         title={ `Week ${index + 1}` }
+                        programLength={ program.length }
                         flattenedProgramDays={ flattenedProgramDays }
                         weekOrder={ String(index) }
                         setFlattenedProgramDays={ setFlattenedProgramDays }
+                        handleAddDay={ handleAddDay }
+                        handleDeleteDay={ handleDeleteDay }
+                        handleEditTitle={ handleEditTitle }
+                        handleDuplicateWeek={ handleDuplicateWeek }
                     />
-
-                ))}
+                ) ) }
             </div>
             {/* { addExerciseDialog.isOpen &&
                 <AddExerciseDialog
