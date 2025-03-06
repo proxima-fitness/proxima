@@ -23,36 +23,33 @@ import { DropIndicator } from "../drag-and-drop/DropIndicator";
 interface IProps {
     day: TProgramCreatorDay;
     title: string;
-    // days: number;
     weekOrder: string;
     programLength: number;
     handleDragStart: (e: any, card: any) => void;
     handleEditTitle: (id: string, day_title: string) => void;
     handleDeleteDay: (id: string) => void;
     handleOpenGenerateDayDialog: (generateDayDialog: TDialog) => void;
-    // handleAddExerciseDialog: (addExercise: TDialog) => void;
+    handleOpenAddExerciseDialog: (addExerciseDialog: TDialog) => void;
     handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: Option[]) => void;    // handleGenerateDayDialog: (generateDayDialog: TDialog) => void;
-    // handleDeleteExercise: (currentWeekIndex: number, currentDay: number, exerciseIndex: number) => void;
-    // handleIsEditExercise: (isEditExercise: boolean) => void;
+    handleDeleteExercise: (weekOrder: number, dayOrder: number, exerciseIndex: number) => void;
+    handleIsEditExercise: (isEditExercise: boolean) => void;
 }
 
 export const DayCard: React.FC<IProps> = (props) => {
 
     const {
         day,
-        // days,
         title,
         weekOrder,
         handleDragStart,
         handleDeleteDay,
         programLength,
-        // handleDeleteDay,
         handleEditTitle,
-        // handleAddExerciseDialog,
+        handleOpenAddExerciseDialog,
         handleDuplicateDay,
         handleOpenGenerateDayDialog,
-        // handleDeleteExercise,
-        // handleIsEditExercise,
+        handleDeleteExercise,
+        handleIsEditExercise,
     } = props;
 
     const [duplicateDayOpen, setDuplicateDayOpen] = useState(false);
@@ -64,8 +61,8 @@ export const DayCard: React.FC<IProps> = (props) => {
     };
 
     const handleEdit = (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: TProgramCreatorExercise ) => {
-            // handleIsEditExercise(true);
-            // handleAddExerciseDialog({currentWeek: currentWeek, currentDay: currentDay, isOpen: true, exerciseIndex: exerciseIndex, editExercise: convertProgramCreatorExerciseToAddExercise(editExercise) });
+            handleIsEditExercise(true);
+            handleOpenAddExerciseDialog({weekOrder: currentWeek, dayOrder: currentDay, isOpen: true, exerciseIndex: exerciseIndex, editExercise: convertProgramCreatorExerciseToAddExercise(editExercise) });
     };
 
     const cardVal = {
@@ -133,7 +130,7 @@ export const DayCard: React.FC<IProps> = (props) => {
                                         <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={ () => {
-                                        handleOpenGenerateDayDialog({ currentWeek: Number(weekOrder), currentDay: Number(day.order), isOpen: true })
+                                        handleOpenGenerateDayDialog({ weekOrder: Number(weekOrder), dayOrder: Number(day.order), isOpen: true })
                                         }}
                                         className="cursor-pointer"
                                     >
@@ -344,7 +341,7 @@ export const DayCard: React.FC<IProps> = (props) => {
                                                     <Trash2Icon
                                                         className="cursor-pointer"
                                                         onClick={ () => {
-                                                            // handleDeleteExercise(weekIndex, Number(day.order), i)
+                                                            handleDeleteExercise(Number(weekOrder), Number(day.order), i)
                                                         } }/>
                                                 </TooltipContent>
                                             </Tooltip>
@@ -356,8 +353,8 @@ export const DayCard: React.FC<IProps> = (props) => {
                     <div
                         className="flex items-center justify-center"
                         onClick={ () => {
-                            // handleAddExerciseDialog({currentWeek: weekIndex, currentDay: Number(day.order), isOpen: true}) }
-                        }}>
+                            handleOpenAddExerciseDialog({weekOrder: Number(weekOrder), dayOrder: Number(day.order), isOpen: true}) }
+                        }>
                         <Button variant="ghost" className="mt-1 w-full font-bold uppercase h-12 hover:bg-gray-200 text-black"><PlusIcon />Add Exercise</Button>
                     </div>
                 </Card>

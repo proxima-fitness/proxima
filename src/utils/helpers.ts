@@ -144,7 +144,7 @@ export const convertProgramCreatorExerciseToAddExercise = (programCreatorExercis
     };
 };
 
-const amrapAsNumber = (amrap: string[]) => {
+const amrapAsNumber = (amrap: string[] = []) => {
     return amrap.map((item) => 999); // amrap string is defined as 999
 };
 

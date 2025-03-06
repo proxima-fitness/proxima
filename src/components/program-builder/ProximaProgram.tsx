@@ -5,8 +5,7 @@ import { toast } from "sonner"
 import { AddExerciseDialog } from "./AddExerciseDialog";
 import { Option } from "@/components/ui/multi-select";
 import { GenerateDayDialog } from "./GenerateDayDialog";
-import { v4 as uuidv4 } from "uuid";
-import { appendWeekOrderAndIdToProgramDays, flattenProgram, reorder } from "@/utils/helpers";
+import { addExerciseToProgramCreatorExerciseConverter, appendWeekOrderAndIdToProgramDays, flattenProgram, reorder } from "@/utils/helpers";
 import { useExercises } from "@/api/hooks";
 import { Column } from "../drag-and-drop/Column";
 
@@ -22,13 +21,13 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
 
     const { data: exercises }  = useExercises();
 
-    // const [addExerciseDialog, setAddExerciseDialog] = useState<TDialog>({currentWeek: undefined, currentDay: undefined, isOpen: false});
-    const [generateDayDialog, setGenerateDayDialog] = useState<TDialog>({currentWeek: undefined, currentDay: undefined, isOpen: false});
-    // const [isEditExercise, setIsEditExercise] = useState(false);
+    const [addExerciseDialog, setAddExerciseDialog] = useState<TDialog>({weekOrder: undefined, dayOrder: undefined, isOpen: false});
+    const [generateDayDialog, setGenerateDayDialog] = useState<TDialog>({weekOrder: undefined, dayOrder: undefined, isOpen: false});
+    const [isEditExercise, setIsEditExercise] = useState(false);
 
-    // const handleIsEditExercise = (isEditExercise: boolean) => {
-    //     setIsEditExercise(isEditExercise);
-    // };
+    const handleIsEditExercise = (isEditExercise: boolean) => {
+        setIsEditExercise(isEditExercise);
+    };
 
     // Duplicates the selected week to other selected weeks
     const handleDuplicateWeek = (fromWeekIndex: number, toWeekIndexes: number[]) => {
@@ -56,7 +55,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     const handleDuplicateDay = (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayOrderArray: Option[]) => {
 
         const toDayOrders = toDayOrderArray.map((day) => Number(day.value)).sort((a, b) => a - b);
-        console.log(toDayOrders);
+
         setFlattenedProgramDays((prev) => {
             const dayToCopy = prev.find((day) => Number(day.weekOrder) === fromWeekOrder && Number(day.order) === fromDayOrder);
 
@@ -100,9 +99,9 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     };
 
     // // State for opening the Add Exercise Dialog with the correct week and day
-    // const handleAddExerciseDialog = (addExerciseDialog: TDialog) => {
-    //     setAddExerciseDialog(addExerciseDialog);
-    // };
+    const handleOpenAddExerciseDialog = (addExerciseDialog: TDialog) => {
+        setAddExerciseDialog(addExerciseDialog);
+    };
 
     // // State for opening the Generate Day Dialog with the correct week and day
     const handleOpenGenerateDayDialog = (generateDayDialog: TDialog) => {
@@ -141,18 +140,6 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
         });
     };
 
-    // // Adds an exercise to the workout day
-    // const handleAddExercise = (currentWeekIndex: number, currentDay: number, exercise: TProgramCreatorExercise) => {
-    //     const tmpProgram = structuredClone(newProgram);
-
-    //     if (tmpProgram[currentWeekIndex][currentDay - 1].exercises.length === 10) {
-    //         toast.error("Maximum 10 Exercises per day");
-    //         return;
-    //     }
-    //     tmpProgram[currentWeekIndex][currentDay - 1].exercises.push(exercise);
-    //     setNewProgram(tmpProgram);
-    //     return;
-    // };
 
     const handleEditTitle = (id: string, day_title: string) => {
         setFlattenedProgramDays((prev) =>
@@ -162,33 +149,57 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
         );
     };
 
-    // const handleEditTitle = (currentWeek: number, currentDay: number, day_title: string) => {
-    //     const tmpProgram = structuredClone(newProgram);
-    //     tmpProgram[currentWeek][currentDay - 1].day_title = day_title;
-    //     setNewProgram(tmpProgram);
-    // };
+    // Deletes an exercise from a workout day
+    const handleDeleteExercise = (weekOrder: number, dayOrder: number, exerciseIndex: number) => {
+        setFlattenedProgramDays((prev) => {
+            return prev.map((day) => {
+                if (Number(day.weekOrder) === weekOrder && Number(day.order) === dayOrder) {
+                    return {
+                        ...day,
+                        exercises: day.exercises.filter((_, index) => index !== exerciseIndex),
+                    };
+                }
+                return day;
+            });
+        });
+    };
 
-    // const handleDeleteExercise = (currentWeekIndex: number, currentDay: number, exerciseIndex: number) => {
-    //     const tmpProgram = structuredClone(newProgram);
+    // Adds an exercise to the workout day
+    const handleAddExercise = (weekOrder: number, dayOrder: number, exercise: TProgramCreatorExercise) => {
+        setFlattenedProgramDays((prev) => {
+            return prev.map((day) => {
+                if (Number(day.weekOrder) === weekOrder && Number(day.order) === dayOrder) {
+                    return {
+                        ...day,
+                        exercises: [...day.exercises, exercise],
+                    };
+                }
+                return day;
+            });
+        });
+    };
 
-    //     tmpProgram[currentWeekIndex][currentDay - 1].exercises = tmpProgram[currentWeekIndex][currentDay - 1].exercises.filter(
-    //         (_, index) => index !== exerciseIndex
-    //     );
+    // Edits an exercise on a workout day
+    const handleEditExercise = async (editExercise: TDialog) => {
 
-    //     setNewProgram(tmpProgram);
-    // };
+        const convertedEditExercise = await addExerciseToProgramCreatorExerciseConverter(editExercise.editExercise);
 
-    // const handleEditExercise = async (editExercise: TDialog) => {
-    //     const tmpProgram = structuredClone(newProgram);
-    //     const convertedEditExercise = await addExerciseToProgramCreatorExerciseConverter(editExercise.editExercise);
-    //     tmpProgram[editExercise.currentWeek][editExercise.currentDay - 1].exercises[editExercise.exerciseIndex] = convertedEditExercise;
-    //     setNewProgram(tmpProgram);
-    //     setIsEditExercise(false);
-    //     return;
-    // };
+        setFlattenedProgramDays((prev) => {
+            return prev.map((day) => {
+                if (Number(day.weekOrder) === editExercise.weekOrder && Number(day.order) === editExercise.dayOrder) {
+                    return {
+                        ...day,
+                        exercises: day.exercises.map((exercise, index) => index === editExercise.exerciseIndex ? convertedEditExercise : exercise),
+                    };
+                }
+                return day;
+            })
+        })
+
+        setIsEditExercise(false);
+    };
+
     const [flattenedProgramDays, setFlattenedProgramDays] = useState<TProgramCreatorDay[]>(flattenProgram(appendWeekOrderAndIdToProgramDays(program)));
-
-    console.log(flattenedProgramDays.map((day) => day.id));
 
     return (
         <>
@@ -204,21 +215,24 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                         handleAddDay={ handleAddDay }
                         handleDeleteDay={ handleDeleteDay }
                         handleEditTitle={ handleEditTitle }
+                        handleIsEditExercise={ handleIsEditExercise }
                         handleDuplicateWeek={ handleDuplicateWeek }
                         handleDuplicateDay={ handleDuplicateDay }
                         handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
+                        handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
+                        handleDeleteExercise={ handleDeleteExercise }
                     />
                 ) ) }
             </div>
-            {/* { addExerciseDialog.isOpen &&
+            { addExerciseDialog.isOpen &&
                 <AddExerciseDialog
                     addExerciseDialog={ addExerciseDialog }
                     isEditExercise={ isEditExercise }
                     handleEditExercise={ handleEditExercise }
                     handleAddExercise={ handleAddExercise }
-                    handleAddExerciseDialog={ handleAddExerciseDialog }
+                    handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
                 />
-            } */ }
+            }
             <GenerateDayDialog
                 handleGenerateDay={ handleGenerateDay }
                 generateDayDialog={ generateDayDialog }

@@ -18,8 +18,11 @@ interface IProps {
     handleOpenGenerateDayDialog: (generateDayDialog: TDialog) => void;
     handleDeleteDay: (id: string) => void;
     handleEditTitle: (id: string, day_title: string) => void;
+    handleIsEditExercise: (isEditExercise: boolean) => void;
     handleDuplicateWeek: (fromWeekIndex: number, toWeekIndexes: number[]) => void;
     handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: Option[]) => void
+    handleOpenAddExerciseDialog: (addExerciseDialog: TDialog) => void;
+    handleDeleteExercise: (weekOrder: number, dayOrder: number, exerciseIndex: number) => void;
 }
 
 export const Column: React.FC<IProps> = (props) => {
@@ -34,8 +37,11 @@ export const Column: React.FC<IProps> = (props) => {
         handleOpenGenerateDayDialog,
         handleDeleteDay,
         handleEditTitle,
+        handleIsEditExercise,
         handleDuplicateWeek,
         handleDuplicateDay,
+        handleOpenAddExerciseDialog,
+        handleDeleteExercise,
     } = props;
 
     const [active, setActive] = useState(false);
@@ -196,6 +202,9 @@ export const Column: React.FC<IProps> = (props) => {
                             handleEditTitle={ handleEditTitle }
                             handleDuplicateDay={ handleDuplicateDay }
                             handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
+                            handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
+                            handleIsEditExercise={ handleIsEditExercise }
+                            handleDeleteExercise={ handleDeleteExercise }
                         />
                 ) } ) }
                 <DropIndicator beforeId={null} weekOrder={weekOrder} />
