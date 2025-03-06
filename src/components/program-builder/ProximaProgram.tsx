@@ -23,65 +23,81 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     const { data: exercises }  = useExercises();
 
     // const [addExerciseDialog, setAddExerciseDialog] = useState<TDialog>({currentWeek: undefined, currentDay: undefined, isOpen: false});
-    // const [generateDayDialog, setGenerateDayDialog] = useState<TDialog>({currentWeek: undefined, currentDay: undefined, isOpen: false});
+    const [generateDayDialog, setGenerateDayDialog] = useState<TDialog>({currentWeek: undefined, currentDay: undefined, isOpen: false});
     // const [isEditExercise, setIsEditExercise] = useState(false);
 
     // const handleIsEditExercise = (isEditExercise: boolean) => {
     //     setIsEditExercise(isEditExercise);
     // };
 
-
-
+    // Duplicates the selected week to other selected weeks
     const handleDuplicateWeek = (fromWeekIndex: number, toWeekIndexes: number[]) => {
         setFlattenedProgramDays((prev) => {
+
+            const filteredPrev = prev.filter((day) => !toWeekIndexes.includes(Number(day.weekOrder)));
+
             const daysToCopy = prev.filter((day) => day.weekOrder === String(fromWeekIndex));
 
-            const newDays = toWeekIndexes.flatMap((week) => {
-                let newId = flattenedProgramDays.length + 1;
-                return daysToCopy.map((day) => ({
+            let newId = filteredPrev.length + 1;
+
+            const newDays = toWeekIndexes.flatMap((week) =>
+                daysToCopy.map((day) => ({
                     ...day,
                     id: String(newId++),
                     weekOrder: String(week),
-                }));
-            });
+                }))
+            );
 
-            console.log(newDays);
-            return [...prev, ...newDays];
+            return reorder([...filteredPrev, ...newDays]);
         });
     };
 
+    // Duplicates the selected day to other days in the program on the selected week
+    const handleDuplicateDay = (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayOrderArray: Option[]) => {
 
-    // // Duplicates the selected day to other days in the program on the selected week
-    // const handleDuplicateDay = (fromWeekIndex: number, fromDayIndex: number, toWeekIndex: number, toDayIndexArray: Option[] ) => {
-    //     const tmpProgram = structuredClone(newProgram);
-    //     const toWeekLength = tmpProgram[toWeekIndex].length;
+        const toDayOrders = toDayOrderArray.map((day) => Number(day.value)).sort((a, b) => a - b);
+        console.log(toDayOrders);
+        setFlattenedProgramDays((prev) => {
+            const dayToCopy = prev.find((day) => Number(day.weekOrder) === fromWeekOrder && Number(day.order) === fromDayOrder);
 
-    //     const toDayIndexes = toDayIndexArray.map((day) => Number(day.value) - 1).sort((a, b) => a - b);
-    //     const lastSelectedDayIndex = toDayIndexes[toDayIndexes.length-1];
+            if (!dayToCopy) return prev;
 
-    //     for (let i = toWeekLength; i <= lastSelectedDayIndex; i++) {
-    //         if (toWeekLength === 7) {
-    //             return;
-    //         }
+            const existingDaysInTargetWeek = prev.filter((day) => Number(day.weekOrder) === toWeekOrder);
+            const maxExistingOrder = Math.max(...existingDaysInTargetWeek.map((day) => Number(day.order)), 0);
 
-    //         if (toDayIndexes.includes(i)) {
-    //             const duplicatedDay: TProgramCreatorDay = {
-    //                 order: String(i + 1),
-    //                 exercises: [...(tmpProgram[fromWeekIndex][fromDayIndex].exercises || [])],
-    //             }
-    //             tmpProgram[toWeekIndex].push(duplicatedDay);
-    //         } else {
-    //             const newEmptyDay: TProgramCreatorDay = {
-    //                 order: String(i + 1),
-    //                 exercises: [],
-    //             }
-    //             tmpProgram[toWeekIndex].push(newEmptyDay);
-    //         }
-    //     };
+            let newId = Math.max(...prev.map((day) => Number(day.id)), 0) + 1;
+            let updatedDays = [...prev];
 
-    //     setNewProgram(tmpProgram);
-    //     return;
-    // };
+            const maxToDayOrder = Math.max(...toDayOrders);
+
+            if (maxToDayOrder > maxExistingOrder) {
+                for (let i = maxExistingOrder + 1; i <= maxToDayOrder; i++) {
+                    if (
+                        !existingDaysInTargetWeek.some((day) => Number(day.order) === i) &&
+                        !toDayOrders.includes(i)
+                    ) {
+                        updatedDays.push({
+                            id: String(newId++),
+                            weekOrder: String(toWeekOrder),
+                            order: String(i),
+                            exercises: [],
+                        });
+                    }
+                }
+            }
+
+            updatedDays = updatedDays.filter((day) => !(Number(day.weekOrder) === toWeekOrder && toDayOrders.includes(Number(day.order))));
+
+            const newDays = toDayOrders.map((dayOrder) => ({
+                ...dayToCopy,
+                id: String(newId++),
+                weekOrder: String(toWeekOrder),
+                order: String(dayOrder),
+            }));
+
+            return reorder([...updatedDays, ...newDays]);
+        });
+    };
 
     // // State for opening the Add Exercise Dialog with the correct week and day
     // const handleAddExerciseDialog = (addExerciseDialog: TDialog) => {
@@ -89,13 +105,15 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     // };
 
     // // State for opening the Generate Day Dialog with the correct week and day
-    // const handleGenerateDayDialog = (generateDayDialog: TDialog) => {
-    //     setGenerateDayDialog(generateDayDialog);
-    // };
+    const handleOpenGenerateDayDialog = (generateDayDialog: TDialog) => {
+        setGenerateDayDialog(generateDayDialog);
+    };
 
-    // const handleGenerateDay = (currentWeekIndex: number, currentDayIndex:number, prompt: string) => {
-    //     // Do AI re-generation of a day here
-    // };
+    // Will re-generate the currently selected day based on a prompt
+    const handleGenerateDay = (weekOrder: number, dayOrder:number, prompt: string) => {
+        // Do AI re-generation of a day here
+        console.log(weekOrder, dayOrder, prompt);
+    };
 
 
     // Adds an empty day to the selected week
@@ -170,7 +188,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     // };
     const [flattenedProgramDays, setFlattenedProgramDays] = useState<TProgramCreatorDay[]>(flattenProgram(appendWeekOrderAndIdToProgramDays(program)));
 
-
+    console.log(flattenedProgramDays.map((day) => day.id));
 
     return (
         <>
@@ -187,6 +205,8 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                         handleDeleteDay={ handleDeleteDay }
                         handleEditTitle={ handleEditTitle }
                         handleDuplicateWeek={ handleDuplicateWeek }
+                        handleDuplicateDay={ handleDuplicateDay }
+                        handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
                     />
                 ) ) }
             </div>
@@ -198,12 +218,12 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                     handleAddExercise={ handleAddExercise }
                     handleAddExerciseDialog={ handleAddExerciseDialog }
                 />
-            }
+            } */ }
             <GenerateDayDialog
                 handleGenerateDay={ handleGenerateDay }
                 generateDayDialog={ generateDayDialog }
-                handleGenerateDayDialog={ handleGenerateDayDialog }
-            /> */}
+                handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
+            />
         </>
     );
 };

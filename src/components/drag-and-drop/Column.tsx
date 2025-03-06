@@ -6,6 +6,8 @@ import { DayCard } from "../program-builder/DayCard";
 import { Button } from "@/components/ui/button";
 import { reorder } from "@/utils/helpers";
 import { DuplicateWeek } from "../program-builder/DuplicateWeek";
+import { Option } from "@/components/ui/multi-select";
+
 interface IProps {
     title: string;
     weekOrder: string;
@@ -13,9 +15,11 @@ interface IProps {
     flattenedProgramDays: TProgramCreatorDay[];
     setFlattenedProgramDays: (flattenedProgramDays: TProgramCreatorDay[]) => void;
     handleAddDay: (weekOrder: string) => void;
+    handleOpenGenerateDayDialog: (generateDayDialog: TDialog) => void;
     handleDeleteDay: (id: string) => void;
     handleEditTitle: (id: string, day_title: string) => void;
     handleDuplicateWeek: (fromWeekIndex: number, toWeekIndexes: number[]) => void;
+    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: Option[]) => void
 }
 
 export const Column: React.FC<IProps> = (props) => {
@@ -27,9 +31,11 @@ export const Column: React.FC<IProps> = (props) => {
         programLength,
         setFlattenedProgramDays,
         handleAddDay,
+        handleOpenGenerateDayDialog,
         handleDeleteDay,
         handleEditTitle,
         handleDuplicateWeek,
+        handleDuplicateDay,
     } = props;
 
     const [active, setActive] = useState(false);
@@ -184,9 +190,12 @@ export const Column: React.FC<IProps> = (props) => {
                             day={ dy }
                             title={ title }
                             weekOrder={ dy.weekOrder }
+                            programLength={ programLength }
                             handleDragStart={handleDragStart}
                             handleDeleteDay={ handleDeleteDay }
                             handleEditTitle={ handleEditTitle }
+                            handleDuplicateDay={ handleDuplicateDay }
+                            handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
                         />
                 ) } ) }
                 <DropIndicator beforeId={null} weekOrder={weekOrder} />

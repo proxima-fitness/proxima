@@ -25,13 +25,13 @@ interface IProps {
     title: string;
     // days: number;
     weekOrder: string;
-    // programLength: number;
+    programLength: number;
     handleDragStart: (e: any, card: any) => void;
     handleEditTitle: (id: string, day_title: string) => void;
     handleDeleteDay: (id: string) => void;
+    handleOpenGenerateDayDialog: (generateDayDialog: TDialog) => void;
     // handleAddExerciseDialog: (addExercise: TDialog) => void;
-    // handleDuplicateDay: (currentWeek: number, currentDay: number, duplicatedToWeek: number, duplicatedToDays: Option[]) => void;
-    // handleGenerateDayDialog: (generateDayDialog: TDialog) => void;
+    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: Option[]) => void;    // handleGenerateDayDialog: (generateDayDialog: TDialog) => void;
     // handleDeleteExercise: (currentWeekIndex: number, currentDay: number, exerciseIndex: number) => void;
     // handleIsEditExercise: (isEditExercise: boolean) => void;
 }
@@ -45,13 +45,12 @@ export const DayCard: React.FC<IProps> = (props) => {
         weekOrder,
         handleDragStart,
         handleDeleteDay,
-        // weekIndex,
-        // programLength,
+        programLength,
         // handleDeleteDay,
         handleEditTitle,
         // handleAddExerciseDialog,
-        // handleDuplicateDay,
-        // handleGenerateDayDialog,
+        handleDuplicateDay,
+        handleOpenGenerateDayDialog,
         // handleDeleteExercise,
         // handleIsEditExercise,
     } = props;
@@ -134,7 +133,7 @@ export const DayCard: React.FC<IProps> = (props) => {
                                         <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={ () => {
-                                        // handleGenerateDayDialog({ currentWeek: weekIndex, currentDay: Number(day.order), isOpen: true })
+                                        handleOpenGenerateDayDialog({ currentWeek: Number(weekOrder), currentDay: Number(day.order), isOpen: true })
                                         }}
                                         className="cursor-pointer"
                                     >
@@ -362,16 +361,15 @@ export const DayCard: React.FC<IProps> = (props) => {
                         <Button variant="ghost" className="mt-1 w-full font-bold uppercase h-12 hover:bg-gray-200 text-black"><PlusIcon />Add Exercise</Button>
                     </div>
                 </Card>
-            {/* <DuplicateDay
+            </motion.div>
+            <DuplicateDay
                 programLength={ programLength }
-                weekIndex={ weekIndex }
+                weekOrder={ weekOrder }
                 day={ day }
-                days={ days }
                 duplicateDayOpen={ duplicateDayOpen }
                 setDuplicateDayOpen={ setDuplicateDayOpen }
                 handleDuplicateDay={ handleDuplicateDay }
-            /> */}
-            </motion.div>
+            />
         </>
     );
 };
