@@ -18,14 +18,14 @@ export const ProgramSchedule: React.FC<IProps> = (props) => {
                     <div className="w-full" key={ `Week ${index}`}>
                         <span className="bg-white p-2 font-main">Week {index + 1}</span>
                         { week.map((day) => (
-                            <Card className="px-4 py-4 my-4 w-[400px] max-sm:w-[355px] bg-gray-100" key={ "week " + day.nthWeek + "day " + day.nthDay + " " }>
+                            <Card className="px-4 py-4 my-4 min-w-[400px] max-w-[400px] w-[400px] max-sm:w-[355px] bg-gray-100" key={ "week " + day.nthWeek + "day " + day.nthDay + " " }>
                                 <div className="border-b-2 border-gray-200">
                                     <div>
                                         <h3 className="font-main text-lg">{ "Day" } { day.nthDay } { day?.day_title ? <> &middot; { day.day_title }</> : "" }</h3>
                                         <p className="font-extralight">{ day.program_workout_exercises.length } {day.program_workout_exercises.length === 1 ? "Exercise" : `Exercises`}</p>
                                     </div>
                                 </div>
-                                <div className="flex flex-row justify-between gap-4 border-b-2 py-2 border-gray-200">
+                                <div className="flex flex-row justify-between gap-4 border-b-2 py-2 border-gray-200 text-sm">
                                     <div className="flex flex-row gap-4 max-w-[50%]">
                                         <div>
                                             #
@@ -34,35 +34,34 @@ export const ProgramSchedule: React.FC<IProps> = (props) => {
                                             Exercise
                                         </div>
                                     </div>
-                                    <div className="flex flex-row justify-start gap-4 max-w-[50%]">
-                                        <div>
+                                    <div className="flex flex-row justify-start min-w-[50%]">
+                                        <div className="flex flex-row justify-center items-center min-w-[33%]">
                                             Sets
                                         </div>
-                                        <div>
+                                        <div className="flex flex-row justify-center items-center min-w-[33%]">
                                             Reps
                                         </div>
-                                        <div>
+                                        <div className="flex flex-row justify-center items-center min-w-[33%]">
                                             Intensity
                                         </div>
                                     </div>
 
                                 </div>
                                 <div
-                                    className=""
-                                    style={ {
-                                        marginTop: "10px", marginBottom: "10px", borderRadius: "8px" } } slot="content">
+                                    className="my-4 rounded-xl"
+                                >
                                     { day?.program_workout_exercises?.map((exercise: TAPIProgramWorkoutExercises, exerciseIndex: number) => (
                                         <div key={ exerciseIndex }>
-                                            <div className="border-b-2 border-gray-200 flex flex-row justify-between font-extralight items-center py-2">
-                                                <div className="flex flex-row gap-6 max-w-[50%]">
+                                            <div className="border-b-2 text-sm border-gray-200 flex flex-row justify-between font-extralight items-center py-2">
+                                                <div className="flex flex-row gap-4 max-w-[50%]">
                                                     <div className="text-[#33bbcf]">{exerciseIndex + 1}</div>
                                                     <div>
                                                         <div className="font-normal text-sm">{ exercise?.exercises?.[`name_english`] }</div>
                                                     </div>
                                                     <div></div>
                                                 </div>
-                                                <div className="flex flex-row justify-start gap-6 max-w-[50%] text-sm">
-                                                    <div>
+                                                <div className="text-center flex flex-row justify-end items-center w-[50%] max-w-[50%] text-sm">
+                                                    <div className="min-w-[33%] flex flex-col justify-center items-center">
                                                         { exercise?.reps && (
                                                             exercise.reps.every((reps, i, arr) => reps === arr[0]) ? (
                                                                 `${exercise.reps.length}`
@@ -120,7 +119,7 @@ export const ProgramSchedule: React.FC<IProps> = (props) => {
                                                             )
                                                         )}
                                                     </div>
-                                                    <div>
+                                                    <div className="min-w-[33%] flex flex-col justify-center items-center">
                                                         { exercise?.amrap && "AMRAP" }
                                                         { exercise?.reps && (
                                                             exercise.reps.every((reps, i, arr) => reps === arr[0]) ? (
@@ -168,7 +167,7 @@ export const ProgramSchedule: React.FC<IProps> = (props) => {
                                                             )
                                                         )}
                                                     </div>
-                                                    <div>
+                                                    <div className="min-w-[33%] flex flex-col justify-center items-center">
                                                         { exercise?.percent_rm && (
                                                             exercise.percent_rm.every((perVal, i, arr) => perVal === arr[0]) ? (
                                                                 <div>{exercise.percent_rm[0]} %1RM</div>
@@ -207,7 +206,6 @@ export const ProgramSchedule: React.FC<IProps> = (props) => {
                                                         )}
                                                     </div>
                                                 </div>
-
                                             </div>
                                         </div>
                                     ) ) }

@@ -4,12 +4,12 @@ import {
     Dialog,
     DialogContent,
     DialogTitle,
-  } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
+  } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import  { Button } from "@/components/ui/button";
 import { SearchIcon, SparklesIcon } from "lucide-react";
 import { z } from "zod";
-import { useForm } from "react-hook-form"
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
     Form,
@@ -49,12 +49,12 @@ export const GenerateDayDialog: React.FC<IProps> = (props) => {
     });
 
     const onSubmit = (values: z.infer<typeof formSchema>) => {
-        handleGenerateDay(generateDayDialog.currentWeek, generateDayDialog.currentDay, values.prompt);
-        handleOpenGenerateDayDialog({currentWeek: undefined, currentDay: undefined, isOpen: false});
+        handleGenerateDay(generateDayDialog.weekOrder, generateDayDialog.dayOrder, values.prompt);
+        handleOpenGenerateDayDialog({weekOrder: undefined, dayOrder: undefined, isOpen: false});
     };
 
     return (
-        <Dialog open={ generateDayDialog.isOpen } onOpenChange={ () => handleOpenGenerateDayDialog({currentWeek: undefined, currentDay: undefined, isOpen: false})} >
+        <Dialog open={ generateDayDialog.isOpen } onOpenChange={ () => handleOpenGenerateDayDialog({weekOrder: undefined, dayOrder: undefined, isOpen: false})} >
 
                 <DialogContent hideClose className="max-w-5xl w-full">
                     <DialogTitle>
@@ -69,7 +69,7 @@ export const GenerateDayDialog: React.FC<IProps> = (props) => {
                                             <FormControl>
                                                 <Input
                                                     startIcon={ SearchIcon }
-                                                    placeholder={`Describe your desired Week ${generateDayDialog.currentWeek + 1} Day ${generateDayDialog.currentDay}`}
+                                                    placeholder={`Describe your desired Week ${generateDayDialog.weekOrder + 1} Day ${generateDayDialog.dayOrder}`}
                                                     {...field}
                                                 />
                                             </FormControl>

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRightIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { FinishDialog } from "./FinishDialog";
 
 export const StepButton: React.FC = () => {
 
@@ -11,10 +13,15 @@ export const StepButton: React.FC = () => {
     const path = usePathname();
     const segments = path.split("/").filter(Boolean);
 
+    const [openFinishDialog, setOpenFinishDialog] = useState(false);
+
+    const handleOpenFinishDialog = (openFinishDialog: boolean) => {
+        setOpenFinishDialog(openFinishDialog);
+    };
+
     const isProgramBuilder = segments.includes("program-builder");
     const isBuildProgram = segments.includes("build-program");
     const isReviewProgram = segments.includes("review-program");
-    console.log(isProgramBuilder, isBuildProgram, isReviewProgram);
 
     if (isProgramBuilder && !isBuildProgram && !isReviewProgram) {
         return (
@@ -38,13 +45,21 @@ export const StepButton: React.FC = () => {
 
     } else if (isProgramBuilder && isBuildProgram && isReviewProgram) {
         return (
-            <Button
-                variant="ghost"
-                className="text-black"
-            >
-                Finish
-                <ArrowRightIcon />
-            </Button>
+            <>
+                <Button
+                    onClick={ () => setOpenFinishDialog(true) }
+                    variant="ghost"
+                    className="text-black"
+                >
+                    Finish
+                    <ArrowRightIcon />
+                </Button>
+                <FinishDialog
+                    handleOpenFinishDialog={ handleOpenFinishDialog }
+                    openFinishDialog={ openFinishDialog }
+                />
+            </>
+
         )
 
     }

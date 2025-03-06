@@ -5201,7 +5201,6 @@ export const coolQuotes: TQuote[] = [
     { quote: "The day you start lifting is the day you become forever smol, because you will never be as big as you want to be.", author: "Dom Mazetti"},
     { quote: "You can't climb the ladder of success with your hands in your pockets", author: "Unknown"},
     { quote: "Swole is the goal, size is the prize, it's gain o'clock MF ... LET'S GO", author: "Robert Frank"},
-    { quote: "Be a sick c*nt not a sad c*nt", author: "Zyzz (RIP)"},
     { quote: "The Iron never lies to you. You can walk outside and listen to all kinds of talk, get told that you're a god or a total bastard. The Iron will always kick you the real deal. The Iron is the great reference point, the all-knowing perspective giver. Always there like a beacon in the pitch black. I have found the Iron to be my greatest friend. It never freaks out on me, never runs. Friends may come and go. But two hundred pounds is always two hundred pounds.", author: "Henry Rollins"},
     { quote: "You can't sculpt a pebble", author: "Unknown" },
     { quote: "If you're gonna wear gloves while you lift, just make sure they match your purse", author: "Unkown"},

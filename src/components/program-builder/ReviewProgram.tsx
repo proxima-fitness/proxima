@@ -18,8 +18,6 @@ export const ReviewProgramPage: React.FC = () => {
         }
     }, []);
 
-    console.log(program);
-
     if (!program) {
         return <BuildProgramSkeleton />
     }

@@ -100,6 +100,9 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
 
     // // State for opening the Add Exercise Dialog with the correct week and day
     const handleOpenAddExerciseDialog = (addExerciseDialog: TDialog) => {
+        if (addExerciseDialog.isOpen === false) {
+            setIsEditExercise(false);
+        }
         setAddExerciseDialog(addExerciseDialog);
     };
 

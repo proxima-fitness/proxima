@@ -333,7 +333,6 @@ export const DayCard: React.FC<IProps> = (props) => {
                                                                 )}
                                                             </div>
                                                         </div>
-
                                                     </div>
                                                 </TooltipTrigger>
                                                 <TooltipContent side="right" className="bg-lightSecondary text-white flex flex-row gap-2">
