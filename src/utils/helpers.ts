@@ -196,3 +196,48 @@ export const reorder = (days: TProgramCreatorDay[]) => {
 
     return days;
 };
+
+export const deFlattenProgram = (flattenedProgram: TProgramCreatorDay[]): TProgramCreatorDay[][] => {
+    return Object.entries(
+      flattenedProgram.reduce<Record<number, TProgramCreatorDay[]>>((acc, day) => {
+        const { weekOrder, id, ...rest } = day; // Destructure to remove weekOrder
+        const week = parseInt(weekOrder || '0'); // Ensure it's treated as a number
+
+        if (!acc[week]) {
+          acc[week] = [];
+        }
+
+        acc[week].push(rest); // Push the rest of the day (without weekOrder) to the correct week
+        return acc;
+      }, {})
+    )
+      // Sort the weeks based on weekOrder (keys)
+      .sort(([a], [b]) => parseInt(a) - parseInt(b))
+      // Map the entries to return just the days in the correct week order
+      .map(([, days]) => days.sort((a, b) => parseInt(a.order) - parseInt(b.order))); // Sort days by order
+  };
+
+
+// Converts TProgramCreatorDay[][] into TScheduleWorkouts[][]
+export const programCreatorDayToScheduleWorkouts = (program: TProgramCreatorDay[][]): TScheduleWorkouts[][] => {
+    return program.map((week, weekIndex) =>
+        week.map((day) => ({
+            nthDay: Number(day.order),
+            nthWeek: weekIndex,
+            day_title: day.day_title,
+            program_workout_exercises: (day.exercises || []).map(exercise => ({
+                reps: exercise.reps_type?.reps,
+                reps_max: exercise.reps_type?.reps_max,
+                reps_range: exercise.reps_type?.reps_range,
+                time_taken: exercise.reps_type?.time_taken,
+                time_range: exercise.reps_type?.time_range,
+                amrap: exercise.reps_type?.amrap,
+                rpe: exercise.intensity?.rpe,
+                rpe_range: exercise.intensity?.rpe_range,
+                percent_rm: exercise.intensity?.percent_rm,
+                weights: exercise.intensity?.weights,
+                exercises: exercise.exercise
+            }))
+        }))
+    );
+};

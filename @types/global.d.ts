@@ -1,7 +1,5 @@
 /** A Proxima Program in the Program Builder is defined as: */
 /***********************************************************/
-type TProgramStructure = Record<string, TProgramCreatorDay[]>;
-
 type TProgramCreatorDay = {
     order: string, // 1-indexed
     day_title?: string;
@@ -108,6 +106,20 @@ type TScheduleWorkouts = {
     program_workout_exercises: TSavedWorkoutExercise[];
 }
 
+type TSavedWorkoutExercise = {
+    reps?: number[];
+    reps_max?: number[];
+    reps_range?: number[][];
+    time_taken?: number[];
+    time_range?: number[][];
+    amrap?: string[];
+    rpe?: number[];
+    rpe_range?: number[][];
+    percent_rm?: number[];
+    weights?: number[];
+    exercises?: TExercise;
+}
+
 type TAPIProgramWorkoutExercises = {
     reps?: number[];
     weights?: number[];
@@ -122,19 +134,7 @@ type TAPIProgramWorkoutExercises = {
     exercises: TExercise;
 };
 
-type TSavedWorkoutExercise = {
-    reps?: number[];
-    reps_max?: number[];
-    reps_range?: number[][];
-    time_taken?: number[];
-    time_range?: number[][];
-    amrap?: string[];
-    rpe?: number[];
-    rpe_range?: number[][];
-    percent_rm?: number[];
-    weights?: number[];
-    exercises?: TExercise;
-}
+
 
 type TProgramFilters = {
     specialization?: string[];

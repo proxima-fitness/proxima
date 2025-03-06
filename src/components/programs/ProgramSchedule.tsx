@@ -12,7 +12,7 @@ export const ProgramSchedule: React.FC<IProps> = (props) => {
     } = props;
 
     return (
-        <div className="w-full pt-8">
+        <div className="w-full">
             <div className="flex flex-row max-sm:flex-col w-full overflow-scroll p-2 gap-4">
                 { sortedWorkoutsByWeek.map((week, index) => (
                     <div className="w-full" key={ `Week ${index}`}>

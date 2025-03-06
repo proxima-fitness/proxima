@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner"
 import { AddExerciseDialog } from "./AddExerciseDialog";
 import { Option } from "@/components/ui/multi-select";
 import { GenerateDayDialog } from "./GenerateDayDialog";
-import { addExerciseToProgramCreatorExerciseConverter, appendWeekOrderAndIdToProgramDays, flattenProgram, reorder } from "@/utils/helpers";
+import { addExerciseToProgramCreatorExerciseConverter, appendWeekOrderAndIdToProgramDays, deFlattenProgram, flattenProgram, reorder } from "@/utils/helpers";
 import { useExercises } from "@/api/hooks";
 import { Column } from "../drag-and-drop/Column";
 
@@ -200,6 +200,12 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     };
 
     const [flattenedProgramDays, setFlattenedProgramDays] = useState<TProgramCreatorDay[]>(flattenProgram(appendWeekOrderAndIdToProgramDays(program)));
+
+    useEffect(() => {
+        if (typeof window !== undefined) {
+            localStorage.setItem("program-in-progress", JSON.stringify(deFlattenProgram(flattenedProgramDays)));
+        }
+    }, [flattenedProgramDays]);
 
     return (
         <>
