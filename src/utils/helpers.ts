@@ -144,7 +144,7 @@ export const convertProgramCreatorExerciseToAddExercise = (programCreatorExercis
     };
 };
 
-const amrapAsNumber = (amrap: string[]) => {
+const amrapAsNumber = (amrap: string[] = []) => {
     return amrap.map((item) => 999); // amrap string is defined as 999
 };
 
@@ -157,4 +157,42 @@ export const getInitials = (name: string) => {
         return initials.slice(0, 2).join("");
     }
     return initials.join("");
+};
+
+// Used to add week order and Id to program days for the drag and drop
+export const appendWeekOrderAndIdToProgramDays = (program: TProgramCreatorDay[][]) => {
+
+    let idCounter = 1;
+
+    const updatedProgram = program.map((week, index) =>
+        week.map((day) => ({
+            ...day,
+            weekOrder: String(index), // Weeks are 0-indexed and days are 1-indexed. Someone please fix this monstrosity.
+            id: String(idCounter++),
+        })))
+    return updatedProgram;
+};
+
+// Flattens program into days with weekOrder and dayOrder fields. Will then be sorted with the drag and drop and upon output will be re-constructed into the proxima_program_schema
+export const flattenProgram = (program: TProgramCreatorDay[][]) => {
+    return program.flat();
+};
+
+// Re-orders the day order field on the de-structured proxima program
+export const reorder = (days: TProgramCreatorDay[]) => {
+
+    const groupedByWeek: Record<number, TProgramCreatorDay[]> = days.reduce((acc, item) => {
+        if (!acc[item.weekOrder]) acc[item.weekOrder] = [];
+        acc[item.weekOrder].push(item);
+        return acc;
+    }, {} as Record<number, TProgramCreatorDay[]>);
+
+    days = Object.values(groupedByWeek).flatMap((group) =>
+        group.map((item, index) => ({
+            ...item,
+            order: String(index + 1), // 1-based order per weekOrder
+        }))
+    );
+
+    return days;
 };

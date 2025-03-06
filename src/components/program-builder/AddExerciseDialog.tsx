@@ -16,9 +16,9 @@ import { Skeleton } from "../ui/skeleton";
 interface IProps {
     addExerciseDialog: TDialog;
     isEditExercise: boolean;
-    handleAddExercise: (currentWeek: number, currentDay: number, exercise: TProgramCreatorExercise) => void;
+    handleAddExercise: (weekOrder: number, dayOrder: number, exercise: TProgramCreatorExercise) => void;
     handleEditExercise: (editExercise: TDialog) => void;
-    handleAddExerciseDialog: (addExerciseDialog: TDialog) => void;
+    handleOpenAddExerciseDialog: (addExerciseDialog: TDialog) => void;
 }
 
 export const AddExerciseDialog: React.FC<IProps> = (props) => {
@@ -28,7 +28,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
         isEditExercise,
         handleAddExercise,
         handleEditExercise,
-        handleAddExerciseDialog,
+        handleOpenAddExerciseDialog,
     } = props;
 
     const { data: exercises, isLoading: loadingExercises }  = useExercises();
@@ -115,12 +115,12 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
         const newExercise: TProgramCreatorExercise = await addExerciseToProgramCreatorExerciseConverter(exerciseData as TAddExercise);
 
         if (isEditExercise) {
-            handleEditExercise({isOpen: false, currentWeek: addExerciseDialog.currentWeek, currentDay: addExerciseDialog.currentDay, exerciseIndex: addExerciseDialog.exerciseIndex ,editExercise: convertProgramCreatorExerciseToAddExercise(newExercise)});
+            handleEditExercise({isOpen: false, weekOrder: addExerciseDialog.weekOrder, dayOrder: addExerciseDialog.dayOrder, exerciseIndex: addExerciseDialog.exerciseIndex ,editExercise: convertProgramCreatorExerciseToAddExercise(newExercise)});
         } else {
-            handleAddExercise(addExerciseDialog.currentWeek, addExerciseDialog.currentDay, newExercise);
+            handleAddExercise(addExerciseDialog.weekOrder, addExerciseDialog.dayOrder, newExercise);
         }
 
-        handleAddExerciseDialog({ currentWeek: undefined, currentDay: undefined, isOpen: false});
+        handleOpenAddExerciseDialog({ weekOrder: undefined, dayOrder: undefined, isOpen: false});
     };
 
     const deleteSet = (index: number) => {
@@ -173,10 +173,10 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
     }, [addExerciseDialog.editExercise?.id, addExerciseDialog.editExercise?.intensityData, addExerciseDialog.editExercise?.intensityDataWithRPERange, addExerciseDialog.editExercise?.intensityValue, addExerciseDialog.editExercise?.repTypeValue, addExerciseDialog.editExercise?.reps, addExerciseDialog.editExercise?.repsWithTimeAndRepRange]);
 
     return (
-        <Dialog open={ addExerciseDialog.isOpen } onOpenChange={ () => handleAddExerciseDialog({ currentWeek: undefined, currentDay: undefined, isOpen: false} )}>
+        <Dialog open={ addExerciseDialog.isOpen } onOpenChange={ () => handleOpenAddExerciseDialog({ weekOrder: undefined, dayOrder: undefined, isOpen: false} )}>
             <DialogContent hideClose className="max-w-4xl w-full">
                 <DialogTitle className="font-bold flex items-center justify-center pb-4 border-b-2">
-                    Add Exercise to Week {addExerciseDialog.currentWeek + 1} Day {addExerciseDialog.currentDay}
+                    Add Exercise to Week {addExerciseDialog.weekOrder + 1} Day {addExerciseDialog.dayOrder}
                 </DialogTitle>
                 <div className={ "modal-content__centered" }>
                     <ExerciseSearchBar
@@ -423,7 +423,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                 </div>
                 <span className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4">
                     <span className="w-full flex items-center justify-center">
-                        <Button onClick={ () => handleAddExerciseDialog({currentWeek: undefined, currentDay: undefined, isOpen: false} ) } variant="ghost" className="w-full h-12">
+                        <Button onClick={ () => handleOpenAddExerciseDialog({weekOrder: undefined, dayOrder: undefined, isOpen: false} ) } variant="ghost" className="w-full h-12">
                                 Cancel
                         </Button>
                     </span>

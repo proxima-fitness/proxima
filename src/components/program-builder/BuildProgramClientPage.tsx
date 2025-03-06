@@ -14,7 +14,7 @@ export const BuildProgramClientPage: React.FC = () => {
     useEffect(() => {
         setTimeout(() => {
             setGenerating(false);
-        }, 2000);
+        }, 100);
     }, []);
 
     return (

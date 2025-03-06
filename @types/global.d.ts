@@ -1,9 +1,14 @@
 /** A Proxima Program in the Program Builder is defined as: */
 /***********************************************************/
+type TProgramStructure = Record<string, TProgramCreatorDay[]>;
+
 type TProgramCreatorDay = {
-    order: string,
+    order: string, // 1-indexed
     day_title?: string;
     exercises?: TProgramCreatorExercise[];
+    /* These two fields are used for the drag and drop but not stored in the DB */
+    weekOrder?: string; // 0-indexed
+    id?: string;
 }
 
 type TProgramCreatorExercise = {
@@ -68,8 +73,8 @@ type TProgram = {
 }
 
 type TDialog = {
-    currentWeek: number;
-    currentDay: number;
+    weekOrder: number;
+    dayOrder: number;
     isOpen: boolean;
     exerciseIndex?: number; // location of exercise to be edited
     editExercise?: TAddExercise; // current value of exercise to be edited
