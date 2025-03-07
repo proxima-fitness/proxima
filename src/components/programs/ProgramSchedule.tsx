@@ -15,7 +15,7 @@ export const ProgramSchedule: React.FC<IProps> = (props) => {
         <div className="w-full">
             <div className="flex flex-row max-sm:flex-col w-full overflow-scroll p-2 gap-4">
                 { sortedWorkoutsByWeek.map((week, index) => (
-                    <div className="w-full" key={ `Week ${index}`}>
+                    <div className="w-full" key={ `Week ${index}` }>
                         <span className="bg-white p-2 font-main">Week {index + 1}</span>
                         { week.map((day) => (
                             <Card className="px-4 py-4 my-4 min-w-[400px] max-w-[400px] w-[400px] max-sm:w-[355px] bg-gray-100" key={ "week " + day.nthWeek + "day " + day.nthDay + " " }>
@@ -98,9 +98,8 @@ export const ProgramSchedule: React.FC<IProps> = (props) => {
                                                                 ))
                                                             )
                                                             )}
-                                                        { /* TODO: this exercise.time_range.length might cause a bug */ }
                                                         { exercise?.time_range && (
-                                                            exercise.time_range.every((reps, i, arr) => reps === arr[0]) ? (
+                                                            exercise.time_range.every((range, i, arr) => JSON.stringify(range) === JSON.stringify(arr[0])) ? (
                                                                 `${exercise.time_range.length}`
                                                             ) : (
                                                                 Array.from({ length: exercise.time_range.length || 0 }, (_, index) => (
@@ -108,7 +107,6 @@ export const ProgramSchedule: React.FC<IProps> = (props) => {
                                                                 ))
                                                             )
                                                         )}
-                                                        { /* TODO: this exercise.reps_range.length might cause a bug */ }
                                                         { exercise?.reps_range && (
                                                             exercise.reps_range.every((range, i, arr) => JSON.stringify(range) === JSON.stringify(arr[0])) ? (
                                                                 `${exercise.reps_range.length}`
@@ -159,10 +157,10 @@ export const ProgramSchedule: React.FC<IProps> = (props) => {
                                                         )}
                                                         { exercise?.time_range && (
                                                             exercise.time_range.every((range, i, arr) => JSON.stringify(range) === JSON.stringify(arr[0])) ? (
-                                                                <div>{ exercise.time_range[0][0]}-{exercise.time_range[0][1] } Reps</div>
+                                                                <div>{ exercise.time_range[0][0]}-{exercise.time_range[0][1] } Secs</div>
                                                             ) : (
                                                                 exercise.time_range.map((range, index) => (
-                                                                    <div key={ index }>{range[0]} - {range[1]} Reps</div>
+                                                                    <div key={ index }>{range[0]} - {range[1]} Secs</div>
                                                                 ))
                                                             )
                                                         )}

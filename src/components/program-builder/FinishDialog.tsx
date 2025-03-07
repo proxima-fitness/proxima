@@ -4,10 +4,13 @@ import {
     DialogTitle,
   } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea"
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRightIcon, CopyIcon, DownloadIcon, FileDownIcon, LogInIcon, PartyPopperIcon, SaveIcon } from "lucide-react";
+import {  CopyIcon, DownloadIcon, FileDownIcon, LogInIcon, PartyPopperIcon } from "lucide-react";
 import { toast } from "sonner";
+import { PDFViewer } from '@react-pdf/renderer';
+import { PdfRenderer } from "../generic/PdfRenderer";
+import { programCreatorDayToScheduleWorkouts } from "@/utils/helpers";
 
 interface IProps {
     openFinishDialog: boolean;
@@ -32,9 +35,6 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                 }
             }
         }, []);
-
-        console.log(program);
-
 
     const handleCopyJson = () => {
         try {
@@ -79,20 +79,18 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                 </Button>
                 </span>
                 <span>
-                    <Textarea className="h-96" readOnly aria-readonly value={ JSON.stringify(program, null, 4) } />
+                    { isPreview ?
+                        <PDFViewer className="w-full h-[50vh]">
+                            <PdfRenderer program={ programCreatorDayToScheduleWorkouts(program) } />
+                        </PDFViewer>
+                        :
+                        <Textarea className="h-[50vh]" readOnly aria-readonly value={ JSON.stringify(program, null, 4) } />
+                    }
                 </span>
                 <span className="w-full flex flex-row items-center justify-between">
                     { isPreview ?
-                        <>
-                            <span>
-                                <Button
-                                    variant="outline"
-                                    className="w-56 h-10 uppercase"
-                                >
-                                    <FileDownIcon /> Download PDF
-                                </Button>
-                            </span>
-                        </>
+                        <div>
+                        </div>
                     :
                         <div className="flex flex-row items-center justify-center gap-2">
                             <span>
