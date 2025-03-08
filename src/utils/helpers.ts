@@ -173,6 +173,34 @@ export const appendWeekOrderAndIdToProgramDays = (program: TProgramCreatorDay[][
     return updatedProgram;
 };
 
+export const appendOrderToHevyRoutines = (routines: THevyRoutine[]): THevyRoutine[] => {
+
+    const sortedRoutines = [...routines].sort((a, b) => a.folder_id - b.folder_id);
+
+    let currentFolderId = sortedRoutines[0].folder_id;
+    let orderCounter = 1;
+
+    const updatedRoutines: THevyRoutine[] = sortedRoutines.map((routine) => {
+        if (routine.folder_id !== currentFolderId) {
+            currentFolderId = routine.folder_id;
+            orderCounter = 1; // Reset order for each new folder
+        }
+
+        const updatedRoutine = {
+            ...routine,
+            order: String(orderCounter),
+        };
+
+        orderCounter++;
+        return updatedRoutine;
+    });
+
+    console.log(updatedRoutines);
+
+    return updatedRoutines;
+};
+
+
 // Flattens program into days with weekOrder and dayOrder fields. Will then be sorted with the drag and drop and upon output will be re-constructed into the proxima_program_schema
 export const flattenProgram = (program: TProgramCreatorDay[][]) => {
     return program.flat();
@@ -196,6 +224,27 @@ export const reorder = (days: TProgramCreatorDay[]) => {
 
     return days;
 };
+
+// Re-orders the day order field on the Hevy routine program
+export const reorderHevy = (routines: THevyRoutine[]): THevyRoutine[] => {
+    // Group routines by folder_id
+    const groupedByFolder: Record<number, THevyRoutine[]> = routines.reduce((acc, item) => {
+        if (!acc[item.folder_id]) acc[item.folder_id] = [];
+        acc[item.folder_id].push(item);
+        return acc;
+    }, {} as Record<number, THevyRoutine[]>);
+
+    // Reorder the routines and add an order based on folder_id grouping
+    const updatedRoutines = Object.values(groupedByFolder).flatMap((group) =>
+        group.map((item, index) => ({
+            ...item,
+            order: String(index + 1), // 1-based order within each folder_id group
+        }))
+    );
+
+    return updatedRoutines;
+};
+
 
 export const deFlattenProgram = (flattenedProgram: TProgramCreatorDay[]): TProgramCreatorDay[][] => {
     return Object.entries(
@@ -241,3 +290,13 @@ export const programCreatorDayToScheduleWorkouts = (program: TProgramCreatorDay[
         }))
     );
 };
+
+export const getNumberRoutineFolders = (routines: THevyRoutine[]): number => {
+    if (routines.length === 0) return 0;
+
+    const folderIds = routines.map(routine => routine.folder_id);
+    const minFolderId = Math.min(...folderIds);
+    const maxFolderId = Math.max(...folderIds);
+
+    return maxFolderId - minFolderId + 1;
+}

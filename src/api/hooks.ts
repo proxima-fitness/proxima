@@ -5,6 +5,7 @@ import { getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, g
 import { getOpUserId, getUserFullName, getUserMetaData } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getExercises } from "./exercises";
+import { getHevyExercises } from "./hevy";
 
 /*********************************/
 /** CLIENT SIDE RENDERED HOOKS **/
@@ -91,6 +92,15 @@ export const useExercises = () => {
         queryFn: () => getExercises(),
     })
 };
+
+// FETCH EXERCISES FROM THE HEVY APP
+export const useHevyExercises = () => {
+    return useQuery({
+        queryKey: ["hevy-exercises"],
+        queryFn: () => getHevyExercises(),
+    })
+};
+
 
 // FETCHES EITHER A GIF OR IMG AT A PARTICULAR RESOLUTION FROM STORAGE BUCKET FOR AN EXERCISE
 export const useExerciseGif = (gif_id: string, resolution: "180" | "360", file_type: "gif" | "jpg", exercise_name: string) => {

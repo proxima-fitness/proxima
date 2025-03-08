@@ -13,12 +13,12 @@ export const CustomPrograms: React.FC = () => {
 
             <div className={ layout.sectionInfoCentered }>
                 <h2 className={ styles.heading2Centered }>
-                    Create your own <br className="sm:block hidden" /> Custom Programs
+                    Let AI build your <br className="sm:block hidden" /> Custom Programs
                 </h2>
                 <p className={ `${styles.paragraph} max-w-[470px] mt-5` }>
-                    Through our App or Web Builder, you can easily create your own custom workout programs. Select from a list of exercises, choose your reps, rep ranges, RPE and other training methods. Plus, once your program is ready, you can share it on the feed page, inspiring others and building a stronger fitness community!
+                    Through our AI Program Builder, you can easily generate your own workout program based on your preferences. Plus, once your program is ready, you can share it on the feed page, inspiring others and building a stronger fitness community!
                 </p>
-                <a href="https://app.proximafitness.com/"><Button text={ "Create Program" } styles={ `mt-10` } /></a>
+                <a href="https://app.proximafitness.com/"><Button text={ "Build Program" } styles={ `mt-10` } /></a>
             </div>
         </section>
     );
