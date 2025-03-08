@@ -1,3 +1,7 @@
+import { getExercises } from "@/api/exercises";
+import { getHevyExercises } from "@/api/hevy";
+import Fuse from "fuse.js";
+
 export function convertSupabaseDateToReadable(inputDate: string | undefined): string {
 
     let formattedDate = "";
@@ -299,4 +303,32 @@ export const getNumberRoutineFolders = (routines: THevyRoutine[]): number => {
     const maxFolderId = Math.max(...folderIds);
 
     return maxFolderId - minFolderId + 1;
+}
+
+// Returns the proxima exercise gif_id for a specific hevy exercise using fuzzy matching
+export const getExerciseGifIdForHevyExercise = async (exercise_name: string) => {
+
+    // Fuse Fuzzy match options
+    const options = {
+        isCaseSensitive: false,
+        includeScore: false,
+        minMatchCharLength: 2,
+        shouldSort: true,
+        threshold: 0.1,
+        keys: [
+            "name_english",
+        ],
+    };
+
+    const proximaExercises = await getExercises();
+
+    const fuse = new Fuse(proximaExercises, options);
+    const fuseResults = fuse.search(exercise_name);
+    if (!fuseResults) {
+        return "";
+    }
+    console.log(fuseResults);
+
+    return fuseResults[0].item.gif_id;
+
 }

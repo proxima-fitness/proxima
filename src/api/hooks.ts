@@ -6,6 +6,7 @@ import { getOpUserId, getUserFullName, getUserMetaData } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getExercises } from "./exercises";
 import { getHevyExercises } from "./hevy";
+import { getExerciseGifIdForHevyExercise } from "@/utils/helpers";
 
 /*********************************/
 /** CLIENT SIDE RENDERED HOOKS **/
@@ -101,12 +102,21 @@ export const useHevyExercises = () => {
     })
 };
 
+// FETCHES PROXIMA GIF ID TO BE USED ON HEVY EXERCISES
+export const useExerciseGifId = (exercise_name) => {
+    return useQuery({
+        queryKey: [ "hevy-exercise-gif-id", exercise_name ],
+        queryFn: () => getExerciseGifIdForHevyExercise(exercise_name),
+    });
+};
+
 
 // FETCHES EITHER A GIF OR IMG AT A PARTICULAR RESOLUTION FROM STORAGE BUCKET FOR AN EXERCISE
 export const useExerciseGif = (gif_id: string, resolution: "180" | "360", file_type: "gif" | "jpg", exercise_name: string) => {
     return useQuery({
         queryKey: [ "exercise-gif", exercise_name, gif_id, resolution, file_type ],
         queryFn: () => getExerciseGif(gif_id, resolution, file_type),
+        enabled: !!gif_id,
     });
 };
 
