@@ -97,7 +97,7 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
                 {
                 index: 1,
                 type: "normal",
-                weight_kg: 50,
+                weight_kg: 0,
                 reps: 10,
                 distance_meters: 0,
                 duration_seconds: 0,
@@ -306,7 +306,7 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
                 {
                 index: 2,
                 type: "normal",
-                weight_kg: 100,
+                weight_kg: 0,
                 reps: 6,
                 distance_meters: 0,
                 duration_seconds: 0,
@@ -353,7 +353,7 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
                 {
                 index: 1,
                 type: "warmup",
-                weight_kg: 60,
+                weight_kg: 0,
                 reps: 10,
                 distance_meters: 0,
                 duration_seconds: 0,
@@ -752,7 +752,7 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
                 {
                 index: 1,
                 type: "warmup",
-                weight_kg: 60,
+                weight_kg: 0,
                 reps: 10,
                 distance_meters: 0,
                 duration_seconds: 0,

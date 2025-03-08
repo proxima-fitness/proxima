@@ -62,8 +62,8 @@ type THevyRoutine = {
     id: string; // The routine ID
     title: string; // The routine title
     folder_id: number; // An ID for the folder this routine corresponds to. (Also used to choose the week routine is assigned in drag and drop)
-    updated_at: string; // ISO 8601 timestamp of when the routine was last updated. example: 2021-09-14T12:00:00Z
-    created_at: string; // ISO 8601 timestamp of when the routine was created. example: 2021-09-14T12:00:00Z
+    updated_at?: string; // ISO 8601 timestamp of when the routine was last updated. example: 2021-09-14T12:00:00Z
+    created_at?: string; // ISO 8601 timestamp of when the routine was created. example: 2021-09-14T12:00:00Z
     exercises: THevyExercise[];
 
     /* This field are used for the drag and drop but not stored in the DB */
@@ -105,6 +105,15 @@ type THevyExerciseTemplate = {
     secondary_muscle_groups: string[]; // The secondary muscle groups of the exercise
     isCustom: boolean; // indicating whether the exercise is a custom exercise
 }
+
+type THevyDialog = {
+    folder_id: number;
+    dayOrder: number;
+    isOpen: boolean;
+    exerciseIndex?: number; // location of exercise to be edited
+    editExercise?: TAddExercise; // current value of exercise to be edited
+}
+
 /***********************************************************/
 
 type TProgramPage = {

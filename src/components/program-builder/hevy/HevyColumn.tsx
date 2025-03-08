@@ -15,14 +15,14 @@ interface IProps {
     programLength: number;
     hevyProgram: THevyRoutine[];
     setHevyProgram: (hevyProgram: THevyRoutine[]) => void;
-    // handleAddDay: (weekOrder: string) => void;
+    handleAddDay: (folder_id: number) => void;
     // handleOpenGenerateDayDialog: (generateDayDialog: TDialog) => void;
-    // handleDeleteDay: (id: string) => void;
-    // handleEditTitle: (id: string, day_title: string) => void;
-    // handleIsEditExercise: (isEditExercise: boolean) => void;
+    handleDeleteDay: (id: string) => void;
+    handleEditTitle: (id: string, title: string) => void;
+    handleIsEditExercise: (isEditExercise: boolean) => void;
     // handleDuplicateWeek: (fromWeekIndex: number, toWeekIndexes: number[]) => void;
     // handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: Option[]) => void
-    // handleOpenAddExerciseDialog: (addExerciseDialog: TDialog) => void;
+    handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
     // handleDeleteExercise: (weekOrder: number, dayOrder: number, exerciseIndex: number) => void;
 }
 
@@ -34,14 +34,14 @@ export const HevyColumn: React.FC<IProps> = (props) => {
         folder_id,
         programLength,
         setHevyProgram,
-        // handleAddDay,
+        handleAddDay,
         // handleOpenGenerateDayDialog,
-        // handleDeleteDay,
-        // handleEditTitle,
-        // handleIsEditExercise,
+        handleDeleteDay,
+        handleEditTitle,
+        handleIsEditExercise,
         // handleDuplicateWeek,
         // handleDuplicateDay,
-        // handleOpenAddExerciseDialog,
+        handleOpenAddExerciseDialog,
         // handleDeleteExercise,
     } = props;
 
@@ -198,25 +198,25 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                             title={ title }
                             folder_id={ dy.folder_id }
                             programLength={ programLength }
-                            // handleDragStart={handleDragStart}
-                            // handleDeleteDay={ handleDeleteDay }
-                            // handleEditTitle={ handleEditTitle }
+                            handleDragStart={handleDragStart}
+                            handleDeleteDay={ handleDeleteDay }
+                            handleEditTitle={ handleEditTitle }
                             // handleDuplicateDay={ handleDuplicateDay }
                             // handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
-                            // handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
-                            // handleIsEditExercise={ handleIsEditExercise }
+                            handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
+                            handleIsEditExercise={ handleIsEditExercise }
                             // handleDeleteExercise={ handleDeleteExercise }
                         />
                 ) } ) }
                 <DropIndicator beforeId={null} weekOrder={folder_id} />
-                {/* <div className="flex flex-row justify-center items-center">
+                <div className="flex flex-row justify-center items-center">
                     <Button
-                        onClick={ () => handleAddDay(weekOrder) }
+                        onClick={ () => handleAddDay(folder_id) }
                         className="mb-4 w-44 font-bold uppercase h-12 rounded-lg bg-lightSecondary hover:bg-lightSecondary text-white">
                             <PlusIcon />
                             Add Day
                     </Button>
-                </div> */}
+                </div>
             </div>
             {/* <DuplicateWeek
                 weekOrder={ weekOrder }

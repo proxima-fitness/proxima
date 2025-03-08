@@ -62,6 +62,21 @@ export const getExerciseFromLocalStorageByName = async (name_english: string) =>
     }
 };
 
+export const getHevyExerciseFromLocalStorageByName = async (title: string) => {
+    const cachedExercises = localStorage.getItem("hevy-exercises");
+
+    if (!cachedExercises) {
+        return undefined;
+    }
+
+    if (cachedExercises && cachedExercises.length > 0) {
+        const { exercises } = JSON.parse(cachedExercises);
+        const exercise: THevyExerciseTemplate | undefined = exercises?.find((exercise: THevyExerciseTemplate) => exercise.title === title);
+        return exercise;
+    }
+};
+
+
 
 // Converts TAddExercise type into TProgramCreatorExercise type
 export const addExerciseToProgramCreatorExerciseConverter = async (addExercise: TAddExercise) => {
@@ -93,6 +108,25 @@ export const addExerciseToProgramCreatorExerciseConverter = async (addExercise: 
 
     return newExercise;
 };
+
+// Convertes TAddExercise to THevyExercise type
+export const addExerciseToHevySetsConverter = (addExercise: TAddExercise): THevySets[] => {
+    const sets: THevySets[] = addExercise.reps.map((rep, setIndex) => {
+        return {
+            index: setIndex,
+            type: "normal", // Defaulting to normal, adjust if needed
+            weight_kg: addExercise.intensityValue === "weights" ? Number((addExercise.intensityData[setIndex] * 0.4536).toFixed(2)) || 0 : 0,
+            reps: rep,
+            distance_meters: 0, // Assuming no distance data
+            duration_seconds: addExercise.repTypeValue.includes("time") ?  addExercise.intensityData[setIndex] || 0 : 0,
+            rpe: addExercise.intensityValue.includes("rpe") ? addExercise.intensityData[setIndex] || 0 : 0,
+            custom_metric: 0 // Assuming no custom metric data
+        };
+    });
+
+    return sets;
+};
+
 
 // Converts TProgramCreatorExercise into TAddExercise type
 export const convertProgramCreatorExerciseToAddExercise = (programCreatorExercise: TProgramCreatorExercise): TAddExercise => {
@@ -198,8 +232,6 @@ export const appendOrderToHevyRoutines = (routines: THevyRoutine[]): THevyRoutin
         orderCounter++;
         return updatedRoutine;
     });
-
-    console.log(updatedRoutines);
 
     return updatedRoutines;
 };
@@ -327,7 +359,6 @@ export const getExerciseGifIdForHevyExercise = async (exercise_name: string) => 
     if (!fuseResults) {
         return "";
     }
-    console.log(fuseResults);
 
     return fuseResults[0].item.gif_id;
 

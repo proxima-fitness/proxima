@@ -4,8 +4,9 @@
 
 import { useEffect, useState } from "react";
 import {  useHevyExercises } from "@/api/hooks";
-import { appendOrderToHevyRoutines, getNumberRoutineFolders } from "@/utils/helpers";
+import { appendOrderToHevyRoutines, getNumberRoutineFolders, reorderHevy } from "@/utils/helpers";
 import { HevyColumn } from "./hevy/HevyColumn";
+import { HevyAddExerciseDialog } from "./hevy/HevyAddExerciseDialog";
 
 interface IProps {
     program: THevyRoutine[];
@@ -19,13 +20,13 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
 
     const { data: exercises }  = useHevyExercises();
 
-    // const [addExerciseDialog, setAddExerciseDialog] = useState<TDialog>({weekOrder: undefined, dayOrder: undefined, isOpen: false});
+    const [addExerciseDialog, setAddExerciseDialog] = useState<THevyDialog>({folder_id: undefined, dayOrder: undefined, isOpen: false});
     // const [generateDayDialog, setGenerateDayDialog] = useState<TDialog>({weekOrder: undefined, dayOrder: undefined, isOpen: false});
-    // const [isEditExercise, setIsEditExercise] = useState(false);
+    const [isEditExercise, setIsEditExercise] = useState(false);
 
-    // const handleIsEditExercise = (isEditExercise: boolean) => {
-    //     setIsEditExercise(isEditExercise);
-    // };
+    const handleIsEditExercise = (isEditExercise: boolean) => {
+        setIsEditExercise(isEditExercise);
+    };
 
     // // Duplicates the selected week to other selected weeks
     // const handleDuplicateWeek = (fromWeekIndex: number, toWeekIndexes: number[]) => {
@@ -97,12 +98,12 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     // };
 
     // // // State for opening the Add Exercise Dialog with the correct week and day
-    // const handleOpenAddExerciseDialog = (addExerciseDialog: TDialog) => {
-    //     if (addExerciseDialog.isOpen === false) {
-    //         setIsEditExercise(false);
-    //     }
-    //     setAddExerciseDialog(addExerciseDialog);
-    // };
+    const handleOpenAddExerciseDialog = (addExerciseDialog: THevyDialog) => {
+        if (addExerciseDialog.isOpen === false) {
+            setIsEditExercise(false);
+        }
+        setAddExerciseDialog(addExerciseDialog);
+    };
 
     // // // State for opening the Generate Day Dialog with the correct week and day
     // const handleOpenGenerateDayDialog = (generateDayDialog: TDialog) => {
@@ -117,38 +118,39 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
 
 
     // // Adds an empty day to the selected week
-    // const handleAddDay = (weekOrder: string) => {
-    //     setFlattenedProgramDays((prev) => {
-    //         const nthDayOrder = prev.filter((day) => day.weekOrder === weekOrder).length + 1;
+    const handleAddDay = (folder_id: number) => {
+        setHevyProgram((prev) => {
+            const nthDayOrder = prev.filter((day) => day.folder_id === folder_id).length + 1;
 
-    //         const newEmptyDay: TProgramCreatorDay = {
-    //             id: String(flattenedProgramDays.length + 1),
-    //             weekOrder,
-    //             order: String(nthDayOrder),
-    //             exercises: [],
-    //         };
+            const newEmptyDay: THevyRoutine = {
+                id: String(hevyProgram.length + 1),
+                folder_id,
+                order: String(nthDayOrder),
+                exercises: [],
+                title: "",
+            };
 
-    //         return [...prev, newEmptyDay];
-    //     });
-    // };
+            return [...prev, newEmptyDay];
+        });
+    };
 
     // // Deletes selected day from selected week by id
-    // const handleDeleteDay = (id: string) => {
-    //     setFlattenedProgramDays((prev) => {
-    //         let newDays = prev.filter((day) => day.id !== id);
-    //         newDays = reorder(newDays);
-    //         return newDays;
-    //     });
-    // };
+    const handleDeleteDay = (id: string) => {
+        setHevyProgram((prev) => {
+            let newDays = prev.filter((day) => day.id !== id);
+            newDays = reorderHevy(newDays);
+            return newDays;
+        });
+    };
 
 
-    // const handleEditTitle = (id: string, day_title: string) => {
-    //     setFlattenedProgramDays((prev) =>
-    //         prev.map((day) =>
-    //             day.id === id ? { ...day, day_title: day_title} : day
-    //         )
-    //     );
-    // };
+    const handleEditTitle = (id: string, title: string) => {
+        setHevyProgram((prev) =>
+            prev.map((day) =>
+                day.id === id ? { ...day, title: title} : day
+            )
+        );
+    };
 
     // // Deletes an exercise from a workout day
     // const handleDeleteExercise = (weekOrder: number, dayOrder: number, exerciseIndex: number) => {
@@ -166,28 +168,29 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     // };
 
     // // Adds an exercise to the workout day
-    // const handleAddExercise = (weekOrder: number, dayOrder: number, exercise: TProgramCreatorExercise) => {
-    //     setFlattenedProgramDays((prev) => {
-    //         return prev.map((day) => {
-    //             if (Number(day.weekOrder) === weekOrder && Number(day.order) === dayOrder) {
-    //                 return {
-    //                     ...day,
-    //                     exercises: [...day.exercises, exercise],
-    //                 };
-    //             }
-    //             return day;
-    //         });
-    //     });
-    // };
+    const handleAddExercise = (folder_id: number, dayOrder: number, exercise: THevySets[]) => {
+        console.log("hevy sets:",exercise);
+        // setHevyProgram((prev) => {
+        //     return prev.map((day) => {
+        //         if (Number(day.folder_id) === folder_id && Number(day.order) === dayOrder) {
+        //             return {
+        //                 ...day,
+        //                 exercises: [...day.exercises, exercise],
+        //             };
+        //         }
+        //         return day;
+        //     });
+        // });
+    };
 
     // // Edits an exercise on a workout day
-    // const handleEditExercise = async (editExercise: TDialog) => {
+    // const handleEditExercise = async (editExercise: THevyDialog) => {
 
-    //     const convertedEditExercise = await addExerciseToProgramCreatorExerciseConverter(editExercise.editExercise);
+    //     const convertedEditExercise = await addExerciseToHevyExerciseConverter(editExercise.editExercise);
 
-    //     setFlattenedProgramDays((prev) => {
+    //     setHevyProgram((prev) => {
     //         return prev.map((day) => {
-    //             if (Number(day.weekOrder) === editExercise.weekOrder && Number(day.order) === editExercise.dayOrder) {
+    //             if (Number(day.folder_id) === editExercise.folder_id && Number(day.order) === editExercise.dayOrder) {
     //                 return {
     //                     ...day,
     //                     exercises: day.exercises.map((exercise, index) => index === editExercise.exerciseIndex ? convertedEditExercise : exercise),
@@ -203,7 +206,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>(appendOrderToHevyRoutines(program));
     const numberOfWeeks = getNumberRoutineFolders(hevyProgram);
     const numberOfWeeksArr = Array.from({ length: numberOfWeeks }, (_, i) => i);
-    console.log(numberOfWeeks);
+    console.log(hevyProgram);
 
     useEffect(() => {
         if (typeof window !== undefined) {
@@ -223,32 +226,32 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                         hevyProgram={ hevyProgram }
                         folder_id={ index }
                         setHevyProgram={ setHevyProgram }
-                        // handleAddDay={ handleAddDay }
-                        // handleDeleteDay={ handleDeleteDay }
-                        // handleEditTitle={ handleEditTitle }
-                        // handleIsEditExercise={ handleIsEditExercise }
+                        handleAddDay={ handleAddDay }
+                        handleDeleteDay={ handleDeleteDay }
+                        handleEditTitle={ handleEditTitle }
+                        handleIsEditExercise={ handleIsEditExercise }
                         // handleDuplicateWeek={ handleDuplicateWeek }
                         // handleDuplicateDay={ handleDuplicateDay }
                         // handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
-                        // handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
+                        handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
                         // handleDeleteExercise={ handleDeleteExercise }
                     />
                 ) ) }
             </div>
-            {/* { addExerciseDialog.isOpen &&
-                <AddExerciseDialog
+            { addExerciseDialog.isOpen &&
+                <HevyAddExerciseDialog
                     addExerciseDialog={ addExerciseDialog }
                     isEditExercise={ isEditExercise }
-                    handleEditExercise={ handleEditExercise }
+                    // handleEditExercise={ handleEditExercise }
                     handleAddExercise={ handleAddExercise }
                     handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
                 />
             }
-            <GenerateDayDialog
+            {/* <GenerateDayDialog
                 handleGenerateDay={ handleGenerateDay }
                 generateDayDialog={ generateDayDialog }
                 handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
-            /> */}
+            />  */}
         </>
     );
 };
