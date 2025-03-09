@@ -5,6 +5,7 @@ import { HevyExerciseGif } from "./HevyExerciseGif";
 interface IProps {
     day: THevyRoutine;
     folder_id: number;
+    handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
 }
 
 export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
@@ -12,6 +13,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
     const {
         day,
         folder_id,
+        handleDeleteExercise,
     } = props;
 
     return (
@@ -101,7 +103,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                         <Trash2Icon
                             className="cursor-pointer"
                             onClick={ () => {
-                                // handleDeleteExercise(Number(folder_id), Number(day.order), i)
+                                handleDeleteExercise(Number(folder_id), Number(day.order), i)
                             } }/>
                         </TooltipContent>
                     </Tooltip>

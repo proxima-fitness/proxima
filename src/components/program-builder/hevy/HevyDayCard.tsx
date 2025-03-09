@@ -26,10 +26,10 @@ interface IProps {
     handleDragStart: (e: any, card: any) => void;
     handleEditTitle: (id: string, title: string) => void;
     handleDeleteDay: (id: string) => void;
-    // handleOpenGenerateDayDialog: (generateDayDialog: TDialog) => void;
+    handleOpenGenerateDayDialog: (generateDayDialog: THevyDialog) => void;
     handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
     // handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: Option[]) => void;    // handleGenerateDayDialog: (generateDayDialog: TDialog) => void;
-    // handleDeleteExercise: (weekOrder: number, dayOrder: number, exerciseIndex: number) => void;
+    handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
     handleIsEditExercise: (isEditExercise: boolean) => void;
 }
 
@@ -45,8 +45,8 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         handleEditTitle,
         handleOpenAddExerciseDialog,
         // handleDuplicateDay,
-        // handleOpenGenerateDayDialog,
-        // handleDeleteExercise,
+        handleOpenGenerateDayDialog,
+        handleDeleteExercise,
         handleIsEditExercise,
     } = props;
 
@@ -132,8 +132,8 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                         <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={ () => {
-                                        // handleOpenGenerateDayDialog({ weekOrder: Number(weekOrder), dayOrder: Number(day.order), isOpen: true })
-                                        }}
+                                        handleOpenGenerateDayDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true })
+                                    }}
                                         className="cursor-pointer"
                                     >
                                         Generate Day
@@ -182,6 +182,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                <HevyExerciseVisualizer
                                     day={ day }
                                     folder_id={ folder_id }
+                                    handleDeleteExercise={ handleDeleteExercise }
                                />
                             </div>
 

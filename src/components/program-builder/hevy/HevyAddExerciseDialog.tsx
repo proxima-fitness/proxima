@@ -15,7 +15,7 @@ import { HevyExerciseSearchBar } from "./HevyExerciseSearchBar";
 interface IProps {
     addExerciseDialog: THevyDialog;
     isEditExercise: boolean;
-    handleAddExercise: (folder_id: number, dayOrder: number, exercise: THevySets[]) => void;
+    handleAddExercise: (folder_id: number, dayOrder: number, exercise: TAddExercise) => void;
     // handleEditExercise: (editExercise: THevyDialog) => void;
     handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
 }
@@ -110,7 +110,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 
         const id = exerciseID;
         const exerciseData = { id, repTypeValue, intensityValue, reps, intensityData, repsWithTimeAndRepRange, intensityDataWithRPERange };
-        const newExercise: THevySets[] = await addExerciseToHevySetsConverter(exerciseData as TAddExercise);
+        const newExercise = (exerciseData as TAddExercise);
 
         if (isEditExercise) {
             // handleEditExercise({isOpen: false, folder_id: addExerciseDialog.folder_id, dayOrder: addExerciseDialog.dayOrder, exerciseIndex: addExerciseDialog.exerciseIndex ,editExercise: convertProgramCreatorExerciseToAddExercise(newExercise)});

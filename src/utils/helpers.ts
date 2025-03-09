@@ -76,6 +76,19 @@ export const getHevyExerciseFromLocalStorageByName = async (title: string) => {
     }
 };
 
+export const getHevyExerciseFromLocalStorageByID = async (id?: string) => {
+    const cachedExercises = localStorage.getItem("hevy-exercises");
+
+    if (!cachedExercises) {
+        return undefined;
+    }
+
+    if (cachedExercises && cachedExercises.length > 0) {
+        const { exercises } = JSON.parse(cachedExercises);
+        const exercise: THevyExerciseTemplate | undefined = exercises?.find((exercise: THevyExerciseTemplate) => exercise.id === id);
+        return exercise;
+    }
+};
 
 
 // Converts TAddExercise type into TProgramCreatorExercise type
@@ -114,7 +127,7 @@ export const addExerciseToHevySetsConverter = (addExercise: TAddExercise): THevy
     const sets: THevySets[] = addExercise.reps.map((rep, setIndex) => {
         return {
             index: setIndex,
-            type: "normal", // Defaulting to normal, adjust if needed
+            type: "normal", // Defaulting to normal, TODO: allow user to select this
             weight_kg: addExercise.intensityValue === "weights" ? Number((addExercise.intensityData[setIndex] * 0.4536).toFixed(2)) || 0 : 0,
             reps: rep,
             distance_meters: 0, // Assuming no distance data
@@ -346,7 +359,7 @@ export const getExerciseGifIdForHevyExercise = async (exercise_name: string) => 
         includeScore: false,
         minMatchCharLength: 2,
         shouldSort: true,
-        threshold: 0.1,
+        threshold: 0.2,
         keys: [
             "name_english",
         ],
@@ -355,11 +368,11 @@ export const getExerciseGifIdForHevyExercise = async (exercise_name: string) => 
     const proximaExercises = await getExercises();
 
     const fuse = new Fuse(proximaExercises, options);
-    const fuseResults = fuse.search(exercise_name);
+    const fuseResults = fuse.search(exercise_name, { limit: 1});
     if (!fuseResults) {
         return "";
     }
 
-    return fuseResults[0].item.gif_id;
+    return fuseResults?.[0]?.item?.gif_id ?? "";
 
 }

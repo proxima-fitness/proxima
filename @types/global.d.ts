@@ -103,7 +103,8 @@ type THevyExerciseTemplate = {
     type: string; // The exercise type.
     primary_muscle_group: string; // The primary muscle group of the exercise
     secondary_muscle_groups: string[]; // The secondary muscle groups of the exercise
-    isCustom: boolean; // indicating whether the exercise is a custom exercise
+    is_custom: boolean; // indicating whether the exercise is a custom exercise
+    equipment: string; // The exercise equipment
 }
 
 type THevyDialog = {

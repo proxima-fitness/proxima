@@ -2,12 +2,10 @@ import { useState } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CopyIcon, PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { reorder, reorderHevy } from "@/utils/helpers";
-import { Option } from "@/components/ui/multi-select";
-import { DayCard } from "../DayCard";
+import { reorderHevy } from "@/utils/helpers";
 import { DropIndicator } from "@/components/drag-and-drop/DropIndicator";
-import { DuplicateWeek } from "../DuplicateWeek";
 import { HevyDayCard } from "./HevyDayCard";
+import { HevyDuplicateWeek } from "./HevyDuplicateWeek";
 
 interface IProps {
     title: string;
@@ -16,14 +14,14 @@ interface IProps {
     hevyProgram: THevyRoutine[];
     setHevyProgram: (hevyProgram: THevyRoutine[]) => void;
     handleAddDay: (folder_id: number) => void;
-    // handleOpenGenerateDayDialog: (generateDayDialog: TDialog) => void;
+    handleOpenGenerateDayDialog: (generateDayDialog: THevyDialog) => void;
     handleDeleteDay: (id: string) => void;
     handleEditTitle: (id: string, title: string) => void;
     handleIsEditExercise: (isEditExercise: boolean) => void;
-    // handleDuplicateWeek: (fromWeekIndex: number, toWeekIndexes: number[]) => void;
+    handleDuplicateWeek: (fromWeekIndex: number, toWeekIndexes: number[]) => void;
     // handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: Option[]) => void
     handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
-    // handleDeleteExercise: (weekOrder: number, dayOrder: number, exerciseIndex: number) => void;
+    handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
 }
 
 export const HevyColumn: React.FC<IProps> = (props) => {
@@ -35,14 +33,14 @@ export const HevyColumn: React.FC<IProps> = (props) => {
         programLength,
         setHevyProgram,
         handleAddDay,
-        // handleOpenGenerateDayDialog,
+        handleOpenGenerateDayDialog,
         handleDeleteDay,
         handleEditTitle,
         handleIsEditExercise,
-        // handleDuplicateWeek,
+        handleDuplicateWeek,
         // handleDuplicateDay,
         handleOpenAddExerciseDialog,
-        // handleDeleteExercise,
+        handleDeleteExercise,
     } = props;
 
     const [active, setActive] = useState(false);
@@ -202,10 +200,10 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                             handleDeleteDay={ handleDeleteDay }
                             handleEditTitle={ handleEditTitle }
                             // handleDuplicateDay={ handleDuplicateDay }
-                            // handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
+                            handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
                             handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
                             handleIsEditExercise={ handleIsEditExercise }
-                            // handleDeleteExercise={ handleDeleteExercise }
+                            handleDeleteExercise={ handleDeleteExercise }
                         />
                 ) } ) }
                 <DropIndicator beforeId={null} weekOrder={folder_id} />
@@ -218,14 +216,13 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                     </Button>
                 </div>
             </div>
-            {/* <DuplicateWeek
-                weekOrder={ weekOrder }
+            <HevyDuplicateWeek
+                folder_id={ folder_id }
                 programLength={ programLength }
                 duplicateWeekOpen={ duplicateWeekOpen }
                 setDuplicateWeekOpen={ setDuplicateWeekOpen }
                 handleDuplicateWeek={ handleDuplicateWeek }
-            /> */}
-
+            />
         </div>
     );
   };

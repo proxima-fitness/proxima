@@ -1,7 +1,7 @@
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { lightColours } from "@/assets/constants";
-import { getExerciseGifIdForHevyExercise, getInitials } from "@/utils/helpers";
+import { getInitials } from "@/utils/helpers";
 import { useExerciseGif, useExerciseGifId } from "@/api/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 
