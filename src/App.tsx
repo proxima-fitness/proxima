@@ -66,13 +66,12 @@ const App = () => {
             </div>
             <div className={ `bg-white ${styles.paddingX} ${styles.flexCenter} flex-col` }>
                 <div className={ `${styles.boxWidth}` }>
-                    {/* <ProgramsSection /> */}
+                    <ProgramsSection />
                 </div>
             </div>
             <div className={ `bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
                 <div className={ `${styles.boxWidth}` }>
                     <Testimonials />
-                    {/* <FirstVisual /> */}
                     <CustomPrograms />
                 </div>
             </div>
@@ -84,8 +83,6 @@ const App = () => {
             <div className={ `bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
                 <div className={ `${styles.boxWidth}` }>
                     <Themes />
-                    {/* <SecondVisual /> */}
-                    {/* <Premium /> */}
                     <Faq />
                     <CallToAction />
                 </div>
