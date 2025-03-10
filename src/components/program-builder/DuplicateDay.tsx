@@ -50,27 +50,27 @@ export const DuplicateDay: React.FC<IProps> = (props) => {
                                 { programLengthArray.map((wk) => {
                                     return (
                                         <SelectItem key={ wk } value={ String(wk) }>Week {wk}</SelectItem>
-                                    )
+                                    );
                                 })}
                             </SelectContent>
                         </Select>
                         <MultiSelect
                             badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                             defaultOptions={ daysOptions }
-                            onChange={ (options) => setSelectedDays(options)}
+                            onChange={ (options) => setSelectedDays(options) }
                             value={ selectedDays }
                             placeholder="Day"
-                            emptyIndicator={
-                            <span className="text-center h-6 text-sm text-gray-600 dark:text-gray-400">
-                                no results found.
-                            </span>
-                            }
+                            emptyIndicator={ (
+                                <span className="text-center h-6 text-sm text-gray-600 dark:text-gray-400">
+                                    no results found.
+                                </span>
+                          ) }
                             />
                     </span>
                     <span className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4">
                         <span className="w-full flex items-center justify-center">
                             <Button onClick={ () => setDuplicateDayOpen(false) } variant="ghost" className="w-full h-12">
-                                    Cancel
+                                Cancel
                             </Button>
                         </span>
                         <span className="w-full flex items-center justify-center">
@@ -82,12 +82,12 @@ export const DuplicateDay: React.FC<IProps> = (props) => {
                                 variant="ghost"
                                 className="bg-lightSecondary text-white hover:bg-lightSecondary w-full h-12"
                             >
-                                    Duplicate
+                                Duplicate
                             </Button>
                         </span>
                     </span>
                 </DialogContent>
-        </Dialog>
+            </Dialog>
         </>
     );
 };

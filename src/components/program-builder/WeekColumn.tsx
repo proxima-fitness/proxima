@@ -1,4 +1,4 @@
-import React = require("react");
+import { FC } from "react";
 import { WeeksBar } from "./WeeksBar";
 import { Button } from "../ui/button";
 import { DayCard } from "./DayCard";
@@ -19,7 +19,7 @@ interface IProps {
     handleAddDay: (currentWeek: number) => void;
 }
 
-export const WeekColumn: React.FC<IProps> = (props) => {
+export const WeekColumn: FC<IProps> = (props) => {
 
     const {
         index,
@@ -58,9 +58,9 @@ export const WeekColumn: React.FC<IProps> = (props) => {
             <Button
                 onClick={ () => handleAddDay(index) }
                 className="mb-4 w-44 font-bold uppercase h-12 rounded-lg bg-lightSecondary hover:bg-lightSecondary text-white">
-                    <PlusIcon />
-                    Add Day
+                <PlusIcon />
+                Add Day
             </Button>
         </div>
-    )
-}
+    );
+};

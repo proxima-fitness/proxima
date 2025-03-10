@@ -5,6 +5,7 @@ import { getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, g
 import { getOpUserId, getUserFullName, getUserMetaData } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getExercises } from "./exercises";
+import { undefined } from "zod";
 
 /*********************************/
 /** CLIENT SIDE RENDERED HOOKS **/
@@ -57,8 +58,8 @@ export const useUserMetadata = (id: string) => {
         queryKey: ['user-metadata', id],
         queryFn: () => getUserMetaData(id),
         enabled: !!id,
-    })
-}
+    });
+};
 
 // FETCHES A PROGRAM BY PROGRAM ID
 export const useProgramById = (program_id: string) => {
@@ -89,7 +90,7 @@ export const useExercises = () => {
     return useQuery({
         queryKey: ["existing-exercises"],
         queryFn: () => getExercises(),
-    })
+    });
 };
 
 // FETCHES EITHER A GIF OR IMG AT A PARTICULAR RESOLUTION FROM STORAGE BUCKET FOR AN EXERCISE
@@ -108,12 +109,17 @@ export const useExerciseGif = (gif_id: string, resolution: "180" | "360", file_t
 // FETCHES A PROGRAM BY PROGRAM ID USING SSR
 export const useProgramByIdSSR = async (program_id: string) => {
 
-    const programOverview: TProgramPage = {
-        program: await getProgramByID(program_id),
-        thumbnail: await getProgramThumbnailByID(program_id),
-        schedule: await getExplorePageProgramDetails(program_id),
+    const program = await getProgramByID(program_id) ?? [];
+    const thumbnail = await getProgramThumbnailByID(program_id);
+    const schedule = await getExplorePageProgramDetails(program_id);
+    if (!thumbnail || !schedule) {
+        return null;
     }
-
+    const programOverview: TProgramPage = {
+        program: program,
+        thumbnail: thumbnail,
+        schedule: schedule,
+    };
     return programOverview;
 };
 
@@ -130,23 +136,33 @@ export const useUserMetadataSSR = (id: string) => {
 // FETCHES THE OP USER METADATA BY ID USING SSR
 export const useOpUserMetadataSSR = async (id: string) => {
     const userId = await getOpUserId(id);
+    if (!userId) {
+        throw new Error("User ID not found");
+    }
+
     return getUserMetaData(userId);
 };
 
 // FETCHES THE USER ID OF THE OP OF A WORKOUT PROGRAM
 export const useProgramOpUserId = (program_id: string) => {
     return getOpUserId(program_id);
-}
+};
 
 export const useOpProfilePictureByIdSSR = async (id: string) => {
     const userId = await getOpUserId(id);
+    if (!userId) {
+        throw new Error("User ID not found");
+    }
     return await getProfilePicByID(userId);
-}
+};
 // GET BLOG BY ID
 export const useBlogByIdSSR = async (id: string) => {
     const blog = await getBlogById(Number(id));
+    if (!blog) {
+        throw new Error("Blog not found");
+    }
     return blog;
-}
+};
 
 // GET ALL BLOGS USING SSR
 export const useBlogsSSR = async () => {
@@ -156,13 +172,16 @@ export const useBlogsSSR = async () => {
 
 export const useProgramsSSR = async () => {
     const programs = await getExplorePagePrograms(42);
+    if (!programs) {
+        throw new Error("Programs not found");
+    }
 
     const programsWithThumbnails = await Promise.all(
         programs.map( async (program) => {
             const thumbnail = await getProgramThumbnailByID(program.id);
             return {...program, thumbnail};
-        })
+        }),
     );
 
     return programsWithThumbnails as TProgram[];
-}
+};

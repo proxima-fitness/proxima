@@ -64,7 +64,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -72,17 +72,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -91,7 +91,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -99,17 +99,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -118,49 +118,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -169,7 +169,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -177,17 +177,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -196,37 +196,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -235,7 +235,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -243,19 +243,19 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
+                            9,
+                        ],
+                    },
+                },
+            ],
         },
         {
             "order": "2",
@@ -267,7 +267,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -275,17 +275,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -294,7 +294,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -302,17 +302,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -321,49 +321,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -372,7 +372,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -380,17 +380,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -399,37 +399,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -438,7 +438,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -446,20 +446,20 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
-        }
+                            9,
+                        ],
+                    },
+                },
+            ],
+        },
     ],
     [
         {
@@ -472,7 +472,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -480,17 +480,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -499,7 +499,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -507,17 +507,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -526,49 +526,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -577,7 +577,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -585,17 +585,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -604,37 +604,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -643,7 +643,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -651,19 +651,19 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
+                            9,
+                        ],
+                    },
+                },
+            ],
         },
         {
             "order": "2",
@@ -675,7 +675,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -683,17 +683,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -702,7 +702,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -710,17 +710,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -729,49 +729,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -780,7 +780,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -788,17 +788,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -807,37 +807,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -846,7 +846,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -854,20 +854,20 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
-        }
+                            9,
+                        ],
+                    },
+                },
+            ],
+        },
     ],
     [
         {
@@ -880,7 +880,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -888,17 +888,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -907,7 +907,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -915,17 +915,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -934,49 +934,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -985,7 +985,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -993,17 +993,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1012,37 +1012,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1051,7 +1051,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -1059,19 +1059,19 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
+                            9,
+                        ],
+                    },
+                },
+            ],
         },
         {
             "order": "2",
@@ -1083,7 +1083,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -1091,17 +1091,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1110,7 +1110,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -1118,17 +1118,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1137,49 +1137,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1188,7 +1188,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -1196,17 +1196,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1215,37 +1215,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1254,7 +1254,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -1262,20 +1262,20 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
-        }
+                            9,
+                        ],
+                    },
+                },
+            ],
+        },
     ],
     [
         {
@@ -1288,7 +1288,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -1296,17 +1296,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1315,7 +1315,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -1323,17 +1323,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1342,49 +1342,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1393,7 +1393,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -1401,17 +1401,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1420,37 +1420,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1459,7 +1459,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -1467,19 +1467,19 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
+                            9,
+                        ],
+                    },
+                },
+            ],
         },
         {
             "order": "2",
@@ -1491,7 +1491,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -1499,17 +1499,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1518,7 +1518,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -1526,17 +1526,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1545,49 +1545,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1596,7 +1596,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -1604,17 +1604,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1623,37 +1623,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1662,7 +1662,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -1670,20 +1670,20 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
-        }
+                            9,
+                        ],
+                    },
+                },
+            ],
+        },
     ],
     [
         {
@@ -1696,7 +1696,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -1704,17 +1704,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1723,7 +1723,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -1731,17 +1731,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1750,49 +1750,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1801,7 +1801,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -1809,17 +1809,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1828,37 +1828,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1867,7 +1867,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -1875,19 +1875,19 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
+                            9,
+                        ],
+                    },
+                },
+            ],
         },
         {
             "order": "2",
@@ -1899,7 +1899,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -1907,17 +1907,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1926,7 +1926,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -1934,17 +1934,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -1953,49 +1953,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2004,7 +2004,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -2012,17 +2012,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2031,37 +2031,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2070,7 +2070,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -2078,20 +2078,20 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
-        }
+                            9,
+                        ],
+                    },
+                },
+            ],
+        },
     ],
     [
         {
@@ -2104,7 +2104,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -2112,17 +2112,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2131,7 +2131,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -2139,17 +2139,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2158,49 +2158,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2209,7 +2209,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -2217,17 +2217,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2236,37 +2236,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2275,7 +2275,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -2283,19 +2283,19 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
+                            9,
+                        ],
+                    },
+                },
+            ],
         },
         {
             "order": "2",
@@ -2307,7 +2307,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -2315,17 +2315,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2334,7 +2334,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -2342,17 +2342,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2361,49 +2361,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2412,7 +2412,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -2420,17 +2420,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2439,37 +2439,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2478,7 +2478,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -2486,20 +2486,20 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
-        }
+                            9,
+                        ],
+                    },
+                },
+            ],
+        },
     ],
     [
         {
@@ -2512,7 +2512,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -2520,17 +2520,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2539,7 +2539,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -2547,17 +2547,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2566,49 +2566,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2617,7 +2617,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -2625,17 +2625,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2644,37 +2644,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2683,7 +2683,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -2691,19 +2691,19 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
+                            9,
+                        ],
+                    },
+                },
+            ],
         },
         {
             "order": "2",
@@ -2715,7 +2715,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -2723,17 +2723,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2742,7 +2742,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -2750,17 +2750,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2769,49 +2769,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2820,7 +2820,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -2828,17 +2828,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2847,37 +2847,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2886,7 +2886,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -2894,20 +2894,20 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
-        }
+                            9,
+                        ],
+                    },
+                },
+            ],
+        },
     ],
     [
         {
@@ -2920,7 +2920,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -2928,17 +2928,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2947,7 +2947,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -2955,17 +2955,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -2974,49 +2974,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3025,7 +3025,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -3033,17 +3033,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3052,37 +3052,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3091,7 +3091,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -3099,19 +3099,19 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
+                            9,
+                        ],
+                    },
+                },
+            ],
         },
         {
             "order": "2",
@@ -3123,7 +3123,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -3131,17 +3131,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3150,7 +3150,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -3158,17 +3158,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3177,49 +3177,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3228,7 +3228,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -3236,17 +3236,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3255,37 +3255,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3294,7 +3294,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -3302,20 +3302,20 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
-        }
+                            9,
+                        ],
+                    },
+                },
+            ],
+        },
     ],
     [
         {
@@ -3328,7 +3328,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -3336,17 +3336,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3355,7 +3355,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -3363,17 +3363,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3382,49 +3382,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3433,7 +3433,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -3441,17 +3441,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3460,37 +3460,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3499,7 +3499,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -3507,19 +3507,19 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
+                            9,
+                        ],
+                    },
+                },
+            ],
         },
         {
             "order": "2",
@@ -3531,7 +3531,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -3539,17 +3539,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3558,7 +3558,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -3566,17 +3566,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3585,49 +3585,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3636,7 +3636,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -3644,17 +3644,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3663,37 +3663,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3702,7 +3702,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -3710,20 +3710,20 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
-        }
+                            9,
+                        ],
+                    },
+                },
+            ],
+        },
     ],
     [
         {
@@ -3736,7 +3736,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -3744,17 +3744,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3763,7 +3763,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -3771,17 +3771,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3790,49 +3790,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3841,7 +3841,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -3849,17 +3849,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3868,37 +3868,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3907,7 +3907,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -3915,19 +3915,19 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
+                            9,
+                        ],
+                    },
+                },
+            ],
         },
         {
             "order": "2",
@@ -3939,7 +3939,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -3947,17 +3947,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3966,7 +3966,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -3974,17 +3974,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -3993,49 +3993,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4044,7 +4044,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -4052,17 +4052,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4071,37 +4071,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4110,7 +4110,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -4118,20 +4118,20 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
-        }
+                            9,
+                        ],
+                    },
+                },
+            ],
+        },
     ],
     [
         {
@@ -4144,7 +4144,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -4152,17 +4152,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4171,7 +4171,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -4179,17 +4179,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4198,49 +4198,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4249,7 +4249,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -4257,17 +4257,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4276,37 +4276,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4315,7 +4315,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -4323,19 +4323,19 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
+                            9,
+                        ],
+                    },
+                },
+            ],
         },
         {
             "order": "2",
@@ -4348,7 +4348,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -4356,17 +4356,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4375,7 +4375,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -4383,17 +4383,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4402,49 +4402,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4453,7 +4453,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -4461,17 +4461,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4480,37 +4480,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4519,7 +4519,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -4527,20 +4527,20 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
-        }
+                            9,
+                        ],
+                    },
+                },
+            ],
+        },
     ],
     [
         {
@@ -4553,7 +4553,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -4561,17 +4561,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4580,7 +4580,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -4588,17 +4588,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4607,49 +4607,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4658,7 +4658,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -4666,17 +4666,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4685,37 +4685,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4724,7 +4724,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -4732,19 +4732,19 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
+                            9,
+                        ],
+                    },
+                },
+            ],
         },
         {
             "order": "2",
@@ -4756,7 +4756,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "21s (EZ Bar)",
                         "name_portugues": "21s (EZ Bar)",
                         "name_francais": "21s (EZ Bar)",
-                        "gif_id": "2404"
+                        "gif_id": "2404",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -4764,17 +4764,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4783,7 +4783,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Círculos de Brazo",
                         "name_portugues": "Círculo de braço",
                         "name_francais": "Cercle de Bras",
-                        "gif_id": "1428"
+                        "gif_id": "1428",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -4791,17 +4791,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "percent_rm": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4810,49 +4810,49 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Fly de Pecho (Cable)",
                         "name_portugues": "Voador de Peito (Cabo)",
                         "name_francais": "Écarté de Poitrine (Câble)",
-                        "gif_id": "0227"
+                        "gif_id": "0227",
                     },
                     "sets": 4,
                     "reps_type": {
                         "reps_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe_range": [
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
+                                10,
                             ],
                             [
                                 9,
-                                10
-                            ]
-                        ]
-                    }
+                                10,
+                            ],
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4861,7 +4861,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Levantamiento Frontal",
                         "name_portugues": "Alavanca Frontal",
                         "name_francais": "Front Lever",
-                        "gif_id": "3296"
+                        "gif_id": "3296",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -4869,17 +4869,17 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             8,
                             8,
                             8,
-                            8
-                        ]
+                            8,
+                        ],
                     },
                     "intensity": {
                         "weights": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4888,37 +4888,37 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Swing con Kettlebell",
                         "name_portugues": "Swing com Kettlebell",
                         "name_francais": "Swing avec Kettlebell",
-                        "gif_id": "0549"
+                        "gif_id": "0549",
                     },
                     "sets": 4,
                     "reps_type": {
                         "time_range": [
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
+                                12,
                             ],
                             [
                                 8,
-                                12
-                            ]
-                        ]
+                                12,
+                            ],
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
+                            9,
+                        ],
+                    },
                 },
                 {
                     "exercise": {
@@ -4927,7 +4927,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                         "name_espanol": "Prensa Trasera (Máquina Smith)",
                         "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
                         "name_francais": "Développé Nuque (Smith Machine)",
-                        "gif_id": "0747"
+                        "gif_id": "0747",
                     },
                     "sets": 4,
                     "reps_type": {
@@ -4935,21 +4935,21 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
                             "amrap",
                             "amrap",
                             "amrap",
-                            "amrap"
-                        ]
+                            "amrap",
+                        ],
                     },
                     "intensity": {
                         "rpe": [
                             9,
                             9,
                             9,
-                            9
-                        ]
-                    }
-                }
-            ]
-        }
-    ]
+                            9,
+                        ],
+                    },
+                },
+            ],
+        },
+    ],
 ];
 
 
@@ -5206,12 +5206,12 @@ export const coolQuotes: TQuote[] = [
     { quote: "Live an extraordinary life… Don’t settle for an ordinary life… It’s easy to be ordinary anybody can do that. Find your magnificent obsession. Whatever it is and let nothing or no one tell you that you can’t do it. Tell them to sit back and watch me. Just sit back and watch me do it. Find your obsession go after that… I could care less what anybody else says and don’t let anything stop you from getting it.", author: "CT Fletcher"},
     { quote: "Man cannot remake himself without Suffering, for he is both the Marble and the Sculptor", author: "Alexis Carrel" },
     { quote: "I hated every minute of training, but I said, ‘Don’t Quit. Suffer now and live the rest of your life as a Champion!", author: "Muhammad Ali"},
-    { quote: "U mirin brah ?", author: "Zyzz (RIP)"}
+    { quote: "U mirin brah ?", author: "Zyzz (RIP)"},
 ];
 
 export const sexOptions: Option[] = [
     { label: "Male", value: "male"},
-    { label: "Female", value: "female"}
+    { label: "Female", value: "female"},
 ];
 
 export const ageOptions: Option[] = Array.from({ length: 100 - 14 + 1 }, (_, i) => {

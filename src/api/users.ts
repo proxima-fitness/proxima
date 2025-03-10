@@ -16,7 +16,7 @@ export const getOpUserId = async (program_id: string) => {
     } catch (error: unknown) {
         console.error("Error fetching program creator user id",error);
     }
-}
+};
 // Gets the users full name
 export const getUserFullName = async (id: string, id_type: "program" | "user") => {
     if (id_type === "program") {

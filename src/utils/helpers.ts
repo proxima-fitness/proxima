@@ -84,7 +84,7 @@ export const addExerciseToProgramCreatorExerciseConverter = async (addExercise: 
     } as TProgramCreatorExercise;
 
     return newExercise;
-}
+};
 
 // Returns the initials of an exercise
 export const getInitials = (name: string) => {

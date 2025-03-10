@@ -9,5 +9,5 @@ interface IProps {
 
 export default function QueryProvider({children}: IProps) {
     const [queryClient] = useState(() => new QueryClient());
-    return <QueryClientProvider client={queryClient}>{ children }</QueryClientProvider>
+    return <QueryClientProvider client={ queryClient }>{ children }</QueryClientProvider>;
 }

@@ -105,8 +105,8 @@ export const NavDrawer: React.FC = () => {
                         alt="menu"
                         className="w-[28px] h-[28px] object-contain"
                     />
-                    </Button>
-                    <SwipeableDrawer
+                </Button>
+                <SwipeableDrawer
                         anchor={ "right" }
                         open={ state["right"] }
                         onClose={ toggleDrawer("right", false) }

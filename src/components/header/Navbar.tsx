@@ -22,30 +22,30 @@ export const Navbar: React.FC = () => {
                                     <Button text={ "Download App" } styles={ `py-2` } />
                                 </Link>
                             : nav.id === "log-in" ?
-                            <li
+                                <li
                                 key={ nav.id }
                                 className={ `font-main font-normal cursor-pointer text-[16px] text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
                             >
-                            <a href="https://app.proximafitness.com/">Log In</a>
-                        </li>
+                                    <a href="https://app.proximafitness.com/">Log In</a>
+                                </li>
                             :
-                            <li
+                                <li
                                     key={ nav.id }
                                     className={ `font-main font-normal cursor-pointer text-[16px] text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
                                 >
-                                <Link href={ `/${nav.id}` }>{nav.title}</Link>
-                            </li>
+                                    <Link href={ `/${nav.id}` }>{nav.title}</Link>
+                                </li>
                             }
-                    </div>
+                        </div>
                     );
                 } ) }
             </ul>
             <div className="sm:hidden flex flex-1 justify-end items-center">
                 <NavDrawer />
                 <div>
+                </div>
             </div>
-        </div>
-    </nav>
+        </nav>
   );
 };
 

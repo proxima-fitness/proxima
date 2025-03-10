@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Badge } from "../ui/badge";
-import { Slider } from "@/components/ui/slider"
+import { Slider } from "@/components/ui/slider";
 import { ComboBox } from "../generic/ComboBox";
 
 interface IProps {
@@ -41,7 +41,7 @@ export const ProgramFilterGroup: React.FC<IProps> = (props) => {
         if (filter.type === "program_length") {
             handleAppliedProgramLengthFilter(filterType);
         } else if(filter.type === "workout_duration") {
-            handleAppliedWorkoutDurationFilter(filterType)
+            handleAppliedWorkoutDurationFilter(filterType);
         } else if (filter.type === "equipment") {
             if (appliedEquipmentFilter.includes(filterType)) {
                 // remove filter if already selected
@@ -54,7 +54,7 @@ export const ProgramFilterGroup: React.FC<IProps> = (props) => {
                 // remove filter if already selected
                 handleAppliedSpecializationFilter(appliedSpecializationFilter.filter(item => item !== filterType));
             } else {
-                handleAppliedSpecializationFilter([...appliedSpecializationFilter, filterType])
+                handleAppliedSpecializationFilter([...appliedSpecializationFilter, filterType]);
             }
         } else if (filter.type === "difficulty") {
             if (appliedDifficultyFilter.includes(filterType)) {
@@ -68,7 +68,7 @@ export const ProgramFilterGroup: React.FC<IProps> = (props) => {
 
     const badgeSelected = (filterType: string | undefined): boolean => {
         if (appliedProgramLengthFilter === filterType) {
-            return true
+            return true;
         } else if (appliedWorkoutDurationFilter === filterType) {
             return true;
         } else if (appliedEquipmentFilter.includes(filterType)) {
@@ -80,35 +80,35 @@ export const ProgramFilterGroup: React.FC<IProps> = (props) => {
         } else {
             return false;
         }
-    }
+    };
 
     return (
         <div className="px-2 pt-4">
             <div className="text-sm">{filter.title}</div>
             { filter.component === "badge" ? (
                 <div className="flex flex-row gap-2 flex-wrap pt-2">
-                { filter.values.map((filter) => {
+                    { filter.values.map((filter) => {
                     return (
-                        <Badge onClick={ () => handleSelectedFilters(filter) } key={ filter } className={`p-2 cursor-pointer ${ badgeSelected(filter) ? "bg-[#37BCCF] hover:bg-[#37BCCF] text-white hover:text-white" : "bg-white hover:bg-white"}  `}>{filter}</Badge>
-                    )
+                        <Badge onClick={ () => handleSelectedFilters(filter) } key={ filter } className={ `p-2 cursor-pointer ${ badgeSelected(filter) ? "bg-[#37BCCF] hover:bg-[#37BCCF] text-white hover:text-white" : "bg-white hover:bg-white"}  ` }>{filter}</Badge>
+                    );
                 } ) }
                 </div>
             ) : filter.component === "combobox" ?
             (
                 <div className="pt-2">
-                <ComboBox value={ filter.type === "program_length" ? appliedProgramLengthFilter: filter.type === "workout_duration" ? appliedWorkoutDurationFilter : undefined } handleSelectedFilters={ handleSelectedFilters } options={ filter.values } title={ filter.title } />
+                    <ComboBox value={ filter.type === "program_length" ? appliedProgramLengthFilter: filter.type === "workout_duration" ? appliedWorkoutDurationFilter : undefined } handleSelectedFilters={ handleSelectedFilters } options={ filter.values } title={ filter.title } />
                 </div>
             ) : filter.component === "slider" ?
             (
                 <div className="py-4">
-                    <Slider value={ sliderValue } onValueChange={ setSliderValue } max={Number(filter.values[filter.values.length - 1])} step={10} />
+                    <Slider value={ sliderValue } onValueChange={ setSliderValue } max={ Number(filter.values[filter.values.length - 1]) } step={ 10 } />
                     { filter.title === "Workout Duration" && `${sliderValue} Mins` }
                 </div>
             )
             :
             (
                 <>
-                <ComboBox value={ filter.type === "program_length" ? appliedProgramLengthFilter: filter.type === "workout_duration" ? appliedWorkoutDurationFilter : undefined } handleSelectedFilters={ handleSelectedFilters } options={ filter.values } title={ filter.title } />
+                    <ComboBox value={ filter.type === "program_length" ? appliedProgramLengthFilter: filter.type === "workout_duration" ? appliedWorkoutDurationFilter : undefined } handleSelectedFilters={ handleSelectedFilters } options={ filter.values } title={ filter.title } />
                 </>
             )
             }

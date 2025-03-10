@@ -55,4 +55,4 @@ export const ThemeSlider: React.FC = () => {
             </Slider>
         </div>
     );
-}
+};

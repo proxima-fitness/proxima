@@ -26,7 +26,7 @@ export const BlogCard: React.FC<IProps> = (props) => {
                 </div>
             </div>
             <div className="flex-[1]">
-                <img className="h-[200px] w-[200px] rounded-lg"  src={ blog.image_url }></img>
+                <img className="h-[200px] w-[200px] rounded-lg" src={ blog.image_url }></img>
             </div>
 
         </div>

@@ -1,11 +1,12 @@
 import { supabase } from ".";
 
 // GET THE PROGRAMS DISPLAYED ON THE EXPLORE PAGE
-export const getExplorePagePrograms = async (limit: number) => {
+export const getExplorePagePrograms = async (limit?: number) => {
     try {
-        const { data, error } = await supabase
-        .from('programs')
-        .select('id,title,details,program_length,workout_duration,equipment,specialization,difficulty,user_id').eq('explore', true).limit(limit);
+        const q = supabase
+            .from('programs')
+            .select('id,title,details,program_length,workout_duration,equipment,specialization,difficulty,user_id').eq('explore', true);
+        const { data, error } = limit ? await q.limit(limit) : await q;
         if (error) {
             console.error('Error fetching explore page programs:', error);
         } else if (data && data.length > 0 ) {
@@ -57,11 +58,13 @@ export const getExplorePageProgramDetails = async (program_id: string) => {
 
             if (error) {
                 console.error('Error fetching program details:', error);
+                throw Error(`Error fetching program details: ${error}`);
             } else if (data && data.length > 0 ) {
                 return data as unknown as TProgramDetails[];
             }
     } catch (error: unknown) {
         console.error('Error fetching program details:', error);
+        throw Error(`Error fetching program details: ${error}`);
     }
 };
 
@@ -85,7 +88,7 @@ export const getPrograms = async (limit?: number) => {
                 programs.map( async (program) => {
                     const thumbnail = await getProgramThumbnailByID(program.id);
                     return {...program, thumbnail};
-                })
+                }),
             );
 
             return programsWithThumbnails as unknown as TProgram[];
@@ -107,7 +110,7 @@ export const getProgramByID = async (program_id: string) => {
             return data as unknown as TProgram[];
         }
     } catch (error: unknown) {
-        console.error('Error fetching explore page programs:', error);
+        throw Error(`Error fetching explore page programs: ${error}`);
     }
 };
 
@@ -142,12 +145,13 @@ export const getProgramThumbnailByID = async (id: string) => {
                 const { data, error } = await supabase.storage.from('programs').download(id + "/" + fileName);
                 if (error) {
                     console.error('Error fetching program thumbnail:', error);
-                    return null;
+                    throw Error(`Error fetching program thumbnail: ${error}`);
                 } else {
                     return data;
                 }
             }
     } catch (error: unknown) {
         console.error('Error fetching program thumbnail:', error);
+        throw Error(`Error fetching program thumbnail: ${error}`);
     }
 };

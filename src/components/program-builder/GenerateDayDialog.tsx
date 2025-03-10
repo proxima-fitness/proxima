@@ -4,13 +4,13 @@ import {
     Dialog,
     DialogContent,
     DialogTitle,
-  } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
+  } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import  { Button } from "@/components/ui/button";
 import { SearchIcon, SparklesIcon } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
-import { useForm } from "react-hook-form"
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
     Form,
@@ -38,9 +38,9 @@ export const GenerateDayDialog: React.FC<IProps> = (props) => {
 
     const formSchema = z.object({
         prompt: z.string().min(0, {
-            message: "Please provide a prompt to Re-generate the selected day"
+            message: "Please provide a prompt to Re-generate the selected day",
         }).max(300, {
-            message: "Prompts cannot exceed 300 characters"
+            message: "Prompts cannot exceed 300 characters",
         }),
     });
 
@@ -57,39 +57,39 @@ export const GenerateDayDialog: React.FC<IProps> = (props) => {
     };
 
     return (
-        <Dialog open={ generateDayDialog.isOpen } onOpenChange={ () => handleGenerateDayDialog({currentWeek: undefined, currentDay: undefined, isOpen: false})} >
+        <Dialog open={ generateDayDialog.isOpen } onOpenChange={ () => handleGenerateDayDialog({currentWeek: undefined, currentDay: undefined, isOpen: false}) } >
 
-                <DialogContent hideClose className="max-w-5xl w-full">
-                    <DialogTitle>
-                        <span>
-                            <Form {...form}>
-                                <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-row justify-between items-center gap-4 w-full">
-                                    <FormField
-                                        control={form.control}
+            <DialogContent hideClose className="max-w-5xl w-full">
+                <DialogTitle>
+                    <span>
+                        <Form { ...form }>
+                            <form onSubmit={ form.handleSubmit(onSubmit) } className="flex flex-row justify-between items-center gap-4 w-full">
+                                <FormField
+                                        control={ form.control }
                                         name="prompt"
-                                        render={({ field }) => (
+                                        render={ ({ field }) => (
                                             <FormItem className="w-full">
-                                            <FormControl>
-                                                <Input
+                                                <FormControl>
+                                                    <Input
                                                     startIcon={ SearchIcon }
-                                                    placeholder={`Describe your desired Week ${generateDayDialog.currentWeek + 1} Day ${generateDayDialog.currentDay}`}
-                                                    {...field}
+                                                    placeholder={ `Describe your desired Week ${generateDayDialog.currentWeek + 1} Day ${generateDayDialog.currentDay}` }
+                                                    { ...field }
                                                 />
-                                            </FormControl>
-                                            <FormMessage />
+                                                </FormControl>
+                                                <FormMessage />
                                             </FormItem>
-                                        )}
+                                        ) }
                                     />
-                                    <Button
+                                <Button
                                         type="submit"
                                         className="w-[auto] h-10 bg-[#33bbcf] text-white">
-                                        <SparklesIcon /> Generate
-                                    </Button>
-                                </form>
-                            </Form>
-                        </span>
-                    </DialogTitle>
-                </DialogContent>
+                                    <SparklesIcon /> Generate
+                                </Button>
+                            </form>
+                        </Form>
+                    </span>
+                </DialogTitle>
+            </DialogContent>
         </Dialog>
     );
 };

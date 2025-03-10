@@ -2,18 +2,19 @@ import styles from "@/style";
 import { GetStarted } from "../header/GetStarted";
 import { useBlogByIdSSR } from "@/api/hooks";
 import { convertSupabaseDateToReadable } from "@/utils/helpers";
-import React = require("react");
+import { FC } from "react";
 // import { RichText } from '@payloadcms/richtext-lexical/react'
-import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
+import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical';
 import { RichText } from "../rich-text/RichText";
 
 interface IProps {
     id: string;
 }
 
-export const BlogSlugLayout: React.FC<IProps> = async (props) => {
+export const BlogSlugLayout: FC<IProps> = async (props) => {
 
     const { id } = props;
+  // eslint-disable-next-line
     const blog = await useBlogByIdSSR(id);
 
     return (

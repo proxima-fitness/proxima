@@ -2,7 +2,7 @@
 
 import { exampleProximaProgram } from "@/assets/constants";
 import { useState } from "react";
-import { toast } from "sonner"
+import { toast } from "sonner";
 import { AddExerciseDialog } from "./AddExerciseDialog";
 import { Option } from "@/components/ui/multi-select";
 import { GenerateDayDialog } from "./GenerateDayDialog";
@@ -52,7 +52,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                 const newEmptyDay: TProgramCreatorDay = {
                     order: String(toWeekLength + 1),
                     exercises: [...(tmpProgram[fromWeekIndex][fromDayIndex].exercises || [])],
-                }
+                };
                 tmpProgram[toWeekIndex].push(newEmptyDay);
             }
         };
@@ -86,7 +86,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
         const newEmptyDay: TProgramCreatorDay = {
             order: String(currentWeekLength + 1),
             exercises: [],
-        }
+        };
         const tmpProgram = [...newProgram];
         tmpProgram[currentWeek].push(newEmptyDay);
         setNewProgram(tmpProgram);
@@ -147,7 +147,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                             handleAddDay={ handleAddDay }
                         />
 
-                    )
+                    );
                 } ) }
             </div>
             <AddExerciseDialog addExerciseDialog={ addExerciseDialog } handleAddExercise={ handleAddExercise } handleAddExerciseDialog={ handleAddExerciseDialog } />

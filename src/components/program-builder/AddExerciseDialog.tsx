@@ -9,7 +9,6 @@ import { addExerciseToProgramCreatorExerciseConverter, getExerciseFromLocalStora
 import { ExerciseSearchBar } from "../generic/ExerciseSearchBar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Input } from "../ui/input";
-import { toast } from "sonner";
 import { PlusIcon, Trash2Icon, XIcon } from "lucide-react";
 
 interface IProps {
@@ -28,10 +27,12 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
 
     const { data: exercises }  = useExercises();
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [title, setTitle] = useState<string>();
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [ editedExercise, setEditedExercise ] = useState<TAddExercise | undefined>();
-    const [ isEditConfirmed, setIsEditConfirmed] = useState<boolean>(false);
+    // const [ isEditConfirmed, setIsEditConfirmed] = useState<boolean>(false);
 
     const [ exerciseID, setExerciseID ] = useState<string>();
     const [ selectedName, setSelectedName ] = useState<string>('');
@@ -159,7 +160,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
 
 
     return (
-        <Dialog open={ addExerciseDialog.isOpen } onOpenChange={ () => handleAddExerciseDialog({ currentWeek: undefined, currentDay: undefined, isOpen: false} )}>
+        <Dialog open={ addExerciseDialog.isOpen } onOpenChange={ () => handleAddExerciseDialog({ currentWeek: undefined, currentDay: undefined, isOpen: false} ) }>
             <DialogContent hideClose className="max-w-4xl w-full">
                 <DialogTitle className="font-bold flex items-center justify-center pb-4 border-b-2">
                     Add Exercise to Week {addExerciseDialog.currentWeek + 1} Day {addExerciseDialog.currentDay}
@@ -176,39 +177,39 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                     />
                     <div className="mt-4">
 
-                            <div className="flex flex-row justify-center gap-2 items-center w-full pb-4">
-                                <div className="flex items-start justify-start w-[10%]">
-                                        Set
-                                </div>
-                                <div className="w-[33%]">
-                                    <Select value={ repTypeValue } aria-label="rep type" onValueChange={ (value) => setRepTypeValue(value) }>
-                                        <SelectTrigger autoFocus className="h-10">
-                                            <SelectValue placeholder="Reps" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            { rep_types.map((rep_type) => (
-                                                <SelectItem key={ rep_type.value } value={ rep_type.value }>{ rep_type.label }</SelectItem>
-                                            ) ) }
-                                        </SelectContent>
-
-                                    </Select>
-                                </div>
-                                <div className="w-[33%]">
-                                    <Select value={ intensityValue } aria-label="intensity" onValueChange={ (value) => setIntensityValue(value) }>
-                                        <SelectTrigger autoFocus className="h-10">
-                                            <SelectValue placeholder="Intensity" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            { intensities.map((intensity) => (
-                                                <SelectItem key={ intensity.value } value={ intensity.value }>{ intensity.label }</SelectItem>
-                                            ) ) }
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div>
-                                    <XIcon className="opacity-0 pointer-events-none" />
-                                </div>
+                        <div className="flex flex-row justify-center gap-2 items-center w-full pb-4">
+                            <div className="flex items-start justify-start w-[10%]">
+                                Set
                             </div>
+                            <div className="w-[33%]">
+                                <Select value={ repTypeValue } aria-label="rep type" onValueChange={ (value) => setRepTypeValue(value) }>
+                                    <SelectTrigger autoFocus className="h-10">
+                                        <SelectValue placeholder="Reps" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        { rep_types.map((rep_type) => (
+                                            <SelectItem key={ rep_type.value } value={ rep_type.value }>{ rep_type.label }</SelectItem>
+                                            ) ) }
+                                    </SelectContent>
+
+                                </Select>
+                            </div>
+                            <div className="w-[33%]">
+                                <Select value={ intensityValue } aria-label="intensity" onValueChange={ (value) => setIntensityValue(value) }>
+                                    <SelectTrigger autoFocus className="h-10">
+                                        <SelectValue placeholder="Intensity" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        { intensities.map((intensity) => (
+                                            <SelectItem key={ intensity.value } value={ intensity.value }>{ intensity.label }</SelectItem>
+                                            ) ) }
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div>
+                                <XIcon className="opacity-0 pointer-events-none" />
+                            </div>
+                        </div>
 
                         { reps.map((rep: string | number, index: number) => (
                             <div
@@ -344,7 +345,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                 <span className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4">
                     <span className="w-full flex items-center justify-center">
                         <Button onClick={ () => handleAddExerciseDialog({currentWeek: undefined, currentDay: undefined, isOpen: false} ) } variant="ghost" className="w-full h-12">
-                                Cancel
+                            Cancel
                         </Button>
                     </span>
                     <span className="w-full flex items-center justify-center">
@@ -353,7 +354,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                             variant="ghost"
                             className="bg-lightSecondary text-white hover:bg-lightSecondary w-full h-12"
                         >
-                                Add
+                            Add
                         </Button>
                     </span>
                 </span>

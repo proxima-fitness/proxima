@@ -9,6 +9,7 @@ import { exampleProximaProgram } from "@/assets/constants";
 export const BuildProgramClientPage: React.FC = () => {
 
     const [generating, setGenerating] = useState(true);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [isHevy, setIsHevy] = useState(false); // if true Hevy routine, else Proxima Program
 
     useEffect(() => {
