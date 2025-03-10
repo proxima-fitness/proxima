@@ -262,3 +262,11 @@ type TUserDetails = {
     bio: string;
     created_at: string;
 }
+type TCard = {
+    title: string,
+    order: string,
+    day_title: string,
+    exercises: TProgramCreatorExercise[],
+    id: string,
+    weekOrder: string,
+}

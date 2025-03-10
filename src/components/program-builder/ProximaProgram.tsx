@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { toast } from "sonner"
+import { toast } from "sonner";
 import { AddExerciseDialog } from "./AddExerciseDialog";
 import { Option } from "@/components/ui/multi-select";
 import { GenerateDayDialog } from "./GenerateDayDialog";
@@ -44,7 +44,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                     ...day,
                     id: String(newId++),
                     weekOrder: String(week),
-                }))
+                })),
             );
 
             return reorder([...filteredPrev, ...newDays]);
@@ -146,8 +146,8 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     const handleEditTitle = (id: string, day_title: string) => {
         setFlattenedProgramDays((prev) =>
             prev.map((day) =>
-                day.id === id ? { ...day, day_title: day_title} : day
-            )
+                day.id === id ? { ...day, day_title: day_title} : day,
+            ),
         );
     };
 
@@ -195,8 +195,8 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                     };
                 }
                 return day;
-            })
-        })
+            });
+        });
 
         setIsEditExercise(false);
     };

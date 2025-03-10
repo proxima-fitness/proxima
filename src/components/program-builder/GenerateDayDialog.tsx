@@ -54,7 +54,7 @@ export const GenerateDayDialog: React.FC<IProps> = (props) => {
     };
 
     return (
-        <Dialog open={ generateDayDialog.isOpen } onOpenChange={ () => handleOpenGenerateDayDialog({weekOrder: undefined, dayOrder: undefined, isOpen: false})} >
+        <Dialog open={ generateDayDialog.isOpen } onOpenChange={ () => handleOpenGenerateDayDialog({weekOrder: undefined, dayOrder: undefined, isOpen: false}) } >
 
             <DialogContent hideClose className="max-w-5xl w-full">
                 <DialogTitle>
@@ -69,8 +69,8 @@ export const GenerateDayDialog: React.FC<IProps> = (props) => {
                                                 <FormControl>
                                                     <Input
                                                     startIcon={ SearchIcon }
-                                                    placeholder={`Describe your desired Week ${generateDayDialog.weekOrder + 1} Day ${generateDayDialog.dayOrder}`}
-                                                    {...field}
+                                                    placeholder={ `Describe your desired Week ${generateDayDialog.weekOrder + 1} Day ${generateDayDialog.dayOrder}` }
+                                                    { ...field }
                                                 />
                                                 </FormControl>
                                                 <FormMessage />

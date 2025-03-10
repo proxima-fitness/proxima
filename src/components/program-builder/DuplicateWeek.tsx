@@ -86,7 +86,7 @@ export const DuplicateWeek: React.FC<IProps> = (props) => {
                             onClick={ () => {
                                 handleDuplicateWeek(
                                     Number(weekOrder),
-                                    toWeekIndexes()
+                                    toWeekIndexes(),
                                 );
                                 setDuplicateWeekOpen(false);
                                 }

@@ -3,7 +3,7 @@ import {
     DialogContent,
     DialogTitle,
   } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea"
+import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {  CopyIcon, DownloadIcon, FileDownIcon, LogInIcon, PartyPopperIcon } from "lucide-react";
@@ -65,36 +65,36 @@ export const FinishDialog: React.FC<IProps> = (props) => {
     };
 
     if (!program && !hevyRoutine) {
-        return <div></div>
+        return <div></div>;
     }
 
     return (
-        <Dialog open={ openFinishDialog } onOpenChange={ () => handleOpenFinishDialog(false)} >
+        <Dialog open={ openFinishDialog } onOpenChange={ () => handleOpenFinishDialog(false) } >
             <DialogContent hideClose className="max-w-5xl">
                 <DialogTitle className="font-bold flex items-center justify-center pb-4 gap-2 border-b-2">
                     Congrats !!! You have created your first Program <PartyPopperIcon />
                 </DialogTitle>
                 <span className="flex flex-row justify-center items-center gap-2">
-                <Button
+                    <Button
                     onClick={ () => setIsPreview(false) }
                     variant={ isPreview ? "ghost" : "outline" }
                     className="w-56 h-10 uppercase"
                 >
-                    View JSON
-                </Button>
-                <Button
+                        View JSON
+                    </Button>
+                    <Button
                     onClick={ () => setIsPreview(true) }
                     variant={ isPreview ? "outline" : "ghost" }
                     className="w-56 h-10 uppercase"
                 >
-                    Preview PDF
-                </Button>
+                        Preview PDF
+                    </Button>
                 </span>
                 <span>
                     { isPreview ?
                         <PDFViewer className="w-full h-[50vh]">
                             { isHevy ?
-                                <HevyPdfRenderer hevyRoutine={ deFlattenHevyRoutine(hevyRoutine) }/>
+                                <HevyPdfRenderer hevyRoutine={ deFlattenHevyRoutine(hevyRoutine) } />
                             :
                                 <PdfRenderer program={ programCreatorDayToScheduleWorkouts(program) } />
                             }
@@ -127,7 +127,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                                     <DownloadIcon /> Download JSON
                                 </Button>
                             </span>
-                    </div>
+                        </div>
                     }
                     <span>
                         <Button

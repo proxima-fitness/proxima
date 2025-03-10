@@ -36,12 +36,12 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                         style={ {
                             fontSize: "18px",
                             fontFamily: "Russo One",
-                            textAlign: "left"
-                        }}
+                            textAlign: "left",
+                        } }
                         >
-                            Week {index + 1}
+                        Week {index + 1}
                     </Text>
-                    <Text style={ { fontSize: "8px", fontFamily: "Russo One"}}>© 2025 Proxima Fitness Inc.</Text>
+                    <Text style={ { fontSize: "8px", fontFamily: "Russo One"} }>© 2025 Proxima Fitness Inc.</Text>
                     <View
                         style={ {
                             display: "flex",
@@ -52,7 +52,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                             paddingVertical: "8px",
                             gap: "16px",
                             flexWrap: "wrap",
-                        }}
+                        } }
                     >
                         { week.map((day) => (
                             <View
@@ -65,8 +65,8 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                 } }
                                 key={ "week " + (day.folder_id + 1) + "day " + day.order + " " }
                             >
-                                <View style={ { borderBottomWidth: "1px", borderColor: "#E5E7EB" }}>
-                                    <Text style={ { fontSize: "12px", fontFamily: "Russo One" }}>
+                                <View style={ { borderBottomWidth: "1px", borderColor: "#E5E7EB" } }>
+                                    <Text style={ { fontSize: "12px", fontFamily: "Russo One" } }>
                                         { "Day" } { day.order } { day?.title ? <> &middot; { day.title }</> : "" }
                                     </Text>
                                     <Text style={ { fontWeight: "200", fontSize: "8px", paddingVertical: "4px" } }>
@@ -80,7 +80,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                     borderBottomWidth: "1px",
                                     borderColor: "#E5E7EB",
                                     fontSize: "8px",
-                                    }}
+                                    } }
                                 >
                                     <View
                                         style={ {
@@ -89,7 +89,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                             justifyContent: "flex-start",
                                             alignItems: "center",
                                             gap: "5px",
-                                        }}
+                                        } }
                                     >
                                         <View>
                                             <Text>#</Text>
@@ -104,7 +104,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                             flexDirection: "row",
                                             justifyContent: "flex-start",
                                             gap: "16px",
-                                        }}
+                                        } }
                                     >
                                         <View
                                             style={ {
@@ -112,7 +112,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                 flexDirection: "row",
                                                 justifyContent: "center",
                                                 alignItems: "center",
-                                            }}
+                                            } }
                                         >
                                             <Text>Sets</Text>
                                         </View>
@@ -123,7 +123,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                 justifyContent: "center",
                                                 alignItems: "center",
 
-                                            }}
+                                            } }
                                         >
                                             <Text>Reps</Text>
                                         </View>
@@ -133,7 +133,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                 flexDirection: "row",
                                                 justifyContent: "center",
                                                 alignItems: "center",
-                                            }}
+                                            } }
                                         >
                                             <Text>Intensity</Text>
                                         </View>
@@ -141,7 +141,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                 </View>
                                 <View>
                                     { day?.exercises?.map((exercise: THevyExercise, exerciseIndex: number) => (
-                                        <View key={ exerciseIndex}>
+                                        <View key={ exerciseIndex }>
                                             <View
                                                 style={ {
                                                     borderBottomWidth: "1px",
@@ -153,7 +153,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                     fontWeight: "200",
                                                     alignItems: "center",
                                                     paddingVertical: "8px",
-                                                }}
+                                                } }
                                             >
                                                 <View style={ {
                                                     display: "flex",
@@ -161,12 +161,12 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                     justifyContent: "flex-start",
                                                     gap: "4px",
                                                     alignItems: "center",
-                                                    maxWidth: "40%"
-                                                }}>
+                                                    maxWidth: "40%",
+                                                } }>
                                                     <View>
                                                         <Text style={ { color: "#33BBCF" } }>{exerciseIndex + 1}</Text>
                                                     </View>
-                                                    <View style={ { paddingRight: "2px" }}>
+                                                    <View style={ { paddingRight: "2px" } }>
                                                         <Text>{ exercise?.title }</Text>
                                                     </View>
                                                     <View>
@@ -180,7 +180,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                         alignItems: "center",
                                                         width: "50%",
                                                         fontSize: "8px",
-                                                    }}
+                                                    } }
                                                 >
                                                     <Text
                                                         style={ { display: "flex", flexDirection: "column" } }
@@ -197,7 +197,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                                     ))
                                                                 )
                                                             )}
-                                                            { exercise.sets[0] && exercise.sets[0].distance_meters > 0 && (
+                                                        { exercise.sets[0] && exercise.sets[0].distance_meters > 0 && (
                                                                 exercise.sets.every((reps, i, arr) => reps.distance_meters === arr[0].distance_meters) ? (
                                                                     <Text>{exercise.sets[0].distance_meters} m</Text>
                                                                 ) : (
@@ -206,7 +206,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                                     ))
                                                                 )
                                                             )}
-                                                            { exercise.sets[0] && exercise.sets[0].duration_seconds > 0 && (
+                                                        { exercise.sets[0] && exercise.sets[0].duration_seconds > 0 && (
                                                                 exercise.sets.every((reps, i, arr) => reps.duration_seconds === arr[0].duration_seconds) ? (
                                                                     <Text>{exercise.sets[0].duration_seconds} s</Text>
                                                                 ) : (
@@ -215,7 +215,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                                     ))
                                                                 )
                                                             )}
-                                                            { exercise.sets[0] && exercise.sets[0].custom_metric > 0 && (
+                                                        { exercise.sets[0] && exercise.sets[0].custom_metric > 0 && (
                                                                 exercise.sets.every((reps, i, arr) => reps.custom_metric === arr[0].custom_metric) ? (
                                                                     <Text>{exercise.sets[0].custom_metric}</Text>
                                                                 ) : (
@@ -262,10 +262,10 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                 justifyContent: "center",
                 alignItems: "center",
                 fontSize: "10px",
-            }}>
-                <View style={ { width: "80vw"}}>
-                    <Text style={ { textAlign: "center", fontSize: "14px", fontWeight: "bold", paddingBottom: "8px" }}>Thank you for using the AI Program Builder!</Text>
-                    <Text style={ { paddingVertical: "4px" } }>I hope this custom workout program helps you make the gains you were after. Respect for putting in the work, now it's time to level up!</Text>
+            } }>
+                <View style={ { width: "80vw"} }>
+                    <Text style={ { textAlign: "center", fontSize: "14px", fontWeight: "bold", paddingBottom: "8px" } }>Thank you for using the AI Program Builder!</Text>
+                    <Text style={ { paddingVertical: "4px" } }>I hope this custom workout program helps you make the gains you were after. Respect for putting in the work, now it&apos;s time to level up!</Text>
                     <Text style={ { paddingVertical: "4px" } }>As a special thank you, enjoy 30% off your purchase on the Proxima Fitness App - the ultimate tool for AI-powered workout programming and tracking.</Text>
                     <Text style={ { paddingVertical: "4px" } }>You can also use your program for FREE in the Proxima Fitness App.</Text>
                     <Text style={ { paddingVertical: "4px", fontWeight: "bold" } }>Use code: GAINS30 at checkout</Text>

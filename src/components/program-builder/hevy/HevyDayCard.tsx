@@ -25,7 +25,7 @@ interface IProps {
     title: string;
     folder_id: number;
     programLength: number;
-    handleDragStart: (e: any, card: any) => void;
+    handleDragStart: (e: DragEvent, card: TCard) => void;
     handleEditTitle: (id: string, title: string) => void;
     handleDeleteDay: (id: string) => void;
     handleOpenGenerateDayDialog: (generateDayDialog: THevyDialog) => void;
@@ -76,12 +76,12 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
 
     return (
         <>
-            <DropIndicator beforeId={day.id} weekOrder={folder_id} />
+            <DropIndicator beforeId={ day.id } weekOrder={ folder_id } />
             <motion.div
                 layout
-                layoutId={day.id}
+                layoutId={ day.id }
                 draggable="true"
-                onDragStart={(e) => handleDragStart(e, cardVal)}
+                onDragStart={ (e) => handleDragStart(e, cardVal) }
                 className="cursor-grab rounded active:cursor-grabbing gap-4"
             >
                 <Card className="group py-4 px-4 min-w-[440px] max-w-[440px] bg-lightGray my-2">
@@ -124,18 +124,18 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                     <DropdownMenuItem
                                         className="cursor-pointer"
                                         onClick={ () => {
-                                            handleDeleteDay(day.id)
-                                            }}>
+                                            handleDeleteDay(day.id);
+                                            } }>
                                         Delete Day
                                         <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={ () => setEditTitleOpen(true)} className="cursor-pointer">
+                                    <DropdownMenuItem onClick={ () => setEditTitleOpen(true) } className="cursor-pointer">
                                         Edit Title
                                         <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={ () => {
-                                        handleOpenGenerateDayDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true })
-                                    }}
+                                        handleOpenGenerateDayDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true });
+                                    } }
                                         className="cursor-pointer"
                                     >
                                         Generate Day
@@ -143,7 +143,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                            <TooltipProvider delayDuration={0}>
+                            <TooltipProvider delayDuration={ 0 }>
                                 <Tooltip>
                                     <TooltipTrigger
                                         className="cursor-pointer group-hover:opacity-100 group-active:opacity-100 group-hover:pointer-events-auto group-active:pointer-events-auto opacity-0 pointer-events-none"
@@ -180,20 +180,20 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                             </div>
                         </div>
                     </div>
-                            <div>
-                               <HevyExerciseVisualizer
+                    <div>
+                        <HevyExerciseVisualizer
                                     day={ day }
                                     folder_id={ folder_id }
                                     handleEdit={ handleEdit }
                                     handleDeleteExercise={ handleDeleteExercise }
                                />
-                            </div>
+                    </div>
 
 
                     <div
                         className="flex items-center justify-center"
                         onClick={ () => {
-                            handleOpenAddExerciseDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true})
+                            handleOpenAddExerciseDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true});
                          } }>
                         <Button variant="ghost" className="mt-1 w-full font-bold uppercase h-12 hover:bg-gray-200 text-black"><PlusIcon />Add Exercise</Button>
                     </div>

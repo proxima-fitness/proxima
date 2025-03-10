@@ -99,11 +99,11 @@ export const useHevyExercises = () => {
     return useQuery({
         queryKey: ["hevy-exercises"],
         queryFn: () => getHevyExercises(),
-    })
+    });
 };
 
 // FETCHES PROXIMA GIF ID TO BE USED ON HEVY EXERCISES
-export const useExerciseGifId = (exercise_name) => {
+export const useExerciseGifId = (exercise_name: string) => {
     return useQuery({
         queryKey: [ "hevy-exercise-gif-id", exercise_name ],
         queryFn: () => getExerciseGifIdForHevyExercise(exercise_name),

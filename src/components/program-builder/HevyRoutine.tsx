@@ -46,7 +46,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                     ...day,
                     id: String(++maxId),
                     folder_id: week,
-                }))
+                })),
             );
 
             return reorderHevy([...filteredPrev, ...newDays]);
@@ -152,8 +152,8 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     const handleEditTitle = (id: string, title: string) => {
         setHevyProgram((prev) =>
             prev.map((day) =>
-                day.id === id ? { ...day, title: title} : day
-            )
+                day.id === id ? { ...day, title: title} : day,
+            ),
         );
     };
 
@@ -191,7 +191,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                                 exercise_template_id: exercise.id,
                                 supersets_id: null,
                                 sets: sets,
-                            }
+                            },
                             ],
                     };
                 }
@@ -222,8 +222,8 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                     };
                 }
                 return day;
-            })
-        })
+            });
+        });
 
         setIsEditExercise(false);
     };

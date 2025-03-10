@@ -52,7 +52,7 @@ export const Column: React.FC<IProps> = (props) => {
         setDuplicateWeekOpen(duplicateWeekOpen);
     };
     // Identify the grabbed card and store it by it's uuid in event handler
-    const handleDragStart = (e, card) => {
+  const handleDragStart = (e: DragEvent, card) => {
         e.dataTransfer.setData("cardId", card.id);
     };
 
@@ -103,7 +103,7 @@ export const Column: React.FC<IProps> = (props) => {
 
     /******* FUNCTIONS FOR STYLING THE DRAG EFFECT  *******/
     /***********************************************************************************/
-    const clearHighlights = (els?: any) => {
+    const clearHighlights = (els?: Element[]) => {
         const indicators = els || getIndicators();
 
         indicators.forEach((i) => {
@@ -112,7 +112,7 @@ export const Column: React.FC<IProps> = (props) => {
     };
 
     const highlightIndicator = (e) => {
-        const indicators = getIndicators();
+      const indicators: Element[] = getIndicators();
 
         clearHighlights(indicators);
 
@@ -139,7 +139,7 @@ export const Column: React.FC<IProps> = (props) => {
           {
             offset: Number.NEGATIVE_INFINITY,
             element: indicators[indicators.length - 1],
-          }
+          },
         );
 
         return el;
@@ -165,7 +165,7 @@ export const Column: React.FC<IProps> = (props) => {
                         { title }
                     </div>
                     <div className="flex flex-row gap-4">
-                        <TooltipProvider delayDuration={0}>
+                        <TooltipProvider delayDuration={ 0 }>
                             <Tooltip>
                                 <TooltipTrigger className="">
                                     <div
@@ -182,12 +182,12 @@ export const Column: React.FC<IProps> = (props) => {
                 </div>
             </div>
             <div
-                onDrop={handleDragEnd}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                className={`h-full w-full gap-4 transition-colors ${
+                onDrop={ handleDragEnd }
+                onDragOver={ handleDragOver }
+                onDragLeave={ handleDragLeave }
+                className={ `h-full w-full gap-4 transition-colors ${
                     active ?  "bg-gray-200" : "bg-white"
-                }`}
+                }` }
             >
                 { filteredWeek.map((dy) => {
                     return (
@@ -197,7 +197,7 @@ export const Column: React.FC<IProps> = (props) => {
                             title={ title }
                             weekOrder={ dy.weekOrder }
                             programLength={ programLength }
-                            handleDragStart={handleDragStart}
+                            handleDragStart={ handleDragStart }
                             handleDeleteDay={ handleDeleteDay }
                             handleEditTitle={ handleEditTitle }
                             handleDuplicateDay={ handleDuplicateDay }
@@ -206,14 +206,14 @@ export const Column: React.FC<IProps> = (props) => {
                             handleIsEditExercise={ handleIsEditExercise }
                             handleDeleteExercise={ handleDeleteExercise }
                         />
-                ) } ) }
-                <DropIndicator beforeId={null} weekOrder={weekOrder} />
+                ); } ) }
+                <DropIndicator beforeId={ null } weekOrder={ weekOrder } />
                 <div className="flex flex-row justify-center items-center">
                     <Button
                         onClick={ () => handleAddDay(weekOrder) }
                         className="mb-4 w-44 font-bold uppercase h-12 rounded-lg bg-lightSecondary hover:bg-lightSecondary text-white">
-                            <PlusIcon />
-                            Add Day
+                        <PlusIcon />
+                        Add Day
                     </Button>
                 </div>
             </div>

@@ -28,7 +28,7 @@ export const ReviewProgramPage: React.FC = () => {
     }, [isHevy]);
 
     if (!program && !hevyRoutine) {
-        return <BuildProgramSkeleton />
+        return <BuildProgramSkeleton />;
     }
 
     return (

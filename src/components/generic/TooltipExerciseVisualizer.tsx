@@ -22,13 +22,13 @@ export const TooltipExerciseVisualizer: React.FC<IProps> = (props) => {
     return (
         <div>
             { day?.exercises?.map((exercise : TProgramCreatorExercise, i: number) => (
-                <TooltipProvider key={ "Week" + (Number(weekOrder) + 1) + "Day" + i } delayDuration={0}>
+                <TooltipProvider key={ "Week" + (Number(weekOrder) + 1) + "Day" + i } delayDuration={ 0 }>
                     <Tooltip>
                         <TooltipTrigger className="w-full min-h-14">
                             <div className="flex flex-row justify-between items-center text-sm border-b-2 py-2 border-gray-200">
                                 <div className="flex flex-row gap-2 items-center justify-start max-w-[50%]">
                                     <div className="text-lightSecondary pr-1">
-                                    { i + 1}
+                                        { i + 1}
                                     </div>
                                     <ExerciseGif thumbnailOrImage={ "thmb" } name={ exercise.exercise?.name_english } gif_id={ exercise.exercise?.gif_id ?? "" } resolution={ "180" } file_type={ 'jpg' } />
                                     <div>{ exercise.exercise?.name_english }</div>
@@ -184,8 +184,8 @@ export const TooltipExerciseVisualizer: React.FC<IProps> = (props) => {
                             <Trash2Icon
                                 className="cursor-pointer"
                                 onClick={ () => {
-                                    handleDeleteExercise(Number(weekOrder), Number(day.order), i)
-                                } }/>
+                                    handleDeleteExercise(Number(weekOrder), Number(day.order), i);
+                                } } />
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>

@@ -26,11 +26,11 @@ export const StepButton: React.FC = () => {
     if (isProgramBuilder && !isBuildProgram && !isReviewProgram) {
         return (
             <div></div>
-        )
+        );
     } else if (isProgramBuilder && isBuildProgram && !isReviewProgram) {
         return (
             <Link
-                href={ `/program-builder/build-program/review-program`}
+                href={ `/program-builder/build-program/review-program` }
                 className="w-[33%] flex items-center justify-end"
             >
                 <Button
@@ -41,7 +41,7 @@ export const StepButton: React.FC = () => {
                     <ArrowRightIcon />
                 </Button>
             </Link>
-        )
+        );
 
     } else if (isProgramBuilder && isBuildProgram && isReviewProgram) {
         return (
@@ -60,7 +60,7 @@ export const StepButton: React.FC = () => {
                 />
             </>
 
-        )
+        );
 
     }
 };

@@ -9,6 +9,7 @@ import { addExerciseToProgramCreatorExerciseConverter, convertProgramCreatorExer
 import { ExerciseSearchBar } from "../generic/ExerciseSearchBar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Input } from "../ui/input";
+import { toast } from "sonner";
 import { PlusIcon, Trash2Icon, XIcon } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
 
@@ -172,7 +173,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
     }, [addExerciseDialog.editExercise?.id, addExerciseDialog.editExercise?.intensityData, addExerciseDialog.editExercise?.intensityDataWithRPERange, addExerciseDialog.editExercise?.intensityValue, addExerciseDialog.editExercise?.repTypeValue, addExerciseDialog.editExercise?.reps, addExerciseDialog.editExercise?.repsWithTimeAndRepRange]);
 
     return (
-        <Dialog open={ addExerciseDialog.isOpen } onOpenChange={ () => handleOpenAddExerciseDialog({ weekOrder: undefined, dayOrder: undefined, isOpen: false} )}>
+        <Dialog open={ addExerciseDialog.isOpen } onOpenChange={ () => handleOpenAddExerciseDialog({ weekOrder: undefined, dayOrder: undefined, isOpen: false} ) }>
             <DialogContent hideClose className="max-w-4xl w-full">
                 <DialogTitle className="font-bold flex items-center justify-center">
                     Add Exercise to Week {addExerciseDialog.weekOrder + 1} Day {addExerciseDialog.dayOrder}
@@ -189,41 +190,12 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                     />
                     <div className="mt-4">
 
-                            <div className="flex flex-row justify-center gap-2 items-center w-full pb-4">
-                                <div className="flex items-start justify-start w-[10%]">
-                                        Set
-                                </div>
-                                <div className="w-[33%]">
-                                    <Select value={ repTypeValue } aria-label="rep type" onValueChange={ (value) => handleSwapRepTypeValue(value) }>
-                                        <SelectTrigger autoFocus className="h-10">
-                                            <SelectValue placeholder="Reps" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            { rep_types.map((rep_type) => (
-                                                <SelectItem key={ rep_type.value } value={ rep_type.value }>{ rep_type.label }</SelectItem>
-                                            ) ) }
-                                        </SelectContent>
-
-                                    </Select>
-                                </div>
-                                <div className="w-[33%]">
-                                    <Select value={ intensityValue } aria-label="intensity" onValueChange={ (value) => setIntensityValue(value) }>
-                                        <SelectTrigger autoFocus className="h-10">
-                                            <SelectValue placeholder="Intensity" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            { intensities.map((intensity) => (
-                                                <SelectItem key={ intensity.value } value={ intensity.value }>{ intensity.label }</SelectItem>
-                                            ) ) }
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div>
-                                    <XIcon className="opacity-0 pointer-events-none" />
-                                </div>
+                        <div className="flex flex-row justify-center gap-2 items-center w-full pb-4">
+                            <div className="flex items-start justify-start w-[10%]">
+                                Set
                             </div>
                             <div className="w-[33%]">
-                                <Select value={ repTypeValue } aria-label="rep type" onValueChange={ (value) => setRepTypeValue(value) }>
+                                <Select value={ repTypeValue } aria-label="rep type" onValueChange={ (value) => handleSwapRepTypeValue(value) }>
                                     <SelectTrigger autoFocus className="h-10">
                                         <SelectValue placeholder="Reps" />
                                     </SelectTrigger>
@@ -261,14 +233,14 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                                 </div>
                                 <div className="w-[33%]">
                                     { repTypeValue === "amrap" ? (
-                                            <Input
+                                        <Input
                                                 disabled
                                                 type="number"
                                                 placeholder="AMRAP"
                                                 autoFocus
                                             />
                                         ) :
-                                            <Input
+                                        <Input
                                                 // type="number"
                                                 placeholder={ (repTypeValue === "time_taken" || repTypeValue === "time_range") ? "Secs" : "Reps" }
                                                 // inputMode="decimal"
@@ -452,7 +424,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                 <span className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4">
                     <span className="w-full flex items-center justify-center">
                         <Button onClick={ () => handleOpenAddExerciseDialog({weekOrder: undefined, dayOrder: undefined, isOpen: false} ) } variant="ghost" className="w-full h-12">
-                                Cancel
+                            Cancel
                         </Button>
                     </span>
                     <span className="w-full flex items-center justify-center">
@@ -461,7 +433,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                             variant="ghost"
                             className="bg-lightSecondary text-white hover:bg-lightSecondary w-full h-12"
                         >
-                                {isEditExercise ? "Edit" : "Add"}
+                            {isEditExercise ? "Edit" : "Add"}
                         </Button>
                     </span>
                 </span>

@@ -1,7 +1,7 @@
 "use client";
 
-import { usePathname } from "next/navigation"
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
+import { usePathname } from "next/navigation";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 
 
 
@@ -22,10 +22,10 @@ export const Breadcrumbs: React.FC = () => {
         <Breadcrumb className="w-[33%]">
             <BreadcrumbList>
                 { breadcrumbs.map((bc, index) => (
-                    <div className="flex flex-row items-center justify-center gap-2" key={ bc.label}>
+                    <div className="flex flex-row items-center justify-center gap-2" key={ bc.label }>
                         <BreadcrumbSeparator />
                         <BreadcrumbItem key={ bc.label }>
-                            <BreadcrumbLink href={ bc.href}>{bc.label}</BreadcrumbLink>
+                            <BreadcrumbLink href={ bc.href }>{bc.label}</BreadcrumbLink>
                         </BreadcrumbItem>
                     </div>
                 ))}

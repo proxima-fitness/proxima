@@ -162,16 +162,16 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
                             </IonSelect>
                         </div>
                     </IonItem> */}
-                    <List
+                  <List
                         height={ 480 }
                         itemCount={ filteredItems.length }
                         itemSize={ 80 }
                         width={ '100%' }
                         itemData={ { filteredItems, selectItem } }
                         >
-                        { ExerciseSearchBarRow }
-                    </List>
-                </>
+                      { ExerciseSearchBarRow }
+                  </List>
+              </>
             ) :
             (
                 <div onClick={ () => handleIsEditing(true) }>
@@ -183,6 +183,6 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
              }
                 </div>
             )}
-        </>
+      </>
   );
 };
