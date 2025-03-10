@@ -18,7 +18,6 @@ export const getProgramsSearchResultsWithThumbnail = async (searchQuery: string)
         }
 
         const programsWithThumbnails = await Promise.all(
-            // TODO: give program a proper type
             searchResults.map(async (program: TProgram) => {
                 const thumbnail = await getProgramThumbnailByID(program?.id);
                 return { ...program, thumbnail };
