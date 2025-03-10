@@ -225,7 +225,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                                 )
                                                             )}
                                                     </Text>
-                                                    <Text>
+                                                    <Text style={ { display: "flex", flexDirection: "column" } }>
                                                         { exercise.sets[0] && exercise.sets[0].weight_kg > 0 && (
                                                             exercise.sets.every((intensity, i, arr) => intensity.weight_kg === arr[0].weight_kg) ? (
                                                                 <Text>{exercise.sets[0].weight_kg} kg</Text>
@@ -240,7 +240,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                                 <Text>{exercise.sets[0].rpe} RPE</Text>
                                                             ) : (
                                                                 exercise.sets.map((set, index) => (
-                                                                    <Text key={ index } style={ { color: set.type === "warmup" ? "#FFFFFF" : "#000000", backgroundColor: set.type === "warmup" ? "#cbd5e1" : "#f8f8f8", paddingHorizontal: "4px", borderRadius: "4px" } }>{ set.rpe } RPE</Text>
+                                                                    <Text key={ index } style={ { display: "flex", flexDirection: "column", color: set.type === "warmup" ? "#FFFFFF" : "#000000", backgroundColor: set.type === "warmup" ? "#cbd5e1" : "#f8f8f8", paddingHorizontal: "4px", borderRadius: "4px" } }>{ set.rpe } RPE</Text>
                                                                 ))
                                                             )
                                                         )}
