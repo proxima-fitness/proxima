@@ -6,6 +6,7 @@ import { reorderHevy } from "@/utils/helpers";
 import { DropIndicator } from "@/components/drag-and-drop/DropIndicator";
 import { HevyDayCard } from "./HevyDayCard";
 import { HevyDuplicateWeek } from "./HevyDuplicateWeek";
+import { Option } from "@/components/ui/multi-select";
 
 interface IProps {
     title: string;
@@ -19,7 +20,7 @@ interface IProps {
     handleEditTitle: (id: string, title: string) => void;
     handleIsEditExercise: (isEditExercise: boolean) => void;
     handleDuplicateWeek: (fromWeekIndex: number, toWeekIndexes: number[]) => void;
-    // handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: Option[]) => void
+    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: Option[]) => void;
     handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
     handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
 }
@@ -38,7 +39,7 @@ export const HevyColumn: React.FC<IProps> = (props) => {
         handleEditTitle,
         handleIsEditExercise,
         handleDuplicateWeek,
-        // handleDuplicateDay,
+        handleDuplicateDay,
         handleOpenAddExerciseDialog,
         handleDeleteExercise,
     } = props;
@@ -199,7 +200,7 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                             handleDragStart={handleDragStart}
                             handleDeleteDay={ handleDeleteDay }
                             handleEditTitle={ handleEditTitle }
-                            // handleDuplicateDay={ handleDuplicateDay }
+                            handleDuplicateDay={ handleDuplicateDay }
                             handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
                             handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
                             handleIsEditExercise={ handleIsEditExercise }

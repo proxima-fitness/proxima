@@ -112,8 +112,36 @@ type THevyDialog = {
     dayOrder: number;
     isOpen: boolean;
     exerciseIndex?: number; // location of exercise to be edited
-    editExercise?: TAddExercise; // current value of exercise to be edited
+    editExercise?: THevyAddExercise; // current value of exercise to be edited
 }
+
+type THevyAddExercise = {
+    id: string;
+    repTypeValue: "reps" | "distance_meters" | "duration_seconds" | "custom_metric";
+    intensityValue: "rpe" | "weight_kg";
+    reps: number[]; // DATA for any rep type that is not a range
+    intensityData: number[]; // DATA for any intensity that is not a range
+}
+
+type THevyProgramCreatorExercise = {
+    exercise?: THevyExercise;
+    sets?: number;
+    reps_type?: THevyRepsTypes;
+    intensity?: THevyIntensityTypes;
+}
+
+type THevyRepsTypes = {
+    reps?: number[],
+    distance_meters?: number[],
+    duration_seconds?: number[],
+    custom_metric?: number[],
+}
+
+type THevyIntensityTypes = {
+    rpe?: number[],
+    weight_kg?: number[],
+}
+
 
 /***********************************************************/
 

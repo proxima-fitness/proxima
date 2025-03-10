@@ -6,6 +6,7 @@ interface IProps {
     day: THevyRoutine;
     folder_id: number;
     handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
+    // handleEdit: (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: TProgramCreatorExercise) => void;
 }
 
 export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
@@ -13,6 +14,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
     const {
         day,
         folder_id,
+        // handleEdit,
         handleDeleteExercise,
     } = props;
 
@@ -47,19 +49,19 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                     )}
                                     { exercise.sets[0] && exercise.sets[0].distance_meters > 0 && (
                                         exercise.sets.every((reps, i, arr) => reps.distance_meters === arr[0].distance_meters) ? (
-                                            <div>{exercise.sets[0].distance_meters}</div>
+                                            <div>{exercise.sets[0].distance_meters} m</div>
                                         ) : (
                                             exercise.sets.map((set, index) => (
-                                                <div key={ index } className={ set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : ""}>{ set.distance_meters }m</div>
+                                                <div key={ index } className={ set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : ""}>{ set.distance_meters } m</div>
                                             ))
                                         )
                                     )}
                                     { exercise.sets[0] && exercise.sets[0].duration_seconds > 0 && (
                                         exercise.sets.every((reps, i, arr) => reps.duration_seconds === arr[0].duration_seconds) ? (
-                                            <div>{exercise.sets[0].duration_seconds}</div>
+                                            <div>{exercise.sets[0].duration_seconds} s</div>
                                         ) : (
                                             exercise.sets.map((set, index) => (
-                                                <div key={ index } className={ set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : ""}>{ set.duration_seconds }s</div>
+                                                <div key={ index } className={ set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : ""}>{ set.duration_seconds } s</div>
                                             ))
                                         )
                                     )}
@@ -76,7 +78,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                 <div className="min-w-[33%] flex flex-col justify-center items-center">
                                     { exercise.sets[0] && exercise.sets[0].weight_kg > 0 && (
                                         exercise.sets.every((intensity, i, arr) => intensity.weight_kg === arr[0].weight_kg) ? (
-                                            <div>{exercise.sets[0].weight_kg}</div>
+                                            <div>{exercise.sets[0].weight_kg} kg</div>
                                         ) : (
                                             exercise.sets.map((set, index) => (
                                                 <div key={ index } className={ set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : ""}>{ set.weight_kg } kg</div>
@@ -85,7 +87,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                     )}
                                     { exercise.sets[0] && exercise.sets[0].rpe > 0 && (
                                         exercise.sets.every((intensity, i, arr) => intensity.rpe === arr[0].rpe) ? (
-                                            <div>{exercise.sets[0].rpe}</div>
+                                            <div>{exercise.sets[0].rpe} RPE</div>
                                         ) : (
                                             exercise.sets.map((set, index) => (
                                                 <div key={ index } className={ set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : ""}>{ set.rpe } RPE</div>
@@ -98,7 +100,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                         </TooltipTrigger>
                         <TooltipContent side="right" className="bg-lightSecondary text-white flex flex-row gap-2">
                         <SquarePenIcon className="cursor-pointer" onClick={ () => {
-                                // handleEdit(Number(weekOrder), Number(day.order), i, exercise )
+                                // handleEdit(folder_id, Number(day.order), i, exercise )
                         } } />
                         <Trash2Icon
                             className="cursor-pointer"

@@ -5,6 +5,8 @@ import { Option } from '@/components/ui/multi-select';
 export const programLengths = ["1","2","3","4","5","6","7","8","9","10","11","12"];
 export const repMaxes = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"];
 export const durations = ["0","10","20","30","40","50","60","70","80","90","100","110","120","130","140","150","160","170", "180"];
+export const hevy_rep_types = [{label: "Reps", value: "reps"}, {label: "Distance (m)", value: "distance_meters"}, {label: "Time (s)", value: "duration_seconds"}, { label: "Custom Metric", value: "custom_metric"}];
+export const hevy_intensities = [{label: "RPE", value: "rpe"}, {label: "Weight (kg)", value: "weight_kg"}];
 export const rep_types = [{label: "Reps", value: "reps"},{label: "Reps Max", value: "reps_max"},{label: "Reps Range", value: "reps_range"},{label: "Time", value: "time_taken"},{label: "Time Range", value:"time_range"},{label: "AMRAP", value: "amrap"}];
 export const intensities = [{label: "RPE", value: "rpe"},{ label: "% 1RM", value: "percent_rm" },{ label: "RPE Range", value: "rpe_range" }, {label: "Weights", value: "weights" }];
 export const lightColours = ["#DCF9C2", "#F4D1BD", "#E2F2F2", "#E0E1B9", "#D7FEC5", "#EEDACA", "#C5E0EA", "#EADEB5", "#CAC8D9", "#C2EAE6"];
@@ -154,7 +156,7 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
                 {
                 index: 1,
                 type: "normal",
-                weight_kg: 200,
+                weight_kg: 0,
                 reps: 12,
                 distance_meters: 0,
                 duration_seconds: 0,

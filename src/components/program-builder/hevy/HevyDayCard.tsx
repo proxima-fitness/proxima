@@ -16,7 +16,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropIndicator } from "@/components/drag-and-drop/DropIndicator";
 import { HevyExerciseVisualizer } from "./HevyExerciseVisualizer";
-import { convertProgramCreatorExerciseToAddExercise } from "@/utils/helpers";
+import { convertProgramCreatorExerciseToHevyAddExercise } from "@/utils/helpers";
+import { HevyDuplicateDay } from "./HevyDuplicateDay";
+import { Option } from "@/components/ui/multi-select";
 
 interface IProps {
     day: THevyRoutine;
@@ -28,7 +30,7 @@ interface IProps {
     handleDeleteDay: (id: string) => void;
     handleOpenGenerateDayDialog: (generateDayDialog: THevyDialog) => void;
     handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
-    // handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: Option[]) => void;    // handleGenerateDayDialog: (generateDayDialog: TDialog) => void;
+    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: Option[]) => void;    // handleGenerateDayDialog: (generateDayDialog: TDialog) => void;
     handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
     handleIsEditExercise: (isEditExercise: boolean) => void;
 }
@@ -41,10 +43,10 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         folder_id,
         handleDragStart,
         handleDeleteDay,
-        // programLength,
+        programLength,
         handleEditTitle,
         handleOpenAddExerciseDialog,
-        // handleDuplicateDay,
+        handleDuplicateDay,
         handleOpenGenerateDayDialog,
         handleDeleteExercise,
         handleIsEditExercise,
@@ -58,9 +60,9 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         setDuplicateDayOpen(duplicateDayOpen);
     };
 
-    const handleEdit = (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: TProgramCreatorExercise ) => {
+    const handleEdit = (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: THevyProgramCreatorExercise ) => {
             handleIsEditExercise(true);
-            handleOpenAddExerciseDialog({folder_id: currentWeek, dayOrder: currentDay, isOpen: true, exerciseIndex: exerciseIndex, editExercise: convertProgramCreatorExerciseToAddExercise(editExercise) });
+            handleOpenAddExerciseDialog({folder_id: currentWeek, dayOrder: currentDay, isOpen: true, exerciseIndex: exerciseIndex, editExercise: convertProgramCreatorExerciseToHevyAddExercise(editExercise) });
     };
 
     const cardVal = {
@@ -182,6 +184,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                <HevyExerciseVisualizer
                                     day={ day }
                                     folder_id={ folder_id }
+                                    // handleEdit={ handleEdit }
                                     handleDeleteExercise={ handleDeleteExercise }
                                />
                             </div>
@@ -196,14 +199,14 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                     </div>
                 </Card>
             </motion.div>
-            {/* <DuplicateDay
+            <HevyDuplicateDay
                 programLength={ programLength }
-                weekOrder={ weekOrder }
+                folder_id={ folder_id }
                 day={ day }
                 duplicateDayOpen={ duplicateDayOpen }
                 setDuplicateDayOpen={ setDuplicateDayOpen }
                 handleDuplicateDay={ handleDuplicateDay }
-            /> */}
+            />
         </>
     );
 };

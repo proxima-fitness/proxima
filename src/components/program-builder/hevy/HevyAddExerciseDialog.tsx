@@ -1,11 +1,11 @@
 "use client";
 
-import { useExercises, useHevyExercises } from "@/api/hooks";
+import { useHevyExercises } from "@/api/hooks";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { intensities, rep_types } from "@/assets/constants";
-import { addExerciseToHevySetsConverter, getExerciseFromLocalStorageByID, getExerciseGifIdForHevyExercise, getHevyExerciseFromLocalStorageByName } from "@/utils/helpers";
+import { hevy_intensities, hevy_rep_types } from "@/assets/constants";
+import { getExerciseGifIdForHevyExercise, getHevyExerciseFromLocalStorageByID, getHevyExerciseFromLocalStorageByName } from "@/utils/helpers";
 import { toast } from "sonner";
 import { PlusIcon, Trash2Icon, XIcon } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -15,8 +15,8 @@ import { HevyExerciseSearchBar } from "./HevyExerciseSearchBar";
 interface IProps {
     addExerciseDialog: THevyDialog;
     isEditExercise: boolean;
-    handleAddExercise: (folder_id: number, dayOrder: number, exercise: TAddExercise) => void;
-    // handleEditExercise: (editExercise: THevyDialog) => void;
+    handleAddExercise: (folder_id: number, dayOrder: number, exercise: THevyAddExercise) => void;
+    handleEditExercise: (editExercise: THevyDialog) => void;
     handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
 }
 
@@ -26,11 +26,11 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
         addExerciseDialog,
         isEditExercise,
         handleAddExercise,
-        // handleEditExercise,
+        handleEditExercise,
         handleOpenAddExerciseDialog,
     } = props;
 
-    const { data: exercises, isLoading: loadingExercises } = useHevyExercises();
+    const { data: exercises } = useHevyExercises();
 
     const [ exerciseID, setExerciseID ] = useState<string>();
     const [ selectedName, setSelectedName ] = useState<string>("");
@@ -58,12 +58,8 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
     const [ reps, setReps ] = useState<number[]>(isEditExercise ? undefined : [8,8,8,8]);
     const [ intensityData, setIntensityData ] = useState<number[]>(isEditExercise ? undefined : [9,9,9,9]);
 
-    // Data structure is different when rep/time/rpe ranges are used
-    const [ repsWithTimeAndRepRange, setRepsWithTimeAndRepRange ] = useState<number[][]>(isEditExercise ? undefined : [[8,12],[8,12],[8,12],[8,12]]);
-    const [ intensityDataWithRPERange, setIntensityDataWithRPERange ] = useState<number[][]>(isEditExercise ? undefined : [[9,10],[9,10],[9,10],[9,10]]);
-
-    const [ repTypeValue, setRepTypeValue ] = useState(isEditExercise ? undefined : rep_types[0].value);
-    const [ intensityValue, setIntensityValue ] = useState(isEditExercise ? undefined : intensities[0].value);
+    const [ repTypeValue, setRepTypeValue ] = useState(isEditExercise ? undefined : hevy_rep_types[0].value);
+    const [ intensityValue, setIntensityValue ] = useState(isEditExercise ? undefined : hevy_intensities[0].value);
 
     const handleSaveIntensity = (value: string | number , index: number) => {
         const updatedWeights = [...intensityData];
@@ -87,20 +83,6 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
         setReps(updatedReps);
 	};
 
-    const handleSaveRepsRange = (value: string , index: number, startOrEnd: string) => {
-        const valueWithNoDashes = value.replace(/[^0-9]/g, "");
-        const innerIndex = startOrEnd === "start" ? 0 : 1;
-        const updatedReps = [...repsWithTimeAndRepRange];
-        updatedReps[index][innerIndex] = Number(valueWithNoDashes);
-        setRepsWithTimeAndRepRange(updatedReps);
-    } ;
-
-    const handleSaveIntensityRange = (value: string | number , index: number, startOrEnd: string) => {
-        const innerIndex = startOrEnd === "start" ? 0 : 1;
-        const updatedIntensities = [...intensityDataWithRPERange];
-        updatedIntensities[index][innerIndex] = Number(value);
-        setIntensityDataWithRPERange(updatedIntensities);
-    };
 
     const handleSave = async () => {
         if (selectedName === "") {
@@ -109,11 +91,11 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
         }
 
         const id = exerciseID;
-        const exerciseData = { id, repTypeValue, intensityValue, reps, intensityData, repsWithTimeAndRepRange, intensityDataWithRPERange };
-        const newExercise = (exerciseData as TAddExercise);
+        const exerciseData = { id, repTypeValue, intensityValue, reps, intensityData };
+        const newExercise = (exerciseData as THevyAddExercise);
 
         if (isEditExercise) {
-            // handleEditExercise({isOpen: false, folder_id: addExerciseDialog.folder_id, dayOrder: addExerciseDialog.dayOrder, exerciseIndex: addExerciseDialog.exerciseIndex ,editExercise: convertProgramCreatorExerciseToAddExercise(newExercise)});
+            handleEditExercise({isOpen: false, folder_id: addExerciseDialog.folder_id, dayOrder: addExerciseDialog.dayOrder, exerciseIndex: addExerciseDialog.exerciseIndex ,editExercise: newExercise});
         } else {
             handleAddExercise(addExerciseDialog.folder_id, addExerciseDialog.dayOrder, newExercise);
         }
@@ -123,57 +105,42 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 
     const deleteSet = (index: number) => {
         setReps(reps.filter((_: number, i: number) => i !== index));
-        setRepsWithTimeAndRepRange(repsWithTimeAndRepRange.filter((_,i) => i !== index));
         setIntensityData(intensityData.filter((_: number, i: number) => i !== index));
-        setIntensityDataWithRPERange(intensityDataWithRPERange.filter((_,i) => i !== index));
     };
 
     const addSet = () => {
-        if (repTypeValue === "time_range" || repTypeValue === "reps_range") {
-            if (repsWithTimeAndRepRange.length < 10) setRepsWithTimeAndRepRange([...repsWithTimeAndRepRange, [8,12]]);
-        } else {
-            if (reps.length < 10) setReps([...reps, 8]);
-        }
+        if (reps.length < 10) setReps([...reps, 8]);
         if (intensityData.length < 10) setIntensityData([...intensityData, 9]);
-        if (intensityDataWithRPERange.length < 10) setIntensityDataWithRPERange([...intensityDataWithRPERange, [9,10]]);
     };
 
     const handleSwapRepTypeValue = (value: string) => {
         setRepTypeValue(value);
-        if (value === "time_range" || value === "reps_range") {
-            setReps([]);
-            setRepsWithTimeAndRepRange([[8,12],[8,12],[8,12],[8,12]]);
-        } else {
-            setRepsWithTimeAndRepRange([]);
-            setReps([8,8,8,8]);
-        }
+        setReps([8,8,8,8]);
     };
 
     useEffect(() => {
         const getExercise = async () => {
-            const exercise = await getExerciseFromLocalStorageByID(addExerciseDialog?.editExercise?.id);
+            const exercise = await getHevyExerciseFromLocalStorageByID(addExerciseDialog?.editExercise?.id);
             setExerciseID(addExerciseDialog?.editExercise?.id);
-            setRepsWithTimeAndRepRange(addExerciseDialog?.editExercise?.repsWithTimeAndRepRange ?? [[8,12],[8,12],[8,12],[8,12]]);
-            setIntensityDataWithRPERange(addExerciseDialog?.editExercise?.intensityDataWithRPERange ?? [[9,10],[9,10],[9,10],[9,10]]);
-            setRepTypeValue(addExerciseDialog?.editExercise?.repTypeValue ?? rep_types[0].value);
+            setRepTypeValue(addExerciseDialog?.editExercise?.repTypeValue ?? hevy_rep_types[0].value);
             setIntensityData(addExerciseDialog?.editExercise?.intensityData ?? [9,9,9,9]);
             setReps(addExerciseDialog?.editExercise?.reps ?? [8,8,8,8]);
-            setIntensityValue(addExerciseDialog?.editExercise?.intensityValue ?? intensities[0].value);
+            setIntensityValue(addExerciseDialog?.editExercise?.intensityValue ?? hevy_intensities[0].value);
             if (exercise) {
-                setSelectedName(exercise[`name_english`]);
-                setSelectedGifID(exercise?.gif_id);
+                setSelectedName(exercise[`title`]);
+                setSelectedGifID(await getExerciseGifIdForHevyExercise(exercise.title));
             }
         };
         if (isEditExercise) {
             setIsEditing(false);
             getExercise();
         }
-    }, [addExerciseDialog.editExercise?.id, addExerciseDialog.editExercise?.intensityData, addExerciseDialog.editExercise?.intensityDataWithRPERange, addExerciseDialog.editExercise?.intensityValue, addExerciseDialog.editExercise?.repTypeValue, addExerciseDialog.editExercise?.reps, addExerciseDialog.editExercise?.repsWithTimeAndRepRange]);
+    }, [addExerciseDialog.editExercise?.id, addExerciseDialog.editExercise?.intensityData, addExerciseDialog.editExercise?.intensityValue, addExerciseDialog.editExercise?.repTypeValue, addExerciseDialog.editExercise?.reps]);
 
     return (
         <Dialog open={ addExerciseDialog.isOpen } onOpenChange={ () => handleOpenAddExerciseDialog({ folder_id: undefined, dayOrder: undefined, isOpen: false} )}>
             <DialogContent hideClose className="max-w-4xl w-full">
-                <DialogTitle className="font-bold flex items-center justify-center pb-4 border-b-2">
+                <DialogTitle className="font-bold flex items-center justify-center">
                     Add Exercise to Week {addExerciseDialog.folder_id + 1} Day {addExerciseDialog.dayOrder}
                 </DialogTitle>
                 <div className={ "modal-content__centered" }>
@@ -198,7 +165,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                                             <SelectValue placeholder="Reps" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            { rep_types.map((rep_type) => (
+                                            { hevy_rep_types.map((rep_type) => (
                                                 <SelectItem key={ rep_type.value } value={ rep_type.value }>{ rep_type.label }</SelectItem>
                                             ) ) }
                                         </SelectContent>
@@ -211,7 +178,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                                             <SelectValue placeholder="Intensity" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            { intensities.map((intensity) => (
+                                            { hevy_intensities.map((intensity) => (
                                                 <SelectItem key={ intensity.value } value={ intensity.value }>{ intensity.label }</SelectItem>
                                             ) ) }
                                         </SelectContent>
@@ -222,7 +189,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                                 </div>
                             </div>
 
-                        { (reps && reps.length > 0) ? reps?.map((rep: string | number, index: number) => (
+                        { (reps && reps.length > 0) && reps?.map((rep: string | number, index: number) => (
                             <div
                                 key={ "Set" + index }
                                 className={ `flex flex-row justify-center gap-2 items-center w-full py-2` }>
@@ -230,165 +197,22 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                                     { index + 1 }
                                 </div>
                                 <div className="w-[33%]">
-                                    { repTypeValue === "amrap" ? (
-                                            <Input
-                                                disabled
-                                                type="number"
-                                                placeholder="AMRAP"
-                                                autoFocus
-                                            />
-                                        ) :
-                                            <Input
-                                                // type="number"
-                                                placeholder={ (repTypeValue === "time_taken" || repTypeValue === "time_range") ? "Secs" : "Reps" }
-                                                // inputMode="decimal"
-                                                value={ rep || '' }
-                                                onInput={ (event) => handleSaveReps(event.currentTarget.value ?? "0", index) }
-                                                onBlur={ (event) => handleSaveReps(event.target.value ?? "0", index) }
-                                                onKeyDown={ (e) => {
-                                                    if (e.key === 'Enter') {
-                                                        handleSaveReps((e.target as HTMLInputElement).value,index);
-                                                }
-                                                } }
-                                                autoFocus
-                                            />
-                                    }
+                                    <Input
+                                        // type="number"
+                                        placeholder={ (repTypeValue === "duration_seconds") ? "Secs" : repTypeValue === "distance_meters" ? "Meters" : "Reps" }
+                                        // inputMode="decimal"
+                                        value={ rep || '' }
+                                        onInput={ (event) => handleSaveReps(event.currentTarget.value ?? "0", index) }
+                                        onBlur={ (event) => handleSaveReps(event.target.value ?? "0", index) }
+                                        onKeyDown={ (e) => {
+                                            if (e.key === 'Enter') {
+                                                handleSaveReps((e.target as HTMLInputElement).value,index);
+                                        }
+                                        } }
+                                        autoFocus
+                                    />
                                 </div>
                                 <div className="w-[33%]">
-                                    { intensityValue === "rpe_range" ?
-                                        <>
-                                            <div className="flex flex-row items-center justify-center gap-2">
-
-                                                <Input
-                                                    // type="number"
-                                                    // inputMode="decimal"
-                                                    value={ intensityDataWithRPERange?.[index]?.[0] }
-                                                    onInput={ (event) => handleSaveIntensityRange(event.currentTarget.value ?? "0", index,"start") }
-                                                    onBlur={ (event) => handleSaveIntensityRange(event.target.value ?? "0", index,"start") }
-                                                    onKeyDown={ (e) => {
-                                                        if (e.key === 'Enter') {
-                                                            handleSaveIntensityRange((e.target as HTMLInputElement).value,index,"start");
-                                                    }
-                                                    } }
-                                                    autoFocus
-                                                />
-                                                <div style={ { marginRight: "20px" } }>-</div>
-                                                <Input
-                                                    // type="number"
-                                                    // inputMode="decimal"
-                                                    value={ intensityDataWithRPERange?.[index]?.[1] }
-                                                    onInput={ (event) => handleSaveIntensityRange(event.currentTarget.value ?? "0", index,"end") }
-                                                    onBlur={ (e) => handleSaveIntensityRange(e.target.value ?? "0", index,"end") }
-                                                    onKeyDown={ (e) => {
-                                                        if (e.key === 'Enter') {
-                                                            handleSaveIntensityRange((e.target as HTMLInputElement).value,index,"end");
-                                                    }
-                                                    } }
-                                                    autoFocus
-                                                />
-                                            </div>
-                                        </>
-
-                                    :
-                                        <Input
-                                            // type="number"
-                                            // inputMode="decimal"
-                                            value={ intensityData[index] || "0" }
-                                            onInput={ (e) => handleUpdatingIntensity(e.currentTarget.value ?? "0", index) }
-                                            onBlur={ (e) => handleSaveIntensity(e.target.value ?? "0", index) }
-                                            onKeyDown={ (e) => {
-                                                if (e.key === 'Enter') {
-                                                    handleSaveIntensity((e.target as HTMLInputElement).value,index);
-                                            }
-                                            } }
-                                            autoFocus
-                                        />
-                                }
-
-                                </div>
-                                <Trash2Icon className="cursor-pointer" onClick={ () => deleteSet(index) } />
-                            </div>
-
-                        ) )
-
-
-                    :   (repsWithTimeAndRepRange && repsWithTimeAndRepRange.length > 0 && repsWithTimeAndRepRange?.map((repRange: number[], index) => (
-                        <div
-                            key={ "Set" + index }
-                            className={ `flex flex-row justify-center gap-2 items-center w-full py-2` }>
-                            <div className="flex items-center justify-start w-[10%]">
-                                { index + 1 }
-                            </div>
-                            <div className="w-[33%]">
-                                <div className="flex flex-row items-center justify-center gap-2">
-                                    <Input
-                                        className="w-full"
-                                        // type="number"
-                                        placeholder="__"
-                                        // inputMode="decimal"
-                                        value={ repsWithTimeAndRepRange?.[index]?.[0] }
-                                        onInput={ (event) => handleSaveRepsRange(event.currentTarget.value ?? "0", index,"start") }
-                                        onBlur={ (event) => handleSaveRepsRange(event.target.value ?? "0", index,"start") }
-                                        onKeyDown={ (e) => {
-                                            if (e.key === 'Enter') {
-                                                handleSaveRepsRange((e.target as HTMLInputElement).value, index,"start");
-                                            }
-                                        } }
-                                        autoFocus
-                                    />
-                                    <div className="mr-4">-</div>
-                                    <Input
-                                        // type="number"
-                                        placeholder="__"
-                                        // inputMode="decimal"
-                                        value={ repsWithTimeAndRepRange?.[index]?.[1] }
-                                        onInput={ (event) => handleSaveRepsRange(event.currentTarget.value ?? "0", index,"end") }
-                                        onBlur={ (event) => handleSaveRepsRange(event.target.value ?? "0", index,"end") }
-                                        onKeyDown={ (e) => {
-                                            if (e.key === 'Enter') {
-                                                handleSaveRepsRange((e.target as HTMLInputElement).value, index,"end");
-                                            }
-                                        } }
-                                        autoFocus
-                                    />
-                                </div>
-                            </div>
-                            <div className="w-[33%]">
-                                { intensityValue === "rpe_range" ?
-                                    <>
-                                        <div className="flex flex-row items-center justify-center gap-2">
-
-                                            <Input
-                                                // type="number"
-                                                // inputMode="decimal"
-                                                value={ intensityDataWithRPERange?.[index]?.[0] }
-                                                onInput={ (event) => handleSaveIntensityRange(event.currentTarget.value ?? "0", index,"start") }
-                                                onBlur={ (event) => handleSaveIntensityRange(event.target.value ?? "0", index,"start") }
-                                                onKeyDown={ (e) => {
-                                                    if (e.key === 'Enter') {
-                                                        handleSaveIntensityRange((e.target as HTMLInputElement).value,index,"start");
-                                                }
-                                                } }
-                                                autoFocus
-                                            />
-                                            <div style={ { marginRight: "20px" } }>-</div>
-                                            <Input
-                                                // type="number"
-                                                // inputMode="decimal"
-                                                value={ intensityDataWithRPERange?.[index]?.[1] }
-                                                onInput={ (event) => handleSaveIntensityRange(event.currentTarget.value ?? "0", index,"end") }
-                                                onBlur={ (e) => handleSaveIntensityRange(e.target.value ?? "0", index,"end") }
-                                                onKeyDown={ (e) => {
-                                                    if (e.key === 'Enter') {
-                                                        handleSaveIntensityRange((e.target as HTMLInputElement).value,index,"end");
-                                                }
-                                                } }
-                                                autoFocus
-                                            />
-                                        </div>
-                                    </>
-
-                                :
                                     <Input
                                         // type="number"
                                         // inputMode="decimal"
@@ -402,12 +226,10 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                                         } }
                                         autoFocus
                                     />
-                            }
-
+                                </div>
+                                <Trash2Icon className="cursor-pointer" onClick={ () => deleteSet(index) } />
                             </div>
-                            <Trash2Icon className="cursor-pointer" onClick={ () => deleteSet(index) } />
-                        </div>
-                    )))
+                        ) )
                     }
                     </div>
                     <div className="pt-4 flex justify-center items-center" onClick={ () => addSet() }>

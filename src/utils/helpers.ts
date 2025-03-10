@@ -123,23 +123,67 @@ export const addExerciseToProgramCreatorExerciseConverter = async (addExercise: 
 };
 
 // Convertes TAddExercise to THevyExercise type
-export const addExerciseToHevySetsConverter = (addExercise: TAddExercise): THevySets[] => {
+export const hevyAddExerciseToHevySetsConverter = (addExercise: THevyAddExercise): THevySets[] => {
     const sets: THevySets[] = addExercise.reps.map((rep, setIndex) => {
         return {
             index: setIndex,
             type: "normal", // Defaulting to normal, TODO: allow user to select this
-            weight_kg: addExercise.intensityValue === "weights" ? Number((addExercise.intensityData[setIndex] * 0.4536).toFixed(2)) || 0 : 0,
-            reps: rep,
-            distance_meters: 0, // Assuming no distance data
-            duration_seconds: addExercise.repTypeValue.includes("time") ?  addExercise.intensityData[setIndex] || 0 : 0,
+            weight_kg: addExercise.intensityValue === "weight_kg" ? addExercise.intensityData[setIndex] || 0 : 0,
+            reps: addExercise.repTypeValue.includes("reps") ? rep || 0 : 0,
+            distance_meters: addExercise.repTypeValue.includes("distance_meters") ? rep || 0 : 0,
+            duration_seconds: addExercise.repTypeValue.includes("duration_seconds") ?  rep || 0 : 0,
             rpe: addExercise.intensityValue.includes("rpe") ? addExercise.intensityData[setIndex] || 0 : 0,
-            custom_metric: 0 // Assuming no custom metric data
+            custom_metric: addExercise.repTypeValue.includes("custom_metric") ? rep || 0 : 0,
         };
     });
 
     return sets;
 };
 
+// Converts TProgramCreatorExercise into THevyAddExercise type
+export const convertProgramCreatorExerciseToHevyAddExercise = (programCreatorExercise: THevyProgramCreatorExercise): THevyAddExercise => {
+
+    if (!programCreatorExercise.exercise) {
+      throw new Error("Missing exercise data.");
+    }
+
+    const { exercise, reps_type, intensity } = programCreatorExercise;
+
+    // Determine repTypeValue
+    const repTypeValue =
+      reps_type?.reps ? "reps" :
+      reps_type?.distance_meters ? "distance_meters" :
+      reps_type?.duration_seconds ? "duration_seconds" :
+      reps_type?.custom_metric ? "custom_metric" :
+      undefined;
+
+    if (!repTypeValue) {
+      throw new Error("Invalid or missing reps_type.");
+    }
+
+    // Determine intensityValue
+    const intensityValue =
+      intensity?.rpe ? "rpe" :
+      intensity?.weight_kg ? "weight_kg" :
+      undefined;
+
+    if (!intensityValue) {
+      throw new Error("Invalid or missing intensity.");
+    }
+
+    // Populate data fields
+    const reps = reps_type?.reps || reps_type?.distance_meters || reps_type.duration_seconds || reps_type.custom_metric || [];
+    const intensityData = intensity?.weight_kg || intensity?.rpe || [];
+
+    // Return the mapped THevyAddExercise object
+    return {
+      id: exercise.exercise_template_id,
+      repTypeValue,
+      intensityValue,
+      reps,
+      intensityData,
+    };
+};
 
 // Converts TProgramCreatorExercise into TAddExercise type
 export const convertProgramCreatorExerciseToAddExercise = (programCreatorExercise: TProgramCreatorExercise): TAddExercise => {

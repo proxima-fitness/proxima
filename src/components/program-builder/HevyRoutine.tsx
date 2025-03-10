@@ -4,11 +4,11 @@
 
 import { useEffect, useState } from "react";
 import {  useHevyExercises } from "@/api/hooks";
-import { addExerciseToHevySetsConverter, appendOrderToHevyRoutines, getHevyExerciseFromLocalStorageByID, getNumberRoutineFolders, reorderHevy } from "@/utils/helpers";
+import { appendOrderToHevyRoutines, getHevyExerciseFromLocalStorageByID, getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy } from "@/utils/helpers";
 import { HevyColumn } from "./hevy/HevyColumn";
 import { HevyAddExerciseDialog } from "./hevy/HevyAddExerciseDialog";
-import { supabase } from "@/api";
 import { HevyGenerateDayDialog } from "./hevy/HevyGenerateDayDialog";
+import { Option } from "@/components/ui/multi-select";
 
 interface IProps {
     program: THevyRoutine[];
@@ -39,12 +39,12 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
 
             const daysToCopy = prev.filter((day) => day.folder_id === fromWeekIndex);
 
-            let newId = filteredPrev.length + 1;
+            let maxId = Math.max(...prev.map((d) => Number(d.id)));
 
             const newDays = toWeekIndexes.flatMap((week) =>
                 daysToCopy.map((day) => ({
                     ...day,
-                    id: String(newId++),
+                    id: String(++maxId),
                     folder_id: week,
                 }))
             );
@@ -54,51 +54,52 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     };
 
     // // Duplicates the selected day to other days in the program on the selected week
-    // const handleDuplicateDay = (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayOrderArray: Option[]) => {
+    const handleDuplicateDay = (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayOrderArray: Option[]) => {
 
-    //     const toDayOrders = toDayOrderArray.map((day) => Number(day.value)).sort((a, b) => a - b);
+        const toDayOrders = toDayOrderArray.map((day) => Number(day.value)).sort((a, b) => a - b);
 
-    //     setFlattenedProgramDays((prev) => {
-    //         const dayToCopy = prev.find((day) => Number(day.weekOrder) === fromWeekOrder && Number(day.order) === fromDayOrder);
+        setHevyProgram((prev) => {
+            const dayToCopy = prev.find((day) => Number(day.folder_id) === fromWeekOrder && Number(day.order) === fromDayOrder);
 
-    //         if (!dayToCopy) return prev;
+            if (!dayToCopy) return prev;
 
-    //         const existingDaysInTargetWeek = prev.filter((day) => Number(day.weekOrder) === toWeekOrder);
-    //         const maxExistingOrder = Math.max(...existingDaysInTargetWeek.map((day) => Number(day.order)), 0);
+            const existingDaysInTargetWeek = prev.filter((day) => Number(day.folder_id) === toWeekOrder);
+            const maxExistingOrder = Math.max(...existingDaysInTargetWeek.map((day) => Number(day.order)), 0);
 
-    //         let newId = Math.max(...prev.map((day) => Number(day.id)), 0) + 1;
-    //         let updatedDays = [...prev];
+            let newId = Math.max(...prev.map((day) => Number(day.id)), 0) + 1;
+            let updatedDays = [...prev];
 
-    //         const maxToDayOrder = Math.max(...toDayOrders);
+            const maxToDayOrder = Math.max(...toDayOrders);
 
-    //         if (maxToDayOrder > maxExistingOrder) {
-    //             for (let i = maxExistingOrder + 1; i <= maxToDayOrder; i++) {
-    //                 if (
-    //                     !existingDaysInTargetWeek.some((day) => Number(day.order) === i) &&
-    //                     !toDayOrders.includes(i)
-    //                 ) {
-    //                     updatedDays.push({
-    //                         id: String(newId++),
-    //                         weekOrder: String(toWeekOrder),
-    //                         order: String(i),
-    //                         exercises: [],
-    //                     });
-    //                 }
-    //             }
-    //         }
+            if (maxToDayOrder > maxExistingOrder) {
+                for (let i = maxExistingOrder + 1; i <= maxToDayOrder; i++) {
+                    if (
+                        !existingDaysInTargetWeek.some((day) => Number(day.order) === i) &&
+                        !toDayOrders.includes(i)
+                    ) {
+                        updatedDays.push({
+                            id: String(newId++),
+                            folder_id: toWeekOrder,
+                            order: String(i),
+                            exercises: [],
+                            title: "",
+                        });
+                    }
+                }
+            }
 
-    //         updatedDays = updatedDays.filter((day) => !(Number(day.weekOrder) === toWeekOrder && toDayOrders.includes(Number(day.order))));
+            updatedDays = updatedDays.filter((day) => !(day.folder_id === toWeekOrder && toDayOrders.includes(Number(day.order))));
 
-    //         const newDays = toDayOrders.map((dayOrder) => ({
-    //             ...dayToCopy,
-    //             id: String(newId++),
-    //             weekOrder: String(toWeekOrder),
-    //             order: String(dayOrder),
-    //         }));
+            const newDays = toDayOrders.map((dayOrder) => ({
+                ...dayToCopy,
+                id: String(newId++),
+                folder_id: toWeekOrder,
+                order: String(dayOrder),
+            }));
 
-    //         return reorder([...updatedDays, ...newDays]);
-    //     });
-    // };
+            return reorderHevy([...updatedDays, ...newDays]);
+        });
+    };
 
     // // // State for opening the Add Exercise Dialog with the correct week and day
     const handleOpenAddExerciseDialog = (addExerciseDialog: THevyDialog) => {
@@ -125,8 +126,10 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
         setHevyProgram((prev) => {
             const nthDayOrder = prev.filter((day) => day.folder_id === folder_id).length + 1;
 
+            const maxId = Math.max(...prev.map((d) => Number(d.id)));
+
             const newEmptyDay: THevyRoutine = {
-                id: String(hevyProgram.length + 1),
+                id: String(maxId + 1),
                 folder_id,
                 order: String(nthDayOrder),
                 exercises: [],
@@ -171,11 +174,11 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     };
 
     // // Adds an exercise to the workout day
-    const handleAddExercise = async (folder_id: number, dayOrder: number, exercise: TAddExercise) => {
+    const handleAddExercise = async (folder_id: number, dayOrder: number, exercise: THevyAddExercise) => {
 
-        const sets = addExerciseToHevySetsConverter(exercise);
+        const sets = hevyAddExerciseToHevySetsConverter(exercise);
         const exerciseTemplate = await getHevyExerciseFromLocalStorageByID(exercise.id);
-        console.log("hevy sets:",exercise);
+
         setHevyProgram((prev) => {
             return prev.map((day) => {
                 if (Number(day.folder_id) === folder_id && Number(day.order) === dayOrder) {
@@ -199,24 +202,32 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     };
 
     // // Edits an exercise on a workout day
-    // const handleEditExercise = async (editExercise: THevyDialog) => {
+    const handleEditExercise = async (editExercise: THevyDialog) => {
 
-    //     const convertedEditExercise = await addExerciseToHevyExerciseConverter(editExercise.editExercise);
+        const sets = hevyAddExerciseToHevySetsConverter(editExercise.editExercise);
+        const exerciseTemplate = await getHevyExerciseFromLocalStorageByID(editExercise.editExercise.id);
 
-    //     setHevyProgram((prev) => {
-    //         return prev.map((day) => {
-    //             if (Number(day.folder_id) === editExercise.folder_id && Number(day.order) === editExercise.dayOrder) {
-    //                 return {
-    //                     ...day,
-    //                     exercises: day.exercises.map((exercise, index) => index === editExercise.exerciseIndex ? convertedEditExercise : exercise),
-    //                 };
-    //             }
-    //             return day;
-    //         })
-    //     })
+        setHevyProgram((prev) => {
+            return prev.map((day) => {
+                if (Number(day.folder_id) === editExercise.folder_id && Number(day.order) === editExercise.dayOrder) {
+                    return {
+                        ...day,
+                        exercises: day.exercises.map((exercise, index) => index === editExercise.exerciseIndex ? {
+                            index: day.exercises.length + 1,
+                            title: exerciseTemplate.title,
+                            notes: "",
+                            exercise_template_id: exerciseTemplate.id,
+                            supersets_id: null,
+                            sets: sets,
+                        } : exercise),
+                    };
+                }
+                return day;
+            })
+        })
 
-    //     setIsEditExercise(false);
-    // };
+        setIsEditExercise(false);
+    };
 
     const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>(appendOrderToHevyRoutines(program));
     const numberOfWeeks = getNumberRoutineFolders(hevyProgram);
@@ -245,7 +256,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                         handleEditTitle={ handleEditTitle }
                         handleIsEditExercise={ handleIsEditExercise }
                         handleDuplicateWeek={ handleDuplicateWeek }
-                        // handleDuplicateDay={ handleDuplicateDay }
+                        handleDuplicateDay={ handleDuplicateDay }
                         handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
                         handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
                         handleDeleteExercise={ handleDeleteExercise }
@@ -256,7 +267,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                 <HevyAddExerciseDialog
                     addExerciseDialog={ addExerciseDialog }
                     isEditExercise={ isEditExercise }
-                    // handleEditExercise={ handleEditExercise }
+                    handleEditExercise={ handleEditExercise }
                     handleAddExercise={ handleAddExercise }
                     handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
                 />
