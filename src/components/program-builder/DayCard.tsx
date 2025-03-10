@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
-import { EllipsisIcon, CopyIcon, PlusIcon, Trash2Icon, SquarePenIcon } from "lucide-react";
+import { EllipsisIcon, CopyIcon, PlusIcon } from "lucide-react";
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "../ui/button";
 import { DuplicateDay } from "./DuplicateDay";
@@ -15,7 +15,6 @@ import {
     DropdownMenuShortcut,
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu";
-import { ExerciseGif } from "../generic/ExerciseGif";
 import { Input } from "../ui/input";
 import { convertProgramCreatorExerciseToAddExercise } from "@/utils/helpers";
 import { DropIndicator } from "../drag-and-drop/DropIndicator";
@@ -57,10 +56,6 @@ export const DayCard: FC<IProps> = (props) => {
     const [editTitleOpen, setEditTitleOpen] = useState(false);
     const [currentTitle, setCurrentTitle] = useState(day.day_title ?? "");
 
-    const handleDuplicateDayOpen = (_day: number, duplicateDayOpen: boolean) => {
-        setDuplicateDayOpen(duplicateDayOpen);
-    };
-
     const handleEdit = (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: TProgramCreatorExercise ) => {
             handleIsEditExercise(true);
             handleOpenAddExerciseDialog({weekOrder: currentWeek, dayOrder: currentDay, isOpen: true, exerciseIndex: exerciseIndex, editExercise: convertProgramCreatorExerciseToAddExercise(editExercise) });
@@ -83,7 +78,7 @@ export const DayCard: FC<IProps> = (props) => {
                 layout
                 layoutId={ day.id }
                 draggable="true"
-                onDragStart={ (e) => handleDragStart(e, cardVal) }
+                onDragStart={ (e: DragEvent) => handleDragStart(e, cardVal) }
                 className="cursor-grab rounded active:cursor-grabbing gap-4"
             >
                 <Card className="group py-4 px-4 min-w-[440px] max-w-[440px] bg-lightGray my-2">

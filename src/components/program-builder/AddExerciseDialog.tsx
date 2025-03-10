@@ -11,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Input } from "../ui/input";
 import { toast } from "sonner";
 import { PlusIcon, Trash2Icon, XIcon } from "lucide-react";
-import { Skeleton } from "../ui/skeleton";
 
 interface IProps {
     addExerciseDialog: TDialog;
@@ -31,7 +30,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
         handleOpenAddExerciseDialog,
     } = props;
 
-    const { data: exercises, isLoading: loadingExercises }  = useExercises();
+    const { data: exercises }  = useExercises();
 
     const [ exerciseID, setExerciseID ] = useState<string>();
     const [ selectedName, setSelectedName ] = useState<string>("");
@@ -170,7 +169,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
             setIsEditing(false);
             getExercise();
         }
-    }, [addExerciseDialog.editExercise?.id, addExerciseDialog.editExercise?.intensityData, addExerciseDialog.editExercise?.intensityDataWithRPERange, addExerciseDialog.editExercise?.intensityValue, addExerciseDialog.editExercise?.repTypeValue, addExerciseDialog.editExercise?.reps, addExerciseDialog.editExercise?.repsWithTimeAndRepRange]);
+    }, [isEditExercise, addExerciseDialog.editExercise?.id, addExerciseDialog.editExercise?.intensityData, addExerciseDialog.editExercise?.intensityDataWithRPERange, addExerciseDialog.editExercise?.intensityValue, addExerciseDialog.editExercise?.repTypeValue, addExerciseDialog.editExercise?.reps, addExerciseDialog.editExercise?.repsWithTimeAndRepRange]);
 
     return (
         <Dialog open={ addExerciseDialog.isOpen } onOpenChange={ () => handleOpenAddExerciseDialog({ weekOrder: undefined, dayOrder: undefined, isOpen: false} ) }>

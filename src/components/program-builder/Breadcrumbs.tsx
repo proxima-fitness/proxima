@@ -21,7 +21,7 @@ export const Breadcrumbs: React.FC = () => {
     return (
         <Breadcrumb className="w-[33%]">
             <BreadcrumbList>
-                { breadcrumbs.map((bc, index) => (
+                { breadcrumbs.map((bc) => (
                     <div className="flex flex-row items-center justify-center gap-2" key={ bc.label }>
                         <BreadcrumbSeparator />
                         <BreadcrumbItem key={ bc.label }>

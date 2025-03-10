@@ -208,10 +208,10 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                             )}
                                                         { exercise.sets[0] && exercise.sets[0].duration_seconds > 0 && (
                                                                 exercise.sets.every((reps, i, arr) => reps.duration_seconds === arr[0].duration_seconds) ? (
-                                                                    <Text>{exercise.sets[0].duration_seconds} s</Text>
+                                                                    <Text>{shortEnglishHumanizer(exercise.sets[0].duration_seconds * 1000)} s</Text>
                                                                 ) : (
                                                                     exercise.sets.map((set, index) => (
-                                                                        <Text key={ index } style={ { color: set.type === "warmup" ? "#FFFFFF" : "#000000", backgroundColor: set.type === "warmup" ? "#cbd5e1" : "#f8f8f8", paddingHorizontal: "4px", borderRadius: "4px" } }>{ set.duration_seconds } s</Text>
+                                                                        <Text key={ index } style={ { color: set.type === "warmup" ? "#FFFFFF" : "#000000", backgroundColor: set.type === "warmup" ? "#cbd5e1" : "#f8f8f8", paddingHorizontal: "4px", borderRadius: "4px" } }>{ shortEnglishHumanizer(set.duration_seconds * 1000) } s</Text>
                                                                     ))
                                                                 )
                                                             )}

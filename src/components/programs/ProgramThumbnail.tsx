@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 
 interface IProps {
     thumbnail: Blob
@@ -14,10 +13,10 @@ export const ProgramThumbnail: React.FC<IProps> = (props) => {
     return (
         <>
             <img
-            className="rounded-lg object-cover h-[350px] w-full"
-            alt="Program Thumbnail"
-            src={ URL.createObjectURL(thumbnail) }
-        />
+                className="rounded-lg object-cover h-[350px] w-full"
+                alt="Program Thumbnail"
+                src={ URL.createObjectURL(thumbnail) }
+            />
         </>
     );
 };

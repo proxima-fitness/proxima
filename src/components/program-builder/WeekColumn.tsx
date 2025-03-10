@@ -41,7 +41,7 @@ export const WeekColumn: FC<IProps> = (props) => {
                 programLength={ programLength }
                 handleDuplicateWeek={ handleDuplicateWeek }
             />
-            { week.map((day, idx) => (
+            { week.map((day) => (
                 <DayCard
                     key={ uuidv4() }
                     day={ day }

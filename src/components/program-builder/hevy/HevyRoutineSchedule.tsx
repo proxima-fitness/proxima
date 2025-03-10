@@ -84,10 +84,10 @@ export const HevyRoutineSchedule: React.FC<IProps> = (props) => {
                                                         )}
                                                         { exercise.sets[0] && exercise.sets[0].duration_seconds > 0 && (
                                                             exercise.sets.every((reps, i, arr) => reps.duration_seconds === arr[0].duration_seconds) ? (
-                                                                <div>{exercise.sets[0].duration_seconds} s</div>
+                                                                <div>{ shortEnglishHumanizer(exercise.sets[0].duration_seconds * 1000) } s</div>
                                                             ) : (
                                                                 exercise.sets.map((set, index) => (
-                                                                    <div key={ index } className={ set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : "" }>{ set.duration_seconds } s</div>
+                                                                    <div key={ index } className={ set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : "" }>{ shortEnglishHumanizer(set.duration_seconds * 1000) } s</div>
                                                                 ))
                                                             )
                                                         )}

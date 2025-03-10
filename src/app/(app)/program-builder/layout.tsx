@@ -1,8 +1,6 @@
 import { Breadcrumbs } from "@/components/program-builder/Breadcrumbs";
 import { ProgramBuilderTabs } from "@/components/program-builder/ProgramBuilderTabs";
 import { StepButton } from "@/components/program-builder/StepButton";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useIsHevy } from "@/contexts/HevyContext";
 import { RotateCcwIcon } from "lucide-react";
 import Link from "next/link";
 

@@ -12,6 +12,7 @@ import { PersonalRecords } from "./components/features/PersonalRecords";
 import { Themes } from "./components/features/Themes";
 import { CallToAction } from "./components/call-to-action/CallToAction";
 import { Faq } from "./components/faqs/Faq";
+import { ProgramsSection } from "./components/features/ProgramsSection";
 
 const App = () => {
 

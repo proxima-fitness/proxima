@@ -20,7 +20,8 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
         program,
     } = props;
 
-    const { data: exercises }  = useHevyExercises();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { data: exercises }  = useHevyExercises(); // Pre-populating the HevyAddExerciseDialog
 
     const [addExerciseDialog, setAddExerciseDialog] = useState<THevyDialog>({folder_id: undefined, dayOrder: undefined, isOpen: false});
     const [generateDayDialog, setGenerateDayDialog] = useState<THevyDialog>({folder_id: undefined, dayOrder: undefined, isOpen: false});
@@ -116,7 +117,8 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
 
     // // Will re-generate the currently selected day based on a prompt
     const handleGenerateDay = (folder_id: number, dayOrder:number, prompt: string) => {
-        // Do AI re-generation of a day here
+        // TODO: Do AI re-generation of a day here
+        console.log(folder_id, dayOrder, prompt);
     };
 
 

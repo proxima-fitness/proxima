@@ -2,34 +2,9 @@
 
 import styles, { layout } from "../../style";
 import { Button } from "../generic/Button";
-import { motion } from "motion/react";
-import { ViewModeThumbnails } from "./ViewModeThumbnails";
 import Link from "next/link";
 import { ProgramCard } from "../programs/ProgramCard";
 import { useProgramsSection } from "@/api/hooks";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-// const FeatureCard = ({id, title, workout_duration, difficulty, equipment }: any) => (
-//     <motion.div
-//         whileHover={ { scale: 1.05 } }
-//         className={ `transition group p-[4px] relative rounded-[20px] ` }
-//     >
-//         <div className="relative z-10 flex flex-row p-4 rounded-[20px] bg-black h-[280px]">
-//             <div className="flex-1 flex flex-col">
-//                 <h4 className="font-second font-semibold text-white text-[18px] leading-[23.4px] mb-1"
-//             style={ { display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden", textOverflow: "ellipsis" } }
-//         >
-//                     { title }
-//                 </h4>
-//                 <p className="font-second font-normal text-dimWhite text-[12px] pt-2 leading-[24px]"
-//         >
-//                     {equipment} &middot; {workout_duration} minutes &middot; { difficulty[0] }...
-//                 </p>
-//                 <ViewModeThumbnails programID={ id } />
-//             </div>
-//         </div>
-//     </motion.div>
-// );
 
 export const ProgramsSection: React.FC = () => {
 
@@ -47,9 +22,7 @@ export const ProgramsSection: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 pt-14 px-24 max-sm:px-0">
                 {programs && programs.length > 0 ? (
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    programs.map((program, index) => (
-                    // <FeatureCard key={ program.id } { ...program } index={ index } />
+                    programs.map((program) => (
                         <Link
                             key={ program.id }
                             target="_self"
@@ -63,7 +36,7 @@ export const ProgramsSection: React.FC = () => {
                         </Link>
                     ))
                     ) : (
-                        <p className="text-white">Loading programs...</p> // Loading state
+                        <p className="text-white">Loading programs...</p>
                     )}
             </div>
             <div className="flex items-center justify-center">

@@ -54,11 +54,12 @@ export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
 
     const [ filteredItems, setFilteredItems ] = useState<THevyExerciseTemplate[]>(items);
 
+    // TODO: Add these filters back in for the Hevy schema
     // const [ selectedMuscleGroup, setSelectedMuscleGroup ] = useState<string>("All Muscle Groups");
     // const [ selectedEquipment, setSelectedEquipment ] = useState<string>("All Equipment");
-    const [ appliedMuscleGroupFilter, setAppliedMuscleGroupFilter ] = useState<string>();
+    // const [ appliedMuscleGroupFilter, setAppliedMuscleGroupFilter ] = useState<string>();
     const [ appliedSearchBarFilter, setAppliedSearchBarFilter ] = useState<string>();
-    const [ appliedEquipmentFilter, setAppliedEquipmentFilter ] = useState<string>();
+    // const [ appliedEquipmentFilter, setAppliedEquipmentFilter ] = useState<string>();
 
     useEffect(() => {
             let filteredItems = items;
@@ -77,7 +78,7 @@ export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
                 filteredItems = fuseResults.map(result => result?.item);
             }
             setFilteredItems(filteredItems);
-    }, [appliedMuscleGroupFilter, appliedSearchBarFilter, appliedEquipmentFilter, items]);
+    }, [appliedSearchBarFilter, items]);
 
     const selectItem = (item: THevyExerciseTemplate) => {
         handleSelected(item);

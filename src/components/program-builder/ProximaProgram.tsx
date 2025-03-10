@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { AddExerciseDialog } from "./AddExerciseDialog";
 import { Option } from "@/components/ui/multi-select";
 import { GenerateDayDialog } from "./GenerateDayDialog";
@@ -19,6 +18,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
         program,
     } = props;
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data: exercises }  = useExercises();
 
     const [addExerciseDialog, setAddExerciseDialog] = useState<TDialog>({weekOrder: undefined, dayOrder: undefined, isOpen: false});
@@ -114,6 +114,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     // Will re-generate the currently selected day based on a prompt
     const handleGenerateDay = (weekOrder: number, dayOrder:number, prompt: string) => {
         // Do AI re-generation of a day here
+        console.log(weekOrder, dayOrder, prompt);
     };
 
 

@@ -6,7 +6,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {  CopyIcon, DownloadIcon, FileDownIcon, LogInIcon, PartyPopperIcon } from "lucide-react";
+import {  CopyIcon, DownloadIcon, LogInIcon, PartyPopperIcon } from "lucide-react";
 import { toast } from "sonner";
 import { PDFViewer } from '@react-pdf/renderer';
 import { PdfRenderer } from "../generic/PdfRenderer";

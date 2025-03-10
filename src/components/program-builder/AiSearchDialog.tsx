@@ -31,7 +31,7 @@ export const AiSearchDialog: React.FC = () => {
 
     useEffect(() => {
         setIsHevy(workoutSchema === "hevy" ? true : false);
-    }, [workoutSchema]);
+    }, [workoutSchema, setIsHevy]);
 
     return (
         <Dialog>

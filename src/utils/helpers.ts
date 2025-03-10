@@ -1,5 +1,4 @@
 import { getExercises } from "@/api/exercises";
-import { getHevyExercises } from "@/api/hevy";
 import Fuse from "fuse.js";
 
 export function convertSupabaseDateToReadable(inputDate: string | undefined): string {
@@ -243,6 +242,7 @@ export const convertProgramCreatorExerciseToAddExercise = (programCreatorExercis
 };
 
 const amrapAsNumber = (amrap: string[] = []) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return amrap.map((item) => 999); // amrap string is defined as 999
 };
 
@@ -342,6 +342,7 @@ export const reorderHevy = (routines: THevyRoutine[]): THevyRoutine[] => {
 };
 
 export const removeOrderHevy = (routines: THevyRoutine[]): Omit<THevyRoutine, 'order'>[] => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return routines?.map(({ order, ...rest }) => rest);
 };
 
@@ -368,6 +369,7 @@ export const deFlattenHevyRoutine = (routines: THevyRoutine[]): THevyRoutine[][]
 export const deFlattenProgram = (flattenedProgram: TProgramCreatorDay[]): TProgramCreatorDay[][] => {
     return Object.entries(
       flattenedProgram.reduce<Record<number, TProgramCreatorDay[]>>((acc, day) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { weekOrder, id, ...rest } = day; // Destructure to remove weekOrder
         const week = parseInt(weekOrder || '0'); // Ensure it's treated as a number
 

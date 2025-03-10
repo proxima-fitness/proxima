@@ -270,3 +270,12 @@ type TCard = {
     id: string,
     weekOrder: string,
 }
+
+type THevyCard = {
+    title: string,
+    order: string,
+    day_title: string,
+    exercises: THevyExercise[],
+    id: string,
+    folder_id: number,
+}

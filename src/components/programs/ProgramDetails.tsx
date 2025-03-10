@@ -6,8 +6,6 @@ import {
     HoverCardContent,
     HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { Button } from "../ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { CalendarIcon } from "lucide-react";
 import { convertSupabaseDateToReadable } from "@/utils/helpers";
 

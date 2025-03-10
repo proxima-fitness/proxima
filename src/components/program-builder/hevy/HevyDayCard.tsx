@@ -25,7 +25,7 @@ interface IProps {
     title: string;
     folder_id: number;
     programLength: number;
-    handleDragStart: (e: DragEvent, card: TCard) => void;
+    handleDragStart: (e: DragEvent, card: THevyCard) => void;
     handleEditTitle: (id: string, title: string) => void;
     handleDeleteDay: (id: string) => void;
     handleOpenGenerateDayDialog: (generateDayDialog: THevyDialog) => void;
@@ -56,16 +56,12 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
     const [editTitleOpen, setEditTitleOpen] = useState(false);
     const [currentTitle, setCurrentTitle] = useState(day.title ?? "");
 
-    const handleDuplicateDayOpen = (day: number, duplicateDayOpen: boolean) => {
-        setDuplicateDayOpen(duplicateDayOpen);
-    };
-
     const handleEdit = (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: THevyExercise ) => {
             handleIsEditExercise(true);
             handleOpenAddExerciseDialog({folder_id: currentWeek, dayOrder: currentDay, isOpen: true, exerciseIndex: exerciseIndex, editExercise: convertHevyExerciseIntoHevyAddExercise(editExercise) });
     };
 
-    const cardVal = {
+    const cardVal: THevyCard = {
         title,
         order: day.order,
         day_title: day.title,
@@ -81,7 +77,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                 layout
                 layoutId={ day.id }
                 draggable="true"
-                onDragStart={ (e) => handleDragStart(e, cardVal) }
+                onDragStart={ (e: DragEvent) => handleDragStart(e, cardVal) }
                 className="cursor-grab rounded active:cursor-grabbing gap-4"
             >
                 <Card className="group py-4 px-4 min-w-[440px] max-w-[440px] bg-lightGray my-2">
