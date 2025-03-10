@@ -341,6 +341,29 @@ export const reorderHevy = (routines: THevyRoutine[]): THevyRoutine[] => {
     return updatedRoutines;
 };
 
+export const removeOrderHevy = (routines: THevyRoutine[]): Omit<THevyRoutine, 'order'>[] => {
+    return routines?.map(({ order, ...rest }) => rest);
+}
+
+export const deFlattenHevyRoutine = (routines: THevyRoutine[]): THevyRoutine[][] => {
+    return Object.entries(
+      routines.reduce<Record<number, THevyRoutine[]>>((acc, routine) => {
+        const folderId = routine.folder_id;
+
+        if (!acc[folderId]) {
+          acc[folderId] = [];
+        }
+
+        acc[folderId].push(routine);
+        return acc;
+      }, {})
+    )
+      // Sort folder groups by folder_id
+      .sort(([a], [b]) => parseInt(a) - parseInt(b))
+      // Return just the routines sorted by their order within each folder
+      .map(([, group]) => group.sort((a, b) => parseInt(a.order) - parseInt(b.order)));
+  };
+
 
 export const deFlattenProgram = (flattenedProgram: TProgramCreatorDay[]): TProgramCreatorDay[][] => {
     return Object.entries(

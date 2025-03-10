@@ -5,11 +5,12 @@ import { BuildProgramSkeleton } from "./BuildProgramSkeleton";
 import { HevyRoutine } from "./HevyRoutine";
 import { ProximaProgram } from "./ProximaProgram";
 import { exampleProximaProgram, exampleHevyRoutineProgram } from "@/assets/constants";
+import { useIsHevy } from "@/contexts/HevyContext";
 
 export const BuildProgramClientPage: React.FC = () => {
 
     const [generating, setGenerating] = useState(true);
-    const [isHevy, setIsHevy] = useState(true); // if true Hevy routine, else Proxima Program
+    const { isHevy } = useIsHevy();
 
     useEffect(() => {
         setTimeout(() => {

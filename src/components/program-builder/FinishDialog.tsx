@@ -10,7 +10,9 @@ import {  CopyIcon, DownloadIcon, FileDownIcon, LogInIcon, PartyPopperIcon } fro
 import { toast } from "sonner";
 import { PDFViewer } from '@react-pdf/renderer';
 import { PdfRenderer } from "../generic/PdfRenderer";
-import { programCreatorDayToScheduleWorkouts } from "@/utils/helpers";
+import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts, removeOrderHevy } from "@/utils/helpers";
+import { useIsHevy } from "@/contexts/HevyContext";
+import { HevyPdfRenderer } from "./hevy/HevyPdfRenderer";
 
 interface IProps {
     openFinishDialog: boolean;
@@ -24,17 +26,23 @@ export const FinishDialog: React.FC<IProps> = (props) => {
         handleOpenFinishDialog,
     } = props;
 
+        const { isHevy } = useIsHevy();
         const [program, setProgram] = useState<TProgramCreatorDay[][]>();
+        const [hevyRoutine, setHevyRoutine] = useState<THevyRoutine[]>();
         const [isPreview, setIsPreview] = useState(false);
 
         useEffect(() => {
             if (typeof window !== undefined) {
-                const localStorageProgram = localStorage.getItem("program-in-progress");
+                const localStorageProgram = localStorage.getItem(isHevy ? "hevy-program-in-progress" : "program-in-progress");
                 if (localStorageProgram) {
-                    setProgram(JSON.parse(localStorageProgram));
+                    if (isHevy) {
+                        setHevyRoutine(JSON.parse(localStorageProgram));
+                    } else {
+                        setProgram(JSON.parse(localStorageProgram));
+                    }
                 }
             }
-        }, []);
+        }, [isHevy]);
 
     const handleCopyJson = () => {
         try {
@@ -55,6 +63,10 @@ export const FinishDialog: React.FC<IProps> = (props) => {
         download.click();
         download.remove();
     };
+
+    if (!program && !hevyRoutine) {
+        return <div></div>
+    }
 
     return (
         <Dialog open={ openFinishDialog } onOpenChange={ () => handleOpenFinishDialog(false)} >
@@ -81,10 +93,14 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                 <span>
                     { isPreview ?
                         <PDFViewer className="w-full h-[50vh]">
-                            <PdfRenderer program={ programCreatorDayToScheduleWorkouts(program) } />
+                            { isHevy ?
+                                <HevyPdfRenderer hevyRoutine={ deFlattenHevyRoutine(hevyRoutine) }/>
+                            :
+                                <PdfRenderer program={ programCreatorDayToScheduleWorkouts(program) } />
+                            }
                         </PDFViewer>
                         :
-                        <Textarea className="h-[50vh]" readOnly aria-readonly value={ JSON.stringify(program, null, 4) } />
+                        <Textarea className="h-[50vh]" readOnly aria-readonly value={ isHevy ? JSON.stringify(removeOrderHevy(hevyRoutine), null, 4) : JSON.stringify(program, null, 4) } />
                     }
                 </span>
                 <span className="w-full flex flex-row items-center justify-between">

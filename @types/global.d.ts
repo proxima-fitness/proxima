@@ -135,6 +135,10 @@ type THevyIntensityTypes = {
     weight_kg?: number[],
 }
 
+interface IsHevyContextType {
+    isHevy: boolean;
+    setIsHevy: (value: boolean) => void;
+}
 
 /***********************************************************/
 

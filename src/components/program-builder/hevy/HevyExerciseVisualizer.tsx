@@ -34,7 +34,6 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                             <div className="text-center flex flex-row items-center justify-end max-w-[50%] w-[50%] h-full">
                                 <div className="min-w-[33%] flex flex-col justify-center items-center">
                                     { exercise.sets.length }
-
                                 </div>
                                 <div className="min-w-[33%] flex flex-col justify-center items-center">
                                     { exercise.sets[0] && exercise.sets[0].reps > 0 && (

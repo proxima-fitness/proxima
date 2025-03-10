@@ -1182,7 +1182,7 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
                 {
                 index: 1,
                 type: "normal",
-                weight_kg: 200,
+                weight_kg: 0,
                 reps: 12,
                 distance_meters: 0,
                 duration_seconds: 0,
