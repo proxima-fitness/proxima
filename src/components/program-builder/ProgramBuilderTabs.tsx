@@ -5,10 +5,10 @@ import { useIsHevy } from "@/contexts/HevyContext";
 
 export const ProgramBuilderTabs: React.FC = () => {
 
-    const { setIsHevy } = useIsHevy();
+    const { isHevy, setIsHevy } = useIsHevy();
 
     return (
-        <Tabs defaultValue="hevy" className="w-[33%] flex items-center justify-center">
+        <Tabs value={ isHevy ? "hevy" : "proxima" } className="w-[33%] flex items-center justify-center">
             <TabsList>
                 <TabsTrigger onClick={ () => setIsHevy(true) } value="hevy">Hevy Routine</TabsTrigger>
                 <TabsTrigger onClick={ () => setIsHevy(false) } value="proxima">Proxima Program</TabsTrigger>
