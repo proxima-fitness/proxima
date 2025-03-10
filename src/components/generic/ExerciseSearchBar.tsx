@@ -162,34 +162,27 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
                             </IonSelect>
                         </div>
                     </IonItem> */}
-                  <List
-            height={ 500 }
-            itemCount={ filteredItems.length }
-            itemSize={ 80 }
-            width={ "100%" }
-            itemData={ { filteredItems, selectItem } }
-          >
-                      {ExerciseSearchBarRow}
-                  </List>
-              </>
-      ) : (
-          <div onClick={ () => handleIsEditing(true) }>
-              <center>
-                  <h2>{selectedName}</h2>
-              </center>
-              {selectedGifID && selectedGifID.length > 0 && (
-              <>
-                  <ExerciseGif
-                name={ selectedName }
-                thumbnailOrImage={ "img" }
-                gif_id={ selectedGifID }
-                resolution={ "360" }
-                file_type={ "gif" }
-              />
-              </>
-          )}
-          </div>
-      )}
-      </>
+                    <List
+                        height={ 480 }
+                        itemCount={ filteredItems.length }
+                        itemSize={ 80 }
+                        width={ '100%' }
+                        itemData={ { filteredItems, selectItem } }
+                        >
+                        { ExerciseSearchBarRow }
+                    </List>
+                </>
+            ) :
+            (
+                <div onClick={ () => handleIsEditing(true) }>
+                    <center><h2>{ selectedName }</h2></center>
+                    { selectedGifID && selectedGifID.length > 0 &&
+                        <>
+                            <ExerciseGif name={ selectedName } thumbnailOrImage={ "img" } gif_id={ selectedGifID } resolution={ "360" } file_type={ "gif" } />
+                        </>
+             }
+                </div>
+            )}
+        </>
   );
 };

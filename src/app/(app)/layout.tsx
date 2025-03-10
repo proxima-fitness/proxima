@@ -5,7 +5,8 @@ import { Navbar } from '@/components/header/Navbar';
 import QueryProvider from '@/utils/QueryProvider';
 import styles from '@/style';
 import type { Metadata } from 'next';
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/sonner"
+import { IsHevyProvider } from "@/contexts/HevyContext";
 
 export const metadata: Metadata = {
   title: 'Proxima Fitness | AI Workout Builder & Program Directory',
@@ -29,12 +30,16 @@ export default function RootLayout({
                 <div className="bg-primary w-full overflow-hidden">
                     <div className={ `${styles.paddingXNav} ${styles.flexCenter}` }>
                         <div className={ `${styles.boxWidth}` }>
-                            <Navbar />
+                            <IsHevyProvider>
+                                <Navbar />
+                            </IsHevyProvider>
                         </div>
                     </div>
                     <main id="root">
                         <QueryProvider>
-                            {children}
+                            <IsHevyProvider>
+                                {children}
+                            </IsHevyProvider>
                             <Toaster richColors />
                         </QueryProvider>
                     </main>

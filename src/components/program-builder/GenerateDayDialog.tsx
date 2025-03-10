@@ -8,24 +8,21 @@ import {
 import { Input } from "@/components/ui/input";
 import  { Button } from "@/components/ui/button";
 import { SearchIcon, SparklesIcon } from "lucide-react";
-import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
-    FormLabel,
     FormMessage,
   } from "@/components/ui/form";
 
 interface IProps {
     handleGenerateDay: (currentWeekIndex: number, currentDayIndex: number, prompt: string) => void;
     generateDayDialog: TDialog;
-    handleGenerateDayDialog: (generateDayDialog: TDialog) => void;
+    handleOpenGenerateDayDialog: (generateDayDialog: TDialog) => void;
 }
 
 export const GenerateDayDialog: React.FC<IProps> = (props) => {
@@ -33,7 +30,7 @@ export const GenerateDayDialog: React.FC<IProps> = (props) => {
     const {
         handleGenerateDay,
         generateDayDialog,
-        handleGenerateDayDialog,
+        handleOpenGenerateDayDialog,
     } = props;
 
     const formSchema = z.object({
@@ -52,12 +49,12 @@ export const GenerateDayDialog: React.FC<IProps> = (props) => {
     });
 
     const onSubmit = (values: z.infer<typeof formSchema>) => {
-        handleGenerateDay(generateDayDialog.currentWeek, generateDayDialog.currentDay - 1, values.prompt);
-        handleGenerateDayDialog({currentWeek: undefined, currentDay: undefined, isOpen: false});
+        handleGenerateDay(generateDayDialog.weekOrder, generateDayDialog.dayOrder, values.prompt);
+        handleOpenGenerateDayDialog({weekOrder: undefined, dayOrder: undefined, isOpen: false});
     };
 
     return (
-        <Dialog open={ generateDayDialog.isOpen } onOpenChange={ () => handleGenerateDayDialog({currentWeek: undefined, currentDay: undefined, isOpen: false}) } >
+        <Dialog open={ generateDayDialog.isOpen } onOpenChange={ () => handleOpenGenerateDayDialog({weekOrder: undefined, dayOrder: undefined, isOpen: false})} >
 
             <DialogContent hideClose className="max-w-5xl w-full">
                 <DialogTitle>
@@ -72,8 +69,8 @@ export const GenerateDayDialog: React.FC<IProps> = (props) => {
                                                 <FormControl>
                                                     <Input
                                                     startIcon={ SearchIcon }
-                                                    placeholder={ `Describe your desired Week ${generateDayDialog.currentWeek + 1} Day ${generateDayDialog.currentDay}` }
-                                                    { ...field }
+                                                    placeholder={`Describe your desired Week ${generateDayDialog.weekOrder + 1} Day ${generateDayDialog.dayOrder}`}
+                                                    {...field}
                                                 />
                                                 </FormControl>
                                                 <FormMessage />

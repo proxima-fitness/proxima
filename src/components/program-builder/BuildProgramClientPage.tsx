@@ -4,18 +4,18 @@ import { useEffect, useState } from "react";
 import { BuildProgramSkeleton } from "./BuildProgramSkeleton";
 import { HevyRoutine } from "./HevyRoutine";
 import { ProximaProgram } from "./ProximaProgram";
-import { exampleProximaProgram } from "@/assets/constants";
+import { exampleProximaProgram, exampleHevyRoutineProgram } from "@/assets/constants";
+import { useIsHevy } from "@/contexts/HevyContext";
 
 export const BuildProgramClientPage: React.FC = () => {
 
     const [generating, setGenerating] = useState(true);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [isHevy, setIsHevy] = useState(false); // if true Hevy routine, else Proxima Program
+    const { isHevy } = useIsHevy();
 
     useEffect(() => {
         setTimeout(() => {
             setGenerating(false);
-        }, 2000);
+        }, 100);
     }, []);
 
     return (
@@ -23,7 +23,7 @@ export const BuildProgramClientPage: React.FC = () => {
             { generating ?
                 <BuildProgramSkeleton />
             : isHevy ?
-                <HevyRoutine />
+                <HevyRoutine program={ exampleHevyRoutineProgram } />
             :
                 <ProximaProgram program={ exampleProximaProgram } />
             }

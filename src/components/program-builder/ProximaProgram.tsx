@@ -1,13 +1,13 @@
 "use client";
 
-import { exampleProximaProgram } from "@/assets/constants";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import { toast } from "sonner"
 import { AddExerciseDialog } from "./AddExerciseDialog";
 import { Option } from "@/components/ui/multi-select";
 import { GenerateDayDialog } from "./GenerateDayDialog";
-import { WeekColumn } from "./WeekColumn";
-import { v4 as uuidv4 } from "uuid";
+import { addExerciseToProgramCreatorExerciseConverter, appendWeekOrderAndIdToProgramDays, deFlattenProgram, flattenProgram, reorder } from "@/utils/helpers";
+import { useExercises } from "@/api/hooks";
+import { Column } from "../drag-and-drop/Column";
 
 interface IProps {
     program: TProgramCreatorDay[][];
@@ -19,139 +19,233 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
         program,
     } = props;
 
-    const [newProgram, setNewProgram] = useState<TProgramCreatorDay[][]>(program);
-    const [addExerciseDialog, setAddExerciseDialog] = useState<TDialog>({currentWeek: undefined, currentDay: undefined, isOpen: false});
-    const [generateDayDialog, setGenerateDayDialog] = useState<TDialog>({currentWeek: undefined, currentDay: undefined, isOpen: false});
+    const { data: exercises }  = useExercises();
 
-    // Duplicates a whole week to another week within the program
+    const [addExerciseDialog, setAddExerciseDialog] = useState<TDialog>({weekOrder: undefined, dayOrder: undefined, isOpen: false});
+    const [generateDayDialog, setGenerateDayDialog] = useState<TDialog>({weekOrder: undefined, dayOrder: undefined, isOpen: false});
+    const [isEditExercise, setIsEditExercise] = useState(false);
+
+    const handleIsEditExercise = (isEditExercise: boolean) => {
+        setIsEditExercise(isEditExercise);
+    };
+
+    // Duplicates the selected week to other selected weeks
     const handleDuplicateWeek = (fromWeekIndex: number, toWeekIndexes: number[]) => {
-        setNewProgram((prevProgram) => {
-            return prevProgram.map((week, idx) => {
-                if (toWeekIndexes.includes(idx)) {
-                    return JSON.parse(JSON.stringify(prevProgram[fromWeekIndex])); // Deep copy to prevent reference issues
+        setFlattenedProgramDays((prev) => {
+
+            const filteredPrev = prev.filter((day) => !toWeekIndexes.includes(Number(day.weekOrder)));
+
+            const daysToCopy = prev.filter((day) => day.weekOrder === String(fromWeekIndex));
+
+            let newId = filteredPrev.length + 1;
+
+            const newDays = toWeekIndexes.flatMap((week) =>
+                daysToCopy.map((day) => ({
+                    ...day,
+                    id: String(newId++),
+                    weekOrder: String(week),
+                }))
+            );
+
+            return reorder([...filteredPrev, ...newDays]);
+        });
+    };
+
+    // Duplicates the selected day to other days in the program on the selected week
+    const handleDuplicateDay = (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayOrderArray: Option[]) => {
+
+        const toDayOrders = toDayOrderArray.map((day) => Number(day.value)).sort((a, b) => a - b);
+
+        setFlattenedProgramDays((prev) => {
+            const dayToCopy = prev.find((day) => Number(day.weekOrder) === fromWeekOrder && Number(day.order) === fromDayOrder);
+
+            if (!dayToCopy) return prev;
+
+            const existingDaysInTargetWeek = prev.filter((day) => Number(day.weekOrder) === toWeekOrder);
+            const maxExistingOrder = Math.max(...existingDaysInTargetWeek.map((day) => Number(day.order)), 0);
+
+            let newId = Math.max(...prev.map((day) => Number(day.id)), 0) + 1;
+            let updatedDays = [...prev];
+
+            const maxToDayOrder = Math.max(...toDayOrders);
+
+            if (maxToDayOrder > maxExistingOrder) {
+                for (let i = maxExistingOrder + 1; i <= maxToDayOrder; i++) {
+                    if (
+                        !existingDaysInTargetWeek.some((day) => Number(day.order) === i) &&
+                        !toDayOrders.includes(i)
+                    ) {
+                        updatedDays.push({
+                            id: String(newId++),
+                            weekOrder: String(toWeekOrder),
+                            order: String(i),
+                            exercises: [],
+                        });
+                    }
                 }
-                return week;
-            });
+            }
+
+            updatedDays = updatedDays.filter((day) => !(Number(day.weekOrder) === toWeekOrder && toDayOrders.includes(Number(day.order))));
+
+            const newDays = toDayOrders.map((dayOrder) => ({
+                ...dayToCopy,
+                id: String(newId++),
+                weekOrder: String(toWeekOrder),
+                order: String(dayOrder),
+            }));
+
+            return reorder([...updatedDays, ...newDays]);
+        });
+    };
+
+    // // State for opening the Add Exercise Dialog with the correct week and day
+    const handleOpenAddExerciseDialog = (addExerciseDialog: TDialog) => {
+        if (addExerciseDialog.isOpen === false) {
+            setIsEditExercise(false);
+        }
+        setAddExerciseDialog(addExerciseDialog);
+    };
+
+    // // State for opening the Generate Day Dialog with the correct week and day
+    const handleOpenGenerateDayDialog = (generateDayDialog: TDialog) => {
+        setGenerateDayDialog(generateDayDialog);
+    };
+
+    // Will re-generate the currently selected day based on a prompt
+    const handleGenerateDay = (weekOrder: number, dayOrder:number, prompt: string) => {
+        // Do AI re-generation of a day here
+    };
+
+
+    // Adds an empty day to the selected week
+    const handleAddDay = (weekOrder: string) => {
+        setFlattenedProgramDays((prev) => {
+            const nthDayOrder = prev.filter((day) => day.weekOrder === weekOrder).length + 1;
+
+            const newEmptyDay: TProgramCreatorDay = {
+                id: String(flattenedProgramDays.length + 1),
+                weekOrder,
+                order: String(nthDayOrder),
+                exercises: [],
+            };
+
+            return [...prev, newEmptyDay];
+        });
+    };
+
+    // Deletes selected day from selected week by id
+    const handleDeleteDay = (id: string) => {
+        setFlattenedProgramDays((prev) => {
+            let newDays = prev.filter((day) => day.id !== id);
+            newDays = reorder(newDays);
+            return newDays;
         });
     };
 
 
-    // Duplicates the selected day to other days in the program on the selected week
-    const handleDuplicateDay = (fromWeekIndex: number, fromDayIndex: number, toWeekIndex: number, toDayIndexArray: Option[] ) => {
-        const tmpProgram = [...newProgram];
-        const toDayIndexes = toDayIndexArray.map((day) => Number(day.value) - 1);
+    const handleEditTitle = (id: string, day_title: string) => {
+        setFlattenedProgramDays((prev) =>
+            prev.map((day) =>
+                day.id === id ? { ...day, day_title: day_title} : day
+            )
+        );
+    };
 
-        for (let i = 0; i < toDayIndexes.length; i++) {
-            if (tmpProgram[toWeekIndex][toDayIndexes[i]]) {
-                tmpProgram[toWeekIndex][toDayIndexes[i]].exercises = [...(tmpProgram[fromWeekIndex][fromDayIndex].exercises || [])];
-            } else {
-                const toWeekLength = newProgram[toWeekIndex].length;
-                if (toWeekLength === 7) {
-                    return;
+    // Deletes an exercise from a workout day
+    const handleDeleteExercise = (weekOrder: number, dayOrder: number, exerciseIndex: number) => {
+        setFlattenedProgramDays((prev) => {
+            return prev.map((day) => {
+                if (Number(day.weekOrder) === weekOrder && Number(day.order) === dayOrder) {
+                    return {
+                        ...day,
+                        exercises: day.exercises.filter((_, index) => index !== exerciseIndex),
+                    };
                 }
-                const newEmptyDay: TProgramCreatorDay = {
-                    order: String(toWeekLength + 1),
-                    exercises: [...(tmpProgram[fromWeekIndex][fromDayIndex].exercises || [])],
-                };
-                tmpProgram[toWeekIndex].push(newEmptyDay);
-            }
-        };
-
-        setNewProgram(tmpProgram);
-        return;
-    };
-
-    // State for opening the Add Exercise Dialog with the correct week and day
-    const handleAddExerciseDialog = (addExerciseDialog: TDialog) => {
-        setAddExerciseDialog(addExerciseDialog);
-    };
-
-    // State for opening the Generate Day Dialog with the correct week and day
-    const handleGenerateDayDialog = (generateDayDialog: TDialog) => {
-        setGenerateDayDialog(generateDayDialog);
-    };
-
-    const handleGenerateDay = (currentWeekIndex: number, currentDayIndex:number, prompt: string) => {
-        // Do AI re-generation of a day here
-    };
-
-    // Adds an empty day to the selected week
-    const handleAddDay = (currentWeek: number) => {
-
-        const currentWeekLength = newProgram[currentWeek].length;
-        if (currentWeekLength === 7) {
-            toast("You can only add up to 7 days per week");
-            return;
-        }
-        const newEmptyDay: TProgramCreatorDay = {
-            order: String(currentWeekLength + 1),
-            exercises: [],
-        };
-        const tmpProgram = [...newProgram];
-        tmpProgram[currentWeek].push(newEmptyDay);
-        setNewProgram(tmpProgram);
-
-        return;
-    };
-
-    // Deletes selected day from selected week
-    const handleDeleteDay = (currentWeek: number, currentDay: number) => {
-        const tmpProgram = [...newProgram];
-
-        tmpProgram[currentWeek] = tmpProgram[currentWeek].filter((day: { order: string; }) => Number(day.order) !== currentDay)
-        .map((day, index) => ({
-            ...day,
-            order: (index + 1).toString(),
-        }));
-
-        setNewProgram(tmpProgram);
-        toast.error("Day deleted");
-        return;
+                return day;
+            });
+        });
     };
 
     // Adds an exercise to the workout day
-    const handleAddExercise = (currentWeekIndex: number, currentDay: number, exercise: TProgramCreatorExercise) => {
-        const tmpProgram = [...newProgram];
+    const handleAddExercise = (weekOrder: number, dayOrder: number, exercise: TProgramCreatorExercise) => {
+        setFlattenedProgramDays((prev) => {
+            return prev.map((day) => {
+                if (Number(day.weekOrder) === weekOrder && Number(day.order) === dayOrder) {
+                    return {
+                        ...day,
+                        exercises: [...day.exercises, exercise],
+                    };
+                }
+                return day;
+            });
+        });
+    };
 
-        if (tmpProgram[currentWeekIndex][currentDay - 1].exercises.length === 10) {
-            toast.error("Maximum 10 Exercises per day");
-            return;
+    // Edits an exercise on a workout day
+    const handleEditExercise = async (editExercise: TDialog) => {
+
+        const convertedEditExercise = await addExerciseToProgramCreatorExerciseConverter(editExercise.editExercise);
+
+        setFlattenedProgramDays((prev) => {
+            return prev.map((day) => {
+                if (Number(day.weekOrder) === editExercise.weekOrder && Number(day.order) === editExercise.dayOrder) {
+                    return {
+                        ...day,
+                        exercises: day.exercises.map((exercise, index) => index === editExercise.exerciseIndex ? convertedEditExercise : exercise),
+                    };
+                }
+                return day;
+            })
+        })
+
+        setIsEditExercise(false);
+    };
+
+    const [flattenedProgramDays, setFlattenedProgramDays] = useState<TProgramCreatorDay[]>(flattenProgram(appendWeekOrderAndIdToProgramDays(program)));
+
+    useEffect(() => {
+        if (typeof window !== undefined) {
+            localStorage.setItem("program-in-progress", JSON.stringify(deFlattenProgram(flattenedProgramDays)));
         }
-        tmpProgram[currentWeekIndex][currentDay - 1].exercises.push(exercise);
-        setNewProgram(tmpProgram);
-        return;
-    };
-
-    const handleEditTitle = (currentWeek: number, currentDay: number, day_title: string) => {
-        const tmpProgram = [...newProgram];
-        tmpProgram[currentWeek][currentDay - 1].day_title = day_title;
-        setNewProgram(tmpProgram);
-    };
+    }, [flattenedProgramDays]);
 
     return (
         <>
-            <div className="flex flex-row gap-4">
-                { newProgram.map((week, index) => {
-                    return (
-                        <WeekColumn
-                            key={ uuidv4() }
-                            index={ index }
-                            programLength={ exampleProximaProgram.length }
-                            handleDuplicateWeek={ handleDuplicateWeek }
-                            week={ week }
-                            handleDuplicateDay={ handleDuplicateDay }
-                            handleEditTitle={ handleEditTitle }
-                            handleDeleteDay={ handleDeleteDay }
-                            handleAddExerciseDialog={ handleAddExerciseDialog }
-                            handleGenerateDayDialog={ handleGenerateDayDialog }
-                            handleAddDay={ handleAddDay }
-                        />
-
-                    );
-                } ) }
+            <div className="flex flex-row gap-4 h-full w-full">
+                { program.map((_, index) => (
+                    <Column
+                        key={ `Week ${index + 1}` }
+                        title={ `Week ${index + 1}` }
+                        programLength={ program.length }
+                        flattenedProgramDays={ flattenedProgramDays }
+                        weekOrder={ String(index) }
+                        setFlattenedProgramDays={ setFlattenedProgramDays }
+                        handleAddDay={ handleAddDay }
+                        handleDeleteDay={ handleDeleteDay }
+                        handleEditTitle={ handleEditTitle }
+                        handleIsEditExercise={ handleIsEditExercise }
+                        handleDuplicateWeek={ handleDuplicateWeek }
+                        handleDuplicateDay={ handleDuplicateDay }
+                        handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
+                        handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
+                        handleDeleteExercise={ handleDeleteExercise }
+                    />
+                ) ) }
             </div>
-            <AddExerciseDialog addExerciseDialog={ addExerciseDialog } handleAddExercise={ handleAddExercise } handleAddExerciseDialog={ handleAddExerciseDialog } />
-            <GenerateDayDialog handleGenerateDay={ handleGenerateDay } generateDayDialog={ generateDayDialog } handleGenerateDayDialog={ handleGenerateDayDialog } />
+            { addExerciseDialog.isOpen &&
+                <AddExerciseDialog
+                    addExerciseDialog={ addExerciseDialog }
+                    isEditExercise={ isEditExercise }
+                    handleEditExercise={ handleEditExercise }
+                    handleAddExercise={ handleAddExercise }
+                    handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
+                />
+            }
+            <GenerateDayDialog
+                handleGenerateDay={ handleGenerateDay }
+                generateDayDialog={ generateDayDialog }
+                handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
+            />
         </>
     );
 };

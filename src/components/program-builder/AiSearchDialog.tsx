@@ -16,16 +16,22 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-  } from "@/components/ui/select";
-import { useReducer, useState } from "react";
+  } from "@/components/ui/select"
+import { useEffect, useReducer, useState } from "react";
 import MultiSelect from '@/components/ui/multi-select';
 import { activityLevelOptions, ageOptions, dayPerWeekOptions, difficultyOptions, equipmentOptions, focusAreasOptions, goalsOptions, healthIssuesOptions, programLengthOptions, sexOptions, specializationOptions, specificDaysOptions, workoutDurationOptions } from "@/assets/constants";
 import Link from "next/link";
+import { useIsHevy } from "@/contexts/HevyContext";
 
 export const AiSearchDialog: React.FC = () => {
 
+    const { setIsHevy } = useIsHevy();
     const [workoutSchema, setWorkoutSchema] = useState("hevy");
     const [advancedSettingsOpen, toggleAdvancedSettingsOpen] = useReducer(prev => !prev, false);
+
+    useEffect(() => {
+        setIsHevy(workoutSchema === "hevy" ? true : false);
+    }, [workoutSchema]);
 
     return (
         <Dialog>

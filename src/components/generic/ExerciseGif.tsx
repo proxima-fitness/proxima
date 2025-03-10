@@ -39,7 +39,7 @@ export const ExerciseGif: React.FC<IProps> = (props) => {
                     </div>
                 }
                 { file_type === "jpg" &&
-                    <div className={ `exercise-gif ` }>
+                    <div className="h-14 w-14 min-w-14 min-h-14 flex items-center justify-center">
                         <Skeleton className="w-full h-full"></Skeleton>
                     </div>
                 }

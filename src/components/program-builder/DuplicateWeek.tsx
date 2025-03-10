@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 interface IProps {
-    weekIndex: number;
+    weekOrder: string;
     programLength: number;
     duplicateWeekOpen: boolean;
     setDuplicateWeekOpen: (duplicateWeekOpen: boolean) => void;
@@ -15,7 +15,7 @@ interface IProps {
 
 export const DuplicateWeek: React.FC<IProps> = (props) => {
     const {
-        weekIndex,
+        weekOrder,
         programLength,
         duplicateWeekOpen,
         setDuplicateWeekOpen,
@@ -45,7 +45,7 @@ export const DuplicateWeek: React.FC<IProps> = (props) => {
         <Dialog open={ duplicateWeekOpen } onOpenChange={ () => setDuplicateWeekOpen(false) }>
             <DialogContent hideClose className="max-w-3xl w-full">
                 <DialogTitle className="font-bold flex items-center justify-center pb-4 border-b-2">
-                    Duplicate Week {weekIndex + 1} to
+                    Duplicate Week {Number(weekOrder) + 1} to
                 </DialogTitle>
                 <DialogDescription className="flex flex-row justify-between items-center">
                     <span className="grid grid-cols-6 gap-6 p-8 w-full">
@@ -59,7 +59,7 @@ export const DuplicateWeek: React.FC<IProps> = (props) => {
                             Select All
                         </DialogBadge>
                         {Array.from({ length: programLength }, (_, index) => index + 1).map((wk) => {
-                            if (wk !== weekIndex + 1) {
+                            if (wk !== Number(weekOrder) + 1) {
                                 return (
                                     <DialogBadge
                                         key={ wk }
@@ -85,8 +85,8 @@ export const DuplicateWeek: React.FC<IProps> = (props) => {
                         <Button
                             onClick={ () => {
                                 handleDuplicateWeek(
-                                    weekIndex,
-                                    toWeekIndexes(),
+                                    Number(weekOrder),
+                                    toWeekIndexes()
                                 );
                                 setDuplicateWeekOpen(false);
                                 }
