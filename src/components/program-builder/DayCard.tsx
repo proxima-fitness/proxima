@@ -25,7 +25,8 @@ interface IProps {
     title: string;
     weekOrder: string;
     programLength: number;
-    handleDragStart: (e: DragEvent, card: TCard) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    handleDragStart: (e: any, card: TCard) => void;
     handleEditTitle: (id: string, day_title: string) => void;
     handleDeleteDay: (id: string) => void;
     handleOpenGenerateDayDialog: (generateDayDialog: TDialog) => void;
@@ -78,7 +79,8 @@ export const DayCard: FC<IProps> = (props) => {
                 layout
                 layoutId={ day.id }
                 draggable="true"
-                onDragStart={ (e: DragEvent) => handleDragStart(e, cardVal) }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onDragStart={ (e: any) => handleDragStart(e, cardVal) }
                 className="cursor-grab rounded active:cursor-grabbing gap-4"
             >
                 <Card className="group py-4 px-4 min-w-[440px] max-w-[440px] bg-lightGray my-2">

@@ -52,12 +52,16 @@ export const Column: React.FC<IProps> = (props) => {
         setDuplicateWeekOpen(duplicateWeekOpen);
     };
     // Identify the grabbed card and store it by it's uuid in event handler
-  const handleDragStart = (e: DragEvent, card) => {
-        e.dataTransfer.setData("cardId", card.id);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleDragStart = (e: any, card: TCard) => {
+        if (e.dataTransfer) {
+            e.dataTransfer.setData("cardId", card.id);
+        }
     };
 
     // Add background style while a card is being dragged and set card to active
-    const handleDragOver = (e) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleDragOver = (e: any) => {
         e.preventDefault();
         highlightIndicator(e);
 
@@ -65,7 +69,8 @@ export const Column: React.FC<IProps> = (props) => {
     };
 
 
-    const handleDragEnd = (e) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleDragEnd = (e: any) => {
         const cardId = e.dataTransfer.getData("cardId");
         setActive(false);
         clearHighlights();
@@ -103,15 +108,18 @@ export const Column: React.FC<IProps> = (props) => {
 
     /******* FUNCTIONS FOR STYLING THE DRAG EFFECT  *******/
     /***********************************************************************************/
-    const clearHighlights = (els?: Element[]) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const clearHighlights = (els?: any) => {
         const indicators = els || getIndicators();
 
-        indicators.forEach((i) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        indicators.forEach((i: any) => {
           i.style.opacity = "0";
         });
     };
 
-    const highlightIndicator = (e) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const highlightIndicator = (e: any) => {
       const indicators: Element[] = getIndicators();
 
         clearHighlights(indicators);
@@ -121,11 +129,13 @@ export const Column: React.FC<IProps> = (props) => {
         el.element.style.opacity = "1";
     };
 
-    const getNearestIndicator = (e, indicators) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const getNearestIndicator = (e: any, indicators: any) => {
         const DISTANCE_OFFSET = 50;
 
         const el = indicators.reduce(
-          (closest, child) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (closest: any, child: any) => {
             const box = child.getBoundingClientRect();
 
             const offset = e.clientY - (box.top + DISTANCE_OFFSET);
@@ -195,7 +205,7 @@ export const Column: React.FC<IProps> = (props) => {
                             key={ dy.id }
                             day={ dy }
                             title={ title }
-                            weekOrder={ dy.weekOrder }
+                            weekOrder={ dy?.weekOrder ?? "0" }
                             programLength={ programLength }
                             handleDragStart={ handleDragStart }
                             handleDeleteDay={ handleDeleteDay }

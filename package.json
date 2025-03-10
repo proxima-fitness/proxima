@@ -71,6 +71,7 @@
   "devDependencies": {
     "@next/eslint-plugin-next": "^15.1.7",
     "@types/aos": "^3.0.7",
+    "@types/humanize-duration": "^3.27.4",
     "@types/node": "^22.10.5",
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",

@@ -180,7 +180,7 @@ export const useBlogByIdSSR = async (id: string) => {
     if (!blog) {
         throw new Error("Blog not found");
     }
-    return blog;
+    return blog as unknown as TBlog;
 };
 
 // GET ALL BLOGS USING SSR

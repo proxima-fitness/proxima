@@ -23,7 +23,7 @@ import {
 interface IProps {
     options: string[];
     title: "Program Length" | "Workout Duration" | "Equipment" | "Specialization" | "Difficulty";
-    handleSelectedFilters: (filterKey: string) => void;
+    handleSelectedFilters: (filterKey: string | undefined) => void;
     value: string;
 }
 
@@ -69,36 +69,36 @@ export const ComboBox: React.FC<IProps> = (props) => {
                             <CommandGroup>
                                 {options.map((option) => (
                                     <CommandItem
-                        key={ option }
-                        value={ option }
-                        onSelect={ (currentValue) => {
-                            handleSelectedFilters(currentValue === value ? "" : currentValue);
-                            // setValue(currentValue === value ? "" : currentValue)
-                            setOpen(false);
-                        } }
-                    >
+                                        key={ option }
+                                        value={ option }
+                                        onSelect={ (currentValue) => {
+                                            handleSelectedFilters(currentValue === value ? "" : currentValue);
+                                            // setValue(currentValue === value ? "" : currentValue)
+                                            setOpen(false);
+                                        } }
+                                    >
                                         <Check
-                        className={ cn(
-                        "mr-2 h-4 w-4",
-                        value === option ? "opacity-100" : "opacity-0",
-                        ) }
-                    />
+                                            className={ cn(
+                                            "mr-2 h-4 w-4",
+                                            value === option ? "opacity-100" : "opacity-0",
+                                            ) }
+                                        />
                                         { title === "Workout Duration" &&
-                        (
-                            <>
-                                {option} Mins
-                            </>
-                        )
-                    }
+                                            (
+                                                <>
+                                                    {option} Mins
+                                                </>
+                                            )
+                                        }
                                         { title === "Program Length" &&
-                        (
-                            <>
-                                {option} { option === "1" ? "Week" : "Weeks"}
-                            </>
-                        )
-                    }
+                                            (
+                                                <>
+                                                    {option} { option === "1" ? "Week" : "Weeks"}
+                                                </>
+                                            )
+                                        }
                                     </CommandItem>
-                ) ) }
+                                ) ) }
                             </CommandGroup>
                         </CommandList>
                     </Command>

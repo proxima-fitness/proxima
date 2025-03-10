@@ -52,20 +52,22 @@ export const HevyColumn: React.FC<IProps> = (props) => {
         setDuplicateWeekOpen(duplicateWeekOpen);
     };
     // Identify the grabbed card and store it by it's uuid in event handler
-    const handleDragStart = (e: DragEvent, card: TCard) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleDragStart = (e: any, card: THevyCard) => {
         e.dataTransfer.setData("cardId", card.id);
     };
 
     // Add background style while a card is being dragged and set card to active
-    const handleDragOver = (e) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleDragOver = (e: any) => {
         e.preventDefault();
         highlightIndicator(e);
 
         setActive(true);
     };
 
-
-    const handleDragEnd = (e) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleDragEnd = (e: any) => {
         const cardId = e.dataTransfer.getData("cardId");
         setActive(false);
         clearHighlights();
@@ -103,17 +105,20 @@ export const HevyColumn: React.FC<IProps> = (props) => {
 
     /******* FUNCTIONS FOR STYLING THE DRAG EFFECT  *******/
     /***********************************************************************************/
-    const clearHighlights = (els?: HTMLElement[]) => {
-      const indicators = els || getIndicators();
-      indicators.forEach((i) => {
-        if (!(i instanceof HTMLElement)) {
-          throw new TypeError(`Expected a object of Type HTMLElement`);
-        }
-        i.style.opacity = "0";
-      });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const clearHighlights = (els?: any) => {
+        const indicators = els || getIndicators();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        indicators.forEach((i: any) => {
+            if (!(i instanceof HTMLElement)) {
+            throw new TypeError(`Expected a object of Type HTMLElement`);
+            }
+            i.style.opacity = "0";
+        });
     };
 
-    const highlightIndicator = (e) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const highlightIndicator = (e: any) => {
         const indicators = getIndicators();
 
         clearHighlights(indicators);
@@ -123,7 +128,8 @@ export const HevyColumn: React.FC<IProps> = (props) => {
         el.element.style.opacity = "1";
     };
 
-    const getNearestIndicator = (e, indicators) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const getNearestIndicator = (e: any, indicators: any) => {
         const DISTANCE_OFFSET = 50;
 
         const el = indicators.reduce(
