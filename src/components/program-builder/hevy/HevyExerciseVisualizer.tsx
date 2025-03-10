@@ -1,12 +1,11 @@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { getExerciseGifIdForHevyExercise } from "@/utils/helpers";
 import { SquarePenIcon, Trash2Icon } from "lucide-react";
 import { HevyExerciseGif } from "./HevyExerciseGif";
 interface IProps {
     day: THevyRoutine;
     folder_id: number;
     handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
-    // handleEdit: (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: TProgramCreatorExercise) => void;
+    handleEdit: (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: THevyExercise) => void;
 }
 
 export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
@@ -14,7 +13,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
     const {
         day,
         folder_id,
-        // handleEdit,
+        handleEdit,
         handleDeleteExercise,
     } = props;
 
@@ -100,7 +99,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                         </TooltipTrigger>
                         <TooltipContent side="right" className="bg-lightSecondary text-white flex flex-row gap-2">
                         <SquarePenIcon className="cursor-pointer" onClick={ () => {
-                                // handleEdit(folder_id, Number(day.order), i, exercise )
+                                handleEdit(folder_id, Number(day.order), i, exercise )
                         } } />
                         <Trash2Icon
                             className="cursor-pointer"

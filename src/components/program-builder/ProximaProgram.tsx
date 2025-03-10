@@ -114,7 +114,6 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     // Will re-generate the currently selected day based on a prompt
     const handleGenerateDay = (weekOrder: number, dayOrder:number, prompt: string) => {
         // Do AI re-generation of a day here
-        console.log(weekOrder, dayOrder, prompt);
     };
 
 

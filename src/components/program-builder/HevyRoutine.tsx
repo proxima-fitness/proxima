@@ -32,7 +32,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
 
     // // Duplicates the selected week to other selected weeks
     const handleDuplicateWeek = (fromWeekIndex: number, toWeekIndexes: number[]) => {
-        console.log("fromWeekIndex:  toWeekIndexes:", fromWeekIndex, toWeekIndexes);
+
         setHevyProgram((prev) => {
 
             const filteredPrev = prev.filter((day) => !toWeekIndexes.includes(day.folder_id));
@@ -117,7 +117,6 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     // // Will re-generate the currently selected day based on a prompt
     const handleGenerateDay = (folder_id: number, dayOrder:number, prompt: string) => {
         // Do AI re-generation of a day here
-        console.log(folder_id, dayOrder, prompt);
     };
 
 
@@ -232,7 +231,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>(appendOrderToHevyRoutines(program));
     const numberOfWeeks = getNumberRoutineFolders(hevyProgram);
     const numberOfWeeksArr = Array.from({ length: numberOfWeeks }, (_, i) => i);
-    console.log(hevyProgram);
+
     useEffect(() => {
         if (typeof window !== undefined) {
             localStorage.setItem("hevy-program-in-progress", JSON.stringify(hevyProgram));

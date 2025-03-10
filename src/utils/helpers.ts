@@ -140,42 +140,44 @@ export const hevyAddExerciseToHevySetsConverter = (addExercise: THevyAddExercise
     return sets;
 };
 
-// Converts TProgramCreatorExercise into THevyAddExercise type
-export const convertProgramCreatorExerciseToHevyAddExercise = (programCreatorExercise: THevyProgramCreatorExercise): THevyAddExercise => {
 
-    if (!programCreatorExercise.exercise) {
-      throw new Error("Missing exercise data.");
-    }
+// Converts THevyExercise into THevyAddExercise
+export const convertHevyExerciseIntoHevyAddExercise = (exercise: THevyExercise): THevyAddExercise => {
 
-    const { exercise, reps_type, intensity } = programCreatorExercise;
+    // Determine the repTypeValue based on the first non-zero value in a rep-type field
+    const firstSet = exercise.sets[0];
 
-    // Determine repTypeValue
-    const repTypeValue =
-      reps_type?.reps ? "reps" :
-      reps_type?.distance_meters ? "distance_meters" :
-      reps_type?.duration_seconds ? "duration_seconds" :
-      reps_type?.custom_metric ? "custom_metric" :
-      undefined;
-
-    if (!repTypeValue) {
-      throw new Error("Invalid or missing reps_type.");
+    let repTypeValue: THevyAddExercise["repTypeValue"] = "reps";
+    if (firstSet.distance_meters > 0) {
+      repTypeValue = "distance_meters";
+    } else if (firstSet.duration_seconds > 0) {
+      repTypeValue = "duration_seconds";
+    } else if (firstSet.custom_metric > 0) {
+      repTypeValue = "custom_metric";
     }
 
     // Determine intensityValue
-    const intensityValue =
-      intensity?.rpe ? "rpe" :
-      intensity?.weight_kg ? "weight_kg" :
-      undefined;
+    const intensityValue: THevyAddExercise["intensityValue"] =
+      firstSet.weight_kg > 0 ? "weight_kg" : "rpe";
 
-    if (!intensityValue) {
-      throw new Error("Invalid or missing intensity.");
-    }
+    // Map values from sets
+    const reps = exercise.sets.map(set => {
+      switch (repTypeValue) {
+        case "reps":
+          return set.reps;
+        case "distance_meters":
+          return set.distance_meters;
+        case "duration_seconds":
+          return set.duration_seconds;
+        case "custom_metric":
+          return set.custom_metric;
+      }
+    });
 
-    // Populate data fields
-    const reps = reps_type?.reps || reps_type?.distance_meters || reps_type.duration_seconds || reps_type.custom_metric || [];
-    const intensityData = intensity?.weight_kg || intensity?.rpe || [];
+    const intensityData = exercise.sets.map(set =>
+      intensityValue === "weight_kg" ? set.weight_kg : set.rpe
+    );
 
-    // Return the mapped THevyAddExercise object
     return {
       id: exercise.exercise_template_id,
       repTypeValue,
@@ -184,6 +186,7 @@ export const convertProgramCreatorExerciseToHevyAddExercise = (programCreatorExe
       intensityData,
     };
 };
+
 
 // Converts TProgramCreatorExercise into TAddExercise type
 export const convertProgramCreatorExerciseToAddExercise = (programCreatorExercise: TProgramCreatorExercise): TAddExercise => {

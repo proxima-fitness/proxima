@@ -123,13 +123,6 @@ type THevyAddExercise = {
     intensityData: number[]; // DATA for any intensity that is not a range
 }
 
-type THevyProgramCreatorExercise = {
-    exercise?: THevyExercise;
-    sets?: number;
-    reps_type?: THevyRepsTypes;
-    intensity?: THevyIntensityTypes;
-}
-
 type THevyRepsTypes = {
     reps?: number[],
     distance_meters?: number[],
