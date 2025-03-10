@@ -1,6 +1,6 @@
 // File for endpoints to the Hevy App Public API
 
-import { hevyApiKey, supabase } from ".";
+import { supabase } from ".";
 
 export const defaultFetch = async <T>(url: string, apiKey: string): Promise<T> => {
     const response = await fetch(url, {

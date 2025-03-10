@@ -2,6 +2,7 @@
 import { program_creator_white } from "public";
 import styles, { layout } from "../../style";
 import { Button } from "../generic/Button";
+import Link from "next/link";
 
 export const CustomPrograms: React.FC = () => {
 
@@ -18,7 +19,7 @@ export const CustomPrograms: React.FC = () => {
                 <p className={ `${styles.paragraph} max-w-[470px] mt-5` }>
                     Through our AI Program Builder, you can easily generate your own workout program based on your preferences. Plus, once your program is ready, you can share it on the feed page, inspiring others and building a stronger fitness community!
                 </p>
-                <a href="https://app.proximafitness.com/"><Button text={ "Build Program" } styles={ `mt-10` } /></a>
+                <Link href="/program-builder"><Button text={ "Build Program" } styles={ `mt-10` } /></Link>
             </div>
         </section>
     );

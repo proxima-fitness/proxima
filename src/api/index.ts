@@ -16,9 +16,9 @@ if (!process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_BLOG_KEY) {
     console.error('Supabase blog key is missing. Check your environment variables.');
 }
 
-if (!process.env.NEXT_PUBLIC_REACT_APP_HEVY_API_KEY) {
-    console.error('Hevy API key is missing. Check your environment variables.');
-}
+// if (!process.env.NEXT_PUBLIC_REACT_APP_HEVY_API_KEY) {
+//     console.error('Hevy API key is missing. Check your environment variables.');
+// }
 
 
 
@@ -28,7 +28,7 @@ export const supabaseBlogUrl = process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_BLOG_U
 export const supabaseKey = process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_KEY ?? "";
 export const supabaseBlogKey = process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_BLOG_KEY ?? "";
 
-export const hevyApiKey = process.env.NEXT_PUBLIC_REACT_APP_HEVY_API_KEY;
+// export const hevyApiKey = process.env.NEXT_PUBLIC_REACT_APP_HEVY_API_KEY;
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 export const supablog = createClient(supabaseBlogUrl, supabaseBlogKey);
