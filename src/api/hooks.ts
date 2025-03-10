@@ -112,7 +112,7 @@ export const useExerciseGifId = (exercise_name: string) => {
 
 
 // FETCHES EITHER A GIF OR IMG AT A PARTICULAR RESOLUTION FROM STORAGE BUCKET FOR AN EXERCISE
-export const useExerciseGif = (gif_id: string, resolution: "180" | "360", file_type: "gif" | "jpg", exercise_name: string) => {
+export const useExerciseGif = (gif_id: string | undefined, resolution: "180" | "360", file_type: "gif" | "jpg", exercise_name: string) => {
     return useQuery({
         queryKey: [ "exercise-gif", exercise_name, gif_id, resolution, file_type ],
         queryFn: () => getExerciseGif(gif_id, resolution, file_type),

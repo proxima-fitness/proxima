@@ -30,7 +30,7 @@ export const TooltipExerciseVisualizer: React.FC<IProps> = (props) => {
                                     <div className="text-lightSecondary pr-1">
                                         { i + 1}
                                     </div>
-                                    <ExerciseGif thumbnailOrImage={ "thmb" } name={ exercise.exercise?.name_english } gif_id={ exercise.exercise?.gif_id ?? "" } resolution={ "180" } file_type={ 'jpg' } />
+                                    <ExerciseGif thumbnailOrImage={ "thmb" } name={ exercise.exercise?.name_english ?? "" } gif_id={ exercise.exercise?.gif_id ?? "" } resolution={ "180" } file_type={ 'jpg' } />
                                     <div>{ exercise.exercise?.name_english }</div>
                                 </div>
                                 <div className="text-center flex flex-row items-center justify-end max-w-[50%] w-[50%] h-full">

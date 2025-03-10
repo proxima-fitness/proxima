@@ -140,7 +140,7 @@ export const PdfRenderer: React.FC<IProps> = (props) => {
                                     </View>
                                 </View>
                                 <View>
-                                    { day?.program_workout_exercises?.map((exercise: TAPIProgramWorkoutExercises, exerciseIndex: number) => (
+                                    { day?.program_workout_exercises?.map((exercise: TSavedWorkoutExercise, exerciseIndex: number) => (
                                         <View key={ exerciseIndex }>
                                             <View
                                                 style={ {
