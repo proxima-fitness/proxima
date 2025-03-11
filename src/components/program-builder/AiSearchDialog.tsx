@@ -6,8 +6,8 @@ import {
     DialogDescription,
     DialogTitle,
     DialogTrigger,
-  } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
+  } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import  { Button } from "@/components/ui/button";
 import { SearchIcon, SparklesIcon, ChevronDownIcon, ChevronUpIcon, PlayIcon } from "lucide-react";
 import {
@@ -16,7 +16,7 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-  } from "@/components/ui/select"
+  } from "@/components/ui/select";
 import { useEffect, useReducer, useState } from "react";
 import MultiSelect from '@/components/ui/multi-select';
 import { activityLevelOptions, ageOptions, dayPerWeekOptions, difficultyOptions, equipmentOptions, focusAreasOptions, goalsOptions, healthIssuesOptions, programLengthOptions, sexOptions, specializationOptions, specificDaysOptions, workoutDurationOptions } from "@/assets/constants";
@@ -31,7 +31,7 @@ export const AiSearchDialog: React.FC = () => {
 
     useEffect(() => {
         setIsHevy(workoutSchema === "hevy" ? true : false);
-    }, [workoutSchema]);
+    }, [workoutSchema, setIsHevy]);
 
     return (
         <Dialog>
@@ -45,7 +45,7 @@ export const AiSearchDialog: React.FC = () => {
                         <Link
                             target="_self"
                             rel="noopener noreferrer"
-                            href={"/program-builder/build-program"}
+                            href={ "/program-builder/build-program" }
                             >
                             <Button className="w-[auto] h-[auto] bg-[#33bbcf] text-white">
                                 <SparklesIcon /> Build
@@ -101,13 +101,13 @@ export const AiSearchDialog: React.FC = () => {
                             </Select>
                             <MultiSelect
                                 badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                defaultOptions={specificDaysOptions}
+                                defaultOptions={ specificDaysOptions }
                                 placeholder="Select specific days"
-                                emptyIndicator={
-                                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                    no results found.
-                                </p>
-                                }
+                                emptyIndicator={ (
+                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                                        no results found.
+                                    </p>
+                              ) }
                             />
                             <Select>
                                 <SelectTrigger autoFocus className="h-10">
@@ -135,107 +135,107 @@ export const AiSearchDialog: React.FC = () => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     { activityLevelOptions.map((act) => (
-                                        <SelectItem key={ act.value} value={ act.value }>{ act.label }</SelectItem>
+                                        <SelectItem key={ act.value } value={ act.value }>{ act.label }</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
                             <MultiSelect
                                 badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                defaultOptions={goalsOptions}
+                                defaultOptions={ goalsOptions }
                                 placeholder="Goals"
-                                emptyIndicator={
-                                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                    no results found.
-                                </p>
-                                }
+                                emptyIndicator={ (
+                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                                        no results found.
+                                    </p>
+                              ) }
                             />
                             <MultiSelect
                                 badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                defaultOptions={specializationOptions}
+                                defaultOptions={ specializationOptions }
                                 placeholder="Specialization"
-                                emptyIndicator={
-                                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                    no results found.
-                                </p>
-                                }
+                                emptyIndicator={ (
+                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                                        no results found.
+                                    </p>
+                              ) }
                             />
                             <MultiSelect
                                 badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                defaultOptions={equipmentOptions}
+                                defaultOptions={ equipmentOptions }
                                 placeholder="Equipment"
-                                emptyIndicator={
-                                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                    no results found.
-                                </p>
-                                }
+                                emptyIndicator={ (
+                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                                        no results found.
+                                    </p>
+                              ) }
                             />
                             <MultiSelect
                                 badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                defaultOptions={focusAreasOptions}
+                                defaultOptions={ focusAreasOptions }
                                 placeholder="Focus areas"
-                                emptyIndicator={
-                                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                    no results found.
-                                </p>
-                                }
+                                emptyIndicator={ (
+                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                                        no results found.
+                                    </p>
+                              ) }
                             />
                             <MultiSelect
                                 badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                defaultOptions={difficultyOptions}
+                                defaultOptions={ difficultyOptions }
                                 placeholder="Difficulty"
-                                emptyIndicator={
-                                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                    no results found.
-                                </p>
-                                }
+                                emptyIndicator={ (
+                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                                        no results found.
+                                    </p>
+                              ) }
                             />
                         </span>
                         <span className="grid grid-cols-1 flex-grow basis-1/3 ">
                             <MultiSelect
                                 badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                defaultOptions={focusAreasOptions}
+                                defaultOptions={ focusAreasOptions }
                                 placeholder="Focus areas"
-                                emptyIndicator={
-                                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                    no results found.
-                                </p>
-                                }
+                                emptyIndicator={ (
+                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                                        no results found.
+                                    </p>
+                              ) }
                             />
                             <MultiSelect
                                 badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                defaultOptions={equipmentOptions}
+                                defaultOptions={ equipmentOptions }
                                 placeholder="Equipment"
-                                emptyIndicator={
-                                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                    no results found.
-                                </p>
-                                }
+                                emptyIndicator={ (
+                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                                        no results found.
+                                    </p>
+                              ) }
                             />
                             <MultiSelect
                                 badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                defaultOptions={specializationOptions}
+                                defaultOptions={ specializationOptions }
                                 placeholder="Specialization"
-                                emptyIndicator={
-                                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                    no results found.
-                                </p>
-                                }
+                                emptyIndicator={ (
+                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                                        no results found.
+                                    </p>
+                              ) }
                             />
                             <MultiSelect
                                 badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                defaultOptions={healthIssuesOptions}
+                                defaultOptions={ healthIssuesOptions }
                                 placeholder="Health Issues"
-                                emptyIndicator={
-                                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                    no results found.
-                                </p>
-                                }
+                                emptyIndicator={ (
+                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                                        no results found.
+                                    </p>
+                              ) }
                             />
                         </span>
                     </span>
                 }
                 <span className="flex flex-row justify-end items-center">
-                    <Select onValueChange={ (value) => setWorkoutSchema(value)} value={ workoutSchema }>
+                    <Select onValueChange={ (value) => setWorkoutSchema(value) } value={ workoutSchema }>
                         <SelectTrigger autoFocus className="h-10 w-[180px]">
                             <SelectValue placeholder="Workout Schema" />
                         </SelectTrigger>

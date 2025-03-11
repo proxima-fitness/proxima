@@ -11,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Input } from "../ui/input";
 import { toast } from "sonner";
 import { PlusIcon, Trash2Icon, XIcon } from "lucide-react";
-import { Skeleton } from "../ui/skeleton";
 
 interface IProps {
     addExerciseDialog: TDialog;
@@ -31,7 +30,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
         handleOpenAddExerciseDialog,
     } = props;
 
-    const { data: exercises, isLoading: loadingExercises }  = useExercises();
+    const { data: exercises }  = useExercises();
 
     const [ exerciseID, setExerciseID ] = useState<string>();
     const [ selectedName, setSelectedName ] = useState<string>("");
@@ -57,18 +56,24 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
     const [ editingSetWeight, setEditingSetWeight ] = useState([false,false,false,false]);
 
     // 3 SECTIONS: SETS, REPS, INTENSITY. reps and intensity are inputs.
-    const [ reps, setReps ] = useState<number[]>(isEditExercise ? undefined : [8,8,8,8]);
-    const [ intensityData, setIntensityData ] = useState<number[]>(isEditExercise ? undefined : [9,9,9,9]);
+    const [ reps, setReps ] = useState<number[] | undefined>(isEditExercise ? undefined : [8,8,8,8]);
+    const [ intensityData, setIntensityData ] = useState<number[] | undefined>(isEditExercise ? undefined : [9,9,9,9]);
 
     // Data structure is different when rep/time/rpe ranges are used
-    const [ repsWithTimeAndRepRange, setRepsWithTimeAndRepRange ] = useState<number[][]>(isEditExercise ? undefined : [[8,12],[8,12],[8,12],[8,12]]);
-    const [ intensityDataWithRPERange, setIntensityDataWithRPERange ] = useState<number[][]>(isEditExercise ? undefined : [[9,10],[9,10],[9,10],[9,10]]);
+    const [ repsWithTimeAndRepRange, setRepsWithTimeAndRepRange ] = useState<number[][] | undefined>(isEditExercise ? undefined : [[8,12],[8,12],[8,12],[8,12]]);
+    const [ intensityDataWithRPERange, setIntensityDataWithRPERange ] = useState<number[][] | undefined>(isEditExercise ? undefined : [[9,10],[9,10],[9,10],[9,10]]);
 
     const [ repTypeValue, setRepTypeValue ] = useState(isEditExercise ? undefined : rep_types[0].value);
     const [ intensityValue, setIntensityValue ] = useState(isEditExercise ? undefined : intensities[0].value);
 
     const handleSaveIntensity = (value: string | number , index: number) => {
-        const updatedWeights = [...intensityData];
+
+        let updatedWeights: number[] = [];
+
+        if (intensityData) {
+            updatedWeights = [...intensityData];
+        }
+
         updatedWeights[index] = Number(value);
         setIntensityData(updatedWeights);
 
@@ -78,13 +83,19 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
 	};
 
     const handleUpdatingIntensity = (value: string | number , index: number) => {
-        const updatedIntensities = [...intensityData];
+        let updatedIntensities: number[] = [];
+        if (intensityData) {
+            updatedIntensities = [...intensityData];
+        }
         updatedIntensities[index] = Number(value);
         setIntensityData(updatedIntensities);
     };
 
     const handleSaveReps = (value: string | number , index: number) => {
-        const updatedReps = [...reps];
+        let updatedReps: number[] = [];
+        if (reps) {
+            updatedReps = [...reps];
+        }
         updatedReps[index] = Number(value);
         setReps(updatedReps);
 	};
@@ -92,14 +103,20 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
     const handleSaveRepsRange = (value: string , index: number, startOrEnd: string) => {
         const valueWithNoDashes = value.replace(/[^0-9]/g, "");
         const innerIndex = startOrEnd === "start" ? 0 : 1;
-        const updatedReps = [...repsWithTimeAndRepRange];
+        let updatedReps: number[][] = [];
+        if (repsWithTimeAndRepRange) {
+            updatedReps = [...repsWithTimeAndRepRange];
+        }
         updatedReps[index][innerIndex] = Number(valueWithNoDashes);
         setRepsWithTimeAndRepRange(updatedReps);
     } ;
 
     const handleSaveIntensityRange = (value: string | number , index: number, startOrEnd: string) => {
         const innerIndex = startOrEnd === "start" ? 0 : 1;
-        const updatedIntensities = [...intensityDataWithRPERange];
+        let updatedIntensities: number[][] = [];
+        if (intensityDataWithRPERange) {
+            updatedIntensities = [...intensityDataWithRPERange];
+        }
         updatedIntensities[index][innerIndex] = Number(value);
         setIntensityDataWithRPERange(updatedIntensities);
     };
@@ -120,24 +137,48 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
             handleAddExercise(addExerciseDialog.weekOrder, addExerciseDialog.dayOrder, newExercise);
         }
 
-        handleOpenAddExerciseDialog({ weekOrder: undefined, dayOrder: undefined, isOpen: false});
+        handleOpenAddExerciseDialog({ weekOrder: 0, dayOrder: 0, isOpen: false});
     };
 
     const deleteSet = (index: number) => {
-        setReps(reps.filter((_: number, i: number) => i !== index));
-        setRepsWithTimeAndRepRange(repsWithTimeAndRepRange.filter((_,i) => i !== index));
-        setIntensityData(intensityData.filter((_: number, i: number) => i !== index));
-        setIntensityDataWithRPERange(intensityDataWithRPERange.filter((_,i) => i !== index));
+        if (reps) {
+            setReps(reps.filter((_: number, i: number) => i !== index));
+        }
+        if (repsWithTimeAndRepRange) {
+            setRepsWithTimeAndRepRange(repsWithTimeAndRepRange.filter((_,i) => i !== index));
+        }
+        if (intensityData) {
+            setIntensityData(intensityData.filter((_: number, i: number) => i !== index));
+        }
+        if (intensityDataWithRPERange) {
+            setIntensityDataWithRPERange(intensityDataWithRPERange.filter((_,i) => i !== index));
+        }
     };
 
     const addSet = () => {
         if (repTypeValue === "time_range" || repTypeValue === "reps_range") {
-            if (repsWithTimeAndRepRange.length < 10) setRepsWithTimeAndRepRange([...repsWithTimeAndRepRange, [8,12]]);
+            if (!repsWithTimeAndRepRange) {
+                setRepsWithTimeAndRepRange([[8,12]]);
+            } else {
+                if (repsWithTimeAndRepRange.length < 10) setRepsWithTimeAndRepRange([...repsWithTimeAndRepRange, [8,12]]);
+            }
         } else {
-            if (reps.length < 10) setReps([...reps, 8]);
+            if (!reps) {
+                setReps([8]);
+            } else {
+                if (reps.length < 10) setReps([...reps, 8]);
+            }
         }
-        if (intensityData.length < 10) setIntensityData([...intensityData, 9]);
-        if (intensityDataWithRPERange.length < 10) setIntensityDataWithRPERange([...intensityDataWithRPERange, [9,10]]);
+        if (!intensityData) {
+            setIntensityData([9]);
+        } else {
+            if (intensityData.length < 10) setIntensityData([...intensityData, 9]);
+        }
+        if (!intensityDataWithRPERange) {
+            setIntensityDataWithRPERange([[9,10]]);
+        } else {
+            if (intensityDataWithRPERange.length < 10) setIntensityDataWithRPERange([...intensityDataWithRPERange, [9,10]]);
+        }
     };
 
     const handleSwapRepTypeValue = (value: string) => {
@@ -170,59 +211,61 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
             setIsEditing(false);
             getExercise();
         }
-    }, [addExerciseDialog.editExercise?.id, addExerciseDialog.editExercise?.intensityData, addExerciseDialog.editExercise?.intensityDataWithRPERange, addExerciseDialog.editExercise?.intensityValue, addExerciseDialog.editExercise?.repTypeValue, addExerciseDialog.editExercise?.reps, addExerciseDialog.editExercise?.repsWithTimeAndRepRange]);
+    }, [isEditExercise, addExerciseDialog.editExercise?.id, addExerciseDialog.editExercise?.intensityData, addExerciseDialog.editExercise?.intensityDataWithRPERange, addExerciseDialog.editExercise?.intensityValue, addExerciseDialog.editExercise?.repTypeValue, addExerciseDialog.editExercise?.reps, addExerciseDialog.editExercise?.repsWithTimeAndRepRange]);
 
     return (
-        <Dialog open={ addExerciseDialog.isOpen } onOpenChange={ () => handleOpenAddExerciseDialog({ weekOrder: undefined, dayOrder: undefined, isOpen: false} )}>
+        <Dialog open={ addExerciseDialog.isOpen } onOpenChange={ () => handleOpenAddExerciseDialog({ weekOrder: 0, dayOrder: 0, isOpen: false} ) }>
             <DialogContent hideClose className="max-w-4xl w-full">
                 <DialogTitle className="font-bold flex items-center justify-center">
                     Add Exercise to Week {addExerciseDialog.weekOrder + 1} Day {addExerciseDialog.dayOrder}
                 </DialogTitle>
                 <div className={ "modal-content__centered" }>
-                    <ExerciseSearchBar
-                        title={ "Exercise" }
-                        items={ exercises }
-                        handleSelected= { handleSelected }
-                        selectedName={ selectedName }
-                        selectedGifID={ selectedGifID }
-                        isEditing={ isEditing }
-                        handleIsEditing={ handleIsEditing }
-                    />
+                    { exercises &&
+                        <ExerciseSearchBar
+                            title={ "Exercise" }
+                            items={ exercises }
+                            handleSelected= { handleSelected }
+                            selectedName={ selectedName }
+                            selectedGifID={ selectedGifID }
+                            isEditing={ isEditing }
+                            handleIsEditing={ handleIsEditing }
+                        />
+                    }
                     <div className="mt-4">
 
-                            <div className="flex flex-row justify-center gap-2 items-center w-full pb-4">
-                                <div className="flex items-start justify-start w-[10%]">
-                                        Set
-                                </div>
-                                <div className="w-[33%]">
-                                    <Select value={ repTypeValue } aria-label="rep type" onValueChange={ (value) => handleSwapRepTypeValue(value) }>
-                                        <SelectTrigger autoFocus className="h-10">
-                                            <SelectValue placeholder="Reps" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            { rep_types.map((rep_type) => (
-                                                <SelectItem key={ rep_type.value } value={ rep_type.value }>{ rep_type.label }</SelectItem>
-                                            ) ) }
-                                        </SelectContent>
-
-                                    </Select>
-                                </div>
-                                <div className="w-[33%]">
-                                    <Select value={ intensityValue } aria-label="intensity" onValueChange={ (value) => setIntensityValue(value) }>
-                                        <SelectTrigger autoFocus className="h-10">
-                                            <SelectValue placeholder="Intensity" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            { intensities.map((intensity) => (
-                                                <SelectItem key={ intensity.value } value={ intensity.value }>{ intensity.label }</SelectItem>
-                                            ) ) }
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div>
-                                    <XIcon className="opacity-0 pointer-events-none" />
-                                </div>
+                        <div className="flex flex-row justify-center gap-2 items-center w-full pb-4">
+                            <div className="flex items-start justify-start w-[10%]">
+                                Set
                             </div>
+                            <div className="w-[33%]">
+                                <Select value={ repTypeValue } aria-label="rep type" onValueChange={ (value) => handleSwapRepTypeValue(value) }>
+                                    <SelectTrigger autoFocus className="h-10">
+                                        <SelectValue placeholder="Reps" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        { rep_types.map((rep_type) => (
+                                            <SelectItem key={ rep_type.value } value={ rep_type.value }>{ rep_type.label }</SelectItem>
+                                            ) ) }
+                                    </SelectContent>
+
+                                </Select>
+                            </div>
+                            <div className="w-[33%]">
+                                <Select value={ intensityValue } aria-label="intensity" onValueChange={ (value) => setIntensityValue(value) }>
+                                    <SelectTrigger autoFocus className="h-10">
+                                        <SelectValue placeholder="Intensity" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        { intensities.map((intensity) => (
+                                            <SelectItem key={ intensity.value } value={ intensity.value }>{ intensity.label }</SelectItem>
+                                            ) ) }
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div>
+                                <XIcon className="opacity-0 pointer-events-none" />
+                            </div>
+                        </div>
 
                         { (reps && reps.length > 0) ? reps?.map((rep: string | number, index: number) => (
                             <div
@@ -233,14 +276,14 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                                 </div>
                                 <div className="w-[33%]">
                                     { repTypeValue === "amrap" ? (
-                                            <Input
+                                        <Input
                                                 disabled
                                                 type="number"
                                                 placeholder="AMRAP"
                                                 autoFocus
                                             />
                                         ) :
-                                            <Input
+                                        <Input
                                                 // type="number"
                                                 placeholder={ (repTypeValue === "time_taken" || repTypeValue === "time_range") ? "Secs" : "Reps" }
                                                 // inputMode="decimal"
@@ -295,7 +338,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                                         <Input
                                             // type="number"
                                             // inputMode="decimal"
-                                            value={ intensityData[index] || "0" }
+                                            value={ intensityData?.[index] ?? "0" }
                                             onInput={ (e) => handleUpdatingIntensity(e.currentTarget.value ?? "0", index) }
                                             onBlur={ (e) => handleSaveIntensity(e.target.value ?? "0", index) }
                                             onKeyDown={ (e) => {
@@ -394,7 +437,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                                     <Input
                                         // type="number"
                                         // inputMode="decimal"
-                                        value={ intensityData[index] || "0" }
+                                        value={ intensityData?.[index] ?? "0" }
                                         onInput={ (e) => handleUpdatingIntensity(e.currentTarget.value ?? "0", index) }
                                         onBlur={ (e) => handleSaveIntensity(e.target.value ?? "0", index) }
                                         onKeyDown={ (e) => {
@@ -423,8 +466,8 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                 </div>
                 <span className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4">
                     <span className="w-full flex items-center justify-center">
-                        <Button onClick={ () => handleOpenAddExerciseDialog({weekOrder: undefined, dayOrder: undefined, isOpen: false} ) } variant="ghost" className="w-full h-12">
-                                Cancel
+                        <Button onClick={ () => handleOpenAddExerciseDialog({weekOrder: 0, dayOrder: 0, isOpen: false} ) } variant="ghost" className="w-full h-12">
+                            Cancel
                         </Button>
                     </span>
                     <span className="w-full flex items-center justify-center">
@@ -433,7 +476,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                             variant="ghost"
                             className="bg-lightSecondary text-white hover:bg-lightSecondary w-full h-12"
                         >
-                                {isEditExercise ? "Edit" : "Add"}
+                            {isEditExercise ? "Edit" : "Add"}
                         </Button>
                     </span>
                 </span>

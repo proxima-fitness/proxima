@@ -28,14 +28,14 @@ export const ReviewProgramPage: React.FC = () => {
     }, [isHevy]);
 
     if (!program && !hevyRoutine) {
-        return <BuildProgramSkeleton />
+        return <BuildProgramSkeleton />;
     }
 
     return (
         <div className="pl-8">
-            { isHevy ?
+            { (isHevy && hevyRoutine) ?
                 <HevyRoutineSchedule deflatHevyRoutine={ deFlattenHevyRoutine(hevyRoutine) } />
-            :
+            : program &&
                 <ProgramSchedule sortedWorkoutsByWeek={ programCreatorDayToScheduleWorkouts(program) } />
             }
         </div>

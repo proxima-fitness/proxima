@@ -46,7 +46,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
         if (fetchedExerciseItem) {
             setExerciseID(fetchedExerciseItem.id);
             setSelectedName(fetchedExerciseItem.title);
-            const gif_id = await getExerciseGifIdForHevyExercise(fetchedExerciseItem.title)
+            const gif_id = await getExerciseGifIdForHevyExercise(fetchedExerciseItem.title);
             setSelectedGifID(gif_id);
         }
         setIsEditing(false);
@@ -55,14 +55,17 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
     const [ editingSetWeight, setEditingSetWeight ] = useState([false,false,false,false]);
 
     // 3 SECTIONS: SETS, REPS, INTENSITY. reps and intensity are inputs.
-    const [ reps, setReps ] = useState<number[]>(isEditExercise ? undefined : [8,8,8,8]);
-    const [ intensityData, setIntensityData ] = useState<number[]>(isEditExercise ? undefined : [9,9,9,9]);
+    const [ reps, setReps ] = useState<number[] | undefined>(isEditExercise ? undefined : [8,8,8,8]);
+    const [ intensityData, setIntensityData ] = useState<number[] | undefined>(isEditExercise ? undefined : [9,9,9,9]);
 
     const [ repTypeValue, setRepTypeValue ] = useState(isEditExercise ? undefined : hevy_rep_types[0].value);
     const [ intensityValue, setIntensityValue ] = useState(isEditExercise ? undefined : hevy_intensities[0].value);
 
     const handleSaveIntensity = (value: string | number , index: number) => {
-        const updatedWeights = [...intensityData];
+        let updatedWeights: number[] = [];
+        if (intensityData) {
+            updatedWeights = [...intensityData];
+        }
         updatedWeights[index] = Number(value);
         setIntensityData(updatedWeights);
 
@@ -72,13 +75,19 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 	};
 
     const handleUpdatingIntensity = (value: string | number , index: number) => {
-        const updatedIntensities = [...intensityData];
+        let updatedIntensities: number[] = [];
+        if (intensityData) {
+            updatedIntensities = [...intensityData];
+        }
         updatedIntensities[index] = Number(value);
         setIntensityData(updatedIntensities);
     };
 
     const handleSaveReps = (value: string | number , index: number) => {
-        const updatedReps = [...reps];
+        let updatedReps: number[] = [];
+        if (reps) {
+            updatedReps = [...reps];
+        }
         updatedReps[index] = Number(value);
         setReps(updatedReps);
 	};
@@ -100,17 +109,29 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
             handleAddExercise(addExerciseDialog.folder_id, addExerciseDialog.dayOrder, newExercise);
         }
 
-        handleOpenAddExerciseDialog({ folder_id: undefined, dayOrder: undefined, isOpen: false});
+        handleOpenAddExerciseDialog({ folder_id: 0, dayOrder: 0, isOpen: false});
     };
 
     const deleteSet = (index: number) => {
-        setReps(reps.filter((_: number, i: number) => i !== index));
-        setIntensityData(intensityData.filter((_: number, i: number) => i !== index));
+        if (reps) {
+            setReps(reps.filter((_: number, i: number) => i !== index));
+        }
+        if (intensityData) {
+            setIntensityData(intensityData.filter((_: number, i: number) => i !== index));
+        }
     };
 
     const addSet = () => {
-        if (reps.length < 10) setReps([...reps, 8]);
-        if (intensityData.length < 10) setIntensityData([...intensityData, 9]);
+        if (!reps) {
+            setReps([8]);
+        } else {
+            if (reps.length < 10) setReps([...reps, 8]);
+        }
+        if (!intensityData) {
+            setIntensityData([9]);
+        } else {
+            if (intensityData.length < 10) setIntensityData([...intensityData, 9]);
+        }
     };
 
     const handleSwapRepTypeValue = (value: string) => {
@@ -135,59 +156,62 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
             setIsEditing(false);
             getExercise();
         }
-    }, [addExerciseDialog.editExercise?.id, addExerciseDialog.editExercise?.intensityData, addExerciseDialog.editExercise?.intensityValue, addExerciseDialog.editExercise?.repTypeValue, addExerciseDialog.editExercise?.reps]);
+    }, [isEditExercise, addExerciseDialog.editExercise?.id, addExerciseDialog.editExercise?.intensityData, addExerciseDialog.editExercise?.intensityValue, addExerciseDialog.editExercise?.repTypeValue, addExerciseDialog.editExercise?.reps]);
 
     return (
-        <Dialog open={ addExerciseDialog.isOpen } onOpenChange={ () => handleOpenAddExerciseDialog({ folder_id: undefined, dayOrder: undefined, isOpen: false} )}>
+        <Dialog open={ addExerciseDialog.isOpen } onOpenChange={ () => handleOpenAddExerciseDialog({ folder_id: 0, dayOrder: 0, isOpen: false} ) }>
             <DialogContent hideClose className="max-w-4xl w-full">
                 <DialogTitle className="font-bold flex items-center justify-center">
                     Add Exercise to Week {addExerciseDialog.folder_id + 1} Day {addExerciseDialog.dayOrder}
                 </DialogTitle>
                 <div className={ "modal-content__centered" }>
-                    <HevyExerciseSearchBar
-                        title={ "Exercise" }
-                        items={ exercises }
-                        handleSelected= { handleSelected }
-                        selectedName={ selectedName }
-                        selectedGifID={ selectedGifID }
-                        isEditing={ isEditing }
-                        handleIsEditing={ handleIsEditing }
-                    />
+                    { exercises &&
+                        <HevyExerciseSearchBar
+                            title={ "Exercise" }
+                            items={ exercises }
+                            handleSelected= { handleSelected }
+                            selectedName={ selectedName }
+                            selectedGifID={ selectedGifID }
+                            isEditing={ isEditing }
+                            handleIsEditing={ handleIsEditing }
+                        />
+                    }
+
                     <div className="mt-4">
 
-                            <div className="flex flex-row justify-center gap-2 items-center w-full pb-4">
-                                <div className="flex items-start justify-start w-[10%]">
-                                        Set
-                                </div>
-                                <div className="w-[33%]">
-                                    <Select value={ repTypeValue } aria-label="rep type" onValueChange={ (value) => handleSwapRepTypeValue(value) }>
-                                        <SelectTrigger autoFocus className="h-10">
-                                            <SelectValue placeholder="Reps" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            { hevy_rep_types.map((rep_type) => (
-                                                <SelectItem key={ rep_type.value } value={ rep_type.value }>{ rep_type.label }</SelectItem>
-                                            ) ) }
-                                        </SelectContent>
-
-                                    </Select>
-                                </div>
-                                <div className="w-[33%]">
-                                    <Select value={ intensityValue } aria-label="intensity" onValueChange={ (value) => setIntensityValue(value) }>
-                                        <SelectTrigger autoFocus className="h-10">
-                                            <SelectValue placeholder="Intensity" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            { hevy_intensities.map((intensity) => (
-                                                <SelectItem key={ intensity.value } value={ intensity.value }>{ intensity.label }</SelectItem>
-                                            ) ) }
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div>
-                                    <XIcon className="opacity-0 pointer-events-none" />
-                                </div>
+                        <div className="flex flex-row justify-center gap-2 items-center w-full pb-4">
+                            <div className="flex items-start justify-start w-[10%]">
+                                Set
                             </div>
+                            <div className="w-[33%]">
+                                <Select value={ repTypeValue } aria-label="rep type" onValueChange={ (value) => handleSwapRepTypeValue(value) }>
+                                    <SelectTrigger autoFocus className="h-10">
+                                        <SelectValue placeholder="Reps" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        { hevy_rep_types.map((rep_type) => (
+                                            <SelectItem key={ rep_type.value } value={ rep_type.value }>{ rep_type.label }</SelectItem>
+                                            ) ) }
+                                    </SelectContent>
+
+                                </Select>
+                            </div>
+                            <div className="w-[33%]">
+                                <Select value={ intensityValue } aria-label="intensity" onValueChange={ (value) => setIntensityValue(value) }>
+                                    <SelectTrigger autoFocus className="h-10">
+                                        <SelectValue placeholder="Intensity" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        { hevy_intensities.map((intensity) => (
+                                            <SelectItem key={ intensity.value } value={ intensity.value }>{ intensity.label }</SelectItem>
+                                            ) ) }
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div>
+                                <XIcon className="opacity-0 pointer-events-none" />
+                            </div>
+                        </div>
 
                         { (reps && reps.length > 0) && reps?.map((rep: string | number, index: number) => (
                             <div
@@ -216,7 +240,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                                     <Input
                                         // type="number"
                                         // inputMode="decimal"
-                                        value={ intensityData[index] || "0" }
+                                        value={ intensityData?.[index] ?? "0" }
                                         onInput={ (e) => handleUpdatingIntensity(e.currentTarget.value ?? "0", index) }
                                         onBlur={ (e) => handleSaveIntensity(e.target.value ?? "0", index) }
                                         onKeyDown={ (e) => {
@@ -243,8 +267,8 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                 </div>
                 <span className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4">
                     <span className="w-full flex items-center justify-center">
-                        <Button onClick={ () => handleOpenAddExerciseDialog({folder_id: undefined, dayOrder: undefined, isOpen: false} ) } variant="ghost" className="w-full h-12">
-                                Cancel
+                        <Button onClick={ () => handleOpenAddExerciseDialog({folder_id: 0, dayOrder: 0, isOpen: false} ) } variant="ghost" className="w-full h-12">
+                            Cancel
                         </Button>
                     </span>
                     <span className="w-full flex items-center justify-center">
@@ -253,7 +277,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                             variant="ghost"
                             className="bg-lightSecondary text-white hover:bg-lightSecondary w-full h-12"
                         >
-                                {isEditExercise ? "Edit" : "Add"}
+                            {isEditExercise ? "Edit" : "Add"}
                         </Button>
                     </span>
                 </span>

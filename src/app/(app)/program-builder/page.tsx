@@ -10,10 +10,10 @@ export const metadata = {
   export default function AiProgramBuilder() {
     return (
         <div className={ `bg-white ${styles.flexCenter} flex-col` }>
-        <div className={ `${styles.boxWidth}` }>
-            <AiSearchDialog />
+            <div className={ `${styles.boxWidth}` }>
+                <AiSearchDialog />
+            </div>
         </div>
-    </div>
 
     );
 }

@@ -25,7 +25,7 @@ export const ViewModeThumbnails: React.FC<IProps> = (props) => {
         <>
             { thumbnail instanceof Blob &&
                 <div>
-                    <img style={ { height: '180px', width: '100%', objectFit: "cover"  } } src={ URL.createObjectURL(thumbnail) } />
+                    <img alt={ "Thumbnail Image" } style={ { height: '180px', width: '100%', objectFit: "cover"  } } src={ URL.createObjectURL(thumbnail) } />
                 </div>
             }
         </>

@@ -35,9 +35,9 @@ export const HevyGenerateDayDialog: React.FC<IProps> = (props) => {
 
     const formSchema = z.object({
         prompt: z.string().min(0, {
-            message: "Please provide a prompt to Re-generate the selected day"
+            message: "Please provide a prompt to Re-generate the selected day",
         }).max(300, {
-            message: "Prompts cannot exceed 300 characters"
+            message: "Prompts cannot exceed 300 characters",
         }),
     });
 
@@ -50,43 +50,43 @@ export const HevyGenerateDayDialog: React.FC<IProps> = (props) => {
 
     const onSubmit = (values: z.infer<typeof formSchema>) => {
         handleGenerateDay(generateDayDialog.folder_id, generateDayDialog.dayOrder, values.prompt);
-        handleOpenGenerateDayDialog({folder_id: undefined, dayOrder: undefined, isOpen: false});
+        handleOpenGenerateDayDialog({folder_id: 0, dayOrder: 0, isOpen: false});
     };
 
     return (
-        <Dialog open={ generateDayDialog.isOpen } onOpenChange={ () => handleOpenGenerateDayDialog({folder_id: undefined, dayOrder: undefined, isOpen: false})} >
+        <Dialog open={ generateDayDialog.isOpen } onOpenChange={ () => handleOpenGenerateDayDialog({folder_id: 0, dayOrder: 0, isOpen: false}) } >
 
-                <DialogContent hideClose className="max-w-5xl w-full">
-                    <DialogTitle>
-                        <span>
-                            <Form {...form}>
-                                <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-row justify-between items-center gap-4 w-full">
-                                    <FormField
-                                        control={form.control}
+            <DialogContent hideClose className="max-w-5xl w-full">
+                <DialogTitle>
+                    <span>
+                        <Form { ...form }>
+                            <form onSubmit={ form.handleSubmit(onSubmit) } className="flex flex-row justify-between items-center gap-4 w-full">
+                                <FormField
+                                        control={ form.control }
                                         name="prompt"
-                                        render={({ field }) => (
+                                        render={ ({ field }) => (
                                             <FormItem className="w-full">
-                                            <FormControl>
-                                                <Input
+                                                <FormControl>
+                                                    <Input
                                                     startIcon={ SearchIcon }
-                                                    placeholder={`Describe your desired Week ${generateDayDialog.folder_id + 1} Day ${generateDayDialog.dayOrder}`}
-                                                    {...field}
+                                                    placeholder={ `Describe your desired Week ${generateDayDialog.folder_id + 1} Day ${generateDayDialog.dayOrder}` }
+                                                    { ...field }
                                                 />
-                                            </FormControl>
-                                            <FormMessage />
+                                                </FormControl>
+                                                <FormMessage />
                                             </FormItem>
-                                        )}
+                                        ) }
                                     />
-                                    <Button
+                                <Button
                                         type="submit"
                                         className="w-[auto] h-10 bg-[#33bbcf] text-white">
-                                        <SparklesIcon /> Generate
-                                    </Button>
-                                </form>
-                            </Form>
-                        </span>
-                    </DialogTitle>
-                </DialogContent>
+                                    <SparklesIcon /> Generate
+                                </Button>
+                            </form>
+                        </Form>
+                    </span>
+                </DialogTitle>
+            </DialogContent>
         </Dialog>
     );
 };

@@ -48,7 +48,7 @@ export const getProgramThumbnailStatus = async (id?: string) => {
 };
 
 // EXERCISE GIF
-export const getExerciseGif = async (gif_id: string, resolution: "180" | "360", file_type: "jpg" | "gif") => {
+export const getExerciseGif = async (gif_id: string | undefined, resolution: "180" | "360", file_type: "jpg" | "gif") => {
     let filePath = "";
     if (file_type === "jpg") {
         filePath = `${resolution}/${gif_id}/1.jpg`;

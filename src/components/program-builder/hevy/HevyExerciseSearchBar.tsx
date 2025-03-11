@@ -31,7 +31,6 @@ interface IProps {
 interface RowData {
     filteredItems: THevyExerciseTemplate[];
     selectItem: (item: THevyExerciseTemplate) => void;
-    language: "english" | "espanol" | "portugues" | "francais";
 }
 
   // Define the Row component props
@@ -54,11 +53,12 @@ export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
 
     const [ filteredItems, setFilteredItems ] = useState<THevyExerciseTemplate[]>(items);
 
+    // TODO: Add these filters back in for the Hevy schema
     // const [ selectedMuscleGroup, setSelectedMuscleGroup ] = useState<string>("All Muscle Groups");
     // const [ selectedEquipment, setSelectedEquipment ] = useState<string>("All Equipment");
-    const [ appliedMuscleGroupFilter, setAppliedMuscleGroupFilter ] = useState<string>();
+    // const [ appliedMuscleGroupFilter, setAppliedMuscleGroupFilter ] = useState<string>();
     const [ appliedSearchBarFilter, setAppliedSearchBarFilter ] = useState<string>();
-    const [ appliedEquipmentFilter, setAppliedEquipmentFilter ] = useState<string>();
+    // const [ appliedEquipmentFilter, setAppliedEquipmentFilter ] = useState<string>();
 
     useEffect(() => {
             let filteredItems = items;
@@ -77,7 +77,7 @@ export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
                 filteredItems = fuseResults.map(result => result?.item);
             }
             setFilteredItems(filteredItems);
-    }, [appliedMuscleGroupFilter, appliedSearchBarFilter, appliedEquipmentFilter, items]);
+    }, [appliedSearchBarFilter, items]);
 
     const selectItem = (item: THevyExerciseTemplate) => {
         handleSelected(item);
@@ -178,7 +178,12 @@ export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
                     <center><h2>{ selectedName }</h2></center>
                     { selectedGifID && selectedGifID.length > 0 &&
                         <>
-                            <HevyExerciseGif name={ selectedName } thumbnailOrImage={ "img" } resolution={ "360" } file_type={ "gif" } />
+                            <HevyExerciseGif
+                                name={ selectedName }
+                                thumbnailOrImage={ "img" }
+                                resolution={ "360" }
+                                file_type={ "gif" }
+                            />
                         </>
              }
                 </div>

@@ -75,7 +75,7 @@ type THevyExercise = {
     title: string; // Title of the exercise
     notes: string; // Routine notes on the exercise
     exercise_template_id: string; // The id of the exercise template. This can be used to fetch the exercise template.
-    supersets_id: number; // The id of the superset that the exercise belongs to. A value of null indicates the exercise is not part of a superset.
+    supersets_id: number | null; // The id of the superset that the exercise belongs to. A value of null indicates the exercise is not part of a superset.
     sets: THevySets[];
 
 }
@@ -261,4 +261,26 @@ type TUserDetails = {
     username: string;
     bio: string;
     created_at: string;
+}
+type TCard = {
+    title: string,
+    order: string,
+    day_title: string,
+    exercises: TProgramCreatorExercise[],
+    id: string,
+    weekOrder: string,
+}
+
+type THevyCard = {
+    title: string,
+    order: string,
+    day_title: string,
+    exercises: THevyExercise[],
+    id: string,
+    folder_id: number,
+}
+
+type TBreadcrumb = {
+    href: string;
+    label: string;
 }

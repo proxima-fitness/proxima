@@ -20,10 +20,11 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
         program,
     } = props;
 
-    const { data: exercises }  = useHevyExercises();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { data: exercises }  = useHevyExercises(); // Pre-populating the HevyAddExerciseDialog
 
-    const [addExerciseDialog, setAddExerciseDialog] = useState<THevyDialog>({folder_id: undefined, dayOrder: undefined, isOpen: false});
-    const [generateDayDialog, setGenerateDayDialog] = useState<THevyDialog>({folder_id: undefined, dayOrder: undefined, isOpen: false});
+    const [addExerciseDialog, setAddExerciseDialog] = useState<THevyDialog>({folder_id: 0, dayOrder: 0, isOpen: false});
+    const [generateDayDialog, setGenerateDayDialog] = useState<THevyDialog>({folder_id: 0, dayOrder: 0, isOpen: false});
     const [isEditExercise, setIsEditExercise] = useState(false);
 
     const handleIsEditExercise = (isEditExercise: boolean) => {
@@ -46,7 +47,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                     ...day,
                     id: String(++maxId),
                     folder_id: week,
-                }))
+                })),
             );
 
             return reorderHevy([...filteredPrev, ...newDays]);
@@ -116,7 +117,8 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
 
     // // Will re-generate the currently selected day based on a prompt
     const handleGenerateDay = (folder_id: number, dayOrder:number, prompt: string) => {
-        // Do AI re-generation of a day here
+        // TODO: Do AI re-generation of a day here
+        console.log(folder_id, dayOrder, prompt);
     };
 
 
@@ -152,8 +154,8 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     const handleEditTitle = (id: string, title: string) => {
         setHevyProgram((prev) =>
             prev.map((day) =>
-                day.id === id ? { ...day, title: title} : day
-            )
+                day.id === id ? { ...day, title: title} : day,
+            ),
         );
     };
 
@@ -172,7 +174,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
         });
     };
 
-    // // Adds an exercise to the workout day
+    // Adds an exercise to the workout day
     const handleAddExercise = async (folder_id: number, dayOrder: number, exercise: THevyAddExercise) => {
 
         const sets = hevyAddExerciseToHevySetsConverter(exercise);
@@ -186,12 +188,12 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                         exercises: [...day.exercises,
                             {
                                 index: day.exercises.length + 1,
-                                title: exerciseTemplate.title,
+                                title: exerciseTemplate?.title ?? "",
                                 notes: "",
                                 exercise_template_id: exercise.id,
                                 supersets_id: null,
                                 sets: sets,
-                            }
+                            },
                             ],
                     };
                 }
@@ -203,27 +205,29 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     // // Edits an exercise on a workout day
     const handleEditExercise = async (editExercise: THevyDialog) => {
 
-        const sets = hevyAddExerciseToHevySetsConverter(editExercise.editExercise);
-        const exerciseTemplate = await getHevyExerciseFromLocalStorageByID(editExercise.editExercise.id);
+        if (editExercise.editExercise) {
+            const sets = hevyAddExerciseToHevySetsConverter(editExercise.editExercise);
+            const exerciseTemplate = await getHevyExerciseFromLocalStorageByID(editExercise.editExercise.id);
 
-        setHevyProgram((prev) => {
-            return prev.map((day) => {
-                if (Number(day.folder_id) === editExercise.folder_id && Number(day.order) === editExercise.dayOrder) {
-                    return {
-                        ...day,
-                        exercises: day.exercises.map((exercise, index) => index === editExercise.exerciseIndex ? {
-                            index: day.exercises.length + 1,
-                            title: exerciseTemplate.title,
-                            notes: "",
-                            exercise_template_id: exerciseTemplate.id,
-                            supersets_id: null,
-                            sets: sets,
-                        } : exercise),
-                    };
-                }
-                return day;
-            })
-        })
+            setHevyProgram((prev) => {
+                return prev.map((day) => {
+                    if (Number(day.folder_id) === editExercise.folder_id && Number(day.order) === editExercise.dayOrder) {
+                        return {
+                            ...day,
+                            exercises: day.exercises.map((exercise, index) => index === editExercise.exerciseIndex ? {
+                                index: day.exercises.length + 1,
+                                title: exerciseTemplate?.title ?? "",
+                                notes: "",
+                                exercise_template_id: exerciseTemplate?.id ?? "",
+                                supersets_id: null,
+                                sets: sets,
+                            } : exercise),
+                        };
+                    }
+                    return day;
+                });
+            });
+        }
 
         setIsEditExercise(false);
     };

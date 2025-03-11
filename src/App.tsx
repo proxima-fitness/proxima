@@ -7,12 +7,12 @@ import { useState } from "react";
 import { Hero } from "./components/header/Hero";
 import { Stats } from "./components/header/Stats";
 import { Testimonials } from "./components/testimonials/Testimonials";
-import { ProgramsSection } from "./components/features/ProgramsSection";
 import { CustomPrograms } from "./components/features/CustomPrograms";
 import { PersonalRecords } from "./components/features/PersonalRecords";
 import { Themes } from "./components/features/Themes";
 import { CallToAction } from "./components/call-to-action/CallToAction";
 import { Faq } from "./components/faqs/Faq";
+import { ProgramsSection } from "./components/features/ProgramsSection";
 
 const App = () => {
 

@@ -3,7 +3,7 @@
 import {
     Command,
     CommandInput,
-} from "@/components/ui/command"
+} from "@/components/ui/command";
 import { ProgramFilterGroup } from "./ProgramFilterGroup";
 import { filterGroupOptions } from "@/assets/constants";
 import { useEffect, useRef, useState } from "react";
@@ -28,8 +28,8 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
 
     const [filteredPrograms, setFilteredPrograms] = useState(programs);
 
-    const [appliedProgramLengthFilter, setAppliedProgramLengthFilter] = useState<string>(); // casting the number to string
-    const [appliedWorkoutDurationFilter, setAppliedWorkoutDurationFilter] = useState<string>(); // casting the number to string
+    const [appliedProgramLengthFilter, setAppliedProgramLengthFilter] = useState<string>(""); // casting the number to string
+    const [appliedWorkoutDurationFilter, setAppliedWorkoutDurationFilter] = useState<string>(""); // casting the number to string
     const [appliedEquipmentFilter, setAppliedEquipmentFilter] = useState<string[]>([]);
     const [appliedSpecializationFilter, setAppliedSpecializationFilter] = useState<string[]>([]);
     const [appliedDifficultyFilter, setAppliedDifficultyFilter] = useState<string[]>([]);
@@ -55,8 +55,8 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
     };
 
     const handleClearFilters = () => {
-        setAppliedProgramLengthFilter(undefined);
-        setAppliedWorkoutDurationFilter(undefined);
+        setAppliedProgramLengthFilter("");
+        setAppliedWorkoutDurationFilter("");
         setAppliedEquipmentFilter([]);
         setAppliedSpecializationFilter([]);
         setAppliedDifficultyFilter([]);
@@ -89,19 +89,19 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
 
         if (appliedEquipmentFilter && appliedEquipmentFilter.length > 0) {
             filteredItems = filteredItems.filter((item: TProgram) =>
-                appliedEquipmentFilter.some((filter) => item.equipment.includes(filter))
+                appliedEquipmentFilter.some((filter) => item.equipment.includes(filter)),
             );
         }
 
         if (appliedSpecializationFilter && appliedSpecializationFilter.length > 0) {
             filteredItems = filteredItems.filter((item: TProgram) =>
-                appliedSpecializationFilter.some((filter) => item.specialization.includes(filter))
+                appliedSpecializationFilter.some((filter) => item.specialization.includes(filter)),
             );
         }
 
         if (appliedDifficultyFilter && appliedDifficultyFilter.length > 0) {
             filteredItems = filteredItems.filter((item: TProgram) =>
-                appliedDifficultyFilter.some((filter) => item.difficulty.includes(filter))
+                appliedDifficultyFilter.some((filter) => item.difficulty.includes(filter)),
             );
         }
 
@@ -142,7 +142,7 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
                             </div>
                             { appliedProgramLengthFilter || appliedWorkoutDurationFilter || (appliedEquipmentFilter && appliedEquipmentFilter.length > 0) || (appliedSpecializationFilter && appliedSpecializationFilter.length > 0) || (appliedDifficultyFilter && appliedDifficultyFilter.length > 0) ?
                                 <div className="flex-1 flex items-center justify-start">
-                                <Button onClick={ handleClearFilters } className={ "text-[#37BCCF]" } variant="ghost">Reset Filters [Ctrl + c]</Button>
+                                    <Button onClick={ handleClearFilters } className={ "text-[#37BCCF]" } variant="ghost">Reset Filters [Ctrl + c]</Button>
                                 </div>
                                 :
                                 <div className="flex-1 flex items-center justify-start">
@@ -171,17 +171,17 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
                 </Card>
             </div>
             <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 py-8">
-            { filteredPrograms.map((program) => (
-                <Link
-                    key={program.id}
+                { filteredPrograms.map((program) => (
+                    <Link
+                    key={ program.id }
                     target="_self"
                     rel="noopener noreferrer"
-                    href={`programs/${program.id}/${program.title.trim().replace(/[\s,]+/g, '-').toLowerCase()}`}
+                    href={ `programs/${program.id}/${program.title.trim().replace(/[\s,]+/g, '-').toLowerCase()}` }
                 >
-                    <ProgramCard
+                        <ProgramCard
                         program={ program }
                     />
-                </Link>
+                    </Link>
             ))}
             </div>
         </>

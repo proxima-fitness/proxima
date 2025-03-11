@@ -8,8 +8,8 @@ export const IsHevyProvider = ({ children }: { children: ReactNode }) => {
     const [isHevy, setIsHevy] = useState(true);
 
     return (
-        <IsHevyContext.Provider value={{ isHevy, setIsHevy }}>
-        {children}
+        <IsHevyContext.Provider value={ { isHevy, setIsHevy } }>
+            {children}
         </IsHevyContext.Provider>
     );
 };

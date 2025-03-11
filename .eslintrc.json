@@ -38,13 +38,14 @@
         "react/prop-types": "off",
         "react-hooks/rules-of-hooks": "error",
         "react-hooks/exhaustive-deps": "warn",
-        // "@next/next/no-img-element": "off",
+    "@next/next/no-img-element": "off",
         "@typescript-eslint/member-ordering": "error",
         "@typescript-eslint/camelcase": "off",
         "@typescript-eslint/no-unused-vars": ["error", {
             "ignoreRestSiblings": true
         }],
-        "@typescript-eslint/naming-convention": [
+    "@typescript-eslint/no-unused-vars": "warn",
+   "@typescript-eslint/naming-convention": [
             "error",
             {
                 "selector": "interface",

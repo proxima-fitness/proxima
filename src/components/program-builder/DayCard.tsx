@@ -2,11 +2,11 @@
 
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
-import { EllipsisIcon, CopyIcon, PlusIcon, Trash2Icon, SquarePenIcon } from "lucide-react";
+import { EllipsisIcon, CopyIcon, PlusIcon } from "lucide-react";
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "../ui/button";
 import { DuplicateDay } from "./DuplicateDay";
-import { useState } from "react";
+import { useState, FC } from "react";
 import { Option } from "@/components/ui/multi-select";
 import {
     DropdownMenu,
@@ -15,7 +15,6 @@ import {
     DropdownMenuShortcut,
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu";
-import { ExerciseGif } from "../generic/ExerciseGif";
 import { Input } from "../ui/input";
 import { convertProgramCreatorExerciseToAddExercise } from "@/utils/helpers";
 import { DropIndicator } from "../drag-and-drop/DropIndicator";
@@ -26,7 +25,8 @@ interface IProps {
     title: string;
     weekOrder: string;
     programLength: number;
-    handleDragStart: (e: any, card: any) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    handleDragStart: (e: any, card: TCard) => void;
     handleEditTitle: (id: string, day_title: string) => void;
     handleDeleteDay: (id: string) => void;
     handleOpenGenerateDayDialog: (generateDayDialog: TDialog) => void;
@@ -36,7 +36,7 @@ interface IProps {
     handleIsEditExercise: (isEditExercise: boolean) => void;
 }
 
-export const DayCard: React.FC<IProps> = (props) => {
+export const DayCard: FC<IProps> = (props) => {
 
     const {
         day,
@@ -57,32 +57,30 @@ export const DayCard: React.FC<IProps> = (props) => {
     const [editTitleOpen, setEditTitleOpen] = useState(false);
     const [currentTitle, setCurrentTitle] = useState(day.day_title ?? "");
 
-    const handleDuplicateDayOpen = (day: number, duplicateDayOpen: boolean) => {
-        setDuplicateDayOpen(duplicateDayOpen);
-    };
-
     const handleEdit = (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: TProgramCreatorExercise ) => {
             handleIsEditExercise(true);
             handleOpenAddExerciseDialog({weekOrder: currentWeek, dayOrder: currentDay, isOpen: true, exerciseIndex: exerciseIndex, editExercise: convertProgramCreatorExerciseToAddExercise(editExercise) });
     };
 
-    const cardVal = {
+
+    const cardVal: TCard = {
         title,
         order: day.order,
-        day_title: day.day_title,
-        exercises: day.exercises,
-        id: day.id,
+        day_title: day?.day_title ?? "",
+        exercises: day?.exercises ?? [],
+        id: day?.id ?? "",
         weekOrder,
     };
 
     return (
         <>
-            <DropIndicator beforeId={day.id} weekOrder={weekOrder} />
+            <DropIndicator beforeId={ day?.id ?? "" } weekOrder={ weekOrder } />
             <motion.div
                 layout
-                layoutId={day.id}
+                layoutId={ day?.id ?? "" }
                 draggable="true"
-                onDragStart={(e) => handleDragStart(e, cardVal)}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onDragStart={ (e: any) => handleDragStart(e, cardVal) }
                 className="cursor-grab rounded active:cursor-grabbing gap-4"
             >
                 <Card className="group py-4 px-4 min-w-[440px] max-w-[440px] bg-lightGray my-2">
@@ -96,12 +94,12 @@ export const DayCard: React.FC<IProps> = (props) => {
                                     value={ currentTitle }
                                     onInput={ (event) => setCurrentTitle(String(event.currentTarget.value) ?? "") }
                                     onBlur={ (event) => {
-                                        handleEditTitle(day.id, String(event.currentTarget.value));
+                                        handleEditTitle(day?.id ?? "", String(event.currentTarget.value));
                                         setEditTitleOpen(false);
                                     } }
                                     onKeyDown={ (e) => {
                                         if (e.key === 'Enter') {
-                                            handleEditTitle(day.id, e.currentTarget.value);
+                                            handleEditTitle(day?.id ?? "", e.currentTarget.value);
                                             setEditTitleOpen(false);
                                         }
                                     } }
@@ -109,7 +107,7 @@ export const DayCard: React.FC<IProps> = (props) => {
                                 />
                                 :
                                 <>
-                                    {day.day_title}
+                                    {day?.day_title ?? ""}
                                 </>
                             }
                         </div>
@@ -122,17 +120,17 @@ export const DayCard: React.FC<IProps> = (props) => {
                                     <EllipsisIcon />
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="start" side="bottom">
-                                    <DropdownMenuItem className="cursor-pointer" onClick={ () => handleDeleteDay(day.id)}>
+                                    <DropdownMenuItem className="cursor-pointer" onClick={ () => handleDeleteDay(day?.id ?? "") }>
                                         Delete Day
                                         <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={ () => setEditTitleOpen(true)} className="cursor-pointer">
+                                    <DropdownMenuItem onClick={ () => setEditTitleOpen(true) } className="cursor-pointer">
                                         Edit Title
                                         <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={ () => {
-                                        handleOpenGenerateDayDialog({ weekOrder: Number(weekOrder), dayOrder: Number(day.order), isOpen: true })
-                                        }}
+                                        handleOpenGenerateDayDialog({ weekOrder: Number(weekOrder), dayOrder: Number(day.order), isOpen: true });
+                                        } }
                                         className="cursor-pointer"
                                     >
                                         Generate Day
@@ -140,7 +138,7 @@ export const DayCard: React.FC<IProps> = (props) => {
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                            <TooltipProvider delayDuration={0}>
+                            <TooltipProvider delayDuration={ 0 }>
                                 <Tooltip>
                                     <TooltipTrigger
                                         className="cursor-pointer group-hover:opacity-100 group-active:opacity-100 group-hover:pointer-events-auto group-active:pointer-events-auto opacity-0 pointer-events-none"
@@ -177,7 +175,7 @@ export const DayCard: React.FC<IProps> = (props) => {
                             </div>
                         </div>
                     </div>
-                        <TooltipExerciseVisualizer
+                    <TooltipExerciseVisualizer
                             day={ day }
                             weekOrder={ weekOrder }
                             handleEdit={ handleEdit }
@@ -186,7 +184,7 @@ export const DayCard: React.FC<IProps> = (props) => {
                     <div
                         className="flex items-center justify-center"
                         onClick={ () => {
-                            handleOpenAddExerciseDialog({weekOrder: Number(weekOrder), dayOrder: Number(day.order), isOpen: true}) }
+                            handleOpenAddExerciseDialog({weekOrder: Number(weekOrder), dayOrder: Number(day.order), isOpen: true}); }
                         }>
                         <Button variant="ghost" className="mt-1 w-full font-bold uppercase h-12 hover:bg-gray-200 text-black"><PlusIcon />Add Exercise</Button>
                     </div>

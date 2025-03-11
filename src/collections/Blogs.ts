@@ -43,14 +43,14 @@ export const Blogs: CollectionConfig = {
                                         {
                                             name: 'media_url',
                                             type: 'text',
-                                            label: 'Media URL'
-                                        }
-                                    ]
-                                }
-                            }
-                        })
-                    ]
-                }
+                                            label: 'Media URL',
+                                        },
+                                    ],
+                                },
+                            },
+                        }),
+                    ];
+                },
             }),
             label: "Content",
             required: true,
@@ -66,7 +66,7 @@ export const Blogs: CollectionConfig = {
             type: 'text',
             label: "Media URL",
             required: true,
-        }
+        },
     ],
     timestamps: true,
   };

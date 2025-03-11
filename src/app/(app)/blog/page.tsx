@@ -8,7 +8,7 @@ export const metadata = {
     description: "Interested in taking your gains to the next level ? Read our blog for new insights!",
 };
 
-export default async function BlogPage() {
+export default function BlogPage() {
 
     const initialBlogs = useBlogsSSR(); // don't await the fetching fct
 

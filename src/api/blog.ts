@@ -1,3 +1,4 @@
+import { undefined } from "zod";
 import { supablog } from ".";
 
 // GET BLOGS WITH CERTAIN LIMIT AND OFFSET
@@ -18,11 +19,11 @@ export const getBlogs = async (limit: number = 10, offset: number = 0) => {
                     return getMediaPublicUrl(blog.media_url);
                 }
                 return undefined;
-            }))
+            }));
 
             const blogsWithImage = blogs.map((blog, index) => ({
                 ...blog,
-                image_url: imageUrls[index]
+                image_url: imageUrls[index],
             }));
 
             return blogsWithImage as TBlog[];
@@ -41,11 +42,11 @@ export const getBlogById = async (id: number) => {
         .from('blogs')
         .select('*').eq("id", id);
 
-        if (blogError) {
+        if (blogError || blogs === null) {
             console.error('Error fetching blogs by id', blogError);
         }
 
-        return blogs[0] as TBlog;
+        return blogs ? blogs[0] as TBlog : undefined;
 
     } catch (error: unknown) {
         console.error('Error fetching blog by id', error);
@@ -68,7 +69,7 @@ export const getMediaByFileName = async (filename: string) => {
     } catch (error: unknown) {
         console.error('Error fetching Media Image:', error);
     }
-}
+};
 
 // GET PUBLIC URL FOR AN IMAGE IN STORAGE
 export const getMediaPublicUrl = (filename: string) => {
@@ -82,4 +83,4 @@ export const getMediaPublicUrl = (filename: string) => {
     } catch (error: unknown) {
         console.error('Error fetching Public Url:', error);
     }
-}
+};

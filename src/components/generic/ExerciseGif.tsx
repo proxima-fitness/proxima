@@ -8,7 +8,7 @@ import { getInitials } from "@/utils/helpers";
 interface IProps {
     thumbnailOrImage: "img" | "thmb";
     name: string;
-    gif_id: string;
+    gif_id: string | undefined;
     resolution: "180" | "360";
     file_type: "jpg" | "gif";
     index?: number;

@@ -1,5 +1,4 @@
 import { getExercises } from "@/api/exercises";
-import { getHevyExercises } from "@/api/hevy";
 import Fuse from "fuse.js";
 
 export function convertSupabaseDateToReadable(inputDate: string | undefined): string {
@@ -101,7 +100,7 @@ export const addExerciseToProgramCreatorExerciseConverter = async (addExercise: 
         sets = addExercise.reps.length;
     } else if (addExercise.repTypeValue === "reps_range" || addExercise.repTypeValue === "time_range") {
         addReps = addExercise.repsWithTimeAndRepRange;
-        sets = addExercise.repsWithTimeAndRepRange.length
+        sets = addExercise.repsWithTimeAndRepRange.length;
     } else {
         addReps = addExercise.reps;
         sets = addExercise.reps.length;
@@ -175,7 +174,7 @@ export const convertHevyExerciseIntoHevyAddExercise = (exercise: THevyExercise):
     });
 
     const intensityData = exercise.sets.map(set =>
-      intensityValue === "weight_kg" ? set.weight_kg : set.rpe
+      intensityValue === "weight_kg" ? set.weight_kg : set.rpe,
     );
 
     return {
@@ -224,8 +223,8 @@ export const convertProgramCreatorExerciseToAddExercise = (programCreatorExercis
     }
 
     // Populate data fields
-    const reps = reps_type?.reps || reps_type?.reps_max || reps_type.time_taken || amrapAsNumber(reps_type.amrap) || []; // AMRAP NEEDS TO BE FIXED HERE
-    const intensityData = intensity?.percent_rm || intensity?.rpe || intensity.weights || [];
+    const reps = reps_type?.reps || reps_type?.reps_max || reps_type?.time_taken || amrapAsNumber(reps_type?.amrap) || []; // AMRAP NEEDS TO BE FIXED HERE
+    const intensityData = intensity?.percent_rm || intensity?.rpe || intensity?.weights || [];
     const repsWithTimeAndRepRange =
       reps_type?.reps_range || reps_type?.time_range || [];
     const intensityDataWithRPERange = intensity?.rpe_range || [];
@@ -243,6 +242,7 @@ export const convertProgramCreatorExerciseToAddExercise = (programCreatorExercis
 };
 
 const amrapAsNumber = (amrap: string[] = []) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return amrap.map((item) => 999); // amrap string is defined as 999
 };
 
@@ -267,7 +267,7 @@ export const appendWeekOrderAndIdToProgramDays = (program: TProgramCreatorDay[][
             ...day,
             weekOrder: String(index), // Weeks are 0-indexed and days are 1-indexed. Someone please fix this monstrosity.
             id: String(idCounter++),
-        })))
+        })));
     return updatedProgram;
 };
 
@@ -306,16 +306,18 @@ export const flattenProgram = (program: TProgramCreatorDay[][]) => {
 export const reorder = (days: TProgramCreatorDay[]) => {
 
     const groupedByWeek: Record<number, TProgramCreatorDay[]> = days.reduce((acc, item) => {
+        if (typeof item.weekOrder !== "number") return acc;
         if (!acc[item.weekOrder]) acc[item.weekOrder] = [];
         acc[item.weekOrder].push(item);
         return acc;
     }, {} as Record<number, TProgramCreatorDay[]>);
 
+
     days = Object.values(groupedByWeek).flatMap((group) =>
         group.map((item, index) => ({
             ...item,
             order: String(index + 1), // 1-based order per weekOrder
-        }))
+        })),
     );
 
     return days;
@@ -325,6 +327,7 @@ export const reorder = (days: TProgramCreatorDay[]) => {
 export const reorderHevy = (routines: THevyRoutine[]): THevyRoutine[] => {
     // Group routines by folder_id
     const groupedByFolder: Record<number, THevyRoutine[]> = routines.reduce((acc, item) => {
+        // if (typeof item.folder_id !== "number") return acc;
         if (!acc[item.folder_id]) acc[item.folder_id] = [];
         acc[item.folder_id].push(item);
         return acc;
@@ -335,15 +338,16 @@ export const reorderHevy = (routines: THevyRoutine[]): THevyRoutine[] => {
         group.map((item, index) => ({
             ...item,
             order: String(index + 1), // 1-based order within each folder_id group
-        }))
+        })),
     );
 
     return updatedRoutines;
 };
 
 export const removeOrderHevy = (routines: THevyRoutine[]): Omit<THevyRoutine, 'order'>[] => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return routines?.map(({ order, ...rest }) => rest);
-}
+};
 
 export const deFlattenHevyRoutine = (routines: THevyRoutine[]): THevyRoutine[][] => {
     return Object.entries(
@@ -356,18 +360,19 @@ export const deFlattenHevyRoutine = (routines: THevyRoutine[]): THevyRoutine[][]
 
         acc[folderId].push(routine);
         return acc;
-      }, {})
+      }, {}),
     )
       // Sort folder groups by folder_id
       .sort(([a], [b]) => parseInt(a) - parseInt(b))
       // Return just the routines sorted by their order within each folder
-      .map(([, group]) => group.sort((a, b) => parseInt(a.order) - parseInt(b.order)));
+      .map(([, group]) => group.sort((a, b) => parseInt(a.order ?? "1") - parseInt(b.order ?? "1")));
   };
 
 
 export const deFlattenProgram = (flattenedProgram: TProgramCreatorDay[]): TProgramCreatorDay[][] => {
     return Object.entries(
       flattenedProgram.reduce<Record<number, TProgramCreatorDay[]>>((acc, day) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { weekOrder, id, ...rest } = day; // Destructure to remove weekOrder
         const week = parseInt(weekOrder || '0'); // Ensure it's treated as a number
 
@@ -377,7 +382,7 @@ export const deFlattenProgram = (flattenedProgram: TProgramCreatorDay[]): TProgr
 
         acc[week].push(rest); // Push the rest of the day (without weekOrder) to the correct week
         return acc;
-      }, {})
+      }, {}),
     )
       // Sort the weeks based on weekOrder (keys)
       .sort(([a], [b]) => parseInt(a) - parseInt(b))
@@ -404,9 +409,9 @@ export const programCreatorDayToScheduleWorkouts = (program: TProgramCreatorDay[
                 rpe_range: exercise.intensity?.rpe_range,
                 percent_rm: exercise.intensity?.percent_rm,
                 weights: exercise.intensity?.weights,
-                exercises: exercise.exercise
-            }))
-        }))
+                exercises: exercise.exercise,
+            })),
+        })),
     );
 };
 
@@ -418,7 +423,7 @@ export const getNumberRoutineFolders = (routines: THevyRoutine[]): number => {
     const maxFolderId = Math.max(...folderIds);
 
     return maxFolderId - minFolderId + 1;
-}
+};
 
 // Returns the proxima exercise gif_id for a specific hevy exercise using fuzzy matching
 export const getExerciseGifIdForHevyExercise = async (exercise_name: string) => {
@@ -445,4 +450,4 @@ export const getExerciseGifIdForHevyExercise = async (exercise_name: string) => 
 
     return fuseResults?.[0]?.item?.gif_id ?? "";
 
-}
+};
