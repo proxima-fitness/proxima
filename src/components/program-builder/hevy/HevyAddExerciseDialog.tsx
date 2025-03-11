@@ -11,6 +11,7 @@ import { PlusIcon, Trash2Icon, XIcon } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { HevyExerciseSearchBar } from "./HevyExerciseSearchBar";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface IProps {
     addExerciseDialog: THevyDialog;
@@ -30,7 +31,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
         handleOpenAddExerciseDialog,
     } = props;
 
-    const { data: exercises } = useHevyExercises();
+    const { data: exercises, isLoading: loadingHevyExercises } = useHevyExercises();
 
     const [ exerciseID, setExerciseID ] = useState<string>();
     const [ selectedName, setSelectedName ] = useState<string>("");
@@ -147,9 +148,12 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
             setIntensityData(addExerciseDialog?.editExercise?.intensityData ?? [9,9,9,9]);
             setReps(addExerciseDialog?.editExercise?.reps ?? [8,8,8,8]);
             setIntensityValue(addExerciseDialog?.editExercise?.intensityValue ?? hevy_intensities[0].value);
+            console.log("Exercise in useEffect",exercise);
             if (exercise) {
                 setSelectedName(exercise[`title`]);
+                console.log("selected Name: ", exercise["title"]);
                 setSelectedGifID(await getExerciseGifIdForHevyExercise(exercise.title));
+                console.log("selected GifId:",await getExerciseGifIdForHevyExercise(exercise.title));
             }
         };
         if (isEditExercise) {
@@ -165,7 +169,11 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                     Add Exercise to Week {addExerciseDialog.folder_id + 1} Day {addExerciseDialog.dayOrder}
                 </DialogTitle>
                 <div className={ "modal-content__centered" }>
-                    { exercises &&
+                    { loadingHevyExercises ?
+                        <div style={ { display: "flex",width: "100%", height: "358px", textAlign: "center", justifyContent: "center", alignItems: "center"} }>
+                            <Skeleton className="w-full h-full"></Skeleton>
+                        </div>
+                    : exercises !== undefined &&
                         <HevyExerciseSearchBar
                             title={ "Exercise" }
                             items={ exercises }

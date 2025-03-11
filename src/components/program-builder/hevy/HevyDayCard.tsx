@@ -178,11 +178,11 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                     </div>
                     <div>
                         <HevyExerciseVisualizer
-                                    day={ day }
-                                    folder_id={ folder_id }
-                                    handleEdit={ handleEdit }
-                                    handleDeleteExercise={ handleDeleteExercise }
-                               />
+                            day={ day }
+                            folder_id={ folder_id }
+                            handleEdit={ handleEdit }
+                            handleDeleteExercise={ handleDeleteExercise }
+                        />
                     </div>
 
 
