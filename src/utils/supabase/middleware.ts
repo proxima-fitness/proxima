@@ -8,8 +8,8 @@ export async function updateSession(request: NextRequest) {
     });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_KEY!,
+        process.env.SUPABASE_URL!,
+        process.env.SUPABASE_KEY!,
         {
         cookies: {
             getAll() {
