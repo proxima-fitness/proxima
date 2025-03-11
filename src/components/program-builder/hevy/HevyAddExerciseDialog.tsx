@@ -160,7 +160,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 
     return (
         <Dialog open={ addExerciseDialog.isOpen } onOpenChange={ () => handleOpenAddExerciseDialog({ folder_id: 0, dayOrder: 0, isOpen: false} ) }>
-            <DialogContent hideClose className="max-w-4xl w-full">
+            <DialogContent hideClose className="max-w-4xl w-full h-[95%] overflow-y-auto">
                 <DialogTitle className="font-bold flex items-center justify-center">
                     Add Exercise to Week {addExerciseDialog.folder_id + 1} Day {addExerciseDialog.dayOrder}
                 </DialogTitle>
@@ -216,7 +216,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                         { (reps && reps.length > 0) && reps?.map((rep: string | number, index: number) => (
                             <div
                                 key={ "Set" + index }
-                                className={ `flex flex-row justify-center gap-2 items-center w-full py-2` }>
+                                className={ `flex flex-row justify-center gap-2 items-center w-full py-1` }>
                                 <div className="flex items-center justify-start w-[10%]">
                                     { index + 1 }
                                 </div>

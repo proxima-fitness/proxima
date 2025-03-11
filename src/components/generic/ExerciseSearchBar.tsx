@@ -155,7 +155,7 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
                             </div>
                         </IonItem> */}
                     <List
-                        height={ 480 }
+                        height={ 320 }
                         itemCount={ filteredItems.length }
                         itemSize={ 80 }
                         width={ '100%' }
