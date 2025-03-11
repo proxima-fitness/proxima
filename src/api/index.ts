@@ -1,20 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 
-let url = "";
-try {
-    if (!process.env || !process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_URL) {
-        throw new Error('Supabase URL is missing from environment variables.');
-    }
-    url = process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_URL;
-} catch (error: unknown) {
-    console.error("Supabase url is missing", error);
-    throw new Error('Supabase URL is missing. Check your environment variables.');
+if (!process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_URL) {
+    console.error('Supabase url is missing. Check your environment variables.');
+    throw new Error('Supabase url is missing. Check your environment variables.');
 }
-// if (!process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_URL) {
-//     console.error('Supabase url is missing. Check your environment variables.');
-//     throw new Error('Supabase url is missing. Check your environment variables.');
-
-// }
 
 if (!process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_KEY) {
     console.error('Supabase key is missing. Check your environment variables.');
@@ -34,9 +23,9 @@ if (!process.env.NEXT_PUBLIC_REACT_APP_HEVY_API_KEY) {
 }
 
 
-export const supabaseUrl = url;
+export const supabaseUrl = process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_URL ?? "";
 
-export const supabaseBlogUrl = process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_BLOG_URL;
+export const supabaseBlogUrl = process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_BLOG_URL ?? "";
 
 export const supabaseKey = process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_KEY ?? "";
 export const supabaseBlogKey = process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_BLOG_KEY ?? "";
