@@ -37,12 +37,12 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
 
             const daysToCopy = prev.filter((day) => day.weekOrder === String(fromWeekIndex));
 
-            let newId = filteredPrev.length + 1;
+            let maxId = Math.max(...prev.map((d) => Number(d.id)));
 
             const newDays = toWeekIndexes.flatMap((week) =>
                 daysToCopy.map((day) => ({
                     ...day,
-                    id: String(newId++),
+                    id: String(++maxId),
                     weekOrder: String(week),
                 })),
             );
@@ -136,6 +136,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
 
     // Deletes selected day from selected week by id
     const handleDeleteDay = (id: string) => {
+        console.log(id);
         setFlattenedProgramDays((prev) => {
             let newDays = prev.filter((day) => day.id !== id);
             newDays = reorder(newDays);
@@ -205,6 +206,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     };
 
     const [flattenedProgramDays, setFlattenedProgramDays] = useState<TProgramCreatorDay[]>(flattenProgram(appendWeekOrderAndIdToProgramDays(program)));
+    console.log(flattenedProgramDays);
 
     useEffect(() => {
         if (typeof window !== undefined) {

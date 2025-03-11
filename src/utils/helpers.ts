@@ -306,7 +306,7 @@ export const flattenProgram = (program: TProgramCreatorDay[][]) => {
 export const reorder = (days: TProgramCreatorDay[]) => {
 
     const groupedByWeek: Record<number, TProgramCreatorDay[]> = days.reduce((acc, item) => {
-        if (typeof item.weekOrder !== "number") return acc;
+        if (typeof item.weekOrder !== "string") return acc;
         if (!acc[item.weekOrder]) acc[item.weekOrder] = [];
         acc[item.weekOrder].push(item);
         return acc;
