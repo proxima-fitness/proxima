@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 let url = "";
 try {
-    let url = process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_URL;
+    url = process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_URL;
 } catch (error: unknown) {
     console.error("Supabase url is missing", error);
     throw new Error('Supabase url is missing. Check your environment variables.');
