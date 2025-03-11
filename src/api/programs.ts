@@ -1,21 +1,33 @@
 import { supabase } from ".";
 
 // GET THE PROGRAMS DISPLAYED ON THE EXPLORE PAGE
-export const getExplorePagePrograms = async (limit?: number) => {
+export const getExplorePagePrograms = async (limit?: number): Promise<TProgram[]> => {
     try {
-        const q = supabase
+        let query = supabase
             .from('programs')
-            .select('id,title,details,program_length,workout_duration,equipment,specialization,difficulty,user_id').eq('explore', true);
-        const { data, error } = limit ? await q.limit(limit) : await q;
-        if (error) {
-            console.error('Error fetching explore page programs:', error);
-        } else if (data && data.length > 0 ) {
-            return data as unknown as TProgram[];
+            .select(
+                'id, title, details, program_length, workout_duration, equipment, specialization, difficulty, user_id'
+            )
+            .eq('explore', true);
+
+        if (limit) {
+            query = query.limit(limit);
         }
+
+        const { data, error } = await query;
+
+        if (error) {
+            console.error('Error fetching explore page programs:', error.message);
+            return [];
+        }
+
+        return data as TProgram[];
     } catch (error: unknown) {
-        console.error('Error fetching explore page programs:', error);
+        console.error('Unexpected error fetching explore page programs:', error);
+        return [];
     }
 };
+
 
 // GET THE SCHEDULE FOR A SPECIFIC PROGRAM
 export const getExplorePageProgramDetails = async (program_id: string) => {
@@ -153,5 +165,35 @@ export const getProgramThumbnailByID = async (id: string) => {
     } catch (error: unknown) {
         console.error('Error fetching program thumbnail:', error);
         throw Error(`Error fetching program thumbnail: ${error}`);
+    }
+};
+
+// GET PROGRAM THUMBNAIL FOR A PROGRAM VIA UUID ( GETS PROGRAM THUMBNAIL AS WORKAROUND FOR CORS. PROGRAM S3 BUCKET IS NOW PUBLIC)
+export const getProgramThumbnailByIDViaPublicUrl = async (id: string) => {
+    try {
+        const { data, error } = await supabase.storage
+            .from('programs')
+            .list(id, {
+                limit: 1,
+                sortBy: { column: 'name', order: 'asc' },
+            });
+
+        if (error) {
+            console.error('Error listing thumbnails:', error);
+        }
+
+        const imageFile = data?.find((file) =>
+            /\.(jpg|jpeg|png|jfif)$/i.test(file.name)
+        );
+
+        if (!imageFile) return undefined;
+
+        const { data: publicData } = supabase.storage
+            .from('programs')
+            .getPublicUrl(`${id}/${imageFile.name}`);
+
+        return publicData.publicUrl;
+    } catch (err) {
+        console.error('Error fetching thumbnail public URL:', err);
     }
 };

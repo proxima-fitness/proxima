@@ -13,20 +13,17 @@ import { Card } from "../ui/card";
 import Link from "next/link";
 import { ProgramCard } from "./ProgramCard";
 import { useDebouncedCallback } from "use-debounce";
+import { usePrograms } from "@/api/hooks";
+import { Skeleton } from "../ui/skeleton";
 
-interface IProps {
-    programs: TProgram[];
-}
+export const ProgramSearch: React.FC = () => {
 
-export const ProgramSearch: React.FC<IProps> = (props) => {
-
-    const {
-        programs,
-    } = props;
+    const { data: programs, isLoading: loadingPrograms } = usePrograms();
+    console.log(programs);
 
     const commandRef = useRef<HTMLInputElement>(null);
 
-    const [filteredPrograms, setFilteredPrograms] = useState(programs);
+    const [filteredPrograms, setFilteredPrograms] = useState<TProgram[]>(programs);
 
     const [appliedProgramLengthFilter, setAppliedProgramLengthFilter] = useState<string>(""); // casting the number to string
     const [appliedWorkoutDurationFilter, setAppliedWorkoutDurationFilter] = useState<string>(""); // casting the number to string
@@ -126,6 +123,24 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
         };
     }, [filteredPrograms, appliedEquipmentFilter]);
 
+    if (loadingPrograms) {
+        return (
+            <div className="pt-10 h-[500px]">
+                <Skeleton className="h-[300px] p-4 bg-gray-100">
+                    <h1 className="text-center text-3xl pb-4 font-main"></h1>
+                    <div className="max-sm:w-full flex flex-col items-center justify-center">
+                        <div className="w-full flex flex-row max-sm:flex-col items-center justify-center">
+                            <div className="flex-1"></div>
+                            <div className="w-[60%] max-sm:w-full">
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-3 max-sm:grid-cols-1">
+                        </div>
+                    </div>
+                </Skeleton>
+            </div>
+        );
+    }
 
     return (
         <>
@@ -171,16 +186,16 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
                 </Card>
             </div>
             <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 py-8">
-                { filteredPrograms.map((program) => (
+                { filteredPrograms?.map((program) => (
                     <Link
-                    key={ program.id }
-                    target="_self"
-                    rel="noopener noreferrer"
-                    href={ `programs/${program.id}/${program.title.trim().replace(/[\s,]+/g, '-').toLowerCase()}` }
-                >
+                        key={ program.id }
+                        target="_self"
+                        rel="noopener noreferrer"
+                        href={ `programs/${program.id}/${program.title.trim().replace(/[\s,]+/g, '-').toLowerCase()}` }
+                    >
                         <ProgramCard
-                        program={ program }
-                    />
+                            program={ program }
+                        />
                     </Link>
             ))}
             </div>
