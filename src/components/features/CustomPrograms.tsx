@@ -14,7 +14,7 @@ export const CustomPrograms: React.FC = () => {
 
             <div className={ layout.sectionInfoCentered }>
                 <h2 className={ styles.heading2Centered }>
-                    Let AI build your <br className="sm:block hidden" /> Custom Programs
+                    Let AI Build Your <br className="sm:block hidden" /> Custom Programs
                 </h2>
                 <p className={ `${styles.paragraph} max-w-[470px] mt-5` }>
                     Through our AI Program Builder, you can easily generate your own workout program based on your preferences. Plus, once your program is ready, you can share it on the feed page, inspiring others and building a stronger fitness community!
