@@ -1,14 +1,12 @@
 "use client";
 
-import { ProgramSearch } from "./ProgramSearch";
+import { Programs } from "./Programs";
 
 export default function ProgramsLayout() {
 
-    // const initialPrograms = use(useProgramsSSR());
-
     return (
         <div className="px-24 max-sm:px-0">
-            <ProgramSearch />
+            <Programs />
         </div>
     );
 };

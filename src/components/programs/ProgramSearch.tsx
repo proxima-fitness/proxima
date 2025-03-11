@@ -13,13 +13,16 @@ import { Card } from "../ui/card";
 import Link from "next/link";
 import { ProgramCard } from "./ProgramCard";
 import { useDebouncedCallback } from "use-debounce";
-import { usePrograms } from "@/api/hooks";
-import { Skeleton } from "../ui/skeleton";
 
-export const ProgramSearch: React.FC = () => {
+interface IProps {
+    programs: TProgram[];
+}
 
-    const { data: programs, isLoading: loadingPrograms } = usePrograms();
-    console.log(programs);
+export const ProgramSearch: React.FC<IProps> = (props) => {
+
+    const {
+        programs,
+    } = props;
 
     const commandRef = useRef<HTMLInputElement>(null);
 
@@ -122,25 +125,6 @@ export const ProgramSearch: React.FC = () => {
             document.removeEventListener("keydown", handleKeyDown);
         };
     }, [filteredPrograms, appliedEquipmentFilter]);
-
-    if (loadingPrograms) {
-        return (
-            <div className="pt-10 h-[500px]">
-                <Skeleton className="h-[300px] p-4 bg-gray-100">
-                    <h1 className="text-center text-3xl pb-4 font-main"></h1>
-                    <div className="max-sm:w-full flex flex-col items-center justify-center">
-                        <div className="w-full flex flex-row max-sm:flex-col items-center justify-center">
-                            <div className="flex-1"></div>
-                            <div className="w-[60%] max-sm:w-full">
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-3 max-sm:grid-cols-1">
-                        </div>
-                    </div>
-                </Skeleton>
-            </div>
-        );
-    }
 
     return (
         <>

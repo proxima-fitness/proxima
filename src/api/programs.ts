@@ -6,7 +6,7 @@ export const getExplorePagePrograms = async (limit?: number): Promise<TProgram[]
         let query = supabase
             .from('programs')
             .select(
-                'id, title, details, program_length, workout_duration, equipment, specialization, difficulty, user_id'
+                'id, title, details, program_length, workout_duration, equipment, specialization, difficulty, user_id',
             )
             .eq('explore', true);
 
@@ -183,7 +183,7 @@ export const getProgramThumbnailByIDViaPublicUrl = async (id: string) => {
         }
 
         const imageFile = data?.find((file) =>
-            /\.(jpg|jpeg|png|jfif)$/i.test(file.name)
+            /\.(jpg|jpeg|png|jfif)$/i.test(file.name),
         );
 
         if (!imageFile) return undefined;

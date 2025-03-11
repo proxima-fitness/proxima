@@ -1,7 +1,7 @@
 // USE OF REACT QUERY IS STRICTLY CLIENT-SIDE, USE SUPABASE SSR FOR SERVER SIDE
 import { useQuery } from "@tanstack/react-query";
 import { getBlogById, getBlogs } from "./blog";
-import { getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID, getProgramThumbnailByIDViaPublicUrl } from "./programs";
+import { getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID } from "./programs";
 import { getOpUserId, getUserFullName, getUserMetaData } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getExercises } from "./exercises";
