@@ -223,8 +223,8 @@ export const convertProgramCreatorExerciseToAddExercise = (programCreatorExercis
     }
 
     // Populate data fields
-    const reps = reps_type?.reps || reps_type?.reps_max || reps_type.time_taken || amrapAsNumber(reps_type.amrap) || []; // AMRAP NEEDS TO BE FIXED HERE
-    const intensityData = intensity?.percent_rm || intensity?.rpe || intensity.weights || [];
+    const reps = reps_type?.reps || reps_type?.reps_max || reps_type?.time_taken || amrapAsNumber(reps_type?.amrap) || []; // AMRAP NEEDS TO BE FIXED HERE
+    const intensityData = intensity?.percent_rm || intensity?.rpe || intensity?.weights || [];
     const repsWithTimeAndRepRange =
       reps_type?.reps_range || reps_type?.time_range || [];
     const intensityDataWithRPERange = intensity?.rpe_range || [];
@@ -306,10 +306,12 @@ export const flattenProgram = (program: TProgramCreatorDay[][]) => {
 export const reorder = (days: TProgramCreatorDay[]) => {
 
     const groupedByWeek: Record<number, TProgramCreatorDay[]> = days.reduce((acc, item) => {
+        if (typeof item.weekOrder !== "number") return acc;
         if (!acc[item.weekOrder]) acc[item.weekOrder] = [];
         acc[item.weekOrder].push(item);
         return acc;
     }, {} as Record<number, TProgramCreatorDay[]>);
+
 
     days = Object.values(groupedByWeek).flatMap((group) =>
         group.map((item, index) => ({
@@ -325,6 +327,7 @@ export const reorder = (days: TProgramCreatorDay[]) => {
 export const reorderHevy = (routines: THevyRoutine[]): THevyRoutine[] => {
     // Group routines by folder_id
     const groupedByFolder: Record<number, THevyRoutine[]> = routines.reduce((acc, item) => {
+        // if (typeof item.folder_id !== "number") return acc;
         if (!acc[item.folder_id]) acc[item.folder_id] = [];
         acc[item.folder_id].push(item);
         return acc;
@@ -362,7 +365,7 @@ export const deFlattenHevyRoutine = (routines: THevyRoutine[]): THevyRoutine[][]
       // Sort folder groups by folder_id
       .sort(([a], [b]) => parseInt(a) - parseInt(b))
       // Return just the routines sorted by their order within each folder
-      .map(([, group]) => group.sort((a, b) => parseInt(a.order) - parseInt(b.order)));
+      .map(([, group]) => group.sort((a, b) => parseInt(a.order ?? "1") - parseInt(b.order ?? "1")));
   };
 
 

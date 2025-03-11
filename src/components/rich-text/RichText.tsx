@@ -1,5 +1,5 @@
 import { getMediaPublicUrl } from '@/api/blog';
-import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical';
+import type { SerializedEditorState } from "@payloadcms/richtext-lexical/lexical";
 
 interface IProps {
     data: SerializedEditorState;
@@ -10,14 +10,15 @@ export const RichText: React.FC<IProps> = (props) => {
     const { data } = props;
 
     if (!data || !data.root.children) return null;
-
-    const renderNode = (node, index) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const renderNode = (node:any, index: number) => {
         switch (node.type) {
             case "list": {
                 if (node.listType === "check") {
                     return (
                         <div key={ index }>
-                            {node.children.map((child, childIndex) => (
+                            { /* eslint-disable-next-line @typescript-eslint/no-explicit-any */ }
+                            {node.children.map((child: any, childIndex: number) => (
                                 <div key={ childIndex } style={ { display: "flex", alignItems: "center" } }>
                                     <input type="checkbox" id={ `check-${index}-${childIndex}` } />
                                     <label htmlFor={ `check-${index}-${childIndex}` } style={ { marginLeft: "8px" } }>

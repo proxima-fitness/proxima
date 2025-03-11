@@ -35,10 +35,17 @@ const PaginationItem = React.forwardRef<
 ));
 PaginationItem.displayName = "PaginationItem";
 
+// type PaginationLinkProps = {
+//   isActive?: boolean
+// } & Pick<ButtonProps, "size"> &
+//   React.ComponentProps<"a">
+
 type PaginationLinkProps = {
-  isActive?: boolean
-} & Pick<ButtonProps, "size"> &
-  React.ComponentProps<"a">
+    isActive?: boolean;
+    size?: ButtonProps["size"];
+    href: string; // <-- required now
+  } & Omit<React.ComponentProps<"a">, "href">;
+
 
 const PaginationLink = ({
   className,
@@ -47,15 +54,15 @@ const PaginationLink = ({
   ...props
 }: PaginationLinkProps) => (
     <Link
-    aria-current={ isActive ? "page" : undefined }
-    className={ cn(
-      buttonVariants({
-        variant: isActive ? "outline" : "ghost",
-        size,
-      }),
-      className,
-    ) }
-    { ...props }
+        aria-current={ isActive ? "page" : undefined }
+        className={ cn(
+        buttonVariants({
+            variant: isActive ? "outline" : "ghost",
+            size,
+        }),
+        className,
+        ) }
+        { ...props }
   />
 );
 PaginationLink.displayName = "PaginationLink";

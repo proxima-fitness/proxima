@@ -55,8 +55,8 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
     };
 
     const handleClearFilters = () => {
-        setAppliedProgramLengthFilter("");
-        setAppliedWorkoutDurationFilter("");
+        setAppliedProgramLengthFilter(undefined);
+        setAppliedWorkoutDurationFilter(undefined);
         setAppliedEquipmentFilter([]);
         setAppliedSpecializationFilter([]);
         setAppliedDifficultyFilter([]);
