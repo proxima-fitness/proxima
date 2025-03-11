@@ -1,6 +1,5 @@
 import ProgramsLayout from "@/components/programs/ProgramsLayout";
 import styles from "../../../style";
-import { useProgramsSSR } from "@/api/hooks";
 
 export const metadata = {
     title: "Search Programs | Proxima Fitness",
@@ -9,12 +8,10 @@ export const metadata = {
 
 export default function ProgramsPage() {
 
-    const initialPrograms = useProgramsSSR();
-
     return (
         <div className={ `bg-white ${styles.paddingX} ${styles.flexCenter} flex-col` }>
             <div className={ `${styles.boxWidth}` }>
-                <ProgramsLayout initialPrograms={ initialPrograms } />
+                <ProgramsLayout />
             </div>
         </div>
     );
