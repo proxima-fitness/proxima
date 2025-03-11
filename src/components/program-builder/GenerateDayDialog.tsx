@@ -50,11 +50,11 @@ export const GenerateDayDialog: React.FC<IProps> = (props) => {
 
     const onSubmit = (values: z.infer<typeof formSchema>) => {
         handleGenerateDay(generateDayDialog.weekOrder, generateDayDialog.dayOrder, values.prompt);
-        handleOpenGenerateDayDialog({weekOrder: undefined, dayOrder: undefined, isOpen: false});
+        handleOpenGenerateDayDialog({weekOrder: 0, dayOrder: 0, isOpen: false});
     };
 
     return (
-        <Dialog open={ generateDayDialog.isOpen } onOpenChange={ () => handleOpenGenerateDayDialog({weekOrder: undefined, dayOrder: undefined, isOpen: false}) } >
+        <Dialog open={ generateDayDialog.isOpen } onOpenChange={ () => handleOpenGenerateDayDialog({weekOrder: 0, dayOrder: 0, isOpen: false}) } >
 
             <DialogContent hideClose className="max-w-5xl w-full">
                 <DialogTitle>

@@ -133,21 +133,22 @@ export const HevyColumn: React.FC<IProps> = (props) => {
         const DISTANCE_OFFSET = 50;
 
         const el = indicators.reduce(
-          (closest, child) => {
-            const box = child.getBoundingClientRect();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (closest: any, child: any) => {
+                const box = child.getBoundingClientRect();
 
-            const offset = e.clientY - (box.top + DISTANCE_OFFSET);
+                const offset = e.clientY - (box.top + DISTANCE_OFFSET);
 
-            if (offset < 0 && offset > closest.offset) {
-              return { offset: offset, element: child };
-            } else {
-              return closest;
-            }
-          },
-          {
-            offset: Number.NEGATIVE_INFINITY,
-            element: indicators[indicators.length - 1],
-          },
+                if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+                } else {
+                return closest;
+                }
+            },
+            {
+                offset: Number.NEGATIVE_INFINITY,
+                element: indicators[indicators.length - 1],
+            },
         );
 
         return el;
@@ -215,7 +216,7 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                             handleDeleteExercise={ handleDeleteExercise }
                         />
                 ); } ) }
-                <DropIndicator beforeId={ null } weekOrder={ folder_id } />
+                <DropIndicator beforeId={ null } weekOrder={ String(folder_id) } />
                 <div className="flex flex-row justify-center items-center">
                     <Button
                         onClick={ () => handleAddDay(folder_id) }

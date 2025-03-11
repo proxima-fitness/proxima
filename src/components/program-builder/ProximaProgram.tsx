@@ -21,8 +21,8 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data: exercises }  = useExercises();
 
-    const [addExerciseDialog, setAddExerciseDialog] = useState<TDialog>({weekOrder: undefined, dayOrder: undefined, isOpen: false});
-    const [generateDayDialog, setGenerateDayDialog] = useState<TDialog>({weekOrder: undefined, dayOrder: undefined, isOpen: false});
+    const [addExerciseDialog, setAddExerciseDialog] = useState<TDialog>({weekOrder: 0, dayOrder: 0, isOpen: false});
+    const [generateDayDialog, setGenerateDayDialog] = useState<TDialog>({weekOrder: 0, dayOrder: 0, isOpen: false});
     const [isEditExercise, setIsEditExercise] = useState(false);
 
     const handleIsEditExercise = (isEditExercise: boolean) => {
@@ -159,7 +159,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                 if (Number(day.weekOrder) === weekOrder && Number(day.order) === dayOrder) {
                     return {
                         ...day,
-                        exercises: day.exercises.filter((_, index) => index !== exerciseIndex),
+                        exercises: day?.exercises?.filter((_, index) => index !== exerciseIndex) ?? [],
                     };
                 }
                 return day;
@@ -174,7 +174,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                 if (Number(day.weekOrder) === weekOrder && Number(day.order) === dayOrder) {
                     return {
                         ...day,
-                        exercises: [...day.exercises, exercise],
+                        exercises: day?.exercises ? [...day.exercises, exercise] : [exercise],
                     };
                 }
                 return day;
@@ -185,19 +185,21 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     // Edits an exercise on a workout day
     const handleEditExercise = async (editExercise: TDialog) => {
 
-        const convertedEditExercise = await addExerciseToProgramCreatorExerciseConverter(editExercise.editExercise);
+        if (editExercise.editExercise) {
+            const convertedEditExercise = await addExerciseToProgramCreatorExerciseConverter(editExercise.editExercise);
 
-        setFlattenedProgramDays((prev) => {
-            return prev.map((day) => {
-                if (Number(day.weekOrder) === editExercise.weekOrder && Number(day.order) === editExercise.dayOrder) {
-                    return {
-                        ...day,
-                        exercises: day.exercises.map((exercise, index) => index === editExercise.exerciseIndex ? convertedEditExercise : exercise),
-                    };
-                }
-                return day;
+            setFlattenedProgramDays((prev) => {
+                return prev.map((day) => {
+                    if (Number(day.weekOrder) === editExercise.weekOrder && Number(day.order) === editExercise.dayOrder) {
+                        return {
+                            ...day,
+                            exercises: day?.exercises?.map((exercise, index) => index === editExercise.exerciseIndex ? convertedEditExercise : exercise) ?? [],
+                        };
+                    }
+                    return day;
+                });
             });
-        });
+        }
 
         setIsEditExercise(false);
     };

@@ -33,9 +33,9 @@ export const ReviewProgramPage: React.FC = () => {
 
     return (
         <div className="pl-8">
-            { isHevy ?
+            { (isHevy && hevyRoutine) ?
                 <HevyRoutineSchedule deflatHevyRoutine={ deFlattenHevyRoutine(hevyRoutine) } />
-            :
+            : program &&
                 <ProgramSchedule sortedWorkoutsByWeek={ programCreatorDayToScheduleWorkouts(program) } />
             }
         </div>

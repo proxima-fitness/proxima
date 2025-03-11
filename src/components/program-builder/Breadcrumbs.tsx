@@ -3,20 +3,16 @@
 import { usePathname } from "next/navigation";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 
-
-
 export const Breadcrumbs: React.FC = () => {
 
     const path = usePathname();
     const segments = path.split("/").filter(Boolean);
 
-    const breadcrumbs = [
-        { href: "/program-builder", label: "Program Builder"},
-        segments.includes("build-program") &&
-        { href: "/program-builder/build-program", label: "Build Program"},
-        segments.includes("review-program") &&
-        { href: "/program-builder/build-program/review-program", label: "Review Program"},
-    ].filter(Boolean);
+    const breadcrumbs: TBreadcrumb[] = [
+        { href: "/program-builder", label: "Program Builder" },
+        ...(segments.includes("build-program") ? [{ href: "/program-builder/build-program", label: "Build Program" }] : []),
+        ...(segments.includes("review-program") ? [{ href: "/program-builder/build-program/review-program", label: "Review Program" }] : []),
+    ];
 
     return (
         <Breadcrumb className="w-[33%]">

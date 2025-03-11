@@ -93,14 +93,14 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                 <span>
                     { isPreview ?
                         <PDFViewer className="w-full h-[50vh]">
-                            { isHevy ?
+                            { (isHevy && hevyRoutine) ?
                                 <HevyPdfRenderer hevyRoutine={ deFlattenHevyRoutine(hevyRoutine) } />
-                            :
+                            : program &&
                                 <PdfRenderer program={ programCreatorDayToScheduleWorkouts(program) } />
                             }
                         </PDFViewer>
                         :
-                        <Textarea className="h-[50vh]" readOnly aria-readonly value={ isHevy ? JSON.stringify(removeOrderHevy(hevyRoutine), null, 4) : JSON.stringify(program, null, 4) } />
+                        <Textarea className="h-[50vh]" readOnly aria-readonly value={ (isHevy && hevyRoutine) ? JSON.stringify(removeOrderHevy(hevyRoutine), null, 4) : program && JSON.stringify(program, null, 4) } />
                     }
                 </span>
                 <span className="w-full flex flex-row items-center justify-between">

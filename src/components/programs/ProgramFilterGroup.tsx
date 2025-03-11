@@ -37,7 +37,7 @@ export const ProgramFilterGroup: React.FC<IProps> = (props) => {
 
     const [sliderValue, setSliderValue] = useState([60]);
 
-    const handleSelectedFilters = (filterType: string | undefined) => {
+    const handleSelectedFilters = (filterType: string) => {
         if (filter.type === "program_length") {
             handleAppliedProgramLengthFilter(filterType);
         } else if(filter.type === "workout_duration") {
@@ -66,7 +66,7 @@ export const ProgramFilterGroup: React.FC<IProps> = (props) => {
         }
     };
 
-    const badgeSelected = (filterType: string | undefined): boolean => {
+    const badgeSelected = (filterType: string): boolean => {
         if (appliedProgramLengthFilter === filterType) {
             return true;
         } else if (appliedWorkoutDurationFilter === filterType) {
@@ -96,7 +96,7 @@ export const ProgramFilterGroup: React.FC<IProps> = (props) => {
             ) : filter.component === "combobox" ?
             (
                 <div className="pt-2">
-                    <ComboBox value={ filter.type === "program_length" ? appliedProgramLengthFilter: filter.type === "workout_duration" ? appliedWorkoutDurationFilter : undefined } handleSelectedFilters={ handleSelectedFilters } options={ filter.values } title={ filter.title } />
+                    <ComboBox value={ filter.type === "program_length" ? appliedProgramLengthFilter: filter.type === "workout_duration" ? appliedWorkoutDurationFilter : "" } handleSelectedFilters={ handleSelectedFilters } options={ filter.values } title={ filter.title } />
                 </div>
             ) : filter.component === "slider" ?
             (
@@ -108,7 +108,7 @@ export const ProgramFilterGroup: React.FC<IProps> = (props) => {
             :
             (
                 <>
-                    <ComboBox value={ filter.type === "program_length" ? appliedProgramLengthFilter: filter.type === "workout_duration" ? appliedWorkoutDurationFilter : undefined } handleSelectedFilters={ handleSelectedFilters } options={ filter.values } title={ filter.title } />
+                    <ComboBox value={ filter.type === "program_length" ? appliedProgramLengthFilter: filter.type === "workout_duration" ? appliedWorkoutDurationFilter : "" } handleSelectedFilters={ handleSelectedFilters } options={ filter.values } title={ filter.title } />
                 </>
             )
             }

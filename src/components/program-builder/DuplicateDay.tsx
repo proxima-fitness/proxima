@@ -29,7 +29,7 @@ export const DuplicateDay: React.FC<IProps> = (props) => {
     const programLengthArray = Array.from({ length: programLength }, (_, index) => index + 1);
     const daysArray = Array.from({length: 7 }, (_, index) => index + 1);
     const daysOptions: Option[] = daysArray.map((d) => ({ label: `Day ${d}`, value: String(d)}));
-    const [selectedDays, setSelectedDays] = useState<Option[]>();
+    const [selectedDays, setSelectedDays] = useState<Option[]>([]);
     const [selectedWeek, setSelectedWeek ] = useState<string>(String(Number(weekOrder) + 1));
 
     return (

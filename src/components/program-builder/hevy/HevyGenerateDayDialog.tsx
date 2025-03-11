@@ -50,11 +50,11 @@ export const HevyGenerateDayDialog: React.FC<IProps> = (props) => {
 
     const onSubmit = (values: z.infer<typeof formSchema>) => {
         handleGenerateDay(generateDayDialog.folder_id, generateDayDialog.dayOrder, values.prompt);
-        handleOpenGenerateDayDialog({folder_id: undefined, dayOrder: undefined, isOpen: false});
+        handleOpenGenerateDayDialog({folder_id: 0, dayOrder: 0, isOpen: false});
     };
 
     return (
-        <Dialog open={ generateDayDialog.isOpen } onOpenChange={ () => handleOpenGenerateDayDialog({folder_id: undefined, dayOrder: undefined, isOpen: false}) } >
+        <Dialog open={ generateDayDialog.isOpen } onOpenChange={ () => handleOpenGenerateDayDialog({folder_id: 0, dayOrder: 0, isOpen: false}) } >
 
             <DialogContent hideClose className="max-w-5xl w-full">
                 <DialogTitle>

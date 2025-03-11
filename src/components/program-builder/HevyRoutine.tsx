@@ -23,8 +23,8 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data: exercises }  = useHevyExercises(); // Pre-populating the HevyAddExerciseDialog
 
-    const [addExerciseDialog, setAddExerciseDialog] = useState<THevyDialog>({folder_id: undefined, dayOrder: undefined, isOpen: false});
-    const [generateDayDialog, setGenerateDayDialog] = useState<THevyDialog>({folder_id: undefined, dayOrder: undefined, isOpen: false});
+    const [addExerciseDialog, setAddExerciseDialog] = useState<THevyDialog>({folder_id: 0, dayOrder: 0, isOpen: false});
+    const [generateDayDialog, setGenerateDayDialog] = useState<THevyDialog>({folder_id: 0, dayOrder: 0, isOpen: false});
     const [isEditExercise, setIsEditExercise] = useState(false);
 
     const handleIsEditExercise = (isEditExercise: boolean) => {
@@ -174,7 +174,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
         });
     };
 
-    // // Adds an exercise to the workout day
+    // Adds an exercise to the workout day
     const handleAddExercise = async (folder_id: number, dayOrder: number, exercise: THevyAddExercise) => {
 
         const sets = hevyAddExerciseToHevySetsConverter(exercise);
@@ -188,7 +188,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                         exercises: [...day.exercises,
                             {
                                 index: day.exercises.length + 1,
-                                title: exerciseTemplate.title,
+                                title: exerciseTemplate?.title ?? "",
                                 notes: "",
                                 exercise_template_id: exercise.id,
                                 supersets_id: null,
@@ -205,27 +205,29 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     // // Edits an exercise on a workout day
     const handleEditExercise = async (editExercise: THevyDialog) => {
 
-        const sets = hevyAddExerciseToHevySetsConverter(editExercise.editExercise);
-        const exerciseTemplate = await getHevyExerciseFromLocalStorageByID(editExercise.editExercise.id);
+        if (editExercise.editExercise) {
+            const sets = hevyAddExerciseToHevySetsConverter(editExercise.editExercise);
+            const exerciseTemplate = await getHevyExerciseFromLocalStorageByID(editExercise.editExercise.id);
 
-        setHevyProgram((prev) => {
-            return prev.map((day) => {
-                if (Number(day.folder_id) === editExercise.folder_id && Number(day.order) === editExercise.dayOrder) {
-                    return {
-                        ...day,
-                        exercises: day.exercises.map((exercise, index) => index === editExercise.exerciseIndex ? {
-                            index: day.exercises.length + 1,
-                            title: exerciseTemplate.title,
-                            notes: "",
-                            exercise_template_id: exerciseTemplate.id,
-                            supersets_id: null,
-                            sets: sets,
-                        } : exercise),
-                    };
-                }
-                return day;
+            setHevyProgram((prev) => {
+                return prev.map((day) => {
+                    if (Number(day.folder_id) === editExercise.folder_id && Number(day.order) === editExercise.dayOrder) {
+                        return {
+                            ...day,
+                            exercises: day.exercises.map((exercise, index) => index === editExercise.exerciseIndex ? {
+                                index: day.exercises.length + 1,
+                                title: exerciseTemplate?.title ?? "",
+                                notes: "",
+                                exercise_template_id: exerciseTemplate?.id ?? "",
+                                supersets_id: null,
+                                sets: sets,
+                            } : exercise),
+                        };
+                    }
+                    return day;
+                });
             });
-        });
+        }
 
         setIsEditExercise(false);
     };

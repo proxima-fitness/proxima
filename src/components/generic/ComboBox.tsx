@@ -23,7 +23,7 @@ import {
 interface IProps {
     options: string[];
     title: "Program Length" | "Workout Duration" | "Equipment" | "Specialization" | "Difficulty";
-    handleSelectedFilters: (filterKey: string | undefined) => void;
+    handleSelectedFilters: (filterKey: string) => void;
     value: string;
 }
 
@@ -39,11 +39,11 @@ export const ComboBox: React.FC<IProps> = (props) => {
             <Popover open={ open } onOpenChange={ setOpen }>
                 <PopoverTrigger asChild>
                     <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={ open }
-                className="w-[200px] justify-between"
-            >
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={ open }
+                        className="w-[200px] justify-between"
+                    >
                         { title === "Workout Duration" &&
                     (
                         <>
@@ -104,7 +104,7 @@ export const ComboBox: React.FC<IProps> = (props) => {
                     </Command>
                 </PopoverContent>
             </Popover>
-            { value !== undefined && <Button onClick={ () => { handleSelectedFilters(undefined); } } className={ "text-[#37BCCF]" } variant="ghost">Reset</Button> }
+            { value !== "" && <Button onClick={ () => { handleSelectedFilters(""); } } className={ "text-[#37BCCF]" } variant="ghost">Reset</Button> }
         </>
     );
 };

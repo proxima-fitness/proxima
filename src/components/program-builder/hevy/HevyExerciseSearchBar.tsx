@@ -31,7 +31,6 @@ interface IProps {
 interface RowData {
     filteredItems: THevyExerciseTemplate[];
     selectItem: (item: THevyExerciseTemplate) => void;
-    language: "english" | "espanol" | "portugues" | "francais";
 }
 
   // Define the Row component props
@@ -179,7 +178,12 @@ export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
                     <center><h2>{ selectedName }</h2></center>
                     { selectedGifID && selectedGifID.length > 0 &&
                         <>
-                            <HevyExerciseGif name={ selectedName } thumbnailOrImage={ "img" } resolution={ "360" } file_type={ "gif" } />
+                            <HevyExerciseGif
+                                name={ selectedName }
+                                thumbnailOrImage={ "img" }
+                                resolution={ "360" }
+                                file_type={ "gif" }
+                            />
                         </>
              }
                 </div>

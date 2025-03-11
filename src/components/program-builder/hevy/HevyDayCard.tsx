@@ -63,16 +63,16 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
 
     const cardVal: THevyCard = {
         title,
-        order: day.order,
-        day_title: day.title,
-        exercises: day.exercises,
-        id: day.id,
+        order: day?.order ?? "",
+        day_title: day?.title ?? "",
+        exercises: day?.exercises ?? [],
+        id: day?.id ?? "",
         folder_id,
     };
 
     return (
         <>
-            <DropIndicator beforeId={ day.id } weekOrder={ folder_id } />
+            <DropIndicator beforeId={ day.id } weekOrder={ String(folder_id) } />
             <motion.div
                 layout
                 layoutId={ day.id }

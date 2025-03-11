@@ -66,18 +66,18 @@ export const DayCard: FC<IProps> = (props) => {
     const cardVal: TCard = {
         title,
         order: day.order,
-        day_title: day.day_title,
-        exercises: day.exercises,
-        id: day.id,
+        day_title: day?.day_title ?? "",
+        exercises: day?.exercises ?? [],
+        id: day?.id ?? "",
         weekOrder,
     };
 
     return (
         <>
-            <DropIndicator beforeId={ day.id } weekOrder={ weekOrder } />
+            <DropIndicator beforeId={ day?.id ?? "" } weekOrder={ weekOrder } />
             <motion.div
                 layout
-                layoutId={ day.id }
+                layoutId={ day?.id ?? "" }
                 draggable="true"
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onDragStart={ (e: any) => handleDragStart(e, cardVal) }
@@ -94,12 +94,12 @@ export const DayCard: FC<IProps> = (props) => {
                                     value={ currentTitle }
                                     onInput={ (event) => setCurrentTitle(String(event.currentTarget.value) ?? "") }
                                     onBlur={ (event) => {
-                                        handleEditTitle(day.id, String(event.currentTarget.value));
+                                        handleEditTitle(day?.id ?? "", String(event.currentTarget.value));
                                         setEditTitleOpen(false);
                                     } }
                                     onKeyDown={ (e) => {
                                         if (e.key === 'Enter') {
-                                            handleEditTitle(day.id, e.currentTarget.value);
+                                            handleEditTitle(day?.id ?? "", e.currentTarget.value);
                                             setEditTitleOpen(false);
                                         }
                                     } }
@@ -107,7 +107,7 @@ export const DayCard: FC<IProps> = (props) => {
                                 />
                                 :
                                 <>
-                                    {day.day_title}
+                                    {day?.day_title ?? ""}
                                 </>
                             }
                         </div>
@@ -120,7 +120,7 @@ export const DayCard: FC<IProps> = (props) => {
                                     <EllipsisIcon />
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="start" side="bottom">
-                                    <DropdownMenuItem className="cursor-pointer" onClick={ () => handleDeleteDay(day.id) }>
+                                    <DropdownMenuItem className="cursor-pointer" onClick={ () => handleDeleteDay(day?.id ?? "") }>
                                         Delete Day
                                         <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
                                     </DropdownMenuItem>

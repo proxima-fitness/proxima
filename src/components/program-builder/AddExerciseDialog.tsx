@@ -338,7 +338,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                                         <Input
                                             // type="number"
                                             // inputMode="decimal"
-                                            value={ intensityData[index] || "0" }
+                                            value={ intensityData?.[index] ?? "0" }
                                             onInput={ (e) => handleUpdatingIntensity(e.currentTarget.value ?? "0", index) }
                                             onBlur={ (e) => handleSaveIntensity(e.target.value ?? "0", index) }
                                             onKeyDown={ (e) => {
@@ -437,7 +437,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                                     <Input
                                         // type="number"
                                         // inputMode="decimal"
-                                        value={ intensityData[index] || "0" }
+                                        value={ intensityData?.[index] ?? "0" }
                                         onInput={ (e) => handleUpdatingIntensity(e.currentTarget.value ?? "0", index) }
                                         onBlur={ (e) => handleSaveIntensity(e.target.value ?? "0", index) }
                                         onKeyDown={ (e) => {
@@ -466,7 +466,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                 </div>
                 <span className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4">
                     <span className="w-full flex items-center justify-center">
-                        <Button onClick={ () => handleOpenAddExerciseDialog({weekOrder: undefined, dayOrder: undefined, isOpen: false} ) } variant="ghost" className="w-full h-12">
+                        <Button onClick={ () => handleOpenAddExerciseDialog({weekOrder: 0, dayOrder: 0, isOpen: false} ) } variant="ghost" className="w-full h-12">
                             Cancel
                         </Button>
                     </span>

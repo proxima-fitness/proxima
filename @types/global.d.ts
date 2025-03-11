@@ -279,3 +279,8 @@ type THevyCard = {
     id: string,
     folder_id: number,
 }
+
+type TBreadcrumb = {
+    href: string;
+    label: string;
+}

@@ -50,7 +50,7 @@ export const ProgramSchedule: React.FC<IProps> = (props) => {
                                 <div
                                     className="my-4 rounded-xl"
                                 >
-                                    { day?.program_workout_exercises?.map((exercise: TAPIProgramWorkoutExercises, exerciseIndex: number) => (
+                                    { day?.program_workout_exercises?.map((exercise: TSavedWorkoutExercise, exerciseIndex: number) => (
                                         <div key={ exerciseIndex }>
                                             <div className="border-b-2 text-sm border-gray-200 flex flex-row justify-between font-extralight items-center py-2">
                                                 <div className="flex flex-row gap-4 max-w-[50%]">

@@ -28,8 +28,8 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
 
     const [filteredPrograms, setFilteredPrograms] = useState(programs);
 
-    const [appliedProgramLengthFilter, setAppliedProgramLengthFilter] = useState<string>(); // casting the number to string
-    const [appliedWorkoutDurationFilter, setAppliedWorkoutDurationFilter] = useState<string>(); // casting the number to string
+    const [appliedProgramLengthFilter, setAppliedProgramLengthFilter] = useState<string>(""); // casting the number to string
+    const [appliedWorkoutDurationFilter, setAppliedWorkoutDurationFilter] = useState<string>(""); // casting the number to string
     const [appliedEquipmentFilter, setAppliedEquipmentFilter] = useState<string[]>([]);
     const [appliedSpecializationFilter, setAppliedSpecializationFilter] = useState<string[]>([]);
     const [appliedDifficultyFilter, setAppliedDifficultyFilter] = useState<string[]>([]);
