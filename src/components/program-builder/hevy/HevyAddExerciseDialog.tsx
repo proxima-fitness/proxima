@@ -11,6 +11,7 @@ import { PlusIcon, Trash2Icon, XIcon } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { HevyExerciseSearchBar } from "./HevyExerciseSearchBar";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface IProps {
     addExerciseDialog: THevyDialog;
@@ -30,7 +31,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
         handleOpenAddExerciseDialog,
     } = props;
 
-    const { data: exercises } = useHevyExercises();
+    const { data: exercises, isLoading: loadingHevyExercises } = useHevyExercises();
 
     const [ exerciseID, setExerciseID ] = useState<string>();
     const [ selectedName, setSelectedName ] = useState<string>("");
@@ -147,9 +148,12 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
             setIntensityData(addExerciseDialog?.editExercise?.intensityData ?? [9,9,9,9]);
             setReps(addExerciseDialog?.editExercise?.reps ?? [8,8,8,8]);
             setIntensityValue(addExerciseDialog?.editExercise?.intensityValue ?? hevy_intensities[0].value);
+            console.log("Exercise in useEffect",exercise);
             if (exercise) {
                 setSelectedName(exercise[`title`]);
+                console.log("selected Name: ", exercise["title"]);
                 setSelectedGifID(await getExerciseGifIdForHevyExercise(exercise.title));
+                console.log("selected GifId:",await getExerciseGifIdForHevyExercise(exercise.title));
             }
         };
         if (isEditExercise) {
@@ -160,12 +164,16 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 
     return (
         <Dialog open={ addExerciseDialog.isOpen } onOpenChange={ () => handleOpenAddExerciseDialog({ folder_id: 0, dayOrder: 0, isOpen: false} ) }>
-            <DialogContent hideClose className="max-w-4xl w-full">
+            <DialogContent hideClose className="max-w-4xl w-full h-[95%] overflow-y-auto">
                 <DialogTitle className="font-bold flex items-center justify-center">
                     Add Exercise to Week {addExerciseDialog.folder_id + 1} Day {addExerciseDialog.dayOrder}
                 </DialogTitle>
                 <div className={ "modal-content__centered" }>
-                    { exercises &&
+                    { loadingHevyExercises ?
+                        <div style={ { display: "flex",width: "100%", height: "358px", textAlign: "center", justifyContent: "center", alignItems: "center"} }>
+                            <Skeleton className="w-full h-full"></Skeleton>
+                        </div>
+                    : exercises !== undefined &&
                         <HevyExerciseSearchBar
                             title={ "Exercise" }
                             items={ exercises }
@@ -216,7 +224,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                         { (reps && reps.length > 0) && reps?.map((rep: string | number, index: number) => (
                             <div
                                 key={ "Set" + index }
-                                className={ `flex flex-row justify-center gap-2 items-center w-full py-2` }>
+                                className={ `flex flex-row justify-center gap-2 items-center w-full py-1` }>
                                 <div className="flex items-center justify-start w-[10%]">
                                     { index + 1 }
                                 </div>

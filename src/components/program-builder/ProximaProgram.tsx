@@ -37,12 +37,12 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
 
             const daysToCopy = prev.filter((day) => day.weekOrder === String(fromWeekIndex));
 
-            let newId = filteredPrev.length + 1;
+            let maxId = Math.max(...prev.map((d) => Number(d.id)));
 
             const newDays = toWeekIndexes.flatMap((week) =>
                 daysToCopy.map((day) => ({
                     ...day,
-                    id: String(newId++),
+                    id: String(++maxId),
                     weekOrder: String(week),
                 })),
             );

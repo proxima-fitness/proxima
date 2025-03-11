@@ -62,9 +62,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Bench Press",
+            title: "Bench Press (Barbell)",
             notes: "Focus on slow eccentric movement",
-            exercise_template_id: "ex-001",
+            exercise_template_id: "79D0BB3A",
             supersets_id: null,
             sets: [
                 {
@@ -91,9 +91,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Overhead Press",
+            title: "Overhead Press (Barbell)",
             notes: "Keep core tight",
-            exercise_template_id: "ex-002",
+            exercise_template_id: "7B8D84E8",
             supersets_id: null,
             sets: [
                 {
@@ -119,9 +119,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -148,9 +148,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
@@ -176,9 +176,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -205,9 +205,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
@@ -233,9 +233,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -262,9 +262,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
@@ -290,9 +290,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -319,9 +319,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
@@ -347,9 +347,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -376,9 +376,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
@@ -404,9 +404,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -433,9 +433,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
@@ -461,9 +461,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -490,9 +490,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
@@ -518,9 +518,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -547,9 +547,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
@@ -575,9 +575,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -604,9 +604,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
@@ -632,9 +632,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -661,9 +661,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
@@ -689,9 +689,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -718,9 +718,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
@@ -746,9 +746,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -775,9 +775,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
@@ -803,9 +803,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -832,9 +832,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
@@ -860,9 +860,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -889,9 +889,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
@@ -917,9 +917,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -946,9 +946,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
@@ -974,9 +974,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -1003,9 +1003,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
@@ -1031,9 +1031,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -1060,9 +1060,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
@@ -1088,9 +1088,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -1117,9 +1117,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
@@ -1145,9 +1145,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -1174,9 +1174,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
@@ -1202,9 +1202,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -1231,9 +1231,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
@@ -1259,9 +1259,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -1288,9 +1288,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
@@ -1316,9 +1316,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -1345,9 +1345,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
@@ -1373,9 +1373,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
         exercises: [
             {
             index: 1,
-            title: "Squat",
+            title: "Squat (Barbell)",
             notes: "Use belt for heavier sets",
-            exercise_template_id: "ex-101",
+            exercise_template_id: "D04AC939",
             supersets_id: null,
             sets: [
                 {
@@ -1402,9 +1402,9 @@ export const exampleHevyRoutineProgram: THevyRoutine[] = [
             },
             {
             index: 2,
-            title: "Leg Press",
+            title: "Leg Press (Machine)",
             notes: "Slow negatives",
-            exercise_template_id: "ex-102",
+            exercise_template_id: "C7973E0E",
             supersets_id: null,
             sets: [
                 {
