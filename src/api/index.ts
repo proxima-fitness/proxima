@@ -18,10 +18,6 @@ if (!process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_BLOG_KEY) {
     console.error('Supabase blog key is missing. Check your environment variables.');
     throw Error('Supabase blog key is missing. Check your environment variables.');}
 
-if (!process.env.NEXT_PUBLIC_REACT_APP_HEVY_API_KEY) {
-    console.error('Hevy API key is missing. Check your environment variables.');
-}
-
 
 export const supabaseUrl = process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_URL ?? "";
 
