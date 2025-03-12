@@ -215,7 +215,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
 
     return (
         <Dialog open={ addExerciseDialog.isOpen } onOpenChange={ () => handleOpenAddExerciseDialog({ weekOrder: 0, dayOrder: 0, isOpen: false} ) }>
-            <DialogContent hideClose className="max-w-4xl w-full h-[95%] overflow-y-auto">
+            <DialogContent hideClose className="max-w-4xl w-full max-lg:h-[95%] 2xl:h-[70%] overflow-y-auto">
                 <DialogTitle className="font-bold flex items-center justify-center">
                     Add Exercise to Week {addExerciseDialog.weekOrder + 1} Day {addExerciseDialog.dayOrder}
                 </DialogTitle>
