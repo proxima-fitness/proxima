@@ -1,31 +1,53 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BuildProgramSkeleton } from "./BuildProgramSkeleton";
 import { HevyRoutine } from "./HevyRoutine";
 import { ProximaProgram } from "./ProximaProgram";
-import { exampleProximaProgram, exampleHevyRoutineProgram } from "@/assets/constants";
 import { useIsHevy } from "@/contexts/HevyContext";
+import { postTextToJson } from "@/api/edge-functions";
 
-export const BuildProgramClientPage: React.FC = () => {
+interface IProps {
+    decodedQuery: string;
+}
+
+export const BuildProgramClientPage: React.FC<IProps> = (props) => {
+
+    const {
+        decodedQuery,
+    } = props;
 
     const [generating, setGenerating] = useState(true);
+    const [routine, setRoutine] = useState<THevyRoutine[]>();
+    const [program, setProgram] = useState<TProgramCreatorDay[][]>();
+
     const { isHevy } = useIsHevy();
 
     useEffect(() => {
-        setTimeout(() => {
+        const aiGenerateProgram = async () => {
+            const ai_schema = await postTextToJson(decodedQuery,isHevy ? "hevy_routine_schema" : "program_details_schema");
+            if (ai_schema) {
+                if (isHevy) {
+                    setRoutine(ai_schema as unknown as THevyRoutine[]);
+                } else {
+                    setProgram(ai_schema as unknown as TProgramCreatorDay[][]);
+                }
+            }
             setGenerating(false);
-        }, 100);
-    }, []);
+            console.log("AI repsonse:",ai_schema);
+        };
+
+        aiGenerateProgram();
+    }, [isHevy, decodedQuery]);
 
     return (
         <div className="pl-8">
             { generating ?
                 <BuildProgramSkeleton />
-            : isHevy ?
-                <HevyRoutine program={ exampleHevyRoutineProgram } />
-            :
-                <ProximaProgram program={ exampleProximaProgram } />
+            : (isHevy && routine !== undefined) ?
+                <HevyRoutine program={ routine } />
+            : (!isHevy && program !== undefined) &&
+                <ProximaProgram program={ program } />
             }
         </div>
     );

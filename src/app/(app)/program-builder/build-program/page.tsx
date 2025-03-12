@@ -5,11 +5,23 @@ export const metadata = {
     description: "Edit your custom program",
   };
 
-export default function BuildProgram() {
+export default function BuildProgram({ searchParams }: {searchParams: URLSearchParams}) {
+
+    const encodedQuery = searchParams.get("aiQueryBuilder");
+
+    let decodedQuery = "";
+
+    if (encodedQuery) {
+        try {
+            decodedQuery = JSON.parse(decodeURIComponent(encodedQuery));
+        } catch (e) {
+            console.error("Failed to parse AI query", e);
+        }
+    }
 
     return (
         <div className={ `bg-white min-h-[1000px] overflow-x-scroll` }>
-            <BuildProgramClientPage />
+            <BuildProgramClientPage decodedQuery={ decodedQuery } />
         </div>
     );
 }
