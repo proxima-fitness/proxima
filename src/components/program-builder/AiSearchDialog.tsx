@@ -89,7 +89,7 @@ export const AiSearchDialog: React.FC = () => {
             <DialogContent hideClose className="max-w-5xl w-full">
                 <DialogTitle>
                     <span className="flex flex-row gap-2">
-                        <Input value={ search } onChange={ (event) => setSearch(event.target.value) } startIcon={ SearchIcon } placeholder="Tell me about your ideal program..." />
+                        <Input autoFocus value={ search } onChange={ (event) => setSearch(event.target.value) } startIcon={ SearchIcon } placeholder="Tell me about your ideal program..." />
                         <Link
                             target="_self"
                             rel="noopener noreferrer"

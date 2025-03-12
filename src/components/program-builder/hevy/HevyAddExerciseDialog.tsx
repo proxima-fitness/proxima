@@ -148,12 +148,10 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
             setIntensityData(addExerciseDialog?.editExercise?.intensityData ?? [9,9,9,9]);
             setReps(addExerciseDialog?.editExercise?.reps ?? [8,8,8,8]);
             setIntensityValue(addExerciseDialog?.editExercise?.intensityValue ?? hevy_intensities[0].value);
-            console.log("Exercise in useEffect",exercise);
+
             if (exercise) {
                 setSelectedName(exercise[`title`]);
-                console.log("selected Name: ", exercise["title"]);
                 setSelectedGifID(await getExerciseGifIdForHevyExercise(exercise.title));
-                console.log("selected GifId:",await getExerciseGifIdForHevyExercise(exercise.title));
             }
         };
         if (isEditExercise) {

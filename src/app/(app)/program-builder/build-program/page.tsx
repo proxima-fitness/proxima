@@ -5,9 +5,9 @@ export const metadata = {
     description: "Edit your custom program",
   };
 
-export default function BuildProgram({ searchParams }: {searchParams: URLSearchParams}) {
+export default async function BuildProgram({ searchParams }: {searchParams: Promise<{ [key: string]: string | string[] | undefined }>}) {
 
-    const encodedQuery = searchParams.get("aiQueryBuilder");
+    const encodedQuery = (await searchParams).aiQueryBuilder as string;
 
     let decodedQuery = "";
 
