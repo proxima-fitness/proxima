@@ -10,6 +10,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { IsHevyProvider } from "@/contexts/HevyContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
     title: 'Proxima Fitness | AI Workout Builder & Program Directory',
@@ -56,6 +57,7 @@ export default function RootLayout({
                         <main id="root">
                             <QueryProvider>
                                 <IsHevyProvider>
+                                    <Analytics />
                                     {children}
                                 </IsHevyProvider>
                                 <Toaster richColors />
