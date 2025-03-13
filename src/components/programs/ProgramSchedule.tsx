@@ -13,12 +13,12 @@ export const ProgramSchedule: React.FC<IProps> = (props) => {
 
     return (
         <div className="w-full">
-            <div className="flex flex-row max-sm:flex-col w-full overflow-scroll p-2 gap-4">
+            <div className="flex flex-row max-sm:flex-col w-full overflow-scroll max-sm:p-0 p-2 gap-4">
                 { sortedWorkoutsByWeek.map((week, index) => (
                     <div className="w-full" key={ `Week ${index}` }>
                         <span className="bg-white p-2 font-main">Week {index + 1}</span>
                         { week.map((day) => (
-                            <Card className="px-4 py-4 my-4 min-w-[400px] max-w-[400px] w-[400px] max-sm:w-[355px] bg-gray-100" key={ "week " + day.nthWeek + "day " + day.nthDay + " " }>
+                            <Card className="px-4 py-4 my-4 min-w-[400px] max-w-[400px] w-[400px] max-sm:min-w-[99%] max-sm:max-w-[99%] max-sm:w-[99%] bg-gray-100" key={ "week " + day.nthWeek + "day " + day.nthDay + " " }>
                                 <div className="border-b-2 border-gray-200">
                                     <div>
                                         <h3 className="font-main text-lg">{ "Day" } { day.nthDay } { day?.day_title ? <> &middot; { day.day_title }</> : "" }</h3>

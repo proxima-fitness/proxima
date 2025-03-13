@@ -11,14 +11,10 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { navLinks } from "../../assets/constants/index";
-import HomeIcon from '@mui/icons-material/Home';
-import TerminalIcon from '@mui/icons-material/Terminal';
-import FeaturedVideoIcon from '@mui/icons-material/FeaturedVideo';
-import LiveHelpIcon from '@mui/icons-material/LiveHelp';
 import LoginIcon from '@mui/icons-material/Login';
-import DownloadIcon from '@mui/icons-material/Download';
 import menu from "../../../public/menu.svg";
 import Link from "next/link";
+import { HardDriveDownloadIcon, LogInIcon, NotebookTextIcon, PersonStandingIcon, SearchIcon, TerminalSquareIcon } from 'lucide-react';
 
 type Anchor = 'top' | 'left' | 'bottom' | 'right';
 
@@ -58,11 +54,11 @@ export const NavDrawer: React.FC = () => {
             <List>
                 {navLinks.map((link) => (
                     <ListItem key={ link.id } disablePadding>
-                        { link.id === "sign-in" ?
+                        { link.id === "log-in" ?
                             <a href="https://app.proximafitness.com/">
                                 <ListItemButton>
                                     <ListItemIcon>
-                                        <LoginIcon style={ { color: "#5ce1e6" } } />
+                                        <LogInIcon style={ { color: "#5ce1e6" } } />
                                     </ListItemIcon>
                                     <ListItemText primary={ link.title } />
                                 </ListItemButton>
@@ -71,7 +67,7 @@ export const NavDrawer: React.FC = () => {
                     <Link href="/download">
                         <ListItemButton>
                             <ListItemIcon>
-                                <LoginIcon style={ { color: "#5ce1e6" } } />
+                                <HardDriveDownloadIcon style={ { color: "#5ce1e6" } } />
                             </ListItemIcon>
                             <ListItemText primary={ link.title } />
                         </ListItemButton>
@@ -80,11 +76,9 @@ export const NavDrawer: React.FC = () => {
                     <Link href={ `/${link.id}` }>
                         <ListItemButton>
                             <ListItemIcon>
-                                { link.id === "home" && <HomeIcon style={ { color: "#5ce1e6" } } /> }
-                                { link.id === "programs" && <TerminalIcon style={ { color: "#5ce1e6" } } /> }
-                                { link.id === "create-programs" && <FeaturedVideoIcon style={ { color: "#5ce1e6" } } /> }
-                                { link.id === "faqs" && <LiveHelpIcon style={ { color: "#5ce1e6" } } /> }
-                                { link.id === "cta" && <DownloadIcon style={ { color: "#5ce1e6" } } /> }
+                                { link.id === "programs" && <NotebookTextIcon style={ { color: "#5ce1e6" } } /> }
+                                { link.id === "about" && <PersonStandingIcon style={ { color: "#5ce1e6" } } /> }
+                                { link.id === "program-builder" && <TerminalSquareIcon style={ { color: "#5ce1e6" } } /> }
                             </ListItemIcon>
                             <ListItemText primary={ link.title } />
                         </ListItemButton>

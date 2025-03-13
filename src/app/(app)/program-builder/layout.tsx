@@ -16,7 +16,7 @@ export default async function ProgramBuilderLayout({
                 <Breadcrumbs />
                 <ProgramBuilderTabs />
                 <Link href={ `/program-builder` }>
-                    <div className="cursor-pointer text-sm flex flex-row justify-center items-center gap-2">
+                    <div className="max-sm:hidden cursor-pointer text-sm flex flex-row justify-center items-center gap-2">
                         Retry
                         <RotateCcwIcon size="16" />
                     </div>
