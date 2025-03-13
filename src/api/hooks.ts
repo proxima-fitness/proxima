@@ -128,14 +128,12 @@ export const useExerciseGif = (gif_id: string | undefined, resolution: "180" | "
 export const useProgramByIdSSR = async (program_id: string) => {
 
     const program = await getProgramByID(program_id) ?? [];
-    const thumbnail = await getProgramThumbnailByID(program_id);
     const schedule = await getExplorePageProgramDetails(program_id);
-    if (!thumbnail || !schedule) {
+    if (!schedule) {
         return null;
     }
     const programOverview: TProgramPage = {
         program: program,
-        thumbnail: thumbnail,
         schedule: schedule,
     };
     return programOverview;

@@ -50,7 +50,6 @@ export const getExplorePagePrograms = async (filters?: TProgramFilters, limit?: 
     }
 };
 
-
 // GET THE SCHEDULE FOR A SPECIFIC PROGRAM
 export const getExplorePageProgramDetails = async (program_id: string) => {
     try {
