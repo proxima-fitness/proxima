@@ -6,6 +6,7 @@ import { HevyRoutine } from "./HevyRoutine";
 import { ProximaProgram } from "./ProximaProgram";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { postTextToJson } from "@/api/edge-functions";
+import { sortWorkouts } from "@/utils/helpers";
 
 interface IProps {
     decodedQuery: string;
@@ -18,8 +19,8 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
     } = props;
 
     const [generating, setGenerating] = useState(true);
-    const [routine, setRoutine] = useState<THevyRoutine[]>();
-    const [program, setProgram] = useState<TProgramCreatorDay[][]>();
+    const [routine, setRoutine] = useState<THevyRoutineAIResponse>();
+    const [program, setProgram] = useState<TProgramDetails>();
     console.log("routine:",routine);
     console.log("program:",program);
 
@@ -31,9 +32,9 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
             if (ai_schema) {
                 const parsedSchema = JSON.parse(ai_schema);
                 if (isHevy) {
-                    setRoutine(parsedSchema as unknown as THevyRoutine[]);
+                    setRoutine(parsedSchema);
                 } else {
-                    setProgram(parsedSchema as unknown as TProgramCreatorDay[][]);
+                    setProgram(parsedSchema as unknown as TProgramDetails);
                 }
             }
             setGenerating(false);
@@ -47,9 +48,10 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
             { generating ?
                 <BuildProgramSkeleton />
             : (isHevy && routine !== undefined) ?
-                <HevyRoutine program={ routine } />
+                <HevyRoutine program={ routine.routines } />
             : (!isHevy && program !== undefined) &&
-                <ProximaProgram program={ program } />
+                <div></div>
+                // <ProximaProgram program={ sortWorkouts(program.schedule_workouts) } />
             }
         </div>
     );
