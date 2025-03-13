@@ -130,7 +130,7 @@ export const useProgramByIdSSR = async (program_id: string) => {
     const program = await getProgramByID(program_id) ?? [];
     const schedule = await getExplorePageProgramDetails(program_id);
     if (!schedule) {
-        return null;
+        return undefined;
     }
     const programOverview: TProgramPage = {
         program: program,

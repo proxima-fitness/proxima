@@ -21,7 +21,7 @@ export const ProgramThumbnail: React.FC<IProps> = (props) => {
             { loadingThumbnail ?
                 <div className="rounded-lg object-cover h-[350px] w-full">
                 </div>
-            :
+            : thumbnail !== undefined &&
                 <img
                     className="rounded-lg object-cover h-[350px] w-full"
                     alt="Program Thumbnail"
