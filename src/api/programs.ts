@@ -43,6 +43,7 @@ export const getExplorePagePrograms = async (filters?: TProgramFilters, limit?: 
             return programsWithThumbnails as unknown as TProgram[];
         }
 
+        return [];
     } catch (error: unknown) {
         console.error('Unexpected error fetching explore page programs:', error);
         return [];
