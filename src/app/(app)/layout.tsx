@@ -42,7 +42,9 @@ export default function RootLayout({
             </head>
             <body>
                 <SidebarProvider>
-                    <AppSidebar />
+                    <div className="max-sm:block hidden">
+                        <AppSidebar />
+                    </div>
                     <div className="bg-primary w-full overflow-hidden">
                         <div className={ `${styles.paddingXNav} ${styles.flexCenter}` }>
                             <div className={ `${styles.boxWidth}` }>
