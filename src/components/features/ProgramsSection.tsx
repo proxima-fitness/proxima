@@ -4,11 +4,11 @@ import styles, { layout } from "../../style";
 import { Button } from "../generic/Button";
 import Link from "next/link";
 import { ProgramCard } from "../programs/ProgramCard";
-import { useProgramsSection } from "@/api/hooks";
+import { useExplorePagePrograms } from "@/api/hooks";
 
 export const ProgramsSection: React.FC = () => {
 
-    const { data: programs } = useProgramsSection(6);
+    const { data: programs } = useExplorePagePrograms({ "specialization": ["Bodybuilding"] }, 6, 10);
 
     return (
         <section id="programs" className={ layout.sectionTop } data-aos="fade-up"

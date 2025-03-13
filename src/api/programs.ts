@@ -1,7 +1,7 @@
 import { supabase } from ".";
 
 // GET THE PROGRAMS DISPLAYED ON THE EXPLORE PAGE
-export const getExplorePagePrograms = async (limit?: number): Promise<TProgram[]> => {
+export const getExplorePagePrograms = async (filters?: TProgramFilters, limit?: number, offset?: number): Promise<TProgram[]> => {
     try {
         let query = supabase
             .from('programs')
@@ -10,18 +10,39 @@ export const getExplorePagePrograms = async (limit?: number): Promise<TProgram[]
             )
             .eq('explore', true);
 
-        if (limit) {
+        if (filters) {
+            for (const [key, value] of Object.entries(filters)) {
+                if (value) {
+                    query = query.contains(key, value);
+                }
+            }
+        }
+
+        if (limit !== undefined) {
             query = query.limit(limit);
         }
 
-        const { data, error } = await query;
+        if (offset !== undefined) {
+            query = query.range(offset, offset + (limit ?? 10) - 1);
+        }
+
+        const { data: programs, error } = await query;
 
         if (error) {
             console.error('Error fetching explore page programs:', error.message);
             return [];
+        } else if (programs && programs.length > 0 ) {
+
+            const programsWithThumbnails = await Promise.all(
+                programs.map( async (program) => {
+                    const thumbnail = await getProgramThumbnailByID(program.id);
+                    return {...program, thumbnail};
+                }),
+            );
+
+            return programsWithThumbnails as unknown as TProgram[];
         }
 
-        return data as TProgram[];
     } catch (error: unknown) {
         console.error('Unexpected error fetching explore page programs:', error);
         return [];

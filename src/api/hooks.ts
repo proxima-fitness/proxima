@@ -30,13 +30,12 @@ export const useUserFullName = (id: string, id_type: "program" | "user") => {
 };
 
 // FETCHES THE PROGRAM NAMES DISPLAYED ON THE EXPLORE PAGE
-export const useExplorePagePrograms = (limit?: number) => {
+export const useExplorePagePrograms = (filters?: TProgramFilters, limit?: number, offset?: number) => {
     return useQuery({
-        queryKey: ['explore-page-programs'],
-        queryFn: () => getExplorePagePrograms(limit),
+        queryKey: ['explore-page-programs', filters, offset],
+        queryFn: () => getExplorePagePrograms(filters, limit, offset),
     });
 };
-
 // FETCHES THE PROGRAM NAMES DISPLAYED ON THE PROGRAMS PAGE WITH THUMBNAILS
 export const usePrograms = (limit?: number) => {
     return useQuery({
@@ -46,12 +45,12 @@ export const usePrograms = (limit?: number) => {
 };
 
 // FETCHES THE PROGRAM NAMES DISPLAYED ON THE PROGRAMS SECTIOn WITH THUMBNAILS
-export const useProgramsSection = (limit?: number) => {
-    return useQuery({
-        queryKey: ['programs-section'],
-        queryFn: () => getPrograms(limit),
-    });
-};
+// export const useProgramsSection = (limit?: number) => {
+//     return useQuery({
+//         queryKey: ['programs-section'],
+//         queryFn: () => getPrograms(limit),
+//     });
+//};
 
 // FETCHES THE USER METADATA BY AN ID
 export const useUserMetadata = (id: string) => {
@@ -189,19 +188,19 @@ export const useBlogsSSR = async () => {
     return blogsWithImage as TBlog[];
 };
 
-export const useProgramsSSR = async () => {
-    const programs = await getExplorePagePrograms(42);
+// export const useProgramsSSR = async () => {
+//     const programs = await getExplorePagePrograms(42);
 
-    if (!programs) {
-        throw new Error("Programs not found");
-    }
+//     if (!programs) {
+//         throw new Error("Programs not found");
+//     }
 
-    const programsWithThumbnails = await Promise.all(
-        programs.map( async (program) => {
-            const thumbnail = await getProgramThumbnailByID(program.id);
-            return {...program, thumbnail};
-        }),
-    );
+//     const programsWithThumbnails = await Promise.all(
+//         programs.map( async (program) => {
+//             const thumbnail = await getProgramThumbnailByID(program.id);
+//             return {...program, thumbnail};
+//         }),
+//     );
 
-    return programsWithThumbnails as TProgram[];
-};
+//     return programsWithThumbnails as TProgram[];
+// };
