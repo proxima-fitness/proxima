@@ -1,7 +1,6 @@
 "use client";
 
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
-
+import { HardDriveDownload, Home, LogIn, PersonStanding, Search, TerminalSquare } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -11,59 +10,65 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 // Menu items.
 const items = [
   {
     title: "Home",
-    url: "#",
+    url: "/",
     icon: Home,
   },
   {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
+    title: "About us",
+    url: "/about",
+    icon: PersonStanding,
   },
   {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
-  },
-  {
-    title: "Search",
-    url: "#",
+    title: "Search Programs",
+    url: "/programs",
     icon: Search,
   },
   {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
+    title: "AI Program Builder",
+    url: "/program-builder",
+    icon: TerminalSquare,
   },
-]
+  {
+    title: "Log in",
+    url: "https://app.proximafitness.com",
+    icon: LogIn,
+  },
+  {
+    title: "Download App",
+    url: "/download",
+    icon: HardDriveDownload,
+  },
+];
 
 export function AppSidebar() {
-  return (
-    <Sidebar side="left">
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-    </Sidebar>
-  )
-}
+
+    return (
+        <Sidebar>
+            <SidebarContent>
+                <SidebarGroup>
+                    <SidebarGroupLabel>Proxima Fitness Inc. &middot; Menu</SidebarGroupLabel>
+                    <SidebarGroupContent>
+                        <SidebarMenu>
+                            { items.map((item) => (
+                                <SidebarMenuItem key={ item.title }>
+                                    <SidebarMenuButton asChild>
+                                        <a href={ item.url }>
+                                            <item.icon className="font-main" />
+                                            <span className="font-main">{ item.title }</span>
+                                        </a>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            ) ) }
+                        </SidebarMenu>
+                    </SidebarGroupContent>
+                </SidebarGroup>
+            </SidebarContent>
+        </Sidebar>
+    );
+};
