@@ -152,7 +152,7 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
                         pl = "12";
                     }
 
-                    const ul = buildUpperLowerRoutine(parsedUpperDay.routine, parsedLowerDay.routine, Number(pl), Number(numberOfDaysPerWeek));
+                    const ul = await buildUpperLowerRoutine(parsedUpperDay.routine, parsedLowerDay.routine, Number(pl), Number(numberOfDaysPerWeek));
                     setRoutine(ul);
                 }
 
@@ -177,7 +177,7 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
                         pl = "12";
                     }
 
-                    const fiveDay = buildFiveDayRoutine(parsedChestDay.routine, parsedBackDay.routine, parsedLegDay.routine, parsedShoulderDay.routine, parsedArmDay.routine, Number(pl));
+                    const fiveDay = await buildFiveDayRoutine(parsedChestDay.routine, parsedBackDay.routine, parsedLegDay.routine, parsedShoulderDay.routine, parsedArmDay.routine, Number(pl));
                     setRoutine(fiveDay);
                 }
 
@@ -194,7 +194,7 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
                         pl = "12";
                     }
 
-                    const oneDay  = buildOneDayRoutine(parsedDay.routine, Number(pl));
+                    const oneDay = await buildOneDayRoutine(parsedDay.routine, Number(pl));
                     setRoutine(oneDay);
 
 
@@ -217,7 +217,7 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
                         pl = "12";
                     }
 
-                    const sevenDay = buildSevenDayRoutine(parsedPushDay.routine, parsedPullDay.routine, parsedLegDay.routine, parsedCardioDay.routine, Number(pl));
+                    const sevenDay = await buildSevenDayRoutine(parsedPushDay.routine, parsedPullDay.routine, parsedLegDay.routine, parsedCardioDay.routine, Number(pl));
                     setRoutine(sevenDay);
                 }
             }

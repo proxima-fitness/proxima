@@ -417,9 +417,10 @@ export const buildPushPullLegsRoutine = async (push: THevyRoutine, pull: THevyRo
     return routines;
 };
 
-export const buildUpperLowerRoutine = (upper: THevyRoutine, lower: THevyRoutine, programLength: number, numberOfDaysPerWeek: number): THevyRoutine[] => {
+export const buildUpperLowerRoutine = async (upper: THevyRoutine, lower: THevyRoutine, programLength: number, numberOfDaysPerWeek: number): Promise<THevyRoutine[]> => {
 
     const routines: THevyRoutine[] = [];
+    const hevyExercises = await getHevyExercises();
 
     let currentId = 1;
 
@@ -431,14 +432,14 @@ export const buildUpperLowerRoutine = (upper: THevyRoutine, lower: THevyRoutine,
                     id: String(currentId++),
                     folder_id: week,
                     order: "1",
-                    exercises: upper.exercises,
+                    exercises: replaceHevyExercises(upper.exercises, hevyExercises),
                 },
                 {
                     ...structuredClone(lower),
                     id: String(currentId++),
                     folder_id: week,
                     order: "2",
-                    exercises: lower.exercises,
+                    exercises: replaceHevyExercises(lower.exercises, hevyExercises),
                 },
 
             ];
@@ -453,28 +454,28 @@ export const buildUpperLowerRoutine = (upper: THevyRoutine, lower: THevyRoutine,
                     id: String(currentId++),
                     folder_id: week,
                     order: "1",
-                    exercises: upper.exercises,
+                    exercises: replaceHevyExercises(upper.exercises, hevyExercises),
                 },
                 {
                     ...structuredClone(lower),
                     id: String(currentId++),
                     folder_id: week,
                     order: "2",
-                    exercises: lower.exercises,
+                    exercises: replaceHevyExercises(lower.exercises, hevyExercises),
                 },
                 {
                     ...structuredClone(upper),
                     id: String(currentId++),
                     folder_id: week,
                     order: "3",
-                    exercises: upper.exercises,
+                    exercises: replaceHevyExercises(upper.exercises, hevyExercises),
                 },
                 {
                     ...structuredClone(lower),
                     id: String(currentId++),
                     folder_id: week,
                     order: "4",
-                    exercises: lower.exercises,
+                    exercises: replaceHevyExercises(lower.exercises, hevyExercises),
                 },
 
             ];
@@ -487,9 +488,10 @@ export const buildUpperLowerRoutine = (upper: THevyRoutine, lower: THevyRoutine,
 };
 
 
-export const buildFiveDayRoutine = (chest: THevyRoutine, back: THevyRoutine, legs: THevyRoutine, shoulders: THevyRoutine, arms: THevyRoutine, programLength: number): THevyRoutine[] => {
+export const buildFiveDayRoutine = async (chest: THevyRoutine, back: THevyRoutine, legs: THevyRoutine, shoulders: THevyRoutine, arms: THevyRoutine, programLength: number): Promise<THevyRoutine[]> => {
 
     const routines: THevyRoutine[] = [];
+    const hevyExercises = await getHevyExercises();
 
     let currentId = 1;
 
@@ -500,35 +502,35 @@ export const buildFiveDayRoutine = (chest: THevyRoutine, back: THevyRoutine, leg
                 id: String(currentId++),
                 folder_id: week,
                 order: "1",
-                exercises: chest.exercises,
+                exercises: replaceHevyExercises(chest.exercises, hevyExercises),
             },
             {
                 ...structuredClone(back),
                 id: String(currentId++),
                 folder_id: week,
                 order: "2",
-                exercises: back.exercises,
+                exercises: replaceHevyExercises(back.exercises, hevyExercises),
             },
             {
                 ...structuredClone(legs),
                 id: String(currentId++),
                 folder_id: week,
                 order: "3",
-                exercises: legs.exercises,
+                exercises: replaceHevyExercises(legs.exercises, hevyExercises),
             },
             {
                 ...structuredClone(shoulders),
                 id: String(currentId++),
                 folder_id: week,
                 order: "4",
-                exercises: shoulders.exercises,
+                exercises: replaceHevyExercises(shoulders.exercises, hevyExercises),
             },
             {
                 ...structuredClone(arms),
                 id: String(currentId++),
                 folder_id: week,
                 order: "4",
-                exercises: arms.exercises,
+                exercises: replaceHevyExercises(arms.exercises, hevyExercises),
             },
         ];
 
@@ -539,9 +541,10 @@ export const buildFiveDayRoutine = (chest: THevyRoutine, back: THevyRoutine, leg
 };
 
 
-export const buildSevenDayRoutine = (push: THevyRoutine, pull: THevyRoutine, legs: THevyRoutine, cardio: THevyRoutine, programLength: number): THevyRoutine[] => {
+export const buildSevenDayRoutine = async (push: THevyRoutine, pull: THevyRoutine, legs: THevyRoutine, cardio: THevyRoutine, programLength: number): Promise<THevyRoutine[]> => {
 
     const routines: THevyRoutine[] = [];
+    const hevyExercises = await getHevyExercises();
 
     let currentId = 1;
 
@@ -552,49 +555,49 @@ export const buildSevenDayRoutine = (push: THevyRoutine, pull: THevyRoutine, leg
                 id: String(currentId++),
                 folder_id: week,
                 order: "1",
-                exercises: push.exercises,
+                exercises: replaceHevyExercises(push.exercises, hevyExercises),
             },
             {
                 ...structuredClone(pull),
                 id: String(currentId++),
                 folder_id: week,
                 order: "2",
-                exercises: pull.exercises,
+                exercises: replaceHevyExercises(pull.exercises, hevyExercises),
             },
             {
                 ...structuredClone(legs),
                 id: String(currentId++),
                 folder_id: week,
                 order: "3",
-                exercises: legs.exercises,
+                exercises: replaceHevyExercises(legs.exercises, hevyExercises),
             },
             {
                 ...structuredClone(push),
                 id: String(currentId++),
                 folder_id: week,
                 order: "4",
-                exercises: push.exercises,
+                exercises: replaceHevyExercises(push.exercises, hevyExercises),
             },
             {
                 ...structuredClone(pull),
                 id: String(currentId++),
                 folder_id: week,
                 order: "4",
-                exercises: pull.exercises,
+                exercises: replaceHevyExercises(pull.exercises, hevyExercises),
             },
             {
                 ...structuredClone(legs),
                 id: String(currentId++),
                 folder_id: week,
                 order: "4",
-                exercises: legs.exercises,
+                exercises: replaceHevyExercises(legs.exercises, hevyExercises),
             },
             {
                 ...structuredClone(cardio),
                 id: String(currentId++),
                 folder_id: week,
                 order: "4",
-                exercises: cardio.exercises,
+                exercises: replaceHevyExercises(cardio.exercises, hevyExercises),
             },
         ];
 
@@ -605,9 +608,10 @@ export const buildSevenDayRoutine = (push: THevyRoutine, pull: THevyRoutine, leg
 };
 
 
-export const buildOneDayRoutine = (day: THevyRoutine, programLength: number): THevyRoutine[] => {
+export const buildOneDayRoutine = async (day: THevyRoutine, programLength: number): Promise<THevyRoutine[]> => {
 
     const routines: THevyRoutine[] = [];
+    const hevyExercises = await getHevyExercises();
 
     let currentId = 1;
 
@@ -618,7 +622,7 @@ export const buildOneDayRoutine = (day: THevyRoutine, programLength: number): TH
                 id: String(currentId++),
                 folder_id: week,
                 order: "1",
-                exercises: day.exercises,
+                exercises: replaceHevyExercises(day.exercises, hevyExercises),
             },
 
         ];
