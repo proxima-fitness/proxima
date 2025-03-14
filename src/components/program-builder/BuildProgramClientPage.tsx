@@ -6,6 +6,7 @@ import { HevyRoutine } from "./HevyRoutine";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { postTextToJson } from "@/api/edge-functions";
 import { buildFiveDayRoutine, buildOneDayRoutine, buildPushPullLegsRoutine, buildSevenDayRoutine, buildUpperLowerRoutine } from "@/utils/helpers";
+import { toast } from "sonner";
 
 interface IProps {
     search: string; // goes into AI Prompt
@@ -103,7 +104,6 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
             if (healthIssues.length > 0) {
                 prompt += healthIssues;
             }
-
             return prompt;
         };
 
@@ -116,9 +116,15 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
 
             if (Number(numberOfDaysPerWeek) % 3 === 0) {
                 // A Push / Pull / Leg Program
+                toast.info("Generating Push Day Routine");
                 const pushDay = await postTextToJson(buildPrompt() + ".Create a Push Workout",isHevy ? "hevy_routine_schema" : "program_details_schema");
+                toast.success("Push Day Generated");
+                toast.info("Generating Pull Day Routine");
                 const pullDay = await postTextToJson(buildPrompt() + ".Create a Pull Workout",isHevy ? "hevy_routine_schema" : "program_details_schema");
+                toast.success("Pull Day Generated");
+                toast.info("Generating Leg Day Routine");
                 const legDay = await postTextToJson(buildPrompt() + ".Create a Leg Workout",isHevy ? "hevy_routine_schema" : "program_details_schema");
+                toast.success("Leg Day Generated");
 
                 if (pushDay && pullDay && legDay){
                     const parsedPushDay = JSON.parse(pushDay);
@@ -139,9 +145,12 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
 
             } else if (Number(numberOfDaysPerWeek) % 3 !== 0 && Number(numberOfDaysPerWeek) % 2 === 0){
                 // An Upper / Lower Program
+                toast.info("Generating Upper Body Day Routine");
                 const upperDay = await postTextToJson(buildPrompt() + ".Create an Upper Body Workout",isHevy ? "hevy_routine_schema" : "program_details_schema");
+                toast.success("Upper Body Day Generated");
+                toast.info("Generating Lower Body Day Routine");
                 const lowerDay = await postTextToJson(buildPrompt() + ".Create an Upper Body Workout",isHevy ? "hevy_routine_schema" : "program_details_schema");
-
+                toast.success("Lower Body Day Generated");
                 if (upperDay && lowerDay){
                     const parsedUpperDay = JSON.parse(upperDay);
                     const parsedLowerDay = JSON.parse(lowerDay);
@@ -158,11 +167,21 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
 
             } else if (Number(numberOfDaysPerWeek) % 5 === 0) {
                 // Chest / Back / Legs / Shoulders / Arms
+                toast.info("Generating Chest Day Routine");
                 const chestDay = await postTextToJson(buildPrompt() + ".Create a Chest Workout",isHevy ? "hevy_routine_schema" : "program_details_schema");
+                toast.success("Chest Day Generated");
+                toast.info("Generating Back Day Routine");
                 const backDay = await postTextToJson(buildPrompt() + ".Create a Back Workout",isHevy ? "hevy_routine_schema" : "program_details_schema");
+                toast.success("Back Day Generated");
+                toast.info("Generating Leg Day Routine");
                 const legDay = await postTextToJson(buildPrompt() + ".Create an Legs Workout",isHevy ? "hevy_routine_schema" : "program_details_schema");
+                toast.success("Leg Day Generated");
+                toast.info("Generating Shoulder Day Routine");
                 const shoulderDay = await postTextToJson(buildPrompt() + ".Create a Shoulder Workout",isHevy ? "hevy_routine_schema" : "program_details_schema");
+                toast.success("Shoulder Day Generated");
+                toast.info("Generating Arm Day Routine");
                 const armDay = await postTextToJson(buildPrompt() + ".Create an Arm day Workout",isHevy ? "hevy_routine_schema" : "program_details_schema");
+                toast.success("Arm Day Generated");
 
                 if (chestDay && backDay && legDay && shoulderDay && armDay){
                     const parsedChestDay = JSON.parse(chestDay);
@@ -184,7 +203,9 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
 
             } else if (Number(numberOfDaysPerWeek) === 1) {
                 // 1 Day per week program
+                toast.info("Generating Routine");
                 const day = await postTextToJson(buildPrompt(),isHevy ? "hevy_routine_schema" : "program_details_schema");
+                toast.success("Routine Generated");
                 if (day) {
                     const parsedDay = JSON.parse(day);
 
@@ -200,11 +221,18 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
 
                 }
             } else if (Number(numberOfDaysPerWeek) === 7) {
+                toast.info("Generating Push Day Routine");
                 const pushDay = await postTextToJson(buildPrompt() + ".Create a Push Workout",isHevy ? "hevy_routine_schema" : "program_details_schema");
+                toast.success("Push Day Generated");
+                toast.info("Generating Pull Day Routine");
                 const pullDay = await postTextToJson(buildPrompt() + ".Create a Pull Workout",isHevy ? "hevy_routine_schema" : "program_details_schema");
+                toast.success("Pull Day Generated");
+                toast.info("Generating Leg Day Routine");
                 const legDay = await postTextToJson(buildPrompt() + ".Create a Leg Workout",isHevy ? "hevy_routine_schema" : "program_details_schema");
+                toast.success("Leg Day Generated");
+                toast.info("Generating Cardio Day Routine");
                 const cardioDay = await postTextToJson(buildPrompt() + ".Create a Cardio Workout",isHevy ? "hevy_routine_schema" : "program_details_schema");
-
+                toast.success("Cardio Day Generated");
                 if (pushDay && pullDay && legDay && cardioDay) {
                     const parsedPushDay = JSON.parse(pushDay);
                     const parsedPullDay = JSON.parse(pullDay);
