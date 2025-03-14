@@ -10,12 +10,12 @@ export const metadata = {
   export default function AboutPage() {
     return (
         <main className="min-h-screen px-4 py-10 bg-gray-100">
-            <h1 className="text-5xl pl-28 font-bold text-gray-900 mb-6 text-left">
+            <h1 className="text-5xl max-sm:text-3xl pl-28 max-sm:pl-0 max-sm:flex max-sm:justify-center font-bold text-gray-900 mb-6 text-left">
                 About Us
             </h1>
             <section className="mt-10 flex flex-col items-center justify-center">
                 <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1">
-                    <div className="relative h-[384px] w-[384px] group">
+                    <div className="relative h-[384px] w-[384px] max-sm:h-auto max-sm:w-full group">
                         <img
                             src={ (jack as any).src }
                             alt="Program Creator Image"
@@ -33,12 +33,12 @@ export const metadata = {
                     <div className="font-medium text-gray-500 text-md py-2">
                         FOUNDER
                     </div>
-                    <div className="w-[400px]">
+                    <div className="w-[400px] max-sm:w-full">
                         Jack was a Software Engineer before creating Proxima, and an avid lifter with a Bench Press PR of 240lbs. Jack enjoys weightlifting and playing with his two rescue puppies.
                     </div>
                 </div>
             </section>
-            <section className="py-8 px-32">
+            <section className="py-8 px-32 max-sm:px-0">
                 <p className="text-lg font-bold text-gray-700 leading-8">
                     Our Story: From Setbacks to Strength
                 </p>

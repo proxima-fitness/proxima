@@ -149,7 +149,6 @@ interface IsHevyContextType {
 
 type TProgramPage = {
     program: TProgram[];
-    thumbnail: Blob;
     schedule: TProgramDetails[];
 }
 

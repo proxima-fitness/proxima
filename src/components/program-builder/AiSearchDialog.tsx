@@ -84,11 +84,11 @@ export const AiSearchDialog: React.FC = () => {
     return (
         <Dialog>
             <span className="flex items-center justify-center">
-                <DialogTrigger className="xl:my-[450px] max-sm:my-[50px] lg:my-[250px] h-[60px] text-white rounded-xl w-[200px] bg-lightSecondary font-main uppercase flex items-center justify-center gap-4"><PlayIcon />Start</DialogTrigger>
+                <DialogTrigger className="xl:my-[450px] max-sm:my-[200px] lg:my-[250px] h-[60px] text-white rounded-xl w-[200px] bg-lightSecondary font-main uppercase flex items-center justify-center gap-4"><PlayIcon />Start</DialogTrigger>
             </span>
-            <DialogContent hideClose className="max-w-5xl w-full">
+            <DialogContent hideClose className="max-w-5xl overflow-y-auto w-full max-sm:max-h-[90%]">
                 <DialogTitle>
-                    <span className="flex flex-row gap-2">
+                    <span className="flex flex-row max-sm:flex-col max-sm:items-end gap-2">
                         <Input autoFocus value={ search } onChange={ (event) => setSearch(event.target.value) } startIcon={ SearchIcon } placeholder="Tell me about your ideal program..." />
                         <Link
                             target="_self"
@@ -115,7 +115,7 @@ export const AiSearchDialog: React.FC = () => {
                 </DialogDescription>
                 { advancedSettingsOpen &&
                     <span className="flex flex-row justify-between gap-5">
-                        <span className="grid grid-cols-2 gap-5 flex-grow-[2] basis-2/3 pr-4 border-r-2">
+                        <span className="grid grid-cols-2 max-sm:grid-cols-1 max-sm:basis-3/3 gap-5 flex-grow-[2] basis-2/3 pr-4 border-r-2">
                             <Select value={ sex } onValueChange={ (value) => setSex(value) }>
                                 <SelectTrigger autoFocus className="h-10">
                                     <SelectValue placeholder="Sex" />

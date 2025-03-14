@@ -10,7 +10,7 @@ export const Navbar: React.FC = () => {
     return (
         <nav className="w-full flex py-2 justify-between items-center navbar">
             <Link href={ "/" } >
-                <img src={ (proxima_logo as any).src } alt="Proxima Logo" className="h-[50px] w-[auto]" />
+                <img src={ (proxima_logo as any).src } alt="Proxima Logo" className="max-sm:hidden h-[50px] w-[auto]" />
             </Link>
 
             <ul className="list-none sm:flex hidden justify-end items-center flex-1 z-[6]">
@@ -42,8 +42,6 @@ export const Navbar: React.FC = () => {
             </ul>
             <div className="sm:hidden flex flex-1 justify-end items-center">
                 <NavDrawer />
-                <div>
-                </div>
             </div>
         </nav>
   );

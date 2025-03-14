@@ -11,7 +11,7 @@ export const ProgramOverviewCard: React.FC<IProps> = (props) => {
     } = props;
 
     return (
-        <Card className="py-4 pl-4 bg-gray-100">
+        <Card className="max-sm:mb-8 py-4 pl-4 bg-gray-100">
             <div className="text-xl uppercase pb-2">
                 Program overview
             </div>
@@ -20,7 +20,7 @@ export const ProgramOverviewCard: React.FC<IProps> = (props) => {
             </div>
             <div className="flex flex-col gap-4 pt-4">
                 <div className="border-b-2 border-gray-200 flex flex-row justify-start items-center">
-                    <div className="w-[25%] ">
+                    <div className="max-sm:hidden w-[25%] ">
                         Program Length
                     </div>
                     <div className="">
@@ -28,7 +28,7 @@ export const ProgramOverviewCard: React.FC<IProps> = (props) => {
                     </div>
                 </div>
                 <div className="border-b-2 border-gray-200 flex flex-row justify-start items-center">
-                    <div className="w-[25%]">
+                    <div className="max-sm:hidden w-[25%]">
                         Program Description
                     </div>
                     <div className="w-[75%]">
@@ -36,7 +36,7 @@ export const ProgramOverviewCard: React.FC<IProps> = (props) => {
                     </div>
                 </div>
                 <div className="border-b-2 border-gray-200 flex flex-row justify-start items-center">
-                    <div className="w-[25%] ">
+                    <div className="max-sm:hidden w-[25%]">
                         Workout Duration
                     </div>
                     <div className="w-[75%]">
@@ -44,7 +44,7 @@ export const ProgramOverviewCard: React.FC<IProps> = (props) => {
                     </div>
                 </div>
                 <div className="border-b-2 border-gray-200 flex flex-row justify-start items-center">
-                    <div className="w-[25%] ">
+                    <div className="max-sm:hidden w-[25%]">
                         Equipment
                     </div>
                     <div className="w-[75%]">
@@ -52,7 +52,7 @@ export const ProgramOverviewCard: React.FC<IProps> = (props) => {
                     </div>
                 </div>
                 <div className="border-b-2 border-gray-200 flex flex-row justify-start items-center">
-                    <div className="w-[25%] ">
+                    <div className="max-sm:hidden w-[25%]">
                         Specialization
                     </div>
                     <div className="w-[75%]">
@@ -60,7 +60,7 @@ export const ProgramOverviewCard: React.FC<IProps> = (props) => {
                     </div>
                 </div>
                 <div className="flex flex-row justify-start items-center">
-                    <div className="w-[25%] ">
+                    <div className="max-sm:hidden w-[25%]">
                         Difficulty
                     </div>
                     <div className="w-[75%]">

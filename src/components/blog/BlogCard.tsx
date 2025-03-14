@@ -13,7 +13,7 @@ export const BlogCard: React.FC<IProps> = (props) => {
     } = props;
 
     return (
-        <div key={ blog.id } className="py-8 border-b border-gray-300 flex flex-row items-center justify-between">
+        <div key={ blog.id } className="py-8 border-b border-gray-300 max-sm:flex-col max-sm:gap-4 flex flex-row items-center justify-between">
             <div className="flex-[3] pr-4">
                 <div className="font-bold pb-2 text-3xl">
                     { blog.title }
@@ -28,7 +28,6 @@ export const BlogCard: React.FC<IProps> = (props) => {
             <div className="flex-[1]">
                 <img alt={ `${blog.title} Image` } className="h-[200px] w-[200px] rounded-lg" src={ blog.image_url }></img>
             </div>
-
         </div>
     );
 };

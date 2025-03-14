@@ -1,5 +1,5 @@
 import App from '@/App';
-import '../../index.css';
+import "../../styles/global.css";
 
 export function generateStaticParams() {
   return [{ slug: [''] }];

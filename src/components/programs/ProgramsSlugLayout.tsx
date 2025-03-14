@@ -14,7 +14,7 @@ export const ProgramsSlugLayout: FC<IProps> =  async (props) => {
 
     const { id } = props;
     // eslint-disable-next-line
-    const program: TProgramPage | null = await useProgramByIdSSR(id);
+    const program: TProgramPage | undefined = await useProgramByIdSSR(id);
     // eslint-disable-next-line
     const fullName = await useUserFullNameSSR(id, "program");
     // eslint-disable-next-line
@@ -31,6 +31,7 @@ export const ProgramsSlugLayout: FC<IProps> =  async (props) => {
             <div className="grid grid-cols-3 max-sm:grid-cols-1 gap-12 max-sm:gap-0 pb-8">
                 { program && fullName && programCreatorMetadata &&
                     <ProgramDetails
+                        id={ id }
                         program={ program }
                         fullName={ fullName }
                         programCreatorMetadata={ programCreatorMetadata }

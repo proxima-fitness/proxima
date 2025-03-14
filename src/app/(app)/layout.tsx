@@ -8,10 +8,13 @@ import styles from '@/style';
 import type { Metadata } from 'next';
 import { Toaster } from "@/components/ui/sonner";
 import { IsHevyProvider } from "@/contexts/HevyContext";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
+import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
-  title: 'Proxima Fitness | AI Workout Builder & Program Directory',
-  description: 'Proxima Fitness is an AI Workout Builder and Programs Directory. This is the Proxima Landing page, where you can sign in to the Proxima Web builder and get started building programs right away, or download the Proxima Fitness App on the App Store or Play Store',
+    title: 'Proxima Fitness | AI Workout Builder & Program Directory',
+    description: 'Proxima Fitness is an AI Workout Builder and Programs Directory. This is the Proxima Landing page, where you can sign in to the Proxima Web builder and get started building programs right away, or download the Proxima Fitness App on the App Store or Play Store',
 };
 
 const russo_one = Russo_One({
@@ -39,28 +42,34 @@ export default function RootLayout({
                 <meta name="theme-color" content="#000000" />
             </head>
             <body>
-                <div className="bg-primary w-full overflow-hidden">
-                    <div className={ `${styles.paddingXNav} ${styles.flexCenter}` }>
-                        <div className={ `${styles.boxWidth}` }>
-                            <IsHevyProvider>
-                                <Navbar />
-                            </IsHevyProvider>
+                <SidebarProvider>
+                    <div className="max-sm:block hidden">
+                        <AppSidebar />
+                    </div>
+                    <div className="bg-primary w-full overflow-hidden">
+                        <div className={ `${styles.paddingXNav} ${styles.flexCenter}` }>
+                            <div className={ `${styles.boxWidth}` }>
+                                <IsHevyProvider>
+                                    <Navbar />
+                                </IsHevyProvider>
+                            </div>
+                        </div>
+                        <main id="root">
+                            <QueryProvider>
+                                <IsHevyProvider>
+                                    <Analytics />
+                                    {children}
+                                </IsHevyProvider>
+                                <Toaster richColors />
+                            </QueryProvider>
+                        </main>
+                        <div className={ `bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
+                            <div className={ `${styles.boxWidth}` }>
+                                <Footer />
+                            </div>
                         </div>
                     </div>
-                    <main id="root">
-                        <QueryProvider>
-                            <IsHevyProvider>
-                                {children}
-                            </IsHevyProvider>
-                            <Toaster richColors />
-                        </QueryProvider>
-                    </main>
-                    <div className={ `bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
-                        <div className={ `${styles.boxWidth}` }>
-                            <Footer />
-                        </div>
-                    </div>
-                </div>
+                </SidebarProvider>
             </body>
         </html>
     );

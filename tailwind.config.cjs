@@ -10,8 +10,8 @@ module.exports = {
 	}
   },
   theme: {
-	extend: {
-		colors: {
+  	extend: {
+  		colors: {
 			primary: "#00040f",
 			secondary: "#00f6ff",
 			lightSecondary: "#33bbcf",
@@ -57,9 +57,19 @@ module.exports = {
 				'3': 'hsl(var(--chart-3))',
 				'4': 'hsl(var(--chart-4))',
 				'5': 'hsl(var(--chart-5))'
-			}
-		},
-		fontFamily: {
+			},
+  			sidebar: {
+  				DEFAULT: 'hsl(var(--sidebar-background))',
+  				foreground: 'hsl(var(--sidebar-foreground))',
+  				primary: 'hsl(var(--sidebar-primary))',
+  				'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
+  				accent: 'hsl(var(--sidebar-accent))',
+  				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
+  				border: 'hsl(var(--sidebar-border))',
+  				ring: 'hsl(var(--sidebar-ring))'
+  			}
+  		},
+  		fontFamily: {
 			main: [
 				'Russo One'
 			],
@@ -73,8 +83,8 @@ module.exports = {
 			md: 'calc(var(--radius) - 2px)',
 			sm: 'calc(var(--radius) - 4px)'
 		}
-	},
-	screens: {
+  	},
+  	screens: {
 		xs: '480px',
 		ss: '620px',
 		sm: '768px',

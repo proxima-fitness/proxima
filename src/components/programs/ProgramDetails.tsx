@@ -1,4 +1,3 @@
-import { ProgramThumbnail } from "./ProgramThumbnail";
 import { Card } from "../ui/card";
 import { ProgramOverviewCard } from "./ProgramOverviewCard";
 import {
@@ -8,8 +7,10 @@ import {
 } from "@/components/ui/hover-card";
 import { CalendarIcon } from "lucide-react";
 import { convertSupabaseDateToReadable } from "@/utils/helpers";
+import { ProgramThumbnail } from "./ProgramThumbnail";
 
 interface IProps {
+    id: string;
     program: TProgramPage;
     fullName: string;
     programCreatorMetadata: TUserDetails;
@@ -19,6 +20,7 @@ interface IProps {
 export const ProgramDetails: React.FC<IProps> = (props) => {
 
     const {
+        id,
         program,
         fullName,
         programCreatorMetadata,
@@ -28,7 +30,7 @@ export const ProgramDetails: React.FC<IProps> = (props) => {
     return (
         <div className="col-span-2 flex flex-col gap-8">
             <div>
-                <ProgramThumbnail thumbnail={ program.thumbnail } />
+                <ProgramThumbnail id={ id } />
             </div>
             <Card className="py-4 pl-4 bg-gray-100">
                 <div className="text-xl uppercase pb-2">

@@ -1,22 +1,33 @@
 "use client";
 
+import { useProgramThumbnail } from "@/api/hooks";
+
 interface IProps {
-    thumbnail: Blob
+    id: string;
 }
 
 export const ProgramThumbnail: React.FC<IProps> = (props) => {
 
     const {
-        thumbnail,
+        id,
     } = props;
+
+    console.log("id:",id);
+
+    const { data: thumbnail, isLoading: loadingThumbnail } = useProgramThumbnail(id);
 
     return (
         <>
-            <img
-                className="rounded-lg object-cover h-[350px] w-full"
-                alt="Program Thumbnail"
-                src={ URL.createObjectURL(thumbnail) }
-            />
+            { loadingThumbnail ?
+                <div className="rounded-lg object-cover h-[350px] w-full">
+                </div>
+            : thumbnail !== undefined &&
+                <img
+                    className="rounded-lg object-cover h-[350px] w-full"
+                    alt="Program Thumbnail"
+                    src={ URL.createObjectURL(thumbnail) }
+                />
+            }
         </>
     );
 };
