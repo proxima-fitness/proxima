@@ -6,7 +6,7 @@ import { HevyRoutine } from "./HevyRoutine";
 import { ProximaProgram } from "./ProximaProgram";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { postTextToJson } from "@/api/edge-functions";
-import { sortWorkouts } from "@/utils/helpers";
+import { cleanIds, reorderHevy, sortWorkouts } from "@/utils/helpers";
 
 interface IProps {
     decodedQuery: string;
@@ -26,8 +26,10 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
 
     const { isHevy } = useIsHevy();
 
+
     useEffect(() => {
         const aiGenerateProgram = async () => {
+            console.log("TRIGGERED aiGenerateProgram");
             const ai_schema = await postTextToJson(decodedQuery,isHevy ? "hevy_routine_schema" : "program_details_schema");
             if (ai_schema) {
                 const parsedSchema = JSON.parse(ai_schema);
@@ -48,7 +50,7 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
             { generating ?
                 <BuildProgramSkeleton />
             : (isHevy && routine !== undefined) ?
-                <HevyRoutine program={ routine.routines } />
+                <HevyRoutine program={ cleanIds(reorderHevy(routine.routine)) } />
             : (!isHevy && program !== undefined) &&
                 <div></div>
                 // <ProximaProgram program={ sortWorkouts(program.schedule_workouts) } />

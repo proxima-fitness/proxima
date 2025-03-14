@@ -51,7 +51,7 @@ type TExercise = {
 // to represent weeks in a program
 
 type THevyRoutineAIResponse = {
-    routines: THevyRoutine[];
+    routine: THevyRoutine[];
 };
 
 

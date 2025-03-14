@@ -345,6 +345,15 @@ export const reorderHevy = (routines: THevyRoutine[]): THevyRoutine[] => {
     return updatedRoutines;
 };
 
+// Clean IDs after AI fetch
+export const cleanIds = (routines: THevyRoutine[]): THevyRoutine[] => {
+    return routines.map((routine, index) => ({
+      ...routine,
+      id: (index + 1).toString(),
+    } ) );
+};
+
+
 export const removeOrderHevy = (routines: THevyRoutine[]): Omit<THevyRoutine, 'order'>[] => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return routines?.map(({ order, ...rest }) => rest);

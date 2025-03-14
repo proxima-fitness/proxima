@@ -1,6 +1,7 @@
 "use client";
 
 import { useProgramThumbnail } from "@/api/hooks";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface IProps {
     id: string;
@@ -12,15 +13,13 @@ export const ProgramThumbnail: React.FC<IProps> = (props) => {
         id,
     } = props;
 
-    console.log("id:",id);
-
     const { data: thumbnail, isLoading: loadingThumbnail } = useProgramThumbnail(id);
 
     return (
         <>
             { loadingThumbnail ?
-                <div className="rounded-lg object-cover h-[350px] w-full">
-                </div>
+                <Skeleton className="rounded-lg object-cover h-[350px] w-full">
+                </Skeleton>
             : thumbnail !== undefined &&
                 <img
                     className="rounded-lg object-cover h-[350px] w-full"
