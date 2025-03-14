@@ -335,7 +335,7 @@ export const buildPushPullLegsRoutine = async (push: THevyRoutine, pull: THevyRo
     let currentId = 1;
 
     if (numberOfDaysPerWeek === 3) {
-        for (let week = 0; week <= programLength; week++) {
+        for (let week = 0; week < programLength; week++) {
             const weekRoutines = [
                 {
                     ...structuredClone(push),
@@ -363,7 +363,7 @@ export const buildPushPullLegsRoutine = async (push: THevyRoutine, pull: THevyRo
           routines.push(...weekRoutines);
         }
     } else if (numberOfDaysPerWeek === 6) {
-        for (let week = 0; week <= programLength; week++) {
+        for (let week = 0; week < programLength; week++) {
             const weekRoutines = [
                 {
                     ...structuredClone(push),
@@ -425,7 +425,7 @@ export const buildUpperLowerRoutine = async (upper: THevyRoutine, lower: THevyRo
     let currentId = 1;
 
     if (numberOfDaysPerWeek === 2) {
-        for (let week = 0; week <= programLength; week++) {
+        for (let week = 0; week < programLength; week++) {
             const weekRoutines = [
                 {
                     ...structuredClone(upper),
@@ -447,7 +447,7 @@ export const buildUpperLowerRoutine = async (upper: THevyRoutine, lower: THevyRo
           routines.push(...weekRoutines);
         }
     } else if (numberOfDaysPerWeek === 4) {
-        for (let week = 0; week <= programLength; week++) {
+        for (let week = 0; week < programLength; week++) {
             const weekRoutines = [
                 {
                     ...structuredClone(upper),
@@ -495,7 +495,7 @@ export const buildFiveDayRoutine = async (chest: THevyRoutine, back: THevyRoutin
 
     let currentId = 1;
 
-    for (let week = 0; week <= programLength; week++) {
+    for (let week = 0; week < programLength; week++) {
         const weekRoutines = [
             {
                 ...structuredClone(chest),
@@ -548,7 +548,7 @@ export const buildSevenDayRoutine = async (push: THevyRoutine, pull: THevyRoutin
 
     let currentId = 1;
 
-    for (let week = 0; week <= programLength; week++) {
+    for (let week = 0; week < programLength; week++) {
         const weekRoutines = [
             {
                 ...structuredClone(push),
@@ -615,7 +615,7 @@ export const buildOneDayRoutine = async (day: THevyRoutine, programLength: numbe
 
     let currentId = 1;
 
-    for (let week = 0; week <= programLength; week++) {
+    for (let week = 0; week < programLength; week++) {
         const weekRoutines = [
             {
                 ...structuredClone(day),
