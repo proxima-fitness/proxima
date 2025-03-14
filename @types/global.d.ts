@@ -50,6 +50,11 @@ type TExercise = {
 // Except the routine folders will have to be labeled and organized programmatically
 // to represent weeks in a program
 
+type THevyRoutineAIResponse = {
+    routine: THevyRoutine;
+};
+
+
 type THevyRoutineFolder = {
     id: number; // The routine folder ID
     index: number; // The routine folder index. Describes the order of the folder in the list.

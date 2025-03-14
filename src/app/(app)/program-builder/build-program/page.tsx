@@ -5,23 +5,35 @@ export const metadata = {
     description: "Edit your custom program",
   };
 
-export default async function BuildProgram({ searchParams }: {searchParams: Promise<{ [key: string]: string | string[] | undefined }>}) {
+export default async function BuildProgram({ searchParams }: {searchParams: Promise<{ [key: string]: string | undefined }>}) {
 
-    const encodedQuery = (await searchParams).aiQueryBuilder as string;
+    const queryParams = await searchParams;
 
-    let decodedQuery = "";
-
-    if (encodedQuery) {
-        try {
-            decodedQuery = JSON.parse(decodeURIComponent(encodedQuery));
-        } catch (e) {
-            console.error("Failed to parse AI query", e);
-        }
+    if (queryParams["sex"]) {
+        console.log("EXISTS:", queryParams["sex"]);
     }
 
     return (
         <div className={ `bg-white min-h-[1000px] overflow-x-scroll` }>
-            <BuildProgramClientPage decodedQuery={ decodedQuery } />
+            <BuildProgramClientPage
+                search={ queryParams?.["search"] ?? "" }
+                sex={ queryParams?.["sex"] ?? "" }
+                age={ queryParams?.["age"] ?? "" }
+                daysPerWeek={ queryParams?.["daysPerWeek"] ?? "" }
+                specificDays={ queryParams?.["specificDays"] ?? "" }
+                programLength={ queryParams?.["programLength"] ?? "" }
+                workoutDuration={ queryParams?.["workoutDuration"] ?? "" }
+                activityLevel={ queryParams?.["activityLevel"] ?? "" }
+                goals={ queryParams?.["goals"] ?? "" }
+                specialization={ queryParams?.["specialization"] ?? "" }
+                equipment={ queryParams?.["equipment"] ?? "" }
+                focusAreas={ queryParams?.["focusAreas"] ?? "" }
+                difficultyLevel={ queryParams?.["difficultyLevel"] ?? "" }
+                excludeAreas={ queryParams?.["excludeAreas"] ?? "" }
+                excludeEquipment={ queryParams?.["excludeEquipment"] ?? "" }
+                excludeSpecializations={ queryParams?.["excludeSpecializations"] ?? "" }
+                healthIssues={ queryParams?.["healthIssues"] ?? "" }
+            />
         </div>
     );
 }

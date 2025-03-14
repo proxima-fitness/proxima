@@ -15,7 +15,7 @@ export const DropIndicator: React.FC<IProps> = (props) => {
         <div
             data-before={ beforeId || "-1" }
             data-column={ weekOrder }
-            className="my-0.5 h-0.5 w-full bg-secondary opacity-0"
+            className="my-0.5 h-1 w-full rounded-2xl bg-lightSecondary opacity-0"
         />
     );
 };
