@@ -324,6 +324,311 @@ export const reorder = (days: TProgramCreatorDay[]) => {
     return days;
 };
 
+// Turns one routine returned from AI into a program
+// Turns one routine returned from AI into a program
+export const buildPushPullLegsRoutine = (push: THevyRoutine, pull: THevyRoutine, legs: THevyRoutine, programLength: number, numberOfDaysPerWeek: number): THevyRoutine[] => {
+
+    const routines: THevyRoutine[] = [];
+
+    let currentId = 1;
+
+    if (numberOfDaysPerWeek === 3) {
+        for (let week = 0; week <= programLength; week++) {
+            const weekRoutines = [
+                {
+                    ...structuredClone(push),
+                    id: String(currentId++),
+                    folder_id: week,
+                    order: "1",
+                    exercises: push.exercises,
+                },
+                {
+                    ...structuredClone(pull),
+                    id: String(currentId++),
+                    folder_id: week,
+                    order: "2",
+                    exercises: pull.exercises,
+                },
+                {
+                    ...structuredClone(legs),
+                    id: String(currentId++),
+                    folder_id: week,
+                    order: "3",
+                    exercises: legs.exercises,
+                },
+            ];
+
+          routines.push(...weekRoutines);
+        }
+    } else if (numberOfDaysPerWeek === 6) {
+        for (let week = 0; week <= programLength; week++) {
+            const weekRoutines = [
+                {
+                    ...structuredClone(push),
+                    id: String(currentId++),
+                    folder_id: week,
+                    order: "1",
+                    exercises: push.exercises,
+                },
+                {
+                    ...structuredClone(pull),
+                    id: String(currentId++),
+                    folder_id: week,
+                    order: "2",
+                    exercises: pull.exercises,
+                },
+                {
+                    ...structuredClone(legs),
+                    id: String(currentId++),
+                    folder_id: week,
+                    order: "3",
+                    exercises: legs.exercises,
+                },
+                {
+                    ...structuredClone(push),
+                    id: String(currentId++),
+                    folder_id: week,
+                    order: "4",
+                    exercises: push.exercises,
+                },
+                {
+                    ...structuredClone(pull),
+                    id: String(currentId++),
+                    folder_id: week,
+                    order: "5",
+                    exercises: pull.exercises,
+                },
+                {
+                    ...structuredClone(legs),
+                    id: String(currentId++),
+                    folder_id: week,
+                    order: "6",
+                    exercises: legs.exercises,
+                },
+            ];
+
+          routines.push(...weekRoutines);
+        }
+
+    }
+
+    return routines;
+};
+
+export const buildUpperLowerRoutine = (upper: THevyRoutine, lower: THevyRoutine, programLength: number, numberOfDaysPerWeek: number): THevyRoutine[] => {
+
+    const routines: THevyRoutine[] = [];
+
+    let currentId = 1;
+
+    if (numberOfDaysPerWeek === 2) {
+        for (let week = 0; week <= programLength; week++) {
+            const weekRoutines = [
+                {
+                    ...structuredClone(upper),
+                    id: String(currentId++),
+                    folder_id: week,
+                    order: "1",
+                    exercises: upper.exercises,
+                },
+                {
+                    ...structuredClone(lower),
+                    id: String(currentId++),
+                    folder_id: week,
+                    order: "2",
+                    exercises: lower.exercises,
+                },
+
+            ];
+
+          routines.push(...weekRoutines);
+        }
+    } else if (numberOfDaysPerWeek === 4) {
+        for (let week = 0; week <= programLength; week++) {
+            const weekRoutines = [
+                {
+                    ...structuredClone(upper),
+                    id: String(currentId++),
+                    folder_id: week,
+                    order: "1",
+                    exercises: upper.exercises,
+                },
+                {
+                    ...structuredClone(lower),
+                    id: String(currentId++),
+                    folder_id: week,
+                    order: "2",
+                    exercises: lower.exercises,
+                },
+                {
+                    ...structuredClone(upper),
+                    id: String(currentId++),
+                    folder_id: week,
+                    order: "3",
+                    exercises: upper.exercises,
+                },
+                {
+                    ...structuredClone(lower),
+                    id: String(currentId++),
+                    folder_id: week,
+                    order: "4",
+                    exercises: lower.exercises,
+                },
+
+            ];
+
+          routines.push(...weekRoutines);
+        }
+    }
+
+    return routines;
+};
+
+
+export const buildFiveDayRoutine = (chest: THevyRoutine, back: THevyRoutine, legs: THevyRoutine, shoulders: THevyRoutine, arms: THevyRoutine, programLength: number): THevyRoutine[] => {
+
+    const routines: THevyRoutine[] = [];
+
+    let currentId = 1;
+
+    for (let week = 0; week <= programLength; week++) {
+        const weekRoutines = [
+            {
+                ...structuredClone(chest),
+                id: String(currentId++),
+                folder_id: week,
+                order: "1",
+                exercises: chest.exercises,
+            },
+            {
+                ...structuredClone(back),
+                id: String(currentId++),
+                folder_id: week,
+                order: "2",
+                exercises: back.exercises,
+            },
+            {
+                ...structuredClone(legs),
+                id: String(currentId++),
+                folder_id: week,
+                order: "3",
+                exercises: legs.exercises,
+            },
+            {
+                ...structuredClone(shoulders),
+                id: String(currentId++),
+                folder_id: week,
+                order: "4",
+                exercises: shoulders.exercises,
+            },
+            {
+                ...structuredClone(arms),
+                id: String(currentId++),
+                folder_id: week,
+                order: "4",
+                exercises: arms.exercises,
+            },
+        ];
+
+        routines.push(...weekRoutines);
+    }
+
+    return routines;
+};
+
+
+export const buildSevenDayRoutine = (push: THevyRoutine, pull: THevyRoutine, legs: THevyRoutine, cardio: THevyRoutine, programLength: number): THevyRoutine[] => {
+
+    const routines: THevyRoutine[] = [];
+
+    let currentId = 1;
+
+    for (let week = 0; week <= programLength; week++) {
+        const weekRoutines = [
+            {
+                ...structuredClone(push),
+                id: String(currentId++),
+                folder_id: week,
+                order: "1",
+                exercises: push.exercises,
+            },
+            {
+                ...structuredClone(pull),
+                id: String(currentId++),
+                folder_id: week,
+                order: "2",
+                exercises: pull.exercises,
+            },
+            {
+                ...structuredClone(legs),
+                id: String(currentId++),
+                folder_id: week,
+                order: "3",
+                exercises: legs.exercises,
+            },
+            {
+                ...structuredClone(push),
+                id: String(currentId++),
+                folder_id: week,
+                order: "4",
+                exercises: push.exercises,
+            },
+            {
+                ...structuredClone(pull),
+                id: String(currentId++),
+                folder_id: week,
+                order: "4",
+                exercises: pull.exercises,
+            },
+            {
+                ...structuredClone(legs),
+                id: String(currentId++),
+                folder_id: week,
+                order: "4",
+                exercises: legs.exercises,
+            },
+            {
+                ...structuredClone(cardio),
+                id: String(currentId++),
+                folder_id: week,
+                order: "4",
+                exercises: cardio.exercises,
+            },
+        ];
+
+        routines.push(...weekRoutines);
+    }
+
+    return routines;
+};
+
+
+export const buildOneDayRoutine = (day: THevyRoutine, programLength: number): THevyRoutine[] => {
+
+    const routines: THevyRoutine[] = [];
+
+    let currentId = 1;
+
+    for (let week = 0; week <= programLength; week++) {
+        const weekRoutines = [
+            {
+                ...structuredClone(day),
+                id: String(currentId++),
+                folder_id: week,
+                order: "1",
+                exercises: day.exercises,
+            },
+
+        ];
+
+        routines.push(...weekRoutines);
+    }
+
+    return routines;
+};
+
+
+
 // Re-orders the day order field on the Hevy routine program
 export const reorderHevy = (routines: THevyRoutine[]): THevyRoutine[] => {
     // Group routines by folder_id
@@ -344,15 +649,6 @@ export const reorderHevy = (routines: THevyRoutine[]): THevyRoutine[] => {
 
     return updatedRoutines;
 };
-
-// Clean IDs after AI fetch
-export const cleanIds = (routines: THevyRoutine[]): THevyRoutine[] => {
-    return routines.map((routine, index) => ({
-      ...routine,
-      id: (index + 1).toString(),
-    } ) );
-};
-
 
 export const removeOrderHevy = (routines: THevyRoutine[]): Omit<THevyRoutine, 'order'>[] => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

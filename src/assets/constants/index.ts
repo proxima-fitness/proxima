@@ -6576,7 +6576,7 @@ export const coolQuotes: TQuote[] = [
     { quote: "Swole is the goal, size is the prize, it's gain o'clock MF ... LET'S GO", author: "Robert Frank"},
     { quote: "The Iron never lies to you. You can walk outside and listen to all kinds of talk, get told that you're a god or a total bastard. The Iron will always kick you the real deal. The Iron is the great reference point, the all-knowing perspective giver. Always there like a beacon in the pitch black. I have found the Iron to be my greatest friend. It never freaks out on me, never runs. Friends may come and go. But two hundred pounds is always two hundred pounds.", author: "Henry Rollins"},
     { quote: "You can't sculpt a pebble", author: "Unknown" },
-    { quote: "If you're gonna wear gloves while you lift, just make sure they match your purse", author: "Unkown"},
+    { quote: "If you're gonna wear gloves while you lift, just make sure they match your purse", author: "Unknown"},
     { quote: "Don't move the weight, work the muscle", author: "Unknown"},
     { quote: "Live an extraordinary life… Don’t settle for an ordinary life… It’s easy to be ordinary anybody can do that. Find your magnificent obsession. Whatever it is and let nothing or no one tell you that you can’t do it. Tell them to sit back and watch me. Just sit back and watch me do it. Find your obsession go after that… I could care less what anybody else says and don’t let anything stop you from getting it.", author: "CT Fletcher"},
     { quote: "Man cannot remake himself without Suffering, for he is both the Marble and the Sculptor", author: "Alexis Carrel" },

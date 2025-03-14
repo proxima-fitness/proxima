@@ -55,30 +55,27 @@ export const AiSearchDialog: React.FC = () => {
     }, [workoutSchema, setIsHevy]);
 
 
-    const handleUpdateAiQueryBuilder = () => {
-        const sexSentence = sex.length > 0 ? `I am a ${sex}.` : "";
-        const ageSentence = age.length > 0 ? `I am ${age} years old.` : "";
-        const daysPerWeekSentence = daysPerWeek.length > 0 ? `I want to go to the gym ${daysPerWeek} days per week.` : "";
-        const specificDaysSentence = specificDays.length > 0 ? `The days I will go are ${specificDays.map(option => option.value).join(', ')}.` : "";
-        const programLengthSentence = programLength.length > 0 ? `The program will be ${programLength} weeks long.` : "";
-        const workoutDurationSentence = workoutDuration.length > 0 ? `A typical session should last ${workoutDuration} minutes.` : "";
-        const activityLevelSentence = activityLevel.length > 0 ? `I am a ${activityLevel} person.` : "";
-        const goalsSentence = goals.length > 0 ? `My goals are to ${goals.map(option => option.value).join(', ')}.` : "";
-        const specializationSentence = specialization.length > 0 ? `My specializations are ${specialization.map(option => option.value).join(', ')}.` : "";
-        const equipmentSentence = equipment.length > 0 ? `My available equipment is ${equipment.map(option => option.value).join(', ')}.` : "";
-        const focusAreasSentence = focusAreas.length > 0 ? `My focus areas are ${focusAreas.map(option => option.value).join(', ')}.` : "";
-        const difficultyLevelSentence = difficultyLevel.length > 0 ? `My desired difficulty level is ${difficultyLevel.map(option => option.value).join(', ')}.` : "";
-        const excludeAreasSentence = excludeAreas.length > 0 ? `I want to exclude these areas: ${excludeAreas.map(option => option.value).join(', ')}.` : "";
-        const excludeEquipmentSentence = excludeEquipment.length > 0 ? `I want to exclude these equipment: ${excludeEquipment.map(option => option.value).join(', ')}.` : "";
-        const excludeSpecializationsSentence = excludeSpecializations.length > 0 ? `I want to exclude these specializations: ${excludeSpecializations.map(option => option.value).join(', ')}.` : "";
-        const healthIssuesSentence = healthIssues.length > 0 ? `I have these health issues: ${healthIssues.map(option => option.value).join(', ')}` : "";
+    const handleDefineQueryParams = () => {
+            const params = new URLSearchParams();
+            if (search) params.append("search", search);
+            if (sex) params.append("sex", sex);
+            if (age) params.append("age", age);
+            if (daysPerWeek) params.append("daysPerWeek", daysPerWeek);
+            if (specificDays.length > 0) params.append("specificDays", (specificDays.map(option => option.value).join(', ')));
+            if (programLength) params.append("programLength", programLength);
+            if (workoutDuration) params.append("workoutDuration", workoutDuration);
+            if (activityLevel) params.append("activityLevel", activityLevel);
+            if (goals.length > 0) params.append("goals", JSON.stringify(goals));
+            if (specialization.length > 0) params.append("specialization", (specialization.map(option => option.value).join(', ')));
+            if (equipment.length > 0) params.append("equipment", (equipment.map(option => option.value).join(', ')));
+            if (focusAreas.length > 0) params.append("focusAreas", (focusAreas.map(option => option.value).join(', ')));
+            if (difficultyLevel.length > 0) params.append("difficultyLevel", (difficultyLevel.map(option => option.value).join(', ')));
+            if (excludeAreas.length > 0) params.append("excludeAreas", (excludeAreas.map(option => option.value).join(', ')));
+            if (excludeEquipment.length > 0) params.append("excludeEquipment", (excludeEquipment.map(option => option.value).join(', ')));
+            if (excludeSpecializations.length > 0) params.append("excludeSpecializations", (excludeSpecializations.map(option => option.value).join(', ')));
+            if (healthIssues.length > 0) params.append("healthIssues", (healthIssues.map(option => option.value).join(', ')));
 
-        const queryData = (search + "." + sexSentence + ageSentence + daysPerWeekSentence + specificDaysSentence +
-        programLengthSentence + workoutDurationSentence + activityLevelSentence + goalsSentence +
-        specializationSentence + equipmentSentence + focusAreasSentence + difficultyLevelSentence +
-        excludeAreasSentence + excludeEquipmentSentence + excludeSpecializationsSentence + healthIssuesSentence);
-        const queryString = encodeURIComponent(JSON.stringify(queryData));
-        return queryString;
+            return params.toString();
     };
 
     return (
@@ -93,7 +90,7 @@ export const AiSearchDialog: React.FC = () => {
                         <Link
                             target="_self"
                             rel="noopener noreferrer"
-                            href={ `/program-builder/build-program?aiQueryBuilder=${handleUpdateAiQueryBuilder()}` }
+                            href={ `/program-builder/build-program?${handleDefineQueryParams()}` }
                         >
                             <Button className="w-[auto] h-[auto] bg-[#33bbcf] text-white">
                                 <SparklesIcon /> Build
