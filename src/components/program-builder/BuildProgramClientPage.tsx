@@ -131,7 +131,8 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
                         pl = "12";
                     }
 
-                    const ppl = buildPushPullLegsRoutine(parsedPushDay.routine, parsedPullDay.routine, parsedLegDay.routine, Number(pl), Number(numberOfDaysPerWeek));
+                    const ppl = await buildPushPullLegsRoutine(parsedPushDay.routine, parsedPullDay.routine, parsedLegDay.routine, Number(pl), Number(numberOfDaysPerWeek));
+
                     setRoutine(ppl);
                 }
 
