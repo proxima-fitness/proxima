@@ -789,7 +789,7 @@ export const getExerciseGifIdForHevyExercise = async (exercise_name: string) => 
     const proximaExercises = await getExercises();
 
     const fuse = new Fuse(proximaExercises, options);
-    const fuseResults = fuse.search(exercise_name, { limit: 1});
+    const fuseResults = fuse?.search(exercise_name, { limit: 1});
     if (!fuseResults) {
         return "";
     }

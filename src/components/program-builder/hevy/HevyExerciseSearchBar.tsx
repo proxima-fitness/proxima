@@ -73,8 +73,8 @@ export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
             if (appliedSearchBarFilter && appliedSearchBarFilter.trim() !== "") {
                 const normalizedQuery = appliedSearchBarFilter.toLowerCase();
                 const fuse = new Fuse(filteredItems, options);
-                const fuseResults  = fuse.search(normalizedQuery);
-                filteredItems = fuseResults.map(result => result?.item);
+                const fuseResults  = fuse?.search(normalizedQuery);
+                filteredItems = fuseResults?.map(result => result?.item);
             }
             setFilteredItems(filteredItems);
     }, [appliedSearchBarFilter, items]);
