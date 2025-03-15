@@ -70,7 +70,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
 
     return (
         <Dialog open={ openFinishDialog } onOpenChange={ () => handleOpenFinishDialog(false) } >
-            <DialogContent hideClose className="max-w-5xl">
+            <DialogContent hideClose className="max-w-5xl h-[95%]">
                 <DialogTitle className="font-bold flex items-center justify-center pb-4 gap-2 border-b-2">
                     Congrats !!! You have created your first Program <PartyPopperIcon />
                 </DialogTitle>
@@ -92,7 +92,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                 </span>
                 <span>
                     { isPreview ?
-                        <PDFViewer className="w-full h-[50vh]">
+                        <PDFViewer className="w-full h-[60vh]">
                             { (isHevy && hevyRoutine) ?
                                 <HevyPdfRenderer hevyRoutine={ deFlattenHevyRoutine(hevyRoutine) } />
                             : program &&

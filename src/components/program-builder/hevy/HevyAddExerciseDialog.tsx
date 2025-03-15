@@ -162,7 +162,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 
     return (
         <Dialog open={ addExerciseDialog.isOpen } onOpenChange={ () => handleOpenAddExerciseDialog({ folder_id: 0, dayOrder: 0, isOpen: false} ) }>
-            <DialogContent hideClose className="max-w-4xl w-full max-lg:h-[95%] 2xl:h-[70%] overflow-y-auto">
+            <DialogContent hideClose className="max-w-4xl w-full max-xl:h-[85%] 2xl:h-[70%] overflow-y-auto">
                 <DialogTitle className="font-bold flex items-center justify-center">
                     Add Exercise to Week {addExerciseDialog.folder_id + 1} Day {addExerciseDialog.dayOrder}
                 </DialogTitle>
