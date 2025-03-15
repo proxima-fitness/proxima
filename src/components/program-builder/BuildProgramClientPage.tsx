@@ -52,14 +52,9 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
 
     const [generating, setGenerating] = useState(true);
     const [routine, setRoutine] = useState<THevyRoutine[]>();
-    // const [program, setProgram] = useState<TProgramDetails>();
-    // console.log("routine:",routine);
-    // console.log("program:",program);
     console.log("Specific Days and workout Duration data is ignored temporarily in the AI process", specificDays, workoutDuration);
 
     const { isHevy } = useIsHevy();
-
-
 
     useEffect(() => {
 

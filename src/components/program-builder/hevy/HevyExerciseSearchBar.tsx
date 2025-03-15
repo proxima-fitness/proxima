@@ -13,7 +13,7 @@ const options = {
     shouldSort: true,
     threshold: 0.1,
     keys: [
-        "name_english",
+        "title",
     ],
 };
 
