@@ -1,0 +1,2679 @@
+[
+    {
+
+        "title": "Ab Scissors",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Aerobics",
+
+        "target_muscle": "cardio",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Air Bike",
+
+        "target_muscle": "cardio",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Around The World",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [
+            "upper_back",
+            "shoulders"
+        ],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Assisted Pistol Squats",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [
+            "hamstrings",
+            "glutes"
+        ],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Back Extension (Hyperextension)",
+
+        "target_muscle": "lower_back",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Back Extension (Machine)",
+
+        "target_muscle": "lower_back",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Back Extension (Weighted Hyperextension)",
+
+        "target_muscle": "lower_back",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Ball Slams",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [],
+
+        "equipment": "other"
+    },
+    {
+
+        "title": "Behind the Back Bicep Wrist Curl (Barbell)",
+
+        "target_muscle": "forearms",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Bench Dip",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "other"
+    },
+    {
+
+        "title": "Bench Press (Cable)",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [
+            "triceps",
+            "shoulders"
+        ],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Bench Press - Close Grip (Barbell)",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Bench Press - Wide Grip (Barbell)",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [
+            "triceps",
+            "shoulders"
+        ],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Bent Over Row (Band)",
+
+        "target_muscle": "upper_back",
+        "secondary_muscles": [],
+
+        "equipment": "resistance_band"
+    },
+    {
+
+        "title": "Bicep Curl (Suspension)",
+
+        "target_muscle": "biceps",
+        "secondary_muscles": [],
+
+        "equipment": "suspension"
+    },
+    {
+
+        "title": "Bicycle Crunch Raised Legs",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Bird Dog",
+
+        "target_muscle": "glutes",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Boxing",
+
+        "target_muscle": "cardio",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Burpee Over the Bar",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Butterfly (Pec Deck)",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Cable Core Palloff Press",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Cable Fly Crossovers",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Cable Pull Through",
+
+        "target_muscle": "glutes",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Cable Twist (Down to up)",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Cable Twist (Up to down)",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Calf Extension (Machine)",
+
+        "target_muscle": "calves",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Calf Press (Machine)",
+
+        "target_muscle": "calves",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Chest Dip",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [
+            "triceps"
+        ],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Chest Dip (Assisted)",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Chest Dip (Weighted)",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [
+            "triceps"
+        ],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Chest Fly (Band)",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [],
+
+        "equipment": "resistance_band"
+    },
+    {
+
+        "title": "Chest Fly (Suspension)",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [],
+
+        "equipment": "suspension"
+    },
+    {
+
+        "title": "Chest Press (Band)",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [],
+
+        "equipment": "resistance_band"
+    },
+    {
+
+        "title": "Chest Supported Incline Row (Dumbbell)",
+
+        "target_muscle": "upper_back",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Chest Supported Reverse Fly (Dumbbell)",
+
+        "target_muscle": "upper_back",
+        "secondary_muscles": [
+            "shoulders"
+        ],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Chest Supported Y Raise (Dumbbell)",
+
+        "target_muscle": "shoulders",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Clamshell",
+
+        "target_muscle": "glutes",
+        "secondary_muscles": [],
+
+        "equipment": "resistance_band"
+    },
+    {
+
+        "title": "Clap Push Ups",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [
+            "triceps",
+            "shoulders"
+        ],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Climbing",
+
+        "target_muscle": "cardio",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Cross Body Hammer Curl",
+
+        "target_muscle": "biceps",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Curtsy Lunge (Dumbbell)",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [
+            "glutes"
+        ],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Cycling",
+
+        "target_muscle": "cardio",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Dead Bug",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Deadlift (Band)",
+
+        "target_muscle": "hamstrings",
+        "secondary_muscles": [
+            "quadriceps",
+            "lower_back",
+            "glutes"
+        ],
+
+        "equipment": "resistance_band"
+    },
+    {
+
+        "title": "Deadlift (Trap bar)",
+
+        "target_muscle": "hamstrings",
+        "secondary_muscles": [
+            "quadriceps",
+            "lower_back",
+            "glutes"
+        ],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Deadlift High Pull",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Decline Bench Press (Machine)",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [
+            "triceps"
+        ],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Decline Bench Press (Smith Machine)",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [
+            "triceps"
+        ],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Decline Chest Fly (Dumbbell)",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Diamond Push Up",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [
+            "chest"
+        ],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Downward Dog",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Drag Curl",
+
+        "target_muscle": "biceps",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Dragonfly",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Dumbbell Snatch",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Dumbbell Squeeze Press",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Dumbbell Step Up",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "EZ Bar Biceps Curl",
+
+        "target_muscle": "biceps",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Elbow to Knee",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Elliptical Trainer",
+
+        "target_muscle": "cardio",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Farmers Walk",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [],
+
+        "equipment": "other"
+    },
+    {
+
+        "title": "Fire Hydrants",
+
+        "target_muscle": "glutes",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Floor Triceps Dip",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Flutter Kicks",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Frog Jumps",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Frog Pumps (Dumbbell)",
+
+        "target_muscle": "glutes",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Front Lever Hold",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Front Lever Raise",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Front Raise (Band)",
+
+        "target_muscle": "shoulders",
+        "secondary_muscles": [],
+
+        "equipment": "resistance_band"
+    },
+    {
+
+        "title": "Front Raise (Barbell)",
+
+        "target_muscle": "shoulders",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Front Raise (Cable)",
+
+        "target_muscle": "shoulders",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Front Raise (Dumbbell)",
+
+        "target_muscle": "shoulders",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Front Raise (Suspension)",
+
+        "target_muscle": "shoulders",
+        "secondary_muscles": [],
+
+        "equipment": "suspension"
+    },
+    {
+
+        "title": "Front Squat",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [
+            "hamstrings",
+            "glutes"
+        ],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Full Squat",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [
+            "hamstrings",
+            "glutes"
+        ],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Glute Bridge",
+
+        "target_muscle": "glutes",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Glute Ham Raise",
+
+        "target_muscle": "hamstrings",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Glute Kickback (Machine)",
+
+        "target_muscle": "glutes",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Glute Kickback on Floor",
+
+        "target_muscle": "glutes",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Good Morning (Barbell)",
+
+        "target_muscle": "hamstrings",
+        "secondary_muscles": [
+            "lower_back",
+            "glutes"
+        ],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Gorilla Row (Kettlebell)",
+
+        "target_muscle": "upper_back",
+        "secondary_muscles": [],
+
+        "equipment": "kettlebell"
+    },
+    {
+
+        "title": "HIIT",
+
+        "target_muscle": "cardio",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Hack Squat (Machine)",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Hammer Curl (Band)",
+
+        "target_muscle": "biceps",
+        "secondary_muscles": [],
+
+        "equipment": "resistance_band"
+    },
+    {
+
+        "title": "Hammer Curl (Cable)",
+
+        "target_muscle": "biceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Hammer Curl (Dumbbell)",
+
+        "target_muscle": "biceps",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Handstand Hold",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Handstand Push Up",
+
+        "target_muscle": "shoulders",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Hanging Knee Raise",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Heel Taps",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Hex Press (Dumbbell)",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [
+            "triceps"
+        ],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "High Knee Skips",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "High Knees",
+
+        "target_muscle": "glutes",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Hiking",
+
+        "target_muscle": "cardio",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Hip Abduction (Machine)",
+
+        "target_muscle": "abductors",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Hip Adduction (Machine)",
+
+        "target_muscle": "adductors",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Hip Thrust",
+
+        "target_muscle": "glutes",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Hip Thrust (Machine)",
+
+        "target_muscle": "glutes",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Incline Push Ups",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Iso-Lateral Chest Press (Machine)",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Iso-Lateral High Row (Machine)",
+
+        "target_muscle": "lats",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Iso-Lateral Low Row",
+
+        "target_muscle": "lats",
+        "secondary_muscles": [
+            "upper_back"
+        ],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Iso-Lateral Row (Machine)",
+
+        "target_muscle": "lats",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "JM Press (Barbell)",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Jack Knife (Suspension)",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "suspension"
+    },
+    {
+
+        "title": "Jackknife Sit Up",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Jump Shrug",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Jumping Lunge",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [
+            "hamstrings",
+            "glutes"
+        ],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Kettlebell Curl",
+
+        "target_muscle": "biceps",
+        "secondary_muscles": [],
+
+        "equipment": "kettlebell"
+    },
+    {
+
+        "title": "Kettlebell Goblet Squat",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [],
+
+        "equipment": "kettlebell"
+    },
+    {
+
+        "title": "Kettlebell High Pull",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [
+            "traps"
+        ],
+
+        "equipment": "kettlebell"
+    },
+    {
+
+        "title": "Kettlebell Shoulder Press",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [],
+
+        "equipment": "kettlebell"
+    },
+    {
+
+        "title": "Kettlebell Snatch",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [],
+
+        "equipment": "kettlebell"
+    },
+    {
+
+        "title": "Kettlebell Turkish Get Up",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [],
+
+        "equipment": "kettlebell"
+    },
+    {
+
+        "title": "Kipping Pull Up",
+
+        "target_muscle": "lats",
+        "secondary_muscles": [
+            "upper_back"
+        ],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Knee Raise Parallel Bars",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Kneeling Pulldown (band)",
+
+        "target_muscle": "lats",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Kneeling Push Up",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [
+            "triceps",
+            "shoulders"
+        ],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "L-Sit Hold",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Landmine 180",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Landmine Row",
+
+        "target_muscle": "upper_back",
+        "secondary_muscles": [
+            "lats"
+        ],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Landmine Squat and Press",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Lat Pulldown (Band)",
+
+        "target_muscle": "lats",
+        "secondary_muscles": [],
+
+        "equipment": "resistance_band"
+    },
+    {
+
+        "title": "Lat Pulldown (Cable)",
+
+        "target_muscle": "lats",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Lat Pulldown (Machine)",
+
+        "target_muscle": "lats",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Lat Pulldown - Close Grip (Cable)",
+
+        "target_muscle": "lats",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Lateral Band Walks",
+
+        "target_muscle": "glutes",
+        "secondary_muscles": [],
+
+        "equipment": "resistance_band"
+    },
+    {
+
+        "title": "Lateral Leg Raises",
+
+        "target_muscle": "glutes",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Lateral Raise (Band)",
+
+        "target_muscle": "shoulders",
+        "secondary_muscles": [],
+
+        "equipment": "resistance_band"
+    },
+    {
+
+        "title": "Lateral Squat",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [
+            "hamstrings",
+            "glutes"
+        ],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Leg Extension (Machine)",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Leg Press (Machine)",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Leg Press Horizontal (Machine)",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [
+            "hamstrings",
+            "glutes"
+        ],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Leg Raise Parallel Bars",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Low Cable Fly Crossovers",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Low Row (Suspension)",
+
+        "target_muscle": "upper_back",
+        "secondary_muscles": [],
+
+        "equipment": "suspension"
+    },
+    {
+
+        "title": "Lunge",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [
+            "hamstrings",
+            "glutes"
+        ],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Lying Knee Raise",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Lying Leg Curl (Machine)",
+
+        "target_muscle": "hamstrings",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Lying Neck Curls",
+
+        "target_muscle": "neck",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Lying Neck Curls (Weighted)",
+
+        "target_muscle": "neck",
+        "secondary_muscles": [],
+
+        "equipment": "plate"
+    },
+    {
+
+        "title": "Lying Neck Extension",
+
+        "target_muscle": "neck",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Lying Neck Extension (Weighted)",
+
+        "target_muscle": "neck",
+        "secondary_muscles": [],
+
+        "equipment": "plate"
+    },
+    {
+
+        "title": "Meadows Rows (Barbell)",
+
+        "target_muscle": "upper_back",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Negative Pull Up",
+
+        "target_muscle": "lats",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Nordic Hamstrings Curls",
+
+        "target_muscle": "hamstrings",
+        "secondary_muscles": [
+            "glutes"
+        ],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "One Arm Push Up",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Overhead Curl (Cable)",
+
+        "target_muscle": "biceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Overhead Dumbbell Lunge",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [
+            "hamstrings",
+            "glutes"
+        ],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Overhead Press (Smith Machine)",
+
+        "target_muscle": "shoulders",
+        "secondary_muscles": [
+            "triceps"
+        ],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Pause Squat (Barbell)",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Pendlay Row (Barbell)",
+
+        "target_muscle": "upper_back",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Pendulum Squat (Machine)",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [
+            "glutes",
+            "calves"
+        ],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Pike Pushup",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [
+            "shoulders"
+        ],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Pilates",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Pinwheel Curl (Dumbbell)",
+
+        "target_muscle": "biceps",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Plank Pushup",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [
+            "abdominals"
+        ],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Plate Curl",
+
+        "target_muscle": "biceps",
+        "secondary_muscles": [],
+
+        "equipment": "plate"
+    },
+    {
+
+        "title": "Plate Front Raise",
+
+        "target_muscle": "shoulders",
+        "secondary_muscles": [],
+
+        "equipment": "plate"
+    },
+    {
+
+        "title": "Plate Press",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [],
+
+        "equipment": "plate"
+    },
+    {
+
+        "title": "Plate Squeeze (Svend Press)",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [],
+
+        "equipment": "plate"
+    },
+    {
+
+        "title": "Preacher Curl (Machine)",
+
+        "target_muscle": "biceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Press Under",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Push Up - Close Grip",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [
+            "triceps",
+            "shoulders"
+        ],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Rack Pull",
+
+        "target_muscle": "lower_back",
+        "secondary_muscles": [
+            "glutes",
+            "quadriceps",
+            "hamstrings"
+        ],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Rear Delt Reverse Fly (Cable)",
+
+        "target_muscle": "upper_back",
+        "secondary_muscles": [
+            "shoulders"
+        ],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Rear Delt Reverse Fly (Dumbbell)",
+
+        "target_muscle": "upper_back",
+        "secondary_muscles": [
+            "shoulders"
+        ],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Rear Delt Reverse Fly (Machine)",
+
+        "target_muscle": "upper_back",
+        "secondary_muscles": [
+            "shoulders"
+        ],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Renegade Row (Dumbbell)",
+
+        "target_muscle": "upper_back",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Reverse Crunch",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Reverse Curl (Barbell)",
+
+        "target_muscle": "biceps",
+        "secondary_muscles": [
+            "forearms"
+        ],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Reverse Curl (Cable)",
+
+        "target_muscle": "biceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Reverse Curl (Dumbbell)",
+
+        "target_muscle": "biceps",
+        "secondary_muscles": [
+            "forearms"
+        ],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Reverse Fly Single Arm (Cable)",
+
+        "target_muscle": "upper_back",
+        "secondary_muscles": [
+            "shoulders"
+        ],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Reverse Grip Concentration Curl",
+
+        "target_muscle": "biceps",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Reverse Grip Lat Pulldown (Cable)",
+
+        "target_muscle": "upper_back",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Reverse Lunge",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [
+            "hamstrings",
+            "glutes"
+        ],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Ring Dips",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Rope Cable Curl",
+
+        "target_muscle": "biceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Rope Straight Arm Pulldown",
+
+        "target_muscle": "lats",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Rowing Machine",
+
+        "target_muscle": "cardio",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Russian Twist (Bodyweight)",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Russian Twist (Weighted)",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "plate"
+    },
+    {
+
+        "title": "Scapular Pull Ups",
+
+        "target_muscle": "upper_back",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Seated Cable Row - Bar Grip",
+
+        "target_muscle": "upper_back",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Seated Cable Row - Bar Wide Grip",
+
+        "target_muscle": "upper_back",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Seated Cable Row - V Grip (Cable)",
+
+        "target_muscle": "upper_back",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Seated Chest Flys (Cable)",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Seated Dip Machine",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Seated Incline Curl (Dumbbell)",
+
+        "target_muscle": "biceps",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Seated Lateral Raise (Dumbbell)",
+
+        "target_muscle": "shoulders",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Seated Leg Curl (Machine)",
+
+        "target_muscle": "hamstrings",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Seated Palms Up Wrist Curl",
+
+        "target_muscle": "forearms",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Seated Shoulder Press (Machine)",
+
+        "target_muscle": "shoulders",
+        "secondary_muscles": [
+            "triceps"
+        ],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Seated Triceps Press",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Seated Wrist Extension (Barbell)",
+
+        "target_muscle": "forearms",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Shoulder Press (Dumbbell)",
+
+        "target_muscle": "shoulders",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Shoulder Press (Machine Plates)",
+
+        "target_muscle": "shoulders",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Shoulder Taps",
+
+        "target_muscle": "shoulders",
+        "secondary_muscles": [
+            "abdominals"
+        ],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Shrug (Cable)",
+
+        "target_muscle": "traps",
+        "secondary_muscles": [
+            "neck"
+        ],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Shrug (Machine)",
+
+        "target_muscle": "traps",
+        "secondary_muscles": [
+            "neck"
+        ],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Shrug (Smith Machine)",
+
+        "target_muscle": "traps",
+        "secondary_muscles": [
+            "neck"
+        ],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Side Bend",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Single Arm Cable Crossover",
+
+        "target_muscle": "chest",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Single Arm Cable Row",
+
+        "target_muscle": "upper_back",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Single Arm Curl (Cable)",
+
+        "target_muscle": "biceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Single Arm Landmine Press (Barbell)",
+
+        "target_muscle": "shoulders",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Single Arm Lat Pulldown",
+
+        "target_muscle": "lats",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Single Arm Lateral Raise (Cable)",
+
+        "target_muscle": "shoulders",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Single Arm Tricep Extension (Dumbbell)",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Single Arm Triceps Pushdown (Cable)",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Single Leg Extensions",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Single Leg Glute Bridge",
+
+        "target_muscle": "glutes",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Single Leg Hip Thrust (Dumbbell)",
+
+        "target_muscle": "glutes",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Single Leg Press (Machine)",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Single Leg Romanian Deadlift (Barbell)",
+
+        "target_muscle": "hamstrings",
+        "secondary_muscles": [
+            "glutes"
+        ],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Single Leg Romanian Deadlift (Dumbbell)",
+
+        "target_muscle": "hamstrings",
+        "secondary_muscles": [
+            "glutes"
+        ],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Single Leg Standing Calf Raise",
+
+        "target_muscle": "calves",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Single Leg Standing Calf Raise (Barbell)",
+
+        "target_muscle": "calves",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Single Leg Standing Calf Raise (Dumbbell)",
+
+        "target_muscle": "calves",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Single Leg Standing Calf Raise (Machine)",
+
+        "target_muscle": "calves",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Sissy Squat (Weighted)",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Sit Up (Weighted)",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Skating",
+
+        "target_muscle": "cardio",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Skiing",
+
+        "target_muscle": "cardio",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Skullcrusher (Barbell)",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Skullcrusher (Dumbbell)",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Sled Push",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [],
+
+        "equipment": "other"
+    },
+    {
+
+        "title": "Snatch",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Snowboarding",
+
+        "target_muscle": "cardio",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Spider Curl (Barbell)",
+
+        "target_muscle": "biceps",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Spider Curl (Dumbbell)",
+
+        "target_muscle": "biceps",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Spiderman",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Spinning",
+
+        "target_muscle": "cardio",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Sprints",
+
+        "target_muscle": "cardio",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Squat (Band)",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [
+            "hamstrings",
+            "glutes"
+        ],
+
+        "equipment": "resistance_band"
+    },
+    {
+
+        "title": "Squat (Machine)",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [
+            "hamstrings",
+            "glutes"
+        ],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Squat (Suspension)",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [],
+
+        "equipment": "suspension"
+    },
+    {
+
+        "title": "Squat Row",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Stair Machine (Floors)",
+
+        "target_muscle": "cardio",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Stair Machine (Steps)",
+
+        "target_muscle": "cardio",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Standing Cable Glute Kickbacks",
+
+        "target_muscle": "glutes",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Standing Calf Raise (Barbell)",
+
+        "target_muscle": "calves",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Standing Calf Raise (Dumbbell)",
+
+        "target_muscle": "calves",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Standing Calf Raise (Machine)",
+
+        "target_muscle": "calves",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Standing Calf Raise (Smith)",
+
+        "target_muscle": "calves",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Standing Leg Curls",
+
+        "target_muscle": "hamstrings",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Standing Military Press (Barbell)",
+
+        "target_muscle": "shoulders",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Step Up",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [],
+
+        "equipment": "other"
+    },
+    {
+
+        "title": "Sternum Pull up (Gironda)",
+
+        "target_muscle": "lats",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Straight Arm Lat Pulldown (Cable)",
+
+        "target_muscle": "lats",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Straight Leg Deadlift",
+
+        "target_muscle": "hamstrings",
+        "secondary_muscles": [
+            "glutes"
+        ],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Sumo Deadlift",
+
+        "target_muscle": "hamstrings",
+        "secondary_muscles": [
+            "quadriceps",
+            "lower_back",
+            "glutes"
+        ],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Sumo Squat (Barbell)",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [
+            "hamstrings",
+            "glutes"
+        ],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Sumo Squat (Dumbbell)",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Sumo Squat (Kettlebell)",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [],
+
+        "equipment": "kettlebell"
+    },
+    {
+
+        "title": "Swimming",
+
+        "target_muscle": "cardio",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Thruster (Kettlebell)",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [],
+
+        "equipment": "kettlebell"
+    },
+    {
+
+        "title": "Toe Touch",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Toes to Bar",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Torso Rotation",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Treadmill",
+
+        "target_muscle": "cardio",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Triceps Dip",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Triceps Dip (Assisted)",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Triceps Dip (Weighted)",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Triceps Extension (Barbell)",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Triceps Extension (Cable)",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Triceps Extension (Dumbbell)",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Triceps Extension (Machine)",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Triceps Extension (Suspension)",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "suspension"
+    },
+    {
+
+        "title": "Triceps Kickback (Cable)",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Triceps Kickback (Dumbbell)",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    },
+    {
+
+        "title": "Triceps Pressdown",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Triceps Pushdown",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Triceps Rope Pushdown",
+
+        "target_muscle": "triceps",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "V Up",
+
+        "target_muscle": "abdominals",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Wall Ball",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [],
+
+        "equipment": "other"
+    },
+    {
+
+        "title": "Warm Up",
+
+        "target_muscle": "full_body",
+        "secondary_muscles": [],
+
+        "equipment": "bodyweight"
+    },
+    {
+
+        "title": "Wide Pull Up",
+
+        "target_muscle": "lats",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Wrist Roller",
+
+        "target_muscle": "forearms",
+        "secondary_muscles": [],
+
+        "equipment": "machine"
+    },
+    {
+
+        "title": "Zercher Squat",
+
+        "target_muscle": "quadriceps",
+        "secondary_muscles": [
+            "hamstrings",
+            "glutes"
+        ],
+
+        "equipment": "barbell"
+    },
+    {
+
+        "title": "Zottman Curl (Dumbbell)",
+
+        "target_muscle": "biceps",
+        "secondary_muscles": [],
+
+        "equipment": "dumbbell"
+    }
+]

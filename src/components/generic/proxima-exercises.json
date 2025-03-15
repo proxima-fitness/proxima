@@ -1,0 +1,3674 @@
+[
+    {
+        "id": "74bbdd14-81b7-4283-bc21-11c704d308ce",
+        "name_english": "100m Row",
+        "name_espanol": "Remo de 100 m",
+        "name_portugues": "Remada de 100m",
+        "name_francais": "Ligne de 100 m",
+        "gif_id": "0861"
+    },
+    {
+        "id": "28763a42-3250-44ec-9bf5-ed57b1a54846",
+        "name_english": "100m Sprint",
+        "name_espanol": "Carrera de 100 m",
+        "name_portugues": "Corrida de 100m",
+        "name_francais": "100m Sprint",
+        "gif_id": "0685"
+    },
+    {
+        "id": "33bbb7bc-bdfe-4fac-8ff2-8aa141ac274b",
+        "name_english": "10km Row",
+        "name_espanol": "Remo de 10km",
+        "name_portugues": "Remada de 10km",
+        "name_francais": "Ligne de 10km",
+        "gif_id": "0861"
+    },
+    {
+        "id": "0e291341-2fed-47b7-96fa-d3820f213f4f",
+        "name_english": "1km Row",
+        "name_espanol": "Remo de 1km",
+        "name_portugues": "Remada de 1km",
+        "name_francais": "Ligne de 1km",
+        "gif_id": "0861"
+    },
+    {
+        "id": "9e9975bd-c923-4acd-bfc5-fcd4d3e3fcc2",
+        "name_english": "200m Sprint",
+        "name_espanol": "Carrera de 200 m",
+        "name_portugues": "Corrida de 200m",
+        "name_francais": "200m Sprint",
+        "gif_id": "0685"
+    },
+    {
+        "id": "76fe28c9-cdde-44ec-ab77-99564cfbfeb3",
+        "name_english": "21s (EZ Bar)",
+        "name_espanol": "21s (EZ Bar)",
+        "name_portugues": "21s (EZ Bar)",
+        "name_francais": "21s (EZ Bar)",
+        "gif_id": "2404"
+    },
+    {
+        "id": "847d52c5-4cd0-476d-bcc2-80423d83d81a",
+        "name_english": "2km Row",
+        "name_espanol": "Remo de 2km",
+        "name_portugues": "Remada de 2km",
+        "name_francais": "Ligne de 2km",
+        "gif_id": "0861"
+    },
+    {
+        "id": "fd73cf94-99ff-4ef7-95bf-a732a6ea4d99",
+        "name_english": "400m Sprint",
+        "name_espanol": "Carrera de 400 m",
+        "name_portugues": "Corrida de 400m",
+        "name_francais": "400m Sprint",
+        "gif_id": "0685"
+    },
+    {
+        "id": "156960ae-032e-466f-b0a6-b65f6971ff27",
+        "name_english": "500m Row",
+        "name_espanol": "Remo de 500m",
+        "name_portugues": "Remada de 500m",
+        "name_francais": "Ligne de 500m",
+        "gif_id": "0861"
+    },
+    {
+        "id": "99721109-8fb1-4546-b8d8-e1f687bda315",
+        "name_english": "AD Press",
+        "name_espanol": "Prensa AD",
+        "name_portugues": "Imprensa AD",
+        "name_francais": "AD Press",
+        "gif_id": "0759"
+    },
+    {
+        "id": "b71310f1-632e-4234-a467-0a20fac8f768",
+        "name_english": "AD Press (Smith Machine)",
+        "name_espanol": "Prensa AD (Máquina Smith)",
+        "name_portugues": "Imprensa AD (Máquina Smith)",
+        "name_francais": "AD Press (Smith Machine)",
+        "gif_id": "0759"
+    },
+    {
+        "id": "aa662fed-2d19-457f-847a-a318ee12796c",
+        "name_english": "Ab Wheel",
+        "name_espanol": "Rueda para el abdomen",
+        "name_portugues": "Rueda para o abdômen",
+        "name_francais": "Rueda pour l'abdomen",
+        "gif_id": "0796"
+    },
+    {
+        "id": "41804e56-5960-403e-b6ea-7ea0442933be",
+        "name_english": "Abs Crunch (Bodyweight)",
+        "name_espanol": "Abdominales (Peso Corporal)",
+        "name_portugues": "Abdominais (peso corporal)",
+        "name_francais": "Crunch Abdominal (Poids du Corps)",
+        "gif_id": "0274"
+    },
+    {
+        "id": "81a84189-951b-4e65-88ee-611aec533a5d",
+        "name_english": "Abs Crunch (Machine)",
+        "name_espanol": "Abdominales (Máquina)",
+        "name_portugues": "Abdominais Crunch (Máquina)",
+        "name_francais": "Crunch Abdominal (Machine)",
+        "gif_id": "1452"
+    },
+    {
+        "id": "867df693-0b29-47b3-a594-c6a6df4ff51b",
+        "name_english": "Abs Crunch (Weighted)",
+        "name_espanol": "Abdominales (Con Peso)",
+        "name_portugues": "Crunch abdominal (ponderado)",
+        "name_francais": "Crunch Abdominal (Avec Poids)",
+        "gif_id": "0832"
+    },
+    {
+        "id": "e3e65fe4-79b4-4c22-bbf1-6fa668e474c1",
+        "name_english": "Alternating Dumbbell Curl",
+        "name_espanol": "Curl Alterno con Mancuernas",
+        "name_portugues": "Curvatura alternada com halteres",
+        "name_francais": "Curl Alterné avec Halteres",
+        "gif_id": "1650"
+    },
+    {
+        "id": "ea1028ef-4ae0-4b39-9a38-3fc19f2f1872",
+        "name_english": "Alternating Lateral Ball Slams",
+        "name_espanol": "Golpes Laterales Alternos con Pelota",
+        "name_portugues": "Batidas de bola laterais alternadas",
+        "name_francais": "Frappe Alternée avec Ballon Médicin",
+        "gif_id": null
+    },
+    {
+        "id": "8bd8b3ec-af2c-4876-8eb4-31e43010fb63",
+        "name_english": "Arm Circle",
+        "name_espanol": "Círculos de Brazo",
+        "name_portugues": "Círculo de braço",
+        "name_francais": "Cercle de Bras",
+        "gif_id": "1428"
+    },
+    {
+        "id": "700e39e3-520a-4408-befd-2cbf6815aefc",
+        "name_english": "Arnold Press",
+        "name_espanol": "Prensa Arnold",
+        "name_portugues": "Arnold Press",
+        "name_francais": "Développé Arnold",
+        "gif_id": "2137"
+    },
+    {
+        "id": "bf862ad3-cc5b-4da8-b551-f4409f12a77e",
+        "name_english": "Back Extension",
+        "name_espanol": "Extensión de Espalda",
+        "name_portugues": "Extensão traseira",
+        "name_francais": "Extension du Dos",
+        "gif_id": "0573"
+    },
+    {
+        "id": "7f618d20-5549-4cbb-a805-f2c205a97b3d",
+        "name_english": "Back Extension (Weighted)",
+        "name_espanol": "Extensión de Espalda (Con Peso)",
+        "name_portugues": "Extensão traseira (ponderada)",
+        "name_francais": "Extension du Dos (Avec Poids)",
+        "gif_id": "0573"
+    },
+    {
+        "id": "9d298084-d0cc-4644-9ebc-e8f111f6fdce",
+        "name_english": "Band Pull Apart",
+        "name_espanol": "Separación con Banda",
+        "name_portugues": "Separação da banda",
+        "name_francais": "Écarté avec Bande",
+        "gif_id": "0991"
+    },
+    {
+        "id": "9711b5ce-f39f-425b-8f3f-e01af72d56ad",
+        "name_english": "Barbell Row",
+        "name_espanol": "Remo con Barra",
+        "name_portugues": "Remada com barra",
+        "name_francais": "Rowing Barre",
+        "gif_id": "0027"
+    },
+    {
+        "id": "a2570e23-35df-42cd-ad36-17fabab480b5",
+        "name_english": "Battle Ropes",
+        "name_espanol": "Cuerdas de Batalla",
+        "name_portugues": "Cordas de batalha",
+        "name_francais": "Cordes de Bataille",
+        "gif_id": "0128"
+    },
+    {
+        "id": "509a7a64-87f2-496b-87d5-ebdffdd958d5",
+        "name_english": "Batwing Row",
+        "name_espanol": "Remo Batwing",
+        "name_portugues": "Linha Asa de Morcego",
+        "name_francais": "Rowing Batwing",
+        "gif_id": null
+    },
+    {
+        "id": "df70dc08-5943-4af3-aff4-925a6587be8f",
+        "name_english": "Bayesian Curl",
+        "name_espanol": "Curl Bayesiano",
+        "name_portugues": "Onda Bayesiana",
+        "name_francais": "Curl Bayésien",
+        "gif_id": null
+    },
+    {
+        "id": "037808c0-c5e6-4321-9bbe-e811d16640fc",
+        "name_english": "Bear Crawl",
+        "name_espanol": "Gateo del Oso",
+        "name_portugues": "Rastejamento de Urso",
+        "name_francais": "Marche de l'Ours",
+        "gif_id": "3360"
+    },
+    {
+        "id": "f543523e-3ad6-41ce-a434-131a47ee8d75",
+        "name_english": "Behind The Neck Lat Pulldown",
+        "name_espanol": "Tirón Lat Pulldown Trasero",
+        "name_portugues": "Pulldown atrás do pescoço",
+        "name_francais": "Tirage Nuque",
+        "gif_id": "0205"
+    },
+    {
+        "id": "2e00037f-97d9-4550-bac0-3b2b3ca9be91",
+        "name_english": "Behind The Neck Press (Smith Machine)",
+        "name_espanol": "Prensa Trasera (Máquina Smith)",
+        "name_portugues": "Prensa atrás do pescoço (máquina Smith)",
+        "name_francais": "Développé Nuque (Smith Machine)",
+        "gif_id": "0747"
+    },
+    {
+        "id": "f5ba737c-6687-4a1e-be0b-73f193c2f4ac",
+        "name_english": "Behind The Neck Push Press",
+        "name_espanol": "Push Press Trasero",
+        "name_portugues": "Pressão com Empurrão por Trás do Pescoço",
+        "name_francais": "Push Press Nuque",
+        "gif_id": "0747"
+    },
+    {
+        "id": "de4a3102-7a99-47f6-93ec-0ad098351b3b",
+        "name_english": "Belt Squat",
+        "name_espanol": "Sentadilla con Cinturón",
+        "name_portugues": "Agachamento com Cinto",
+        "name_francais": "Squat avec Ceinture",
+        "gif_id": null
+    },
+    {
+        "id": "b96bd3ec-51a2-4f36-af76-f029c3c4a760",
+        "name_english": "Bench Press (Barbell)",
+        "name_espanol": "Press de Banca (Barra)",
+        "name_portugues": "Supino (Barra)",
+        "name_francais": "Développé Couché (Barre)",
+        "gif_id": "0025"
+    },
+    {
+        "id": "60ff6ba8-f2f2-44e8-a35f-7817a9eea1e0",
+        "name_english": "Bench Press (Close Grip)",
+        "name_espanol": "Press de Banca (Agarre Cerrado)",
+        "name_portugues": "Supino (Pegada Fechada)",
+        "name_francais": "Développé Couché (Prise Serrée)",
+        "gif_id": "0030"
+    },
+    {
+        "id": "2fe4e471-22fc-4572-8cfb-be0686895520",
+        "name_english": "Bench Press (Dumbbell)",
+        "name_espanol": "Press de Banca (Mancuernas)",
+        "name_portugues": "Supino (Halteres)",
+        "name_francais": "Développé Couché (Haltères)",
+        "gif_id": "0289"
+    },
+    {
+        "id": "96cb3793-6eed-46f2-b4ab-ecf2da8bf279",
+        "name_english": "Bench Press (Long Pause)",
+        "name_espanol": "Press de Banca (Pausa Larga)",
+        "name_portugues": "Supino (Pausa Longa)",
+        "name_francais": "Développé Couché (Pause Longue)",
+        "gif_id": "0025"
+    },
+    {
+        "id": "50e1039a-a48f-4d9f-9ca4-9bfb310ee0d3",
+        "name_english": "Bench Press (Pause Reps)",
+        "name_espanol": "Press de Banca (Repeticiones con Pausa)",
+        "name_portugues": "Supino (Repetições Pausadas)",
+        "name_francais": "Développé Couché (Réps en Pause)",
+        "gif_id": "0025"
+    },
+    {
+        "id": "692dcf85-f9db-4eab-9cb5-ed60fab984c0",
+        "name_english": "Bench Press (Smith Machine)",
+        "name_espanol": "Press de Banca (Máquina Smith)",
+        "name_portugues": "Supino (Máquina Smith)",
+        "name_francais": "Développé Couché (Smith Machine)",
+        "gif_id": "0748"
+    },
+    {
+        "id": "88d04745-1670-4f15-a9e0-5e26391b1b32",
+        "name_english": "Bench Press (Wide Grip)",
+        "name_espanol": "Press de Banca (Agarre Ancho)",
+        "name_portugues": "Supino (Pegada Larga)",
+        "name_francais": "Développé Couché (Prise Large)",
+        "gif_id": "1308"
+    },
+    {
+        "id": "259b212b-8119-4907-ac70-4ba6fb4470df",
+        "name_english": "Bent Leg Raise",
+        "name_espanol": "Levantamiento de Piernas Flexionadas",
+        "name_portugues": "Elevação de Pernas Dobradas",
+        "name_francais": "Élévation des Jambes Fléchies",
+        "gif_id": "0472"
+    },
+    {
+        "id": "3ab4e314-ea19-45c1-bccc-97e2deccd7ea",
+        "name_english": "Bent Over Row (Barbell)",
+        "name_espanol": "Remo Inclinado (Barra)",
+        "name_portugues": "Remada Curvada (Barra)",
+        "name_francais": "Rowing Penché (Barre)",
+        "gif_id": "0027"
+    },
+    {
+        "id": "3dc16686-dd74-4121-907c-6beaf4d24acb",
+        "name_english": "Bent Over Row (Barbell, Paused)",
+        "name_espanol": "Remo Inclinado (Barra, Pausa)",
+        "name_portugues": "Remada Curvada (Barra, Pausada)",
+        "name_francais": "Rowing Penché (Barre, en Pause)",
+        "gif_id": "0027"
+    },
+    {
+        "id": "51fe7db1-cbb6-4296-97a8-c9c7d95d7494",
+        "name_english": "Bent Over Row (Dumbbell)",
+        "name_espanol": "Remo Inclinado (Mancuernas)",
+        "name_portugues": "Remada Curvada (Halteres)",
+        "name_francais": "Rowing Penché (Haltères)",
+        "gif_id": "0293"
+    },
+    {
+        "id": "38305a4f-8ded-4dc2-be3f-b5db6e5a47cb",
+        "name_english": "Bent Over Row (Kettlebell)",
+        "name_espanol": "Remo Inclinado (Kettlebell)",
+        "name_portugues": "Remada Curvada (Kettlebell)",
+        "name_francais": "Rowing Penché (Kettlebell)",
+        "gif_id": "0522"
+    },
+    {
+        "id": "283b0457-efd8-4580-a0c4-afcf7796d038",
+        "name_english": "Bent-over Twist",
+        "name_espanol": "Giro Inclinada",
+        "name_portugues": "Torção Curvada",
+        "name_francais": "Torsion Penché",
+        "gif_id": null
+    },
+    {
+        "id": "05d35a76-cd0f-42d6-8cf0-36d969c27443",
+        "name_english": "Bicep Curl (Barbell)",
+        "name_espanol": "Curl de Bíceps (Barra)",
+        "name_portugues": "Curl de Bíceps (Barra)",
+        "name_francais": "Curl Biceps (Barre)",
+        "gif_id": "0031"
+    },
+    {
+        "id": "5aa42032-7965-44e4-bd21-c795bc534af5",
+        "name_english": "Bicep Curl (Cable)",
+        "name_espanol": "Curl de Bíceps (Cable)",
+        "name_portugues": "Curl de Bíceps (Cabo)",
+        "name_francais": "Curl Biceps (Câble)",
+        "gif_id": "0868"
+    },
+    {
+        "id": "3d935965-9bb1-46d3-b89c-5f3098f05da7",
+        "name_english": "Bicep Curl (Dumbbell)",
+        "name_espanol": "Curl de Bíceps (Mancuernas)",
+        "name_portugues": "Curl de Bíceps (Halteres)",
+        "name_francais": "Curl Biceps (Haltères)",
+        "gif_id": "1677"
+    },
+    {
+        "id": "1c7f1999-c41b-4fa1-a241-474b83a5afd1",
+        "name_english": "Bicep Curl (EZ Bar)",
+        "name_espanol": "Curl de Bíceps (EZ Bar)",
+        "name_portugues": "Curl de Bíceps (Barra EZ)",
+        "name_francais": "Curl Biceps (Barre EZ)",
+        "gif_id": "0447"
+    },
+    {
+        "id": "835e6236-3549-4ba2-a722-a59f4fda926b",
+        "name_english": "Bicep Curl (Machine)",
+        "name_espanol": "Curl de Bíceps (Máquina)",
+        "name_portugues": "Curl de Bíceps (Máquina)",
+        "name_francais": "Curl Biceps (Machine)",
+        "gif_id": "0575"
+    },
+    {
+        "id": "f63d47c8-29b6-4b9d-bb25-bd960c08eeec",
+        "name_english": "Bicycle Crunch",
+        "name_espanol": "Abdominales en Bicicleta",
+        "name_portugues": "Abdominal Bicicleta",
+        "name_francais": "Crunch Bicyclette",
+        "gif_id": "0972"
+    },
+    {
+        "id": "732888df-4954-4c55-8724-0b05d61c71e8",
+        "name_english": "Bilateral Snapdown",
+        "name_espanol": "Descenso Bilateral",
+        "name_portugues": "Puxada Bilateral",
+        "name_francais": "Snapdown Bilatéral",
+        "gif_id": null
+    },
+    {
+        "id": "be905847-93aa-40a1-9986-fba822554a5a",
+        "name_english": "Blank Bodyweight Row",
+        "name_espanol": "Fila de Peso Corporal en Blanco",
+        "name_portugues": "Remada Invertida",
+        "name_francais": "Rowing Poids du Corps",
+        "gif_id": null
+    },
+    {
+        "id": "9b594bd4-6da2-40bc-90ae-6700912c86b7",
+        "name_english": "Block Pull (Barbell)",
+        "name_espanol": "Tirón de Bloque (Barra)",
+        "name_portugues": "Levantamento com Bloco (Barra)",
+        "name_francais": "Block Pull (Barre)",
+        "gif_id": null
+    },
+    {
+        "id": "9bcae005-9316-43df-8731-d0532da5f8aa",
+        "name_english": "Box Jump",
+        "name_espanol": "Salto de Caja",
+        "name_portugues": "Salto na Caixa",
+        "name_francais": "Saut sur Boîte",
+        "gif_id": "1374"
+    },
+    {
+        "id": "fa67e702-7d17-4d20-9f03-6b69eb153907",
+        "name_english": "Box Squat (Barbell)",
+        "name_espanol": "Sentadilla en Caja (Barra)",
+        "name_portugues": "Agachamento na Caixa (Barra)",
+        "name_francais": "Squat sur Boîte (Barre)",
+        "gif_id": null
+    },
+    {
+        "id": "02cb264f-1e08-4b78-bf04-801064452cc9",
+        "name_english": "Bulgarian Split Squat (Barbell)",
+        "name_espanol": "Sentadilla Búlgara (Barra)",
+        "name_portugues": "Agachamento Búlgaro (Barra)",
+        "name_francais": "Fente Bulgare (Barre)",
+        "gif_id": "0099"
+    },
+    {
+        "id": "81a3c7b3-d3b9-4532-8da3-52608d02f405",
+        "name_english": "Bulgarian Split Squat (Bodyweight)",
+        "name_espanol": "Sentadilla Búlgara (Peso Corporal)",
+        "name_portugues": "Agachamento Búlgaro (Peso Corporal)",
+        "name_francais": "Fente Bulgare (Poids du Corps)",
+        "gif_id": "2368"
+    },
+    {
+        "id": "8a13abbd-76c1-4dfd-9235-6b154fb7df2c",
+        "name_english": "Bulgarian Split Squat (Dumbbell)",
+        "name_espanol": "Sentadilla Búlgara (Mancuernas)",
+        "name_portugues": "Agachamento Búlgaro (Halteres)",
+        "name_francais": "Fente Bulgare (Haltères)",
+        "gif_id": "0410"
+    },
+    {
+        "id": "1a277b95-f5b2-4a48-8b32-0d11cba23388",
+        "name_english": "Burpee",
+        "name_espanol": "Burpee",
+        "name_portugues": "Burpee",
+        "name_francais": "Burpee",
+        "gif_id": "1160"
+    },
+    {
+        "id": "29d7e772-1d6f-4a86-a84d-a200ce0971b3",
+        "name_english": "Burpee (No Push Up)",
+        "name_espanol": "Burpee (Sin Flexión)",
+        "name_portugues": "Burpee (Sem Flexão)",
+        "name_francais": "Burpee (Sans Pompe)",
+        "gif_id": "1160"
+    },
+    {
+        "id": "72d8eb63-5a32-4971-a624-f92450df9300",
+        "name_english": "Cable Crossover",
+        "name_espanol": "Cruce de Cable",
+        "name_portugues": "Crossover de Cabos",
+        "name_francais": "Crossover avec Câble",
+        "gif_id": null
+    },
+    {
+        "id": "d72076db-da40-45b4-aacb-362de4bdbfe7",
+        "name_english": "Cable Crunch",
+        "name_espanol": "Crunch de Cable",
+        "name_portugues": "Crunch com Cabo",
+        "name_francais": "Crunch avec Câble",
+        "gif_id": "0985"
+    },
+    {
+        "id": "3a3280d2-77a4-4ed1-b34b-2246301aa416",
+        "name_english": "Calf Raise (Bodyweight)",
+        "name_espanol": "Elevación de Pantorrillas (Peso Corporal)",
+        "name_portugues": "Elevação de Panturrilha (Peso Corporal)",
+        "name_francais": "Élévation des Mollets (Poids du Corps)",
+        "gif_id": "1373"
+    },
+    {
+        "id": "5b7de8bc-f9aa-471e-8ffe-3924e3ac7721",
+        "name_english": "Calf Raise (Leg Press)",
+        "name_espanol": "Elevación de Pantorrillas (Prensa de Piernas)",
+        "name_portugues": "Elevação de Panturrilha (Leg Press)",
+        "name_francais": "Élévation des Mollets (Leg Press)",
+        "gif_id": "1385"
+    },
+    {
+        "id": "ef8b90d5-f648-4f0d-ab63-3f4fa5dcf52b",
+        "name_english": "Cambered Bar Squat",
+        "name_espanol": "Sentadilla con Barra Cambered",
+        "name_portugues": "Agachamento com Barra Cambered",
+        "name_francais": "Squat avec Barre Cambrée",
+        "gif_id": null
+    },
+    {
+        "id": "4a94c94a-1ebd-4e09-9a4c-1e5bf268adb8",
+        "name_english": "Cannonball Crunch",
+        "name_espanol": "Crunch de Bala de Cañón",
+        "name_portugues": "Crunch de Bola",
+        "name_francais": "Crunch Cannonball",
+        "gif_id": "2429"
+    },
+    {
+        "id": "c2d66f3b-2859-41e7-b5b7-f63dac34c8a6",
+        "name_english": "Cat Cow Stretch",
+        "name_espanol": "Estiramiento de Gato Vaca",
+        "name_portugues": "Alongamento de Gato-Vaca",
+        "name_francais": "Étirement Chat-Vache",
+        "gif_id": null
+    },
+    {
+        "id": "8d6e55b1-9db7-46e7-8a99-662828674528",
+        "name_english": "Chest Fly (Cable)",
+        "name_espanol": "Fly de Pecho (Cable)",
+        "name_portugues": "Voador de Peito (Cabo)",
+        "name_francais": "Écarté de Poitrine (Câble)",
+        "gif_id": "0227"
+    },
+    {
+        "id": "4d5ad4e4-4b02-420f-a6da-4cae48337692",
+        "name_english": "Chest Fly (Dumbbell)",
+        "name_espanol": "Fly de Pecho (Mancuernas)",
+        "name_portugues": "Voador de Peito (Halteres)",
+        "name_francais": "Écarté de Poitrine (Haltères)",
+        "gif_id": "0308"
+    },
+    {
+        "id": "bf8e9348-1c3d-496d-9042-55b77a360281",
+        "name_english": "Chest Fly (Machine)",
+        "name_espanol": "Fly de Pecho (Máquina)",
+        "name_portugues": "Voador de Peito (Máquina)",
+        "name_francais": "Écarté de Poitrine (Machine)",
+        "gif_id": "0596"
+    },
+    {
+        "id": "89246ba4-eeb6-4e64-ab03-73cb2e746a2a",
+        "name_english": "Chest Press (Machine)",
+        "name_espanol": "Press de Pecho (Máquina)",
+        "name_portugues": "Supino na Máquina",
+        "name_francais": "Développé de Poitrine (Machine)",
+        "gif_id": "0577"
+    },
+    {
+        "id": "df66f6f9-4546-486b-bbd5-bb8db42e1ce2",
+        "name_english": "Chest Supported Row (Dumbbell)",
+        "name_espanol": "Remo de Apoyo de Pecho (Mancuernas)",
+        "name_portugues": "Remada com Suporte de Peito (Halteres)",
+        "name_francais": "Rowing Supporté (Haltères)",
+        "gif_id": "1350"
+    },
+    {
+        "id": "771bdb13-0830-41f9-830b-3bd10ae4123b",
+        "name_english": "Chest Supported Row (Machine)",
+        "name_espanol": "Remo de Apoyo de Pecho (Máquina)",
+        "name_portugues": "Remada na Máquina com Suporte de Peito",
+        "name_francais": "Rowing Supporté (Machine)",
+        "gif_id": "1350"
+    },
+    {
+        "id": "fd749cd4-6015-4be4-bdbb-5fd195f5ff91",
+        "name_english": "Chin Up (Assisted)",
+        "name_espanol": "Dominadas (Asistido)",
+        "name_portugues": "Barra Fixa (Assistida)",
+        "name_francais": "Traction en Supination (Assistée)",
+        "gif_id": "1431"
+    },
+    {
+        "id": "0f681180-cb21-4a86-8c42-c4e0e57a54f1",
+        "name_english": "Chin Up (Bodyweight)",
+        "name_espanol": "Dominadas (Peso Corporal)",
+        "name_portugues": "Barra Fixa (Peso Corporal)",
+        "name_francais": "Traction en Supination (Poids du Corps)",
+        "gif_id": "1326"
+    },
+    {
+        "id": "bf03586b-2e31-4cb9-8fd4-7eaa1942a6bf",
+        "name_english": "Chin Up (Weighted)",
+        "name_espanol": "Dominadas (Con Peso)",
+        "name_portugues": "Barra Fixa (Com Peso)",
+        "name_francais": "Traction en Supination (Avec Poids)",
+        "gif_id": "1326"
+    },
+    {
+        "id": "e04c439d-23b3-47b4-b80e-c695d36929ff",
+        "name_english": "Clean (Barbell)",
+        "name_espanol": "Clean (Barra)",
+        "name_portugues": "Arranco (Barra)",
+        "name_francais": "Clean (Barre)",
+        "gif_id": "0028"
+    },
+    {
+        "id": "3d67418e-5882-48f1-bb1f-1197d57367db",
+        "name_english": "Clean Deadlift",
+        "name_espanol": "Peso Muerto Limpio",
+        "name_portugues": "Levantamento Terra com Arranco",
+        "name_francais": "Deadlift Clean",
+        "gif_id": "0032"
+    },
+    {
+        "id": "4e5afb5e-a273-4857-a1c6-da3df38a6ef4",
+        "name_english": "Clean Pull",
+        "name_espanol": "Tirón Limpio",
+        "name_portugues": "Puxada de Arranco",
+        "name_francais": "Pull Clean",
+        "gif_id": null
+    },
+    {
+        "id": "1db860e5-477b-4bb7-8c00-1789dc839d6f",
+        "name_english": "Clean and Jerk",
+        "name_espanol": "Cargada y envión",
+        "name_portugues": "Arranco e Arremesso",
+        "name_francais": "Clean and Jerk",
+        "gif_id": "0537"
+    },
+    {
+        "id": "3fd31029-4e5b-4fdd-814c-a122e31e5099",
+        "name_english": "Clean and Press",
+        "name_espanol": "Lavar y Planchar",
+        "name_portugues": "Arranco e Press",
+        "name_francais": "Clean and Press",
+        "gif_id": "0028"
+    },
+    {
+        "id": "54d91ebc-29b5-4089-83d1-4dd230afcd43",
+        "name_english": "Close Grip Bench Press (Smith Machine)",
+        "name_espanol": "Press de Banca con Agarre Cerrado (Máquina Smith)",
+        "name_portugues": "Supino com Pegada Fechada (Máquina Smith)",
+        "name_francais": "Développé Couché Prise Serrée (Smith Machine)",
+        "gif_id": "1625"
+    },
+    {
+        "id": "ffed9741-8534-4323-90c2-806c3c0f5af1",
+        "name_english": "Concentration Curl",
+        "name_espanol": "Curl de Concentración",
+        "name_portugues": "Curl Concentrado",
+        "name_francais": "Curl de Concentration",
+        "gif_id": "0297"
+    },
+    {
+        "id": "b51ec4fe-917b-4a2e-822f-6d6a88baefda",
+        "name_english": "Copenhagen Plank",
+        "name_espanol": "Plank de Copenhague",
+        "name_portugues": "Prancha de Copenhague",
+        "name_francais": "Planche de Copenhague",
+        "gif_id": "3544"
+    },
+    {
+        "id": "362d0e93-0c6a-451a-b825-f6d51647bdc4",
+        "name_english": "Couch Stretch with Reachovers",
+        "name_espanol": "Estiramiento de Sofá con Alcances",
+        "name_portugues": "Alongamento de Sofá com Alcance",
+        "name_francais": "Étirement du Canapé avec Extensions",
+        "gif_id": null
+    },
+    {
+        "id": "d8da6ad5-4ffb-4c8a-847e-9a19bcf3b2d2",
+        "name_english": "Dead Hang",
+        "name_espanol": "Muerto Colgado",
+        "name_portugues": "Pendurar Morto",
+        "name_francais": "Suspension Passive",
+        "gif_id": "1764"
+    },
+    {
+        "id": "47a7df9e-d404-4ff7-8572-325a6ad5423a",
+        "name_english": "Deadlift (Barbell)",
+        "name_espanol": "Deadlift (Barra)",
+        "name_portugues": "Levantamento Terra (Barra)",
+        "name_francais": "Deadlift (Barre)",
+        "gif_id": "0032"
+    },
+    {
+        "id": "a0b6b20f-d161-44e2-8d71-a076929f7907",
+        "name_english": "Deadlift (Deficit)",
+        "name_espanol": "Deadlift (Déficit)",
+        "name_portugues": "Levantamento Terra (Déficit)",
+        "name_francais": "Deadlift (Déficit)",
+        "gif_id": "0032"
+    },
+    {
+        "id": "c9885604-a963-4abd-8882-cd426b17ce6f",
+        "name_english": "Deadlift (Dumbbell)",
+        "name_espanol": "Deadlift (Mancuernas)",
+        "name_portugues": "Levantamento Terra (Halteres)",
+        "name_francais": "Deadlift (Haltères)",
+        "gif_id": "0300"
+    },
+    {
+        "id": "61674fc0-59f7-40f4-ac65-9fdeb1ea4d75",
+        "name_english": "Deadlift (Paused)",
+        "name_espanol": "Deadlift (Pausado)",
+        "name_portugues": "Levantamento Terra (Pausado)",
+        "name_francais": "Deadlift (En Pause)",
+        "gif_id": "0032"
+    },
+    {
+        "id": "3ea1b15b-c59c-49b7-b087-1297c71dedd0",
+        "name_english": "Deadlift (Smith Machine)",
+        "name_espanol": "Deadlift (Máquina Smith)",
+        "name_portugues": "Levantamento Terra (Máquina Smith)",
+        "name_francais": "Deadlift (Smith Machine)",
+        "gif_id": "0752"
+    },
+    {
+        "id": "ae1e9dd5-30c5-4731-9d0f-c9231011ed22",
+        "name_english": "Deadlift with Chains",
+        "name_espanol": "Deadlift con Cadenas",
+        "name_portugues": "Levantamento Terra com Correntes",
+        "name_francais": "Deadlift avec Chaînes",
+        "gif_id": "0032"
+    },
+    {
+        "id": "daf94235-9c82-4934-9731-c7873fe3e592",
+        "name_english": "Decline Bench Press (Barbell)",
+        "name_espanol": "Press de Banca Declinado (Barra)",
+        "name_portugues": "Supino Declinado (Barra)",
+        "name_francais": "Développé Couché Incliné (Barre)",
+        "gif_id": "0033"
+    },
+    {
+        "id": "8201d254-a221-4604-8c92-77783a141d3b",
+        "name_english": "Decline Bench Press (Dumbbell)",
+        "name_espanol": "Press de Banca Declinado (Mancuernas)",
+        "name_portugues": "Supino Declinado (Halteres)",
+        "name_francais": "Développé Couché Incliné (Haltères)",
+        "gif_id": "0301"
+    },
+    {
+        "id": "b39aef31-5960-483e-9cb9-bf1a0c4304b1",
+        "name_english": "Decline Crunch",
+        "name_espanol": "Crujido de Declinación",
+        "name_portugues": "Abdominal Declinado",
+        "name_francais": "Crunch Incliné",
+        "gif_id": "0277"
+    },
+    {
+        "id": "b769d3e7-59c9-4679-9f06-e4fadffb3b6a",
+        "name_english": "Decline Crunch (Weighted)",
+        "name_espanol": "Crunch Declinado (Con Peso)",
+        "name_portugues": "Abdominal Declinado (Com Peso)",
+        "name_francais": "Crunch Incliné (Avec Poids)",
+        "gif_id": "0277"
+    },
+    {
+        "id": "58807e8c-073f-43b1-8c14-725e54bc853a",
+        "name_english": "Decline Push Up",
+        "name_espanol": "Flexiones Declinado",
+        "name_portugues": "Flexão Declinada",
+        "name_francais": "Pompe Incliné",
+        "gif_id": "0279"
+    },
+    {
+        "id": "d93bfd85-79d9-4c30-9555-5c7f85f5a4b7",
+        "name_english": "Decline Sit Up (Bodyweight)",
+        "name_espanol": "Abdominales Declinado (Peso Corporal)",
+        "name_portugues": "Abdominal Declinado (Peso Corporal)",
+        "name_francais": "Sit Up Incliné (Poids du Corps)",
+        "gif_id": "0282"
+    },
+    {
+        "id": "fdba152c-2075-4efb-9270-9f647ad88d31",
+        "name_english": "Decline Sit Up (Weighted)",
+        "name_espanol": "Abdominales Declinado (Con Peso)",
+        "name_portugues": "Abdominal Declinado (Com Peso)",
+        "name_francais": "Sit Up Incliné (Avec Poids)",
+        "gif_id": "3670"
+    },
+    {
+        "id": "4c34fe50-3c7f-455e-8636-205754a2ee73",
+        "name_english": "Deficit Deadlift (Barbell)",
+        "name_espanol": "Deadlift con Déficit (Barra)",
+        "name_portugues": "Levantamento Terra com Déficit (Barra)",
+        "name_francais": "Déficit Deadlift (Barre)",
+        "gif_id": "0032"
+    },
+    {
+        "id": "0eb659a4-33e4-4c53-990b-d1ab8ac28437",
+        "name_english": "Deficit Handstand Push Up",
+        "name_espanol": "Flexiones de Manos con Déficit",
+        "name_portugues": "Flexão de Braço Invertida com Déficit",
+        "name_francais": "Pompe en Équilibre (Déficit)",
+        "gif_id": "0471"
+    },
+    {
+        "id": "d3682b8e-a256-4e58-9db5-052b79530c07",
+        "name_english": "Deficit Push Up",
+        "name_espanol": "Flexiones con Déficit",
+        "name_portugues": "Flexão de Braço com Déficit",
+        "name_francais": "Pompe (Déficit)",
+        "gif_id": "0279"
+    },
+    {
+        "id": "73611237-1b04-4948-8fb5-89808f6b54f1",
+        "name_english": "Dip (Assisted)",
+        "name_espanol": "Dip (Asistido)",
+        "name_portugues": "Paralelas (Assistida)",
+        "name_francais": "Dips (Assistée)",
+        "gif_id": "0009"
+    },
+    {
+        "id": "043ea98c-d3eb-483f-a3ff-fbbd93f76205",
+        "name_english": "Dip (Bodyweight)",
+        "name_espanol": "Dip (Peso Corporal)",
+        "name_portugues": "Paralelas (Peso Corporal)",
+        "name_francais": "Dips (Poids du Corps)",
+        "gif_id": "0251"
+    },
+    {
+        "id": "36dff4e2-6000-42f4-8341-5cfc637dff89",
+        "name_english": "Dip (Weighted)",
+        "name_espanol": "Dip (Con Peso)",
+        "name_portugues": "Paralelas (Com Peso)",
+        "name_francais": "Dips (Avec Poids)",
+        "gif_id": "1767"
+    },
+    {
+        "id": "f7b568a6-04f5-4f73-adf4-1ed2e32964dd",
+        "name_english": "Dips Between Chairs",
+        "name_espanol": "Dips Entre Sillas",
+        "name_portugues": "Paralelas Entre Cadeiras",
+        "name_francais": "Dips Entre Chaises",
+        "gif_id": "0814"
+    },
+    {
+        "id": "b07a54cc-918d-4c20-afbe-b89ea5951dad",
+        "name_english": "Double Leg Multi-Directional Pogo",
+        "name_espanol": "Pogo Multi-Direccional de Piernas Dobles",
+        "name_portugues": "Pogo Multidirecional com Duas Pernas",
+        "name_francais": "Pogo Multidirectionnel à Deux Jambes",
+        "gif_id": null
+    },
+    {
+        "id": "e9c564f6-0862-45e7-a76d-425616a570d7",
+        "name_english": "Dragon Flag",
+        "name_espanol": "Bandera del Dragón",
+        "name_portugues": "Bandeira do Dragão",
+        "name_francais": "Dragon Flag",
+        "gif_id": null
+    },
+    {
+        "id": "ebce03d7-c620-465d-8425-8ee80064c9ef",
+        "name_english": "Dragon Fly",
+        "name_espanol": "Fly del Dragón",
+        "name_portugues": "Mosca do Dragão",
+        "name_francais": "Dragon Fly",
+        "gif_id": null
+    },
+    {
+        "id": "a88a9e84-1e5f-4a78-8406-6aa54619981b",
+        "name_english": "Dumbbell Bench Pullover",
+        "name_espanol": "Pullover de Banca con Mancuernas",
+        "name_portugues": "Pullover com Haltere no Banco",
+        "name_francais": "Pullover sur Banc (Haltères)",
+        "gif_id": "0375"
+    },
+    {
+        "id": "c50b8d2d-0e1d-4417-92ac-501484e5ee9a",
+        "name_english": "Dumbbell Row",
+        "name_espanol": "Remo con Mancuernas",
+        "name_portugues": "Remada com Haltere",
+        "name_francais": "Rowing avec Haltères",
+        "gif_id": "0293"
+    },
+    {
+        "id": "bb4c253e-5ffb-4826-a417-6da7a6b56080",
+        "name_english": "Dynamic Side Plank",
+        "name_espanol": "Plank Lateral Dinámico",
+        "name_portugues": "Prancha Lateral Dinâmica",
+        "name_francais": "Planche Latérale Dynamique",
+        "gif_id": null
+    },
+    {
+        "id": "4234be2b-1263-49ad-850c-f8d3303a16c9",
+        "name_english": "Eccentric Push Up",
+        "name_espanol": "Flexiones Excéntricas",
+        "name_portugues": "Flexão de Braço Excêntrica",
+        "name_francais": "Pompe Excentrique",
+        "gif_id": "1311"
+    },
+    {
+        "id": "4cd267bd-f596-4c97-8032-035609491244",
+        "name_english": "Face Pull",
+        "name_espanol": "Tirón de Cara",
+        "name_portugues": "Puxada para o Rosto",
+        "name_francais": "Tirage Visage",
+        "gif_id": null
+    },
+    {
+        "id": "579aea12-fd87-4c11-b42b-d95113ac0173",
+        "name_english": "Farmer's Carry (Weighted)",
+        "name_espanol": "Paseo del Granjero (Con Peso)",
+        "name_portugues": "Caminhada do Fazendeiro (Com Peso)",
+        "name_francais": "Marche du Fermier (Avec Poids)",
+        "gif_id": "2133"
+    },
+    {
+        "id": "42e9a494-8ca9-4035-bc6e-2f6b8ca65b59",
+        "name_english": "Floor Press (Barbell)",
+        "name_espanol": "Press en el Suelo (Barra)",
+        "name_portugues": "Supino no Chão (Barra)",
+        "name_francais": "Développé Couché au Sol (Barre)",
+        "gif_id": "0065"
+    },
+    {
+        "id": "0e0e5371-9d86-4a34-af0e-7a5b2ae11830",
+        "name_english": "Floor Press (Dumbbell)",
+        "name_espanol": "Press en el Suelo (Mancuernas)",
+        "name_portugues": "Supino no Chão (Haltere)",
+        "name_francais": "Développé Couché au Sol (Haltères)",
+        "gif_id": "1298"
+    },
+    {
+        "id": "a97c06e7-235c-48fc-8bbe-294feffc9462",
+        "name_english": "Fly Press (Dumbbell)",
+        "name_espanol": "Fly Press (Mancuernas)",
+        "name_portugues": "Crucifixo (Haltere)",
+        "name_francais": "Fly Press (Haltères)",
+        "gif_id": "0308"
+    },
+    {
+        "id": "a1d063c2-de84-4057-98e6-50cacacdeb22",
+        "name_english": "Forward Jump",
+        "name_espanol": "Salto Adelante",
+        "name_portugues": "Salto para Frente",
+        "name_francais": "Saut en Avant",
+        "gif_id": "1472"
+    },
+    {
+        "id": "8682ce9f-bba9-48a5-abf4-10af8078b311",
+        "name_english": "French Press",
+        "name_espanol": "Press Francés",
+        "name_portugues": "Tríceps Francês",
+        "name_francais": "Presse Française",
+        "gif_id": "1749"
+    },
+    {
+        "id": "12c19386-ce7b-446c-a843-725aa5f842dc",
+        "name_english": "Front Lever",
+        "name_espanol": "Levantamiento Frontal",
+        "name_portugues": "Alavanca Frontal",
+        "name_francais": "Front Lever",
+        "gif_id": "3296"
+    },
+    {
+        "id": "562c1ed3-7d3b-48bd-931d-89254848673d",
+        "name_english": "Front Raise",
+        "name_espanol": "Sentadilla Frontal",
+        "name_portugues": "Elevação Frontal",
+        "name_francais": "Élévation Frontale",
+        "gif_id": "0310"
+    },
+    {
+        "id": "4490b55b-9461-494e-b24b-8c76d4abd0e7",
+        "name_english": "Front Squat (Barbell)",
+        "name_espanol": "Sentadilla Frontal (Barra)",
+        "name_portugues": "Agachamento Frontal (Barra)",
+        "name_francais": "Front Squat (Barre)",
+        "gif_id": "0029"
+    },
+    {
+        "id": "7e4877ef-74e7-4db5-add4-e12812e4c640",
+        "name_english": "Front Squat (Dumbbell)",
+        "name_espanol": "Sentadilla Frontal (Mancuernas)",
+        "name_portugues": "Agachamento Frontal (Haltere)",
+        "name_francais": "Front Squat (Haltères)",
+        "gif_id": "0413"
+    },
+    {
+        "id": "2d896802-0aef-4b1c-818c-f8ff8b89dda4",
+        "name_english": "Front Squat (Paused)",
+        "name_espanol": "Sentadilla Frontal (Pausado)",
+        "name_portugues": "Agachamento Frontal (Com Pausa)",
+        "name_francais": "Front Squat (En Pause)",
+        "gif_id": "0029"
+    },
+    {
+        "id": "efd8edb4-669d-41de-b571-69fda062362c",
+        "name_english": "Glute Bridge (Barbell)",
+        "name_espanol": "Puente de Glúteos (Barra)",
+        "name_portugues": "Ponte Glútea (Barra)",
+        "name_francais": "Pont de Fessier (Barre)",
+        "gif_id": "1409"
+    },
+    {
+        "id": "13ccec69-320d-41fd-98e0-041400798d70",
+        "name_english": "Glute Bridge (Bodyweight)",
+        "name_espanol": "Puente de Glúteos (Peso Corporal)",
+        "name_portugues": "Ponte Glútea (Peso Corporal)",
+        "name_francais": "Pont de Fessier (Poids du Corps)",
+        "gif_id": "3523"
+    },
+    {
+        "id": "2eacab4a-da99-465e-942e-3cb570d0b1cd",
+        "name_english": "Glute Bridge (Dumbbell)",
+        "name_espanol": "Puente de Glúteos (Mancuernas)",
+        "name_portugues": "Ponte Glútea (Haltere)",
+        "name_francais": "Pont de Fessier (Haltères)",
+        "gif_id": "3523"
+    },
+    {
+        "id": "687305b3-f7f2-4640-8c03-6e853f315099",
+        "name_english": "Glute Kickback",
+        "name_espanol": "Patada de Glúteos",
+        "name_portugues": "Elevação Posterior de Perna",
+        "name_francais": "Kickback de Fessier",
+        "gif_id": null
+    },
+    {
+        "id": "9e81347b-f44f-45a7-b1c6-fcd43207b9b3",
+        "name_english": "Glute Kickback (Cable)",
+        "name_espanol": "Patada de Glúteos (Cable)",
+        "name_portugues": "Elevação Posterior de Perna (Cabo)",
+        "name_francais": "Kickback de Fessier (Câble)",
+        "gif_id": null
+    },
+    {
+        "id": "8c8445c5-fd4a-458f-8c26-c6475fe0812e",
+        "name_english": "Glute-Ham Raise",
+        "name_espanol": "Levantamiento de Glúteos-Ham",
+        "name_portugues": "Elevação de Glúteo e Isquiotibiais",
+        "name_francais": "Élévation Glute-Ham",
+        "gif_id": "3193"
+    },
+    {
+        "id": "4ea639a1-3b57-48ce-a86c-60d06668970c",
+        "name_english": "Goblet Squat",
+        "name_espanol": "Sentadilla Goblet",
+        "name_portugues": "Agachamento com Haltere",
+        "name_francais": "Goblet Squat",
+        "gif_id": "0534"
+    },
+    {
+        "id": "586ce8f4-82b7-4e63-964e-d44a76fb442e",
+        "name_english": "Good Morning",
+        "name_espanol": "Buenos Días",
+        "name_portugues": "Bom Dia",
+        "name_francais": "Good Morning",
+        "gif_id": "0044"
+    },
+    {
+        "id": "9ab62dff-1745-4ad4-bad7-177a8e4e9300",
+        "name_english": "Hack Squat",
+        "name_espanol": "Sentadilla Hack",
+        "name_portugues": "Agachamento Hack",
+        "name_francais": "Hack Squat",
+        "gif_id": "0743"
+    },
+    {
+        "id": "3217df58-bdfc-4b69-ab72-2cc1b6907a7b",
+        "name_english": "Hammer Curl",
+        "name_espanol": "Curl de Martillo",
+        "name_portugues": "Rosca Martelo",
+        "name_francais": "Curl Marteau",
+        "gif_id": "0313"
+    },
+    {
+        "id": "198ac6ae-8d75-43a4-ac60-9fc15094bd16",
+        "name_english": "Hamstring Curl",
+        "name_espanol": "Curl de Isquiotibiales",
+        "name_portugues": "Flexão de Pernas",
+        "name_francais": "Curl des Ischio-Jambiers",
+        "gif_id": "0586"
+    },
+    {
+        "id": "f113bebb-43d7-4d4d-b327-dbb1f5cb762f",
+        "name_english": "Hamstring Stretch with Rotation",
+        "name_espanol": "Estiramiento de Isquiotibiales con Rotación",
+        "name_portugues": "Alongamento de Isquiotibiais com Rotação",
+        "name_francais": "Étirement des Ischio-Jambiers avec Rotation",
+        "gif_id": null
+    },
+    {
+        "id": "2b61cbc6-42e7-483a-8b26-87d97386652b",
+        "name_english": "Hands on Hips Countermovement Jump",
+        "name_espanol": "Salto con Movimiento de Caderas",
+        "name_portugues": "Salto com Contramovimento com Mãos no Quadril",
+        "name_francais": "Saut Contre-Mouvement Mains sur les Hanches",
+        "gif_id": null
+    },
+    {
+        "id": "db3149ad-cff2-4232-a86e-f6f9af620951",
+        "name_english": "Hang Clean",
+        "name_espanol": "Hang Clean / Envíon Colgado",
+        "name_portugues": "Arranque em Suspensão",
+        "name_francais": "Hang Clean",
+        "gif_id": null
+    },
+    {
+        "id": "c4b27e11-0a1e-442c-b1f6-92edc04eba17",
+        "name_english": "Hang Power Clean",
+        "name_espanol": "Hang Power Clean",
+        "name_portugues": "Arranque Potência em Suspensão",
+        "name_francais": "Hang Power Clean",
+        "gif_id": null
+    },
+    {
+        "id": "a3b7e1a3-f422-4205-ba81-f8f199e0a459",
+        "name_english": "Hang Snatch",
+        "name_espanol": "Hang Snatch / Arranque Colgado",
+        "name_portugues": "Arranque em Suspensão",
+        "name_francais": "Hang Snatch",
+        "gif_id": null
+    },
+    {
+        "id": "1f3bb8bb-da70-4841-a638-577c8f1df71a",
+        "name_english": "Hanging Leg Raise",
+        "name_espanol": "Elevación de Piernas Colgadas",
+        "name_portugues": "Elevação de Pernas Suspenso",
+        "name_francais": "Élévation des Jambes en Suspension",
+        "gif_id": "0472"
+    },
+    {
+        "id": "1194350e-6548-4f26-9f89-f3c1a25fe02b",
+        "name_english": "Hanging Toes to Bar",
+        "name_espanol": "Toes to Bar Colgado",
+        "name_portugues": "Dedos aos Pés na Barra",
+        "name_francais": "Élévation des Orteils à la Barre",
+        "gif_id": null
+    },
+    {
+        "id": "73de7fe3-3834-4b8e-93a1-294d25b3208e",
+        "name_english": "High Bar Squat (Barbell)",
+        "name_espanol": "Sentadilla High Bar (Barra)",
+        "name_portugues": "Agachamento com Barra Alta",
+        "name_francais": "High Bar Squat (Barre)",
+        "gif_id": "1436"
+    },
+    {
+        "id": "2d052fb1-255f-474f-98ae-e0507af7010c",
+        "name_english": "High Pull",
+        "name_espanol": "Tirón Alto",
+        "name_portugues": "Puxada Alta",
+        "name_francais": "Tirage Haut",
+        "gif_id": "0548"
+    },
+    {
+        "id": "7cfe1f4f-d4ec-4521-b5dd-b4127d409c68",
+        "name_english": "High Row",
+        "name_espanol": "Remo Alto",
+        "name_portugues": "Remada Alta",
+        "name_francais": "Rowing Haut",
+        "gif_id": "0581"
+    },
+    {
+        "id": "aaf9f6d8-93ac-471f-bb58-03f3fcd40400",
+        "name_english": "Hip Abductor (Machine)",
+        "name_espanol": "Abductor de Caderas (Máquina)",
+        "name_portugues": "Abdutor de Quadril (Máquina)",
+        "name_francais": "Abducteur de Hanches (Machine)",
+        "gif_id": "0597"
+    },
+    {
+        "id": "dd2977bd-6465-4344-9d5b-e0896f908e4e",
+        "name_english": "Hip Adductor (Machine)",
+        "name_espanol": "Aductor de Caderas (Máquina)",
+        "name_portugues": "Adutor de Quadril (Máquina)",
+        "name_francais": "Adducteur de Hanches (Machine)",
+        "gif_id": "0598"
+    },
+    {
+        "id": "3df5e554-b540-45e3-9f7f-bcec83ed31ba",
+        "name_english": "Hip Bridge March",
+        "name_espanol": "Marcha de Puente de Caderas",
+        "name_portugues": "Marcha na Ponte de Quadril",
+        "name_francais": "Pont de Hanche en Marche",
+        "gif_id": "3561"
+    },
+    {
+        "id": "5345b3f4-6eac-4135-a069-998aad5515a3",
+        "name_english": "Hip Extension",
+        "name_espanol": "Extensión de Caderas",
+        "name_portugues": "Extensão de Quadril",
+        "name_francais": "Extension de Hanche",
+        "gif_id": "2286"
+    },
+    {
+        "id": "e9336bb5-f58a-4a9e-b6e3-6d571f09118e",
+        "name_english": "Hip Thrust (Barbell)",
+        "name_espanol": "Thrust de Caderas (Barra)",
+        "name_portugues": "Elevação de Quadril (Barra)",
+        "name_francais": "Hip Thrust (Barre)",
+        "gif_id": null
+    },
+    {
+        "id": "b65188ba-be1a-4422-86de-6a1c9d625668",
+        "name_english": "Hip Thrust (Bodyweight)",
+        "name_espanol": "Thrust de Caderas (Peso Corporal)",
+        "name_portugues": "Elevação de Quadril (Peso Corporal)",
+        "name_francais": "Hip Thrust (Poids du Corps)",
+        "gif_id": "3236"
+    },
+    {
+        "id": "660f9a9d-9424-44b2-813b-63f318f7f584",
+        "name_english": "Hip Thrust (Dumbbell)",
+        "name_espanol": "Thrust de Caderas (Mancuernas)",
+        "name_portugues": "Elevação de Quadril (Haltere)",
+        "name_francais": "Hip Thrust (Haltères)",
+        "gif_id": null
+    },
+    {
+        "id": "33da93a3-bf87-4090-84d9-13219af29247",
+        "name_english": "Hollow Hold",
+        "name_espanol": "Hollow Hold",
+        "name_portugues": "Prancha Oca",
+        "name_francais": "Maintien Creux",
+        "gif_id": null
+    },
+    {
+        "id": "caafe792-cb2b-4022-b504-aac6b5f81308",
+        "name_english": "Hollow Rock",
+        "name_espanol": "Hollow Rock",
+        "name_portugues": "Balanceio Oco",
+        "name_francais": "Rock Creux",
+        "gif_id": null
+    },
+    {
+        "id": "7f4f222f-d992-460a-a65c-8b14ebe3e6d5",
+        "name_english": "Hyperextension",
+        "name_espanol": "Hiperextensión",
+        "name_portugues": "Hiperextensão",
+        "name_francais": "Hyperextension",
+        "gif_id": "0489"
+    },
+    {
+        "id": "21d794cc-75e3-4b97-aef0-cb7f9e60dda8",
+        "name_english": "Inch Worm + Push Up",
+        "name_espanol": "Gusano con Flexión",
+        "name_portugues": "Verme com Flexão de Braço",
+        "name_francais": "Inch Worm + Pompe",
+        "gif_id": "3698"
+    },
+    {
+        "id": "49eaf92a-1906-48a4-a151-7a9a23474fb5",
+        "name_english": "Inchworm",
+        "name_espanol": "Gusano",
+        "name_portugues": "Verme",
+        "name_francais": "Inchworm",
+        "gif_id": "1471"
+    },
+    {
+        "id": "b5bb8130-1d70-4e25-9b58-b8e3222e0014",
+        "name_english": "Inchworm Walkout",
+        "name_espanol": "Gusano Caminante",
+        "name_portugues": "Verme Caminhada",
+        "name_francais": "Marche Inchworm",
+        "gif_id": "3698"
+    },
+    {
+        "id": "b94ef3eb-daec-4bf3-a813-0b44a473a754",
+        "name_english": "Incline Bench Press (Barbell)",
+        "name_espanol": "Press de Banca Inclinado (Barra)",
+        "name_portugues": "Supino Inclinado (Barra)",
+        "name_francais": "Développé Couché Incliné (Barre)",
+        "gif_id": "0047"
+    },
+    {
+        "id": "ed779f20-330f-4f87-b0a7-5856fc98f92f",
+        "name_english": "Incline Bench Press (Dumbbell)",
+        "name_espanol": "Press de Banca Inclinado (Mancuernas)",
+        "name_portugues": "Supino Inclinado (Haltere)",
+        "name_francais": "Développé Couché Incliné (Haltères)",
+        "gif_id": "0314"
+    },
+    {
+        "id": "d82321df-1076-46c2-8d35-c861a707f7fe",
+        "name_english": "Incline Bench Press (Smith Machine)",
+        "name_espanol": "Press de Banca Inclinado (Máquina Smith)",
+        "name_portugues": "Supino Inclinado (Máquina Smith)",
+        "name_francais": "Développé Couché Incliné (Smith Machine)",
+        "gif_id": "0757"
+    },
+    {
+        "id": "5db22ef4-1fe2-407c-9ea4-f8cd7e9237a8",
+        "name_english": "Incline Chest Fly (Dumbbell)",
+        "name_espanol": "Fly de Pecho Inclinado (Mancuernas)",
+        "name_portugues": "Crucifixo Inclinado (Haltere)",
+        "name_francais": "Écarté de Poitrine Incliné (Haltères)",
+        "gif_id": "0319"
+    },
+    {
+        "id": "9e0937d5-0516-4ce1-ab28-732b5b41c6b9",
+        "name_english": "Incline Chest Press (Machine)",
+        "name_espanol": "Press de Pecho Inclinado (Máquina)",
+        "name_portugues": "Supino Inclinado (Máquina)",
+        "name_francais": "Développé de Poitrine Incliné (Machine)",
+        "gif_id": "0757"
+    },
+    {
+        "id": "db3db2fe-9825-49fb-ab34-4635473e4eef",
+        "name_english": "Incline Curl (Dumbbell)",
+        "name_espanol": "Curl Inclinado (Mancuernas)",
+        "name_portugues": "Rosca Inclinado (Haltere)",
+        "name_francais": "Curl Incliné (Haltères)",
+        "gif_id": "0318"
+    },
+    {
+        "id": "fad470a9-25f4-43ce-a42c-b64ef1f77c92",
+        "name_english": "Incline Fly Press (Dumbbell)",
+        "name_espanol": "Fly Press Inclinado (Mancuernas)",
+        "name_portugues": "Crucifixo Inclinado (Haltere)",
+        "name_francais": "Fly Press Incliné (Haltères)",
+        "gif_id": "0319"
+    },
+    {
+        "id": "c7919335-21cc-4ded-8afc-bbfe1bbb2afe",
+        "name_english": "Incline Pushdown (Cable)",
+        "name_espanol": "Pushdown Inclinado (Cable)",
+        "name_portugues": "Desenvolvimento Inclinado (Cabo)",
+        "name_francais": "Pushdown Incliné (Câble)",
+        "gif_id": "0172"
+    },
+    {
+        "id": "ea797c60-b10e-462c-9432-c0b7a18f4a43",
+        "name_english": "Incline Tricep Extension (Dumbbell)",
+        "name_espanol": "Extensión de Tríceps Inclinado (Mancuernas)",
+        "name_portugues": "Extensão de Tríceps Inclinado (Haltere)",
+        "name_francais": "Extension de Triceps Incliné (Haltères)",
+        "gif_id": "0330"
+    },
+    {
+        "id": "0ad951e0-68a8-4e13-b61c-51193bcc39c8",
+        "name_english": "Inverted Row",
+        "name_espanol": "Remo Invertido",
+        "name_portugues": "Remada Invertida",
+        "name_francais": "Rowing Inversé",
+        "gif_id": "0499"
+    },
+    {
+        "id": "88963780-ccd8-46ad-8f2c-2a56d49fee95",
+        "name_english": "Iron Cross",
+        "name_espanol": "Cruz de Hierro",
+        "name_portugues": "Cruz de Ferro",
+        "name_francais": "Croix de Fer",
+        "gif_id": "0332"
+    },
+    {
+        "id": "79c0d5d0-0fa3-4697-85ad-98acf13e6b96",
+        "name_english": "JM Press",
+        "name_espanol": "JM Press",
+        "name_portugues": "JM Press",
+        "name_francais": "JM Press",
+        "gif_id": null
+    },
+    {
+        "id": "1f85ce85-028b-4c1c-90a0-9ddb52ebe186",
+        "name_english": "JM Press (Smith Machine)",
+        "name_espanol": "JM Press (Máquina Smith)",
+        "name_portugues": "JM Press (Máquina Smith)",
+        "name_francais": "JM Press (Smith Machine)",
+        "gif_id": "0052"
+    },
+    {
+        "id": "35b8378c-ec2b-4b30-86b6-c8d52235601f",
+        "name_english": "Jammer Press",
+        "name_espanol": "Press Jammer",
+        "name_portugues": "Desenvolvimento Jammer",
+        "name_francais": "Jammer Press",
+        "gif_id": null
+    },
+    {
+        "id": "e65b6c43-bb9d-453c-910a-908d9da27fb0",
+        "name_english": "Jog",
+        "name_espanol": "Jog",
+        "name_portugues": "Correr",
+        "name_francais": "Jogging",
+        "gif_id": "0685"
+    },
+    {
+        "id": "db2621c6-1668-42d2-b5ad-83c6fb99a65b",
+        "name_english": "Jump Rope",
+        "name_espanol": "Salto con Cuerda",
+        "name_portugues": "Pular Corda",
+        "name_francais": "Saut à la Corde",
+        "gif_id": "2612"
+    },
+    {
+        "id": "8430f911-1443-4df7-9782-6954dadcdce2",
+        "name_english": "Jump Squat",
+        "name_espanol": "Sentadilla con Salto",
+        "name_portugues": "Agachamento com Salto",
+        "name_francais": "Squat Sauté",
+        "gif_id": "0514"
+    },
+    {
+        "id": "1e56ae90-4ca6-4cdf-83e0-e3a7c50b1edc",
+        "name_english": "Jump Switch Lunge",
+        "name_espanol": "Salto de Lunge Alternado",
+        "name_portugues": "Salto com Troca de Lunge",
+        "name_francais": "Fente Sautante",
+        "gif_id": "3582"
+    },
+    {
+        "id": "035c0aa5-9e65-4226-b817-01866011dbba",
+        "name_english": "Jumping Jack",
+        "name_espanol": "Jumping Jack",
+        "name_portugues": "Polichinelo",
+        "name_francais": "Jumping Jack",
+        "gif_id": "3224"
+    },
+    {
+        "id": "78c38849-8aa2-43fe-ab9d-45eeae9889b2",
+        "name_english": "Katana Extension",
+        "name_espanol": "Extensión Katana",
+        "name_portugues": "Extensão Katana",
+        "name_francais": "Extension Katana",
+        "gif_id": null
+    },
+    {
+        "id": "c31d3d2d-bf2e-438c-aae6-e080872d276b",
+        "name_english": "Kettlebell Clean",
+        "name_espanol": "Clean con Kettlebell",
+        "name_portugues": "Clean com Kettlebell",
+        "name_francais": "Clean avec Kettlebell",
+        "gif_id": "0552"
+    },
+    {
+        "id": "83cdefc4-17bd-450c-baed-e1e300b6afc9",
+        "name_english": "Kettlebell Clean and Press",
+        "name_espanol": "Clean y Press con Kettlebell",
+        "name_portugues": "Clean e Press com Kettlebell",
+        "name_francais": "Clean et Press avec Kettlebell",
+        "gif_id": "0028"
+    },
+    {
+        "id": "856aa1b6-db62-4d6c-a28a-0639f079e2c0",
+        "name_english": "Kettlebell Gorilla Row",
+        "name_espanol": "Remo Gorilla con Kettlebell",
+        "name_portugues": "Remada Gorila com Kettlebell",
+        "name_francais": "Rowing Gorille avec Kettlebell",
+        "gif_id": null
+    },
+    {
+        "id": "514c3967-b33c-4def-92af-db9ce2d9127b",
+        "name_english": "Kettlebell Halo",
+        "name_espanol": "Halo con Kettlebell",
+        "name_portugues": "Halo com Kettlebell",
+        "name_francais": "Halo avec Kettlebell",
+        "gif_id": null
+    },
+    {
+        "id": "27e28b20-5eb6-409d-a945-c88d1f913eae",
+        "name_english": "Kettlebell Press",
+        "name_espanol": "Press con Kettlebell",
+        "name_portugues": "Desenvolvimento com Kettlebell",
+        "name_francais": "Press avec Kettlebell",
+        "gif_id": null
+    },
+    {
+        "id": "957bd715-f994-4031-8b67-5871c805715d",
+        "name_english": "Kettlebell Swing",
+        "name_espanol": "Swing con Kettlebell",
+        "name_portugues": "Swing com Kettlebell",
+        "name_francais": "Swing avec Kettlebell",
+        "gif_id": "0549"
+    },
+    {
+        "id": "d0b4b58e-1783-4b28-a4a7-6c05cf0d8635",
+        "name_english": "Knee Raise (Captain's Chair)",
+        "name_espanol": "Elevación de Rodillas (Silla del Capitán)",
+        "name_portugues": "Elevação de Joelho (Cadeira do Capitão)",
+        "name_francais": "Élévation des Genoux (Chaise du Capitaine)",
+        "gif_id": "2963"
+    },
+    {
+        "id": "fc758f8f-a33f-4177-a2b0-7a730cd72926",
+        "name_english": "Kroc Row",
+        "name_espanol": "Remo Kroc",
+        "name_portugues": "Remada Kroc",
+        "name_francais": "Rowing Kroc",
+        "gif_id": null
+    },
+    {
+        "id": "f4b7099a-fa18-4110-8de9-83824645ff2f",
+        "name_english": "Landmine Clean and Press",
+        "name_espanol": "Clean y Press con Landmine",
+        "name_portugues": "Clean e Press com Landmine",
+        "name_francais": "Clean et Press avec Landmine",
+        "gif_id": null
+    },
+    {
+        "id": "3fa8900d-61cc-436a-b728-eaf8eb6d5906",
+        "name_english": "Landmine Oblique Twist",
+        "name_espanol": "Giro Oblicuo con Landmine",
+        "name_portugues": "Torção Oblíqua com Landmine",
+        "name_francais": "Torsion Oblique avec Landmine",
+        "gif_id": "0562"
+    },
+    {
+        "id": "a36cc44b-e348-4809-a54d-aafd11fc97b4",
+        "name_english": "Landmine Press",
+        "name_espanol": "Press con Landmine",
+        "name_portugues": "Desenvolvimento com Landmine",
+        "name_francais": "Press avec Landmine",
+        "gif_id": null
+    },
+    {
+        "id": "90a89579-8f07-4aa6-90b7-1d2735463af1",
+        "name_english": "Landmine Push Press",
+        "name_espanol": "Push Press con Landmine",
+        "name_portugues": "Push Press com Landmine",
+        "name_francais": "Push Press avec Landmine",
+        "gif_id": null
+    },
+    {
+        "id": "ddebd804-1a60-482e-a782-7b0d2db860cc",
+        "name_english": "Landmine Twist",
+        "name_espanol": "Giro con Landmine",
+        "name_portugues": "Torção com Landmine",
+        "name_francais": "Torsion avec Landmine",
+        "gif_id": "0562"
+    },
+    {
+        "id": "0772c47b-a265-4e26-b6b8-8e452ab84ab3",
+        "name_english": "Larsen Press (Barbell)",
+        "name_espanol": "Larsen Press (Barra)",
+        "name_portugues": "Supino Larsen (Barra)",
+        "name_francais": "Larsen Press (Barre)",
+        "gif_id": null
+    },
+    {
+        "id": "e8aee1aa-7dec-4901-b7ae-04fdcdda77b2",
+        "name_english": "Lat Prayer",
+        "name_espanol": "Oración de Lats",
+        "name_portugues": "Oração de Latíssimo",
+        "name_francais": "Prière Lat",
+        "gif_id": null
+    },
+    {
+        "id": "6c895d04-6ca2-41ba-b6a5-0836d07fdeab",
+        "name_english": "Lat Pulldown",
+        "name_espanol": "Pulldown de Lats",
+        "name_portugues": "Puxada de Latíssimo",
+        "name_francais": "Tirage Lat",
+        "gif_id": "0198"
+    },
+    {
+        "id": "6675d578-5e24-48a9-b218-24275b16e567",
+        "name_english": "Lat Pulldown (Close Grip)",
+        "name_espanol": "Pulldown de Lats (Agarre Cerrado)",
+        "name_portugues": "Puxada de Latíssimo (Pegada Fechada)",
+        "name_francais": "Tirage Lat (Prise Serrée)",
+        "gif_id": "0974"
+    },
+    {
+        "id": "67225107-4ade-4cb4-95b4-e37c702341cc",
+        "name_english": "Lat Pulldown (Neutral Grip)",
+        "name_espanol": "Pulldown de Lats (Agarre Neutral)",
+        "name_portugues": "Puxada de Latíssimo (Pegada Neutra)",
+        "name_francais": "Tirage Lat (Prise Neutre)",
+        "gif_id": "0198"
+    },
+    {
+        "id": "225b35cb-b40d-416b-a138-e9f03f9f97b0",
+        "name_english": "Lat Pulldown (Single Arm)",
+        "name_espanol": "Pulldown de Lats (Un Brazo)",
+        "name_portugues": "Puxada de Latíssimo (Unilateral)",
+        "name_francais": "Tirage Lat (Unilatéral)",
+        "gif_id": "2330"
+    },
+    {
+        "id": "4a443221-d8a4-4622-908e-aee0b2a7394b",
+        "name_english": "Lateral Bear Crawl",
+        "name_espanol": "Gateo del Oso Lateral",
+        "name_portugues": "Caminhada do Urso Lateral",
+        "name_francais": "Marche de l’Ours Latéral",
+        "gif_id": "3360"
+    },
+    {
+        "id": "08fa27b3-df20-4314-96eb-7ad4c7d5ff20",
+        "name_english": "Lateral Box Jump",
+        "name_espanol": "Salto Lateral de Caja",
+        "name_portugues": "Salto Lateral na Caixa",
+        "name_francais": "Saut Latéral sur Boîte",
+        "gif_id": "1374"
+    },
+    {
+        "id": "62d54f05-e3ba-4423-aa85-f6585192880b",
+        "name_english": "Lateral Jump",
+        "name_espanol": "Salto Lateral",
+        "name_portugues": "Salto Lateral",
+        "name_francais": "Saut Latéral",
+        "gif_id": "1473"
+    },
+    {
+        "id": "c0a4ec25-905b-49e3-b42e-2d89d1cfb8e4",
+        "name_english": "Lateral Lunge",
+        "name_espanol": "Lunge Lateral",
+        "name_portugues": "Lunge Lateral",
+        "name_francais": "Fente Latérale",
+        "gif_id": "1410"
+    },
+    {
+        "id": "fd22a983-2429-4966-961c-63e08f11d527",
+        "name_english": "Lateral Lunge (Weighted)",
+        "name_espanol": "Lunge Lateral (Con Peso)",
+        "name_portugues": "Lunge Lateral (Com Peso)",
+        "name_francais": "Fente Latérale (Avec Poids)",
+        "gif_id": "1410"
+    },
+    {
+        "id": "b17d9d93-72d4-4d21-81e5-455ad9856a4f",
+        "name_english": "Lateral Med Ball Slam",
+        "name_espanol": "Golpe de Bola Medicinal Lateral",
+        "name_portugues": "Arremesso Lateral de Bola Medicinal",
+        "name_francais": "Frappe Latérale avec Ballon Médicin",
+        "gif_id": "1354"
+    },
+    {
+        "id": "4f55ecfe-5200-49f6-b0f9-15a360152ebf",
+        "name_english": "Lateral Med Ball Throw",
+        "name_espanol": "Lanzamiento de Bola Medicinal Lateral",
+        "name_portugues": "Arremesso Lateral de Bola Medicinal",
+        "name_francais": "Lancer Latéral avec Ballon Médicin",
+        "gif_id": "0640"
+    },
+    {
+        "id": "87e60900-01a4-4f9c-ac9f-6df86e196e11",
+        "name_english": "Lateral Raise (Cable)",
+        "name_espanol": "Elevación Lateral (Cable)",
+        "name_portugues": "Elevação Lateral (Cabo)",
+        "name_francais": "Élévation Latérale (Câble)",
+        "gif_id": "0178"
+    },
+    {
+        "id": "53849309-2003-44ba-9e4c-3596f0e4d55b",
+        "name_english": "Lateral Raise (Dumbbell)",
+        "name_espanol": "Elevación Lateral (Mancuernas)",
+        "name_portugues": "Elevação Lateral (Haltere)",
+        "name_francais": "Élévation Latérale (Haltères)",
+        "gif_id": "0334"
+    },
+    {
+        "id": "cbf4ab39-e197-49c8-b211-e8b29dddcce4",
+        "name_english": "Lateral Raise (Machine)",
+        "name_espanol": "Elevación Lateral (Máquina)",
+        "name_portugues": "Elevação Lateral (Máquina)",
+        "name_francais": "Élévation Latérale (Machine)",
+        "gif_id": "0584"
+    },
+    {
+        "id": "97ae81b3-2d58-4055-9bc8-29b242b956fe",
+        "name_english": "Lateral Shuffle",
+        "name_espanol": "Desplazamiento Lateral",
+        "name_portugues": "Deslocamento Lateral",
+        "name_francais": "Déplacement Latéral",
+        "gif_id": null
+    },
+    {
+        "id": "77809c41-e8c8-408f-9d8f-0733c3bc7a6e",
+        "name_english": "Leg Curl",
+        "name_espanol": "Curl de Pierna",
+        "name_portugues": "Flexão de Pernas",
+        "name_francais": "Curl des Jambes",
+        "gif_id": "0599"
+    },
+    {
+        "id": "a4e4c202-e329-44a0-bb2c-040ac71a8b1a",
+        "name_english": "Leg Extension",
+        "name_espanol": "Extensión de Pierna",
+        "name_portugues": "Extensão de Pernas",
+        "name_francais": "Extension des Jambes",
+        "gif_id": "0585"
+    },
+    {
+        "id": "b136f446-2f1c-4b9b-bf2b-61bfb428df47",
+        "name_english": "Leg Press",
+        "name_espanol": "Prensa de Pierna",
+        "name_portugues": "Leg Press",
+        "name_francais": "Leg Press",
+        "gif_id": "2611"
+    },
+    {
+        "id": "bb3bddc9-118d-4e3f-8804-e7cf5d134412",
+        "name_english": "Leg Press (45 Degrees)",
+        "name_espanol": "Prensa de Pierna (45 Grados)",
+        "name_portugues": "Leg Press (45 Graus)",
+        "name_francais": "Leg Press (45 Degrés)",
+        "gif_id": "0739"
+    },
+    {
+        "id": "610b715c-fb90-43b8-8254-fd6150cd6c48",
+        "name_english": "Leg Pull In",
+        "name_espanol": "Pull In de Pierna",
+        "name_portugues": "Elevação de Pernas",
+        "name_francais": "Relevé des Jambes",
+        "gif_id": "0570"
+    },
+    {
+        "id": "34eaac15-2eba-44f5-ab1d-cdd576de93ca",
+        "name_english": "Leg Raise (Captain's Chair)",
+        "name_espanol": "Elevación de Pierna (Silla del Capitán)",
+        "name_portugues": "Elevação de Pernas (Cadeira do Capitão)",
+        "name_francais": "Élévation des Jambes (Chaise du Capitaine)",
+        "gif_id": "2963"
+    },
+    {
+        "id": "8b8c2f1a-40c1-4e1f-a4df-9a4a99fa5895",
+        "name_english": "Legs Up Bench Press (Barbell)",
+        "name_espanol": "Press de Banca con Piernas Elevadas (Barra)",
+        "name_portugues": "Supino com Pernas Elevadas (Barra)",
+        "name_francais": "Développé Couché Jambes en L’air (Barre)",
+        "gif_id": null
+    },
+    {
+        "id": "ede339f5-bfbb-432b-8ea5-0052de38ce24",
+        "name_english": "Lever Front Pulldown",
+        "name_espanol": "Palanca desplegable frontal",
+        "name_portugues": "Alavanca suspensa frontal",
+        "name_francais": "Tirage avant du levier",
+        "gif_id": "0579"
+    },
+    {
+        "id": "44bb95ad-8d97-4600-a69f-ae7f32159aec",
+        "name_english": "Light Jog",
+        "name_espanol": "Jog Ligero",
+        "name_portugues": "Corrida Leve",
+        "name_francais": "Jogging Léger",
+        "gif_id": "0685"
+    },
+    {
+        "id": "ef413658-b10f-49f7-ad53-94a3b4419f31",
+        "name_english": "Log Press",
+        "name_espanol": "Press de Tronco",
+        "name_portugues": "Desenvolvimento com Log",
+        "name_francais": "Press Log",
+        "gif_id": null
+    },
+    {
+        "id": "85f163bc-8e29-469b-820c-089bb57fc290",
+        "name_english": "Long Pause Bench Press",
+        "name_espanol": "Press de Banca con Pausa Larga",
+        "name_portugues": "Supino com Longa Pausa",
+        "name_francais": "Développé Couché avec Longue Pause",
+        "gif_id": "0025"
+    },
+    {
+        "id": "6b59ac75-4e87-4540-bc58-ebdd6a05e8f6",
+        "name_english": "Lu Raise",
+        "name_espanol": "Levantamiento Lu",
+        "name_portugues": "Elevação Lu",
+        "name_francais": "Élévation Lu",
+        "gif_id": null
+    },
+    {
+        "id": "9f95a852-8efc-4c1c-985c-4a113a04dcd7",
+        "name_english": "Lunge (Barbell)",
+        "name_espanol": "Lunge (Barra)",
+        "name_portugues": "Lunge (Barra)",
+        "name_francais": "Fente (Barre)",
+        "gif_id": "0054"
+    },
+    {
+        "id": "b4752e1a-c7d1-4f46-b341-13842152fbdf",
+        "name_english": "Lunge (Bodyweight)",
+        "name_espanol": "Lunge (Peso Corporal)",
+        "name_portugues": "Lunge (Peso Corporal)",
+        "name_francais": "Fente (Poids du Corps)",
+        "gif_id": "3470"
+    },
+    {
+        "id": "7c129f87-2901-4524-bba6-f226037b120b",
+        "name_english": "Lunge (Dumbbell)",
+        "name_espanol": "Lunge (Mancuernas)",
+        "name_portugues": "Lunge (Haltere)",
+        "name_francais": "Fente (Haltères)",
+        "gif_id": "0336"
+    },
+    {
+        "id": "0fdd1f10-7398-4596-a0e4-9699f4541ea0",
+        "name_english": "Lunge (Kettlebell)",
+        "name_espanol": "Lunge (Kettlebell)",
+        "name_portugues": "Lunge (Kettlebell)",
+        "name_francais": "Fente (Kettlebell)",
+        "gif_id": "0536"
+    },
+    {
+        "id": "e01ff971-cc77-44bb-a22c-9c471781ab52",
+        "name_english": "Lying Leg Curl",
+        "name_espanol": "Curl de Piernas Acostado",
+        "name_portugues": "Flexão de Pernas Deitado",
+        "name_francais": "Curl des Jambes Allongé",
+        "gif_id": "0586"
+    },
+    {
+        "id": "21be4c9b-8ed5-4226-8821-25645dc345f6",
+        "name_english": "Lying Leg Raise",
+        "name_espanol": "Elevación de Piernas Acostado",
+        "name_portugues": "Elevação de Pernas Deitado",
+        "name_francais": "Élévation des Jambes Allongé",
+        "gif_id": "0620"
+    },
+    {
+        "id": "d06e24c3-c2d9-45e9-9b85-170178910c56",
+        "name_english": "Lying Pullover (Cable)",
+        "name_espanol": "Pullover Acostado (Cable)",
+        "name_portugues": "Pullover Deitado (Cabo)",
+        "name_francais": "Pullover Allongé (Câble)",
+        "gif_id": "0184"
+    },
+    {
+        "id": "3667f1e9-4d09-4a6a-9825-df4053b47ed4",
+        "name_english": "Lying Rear Lateral Raise",
+        "name_espanol": "Elevación Lateral Acostado",
+        "name_portugues": "Elevação Lateral Posterior Deitado",
+        "name_francais": "Élévation Latérale Postérieure Allongé",
+        "gif_id": "0348"
+    },
+    {
+        "id": "37aa3242-b192-4961-abb2-d50923f55193",
+        "name_english": "Lying Side Lateral Raise",
+        "name_espanol": "Elevación Lateral Acostado",
+        "name_portugues": "Elevação Lateral Deitado",
+        "name_francais": "Élévation Latérale Latérale Allongé",
+        "gif_id": "0345"
+    },
+    {
+        "id": "f8575e5d-0fc4-4b58-ab37-c9af2cc0a35a",
+        "name_english": "Lying Tricep Extension (Barbell)",
+        "name_espanol": "Extensión de Tríceps Acostado (Barra)",
+        "name_portugues": "Extensão de Tríceps Deitado (Barra)",
+        "name_francais": "Extension de Triceps Allongé (Barre)",
+        "gif_id": "0061"
+    },
+    {
+        "id": "3da42d55-5959-42ef-8ea7-404fe210f449",
+        "name_english": "Meadows Curl",
+        "name_espanol": "Curl Meadows",
+        "name_portugues": "Rosca Meadows",
+        "name_francais": "Curl Meadows",
+        "gif_id": null
+    },
+    {
+        "id": "a79dc921-8312-4263-b900-5f1b93f393fb",
+        "name_english": "Meadows Row",
+        "name_espanol": "Remo Meadows",
+        "name_portugues": "Remada Meadows",
+        "name_francais": "Rowing Meadows",
+        "gif_id": null
+    },
+    {
+        "id": "d7fbe653-8a84-421e-bf30-524417da7df2",
+        "name_english": "Med Ball Slam",
+        "name_espanol": "Golpe de Bola Medicinal",
+        "name_portugues": "Arremesso de Bola Medicinal",
+        "name_francais": "Frappe avec Ballon Médicin",
+        "gif_id": "1354"
+    },
+    {
+        "id": "ed7e5ec1-d783-465f-b2ab-421618dc5eb7",
+        "name_english": "Military Press (Barbell)",
+        "name_espanol": "Press Militar (Barra)",
+        "name_portugues": "Desenvolvimento Militar (Barra)",
+        "name_francais": "Développé Militaire (Barre)",
+        "gif_id": "1457"
+    },
+    {
+        "id": "cb5973f8-bf7d-4d49-9129-e4ece6a3658d",
+        "name_english": "Modified Dragon Fly",
+        "name_espanol": "Fly del Dragón Modificado",
+        "name_portugues": "Mosca do Dragão Modificada",
+        "name_francais": "Dragon Fly Modifié",
+        "gif_id": null
+    },
+    {
+        "id": "f17e58c5-a6a0-42e9-8fa8-8fe572c09584",
+        "name_english": "Modified Jumping Jack",
+        "name_espanol": "Jumping Jack Modificado",
+        "name_portugues": "Polichinelo Modificado",
+        "name_francais": "Jumping Jack Modifié",
+        "gif_id": null
+    },
+    {
+        "id": "dfc4d161-84ec-42ca-8160-18c8c184386e",
+        "name_english": "Monastery Tricep Extension",
+        "name_espanol": "Extensión de Tríceps Monasterio",
+        "name_portugues": "Extensão de Tríceps Monastério",
+        "name_francais": "Extension de Triceps Monastère",
+        "gif_id": null
+    },
+    {
+        "id": "6034b880-3fc6-41e6-a456-131da4206524",
+        "name_english": "Mountain Climber",
+        "name_espanol": "Mountain Climber",
+        "name_portugues": "Escalador",
+        "name_francais": "Grimpeur de Montagne",
+        "gif_id": null
+    },
+    {
+        "id": "ebccdde4-d415-47bd-8042-766821b3a086",
+        "name_english": "Muscle Up",
+        "name_espanol": "Muscle Up",
+        "name_portugues": "Muscle Up",
+        "name_francais": "Muscle Up",
+        "gif_id": "0631"
+    },
+    {
+        "id": "57f08516-190c-40fb-8401-0a693d808248",
+        "name_english": "Neck Curl",
+        "name_espanol": "Curl de Cuello",
+        "name_portugues": "Rosca de Pescoço",
+        "name_francais": "Curl du Cou",
+        "gif_id": "0716"
+    },
+    {
+        "id": "4c2a0c8f-1b98-4fcc-9d58-99edfe1bb36b",
+        "name_english": "Neck Extension",
+        "name_espanol": "Extensión de Cuello",
+        "name_portugues": "Extensão de Pescoço",
+        "name_francais": "Extension du Cou",
+        "gif_id": "1403"
+    },
+    {
+        "id": "19a56685-51b8-4157-8449-2dafdad2010a",
+        "name_english": "Neck Flexion",
+        "name_espanol": "Flexión de Cuello",
+        "name_portugues": "Flexão de Pescoço",
+        "name_francais": "Flexion du Cou",
+        "gif_id": "1403"
+    },
+    {
+        "id": "80362c40-3f7a-47d8-bb82-21b1c4de73b5",
+        "name_english": "Nordic Curl",
+        "name_espanol": "Curl Nórdico",
+        "name_portugues": "Flexão Nórdica",
+        "name_francais": "Curl Nordique",
+        "gif_id": null
+    },
+    {
+        "id": "3d9fb06d-1e21-4f58-bfa7-14962a5dbff2",
+        "name_english": "Oblique Crunch",
+        "name_espanol": "Crunch Oblicuo",
+        "name_portugues": "Abdominal Oblíquo",
+        "name_francais": "Crunch Oblique",
+        "gif_id": "1495"
+    },
+    {
+        "id": "dafbadae-8c92-4dff-85f1-952d04d23575",
+        "name_english": "One Arm Bent Over Row",
+        "name_espanol": "Remo Un Brazo Inclinado",
+        "name_portugues": "Remada Curvada Unilateral",
+        "name_francais": "Rowing Penché Unilatéral",
+        "gif_id": "0292"
+    },
+    {
+        "id": "2921405a-a9e9-41e7-a6da-5783be5aea97",
+        "name_english": "One Arm Lateral Raise (Cable)",
+        "name_espanol": "Elevación Lateral Un Brazo (Cable)",
+        "name_portugues": "Elevação Lateral Unilateral (Cabo)",
+        "name_francais": "Élévation Latérale Unilatérale (Câble)",
+        "gif_id": "0192"
+    },
+    {
+        "id": "5c2d4556-00ed-4fe2-9ebf-37debd716373",
+        "name_english": "One Arm Lateral Raise (Dumbbell)",
+        "name_espanol": "Elevación Lateral Un Brazo (Mancuernas)",
+        "name_portugues": "Elevação Lateral Unilateral (Haltere)",
+        "name_francais": "Élévation Latérale Unilatérale (Haltères)",
+        "gif_id": "0355"
+    },
+    {
+        "id": "51a4d95d-14eb-4fa0-ae28-31a4695e2540",
+        "name_english": "Overhead Extension (Dumbbell)",
+        "name_espanol": "Extensión de Tríceps Sobre la Cabeza (Mancuernas)",
+        "name_portugues": "Extensão Acima da Cabeça (Haltere)",
+        "name_francais": "Extension au-dessus de la Tête (Haltères)",
+        "gif_id": "0430"
+    },
+    {
+        "id": "89bd0cda-dd43-4638-a5b0-4d68d2ae6631",
+        "name_english": "Overhead Extension (EZ Bar)",
+        "name_espanol": "Extensión de Tríceps Sobre la Cabeza (EZ Bar)",
+        "name_portugues": "Extensão Acima da Cabeça (Barra EZ)",
+        "name_francais": "Extension au-dessus de la Tête (Barre EZ)",
+        "gif_id": "0092"
+    },
+    {
+        "id": "d3803811-e137-4909-86a1-0915f7866770",
+        "name_english": "Overhead Press (Barbell)",
+        "name_espanol": "Press de Hombros (Barra)",
+        "name_portugues": "Desenvolvimento Acima da Cabeça (Barra)",
+        "name_francais": "Développé au-dessus de la Tête (Barre)",
+        "gif_id": "0091"
+    },
+    {
+        "id": "75987572-afa3-451a-bba0-78f60c838f2f",
+        "name_english": "Overhead Press (Dumbbell)",
+        "name_espanol": "Press de Hombros (Mancuernas)",
+        "name_portugues": "Desenvolvimento Acima da Cabeça (Haltere)",
+        "name_francais": "Développé au-dessus de la Tête (Haltères)",
+        "gif_id": "0426"
+    },
+    {
+        "id": "8f510bda-12e4-40a0-8685-4cec643cd1c8",
+        "name_english": "Overhead Press (Machine)",
+        "name_espanol": "Press de Hombros (Máquina)",
+        "name_portugues": "Desenvolvimento Acima da Cabeça (Máquina)",
+        "name_francais": "Développé au-dessus de la Tête (Machine)",
+        "gif_id": "0587"
+    },
+    {
+        "id": "84645ebf-0b33-48a9-8136-fa071db7d6ec",
+        "name_english": "Overhead Squat",
+        "name_espanol": "Sentadilla Overhead",
+        "name_portugues": "Agachamento Overhead",
+        "name_francais": "Squat au-dessus de la Tête",
+        "gif_id": "0069"
+    },
+    {
+        "id": "1d8ce137-7b10-4c96-bd14-fa41f27770f3",
+        "name_english": "Overhead Tricep Extension (Cable)",
+        "name_espanol": "Extensión de Tríceps Sobre la Cabeza (Cable)",
+        "name_portugues": "Extensão de Tríceps Acima da Cabeça (Cabo)",
+        "name_francais": "Extension de Triceps au-dessus de la Tête (Câble)",
+        "gif_id": "1722"
+    },
+    {
+        "id": "be3c1252-74ef-401d-b08f-1db28d5114eb",
+        "name_english": "Pallof Press",
+        "name_espanol": "Prensa Pallof",
+        "name_portugues": "Pallof Press",
+        "name_francais": "Pallof Press",
+        "gif_id": "1015"
+    },
+    {
+        "id": "10f86516-28fd-4252-9278-85178fe3431b",
+        "name_english": "Pec Deck (Machine)",
+        "name_espanol": "Pec Deck (Máquina)",
+        "name_portugues": "Pec Deck (Máquina)",
+        "name_francais": "Pec Deck (Machine)",
+        "gif_id": null
+    },
+    {
+        "id": "46351892-a05f-4744-8da2-940bb2f06142",
+        "name_english": "Pec Fly (Dumbbell)",
+        "name_espanol": "Fly de Pec (Mancuernas)",
+        "name_portugues": "Crucifixo (Haltere)",
+        "name_francais": "Écarté de Poitrine (Haltères)",
+        "gif_id": "0308"
+    },
+    {
+        "id": "b1bf981f-6e66-4482-b6bd-1fca825955f6",
+        "name_english": "Pendlay Row",
+        "name_espanol": "Remo Pendlay",
+        "name_portugues": "Remada Pendlay",
+        "name_francais": "Rowing Pendlay",
+        "gif_id": "3017"
+    },
+    {
+        "id": "edcaa830-27af-4686-8f67-cd60565d8b9d",
+        "name_english": "Pendulum Squat",
+        "name_espanol": "Sentadilla Pendulum",
+        "name_portugues": "Agachamento Pêndulo",
+        "name_francais": "Squat Pendulum",
+        "gif_id": null
+    },
+    {
+        "id": "a4e75b1f-f7c9-442d-a70c-81a8ae61c269",
+        "name_english": "Pike Push Up",
+        "name_espanol": "Push Up Pike",
+        "name_portugues": "Flexão Pike",
+        "name_francais": "Pompe Pike",
+        "gif_id": "1296"
+    },
+    {
+        "id": "f434114c-e077-4284-88b7-88d9a16c51e6",
+        "name_english": "Pin Press Bench (Barbell)",
+        "name_espanol": "Press de Banca Pin Press (Barra)",
+        "name_portugues": "Supino com Barra (Pin Press)",
+        "name_francais": "Pin Press Bench (Barre)",
+        "gif_id": "1751"
+    },
+    {
+        "id": "d365f24d-4576-4954-8ed3-5b8fb4948725",
+        "name_english": "Pinwheel Curl",
+        "name_espanol": "Curl Pinwheel",
+        "name_portugues": "Rosca Pinwheel",
+        "name_francais": "Curl Pinwheel",
+        "gif_id": null
+    },
+    {
+        "id": "415416cb-b511-4190-89a9-0253b6e5d885",
+        "name_english": "Pistol Squat",
+        "name_espanol": "Sentadilla Pistol",
+        "name_portugues": "Agachamento Pistol",
+        "name_francais": "Squat Pistol",
+        "gif_id": "1759"
+    },
+    {
+        "id": "f0fec359-4872-4648-abba-2114538b5cdb",
+        "name_english": "Plank",
+        "name_espanol": "Plank",
+        "name_portugues": "Prancha",
+        "name_francais": "Planche",
+        "gif_id": "2135"
+    },
+    {
+        "id": "4ab19bf5-1842-4782-862d-7e248213cf0c",
+        "name_english": "Plank (Weighted)",
+        "name_espanol": "Plank (Con Peso)",
+        "name_portugues": "Prancha (Com Peso)",
+        "name_francais": "Planche (Avec Poids)",
+        "gif_id": "2135"
+    },
+    {
+        "id": "8015b14f-d549-456b-ac49-4b36925510e0",
+        "name_english": "Plank Walkout",
+        "name_espanol": "Plank Walkout",
+        "name_portugues": "Caminhada em Prancha",
+        "name_francais": "Marche en Planche",
+        "gif_id": null
+    },
+    {
+        "id": "36fab549-b9a3-4e1f-8acc-2c5cfab901dc",
+        "name_english": "Platz Squat",
+        "name_espanol": "Sentadilla Platz",
+        "name_portugues": "Agachamento Platz",
+        "name_francais": "Squat Platz",
+        "gif_id": null
+    },
+    {
+        "id": "4058c35c-638b-461b-9a8f-10821c8d4aea",
+        "name_english": "Pogo Hop",
+        "name_espanol": "Salto Pogo (Hop)",
+        "name_portugues": "Pogo Hop",
+        "name_francais": "Pogo Hop",
+        "gif_id": null
+    },
+    {
+        "id": "00f58a25-f6c4-4918-a3ea-4d06956d7283",
+        "name_english": "Pogo Jump",
+        "name_espanol": "Salto Pogo (Jump)",
+        "name_portugues": "Pogo Jump",
+        "name_francais": "Saut Pogo",
+        "gif_id": null
+    },
+    {
+        "id": "44e86ebd-160e-4d45-bd8d-b680d234bbb3",
+        "name_english": "Powell Raise",
+        "name_espanol": "Elevación Powell",
+        "name_portugues": "Elevação Powell",
+        "name_francais": "Élévation Powell",
+        "gif_id": null
+    },
+    {
+        "id": "a293d4fd-31e0-4b93-8a7c-790037ad5e39",
+        "name_english": "Power Clean",
+        "name_espanol": "Clean de Potencia",
+        "name_portugues": "Power Clean",
+        "name_francais": "Power Clean",
+        "gif_id": "0648"
+    },
+    {
+        "id": "4f9eb6db-b707-43df-97f4-118ec34895ad",
+        "name_english": "Power Jerk",
+        "name_espanol": "Jerk de Potencia",
+        "name_portugues": "Power Jerk",
+        "name_francais": "Power Jerk",
+        "gif_id": "0786"
+    },
+    {
+        "id": "0f96726b-2445-45ab-a5c9-311023ec11ed",
+        "name_english": "Power Shrug",
+        "name_espanol": "Encogimiento de Potencia",
+        "name_portugues": "Encolhimento de Ombros com Potência",
+        "name_francais": "Shrug Power",
+        "gif_id": "0095"
+    },
+    {
+        "id": "90501d16-a8a2-4e5a-a8db-aa9dcff31ccc",
+        "name_english": "Power Snatch",
+        "name_espanol": "Snatch de Potencia",
+        "name_portugues": "Power Snatch",
+        "name_francais": "Snatch Power",
+        "gif_id": "0776"
+    },
+    {
+        "id": "1cdb7bef-06bc-44a3-81a7-d5b413c6279e",
+        "name_english": "Preacher Curl (Barbell)",
+        "name_espanol": "Curl de Predicador (Barra)",
+        "name_portugues": "Rosca Scott (Barra)",
+        "name_francais": "Curl Preacher (Barre)",
+        "gif_id": "0070"
+    },
+    {
+        "id": "5f101937-62d2-4025-a944-024c28822cc3",
+        "name_english": "Preacher Curl (Dumbbell)",
+        "name_espanol": "Curl de Predicador (Mancuernas)",
+        "name_portugues": "Rosca Scott (Haltere)",
+        "name_francais": "Curl Preacher (Haltères)",
+        "gif_id": "0372"
+    },
+    {
+        "id": "8840cfe0-abb0-48cc-bb20-82c8535383be",
+        "name_english": "Preacher Curl (EZ Bar)",
+        "name_espanol": "Curl de Predicador (EZ Bar)",
+        "name_portugues": "Rosca Scott (Barra EZ)",
+        "name_francais": "Curl Preacher (Barre EZ)",
+        "gif_id": "1627"
+    },
+    {
+        "id": "df346bd5-7bfa-4b22-8c29-e91686714f89",
+        "name_english": "Prowler Push",
+        "name_espanol": "Empuje de merodeador",
+        "name_portugues": "Empurrão do Trenó",
+        "name_francais": "Prowler Push",
+        "gif_id": null
+    },
+    {
+        "id": "bfe00354-4e3c-4853-9709-634535631125",
+        "name_english": "Pull Through (Cable)",
+        "name_espanol": "Tirar a través (cable)",
+        "name_portugues": "Pull Through (Cabo)",
+        "name_francais": "Tirage à Travers (Câble)",
+        "gif_id": "0196"
+    },
+    {
+        "id": "1dc429a1-6aaa-47d8-bc91-ae5e67ebe99a",
+        "name_english": "Pull Up (Assisted)",
+        "name_espanol": "Pull Up (Asistido)",
+        "name_portugues": "Pull Up (Assistido)",
+        "name_francais": "Traction (Assistée)",
+        "gif_id": "0651"
+    },
+    {
+        "id": "989f82b3-0c93-4b94-bcba-89f32ab02184",
+        "name_english": "Pull Up (Band)",
+        "name_espanol": "Pull Up (Banda)",
+        "name_portugues": "Pull Up (Banda)",
+        "name_francais": "Traction (Avec Bande)",
+        "gif_id": null
+    },
+    {
+        "id": "ad5a8caa-2287-480a-9f5e-93a4a77c4e81",
+        "name_english": "Pull Up (Bodyweight)",
+        "name_espanol": "Pull Up (Peso Corporal)",
+        "name_portugues": "Pull Up (Peso Corporal)",
+        "name_francais": "Traction (Poids du Corps)",
+        "gif_id": null
+    },
+    {
+        "id": "4a998796-9c58-4dfa-862c-0af0c174d3ba",
+        "name_english": "Pull Up (Neutral Grip, Bodyweight)",
+        "name_espanol": "Pull Up (agarre neutral, peso corporal)",
+        "name_portugues": "Pull Up (Pegada Neutra, Peso Corporal)",
+        "name_francais": "Traction (Prise Neutre, Poids du Corps)",
+        "gif_id": null
+    },
+    {
+        "id": "dd1c9357-be20-4e8b-8710-d213071b7c1b",
+        "name_english": "Pull Up (Neutral Grip, Weighted)",
+        "name_espanol": "Pull Up (agarre neutral, con peso)",
+        "name_portugues": "Pull Up (Pegada Neutra, Com Peso)",
+        "name_francais": "Traction (Prise Neutre, Avec Poids)",
+        "gif_id": null
+    },
+    {
+        "id": "82c32f0f-1126-4a73-a1cd-b97cb83aacf4",
+        "name_english": "Pull Up (Weighted)",
+        "name_espanol": "Pull Up (con peso)",
+        "name_portugues": "Pull Up (Com Peso)",
+        "name_francais": "Traction (Avec Poids)",
+        "gif_id": null
+    },
+    {
+        "id": "00ec65ba-8614-4bf5-848c-8ac5585d5c82",
+        "name_english": "Pullover (Dumbbell)",
+        "name_espanol": "Pullover (Mancuernas)",
+        "name_portugues": "Pullover (Haltere)",
+        "name_francais": "Pullover (Haltères)",
+        "gif_id": "0375"
+    },
+    {
+        "id": "2240de1c-da32-4374-9666-64fd1b6dc445",
+        "name_english": "Pullover (EZ Bar)",
+        "name_espanol": "Pullover (EZ Bar)",
+        "name_portugues": "Pullover (Barra EZ)",
+        "name_francais": "Pullover (Barre EZ)",
+        "gif_id": "3010"
+    },
+    {
+        "id": "4e06614e-9272-4848-9574-9fedce81d897",
+        "name_english": "Pullover (Machine)",
+        "name_espanol": "Pullover (Maquina)",
+        "name_portugues": "Pullover (Máquina)",
+        "name_francais": "Pullover (Machine)",
+        "gif_id": "2285"
+    },
+    {
+        "id": "b18de909-712f-467b-9361-43243346659f",
+        "name_english": "Punching Bag",
+        "name_espanol": "Saco de boxeo",
+        "name_portugues": "Saco de Pancadas",
+        "name_francais": "Sac de Frappe",
+        "gif_id": null
+    },
+    {
+        "id": "9ece9dde-7fc3-4ec4-83d2-ddf07c9bcf4c",
+        "name_english": "Push Press (Barbell)",
+        "name_espanol": "Prensa de empuje (Barra)",
+        "name_portugues": "Push Press (Barra)",
+        "name_francais": "Push Press (Barre)",
+        "gif_id": "1700"
+    },
+    {
+        "id": "ab6e8a4c-050e-4ffa-b0ac-d12751f9e32d",
+        "name_english": "Push Up",
+        "name_espanol": "Flexiones",
+        "name_portugues": "Flexão de Braço",
+        "name_francais": "Pompe",
+        "gif_id": "1311"
+    },
+    {
+        "id": "397b8d7b-16b0-4264-a5c8-5e37ced549e0",
+        "name_english": "Push Up (Incline)",
+        "name_espanol": "Flexiones (Inclanadas)",
+        "name_portugues": "Flexão de Braço (Inclinado)",
+        "name_francais": "Pompe (Incliné)",
+        "gif_id": "3011"
+    },
+    {
+        "id": "e9f43529-2aab-4275-9779-4164ce5afa44",
+        "name_english": "Push Up (Knees)",
+        "name_espanol": "Flexiones (rodillas)",
+        "name_portugues": "Flexão de Braço (Joelhos)",
+        "name_francais": "Pompe (Genoux)",
+        "gif_id": null
+    },
+    {
+        "id": "8d3d8f36-dcf5-4413-90f5-3f6888399a7c",
+        "name_english": "Push Up (Weighted)",
+        "name_espanol": "Flexiones (con peso)",
+        "name_portugues": "Flexão de Braço (Com Peso)",
+        "name_francais": "Pompe (Avec Poids)",
+        "gif_id": "1310"
+    },
+    {
+        "id": "250a2030-a6ec-41f1-bd47-e9152ed9865c",
+        "name_english": "Rack Pull (Barbell)",
+        "name_espanol": "Tirón de rejilla (Barra)",
+        "name_portugues": "Rack Pull (Barra)",
+        "name_francais": "Rack Pull (Barre)",
+        "gif_id": "0074"
+    },
+    {
+        "id": "ac8187b7-a9e0-4b13-a33f-1dc01c7ccbf4",
+        "name_english": "Reaching Sit Up",
+        "name_espanol": "Alcanzar sentarse",
+        "name_portugues": "Abdominal Reaching",
+        "name_francais": "Sit Up avec Extension",
+        "gif_id": "0457"
+    },
+    {
+        "id": "fc7a8d36-29e9-4307-8c69-62974abad7a4",
+        "name_english": "Rear Delt Fly (Dumbbell)",
+        "name_espanol": "Delt Fly trasero (Mancuernas)",
+        "name_portugues": "Elevação Posterior de Ombro (Haltere)",
+        "name_francais": "Écarté Dorsal Postérieur (Haltères)",
+        "gif_id": "0383"
+    },
+    {
+        "id": "219546cc-8601-421f-9b42-d4a978930917",
+        "name_english": "Rear Delt Fly (Machine)",
+        "name_espanol": "Delt Fly trasero (Maquina)",
+        "name_portugues": "Elevação Posterior de Ombro (Máquina)",
+        "name_francais": "Écarté Dorsal Postérieur (Machine)",
+        "gif_id": "0602"
+    },
+    {
+        "id": "d7094ccb-40a2-4e94-9bf9-d12d40397968",
+        "name_english": "Rear Delt Row",
+        "name_espanol": "Remo deltoides trasero",
+        "name_portugues": "Remada Posterior de Ombro",
+        "name_francais": "Rowing Dorsal Postérieur",
+        "gif_id": "0076"
+    },
+    {
+        "id": "93a10485-515a-4449-808b-7255aa61f0dd",
+        "name_english": "Rear Foot Elevated Split Squat",
+        "name_espanol": "Sentadilla dividida con pie trasero elevado",
+        "name_portugues": "Agachamento Búlgaro",
+        "name_francais": "Fente Bulgare Pied Élevé",
+        "gif_id": "0410"
+    },
+    {
+        "id": "510474ab-005c-4548-bc07-edd439037c50",
+        "name_english": "Reverse Abs Crunch (Bodyweight)",
+        "name_espanol": "Crunch de abdominales inversos (Peso Corporal)",
+        "name_portugues": "Abdominal Reverso (Peso Corporal)",
+        "name_francais": "Crunch Abdominal Inversé (Poids du Corps)",
+        "gif_id": "0872"
+    },
+    {
+        "id": "f37c3ed8-45ee-4c30-8ca0-642525e76405",
+        "name_english": "Reverse Bicep Curl (Dumbbell)",
+        "name_espanol": "Crunch de abdominales inversos (Mancuernas)",
+        "name_portugues": "Rosca Bíceps Reversa (Haltere)",
+        "name_francais": "Curl Biceps Inversé (Haltères)",
+        "gif_id": "0429"
+    },
+    {
+        "id": "ec6012ac-4be7-4517-9160-90b11d95a1c1",
+        "name_english": "Reverse Bicep Curl (EZ Bar)",
+        "name_espanol": "Curl de bíceps inverso (barra EZ)",
+        "name_portugues": "Rosca Bíceps Reversa (Barra EZ)",
+        "name_francais": "Curl Biceps Inversé (Barre EZ)",
+        "gif_id": "0080"
+    },
+    {
+        "id": "616d291c-6e27-482a-bc5b-1a0c687c1efd",
+        "name_english": "Reverse Hyperextension",
+        "name_espanol": "Hiperextensión inversa",
+        "name_portugues": "Hiperextensão Reversa",
+        "name_francais": "Hyperextension Inversée",
+        "gif_id": "0593"
+    },
+    {
+        "id": "2e293014-a9c6-4914-b519-559dcc5310e1",
+        "name_english": "Reverse Lunge (Barbell)",
+        "name_espanol": "Estocada inversa (Barra)",
+        "name_portugues": "Lunge Reverso (Barra)",
+        "name_francais": "Fente Inversée (Barre)",
+        "gif_id": "0078"
+    },
+    {
+        "id": "dcf31e90-9e3f-4870-981a-a790ec03d237",
+        "name_english": "Reverse Lunge (Bodyweight)",
+        "name_espanol": "Estocada inversa (Peso Corporal)",
+        "name_portugues": "Lunge Reverso (Peso Corporal)",
+        "name_francais": "Fente Inversée (Poids du Corps)",
+        "gif_id": "0078"
+    },
+    {
+        "id": "bffda867-4f35-4e8a-b55d-62283272ef8f",
+        "name_english": "Reverse Lunge (Dumbbell)",
+        "name_espanol": "Estocada inversa (Mancuernas)",
+        "name_portugues": "Lunge Reverso (Haltere)",
+        "name_francais": "Fente Inversée (Haltères)",
+        "gif_id": "0381"
+    },
+    {
+        "id": "57593848-8e78-4f3d-ae61-6e4f1ea85a33",
+        "name_english": "Reverse Nordic Curl",
+        "name_espanol": "Curl nórdico inverso",
+        "name_portugues": "Flexão Nórdica Reversa",
+        "name_francais": "Curl Nordique Inversé",
+        "gif_id": null
+    },
+    {
+        "id": "eef1d0d8-ad86-42a7-9c6a-0eb461c07bdd",
+        "name_english": "Reverse Pec Deck",
+        "name_espanol": "Cubierta pectoral inversa",
+        "name_portugues": "Pec Deck Reverso",
+        "name_francais": "Pec Deck Inversé",
+        "gif_id": null
+    },
+    {
+        "id": "7deeaecc-63ea-4d92-aa84-965fd75faba5",
+        "name_english": "Reverse Plank",
+        "name_espanol": "Plancha inversa",
+        "name_portugues": "Prancha Reversa",
+        "name_francais": "Planche Inversée",
+        "gif_id": "3663"
+    },
+    {
+        "id": "f8b9e8ea-2e69-4a2a-8cdc-aedc5807d59c",
+        "name_english": "Reverse Wrist Curl (Barbell)",
+        "name_espanol": "Curl de muñeca inverso (Barra)",
+        "name_portugues": "Rosca Inversa de Pulso (Barra)",
+        "name_francais": "Curl du Poignet Inversé (Barre)",
+        "gif_id": "0082"
+    },
+    {
+        "id": "e344e402-3f4f-4352-b94a-279d4d338018",
+        "name_english": "Reverse Wrist Curl (Dumbbell)",
+        "name_espanol": "Curl de muñeca inverso (Mancuernas)",
+        "name_portugues": "Rosca Inversa de Pulso (Haltere)",
+        "name_francais": "Curl du Poignet Inversé (Haltères)",
+        "gif_id": "0385"
+    },
+    {
+        "id": "508af40a-0be1-47db-8ed2-cb061d8e2956",
+        "name_english": "Ring Dip",
+        "name_espanol": "Inmersión del anillo",
+        "name_portugues": "Dip nas Argolas",
+        "name_francais": "Dip aux Anneaux",
+        "gif_id": "0677"
+    },
+    {
+        "id": "bd2d8118-6dd3-4d8d-be5d-bbdc7b236cdf",
+        "name_english": "Ring Push Up",
+        "name_espanol": "Flexiones del anillo",
+        "name_portugues": "Flexão de Braço nas Argolas",
+        "name_francais": "Pompe aux Anneaux",
+        "gif_id": null
+    },
+    {
+        "id": "31e1739e-dd31-405a-b41f-7d563ec1c8ee",
+        "name_english": "Ring Row",
+        "name_espanol": "Remo del anillo",
+        "name_portugues": "Remada nas Argolas",
+        "name_francais": "Rowing aux Anneaux",
+        "gif_id": null
+    },
+    {
+        "id": "28a9f14b-f0e9-4095-be87-501eb7b36de4",
+        "name_english": "Ring Row (Weighted)",
+        "name_espanol": "Remo del anillo (Con Peso)",
+        "name_portugues": "Remada nas Argolas (Com Peso)",
+        "name_francais": "Rowing aux Anneaux (Avec Poids)",
+        "gif_id": null
+    },
+    {
+        "id": "8e0686ae-5f79-474f-a837-31030f1cd971",
+        "name_english": "Rolling Tricep Extension (Dumbbell)",
+        "name_espanol": "Extensión de tríceps rodante (Mancuernas)",
+        "name_portugues": "Extensão de Tríceps Rolante (Haltere)",
+        "name_francais": "Extension de Triceps Roulante (Haltères)",
+        "gif_id": null
+    },
+    {
+        "id": "7ed4c15a-1869-4599-a814-afe0e011e98e",
+        "name_english": "Roman Chair Sit Up",
+        "name_espanol": "Silla romana sentarse",
+        "name_portugues": "Abdominal na Cadeira Romana",
+        "name_francais": "Sit Up sur Chaise Romain",
+        "gif_id": null
+    },
+    {
+        "id": "38a36f00-fb21-46c3-a2b6-eff16e973edb",
+        "name_english": "Romanian Deadlift (Barbell)",
+        "name_espanol": "Peso muerto rumano (Barra)",
+        "name_portugues": "Levantamento Terra Romeno (Barra)",
+        "name_francais": "Soulevé de Terre Roumain (Barre)",
+        "gif_id": "0085"
+    },
+    {
+        "id": "d00f5215-a406-4bef-b03d-b54db8676e04",
+        "name_english": "Romanian Deadlift (Dumbbell)",
+        "name_espanol": "Peso muerto rumano (Mancuernas)",
+        "name_portugues": "Levantamento Terra Romeno (Haltere)",
+        "name_francais": "Soulevé de Terre Roumain (Haltères)",
+        "gif_id": "1459"
+    },
+    {
+        "id": "44b9c576-f0e9-4f7f-b126-ea6f3284c845",
+        "name_english": "Romanian Deadlift (Trap Bar)",
+        "name_espanol": "Peso muerto rumano (Barra trampa)",
+        "name_portugues": "Levantamento Terra Romeno (Barra Trap)",
+        "name_francais": "Soulevé de Terre Roumain (Trap Bar)",
+        "gif_id": "0811"
+    },
+    {
+        "id": "820c9cdb-38f8-43ba-b28f-1048940df533",
+        "name_english": "Rotational Landmine Push Press",
+        "name_espanol": "Prensa de empuje de minas terrestres rotacional",
+        "name_portugues": "Push Press Rotacional com Landmine",
+        "name_francais": "Push Press Rotationnel avec Landmine",
+        "gif_id": null
+    },
+    {
+        "id": "220f5042-77d0-4792-b051-6536a0afa732",
+        "name_english": "Row Between Chairs",
+        "name_espanol": "Remo entre sillas",
+        "name_portugues": "Remada Entre Cadeiras",
+        "name_francais": "Rowing entre Chaises",
+        "gif_id": null
+    },
+    {
+        "id": "34692ba5-6d53-4e65-82ad-4e0f5a45cf06",
+        "name_english": "Run",
+        "name_espanol": "Correr",
+        "name_portugues": "Correr",
+        "name_francais": "Course",
+        "gif_id": "0685"
+    },
+    {
+        "id": "4d15f87c-2439-4b69-9dce-1347fb4dd96a",
+        "name_english": "Russian Twist",
+        "name_espanol": "Ruleta rusa",
+        "name_portugues": "Torção Russa",
+        "name_francais": "Twist Russe",
+        "gif_id": "0687"
+    },
+    {
+        "id": "f2492c82-7538-481e-bd06-011f3ff511fd",
+        "name_english": "Russian Twist (Dumbbell)",
+        "name_espanol": "Ruleta rusa (Mancuernas)",
+        "name_portugues": "Torção Russa (Haltere)",
+        "name_francais": "Twist Russe (Haltères)",
+        "gif_id": "0846"
+    },
+    {
+        "id": "885f07f3-a7c7-45a7-a404-5f30a3011d83",
+        "name_english": "Safety Bar Squat",
+        "name_espanol": "Sentadilla con barra de seguridad",
+        "name_portugues": "Agachamento com Barra de Segurança",
+        "name_francais": "Squat avec Barre de Sécurité",
+        "gif_id": null
+    },
+    {
+        "id": "d8abaf90-5f76-46df-9ec8-ee2aae42ee4f",
+        "name_english": "Seal Row",
+        "name_espanol": "Remo de sello",
+        "name_portugues": "Remada Seal",
+        "name_francais": "Rowing Seal",
+        "gif_id": null
+    },
+    {
+        "id": "4d8d0464-60be-4fbf-b4b9-43ea7e05156a",
+        "name_english": "Seated Anterior Delt Press (AD)",
+        "name_espanol": "Press de deltoides anterior sentado (AD)",
+        "name_portugues": "Desenvolvimento Anterior Sentado",
+        "name_francais": "Développé Antérieur des Épaules Assis (AD)",
+        "gif_id": null
+    },
+    {
+        "id": "943e8d59-34ef-4591-8f6b-a06fa8dd3562",
+        "name_english": "Seated Calf Raise",
+        "name_espanol": "Elevación de pantorrilla sentado",
+        "name_portugues": "Elevação de Panturrilha Sentado",
+        "name_francais": "Élévation des Mollets Assis",
+        "gif_id": "0594"
+    },
+    {
+        "id": "31cb0972-c4ec-4b53-bbc0-c802984b9a22",
+        "name_english": "Seated Dip (Machine)",
+        "name_espanol": "Máquina de inmersión sentado",
+        "name_portugues": "Dip Sentado (Máquina)",
+        "name_francais": "Dip Assis (Machine)",
+        "gif_id": "1451"
+    },
+    {
+        "id": "1d219612-10b5-4e6b-8f53-8f9be7860210",
+        "name_english": "Seated Dumbbell Curl",
+        "name_espanol": "Curl sentado con mancuernas",
+        "name_portugues": "Rosca Sentado (Haltere)",
+        "name_francais": "Curl d’Haltères Assis",
+        "gif_id": "0391"
+    },
+    {
+        "id": "d13d0110-5812-4880-92c7-fbd0e1170870",
+        "name_english": "Seated Front Raise",
+        "name_espanol": "Elevación frontal sentado",
+        "name_portugues": "Elevação Frontal Sentado",
+        "name_francais": "Élévation Frontale Assis",
+        "gif_id": "0392"
+    },
+    {
+        "id": "c1298d13-5993-413d-bd07-f1c3b445ee29",
+        "name_english": "Seated Hamstring Curl",
+        "name_espanol": "Curl de isquiotibiales sentado",
+        "name_portugues": "Flexão de Pernas Sentado",
+        "name_francais": "Curl des Ischio-jambiers Assis",
+        "gif_id": "0599"
+    },
+    {
+        "id": "092183cc-6279-40e3-884a-be937b3bed5f",
+        "name_english": "Seated Leg Curl",
+        "name_espanol": "Curl de piernas sentado",
+        "name_portugues": "Flexão de perna sentada",
+        "name_francais": "Curl des jambes assises",
+        "gif_id": "0599"
+    },
+    {
+        "id": "eb9849cc-3571-4103-980e-60fd83fcc40b",
+        "name_english": "Seated Military Press (Barbell)",
+        "name_espanol": "Press militar sentado (Barra)",
+        "name_portugues": "Desenvolvimento Militar Sentado (Barra)",
+        "name_francais": "Développé Militaire Assis (Barre)",
+        "gif_id": "0086"
+    },
+    {
+        "id": "c0212173-1698-4588-9aa8-6780b6f3bef2",
+        "name_english": "Seated Military Press (Smith Machine)",
+        "name_espanol": "Press militar sentado (Maquina Smith)",
+        "name_portugues": "Desenvolvimento Militar Sentado (Máquina Smith)",
+        "name_francais": "Développé Militaire Assis (Smith Machine)",
+        "gif_id": "0587"
+    },
+    {
+        "id": "0be46d98-1f94-4f4a-96e3-b67baafc9eab",
+        "name_english": "Seated Overhead Extension (EZ Bar)",
+        "name_espanol": "Extensión aérea sentado (Barra EZ)",
+        "name_portugues": "Extensão Acima da Cabeça Sentado (Barra EZ)",
+        "name_francais": "Extension au-dessus de la Tête Assis (Barre EZ)",
+        "gif_id": "0092"
+    },
+    {
+        "id": "af61f5ff-fa4c-4cae-8da9-11d823416c3a",
+        "name_english": "Seated Overhead Press (Barbell)",
+        "name_espanol": "Press arriba de hombros sentado (Barra)",
+        "name_portugues": "Desenvolvimento Acima da Cabeça Sentado (Barra)",
+        "name_francais": "Développé au-dessus de la Tête Assis (Barre)",
+        "gif_id": "0091"
+    },
+    {
+        "id": "7045be3b-2003-42cd-8b61-e9e728225c85",
+        "name_english": "Seated Overhead Press (Dumbbell)",
+        "name_espanol": "Press arriba de hombros sentado (Mancuernas)",
+        "name_portugues": "Desenvolvimento Acima da Cabeça Sentado (Haltere)",
+        "name_francais": "Développé au-dessus de la Tête Assis (Haltères)",
+        "gif_id": "0290"
+    },
+    {
+        "id": "05917700-7e10-4898-915d-176d3462c65c",
+        "name_english": "Seated Row (Cable)",
+        "name_espanol": "Remo sentado (Cable)",
+        "name_portugues": "Remada Sentado (Cabo)",
+        "name_francais": "Rowing Assis (Câble)",
+        "gif_id": "0861"
+    },
+    {
+        "id": "02a7e5f0-9e07-4717-b6f5-60b0ec19535c",
+        "name_english": "Seated Row (Machine)",
+        "name_espanol": "Remo sentado (Maquina)",
+        "name_portugues": "Remada Sentado (Máquina)",
+        "name_francais": "Rowing Assis (Machine)",
+        "gif_id": "0861"
+    },
+    {
+        "id": "b9152d71-7728-41de-8af9-ba9ab3d7b081",
+        "name_english": "Seated Shoulder Press (Dumbbell)",
+        "name_espanol": "Press de hombros sentado (Mancuernas)",
+        "name_portugues": "Desenvolvimento de Ombro Sentado (Haltere)",
+        "name_francais": "Développé des Épaules Assis (Haltères)",
+        "gif_id": "0290"
+    },
+    {
+        "id": "e124d99d-4af0-4aaf-924d-cb2323131074",
+        "name_english": "Seated Wide-Grip Row (Cable)",
+        "name_espanol": "Remo con agarre ancho sentado (Cable)",
+        "name_portugues": "Remada Sentado com Pegada Aberta (Cabo)",
+        "name_francais": "Rowing Large Prise Assis (Câble)",
+        "gif_id": "1323"
+    },
+    {
+        "id": "ca82c7ff-42be-4468-bb53-d3a74fdf950d",
+        "name_english": "Shadow Boxing",
+        "name_espanol": "Boxeo de sombra",
+        "name_portugues": "Sombra de Boxe",
+        "name_francais": "Boxe en Ombre",
+        "gif_id": "2271"
+    },
+    {
+        "id": "984f7ba4-6514-48a1-8a3b-c2277ea710c7",
+        "name_english": "Shadow Kickboxing",
+        "name_espanol": "Kickboxing en la sombra",
+        "name_portugues": "Sombra de Kickboxing",
+        "name_francais": "Kickboxing en Ombre",
+        "gif_id": "2271"
+    },
+    {
+        "id": "d56e13d9-85f3-46a3-9805-6f1b25718395",
+        "name_english": "Shoulder Press (Machine)",
+        "name_espanol": "Presa de hombro (Maquina)",
+        "name_portugues": "Desenvolvimento de Ombro (Máquina)",
+        "name_francais": "Développé Épaules (Machine)",
+        "gif_id": "0603"
+    },
+    {
+        "id": "aa7b9096-5efe-4193-a352-65ef2b17bb79",
+        "name_english": "Shoulder Press (Plate Loaded)",
+        "name_espanol": "Presa de hombro (Placa cargada)",
+        "name_portugues": "Desenvolvimento de Ombro (Carregamento de Placas)",
+        "name_francais": "Développé Épaules (Chargeur de Plaques)",
+        "gif_id": "0603"
+    },
+    {
+        "id": "f814d96d-4a58-4f14-8d79-10333c8462c9",
+        "name_english": "Shrug (Barbell)",
+        "name_espanol": "Encogimiento de hombros (Barra)",
+        "name_portugues": "Encolhimento de Ombro (Barra)",
+        "name_francais": "Shrug (Barre)",
+        "gif_id": null
+    },
+    {
+        "id": "5f858879-7795-4a9b-8e48-247ec5f05fdb",
+        "name_english": "Shrug (Dumbbell)",
+        "name_espanol": "Encogimiento de hombros (Mancuernas)",
+        "name_portugues": "Encolhimento de Ombro (Haltere)",
+        "name_francais": "Shrug (Haltères)",
+        "gif_id": "0406"
+    },
+    {
+        "id": "f34874ee-a4bf-41aa-9673-810e93cc9378",
+        "name_english": "Shrug (Trap Bar)",
+        "name_espanol": "Encogimiento de hombros (Barra Trampa)",
+        "name_portugues": "Encolhimento de Ombro (Barra Trap)",
+        "name_francais": "Shrug (Trap Bar)",
+        "gif_id": "0095"
+    },
+    {
+        "id": "ee991403-c64a-4a53-aaf6-6a53de2f98ee",
+        "name_english": "Side Bend (Dumbbell)",
+        "name_espanol": "Curva lateral (Mancuernas)",
+        "name_portugues": "Flexão Lateral (Haltere)",
+        "name_francais": "Inclinaison Latérale (Haltères)",
+        "gif_id": "0407"
+    },
+    {
+        "id": "63ee2156-6afa-4d4b-a48a-f31397d5da04",
+        "name_english": "Side Crunch (Cable)",
+        "name_espanol": "Crujido lateral (Cable)",
+        "name_portugues": "Abdominal Lateral (Cabo)",
+        "name_francais": "Crunch Latéral (Câble)",
+        "gif_id": "0223"
+    },
+    {
+        "id": "22f34b11-6a01-4693-b12a-deb95d3e89c2",
+        "name_english": "Side Plank",
+        "name_espanol": "Tabla lateral",
+        "name_portugues": "Prancha Lateral",
+        "name_francais": "Planche Latérale",
+        "gif_id": "1775"
+    },
+    {
+        "id": "56d3e5d9-de64-4723-a423-c89b2f13328e",
+        "name_english": "Single Arm High Row (Cable)",
+        "name_espanol": "Remo alto con un solo brazo (Cable)",
+        "name_portugues": "Remada Alta Unilateral (Cabo)",
+        "name_francais": "Rowing Unilatéral Haut (Câble)",
+        "gif_id": "0233"
+    },
+    {
+        "id": "02b9d3fd-3b8e-4c77-9a4b-482e7da893d1",
+        "name_english": "Single Arm Isolated Row",
+        "name_espanol": "Remo aislado de un solo brazo",
+        "name_portugues": "Remada Isolada Unilateral",
+        "name_francais": "Rowing Isolé Unilatéral",
+        "gif_id": "3162"
+    },
+    {
+        "id": "ac4d6281-766e-4d9e-97a4-88789fe4ace3",
+        "name_english": "Single Arm Kettlebell Swing",
+        "name_espanol": "Columpio con pesa rusa de un solo brazo",
+        "name_portugues": "Swing com Kettlebell Unilateral",
+        "name_francais": "Balancement Kettlebell Unilatéral",
+        "gif_id": "0549"
+    },
+    {
+        "id": "6824da10-85dc-4c43-897e-32c8884f27ea",
+        "name_english": "Single Arm Overhead Tricep Extension",
+        "name_espanol": "Extensión de tríceps por encima de la cabeza con un solo brazo",
+        "name_portugues": "Extensão de Tríceps Acima da Cabeça Unilateral",
+        "name_francais": "Extension de Triceps au-dessus de la Tête Unilatéral",
+        "gif_id": "1722"
+    },
+    {
+        "id": "597ec898-36c1-4ed1-a66c-047a7bbc5692",
+        "name_english": "Single Arm Push Press (Dumbbell)",
+        "name_espanol": "Prensa de empuje de un solo brazo (Mancuernas)",
+        "name_portugues": "Push Press Unilateral (Haltere)",
+        "name_francais": "Push Press Unilatéral (Haltères)",
+        "gif_id": "0343"
+    },
+    {
+        "id": "0e1e8d5a-1ce4-4d73-8a7e-80d9e3d65980",
+        "name_english": "Single Arm Pushdown",
+        "name_espanol": "Empuje con un solo brazo",
+        "name_portugues": "Pushdown Unilateral",
+        "name_francais": "Pushdown Unilatéral",
+        "gif_id": "1723"
+    },
+    {
+        "id": "5f944263-8b12-478f-a645-1d7f488b20d7",
+        "name_english": "Single Arm Row (Dumbbell)",
+        "name_espanol": "Remo con un solo brazo (Mancuernas)",
+        "name_portugues": "Remada Unilateral (Haltere)",
+        "name_francais": "Rowing Unilatéral (Haltères)",
+        "gif_id": "0541"
+    },
+    {
+        "id": "c0edfcbe-0591-4a48-9f78-3711c4296d5b",
+        "name_english": "Single Arm Shoulder Press",
+        "name_espanol": "Press de hombros con un solo brazo",
+        "name_portugues": "Desenvolvimento de Ombro Unilateral",
+        "name_francais": "Développé Épaules Unilatéral",
+        "gif_id": "0361"
+    },
+    {
+        "id": "9b2edb98-2813-4d9f-bbea-fdb8ca6c7a0f",
+        "name_english": "Single Arm Tricep Extension (Cable)",
+        "name_espanol": "Extensión de tríceps con un solo brazo (Cable)",
+        "name_portugues": "Extensão de Tríceps Unilateral (Cabo)",
+        "name_francais": "Extension de Triceps Unilatéral (Câble)",
+        "gif_id": "0231"
+    },
+    {
+        "id": "ec401aff-0a38-464c-bf25-4cfecca7c640",
+        "name_english": "Single Leg Deadlift",
+        "name_espanol": "Peso muerto con una sola pierna",
+        "name_portugues": "Levantamento Terra Unilateral",
+        "name_francais": "Soulevé de Terre à Une Jambe",
+        "gif_id": "1757"
+    },
+    {
+        "id": "323f7a8c-7f3b-492d-9f42-125632f2155e",
+        "name_english": "Single Leg Hip Thrust",
+        "name_espanol": "Empuje de cadera con una sola pierna",
+        "name_portugues": "Elevação de Quadril Unilateral",
+        "name_francais": "Poussée de Hanche à Une Jambe",
+        "gif_id": null
+    },
+    {
+        "id": "165067b6-b860-4d6b-a7c8-17de76b0d245",
+        "name_english": "Single Leg Press",
+        "name_espanol": "Prensa con una sola pierna",
+        "name_portugues": "Leg Press Unilateral",
+        "name_francais": "Leg Press à Une Jambe",
+        "gif_id": "1425"
+    },
+    {
+        "id": "0ef73207-c5a3-4e21-acac-8124a49d7139",
+        "name_english": "Single Leg Romanian Deadlift",
+        "name_espanol": "Peso muerto rumano con una sola pierna",
+        "name_portugues": "Levantamento Terra Romeno Unilateral",
+        "name_francais": "Soulevé de Terre Roumain à Une Jambe",
+        "gif_id": "1459"
+    },
+    {
+        "id": "2f088c7c-d17a-4d33-9ebb-f51d1d974f33",
+        "name_english": "Single-Leg Leg Curl",
+        "name_espanol": "Curl de piernas con una sola pierna",
+        "name_portugues": "Flexão de Pernas Unilateral",
+        "name_francais": "Curl des Jambes à Une Jambe",
+        "gif_id": "3195"
+    },
+    {
+        "id": "298ebf0a-8229-4a67-972e-fea411eb0d1b",
+        "name_english": "Sissy Squat",
+        "name_espanol": "Sentadilla mariquita",
+        "name_portugues": "Agachamento Sissy",
+        "name_francais": "Squat Sissy",
+        "gif_id": "1489"
+    },
+    {
+        "id": "faa88d8b-86ee-4a9f-a73a-05e15b073bc2",
+        "name_english": "Sit Up",
+        "name_espanol": "Incorporarse",
+        "name_portugues": "Abdominal",
+        "name_francais": "Sit Up",
+        "gif_id": "0735"
+    },
+    {
+        "id": "d645709c-9e6c-4b15-9793-b0a8bcfcd408",
+        "name_english": "Skater Hop",
+        "name_espanol": "Salto del patinador",
+        "name_portugues": "Salto Patinador",
+        "name_francais": "Saut de Patineur",
+        "gif_id": "3361"
+    },
+    {
+        "id": "8da3f286-ef86-4840-8d30-9ed9eef33352",
+        "name_english": "Skull Crusher",
+        "name_espanol": "Aplasta cráneos",
+        "name_portugues": "Triturador de crânio",
+        "name_francais": "Écrase-Crâne",
+        "gif_id": "0060"
+    },
+    {
+        "id": "bd51c282-0045-415e-a25a-9679e068af98",
+        "name_english": "Skull Crusher (Barbell)",
+        "name_espanol": "Aplasta cráneos (Barra)",
+        "name_portugues": "Triturador de crânio (Barra)",
+        "name_francais": "Écrase-Crâne (Barre)",
+        "gif_id": "0060"
+    },
+    {
+        "id": "62eafcfa-9a18-4eca-beb9-8cc53274813a",
+        "name_english": "Sling Shot Bench Press (Barbell)",
+        "name_espanol": "Press de banca con honda (Barra)",
+        "name_portugues": "Supino com Sling Shot (Barra)",
+        "name_francais": "Développé Couché Sling Shot (Barre)",
+        "gif_id": null
+    },
+    {
+        "id": "fff2cee9-c619-4419-a64a-23581b6ae704",
+        "name_english": "Sling Shot Bench Press (Dumbbell)",
+        "name_espanol": "Press de banca con honda (Mancuernas)",
+        "name_portugues": "Supino com Sling Shot (Haltere)",
+        "name_francais": "Développé Couché Sling Shot (Haltères)",
+        "gif_id": null
+    },
+    {
+        "id": "a69f20dd-8b17-46f9-b9bc-f72d2efc6d4a",
+        "name_english": "Snatch (Barbell)",
+        "name_espanol": "Arranque (Barra)",
+        "name_portugues": "Snatch (Barra)",
+        "name_francais": "Snatch (Barre)",
+        "gif_id": null
+    },
+    {
+        "id": "1fd3bc04-18b2-483a-9006-2f13cbdccf3d",
+        "name_english": "Snatch (Dumbbell)",
+        "name_espanol": "Arranque (Mancuernas)",
+        "name_portugues": "Snatch (Haltere)",
+        "name_francais": "Snatch (Haltères)",
+        "gif_id": "3888"
+    },
+    {
+        "id": "83635926-96a8-43a1-895f-e9376544e68c",
+        "name_english": "Snatch (Kettlebell)",
+        "name_espanol": "Arranque (Kettlebell)",
+        "name_portugues": "Snatch (Kettlebell)",
+        "name_francais": "Snatch (Kettlebell)",
+        "gif_id": "0542"
+    },
+    {
+        "id": "7130ac77-d616-4f62-a2c7-b315925ca5b1",
+        "name_english": "Snatch Deadlift",
+        "name_espanol": "Arranque de peso muerto",
+        "name_portugues": "Levantamento Terra com Snatch",
+        "name_francais": "Soulevé de Terre Snatch",
+        "gif_id": "0776"
+    },
+    {
+        "id": "f1bcb251-a513-4b02-99ac-5b990a8db65a",
+        "name_english": "Spider Curl",
+        "name_espanol": "Rizo de araña",
+        "name_portugues": "Rosca Spider",
+        "name_francais": "Curl Araignée",
+        "gif_id": "1628"
+    },
+    {
+        "id": "05a0a2b0-c11a-4b76-864a-e69075fb5a58",
+        "name_english": "Split Jerk",
+        "name_espanol": "Jerk dividido",
+        "name_portugues": "Jerk com Divisão",
+        "name_francais": "Split Jerk",
+        "gif_id": "0537"
+    },
+    {
+        "id": "b5c1ab60-161b-48a3-a3a9-78ea506c735d",
+        "name_english": "Split Squat (Barbell)",
+        "name_espanol": "Sentadilla dividida (Barra)",
+        "name_portugues": "Agachamento Búlgaro (Barra)",
+        "name_francais": "Squat Fente (Barre)",
+        "gif_id": "0099"
+    },
+    {
+        "id": "dbd4b914-016d-4f96-a2a9-c5fbd3a22bcd",
+        "name_english": "Split Squat (Bodyweight)",
+        "name_espanol": "Sentadilla dividida (Peso Corporal)",
+        "name_portugues": "Agachamento Búlgaro (Peso Corporal)",
+        "name_francais": "Squat Fente (Poids du Corps)",
+        "gif_id": "0099"
+    },
+    {
+        "id": "53859644-715e-45ec-9c42-d564a8030fd5",
+        "name_english": "Split Squat (Dumbbell)",
+        "name_espanol": "Sentadilla dividida (Mancuernas)",
+        "name_portugues": "Agachamento Búlgaro (Haltere)",
+        "name_francais": "Squat Fente (Haltères)",
+        "gif_id": "0410"
+    },
+    {
+        "id": "bd30ab81-1a70-49bb-9a3f-437ed927b308",
+        "name_english": "Split Squat (Smith Machine)",
+        "name_espanol": "Sentadilla dividida (Maquina Smith)",
+        "name_portugues": "Agachamento Búlgaro (Máquina Smith)",
+        "name_francais": "Squat Fente (Smith Machine)",
+        "gif_id": "0768"
+    },
+    {
+        "id": "feb1699b-fee1-4277-95da-ec9458bc1723",
+        "name_english": "Split Squat Front Foot Elevated (Smith Machine)",
+        "name_espanol": "Pie delantero en cuclillas divididas elevado (Máquina Smith)",
+        "name_portugues": "Agachamento Búlgaro com Pé Elevado (Máquina Smith)",
+        "name_francais": "Squat Fente Pied Avant Élevé (Smith Machine)",
+        "gif_id": "0768"
+    },
+    {
+        "id": "0e0b11cb-9c58-4062-8108-c6a5318cf410",
+        "name_english": "Split Squat Jump",
+        "name_espanol": "Salto en cuclillas dividido",
+        "name_portugues": "Salto com Divisão",
+        "name_francais": "Saut Squat Fente",
+        "gif_id": null
+    },
+    {
+        "id": "2dea2a16-e614-488c-a291-8d3878513ab6",
+        "name_english": "Spoto Press",
+        "name_espanol": "Prensa Spoto",
+        "name_portugues": "Spoto Press",
+        "name_francais": "Spoto Press",
+        "gif_id": null
+    },
+    {
+        "id": "9e045d88-3540-4178-808d-84f9d6514fe2",
+        "name_english": "Sprint",
+        "name_espanol": "Correr",
+        "name_portugues": "Sprint",
+        "name_francais": "Sprint",
+        "gif_id": "0685"
+    },
+    {
+        "id": "c93ea04a-1d64-4534-b7b3-4d5736f21aca",
+        "name_english": "Squat (Barbell)",
+        "name_espanol": "Sentadilla (Barra)",
+        "name_portugues": "Agachamento (Barra)",
+        "name_francais": "Squat (Barre)",
+        "gif_id": "1435"
+    },
+    {
+        "id": "8698c083-0d77-42b6-a38f-9d3dcc131add",
+        "name_english": "Squat (Bodyweight)",
+        "name_espanol": "Sentadilla (Peso Corporal)",
+        "name_portugues": "Agachamento (Peso Corporal)",
+        "name_francais": "Squat (Poids du Corps)",
+        "gif_id": null
+    },
+    {
+        "id": "456bb1c9-5ce0-4b55-b9d4-b85723428375",
+        "name_english": "Squat (Dumbbell)",
+        "name_espanol": "Sentadilla (Mancuernas)",
+        "name_portugues": "Agachamento (Haltere)",
+        "name_francais": "Squat (Haltères)",
+        "gif_id": "0413"
+    },
+    {
+        "id": "edec49c6-4925-407e-a5e7-48188a8bc8aa",
+        "name_english": "Squat (Low Bar)",
+        "name_espanol": "Sentadilla (Barra baja)",
+        "name_portugues": "Agachamento (Barra Baixa)",
+        "name_francais": "Squat (Barre Basse)",
+        "gif_id": "1435"
+    },
+    {
+        "id": "414e576b-af9e-47f3-a63d-b7c83718e63a",
+        "name_english": "Squat (Paused)",
+        "name_espanol": "Sentadilla (Pausada)",
+        "name_portugues": "Agachamento (Com Pausa)",
+        "name_francais": "Squat (Avec Pause)",
+        "gif_id": "1435"
+    },
+    {
+        "id": "92cd046d-4006-4fca-80e7-137091140ca0",
+        "name_english": "Squat (Smith Machine)",
+        "name_espanol": "Sentadilla (Maquina Smith)",
+        "name_portugues": "Agachamento (Máquina Smith)",
+        "name_francais": "Squat (Smith Machine)",
+        "gif_id": "0770"
+    },
+    {
+        "id": "faf01da0-0de0-47bd-b05c-01c7dc200e25",
+        "name_english": "Squat Jerk",
+        "name_espanol": "Jerk en cuclillas",
+        "name_portugues": "Jerk com Agachamento",
+        "name_francais": "Squat Jerk",
+        "gif_id": "0786"
+    },
+    {
+        "id": "a7ad883f-ad26-41c2-aaaf-1b95070000fa",
+        "name_english": "Squat Thruster",
+        "name_espanol": "Propulsor en cuclillas",
+        "name_portugues": "Thruster com Agachamento",
+        "name_francais": "Thruster Squat",
+        "gif_id": "3305"
+    },
+    {
+        "id": "d3c3ca91-5a85-43fc-8d35-e81d44d2bc1b",
+        "name_english": "Standing Behind Neck Shoulder Press (Barbell)",
+        "name_espanol": "Press de hombros de pie detrás del cuello (con barra)",
+        "name_portugues": "Desenvolvimento de Ombro por Trás do Pescoço (Barra)",
+        "name_francais": "Développé Épaules Debout Derrière le Cou (Barre)",
+        "gif_id": "0788"
+    },
+    {
+        "id": "1ecc0a43-93d6-4bc5-9ab6-57c6f1696218",
+        "name_english": "Standing Calf Raise",
+        "name_espanol": "Elevación de pantorrilla de pie",
+        "name_portugues": "Elevação de Panturrilha em Pé",
+        "name_francais": "Élévation des Mollets Debout",
+        "gif_id": "0417"
+    },
+    {
+        "id": "9e3315e7-dcf9-4442-9828-f883f43ab968",
+        "name_english": "Standing Pullover (Cable)",
+        "name_espanol": "Pullover de pie (Cable)",
+        "name_portugues": "Pullover em Pé (Cabo)",
+        "name_francais": "Pullover Debout (Câble)",
+        "gif_id": null
+    },
+    {
+        "id": "ab053893-a397-4aff-ab44-c835c652c11e",
+        "name_english": "Standing Shoulder Press (Dumbbell)",
+        "name_espanol": "Press de hombros de pie (Mancuernas)",
+        "name_portugues": "Desenvolvimento de Ombro em Pé (Haltere)",
+        "name_francais": "Développé Épaules Debout (Haltères)",
+        "gif_id": "0360"
+    },
+    {
+        "id": "adfa4c4a-dd67-4dae-af3e-ace4732c8b62",
+        "name_english": "Step Up (Weighted)",
+        "name_espanol": "Aumentar (Con Peso)",
+        "name_portugues": "Step Up (Com Peso)",
+        "name_francais": "Montée sur Banc (Avec Poids)",
+        "gif_id": "1684"
+    },
+    {
+        "id": "18bc3063-636f-443a-8e34-b54c08d881fc",
+        "name_english": "Stiff Leg Deadlift",
+        "name_espanol": "Peso muerto con piernas rígidas",
+        "name_portugues": "Levantamento Terra com Pernas Rígidas",
+        "name_francais": "Soulevé de Terre Jambes Raides",
+        "gif_id": "0432"
+    },
+    {
+        "id": "863b4cac-36cc-4aae-bcc2-05c721a8ab85",
+        "name_english": "Stiff Leg Deadlift (Dumbbell)",
+        "name_espanol": "Peso muerto con piernas rígidas (con mancuernas)",
+        "name_portugues": "Levantamento Terra com Pernas Rígidas (Haltere)",
+        "name_francais": "Soulevé de Terre Jambes Raides (Haltères)",
+        "gif_id": "0432"
+    },
+    {
+        "id": "2871604a-df73-4bf3-ae30-8f0be5329dc1",
+        "name_english": "Straight Bar Lat Extension",
+        "name_espanol": "Extensión lateral con barra recta",
+        "name_portugues": "Extensão de Latíssimo com Barra Reta",
+        "name_francais": "Extension Latérale à Barre Droite",
+        "gif_id": null
+    },
+    {
+        "id": "fb937263-7b75-4100-a5ca-72ea149d3e6d",
+        "name_english": "Straight Leg Calf Raise",
+        "name_espanol": "Elevación de pantorrilla con pierna recta",
+        "name_portugues": "Elevação de Panturrilha com Pernas Retas",
+        "name_francais": "Élévation des Mollets Jambes Droites",
+        "gif_id": "0773"
+    },
+    {
+        "id": "29c9dcb8-b131-433b-b303-304e9a62e4d8",
+        "name_english": "Stretching",
+        "name_espanol": "Extensión",
+        "name_portugues": "Alongamento",
+        "name_francais": "Étirement",
+        "gif_id": "1363"
+    },
+    {
+        "id": "a41006a8-ad81-4af3-9e18-f45998177f5c",
+        "name_english": "Suitcase Carry",
+        "name_espanol": "Transporte de maleta",
+        "name_portugues": "Carregada de Mala",
+        "name_francais": "Transport de Valise",
+        "gif_id": "2133"
+    },
+    {
+        "id": "e63b8e63-c7d2-4846-8c5a-eb17cd962ba7",
+        "name_english": "Suitcase Deadlift",
+        "name_espanol": "Peso muerto con maleta",
+        "name_portugues": "Levantamento Terra com Mala",
+        "name_francais": "Soulevé de Terre Valise",
+        "gif_id": "0066"
+    },
+    {
+        "id": "67a81cbf-ad3f-4327-b850-df53c0c2da5c",
+        "name_english": "Sumo Deadlift (Barbell)",
+        "name_espanol": "Peso muerto sumo (Barra)",
+        "name_portugues": "Levantamento Terra Sumo (Barra)",
+        "name_francais": "Soulevé de Terre Sumo (Barre)",
+        "gif_id": "0117"
+    },
+    {
+        "id": "2f6791f6-edb1-4351-96c4-35cdda6f3728",
+        "name_english": "Sumo Deadlift (Dumbbell)",
+        "name_espanol": "Peso muerto sumo (Mancuernas)",
+        "name_portugues": "Levantamento Terra Sumo (Haltere)",
+        "name_francais": "Soulevé de Terre Sumo (Haltères)",
+        "gif_id": "0300"
+    },
+    {
+        "id": "03ff504e-72fd-4570-b2f1-83c9b13f0ef3",
+        "name_english": "Sumo Deadlift (Paused)",
+        "name_espanol": "Peso muerto sumo (Pausado)",
+        "name_portugues": "Levantamento Terra Sumo (Com Pausa)",
+        "name_francais": "Soulevé de Terre Sumo (Avec Pause)",
+        "gif_id": "0117"
+    },
+    {
+        "id": "4b89af70-fe43-45b3-86a8-3a2a1a3e6f6d",
+        "name_english": "Sumo Squat",
+        "name_espanol": "Sentadilla de sumo",
+        "name_portugues": "Agachamento Sumo",
+        "name_francais": "Squat Sumo",
+        "gif_id": "3142"
+    },
+    {
+        "id": "05fa2743-0b96-443c-ad8a-7d2004c5a607",
+        "name_english": "Superman",
+        "name_espanol": "Superman",
+        "name_portugues": "Superman",
+        "name_francais": "Superman",
+        "gif_id": "0803"
+    },
+    {
+        "id": "5dfa01fb-25b9-4258-998e-e437a5a8458c",
+        "name_english": "Swim",
+        "name_espanol": "Nadar",
+        "name_portugues": "Nadar",
+        "name_francais": "Natation",
+        "gif_id": "3433"
+    },
+    {
+        "id": "ec1d11c5-2c31-4e47-80f6-3346b1cca1cc",
+        "name_english": "T Bar Row",
+        "name_espanol": "Remo con barra en T",
+        "name_portugues": "Remada com Barra T",
+        "name_francais": "Rowing à T-Bar",
+        "gif_id": "0606"
+    },
+    {
+        "id": "ebec0172-ecae-4e51-9457-7198793964e1",
+        "name_english": "TRX Row",
+        "name_espanol": "Remo de TRX",
+        "name_portugues": "Remada TRX",
+        "name_francais": "Rowing TRX",
+        "gif_id": null
+    },
+    {
+        "id": "5128ba27-8878-47c9-bce3-29fddbdd3ce9",
+        "name_english": "Tempo Bench Press",
+        "name_espanol": "Press de banca a ritmo",
+        "name_portugues": "Supino com Tempo",
+        "name_francais": "Développé Couché Tempo",
+        "gif_id": "0025"
+    },
+    {
+        "id": "eddfdf8c-b9fb-4a9c-9cba-75da7984779f",
+        "name_english": "Tempo Deadlift",
+        "name_espanol": "Peso muerto tempo",
+        "name_portugues": "Levantamento Terra com Tempo",
+        "name_francais": "Soulevé de Terre Tempo",
+        "gif_id": "0032"
+    },
+    {
+        "id": "eaa61a09-9d50-41ea-97d3-c6c712159c18",
+        "name_english": "Tempo Squat (Barbell)",
+        "name_espanol": "Sentadilla al ritmo (Barra)",
+        "name_portugues": "Agachamento com Tempo (Barra)",
+        "name_francais": "Squat Tempo (Barre)",
+        "gif_id": "1435"
+    },
+    {
+        "id": "2b3f335d-e76a-487d-8e68-6cdd0f70ca84",
+        "name_english": "Terminal Knee Extension",
+        "name_espanol": "Extensión terminal de rodilla",
+        "name_portugues": "Extensão Terminal de Joelho",
+        "name_francais": "Extension Terminale du Genou",
+        "gif_id": null
+    },
+    {
+        "id": "f45d121c-adf3-4c2f-91db-80586bfbac5f",
+        "name_english": "Thruster (Barbell)",
+        "name_espanol": "Propulsor (Barra)",
+        "name_portugues": "Thruster (Barra)",
+        "name_francais": "Thruster (Barre)",
+        "gif_id": "3305"
+    },
+    {
+        "id": "546266fa-06c0-4752-a4bf-02c63150b6ae",
+        "name_english": "Trap Bar Deadlift",
+        "name_espanol": "Peso muerto con barra trampa",
+        "name_portugues": "Levantamento Terra com Barra Trap",
+        "name_francais": "Soulevé de Terre Trap Bar",
+        "gif_id": "0032"
+    },
+    {
+        "id": "a48922a6-3cd4-486b-90ae-fc937174987a",
+        "name_english": "Trapbar High Pull",
+        "name_espanol": "Barra trampa de tiro alto",
+        "name_portugues": "Puxada Alta com Barra Trap",
+        "name_francais": "High Pull Trap Bar",
+        "gif_id": null
+    },
+    {
+        "id": "9b49259d-cd25-4b55-9b55-b377dd9bd78d",
+        "name_english": "Tricep Extension (Barbell)",
+        "name_espanol": "Extensión de tríceps (Barra)",
+        "name_portugues": "Extensão de Tríceps (Barra)",
+        "name_francais": "Extension de Triceps (Barre)",
+        "gif_id": "1720"
+    },
+    {
+        "id": "81422674-d009-416a-824d-2dadeecc26ac",
+        "name_english": "Tricep Extension (Cable)",
+        "name_espanol": "Extensión de tríceps (Cable)",
+        "name_portugues": "Extensão de Tríceps (Cabo)",
+        "name_francais": "Extension de Triceps (Câble)",
+        "gif_id": "1722"
+    },
+    {
+        "id": "a6ce8368-ee9b-406b-9608-0d86cec18a13",
+        "name_english": "Tricep Extension (Dumbbell)",
+        "name_espanol": "Extensión de tríceps (Mancuernas)",
+        "name_portugues": "Extensão de Tríceps (Haltere)",
+        "name_francais": "Extension de Triceps (Haltères)",
+        "gif_id": "0362"
+    },
+    {
+        "id": "41e87dd1-a372-4f30-bf17-23f83d443b9a",
+        "name_english": "Tricep Extension (Machine)",
+        "name_espanol": "Extensión de tríceps (Maquina)",
+        "name_portugues": "Extensão de Tríceps (Máquina)",
+        "name_francais": "Extension de Triceps (Machine)",
+        "gif_id": "0607"
+    },
+    {
+        "id": "b1cff4f0-28c3-4c3c-b718-a3780a41d356",
+        "name_english": "Tricep Kickback",
+        "name_espanol": "Contragolpe de tríceps",
+        "name_portugues": "Tríceps Kickback",
+        "name_francais": "Kickback de Triceps",
+        "gif_id": "0860"
+    },
+    {
+        "id": "c2bce18a-51fb-4ab8-8121-46996fce988f",
+        "name_english": "Tricep Pushdown (Cable)",
+        "name_espanol": "Flexión de tríceps (Cable)",
+        "name_portugues": "Pushdown de Tríceps (Cabo)",
+        "name_francais": "Pushdown de Triceps (Câble)",
+        "gif_id": "0201"
+    },
+    {
+        "id": "515f1555-0ff9-4c4f-811d-af0cee490e60",
+        "name_english": "Tricep Rope Pushdown (Cable)",
+        "name_espanol": "Empuje con cuerda para tríceps (Cable)",
+        "name_portugues": "Pushdown de Tríceps com Corda (Cabo)",
+        "name_francais": "Pushdown de Triceps avec Corde (Câble)",
+        "gif_id": "0201"
+    },
+    {
+        "id": "d8daaba1-8ac1-4377-b22d-1cade5bf7c12",
+        "name_english": "Turkish Get Up",
+        "name_espanol": "Levántate turco",
+        "name_portugues": "Turkish Get Up",
+        "name_francais": "Get Up Turc",
+        "gif_id": "0551"
+    },
+    {
+        "id": "ddbcca97-3663-4ca8-a9ca-b78e1247565d",
+        "name_english": "Underhand Lat Pulldown",
+        "name_espanol": "Lat Pulldown por debajo",
+        "name_portugues": "Puxada de Latíssimo com Pegada Invertida",
+        "name_francais": "Tirage Latéral en Supination",
+        "gif_id": "0673"
+    },
+    {
+        "id": "6f6254e2-34bb-4711-b16c-b74e2fb3ea8f",
+        "name_english": "Up Down Plank",
+        "name_espanol": "Plank Arriba Abajo",
+        "name_portugues": "Prancha Baixa e Alta",
+        "name_francais": "Planche Montée et Descente",
+        "gif_id": null
+    },
+    {
+        "id": "6a57ef4b-aeba-4b7e-ace3-8541ad3df7fc",
+        "name_english": "Upright Row (Barbell)",
+        "name_espanol": "Remo vertical (Barra)",
+        "name_portugues": "Remada Alta (Barra)",
+        "name_francais": "Rowing Vertical (Barre)",
+        "gif_id": "0120"
+    },
+    {
+        "id": "cc8eedc0-d5ea-4cb1-80e5-e5e09e72fe7e",
+        "name_english": "Upright Row (Cable)",
+        "name_espanol": "Remo vertical (Cable)",
+        "name_portugues": "Remada Alta (Cabo)",
+        "name_francais": "Rowing Vertical (Câble)",
+        "gif_id": "0246"
+    },
+    {
+        "id": "8e695ed7-6865-453d-a70c-3baaaf2f3742",
+        "name_english": "Upright Row (Dumbbell)",
+        "name_espanol": "Remo vertical (Mancuernas)",
+        "name_portugues": "Remada Alta (Haltere)",
+        "name_francais": "Rowing Vertical (Haltères)",
+        "gif_id": "0437"
+    },
+    {
+        "id": "a2bf3787-5af4-4b4f-b282-0c8034961c16",
+        "name_english": "V-Handle Tricep Pushdown (Cable)",
+        "name_espanol": "Empuje de tríceps con mango en V (cable)",
+        "name_portugues": "Pushdown de Tríceps com Pegada V (Cabo)",
+        "name_francais": "Pushdown de Triceps avec Poignée en V (Câble)",
+        "gif_id": "0241"
+    },
+    {
+        "id": "1ecac721-ecae-4e7e-bc05-4e02e5146816",
+        "name_english": "V-Up",
+        "name_espanol": "V Arriba",
+        "name_portugues": "V-Up",
+        "name_francais": "V-Up",
+        "gif_id": "1014"
+    },
+    {
+        "id": "afefc930-4399-4ce2-9409-c658067f0741",
+        "name_english": "Vertical Jump",
+        "name_espanol": "Salto vertical",
+        "name_portugues": "Salto Vertical",
+        "name_francais": "Saut Vertical",
+        "gif_id": "1472"
+    },
+    {
+        "id": "a5ad039f-d8c4-44d7-9598-a35f02368825",
+        "name_english": "Viking Press",
+        "name_espanol": "Prensa vikinga",
+        "name_portugues": "Viking Press",
+        "name_francais": "Développé Viking",
+        "gif_id": null
+    },
+    {
+        "id": "22223267-582f-4f1b-83e1-bb29dd3a0633",
+        "name_english": "Walk",
+        "name_espanol": "Caminar",
+        "name_portugues": "Caminhar",
+        "name_francais": "Marche",
+        "gif_id": "3666"
+    },
+    {
+        "id": "a965cf16-7163-4d97-9ac7-1a7028556422",
+        "name_english": "Walking Lunge",
+        "name_espanol": "Estocada caminando",
+        "name_portugues": "Lunge Andando",
+        "name_francais": "Fente en Marchant",
+        "gif_id": "0336"
+    },
+    {
+        "id": "0a4be4f6-01d0-4b08-b18f-d26a59e4e022",
+        "name_english": "Walking Lunge (Dumbbell)",
+        "name_espanol": "Estocada caminando (Mancuernas)",
+        "name_portugues": "Lunge Andando (Haltere)",
+        "name_francais": "Fente en Marchant (Haltères)",
+        "gif_id": "1460"
+    },
+    {
+        "id": "8c9d13ba-eb2b-4bdd-91da-b3afcfffd549",
+        "name_english": "Walkout Plank",
+        "name_espanol": "Plank de salida",
+        "name_portugues": "Prancha Andando",
+        "name_francais": "Planche avec Marche",
+        "gif_id": null
+    },
+    {
+        "id": "09dbbe33-df95-431f-8bf1-8689ec44a6a3",
+        "name_english": "Wall Press Dead Bug",
+        "name_espanol": "Muro prensa error muerto",
+        "name_portugues": "Dead Bug com Pressão na Parede",
+        "name_francais": "Dead Bug Pression Mur",
+        "gif_id": "0276"
+    },
+    {
+        "id": "30f2994a-94f5-46f3-9ccf-4dd1fea0104f",
+        "name_english": "Wall Sit",
+        "name_espanol": "Sentarse en la pared",
+        "name_portugues": "Agachamento na Parede",
+        "name_francais": "Assis Mur",
+        "gif_id": "0624"
+    },
+    {
+        "id": "67a63907-0840-44a5-a96c-db387f9fc13b",
+        "name_english": "Wide Grip Lat Pulldown",
+        "name_espanol": "Jalón lateral con agarre amplio",
+        "name_portugues": "Puxada de Latíssimo com Pegada Aberta",
+        "name_francais": "Tirage Latéral Large Prise",
+        "gif_id": "1325"
+    },
+    {
+        "id": "bfa06499-d66c-4f03-81f9-e90dca010351",
+        "name_english": "Wide Grip Pull Up",
+        "name_espanol": "Dominadas con agarre ancho",
+        "name_portugues": "Pull Up com Pegada Aberta",
+        "name_francais": "Traction Large Prise",
+        "gif_id": "0651"
+    },
+    {
+        "id": "96d5b52f-0a0b-4975-bfda-680b8a21aee4",
+        "name_english": "Wide Grip Rear Pull Up",
+        "name_espanol": "Pull Up de lectura con agarre ancho",
+        "name_portugues": "Pull Up Posterior com Pegada Aberta",
+        "name_francais": "Traction Large Prise Inversée",
+        "gif_id": null
+    },
+    {
+        "id": "dc5cde8c-31fd-42d7-a011-d250b1d82a3e",
+        "name_english": "Windshield Wipers",
+        "name_espanol": "Limpia parabrisas",
+        "name_portugues": "Limpadores de Para-brisa",
+        "name_francais": "Essuie-Glaces",
+        "gif_id": "0500"
+    },
+    {
+        "id": "63ec5992-0380-461f-a12f-57f28331269b",
+        "name_english": "Wood Chop",
+        "name_espanol": "Chuleta de madera",
+        "name_portugues": "Chop de Madeira",
+        "name_francais": "Coup de Hache",
+        "gif_id": null
+    },
+    {
+        "id": "43116656-2bb5-4488-82ea-2a41a1499242",
+        "name_english": "World's Greatest Stretch",
+        "name_espanol": "El tramo más grande del mundo",
+        "name_portugues": "Alongamento do Mundo",
+        "name_francais": "Étirement du Plus Grand du Monde",
+        "gif_id": "1604"
+    },
+    {
+        "id": "3db5d103-91dc-40d4-857c-1353344abb06",
+        "name_english": "Wrist Curls",
+        "name_espanol": "Flexiones de muñeca",
+        "name_portugues": "Rosca de Punho",
+        "name_francais": "Curl des Poignets",
+        "gif_id": "0126"
+    },
+    {
+        "id": "db137791-6172-44cd-9395-d3c81ade6afa",
+        "name_english": "Y Raise",
+        "name_espanol": "Y elevar",
+        "name_portugues": "Elevação Y",
+        "name_francais": "Élévation en Y",
+        "gif_id": null
+    },
+    {
+        "id": "d3e8434f-0e0f-49bb-bf32-1e7c61b41013",
+        "name_english": "Yoga",
+        "name_espanol": "Yoga",
+        "name_portugues": "Yoga",
+        "name_francais": "Yoga",
+        "gif_id": "1494"
+    },
+    {
+        "id": "2ddba664-0c9f-4d8a-8ca3-c39150d06161",
+        "name_english": "Zercher Front Foot Elevated Split Squat",
+        "name_espanol": "Zercher Sentadilla dividida con pie delantero elevado",
+        "name_portugues": "Agachamento Búlgaro com Pé Elevado Zercher",
+        "name_francais": "Squat Fente Avant avec Zercher Pied Élevé",
+        "gif_id": null
+    },
+    {
+        "id": "846592da-1323-4593-b10f-ddfe410c595f",
+        "name_english": "Zercher Squat (Barbell)",
+        "name_espanol": "Sentadilla Zercher (Barra)",
+        "name_portugues": "Agachamento Zercher (Barra)",
+        "name_francais": "Squat Zercher (Barre)",
+        "gif_id": "0127"
+    }
+]

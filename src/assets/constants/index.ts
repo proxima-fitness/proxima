@@ -6651,6 +6651,7 @@ export const goalsOptions: Option[] = [
 export const specializationOptions: Option[] = [
     { label: "Bodybuilding", value: "bodybuilding"},
     { label: "Powerbuilding", value: "powerbuilding" },
+    { label: "Powerlifting", value: "powerlifting"},
     { label: "Athletics", value: "athletics" },
     { label: "Bodyweight training", value: "bodyweight training" },
     { label: "Olympic weightlifting", value: "olympic weightlifting" },
