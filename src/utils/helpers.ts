@@ -754,7 +754,7 @@ export const replaceHevyExercises = (exercises: THevyExercise[], hevyExercises: 
     const fuse = new Fuse(hevyExercises, options);
 
     const updatedExercises = exercises.map((exercise) => {
-        const fuseResults = fuse.search(exercise.title, { limit: 1});
+        const fuseResults = fuse?.search(exercise.title, { limit: 1});
         const match = fuseResults?.[0]?.item;
 
         if (match) {
