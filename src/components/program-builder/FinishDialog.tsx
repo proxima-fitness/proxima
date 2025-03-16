@@ -32,7 +32,13 @@ export const FinishDialog: React.FC<IProps> = (props) => {
         const [program, setProgram] = useState<TProgramCreatorDay[][]>();
         const [hevyRoutine, setHevyRoutine] = useState<THevyRoutine[]>();
         const [isPreview, setIsPreview] = useState(false);
+        const [isProgramId, setIsProgramId] = useState(false);
         const [uuid, setUuid] = useState<string>("");
+
+        const handleCloseDialog = () => {
+            handleOpenFinishDialog(false);
+            setIsProgramId(false);
+        };
 
         useEffect(() => {
             if (typeof window !== undefined) {
@@ -71,12 +77,19 @@ export const FinishDialog: React.FC<IProps> = (props) => {
         return <div></div>;
     }
 
+    const handleUuid = () => {
+        const new_id = uuidv4();
+        copyAndSendUUID(new_id);
+        setUuid(new_id);
+    };
+
     const copyAndSendUUID = async (uuid: string) => {
         navigator.clipboard.writeText(JSON.stringify(uuid));
         if (hevyRoutine !== undefined) {
             await postHevyRoutineProgram(uuid, hevyRoutine);
         }
-        return true;
+        toast.success("Program ID Copied to Clipboard");
+        setIsProgramId(true);
     };
 
     const finishDialog = () => {
@@ -142,7 +155,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                     }
                     <span>
                         <Button
-                            onClick={ () => (setUuid(uuidv4())) }
+                            onClick={ handleUuid }
                             className="w-56 h-10 uppercase bg-lightSecondary hover:text-white hover:bg-lightSecondary text-white"
                         >
                             Save Program
@@ -151,21 +164,30 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                     </span>
                 </span>
             </DialogContent>
-);
+        );
     };
+
     return (
         <>
-            <Dialog open={ openFinishDialog } onOpenChange={ () => handleOpenFinishDialog(false) } >
-                { uuid.length > 0 ?
-                    copyAndSendUUID(uuid) &&
+            <Dialog open={ openFinishDialog } onOpenChange={ handleCloseDialog }>
+                { isProgramId ?
                     (
-                        <DialogContent>
-                            <span className="items-center justify-center">
+                        <DialogContent hideClose>
+                            <DialogTitle className="text-center">PROGRAM ID</DialogTitle>
+                            <span className="flex items-center justify-center">
                                 Your Program ID is {uuid}
                             </span>
-                            <span className="items-center justify-center">
-                                it has been copied to your clipboard
+                            <span className="flex items-center justify-center font-sm">
+                                ID is automatically copied to clipboard
                             </span>
+                            <a href="https://app.proximafitness.com/" className="w-full">
+                                <Button
+                                    className="w-full h-10 uppercase bg-lightSecondary hover:text-white hover:bg-lightSecondary text-white"
+                                >
+                                    Sign in to view your Program
+                                    <LogInIcon />
+                                </Button>
+                            </a>
                         </DialogContent>)
                     : finishDialog()
                 }
