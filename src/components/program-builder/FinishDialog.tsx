@@ -31,7 +31,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
         const [program, setProgram] = useState<TProgramCreatorDay[][]>();
         const [hevyRoutine, setHevyRoutine] = useState<THevyRoutine[]>();
         const [isPreview, setIsPreview] = useState(false);
-        const [uuid, setUuid] = useState<string | null>(null);
+        const [uuid, setUuid] = useState<string>("");
 
         useEffect(() => {
             if (typeof window !== undefined) {
@@ -75,7 +75,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
         // TODO: Send UUID to server (jack)
         return true;
     };
-    const ogDialog = () => {
+    const finishDialog = () => {
         return (
             <DialogContent hideClose className="max-w-5xl h-[95%]">
                 <DialogTitle className="font-bold flex items-center justify-center pb-4 gap-2 border-b-2">
@@ -152,7 +152,19 @@ export const FinishDialog: React.FC<IProps> = (props) => {
     return (
         <>
             <Dialog open={ openFinishDialog } onOpenChange={ () => handleOpenFinishDialog(false) } >
-                {(uuid) ? copyAndSendUUID(uuid) && (<DialogContent> <span className="items-center justify-center">Your Program ID is {uuid}</span><span className="items-center justify-center">it has been coppied to your clipboard </span> </DialogContent>) : ogDialog()}
+                { uuid.length > 0 ?
+                    copyAndSendUUID(uuid) &&
+                    (
+                        <DialogContent>
+                            <span className="items-center justify-center">
+                                Your Program ID is {uuid}
+                            </span>
+                            <span className="items-center justify-center">
+                                it has been copied to your clipboard
+                            </span>
+                        </DialogContent>)
+                    : finishDialog()
+                }
             </Dialog>
         </>
     );;
