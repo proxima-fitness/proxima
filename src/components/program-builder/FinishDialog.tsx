@@ -13,6 +13,8 @@ import { PdfRenderer } from "../generic/PdfRenderer";
 import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts, removeOrderHevy } from "@/utils/helpers";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { HevyPdfRenderer } from "./hevy/HevyPdfRenderer";
+import { postHevyRoutineProgram } from "@/api/hevy";
+import { v4 as uuidv4 } from "uuid";
 
 interface IProps {
     openFinishDialog: boolean;
@@ -30,6 +32,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
         const [program, setProgram] = useState<TProgramCreatorDay[][]>();
         const [hevyRoutine, setHevyRoutine] = useState<THevyRoutine[]>();
         const [isPreview, setIsPreview] = useState(false);
+        const id = uuidv4(); // Whatever the uuid is for the new routine/program
 
         useEffect(() => {
             if (typeof window !== undefined) {
@@ -62,6 +65,10 @@ export const FinishDialog: React.FC<IProps> = (props) => {
         document.body.appendChild(download);
         download.click();
         download.remove();
+    };
+
+    const handleSaveTemporaryProgram = async () => {
+        await postHevyRoutineProgram(id, hevyRoutine);
     };
 
     if (!program && !hevyRoutine) {
@@ -131,6 +138,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                     }
                     <span>
                         <Button
+                            onClick={ handleSaveTemporaryProgram }
                             className="w-56 h-10 uppercase bg-lightSecondary hover:text-white hover:bg-lightSecondary text-white"
                         >
                             Save Program
