@@ -13,6 +13,7 @@ import { PdfRenderer } from "../generic/PdfRenderer";
 import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts, removeOrderHevy } from "@/utils/helpers";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { HevyPdfRenderer } from "./hevy/HevyPdfRenderer";
+import { v4 as uuidv4 } from 'uuid';
 
 interface IProps {
     openFinishDialog: boolean;
@@ -30,6 +31,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
         const [program, setProgram] = useState<TProgramCreatorDay[][]>();
         const [hevyRoutine, setHevyRoutine] = useState<THevyRoutine[]>();
         const [isPreview, setIsPreview] = useState(false);
+        const [uuid, setUuid] = useState<string | null>(null);
 
         useEffect(() => {
             if (typeof window !== undefined) {
@@ -68,8 +70,13 @@ export const FinishDialog: React.FC<IProps> = (props) => {
         return <div></div>;
     }
 
-    return (
-        <Dialog open={ openFinishDialog } onOpenChange={ () => handleOpenFinishDialog(false) } >
+    const copyAndSendUUID = (uuid: string) => {
+        navigator.clipboard.writeText(JSON.stringify(uuid));
+        // TODO: Send UUID to server (jack)
+        return true;
+    };
+    const ogDialog = () => {
+        return (
             <DialogContent hideClose className="max-w-5xl h-[95%]">
                 <DialogTitle className="font-bold flex items-center justify-center pb-4 gap-2 border-b-2">
                     Congrats !!! You have created your first Program <PartyPopperIcon />
@@ -131,6 +138,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                     }
                     <span>
                         <Button
+                            onClick={ () => (setUuid(uuidv4())) }
                             className="w-56 h-10 uppercase bg-lightSecondary hover:text-white hover:bg-lightSecondary text-white"
                         >
                             Save Program
@@ -139,6 +147,13 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                     </span>
                 </span>
             </DialogContent>
-        </Dialog>
-    );
+);
+    };
+    return (
+        <>
+            <Dialog open={ openFinishDialog } onOpenChange={ () => handleOpenFinishDialog(false) } >
+                {(uuid) ? copyAndSendUUID(uuid) && (<DialogContent> <span className="items-center justify-center">Your Program ID is {uuid}</span><span className="items-center justify-center">it has been coppied to your clipboard </span> </DialogContent>) : ogDialog()}
+            </Dialog>
+        </>
+    );;
 };
