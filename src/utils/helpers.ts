@@ -274,7 +274,7 @@ export const appendWeekOrderAndIdToProgramDays = (program: TProgramCreatorDay[][
 
 export const getMaxFolderId = (routines: THevyRoutine[]): number => {
 
-    if (routines.length === 0) return null;
+    if (routines.length === 0) return 0;
 
     return routines.reduce((max, routine) => {
         return routine.folder_id > max ? routine.folder_id : max;
