@@ -84,7 +84,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
     };
 
     const copyAndSendUUID = async (uuid: string) => {
-        navigator.clipboard.writeText(JSON.stringify(uuid));
+        navigator.clipboard.writeText(uuid);
         if (hevyRoutine !== undefined) {
             await postHevyRoutineProgram(uuid, hevyRoutine);
         }
