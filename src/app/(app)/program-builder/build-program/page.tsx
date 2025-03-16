@@ -9,10 +9,6 @@ export default async function BuildProgram({ searchParams }: {searchParams: Prom
 
     const queryParams = await searchParams;
 
-    if (queryParams["sex"]) {
-        console.log("EXISTS:", queryParams["sex"]);
-    }
-
     return (
         <div className={ `bg-white min-h-[1000px] overflow-x-scroll` }>
             <BuildProgramClientPage

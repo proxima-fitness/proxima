@@ -13,7 +13,8 @@ import { PdfRenderer } from "../generic/PdfRenderer";
 import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts, removeOrderHevy } from "@/utils/helpers";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { HevyPdfRenderer } from "./hevy/HevyPdfRenderer";
-import { v4 as uuidv4 } from 'uuid';
+import { postHevyRoutineProgram } from "@/api/hevy";
+import { v4 as uuidv4 } from "uuid";
 
 interface IProps {
     openFinishDialog: boolean;
@@ -70,11 +71,14 @@ export const FinishDialog: React.FC<IProps> = (props) => {
         return <div></div>;
     }
 
-    const copyAndSendUUID = (uuid: string) => {
+    const copyAndSendUUID = async (uuid: string) => {
         navigator.clipboard.writeText(JSON.stringify(uuid));
-        // TODO: Send UUID to server (jack)
+        if (hevyRoutine !== undefined) {
+            await postHevyRoutineProgram(uuid, hevyRoutine);
+        }
         return true;
     };
+
     const finishDialog = () => {
         return (
             <DialogContent hideClose className="max-w-5xl h-[95%]">

@@ -13,7 +13,6 @@ export const ReviewProgramPage: React.FC = () => {
     const [program, setProgram] = useState<TProgramCreatorDay[][]>();
     const [hevyRoutine, setHevyRoutine] = useState<THevyRoutine[]>();
 
-
     useEffect(() => {
         if (typeof window !== undefined) {
             const localStorageProgram = localStorage.getItem(isHevy ? "hevy-program-in-progress" : "program-in-progress");
