@@ -68,7 +68,9 @@ export const FinishDialog: React.FC<IProps> = (props) => {
     };
 
     const handleSaveTemporaryProgram = async () => {
-        await postHevyRoutineProgram(id, hevyRoutine);
+        if (hevyRoutine !== undefined) {
+            await postHevyRoutineProgram(id, hevyRoutine);
+        }
     };
 
     if (!program && !hevyRoutine) {
