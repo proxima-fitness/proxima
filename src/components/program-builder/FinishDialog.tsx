@@ -13,6 +13,8 @@ import { PdfRenderer } from "../generic/PdfRenderer";
 import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts, removeOrderHevy } from "@/utils/helpers";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { HevyPdfRenderer } from "./hevy/HevyPdfRenderer";
+import { postHevyRoutineProgram } from "@/api/hevy";
+import { v4 as uuidv4 } from "uuid";
 
 interface IProps {
     openFinishDialog: boolean;
@@ -30,6 +32,13 @@ export const FinishDialog: React.FC<IProps> = (props) => {
         const [program, setProgram] = useState<TProgramCreatorDay[][]>();
         const [hevyRoutine, setHevyRoutine] = useState<THevyRoutine[]>();
         const [isPreview, setIsPreview] = useState(false);
+        const [isProgramId, setIsProgramId] = useState(false);
+        const [uuid, setUuid] = useState<string>("");
+
+        const handleCloseDialog = () => {
+            handleOpenFinishDialog(false);
+            setIsProgramId(false);
+        };
 
         useEffect(() => {
             if (typeof window !== undefined) {
@@ -68,8 +77,23 @@ export const FinishDialog: React.FC<IProps> = (props) => {
         return <div></div>;
     }
 
-    return (
-        <Dialog open={ openFinishDialog } onOpenChange={ () => handleOpenFinishDialog(false) } >
+    const handleUuid = () => {
+        const new_id = uuidv4();
+        copyAndSendUUID(new_id);
+        setUuid(new_id);
+    };
+
+    const copyAndSendUUID = async (uuid: string) => {
+        navigator.clipboard.writeText(JSON.stringify(uuid));
+        if (hevyRoutine !== undefined) {
+            await postHevyRoutineProgram(uuid, hevyRoutine);
+        }
+        toast.success("Program ID Copied to Clipboard");
+        setIsProgramId(true);
+    };
+
+    const finishDialog = () => {
+        return (
             <DialogContent hideClose className="max-w-5xl h-[95%]">
                 <DialogTitle className="font-bold flex items-center justify-center pb-4 gap-2 border-b-2">
                     Congrats !!! You have created your first Program <PartyPopperIcon />
@@ -131,6 +155,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                     }
                     <span>
                         <Button
+                            onClick={ handleUuid }
                             className="w-56 h-10 uppercase bg-lightSecondary hover:text-white hover:bg-lightSecondary text-white"
                         >
                             Save Program
@@ -139,6 +164,34 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                     </span>
                 </span>
             </DialogContent>
-        </Dialog>
-    );
+        );
+    };
+
+    return (
+        <>
+            <Dialog open={ openFinishDialog } onOpenChange={ handleCloseDialog }>
+                { isProgramId ?
+                    (
+                        <DialogContent hideClose>
+                            <DialogTitle className="text-center">PROGRAM ID</DialogTitle>
+                            <span className="flex items-center justify-center">
+                                Your Program ID is {uuid}
+                            </span>
+                            <span className="flex items-center justify-center font-sm">
+                                ID is automatically copied to clipboard
+                            </span>
+                            <a href="https://app.proximafitness.com/" className="w-full">
+                                <Button
+                                    className="w-full h-10 uppercase bg-lightSecondary hover:text-white hover:bg-lightSecondary text-white"
+                                >
+                                    Sign in to view your Program
+                                    <LogInIcon />
+                                </Button>
+                            </a>
+                        </DialogContent>)
+                    : finishDialog()
+                }
+            </Dialog>
+        </>
+    );;
 };
