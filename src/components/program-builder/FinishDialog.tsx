@@ -155,10 +155,11 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                     }
                     <span>
                         <Button
+                            disabled
                             onClick={ handleUuid }
-                            className="w-56 h-10 uppercase bg-lightSecondary hover:text-white hover:bg-lightSecondary text-white"
+                            className="w-92 h-10 uppercase bg-lightSecondary hover:text-white hover:bg-lightSecondary text-white"
                         >
-                            Save Program
+                            Save Program (Feature Coming Soon...)
                             <LogInIcon />
                         </Button>
                     </span>
