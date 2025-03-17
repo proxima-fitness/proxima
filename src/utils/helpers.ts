@@ -764,13 +764,13 @@ export const replaceHevyExercises = (exercises: THevyExercise[], hevyExercises: 
     const fuse = new Fuse(hevyExercises, options);
 
     const updatedExercises = exercises.map((exercise) => {
-        const fuseResults = fuse?.search(exercise.title, { limit: 1});
+        const fuseResults = fuse && fuse?.search(exercise?.title ?? "", { limit: 1});
         const match = fuseResults?.[0]?.item;
 
         if (match) {
             return {
                 ...exercise,
-                title: match.title,
+                title: match?.title ?? "",
                 exercise_template_id: match.id,
             };
         }
@@ -833,3 +833,61 @@ export const getExerciseIdForHevyExercise = async (exercise_name: string) => {
     return fuseResults?.[0]?.item?.id ?? "";
 };
 
+
+export const buildPrompt = (
+    search: string, // goes into AI Prompt
+    sex: string, // goes into AI Prompt
+    age: string, // goes into AI Prompt
+    activityLevel: string,  // goes into AI Prompt
+    goals: string, // goes into AI Prompt
+    specialization: string, // goes into AI Prompt
+    equipment: string, // goes into AI Prompt
+    focusAreas: string, // goes into AI Prompt
+    difficultyLevel: string, // goes into AI Prompt
+    excludeAreas: string, // goes into AI Prompt
+    excludeEquipment: string, // goes into AI Prompt
+    excludeSpecializations: string, // goes into AI Prompt
+    healthIssues: string, // goes into AI Prompt
+) => {
+    let prompt = "";
+    if (search.length > 0) {
+        prompt += search;
+    }
+    if (sex.length > 0) {
+        prompt += sex;
+    }
+    if (age.length > 0) {
+        prompt += age;
+    }
+    if (activityLevel.length > 0) {
+        prompt += activityLevel;
+    }
+    if (goals.length > 0) {
+        prompt += goals;
+    }
+    if (specialization.length > 0) {
+        prompt += specialization;
+    }
+    if (equipment.length > 0) {
+        prompt += equipment;
+    }
+    if (focusAreas.length > 0) {
+        prompt += focusAreas;
+    }
+    if (difficultyLevel.length > 0) {
+        prompt += difficultyLevel;
+    }
+    if (excludeAreas.length > 0) {
+        prompt += excludeAreas;
+    }
+    if (excludeEquipment.length > 0) {
+        prompt += excludeEquipment;
+    }
+    if (excludeSpecializations.length > 0) {
+        prompt += excludeSpecializations;
+    }
+    if (healthIssues.length > 0) {
+        prompt += healthIssues;
+    }
+    return prompt;
+};
