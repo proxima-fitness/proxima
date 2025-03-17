@@ -95,7 +95,9 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
 
                 const [pushDay, pullDay, legDay] = results.map((result, i) => {
                     if (result.status === "fulfilled") {
-                        return JSON.parse(result.value);
+                        if (result && result.value) {
+                            return JSON.parse(result.value);
+                        }
                     } else {
                         toast.error(`Error in ${["Push", "Pull", "Leg"][i]} Workout:, ${result.reason}`);
                         return [hevyFallbackPush, hevyFallbackPull, hevyFallbackLeg][i];
@@ -127,7 +129,9 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
 
                 const [upperDay, lowerDay] = results.map((result, i) => {
                     if (result.status === "fulfilled") {
-                        return JSON.parse(result.value);
+                        if (result && result.value) {
+                            return JSON.parse(result.value);
+                        }
                     } else {
                         toast.error(`Error in ${["Upper", "Lower"][i]} Workout:, ${result.reason}`);
                         return [hevyFallbackPush, hevyFallbackLeg][i];
@@ -161,7 +165,9 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
 
                 const [chestDay, backDay, legDay, shoulderDay, armDay] = results.map((result, i) => {
                     if (result.status === "fulfilled") {
-                        return JSON.parse(result.value);
+                        if (result && result.value) {
+                            return JSON.parse(result.value);
+                        }
                     } else {
                         toast.error(`Error in ${["Chest", "Back", "Leg", "Shoulder", "Arm"][i]} Workout:, ${result.reason}`);
                         return [hevyFallbackPush, hevyFallbackPull, hevyFallbackLeg, hevyFallbackPush, hevyFallbackPull][i];
@@ -192,7 +198,9 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
 
                 const [day] = results.map((result, i) => {
                     if (result.status === "fulfilled") {
-                        return JSON.parse(result.value);
+                        if (result && result.value) {
+                            return JSON.parse(result.value);
+                        }
                     } else {
                         toast.error(`Error Generating Workout:, ${result.reason}`);
                         return [hevyFallbackPush][i];
@@ -226,7 +234,9 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
 
                 const [pushDay, pullDay, legDay, cardioDay] = results.map((result, i) => {
                     if (result.status === "fulfilled") {
-                        return JSON.parse(result.value);
+                        if (result && result.value) {
+                            return JSON.parse(result.value);
+                        }
                     } else {
                         toast.error(`Error in ${["Push", "Pull", "Legs", "Cardio"][i]} Workout:, ${result.reason}`);
                         return [hevyFallbackPush, hevyFallbackPull, hevyFallbackLeg, hevyFallbackLeg][i];
