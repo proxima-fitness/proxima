@@ -56,6 +56,7 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
     console.log("Specific Days and workout Duration data ignored temporarily in the AI process", specificDays, workoutDuration);
 
     const { isHevy } = useIsHevy();
+    const schema = isHevy ? "hevy_routine_schema" : "program_creator_day_schema";
 
     useEffect(() => {
 
@@ -76,8 +77,6 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
                 excludeSpecializations,
                 healthIssues,
             );
-
-            const schema = isHevy ? "hevy_routine_schema" : "program_details_schema";
 
             let numberOfDaysPerWeek = daysPerWeek;
 
@@ -253,7 +252,7 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
         };
 
         aiGenerateProgram();
-    }, [isHevy, activityLevel, age, daysPerWeek, difficultyLevel, equipment, excludeAreas, excludeEquipment, excludeSpecializations, focusAreas, goals, healthIssues, programLength, search, sex, specialization]);
+    }, [isHevy, schema, activityLevel, age, daysPerWeek, difficultyLevel, equipment, excludeAreas, excludeEquipment, excludeSpecializations, focusAreas, goals, healthIssues, programLength, search, sex, specialization]);
 
     return (
         <div className="pl-8">
