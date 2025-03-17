@@ -763,22 +763,26 @@ export const replaceHevyExercises = (exercises: THevyExercise[] = [], hevyExerci
 
     const fuse = new Fuse(hevyExercises, options);
 
-    const updatedExercises = exercises && exercises.length > 0 && exercises.map((exercise) => {
-        const fuseResults = fuse && fuse?.search(exercise?.title ?? "", { limit: 1});
-        const match = fuseResults?.[0]?.item;
+    if (exercises && exercises.length > 0) {
+        const updatedExercises = exercises.map((exercise) => {
+            const fuseResults = fuse && fuse?.search(exercise?.title ?? "", { limit: 1});
+            const match = fuseResults?.[0]?.item;
 
-        if (match) {
-            return {
-                ...exercise,
-                title: match?.title ?? "",
-                exercise_template_id: match.id,
-            };
-        }
+            if (match) {
+                return {
+                    ...exercise,
+                    title: match?.title ?? "",
+                    exercise_template_id: match.id,
+                };
+            }
 
-        return exercise;
-    });
+            return exercise;
+        });
 
-    return updatedExercises ?? exercises;
+        return updatedExercises;
+    }
+
+    return exercises;
 };
 
 // Returns the proxima exercise gif_id for a specific hevy exercise using fuzzy matching
