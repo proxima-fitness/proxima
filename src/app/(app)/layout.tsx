@@ -11,6 +11,7 @@ import { IsHevyProvider } from "@/contexts/HevyContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Analytics } from "@vercel/analytics/react";
+import NextTopLoader from 'nextjs-toploader';
 
 export const metadata: Metadata = {
     title: 'Proxima Fitness | AI Workout Builder & Program Directory',
@@ -58,6 +59,10 @@ export default function RootLayout({
                             <QueryProvider>
                                 <IsHevyProvider>
                                     <Analytics />
+                                    <NextTopLoader
+                                        showSpinner={ false }
+                                        color="#00f6ff"
+                                    />
                                     {children}
                                 </IsHevyProvider>
                                 <Toaster richColors />
