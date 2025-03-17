@@ -86,7 +86,7 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
 
             if (Number(numberOfDaysPerWeek) % 3 === 0) {
                 // A Push / Pull / Leg Program
-                toast.info("Generating Routines");
+                toast.info("Generating Routines. This may take up to a minute...");
                 const pushPromise = postTextToJson(promptBase + ".Create a Push Workout", schema);
                 const pullPromise = postTextToJson(promptBase + ".Create a Pull Workout", schema);
                 const legPromise = postTextToJson(promptBase + ".Create a Leg Workout", schema);
@@ -121,7 +121,7 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
 
             } else if (Number(numberOfDaysPerWeek) % 3 !== 0 && Number(numberOfDaysPerWeek) % 2 === 0){
                 // An Upper / Lower Program
-                toast.info("Generating Routines");
+                toast.info("Generating Routines. This may take up to a minute...");
                 const upperPromise = postTextToJson(promptBase + ".Create an Upper Body Workout", schema);
                 const lowerPromise = postTextToJson(promptBase + ".Create a Lower Body Workout", schema);
 
@@ -154,7 +154,7 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
 
             } else if (Number(numberOfDaysPerWeek) % 5 === 0) {
                 // Chest / Back / Legs / Shoulders / Arms
-                toast.info("Generating Routines");
+                toast.info("Generating Routines. This may take up to a minute...");
                 const chestPromise = postTextToJson(promptBase + ".Create a Chest Workout", schema);
                 const backPromise = postTextToJson(promptBase + ".Create a Back Workout", schema);
                 const legPromise = postTextToJson(promptBase + ".Create an Legs Workout", schema);
@@ -191,7 +191,7 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
 
             } else if (Number(numberOfDaysPerWeek) === 1) {
                 // 1 Day per week program
-                toast.info("Generating Routines");
+                toast.info("Generating Routines. This may take up to a minute...");
                 const dayPromise = postTextToJson(promptBase, schema);
 
                 const results = await Promise.allSettled([dayPromise]);
@@ -224,7 +224,7 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
                 }
             } else if (Number(numberOfDaysPerWeek) === 7) {
 
-                toast.info("Generating Routines");
+                toast.info("Generating Routines. This may take up to a minute...");
                 const pushPromise = postTextToJson(promptBase + ".Create a Push Workout", schema);
                 const pullPromise = postTextToJson(promptBase + ".Create a Pull Workout", schema);
                 const legPromise = postTextToJson(promptBase + ".Create a Leg Workout", schema);
