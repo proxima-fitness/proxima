@@ -12,6 +12,7 @@ export default async function BuildProgram({ searchParams }: {searchParams: Prom
     return (
         <div className={ `bg-white min-h-[1000px] overflow-x-scroll` }>
             <BuildProgramClientPage
+                empty={ queryParams?.["empty"] ?? "" }
                 search={ queryParams?.["search"] ?? "" }
                 sex={ queryParams?.["sex"] ?? "" }
                 age={ queryParams?.["age"] ?? "" }

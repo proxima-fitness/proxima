@@ -738,7 +738,7 @@ export const programCreatorDayToScheduleWorkouts = (program: TProgramCreatorDay[
 };
 
 export const getNumberRoutineFolders = (routines: THevyRoutine[]): number => {
-    if (routines.length === 0) return 0;
+    if (routines.length === 0) return 12;
 
     const folderIds = routines.map(routine => routine.folder_id);
     const minFolderId = Math.min(...folderIds);

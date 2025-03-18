@@ -7,9 +7,10 @@ import { useIsHevy } from "@/contexts/HevyContext";
 import { postTextToJson } from "@/api/edge-functions";
 import { buildFiveDayRoutine, buildOneDayRoutine, buildPrompt, buildPushPullLegsRoutine, buildSevenDayRoutine, buildUpperLowerRoutine } from "@/utils/helpers";
 import { toast } from "sonner";
-import { hevyFallbackLeg, hevyFallbackPull, hevyFallbackPush } from "@/assets/constants";
+import {  emptyHevyRoutineProgram, hevyFallbackLeg, hevyFallbackPull, hevyFallbackPush } from "@/assets/constants";
 
 interface IProps {
+    empty: string; // used to open a program builder with no AI
     search: string; // goes into AI Prompt
     sex: string; // goes into AI Prompt
     age: string; // goes into AI Prompt
@@ -32,6 +33,7 @@ interface IProps {
 export const BuildProgramClientPage: React.FC<IProps> = (props) => {
 
     const {
+        empty,
         search,
         sex,
         age,
@@ -261,7 +263,13 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
             setGenerating(false);
         };
 
-        aiGenerateProgram();
+        if (empty !== "true") {
+            aiGenerateProgram();
+        } else {
+            setRoutine(emptyHevyRoutineProgram);
+            setGenerating(false);
+        }
+
     }, [isHevy, schema, activityLevel, age, daysPerWeek, difficultyLevel, equipment, excludeAreas, excludeEquipment, excludeSpecializations, focusAreas, goals, healthIssues, programLength, search, sex, specialization]);
 
     return (

@@ -122,7 +122,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     };
 
 
-    // // Adds an empty day to the selected week
+    // Adds an empty day to the selected week
     const handleAddDay = (folder_id: number) => {
         setHevyProgram((prev) => {
             const nthDayOrder = prev.filter((day) => day.folder_id === folder_id).length + 1;
