@@ -22,9 +22,9 @@ export const metadata = {
                         rel="noopener noreferrer"
                         href={ `/program-builder/build-program?empty=true` }
                     >
-                    <Button variant="ghost" className="xl:my-[450px] max-sm:my-24 lg:my-[250px] h-[60px] rounded-xl w-[200px font-main uppercase flex items-center justify-center gap-4">
-                        empty template
-                    </Button>
+                        <Button variant="ghost" className="xl:my-[450px] max-sm:my-24 lg:my-[250px] h-[60px] rounded-xl w-[200px font-main uppercase flex items-center justify-center gap-4">
+                            empty template
+                        </Button>
                     </Link>
                 </div>
                 <div className="bg-red-400 py-4 text-white hidden max-sm:flex max-sm:flex-col max-sm:justify-center max-sm:items-center text-center">

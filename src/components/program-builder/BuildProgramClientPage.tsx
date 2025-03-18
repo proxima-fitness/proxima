@@ -270,7 +270,7 @@ export const BuildProgramClientPage: React.FC<IProps> = (props) => {
             setGenerating(false);
         }
 
-    }, [isHevy, schema, activityLevel, age, daysPerWeek, difficultyLevel, equipment, excludeAreas, excludeEquipment, excludeSpecializations, focusAreas, goals, healthIssues, programLength, search, sex, specialization]);
+    }, [isHevy, empty, schema, activityLevel, age, daysPerWeek, difficultyLevel, equipment, excludeAreas, excludeEquipment, excludeSpecializations, focusAreas, goals, healthIssues, programLength, search, sex, specialization]);
 
     return (
         <div className="pl-8">
