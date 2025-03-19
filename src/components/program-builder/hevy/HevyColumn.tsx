@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CopyIcon, PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { reorderHevy } from "@/utils/helpers";
+import { reorderHevy } from "@/utils/general/helpers";
 import { DropIndicator } from "@/components/drag-and-drop/DropIndicator";
 import { HevyDayCard } from "./HevyDayCard";
 import { HevyDuplicateWeek } from "./HevyDuplicateWeek";

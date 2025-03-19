@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { intensities, rep_types } from "@/assets/constants";
-import { addExerciseToProgramCreatorExerciseConverter, convertProgramCreatorExerciseToAddExercise, getExerciseFromLocalStorageByID, getExerciseFromLocalStorageByName } from "@/utils/helpers";
+import { addExerciseToProgramCreatorExerciseConverter, convertProgramCreatorExerciseToAddExercise, getExerciseFromLocalStorageByID, getExerciseFromLocalStorageByName } from "@/utils/general/helpers";
 import { ExerciseSearchBar } from "../generic/ExerciseSearchBar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Input } from "../ui/input";

@@ -18,7 +18,7 @@ import { DropIndicator } from "@/components/drag-and-drop/DropIndicator";
 import { HevyExerciseVisualizer } from "./HevyExerciseVisualizer";
 import { HevyDuplicateDay } from "./HevyDuplicateDay";
 import { Option } from "@/components/ui/multi-select";
-import { convertHevyExerciseIntoHevyAddExercise } from "@/utils/helpers";
+import { convertHevyExerciseIntoHevyAddExercise } from "@/utils/general/helpers";
 
 interface IProps {
     day: THevyRoutine;

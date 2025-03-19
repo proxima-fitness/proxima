@@ -1,3 +1,4 @@
+import { aiRequest, buildProgram, buildPrompt } from "@/utils/program-builder";
 import { supabaseKey, supabaseUrl } from ".";
 
 interface TextToJsonRequestPayload {
@@ -68,7 +69,7 @@ export const postChatPrompt = async (prompt: string, onChunk: (chunk: string) =>
 };
 
 // Text to JSON Edge function, can create workout_history, save_workout_schema, program_details_schema
-export const postTextToJson = async (query: string, schemaType: string) => {
+export const postTextToJson = async (query: string, schemaType: TTextToJsonSchema) => {
 
     const url = supabaseUrl + text_to_json;
     const payload: TextToJsonRequestPayload = { query, schemaType };
@@ -85,15 +86,17 @@ export const postTextToJson = async (query: string, schemaType: string) => {
 
         if (!response.ok) {
             console.error('Network response was not ok');
-            return null;
+            return { success: false, error: `Server error: ${response.statusText}` };
         }
 
-        const data = await response.json();
-        return data["reply"];
+        const json = await response.json();
+        return { success: true, data: json["reply" ] };
+
     } catch (error) {
         console.error('Error posting data:', error);
+        return { success: false, error: error || "unknown error" };
     }
-  };
+};
 
 
 // Image to Text Edge function
@@ -176,4 +179,155 @@ export const postNsfwImageDetection = async (imageUrl: string) => {
     } catch (error) {
         console.error('Error posting data:', error);
     }
+};
+
+
+export const buildAiProgram = async (request: TTextToJsonRequest, isHevy: boolean) => {
+
+            const promptBase = buildPrompt(
+                request.search,
+                request.sex,
+                request.age,
+                request.activityLevel,
+                request.goals,
+                request.specialization,
+                request.equipment,
+                request.focusAreas,
+                request.difficultyLevel,
+                request.excludeAreas,
+                request.excludeEquipment,
+                request.excludeSpecializations,
+                request.healthIssues,
+            );
+
+            let numberOfDaysPerWeek = Number(request.daysPerWeek);
+            const response = await aiRequest(numberOfDaysPerWeek, promptBase);
+
+            // JSON.stringify({
+            //     "workout_days": [
+            //         {
+            //             "day_title": "Push Day",
+            //             "exercises": [
+            //                 {
+            //                     "title": "Bench Press",
+            //                     "sets": 4,
+            //                     "reps": 8,
+            //                     "rpe": 7
+            //                 },
+            //                 {
+            //                     "title": "Overhead Dumbbell Press",
+            //                     "sets": 3,
+            //                     "reps": 10,
+            //                     "rpe": 8
+            //                 },
+            //                 {
+            //                     "title": "Incline Dumbbell Flyes",
+            //                     "sets": 3,
+            //                     "reps": 12,
+            //                     "rpe": 7
+            //                 },
+            //                 {
+            //                     "title": "Tricep Dips",
+            //                     "sets": 3,
+            //                     "reps": 10,
+            //                     "rpe": 8
+            //                 },
+            //                 {
+            //                     "title": "Lateral Raises",
+            //                     "sets": 3,
+            //                     "reps": 12,
+            //                     "rpe": 7
+            //                 }
+            //             ]
+            //         },
+            //         {
+            //             "day_title": "Pull Day",
+            //             "exercises": [
+            //                 {
+            //                     "title": "Pull-Ups",
+            //                     "sets": 4,
+            //                     "reps": 6,
+            //                     "rpe": 8
+            //                 },
+            //                 {
+            //                     "title": "Bent Over Barbell Rows",
+            //                     "sets": 4,
+            //                     "reps": 8,
+            //                     "rpe": 7
+            //                 },
+            //                 {
+            //                     "title": "Seated Cable Rows",
+            //                     "sets": 3,
+            //                     "reps": 10,
+            //                     "rpe": 8
+            //                 },
+            //                 {
+            //                     "title": "Face Pulls",
+            //                     "sets": 3,
+            //                     "reps": 12,
+            //                     "rpe": 7
+            //                 },
+            //                 {
+            //                     "title": "Bicep Curls",
+            //                     "sets": 3,
+            //                     "reps": 10,
+            //                     "rpe": 8
+            //                 }
+            //             ]
+            //         },
+            //         {
+            //             "day_title": "Leg Day",
+            //             "exercises": [
+            //                 {
+            //                     "title": "Squats",
+            //                     "sets": 4,
+            //                     "reps": 8,
+            //                     "rpe": 8
+            //                 },
+            //                 {
+            //                     "title": "Leg Press",
+            //                     "sets": 4,
+            //                     "reps": 10,
+            //                     "rpe": 7
+            //                 },
+            //                 {
+            //                     "title": "Lunges",
+            //                     "sets": 3,
+            //                     "reps": 12,
+            //                     "rpe": 7
+            //                 },
+            //                 {
+            //                     "title": "Leg Curls",
+            //                     "sets": 3,
+            //                     "reps": 10,
+            //                     "rpe": 8
+            //                 },
+            //                 {
+            //                     "title": "Calf Raises",
+            //                     "sets": 3,
+            //                     "reps": 15,
+            //                     "rpe": 7
+            //                 }
+            //             ]
+            //         }
+            //     ]
+            // });
+
+            if (response !== undefined) {
+                const parsedResponse = JSON.parse(response);
+
+                const program = await buildProgram(parsedResponse, Number(request.programLength), Number(request.daysPerWeek));
+                return program;
+            }
+
+
+
+        // };
+
+        // if (empty !== "true") {
+        //     aiGenerateProgram();
+        // } else {
+        //     setRoutine(emptyHevyRoutineProgram);
+        // }
+
 };

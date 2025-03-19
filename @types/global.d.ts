@@ -50,6 +50,50 @@ type TExercise = {
 // Except the routine folders will have to be labeled and organized programmatically
 // to represent weeks in a program
 
+type TTextToJsonResponse = {
+    workout_days: {
+        day_title: string;
+        exercises: {
+            reps: number;
+            rpe: number;
+            sets: number;
+            title: string;
+        }[];
+    }[];
+}
+
+type TTextToJsonSchema =
+    "workout_history_schema" |
+    "program_creator_day_schema" |
+    "saved_workout_schema" |
+    "one_day_schema" | // Schema for 1 Workout
+    "ppl_schema" | // Schema for Push, Pull, Legs Split
+    "ul_schema" | // Schema for Upper Lower Split
+    "cblsa_schema" | // Schema for Chest, Back, Legs, Shoulders, Arms Split
+    "pplc_schema" | // Schema for Push, Pull, Legs, Cardio Split
+    "hevy_routine_schema";
+
+type TTextToJsonRequest = {
+    empty: string; // used to open a program builder with no AI
+    search: string; // goes into AI Prompt
+    sex: string; // goes into AI Prompt
+    age: string; // goes into AI Prompt
+    daysPerWeek: string; // used in the buildRoutine function
+    specificDays: string; // Ignore for now
+    programLength: string; // used in the buildRoutine function
+    workoutDuration: string; // Ignore for now
+    activityLevel: string;  // goes into AI Prompt
+    goals: string; // goes into AI Prompt
+    specialization: string; // goes into AI Prompt
+    equipment: string; // goes into AI Prompt
+    focusAreas: string; // goes into AI Prompt
+    difficultyLevel: string; // goes into AI Prompt
+    excludeAreas: string; // goes into AI Prompt
+    excludeEquipment: string; // goes into AI Prompt
+    excludeSpecializations: string; // goes into AI Prompt
+    healthIssues: string; // goes into AI Prompt
+}
+
 type THevyRoutineAIResponse = {
     routine: THevyRoutine;
 };

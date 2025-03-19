@@ -6,7 +6,7 @@ import {
     HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { CalendarIcon } from "lucide-react";
-import { convertSupabaseDateToReadable } from "@/utils/helpers";
+import { convertSupabaseDateToReadable } from "@/utils/general/helpers";
 import { ProgramThumbnail } from "./ProgramThumbnail";
 
 interface IProps {

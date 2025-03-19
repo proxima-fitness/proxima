@@ -1,7 +1,7 @@
 
 import { useMemo } from "react";
 import { lightColours } from "@/assets/constants";
-import { getInitials } from "@/utils/helpers";
+import { getInitials } from "@/utils/general/helpers";
 import { useExerciseGif, useExerciseGifId } from "@/api/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 

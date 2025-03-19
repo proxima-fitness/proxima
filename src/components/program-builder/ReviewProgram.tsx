@@ -1,6 +1,6 @@
 "use client";
 
-import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts } from "@/utils/helpers";
+import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts } from "@/utils/general/helpers";
 import { ProgramSchedule } from "../programs/ProgramSchedule";
 import { useEffect, useState } from "react";
 import { BuildProgramSkeleton } from "./BuildProgramSkeleton";

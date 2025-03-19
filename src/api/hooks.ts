@@ -6,7 +6,8 @@ import { getOpUserId, getUserFullName, getUserMetaData } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getExercises } from "./exercises";
 import { getHevyExercises } from "./hevy";
-import { getExerciseGifIdForHevyExercise } from "@/utils/helpers";
+import { getExerciseGifIdForHevyExercise } from "@/utils/program-builder";
+import { buildAiProgram } from "./edge-functions";
 
 /*********************************/
 /** CLIENT SIDE RENDERED HOOKS **/
@@ -44,13 +45,13 @@ export const usePrograms = (limit?: number) => {
     });
 };
 
-// FETCHES THE PROGRAM NAMES DISPLAYED ON THE PROGRAMS SECTIOn WITH THUMBNAILS
-// export const useProgramsSection = (limit?: number) => {
-//     return useQuery({
-//         queryKey: ['programs-section'],
-//         queryFn: () => getPrograms(limit),
-//     });
-//};
+export const useBuildAiProgram = (request: TTextToJsonRequest, isHevy: boolean) => {
+    return useQuery({
+        queryKey: ['ai-program', request, isHevy],
+        queryFn: () => buildAiProgram(request, isHevy),
+        refetchOnWindowFocus: false,
+    });
+};
 
 // FETCHES THE USER METADATA BY AN ID
 export const useUserMetadata = (id: string) => {

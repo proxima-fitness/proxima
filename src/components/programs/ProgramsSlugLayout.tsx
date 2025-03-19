@@ -3,7 +3,7 @@ import { GetStarted } from "../header/GetStarted";
 import { useOpUserMetadataSSR, useProgramByIdSSR, useUserFullNameSSR } from "@/api/hooks";
 import { ProgramDetails } from "./ProgramDetails";
 import { ProgramSchedule } from "./ProgramSchedule";
-import { sortWorkouts } from "@/utils/helpers";
+import { sortWorkouts } from "@/utils/general/helpers";
 import { FC } from "react";
 
 interface IProps {
