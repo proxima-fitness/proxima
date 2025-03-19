@@ -1,4 +1,4 @@
-import { BuildProgramClientPage } from "@/components/program-builder/BuildProgramClientPage";
+import { BuildProgramPage } from "@/components/program-builder/BuildProgramPage";
 
 export const metadata = {
     title: "Build Program | AI Program Builder",
@@ -11,7 +11,7 @@ export default async function BuildProgram({ searchParams }: {searchParams: Prom
 
     return (
         <div className={ `bg-white min-h-[1000px] overflow-x-scroll` }>
-            <BuildProgramClientPage
+            <BuildProgramPage
                 empty={ queryParams?.["empty"] ?? "" }
                 search={ queryParams?.["search"] ?? "" }
                 sex={ queryParams?.["sex"] ?? "" }

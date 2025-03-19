@@ -30,7 +30,7 @@ interface IProps {
     healthIssues: string; // goes into AI Prompt
 }
 
-export const BuildProgramClientPage: React.FC<IProps> = (props) => {
+export const BuildProgramPage: React.FC<IProps> = (props) => {
 
     const {
         empty,
