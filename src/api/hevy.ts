@@ -1,7 +1,7 @@
 // File for endpoints to the Hevy App Public API
 import { v4 as uuidv4 } from "uuid";
-import { getExerciseIdForHevyExercise, getMaxFolderId } from "@/utils/helpers";
 import { supabase } from ".";
+import { getExerciseIdForHevyExercise, getMaxFolderId } from "@/utils/program-builder";
 
 export const defaultFetch = async <T>(url: string, apiKey: string): Promise<T> => {
     const response = await fetch(url, {

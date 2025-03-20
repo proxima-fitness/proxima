@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { AddExerciseDialog } from "./AddExerciseDialog";
 import { Option } from "@/components/ui/multi-select";
 import { GenerateDayDialog } from "./GenerateDayDialog";
-import { addExerciseToProgramCreatorExerciseConverter, appendWeekOrderAndIdToProgramDays, deFlattenProgram, flattenProgram, reorder } from "@/utils/helpers";
 import { useExercises } from "@/api/hooks";
 import { Column } from "../drag-and-drop/Column";
+import { addExerciseToProgramCreatorExerciseConverter, appendWeekOrderAndIdToProgramDays, deFlattenProgram, flattenProgram, reorder } from "@/utils/program-builder";
 
 interface IProps {
     program: TProgramCreatorDay[][];

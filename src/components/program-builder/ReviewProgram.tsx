@@ -1,11 +1,11 @@
 "use client";
 
-import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts } from "@/utils/helpers";
 import { ProgramSchedule } from "../programs/ProgramSchedule";
 import { useEffect, useState } from "react";
 import { BuildProgramSkeleton } from "./BuildProgramSkeleton";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { HevyRoutineSchedule } from "./hevy/HevyRoutineSchedule";
+import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts } from "@/utils/program-builder";
 
 export const ReviewProgramPage: React.FC = () => {
 

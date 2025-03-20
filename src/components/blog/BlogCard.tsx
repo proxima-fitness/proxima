@@ -1,6 +1,6 @@
 "use client";
 
-import { convertSupabaseDateToReadable } from "@/utils/helpers";
+import { convertSupabaseDateToReadable } from "@/utils/general/helpers";
 
 interface IProps {
     blog: TBlog;

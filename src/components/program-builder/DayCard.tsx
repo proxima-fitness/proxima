@@ -16,9 +16,9 @@ import {
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu";
 import { Input } from "../ui/input";
-import { convertProgramCreatorExerciseToAddExercise } from "@/utils/helpers";
 import { DropIndicator } from "../drag-and-drop/DropIndicator";
 import { TooltipExerciseVisualizer } from "../generic/TooltipExerciseVisualizer";
+import { convertProgramCreatorExerciseToAddExercise } from "@/utils/program-builder";
 
 interface IProps {
     day: TProgramCreatorDay;

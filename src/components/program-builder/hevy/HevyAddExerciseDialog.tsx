@@ -5,13 +5,14 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { hevy_intensities, hevy_rep_types } from "@/assets/constants";
-import { getExerciseGifIdForHevyExercise, getHevyExerciseFromLocalStorageByID, getHevyExerciseFromLocalStorageByName } from "@/utils/helpers";
+import { getHevyExerciseFromLocalStorageByID, getHevyExerciseFromLocalStorageByName } from "@/utils/general/helpers";
 import { toast } from "sonner";
 import { PlusIcon, Trash2Icon, XIcon } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { HevyExerciseSearchBar } from "./HevyExerciseSearchBar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getExerciseGifIdForHevyExercise } from "@/utils/program-builder";
 
 interface IProps {
     addExerciseDialog: THevyDialog;

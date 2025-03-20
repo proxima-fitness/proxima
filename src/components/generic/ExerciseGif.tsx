@@ -3,7 +3,7 @@ import { useExerciseGif } from "../../api/hooks";
 import { useMemo } from "react";
 import { Skeleton } from "../ui/skeleton";
 import { lightColours } from "@/assets/constants";
-import { getInitials } from "@/utils/helpers";
+import { getInitials } from "@/utils/general/helpers";
 
 interface IProps {
     thumbnailOrImage: "img" | "thmb";

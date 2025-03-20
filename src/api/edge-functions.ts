@@ -1,4 +1,6 @@
+import { aiRequest, buildProgram, buildPrompt } from "@/utils/program-builder";
 import { supabaseKey, supabaseUrl } from ".";
+import { emptyHevyRoutineProgram } from "@/assets/constants";
 
 interface TextToJsonRequestPayload {
     query: string;
@@ -68,7 +70,7 @@ export const postChatPrompt = async (prompt: string, onChunk: (chunk: string) =>
 };
 
 // Text to JSON Edge function, can create workout_history, save_workout_schema, program_details_schema
-export const postTextToJson = async (query: string, schemaType: string) => {
+export const postTextToJson = async (query: string, schemaType: TTextToJsonSchema) => {
 
     const url = supabaseUrl + text_to_json;
     const payload: TextToJsonRequestPayload = { query, schemaType };
@@ -85,15 +87,17 @@ export const postTextToJson = async (query: string, schemaType: string) => {
 
         if (!response.ok) {
             console.error('Network response was not ok');
-            return null;
+            return { success: false, error: `Server error: ${response.statusText}` };
         }
 
-        const data = await response.json();
-        return data["reply"];
+        const json = await response.json();
+        return { success: true, data: json["reply" ] };
+
     } catch (error) {
         console.error('Error posting data:', error);
+        return { success: false, error: error || "unknown error" };
     }
-  };
+};
 
 
 // Image to Text Edge function
@@ -175,5 +179,39 @@ export const postNsfwImageDetection = async (imageUrl: string) => {
 
     } catch (error) {
         console.error('Error posting data:', error);
+    }
+};
+
+
+export const buildAiProgram = async (request: TTextToJsonRequest, isHevy: boolean) => {
+
+    if (request.empty === "true") {
+        return emptyHevyRoutineProgram;
+    }
+
+    const promptBase = buildPrompt(
+        request.search,
+        request.sex,
+        request.age,
+        request.activityLevel,
+        request.goals,
+        request.specialization,
+        request.equipment,
+        request.focusAreas,
+        request.difficultyLevel,
+        request.excludeAreas,
+        request.excludeEquipment,
+        request.excludeSpecializations,
+        request.healthIssues,
+    );
+
+    const numberOfDaysPerWeek = Number(request.daysPerWeek);
+    const response = await aiRequest(numberOfDaysPerWeek, promptBase);
+
+    if (response !== undefined) {
+        const parsedResponse = JSON.parse(response);
+
+        const program = await buildProgram(parsedResponse, Number(request.programLength), Number(request.daysPerWeek));
+        return program;
     }
 };

@@ -4,9 +4,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { CopyIcon, PlusIcon } from "lucide-react";
 import { DayCard } from "../program-builder/DayCard";
 import { Button } from "@/components/ui/button";
-import { reorder } from "@/utils/helpers";
 import { DuplicateWeek } from "../program-builder/DuplicateWeek";
 import { Option } from "@/components/ui/multi-select";
+import { reorder } from "@/utils/program-builder";
 
 interface IProps {
     title: string;
