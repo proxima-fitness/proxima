@@ -1,54 +1,34 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { BuildProgramSkeleton } from "./BuildProgramSkeleton";
 import { HevyRoutine } from "./HevyRoutine";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { useBuildAiProgram } from "@/api/hooks";
 import { useMemo } from "react";
 
-interface IProps {
-    empty: string; // used to open a program builder with no AI
-    search: string; // goes into AI Prompt
-    sex: string; // goes into AI Prompt
-    age: string; // goes into AI Prompt
-    daysPerWeek: string; // used in the buildRoutine function
-    specificDays: string; // Ignore for now
-    programLength: string; // used in the buildRoutine function
-    workoutDuration: string; // Ignore for now
-    activityLevel: string;  // goes into AI Prompt
-    goals: string; // goes into AI Prompt
-    specialization: string; // goes into AI Prompt
-    equipment: string; // goes into AI Prompt
-    focusAreas: string; // goes into AI Prompt
-    difficultyLevel: string; // goes into AI Prompt
-    excludeAreas: string; // goes into AI Prompt
-    excludeEquipment: string; // goes into AI Prompt
-    excludeSpecializations: string; // goes into AI Prompt
-    healthIssues: string; // goes into AI Prompt
-}
+export const BuildProgramPage: React.FC = () => {
 
-export const BuildProgramPage: React.FC<IProps> = (props) => {
+    const searchParams = useSearchParams();
 
-    const {
-        empty,
-        search,
-        sex,
-        age,
-        daysPerWeek,
-        specificDays,
-        programLength,
-        workoutDuration,
-        activityLevel,
-        goals,
-        specialization,
-        equipment,
-        focusAreas,
-        difficultyLevel,
-        excludeAreas,
-        excludeEquipment,
-        excludeSpecializations,
-        healthIssues,
-    } = props;
+    const empty = searchParams.get('empty') ?? '';
+    const search = searchParams.get('search') ?? '';
+    const sex = searchParams.get('sex') ?? '';
+    const age = searchParams.get('age') ?? '';
+    const daysPerWeek = searchParams.get('daysPerWeek') ?? '';
+    const specificDays = searchParams.get('specificDays') ?? '';
+    const programLength = searchParams.get('programLength') ?? '';
+    const workoutDuration = searchParams.get('workoutDuration') ?? '';
+    const activityLevel = searchParams.get('activityLevel') ?? '';
+    const goals = searchParams.get('goals') ?? '';
+    const specialization = searchParams.get('specialization') ?? '';
+    const equipment = searchParams.get('equipment') ?? '';
+    const focusAreas = searchParams.get('focusAreas') ?? '';
+    const difficultyLevel = searchParams.get('difficultyLevel') ?? '';
+    const excludeAreas = searchParams.get('excludeAreas') ?? '';
+    const excludeEquipment = searchParams.get('excludeEquipment') ?? '';
+    const excludeSpecializations = searchParams.get('excludeSpecializations') ?? '';
+    const healthIssues = searchParams.get('healthIssues') ?? '';
 
     const { isHevy } = useIsHevy();
     const request = useMemo(() => ({
