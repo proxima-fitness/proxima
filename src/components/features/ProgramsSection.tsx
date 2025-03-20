@@ -29,7 +29,7 @@ export const ProgramsSection: React.FC = () => {
             :   (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 pt-14 px-24 max-sm:px-0">
 
-                    { programs.map((program) => (
+                    { programs !== undefined && programs.map((program) => (
                         <Link
                             key={ program.id }
                             target="_self"
