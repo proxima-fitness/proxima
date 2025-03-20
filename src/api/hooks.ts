@@ -47,7 +47,7 @@ export const usePrograms = (limit?: number) => {
 
 export const useBuildAiProgram = (request: TTextToJsonRequest, isHevy: boolean) => {
     return useQuery({
-        queryKey: ['ai-program', request, isHevy],
+        queryKey: ['ai-program'],
         queryFn: () => buildAiProgram(request, isHevy),
         enabled: isHevy !== undefined,
         refetchOnWindowFocus: false,
