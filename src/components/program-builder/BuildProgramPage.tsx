@@ -52,7 +52,7 @@ export const BuildProgramPage: React.FC<IProps> = (props) => {
     // const [routine, setRoutine] = useState<THevyRoutine[]>();
     const { isHevy } = useIsHevy();
 
-    const { data: program, isLoading: loadingProgram, isError: programError } =  useBuildAiProgram({
+    const { data: program, isLoading: loadingProgram } =  useBuildAiProgram({
         empty,
         search,
         sex,

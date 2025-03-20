@@ -10,11 +10,11 @@ import {  CopyIcon, DownloadIcon, LogInIcon, PartyPopperIcon } from "lucide-reac
 import { toast } from "sonner";
 import { PDFViewer } from '@react-pdf/renderer';
 import { PdfRenderer } from "../generic/PdfRenderer";
-import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts, removeOrderHevy } from "@/utils/general/helpers";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { HevyPdfRenderer } from "./hevy/HevyPdfRenderer";
 import { postHevyRoutineProgram } from "@/api/hevy";
 import { v4 as uuidv4 } from "uuid";
+import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts, removeOrderHevy } from "@/utils/program-builder";
 
 interface IProps {
     openFinishDialog: boolean;

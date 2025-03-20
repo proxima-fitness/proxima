@@ -185,6 +185,8 @@ export const postNsfwImageDetection = async (imageUrl: string) => {
 
 export const buildAiProgram = async (request: TTextToJsonRequest, isHevy: boolean) => {
 
+    console.log("Hevy routine:", isHevy);
+
     if (request.empty === "true") {
         return emptyHevyRoutineProgram;
     }
@@ -207,7 +209,7 @@ export const buildAiProgram = async (request: TTextToJsonRequest, isHevy: boolea
 
     console.log("promptBase:",promptBase);
 
-    let numberOfDaysPerWeek = Number(request.daysPerWeek);
+    const numberOfDaysPerWeek = Number(request.daysPerWeek);
     const response = await aiRequest(numberOfDaysPerWeek, promptBase);
 
     if (response !== undefined) {

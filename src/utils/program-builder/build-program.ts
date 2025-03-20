@@ -1,8 +1,7 @@
 import { getHevyExercises } from "@/api/hevy";
-import { replaceHevyExercises, replaceTextToJsonExercisesHevy } from "./format-responses";
+import { replaceTextToJsonExercisesHevy } from "./format-responses";
 import { postTextToJson } from "@/api/edge-functions";
 import { toast } from "sonner";
-import { title } from "process";
 
 export const buildPrompt = (
     search: string, // goes into AI Prompt
