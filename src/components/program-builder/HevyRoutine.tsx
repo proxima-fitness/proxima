@@ -246,7 +246,6 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     return (
         <>
             <div className="flex flex-row gap-4 h-full w-full">
-
                 { numberOfWeeksArr.map((_, index) => (
                     <HevyColumn
                         key={ `Week ${index + 1}` }

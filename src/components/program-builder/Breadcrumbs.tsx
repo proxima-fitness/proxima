@@ -15,10 +15,10 @@ export const Breadcrumbs: React.FC = () => {
     ];
 
     return (
-        <Breadcrumb className="w-[33%] max-sm:hidden">
+        <Breadcrumb className="w-[33%]">
             <BreadcrumbList>
                 { breadcrumbs.map((bc) => (
-                    <div className="flex flex-row items-center justify-center gap-2" key={ bc.label }>
+                    <div className="max-sm:text-xs flex flex-row items-center justify-center gap-2" key={ bc.label }>
                         <BreadcrumbSeparator />
                         <BreadcrumbItem key={ bc.label }>
                             <BreadcrumbLink href={ bc.href }>{bc.label}</BreadcrumbLink>

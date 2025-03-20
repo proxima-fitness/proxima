@@ -31,7 +31,7 @@ export const ReviewProgramPage: React.FC = () => {
     }
 
     return (
-        <div className="pl-8">
+        <div className="sm:pl-8">
             { (isHevy && hevyRoutine) ?
                 <HevyRoutineSchedule deflatHevyRoutine={ deFlattenHevyRoutine(hevyRoutine) } />
             : program &&

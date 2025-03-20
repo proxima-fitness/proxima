@@ -48,7 +48,7 @@ export const HevyDuplicateWeek: React.FC<IProps> = (props) => {
                     Duplicate Week {folder_id + 1} to
                 </DialogTitle>
                 <DialogDescription className="flex flex-row justify-between items-center">
-                    <span className="grid grid-cols-6 gap-6 p-8 w-full">
+                    <span className="grid grid-cols-6 gap-2 max-sm:text-center sm:gap-6 sm:p-8 w-full">
                         <DialogBadge
                             key="select-all"
                             onClick={ selectAllWeeks }

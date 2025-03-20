@@ -94,23 +94,23 @@ export const FinishDialog: React.FC<IProps> = (props) => {
 
     const finishDialog = () => {
         return (
-            <DialogContent hideClose className="max-w-5xl h-[95%]">
-                <DialogTitle className="font-bold flex items-center justify-center pb-4 gap-2 border-b-2">
+            <DialogContent className="sm:max-w-5xl max-sm:w-screen h-[95%]">
+                <DialogTitle className="font-bold flex max-sm:flex-col max-sm:text-center items-center justify-center max-sm:pb-0 pb-4 gap-2 border-b-2">
                     Congrats !!! You have created your first Program <PartyPopperIcon />
                 </DialogTitle>
                 <span className="flex flex-row justify-center items-center gap-2">
                     <Button
-                    onClick={ () => setIsPreview(false) }
-                    variant={ isPreview ? "ghost" : "outline" }
-                    className="w-56 h-10 uppercase"
-                >
+                        onClick={ () => setIsPreview(false) }
+                        variant={ isPreview ? "ghost" : "outline" }
+                        className="max-sm:w-auto w-56 h-10 uppercase"
+                    >
                         View JSON
                     </Button>
                     <Button
-                    onClick={ () => setIsPreview(true) }
-                    variant={ isPreview ? "outline" : "ghost" }
-                    className="w-56 h-10 uppercase"
-                >
+                        onClick={ () => setIsPreview(true) }
+                        variant={ isPreview ? "outline" : "ghost" }
+                        className="max-sm:w-auto w-56 h-10 uppercase"
+                    >
                         Preview PDF
                     </Button>
                 </span>
@@ -127,7 +127,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                         <Textarea className="h-[50vh]" readOnly aria-readonly value={ (isHevy && hevyRoutine) ? JSON.stringify(removeOrderHevy(hevyRoutine), null, 4) : program && JSON.stringify(program, null, 4) } />
                     }
                 </span>
-                <span className="w-full flex flex-row items-center justify-between">
+                <span className="w-full flex flex-row max-sm:flex-col items-center justify-between max-sm:justify-center gap-4">
                     { isPreview ?
                         <div>
                         </div>
@@ -137,7 +137,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                                 <Button
                                     onClick={ handleCopyJson }
                                     variant="outline"
-                                    className="w-56 h-10 uppercase"
+                                    className="max-sm:w-auto w-56 h-10 uppercase"
                                 >
                                     <CopyIcon /> Copy JSON
                                 </Button>
@@ -146,7 +146,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                                 <Button
                                     onClick={ handleDownloadJson }
                                     variant="outline"
-                                    className="w-56 h-10 uppercase"
+                                    className="max-sm:w-auto w-56 h-10 uppercase"
                                 >
                                     <DownloadIcon /> Download JSON
                                 </Button>
@@ -157,7 +157,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                         <Button
                             disabled
                             onClick={ handleUuid }
-                            className="w-92 h-10 uppercase bg-lightSecondary hover:text-white hover:bg-lightSecondary text-white"
+                            className="max-sm:w-auto w-92 h-10 uppercase bg-lightSecondary hover:text-white hover:bg-lightSecondary text-white"
                         >
                             Save Program (Feature Coming Soon...)
                             <LogInIcon />

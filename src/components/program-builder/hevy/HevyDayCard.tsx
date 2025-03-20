@@ -80,7 +80,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                 onDragStart={ (e: DragEvent) => handleDragStart(e, cardVal) }
                 className="cursor-grab rounded active:cursor-grabbing gap-4"
             >
-                <Card className="group py-4 px-4 min-w-[440px] max-w-[440px] bg-lightGray my-2">
+                <Card className="w-[100%] group py-4 px-4 sm:min-w-[440px] sm:max-w-[440px] bg-lightGray my-2">
                     <div className="flex flex-row justify-between items-center">
                         <div className="font-main text-xl flex flex-row">
                             Day {day.order}

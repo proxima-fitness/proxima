@@ -94,7 +94,7 @@ export const BuildProgramPage: React.FC<IProps> = (props) => {
     const { data: program, isLoading: loadingProgram } =  useBuildAiProgram(request, isHevy);
 
     return (
-        <div className="pl-8">
+        <div className="max-sm:px-2 sm:pl-8">
             { loadingProgram ?
                 <BuildProgramSkeleton />
             : (isHevy && program !== undefined) &&
