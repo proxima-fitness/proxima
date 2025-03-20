@@ -4,6 +4,7 @@ import { BuildProgramSkeleton } from "./BuildProgramSkeleton";
 import { HevyRoutine } from "./HevyRoutine";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { useBuildAiProgram } from "@/api/hooks";
+import { useMemo } from "react";
 
 interface IProps {
     empty: string; // used to open a program builder with no AI
@@ -49,10 +50,8 @@ export const BuildProgramPage: React.FC<IProps> = (props) => {
         healthIssues,
     } = props;
 
-    // const [routine, setRoutine] = useState<THevyRoutine[]>();
     const { isHevy } = useIsHevy();
-
-    const { data: program, isLoading: loadingProgram } =  useBuildAiProgram({
+    const request = useMemo(() => ({
         empty,
         search,
         sex,
@@ -71,9 +70,28 @@ export const BuildProgramPage: React.FC<IProps> = (props) => {
         excludeEquipment,
         excludeSpecializations,
         healthIssues,
-    } as TTextToJsonRequest, isHevy);
+      } as TTextToJsonRequest), [
+        empty,
+        search,
+        sex,
+        age,
+        daysPerWeek,
+        specificDays,
+        programLength,
+        workoutDuration,
+        activityLevel,
+        goals,
+        specialization,
+        equipment,
+        focusAreas,
+        difficultyLevel,
+        excludeAreas,
+        excludeEquipment,
+        excludeSpecializations,
+        healthIssues,
+    ]);
 
-    console.log("PROGRAM:",program);
+    const { data: program, isLoading: loadingProgram } =  useBuildAiProgram(request, isHevy);
 
     return (
         <div className="pl-8">

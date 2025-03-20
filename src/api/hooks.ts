@@ -8,6 +8,7 @@ import { getExercises } from "./exercises";
 import { getHevyExercises } from "./hevy";
 import { getExerciseGifIdForHevyExercise } from "@/utils/program-builder";
 import { buildAiProgram } from "./edge-functions";
+import { useMemo } from "react";
 
 /*********************************/
 /** CLIENT SIDE RENDERED HOOKS **/
@@ -49,6 +50,7 @@ export const useBuildAiProgram = (request: TTextToJsonRequest, isHevy: boolean) 
     return useQuery({
         queryKey: ['ai-program', request, isHevy],
         queryFn: () => buildAiProgram(request, isHevy),
+        enabled: isHevy !== undefined,
         refetchOnWindowFocus: false,
     });
 };
