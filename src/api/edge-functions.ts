@@ -1,5 +1,6 @@
 import { aiRequest, buildProgram, buildPrompt } from "@/utils/program-builder";
 import { supabaseKey, supabaseUrl } from ".";
+import { emptyHevyRoutineProgram } from "@/assets/constants";
 
 interface TextToJsonRequestPayload {
     query: string;
@@ -184,150 +185,35 @@ export const postNsfwImageDetection = async (imageUrl: string) => {
 
 export const buildAiProgram = async (request: TTextToJsonRequest, isHevy: boolean) => {
 
-            const promptBase = buildPrompt(
-                request.search,
-                request.sex,
-                request.age,
-                request.activityLevel,
-                request.goals,
-                request.specialization,
-                request.equipment,
-                request.focusAreas,
-                request.difficultyLevel,
-                request.excludeAreas,
-                request.excludeEquipment,
-                request.excludeSpecializations,
-                request.healthIssues,
-            );
+    if (request.empty === "true") {
+        return emptyHevyRoutineProgram;
+    }
 
-            let numberOfDaysPerWeek = Number(request.daysPerWeek);
-            const response = await aiRequest(numberOfDaysPerWeek, promptBase);
+    const promptBase = buildPrompt(
+        request.search,
+        request.sex,
+        request.age,
+        request.activityLevel,
+        request.goals,
+        request.specialization,
+        request.equipment,
+        request.focusAreas,
+        request.difficultyLevel,
+        request.excludeAreas,
+        request.excludeEquipment,
+        request.excludeSpecializations,
+        request.healthIssues,
+    );
 
-            // JSON.stringify({
-            //     "workout_days": [
-            //         {
-            //             "day_title": "Push Day",
-            //             "exercises": [
-            //                 {
-            //                     "title": "Bench Press",
-            //                     "sets": 4,
-            //                     "reps": 8,
-            //                     "rpe": 7
-            //                 },
-            //                 {
-            //                     "title": "Overhead Dumbbell Press",
-            //                     "sets": 3,
-            //                     "reps": 10,
-            //                     "rpe": 8
-            //                 },
-            //                 {
-            //                     "title": "Incline Dumbbell Flyes",
-            //                     "sets": 3,
-            //                     "reps": 12,
-            //                     "rpe": 7
-            //                 },
-            //                 {
-            //                     "title": "Tricep Dips",
-            //                     "sets": 3,
-            //                     "reps": 10,
-            //                     "rpe": 8
-            //                 },
-            //                 {
-            //                     "title": "Lateral Raises",
-            //                     "sets": 3,
-            //                     "reps": 12,
-            //                     "rpe": 7
-            //                 }
-            //             ]
-            //         },
-            //         {
-            //             "day_title": "Pull Day",
-            //             "exercises": [
-            //                 {
-            //                     "title": "Pull-Ups",
-            //                     "sets": 4,
-            //                     "reps": 6,
-            //                     "rpe": 8
-            //                 },
-            //                 {
-            //                     "title": "Bent Over Barbell Rows",
-            //                     "sets": 4,
-            //                     "reps": 8,
-            //                     "rpe": 7
-            //                 },
-            //                 {
-            //                     "title": "Seated Cable Rows",
-            //                     "sets": 3,
-            //                     "reps": 10,
-            //                     "rpe": 8
-            //                 },
-            //                 {
-            //                     "title": "Face Pulls",
-            //                     "sets": 3,
-            //                     "reps": 12,
-            //                     "rpe": 7
-            //                 },
-            //                 {
-            //                     "title": "Bicep Curls",
-            //                     "sets": 3,
-            //                     "reps": 10,
-            //                     "rpe": 8
-            //                 }
-            //             ]
-            //         },
-            //         {
-            //             "day_title": "Leg Day",
-            //             "exercises": [
-            //                 {
-            //                     "title": "Squats",
-            //                     "sets": 4,
-            //                     "reps": 8,
-            //                     "rpe": 8
-            //                 },
-            //                 {
-            //                     "title": "Leg Press",
-            //                     "sets": 4,
-            //                     "reps": 10,
-            //                     "rpe": 7
-            //                 },
-            //                 {
-            //                     "title": "Lunges",
-            //                     "sets": 3,
-            //                     "reps": 12,
-            //                     "rpe": 7
-            //                 },
-            //                 {
-            //                     "title": "Leg Curls",
-            //                     "sets": 3,
-            //                     "reps": 10,
-            //                     "rpe": 8
-            //                 },
-            //                 {
-            //                     "title": "Calf Raises",
-            //                     "sets": 3,
-            //                     "reps": 15,
-            //                     "rpe": 7
-            //                 }
-            //             ]
-            //         }
-            //     ]
-            // });
+    console.log("promptBase:",promptBase);
 
-            if (response !== undefined) {
-                const parsedResponse = JSON.parse(response);
+    let numberOfDaysPerWeek = Number(request.daysPerWeek);
+    const response = await aiRequest(numberOfDaysPerWeek, promptBase);
 
-                const program = await buildProgram(parsedResponse, Number(request.programLength), Number(request.daysPerWeek));
-                return program;
-            }
+    if (response !== undefined) {
+        const parsedResponse = JSON.parse(response);
 
-
-
-        // };
-
-        // if (empty !== "true") {
-        //     aiGenerateProgram();
-        // } else {
-        //     setRoutine(emptyHevyRoutineProgram);
-        // }
-
+        const program = await buildProgram(parsedResponse, Number(request.programLength), Number(request.daysPerWeek));
+        return program;
+    }
 };

@@ -2,6 +2,7 @@ import { getHevyExercises } from "@/api/hevy";
 import { replaceHevyExercises, replaceTextToJsonExercisesHevy } from "./format-responses";
 import { postTextToJson } from "@/api/edge-functions";
 import { toast } from "sonner";
+import { title } from "process";
 
 export const buildPrompt = (
     search: string, // goes into AI Prompt
@@ -122,53 +123,28 @@ export const buildProgram = async (parsedResponse: TTextToJsonResponse, programL
 
     if (numberOfDaysPerWeek === 1) {
         // 1 Day per week program
+        const one_day = await buildOneDayRoutine(parsedResponse, programLength);
+        return one_day;
 
     } else if (numberOfDaysPerWeek === 2 || numberOfDaysPerWeek === 4) {
         // An Upper / Lower Program
+        const ul = await buildUpperLowerRoutine(parsedResponse, programLength, numberOfDaysPerWeek);
+        return ul;
 
     } else if (numberOfDaysPerWeek === 3 || numberOfDaysPerWeek === 6) {
         // A Push / Pull / Leg Program
         const ppl = await buildPushPullLegsRoutine(parsedResponse, programLength, numberOfDaysPerWeek);
-        console.log("PPL:",ppl);
         return ppl;
     } else if (numberOfDaysPerWeek === 5) {
         // Chest / Back / Legs / Shoulders / Arms
+        const five_day = await buildFiveDayRoutine(parsedResponse, programLength);
+        return five_day;
 
     } else if (numberOfDaysPerWeek === 7) {
         // Push / Pull / Legs / Cardio
-
+        const seven_day = await buildSevenDayRoutine(parsedResponse, programLength);
+        return seven_day;
     }
-
-
-
-        //             setRoutine(ppl);
-        //         }
-
-
-
-
-        //             const ul = await buildUpperLowerRoutine(upperDay.routine, lowerDay.routine, Number(pl), Number(numberOfDaysPerWeek));
-        //             setRoutine(ul);
-        //         }
-
-
-
-        //             const fiveDay = await buildFiveDayRoutine(chestDay.routine, backDay.routine, legDay.routine, shoulderDay.routine, armDay.routine, Number(pl));
-        //             setRoutine(fiveDay);
-
-
-        //             const oneDay = await buildOneDayRoutine(day.routine, Number(pl));
-        //             setRoutine(oneDay);
-
-
-
-        //             const sevenDay = await buildSevenDayRoutine(pushDay.routine, pullDay.routine, legDay.routine, cardioDay.routine, Number(pl));
-        //             setRoutine(sevenDay);
-        //         }
-        //     }
-
-
-
 };
 
 // Turns one routine returned from AI into a program
@@ -262,7 +238,7 @@ export const buildPushPullLegsRoutine = async (split: TTextToJsonResponse, progr
     return routines;
 };
 
-export const buildUpperLowerRoutine = async (upper: THevyRoutine, lower: THevyRoutine, programLength: number, numberOfDaysPerWeek: number): Promise<THevyRoutine[]> => {
+export const buildUpperLowerRoutine = async (split: TTextToJsonResponse, programLength: number, numberOfDaysPerWeek: number): Promise<THevyRoutine[]> => {
 
     const routines: THevyRoutine[] = [];
     const hevyExercises = await getHevyExercises();
@@ -273,18 +249,18 @@ export const buildUpperLowerRoutine = async (upper: THevyRoutine, lower: THevyRo
         for (let week = 0; week < programLength; week++) {
             const weekRoutines = [
                 {
-                    ...structuredClone(upper),
                     id: String(currentId++),
+                    title: split.workout_days[0].day_title,
                     folder_id: week,
                     order: "1",
-                    exercises: replaceHevyExercises(upper.exercises, hevyExercises),
+                    exercises: replaceTextToJsonExercisesHevy(split.workout_days[0].exercises, hevyExercises),
                 },
                 {
-                    ...structuredClone(lower),
                     id: String(currentId++),
+                    title: split.workout_days[1].day_title,
                     folder_id: week,
                     order: "2",
-                    exercises: replaceHevyExercises(lower.exercises, hevyExercises),
+                    exercises: replaceTextToJsonExercisesHevy(split.workout_days[1].exercises, hevyExercises),
                 },
 
             ];
@@ -295,32 +271,32 @@ export const buildUpperLowerRoutine = async (upper: THevyRoutine, lower: THevyRo
         for (let week = 0; week < programLength; week++) {
             const weekRoutines = [
                 {
-                    ...structuredClone(upper),
                     id: String(currentId++),
+                    title: split.workout_days[0].day_title,
                     folder_id: week,
                     order: "1",
-                    exercises: replaceHevyExercises(upper.exercises, hevyExercises),
+                    exercises: replaceTextToJsonExercisesHevy(split.workout_days[0].exercises, hevyExercises),
                 },
                 {
-                    ...structuredClone(lower),
                     id: String(currentId++),
+                    title: split.workout_days[1].day_title,
                     folder_id: week,
                     order: "2",
-                    exercises: replaceHevyExercises(lower.exercises, hevyExercises),
+                    exercises: replaceTextToJsonExercisesHevy(split.workout_days[1].exercises, hevyExercises),
                 },
                 {
-                    ...structuredClone(upper),
                     id: String(currentId++),
+                    title: split.workout_days[0].day_title,
                     folder_id: week,
                     order: "3",
-                    exercises: replaceHevyExercises(upper.exercises, hevyExercises),
+                    exercises: replaceTextToJsonExercisesHevy(split.workout_days[0].exercises, hevyExercises),
                 },
                 {
-                    ...structuredClone(lower),
                     id: String(currentId++),
+                    title: split.workout_days[1].day_title,
                     folder_id: week,
                     order: "4",
-                    exercises: replaceHevyExercises(lower.exercises, hevyExercises),
+                    exercises: replaceTextToJsonExercisesHevy(split.workout_days[1].exercises, hevyExercises),
                 },
 
             ];
@@ -333,7 +309,7 @@ export const buildUpperLowerRoutine = async (upper: THevyRoutine, lower: THevyRo
 };
 
 
-export const buildFiveDayRoutine = async (chest: THevyRoutine, back: THevyRoutine, legs: THevyRoutine, shoulders: THevyRoutine, arms: THevyRoutine, programLength: number): Promise<THevyRoutine[]> => {
+export const buildFiveDayRoutine = async (split: TTextToJsonResponse, programLength: number): Promise<THevyRoutine[]> => {
 
     const routines: THevyRoutine[] = [];
     const hevyExercises = await getHevyExercises();
@@ -343,39 +319,39 @@ export const buildFiveDayRoutine = async (chest: THevyRoutine, back: THevyRoutin
     for (let week = 0; week < programLength; week++) {
         const weekRoutines = [
             {
-                ...structuredClone(chest),
                 id: String(currentId++),
+                title: split.workout_days[0].day_title,
                 folder_id: week,
                 order: "1",
-                exercises: replaceHevyExercises(chest.exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split.workout_days[0].exercises, hevyExercises),
             },
             {
-                ...structuredClone(back),
                 id: String(currentId++),
+                title: split.workout_days[1].day_title,
                 folder_id: week,
                 order: "2",
-                exercises: replaceHevyExercises(back.exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split.workout_days[1].exercises, hevyExercises),
             },
             {
-                ...structuredClone(legs),
                 id: String(currentId++),
+                title: split.workout_days[2].day_title,
                 folder_id: week,
                 order: "3",
-                exercises: replaceHevyExercises(legs.exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split.workout_days[2].exercises, hevyExercises),
             },
             {
-                ...structuredClone(shoulders),
                 id: String(currentId++),
+                title: split.workout_days[3].day_title,
                 folder_id: week,
                 order: "4",
-                exercises: replaceHevyExercises(shoulders.exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split.workout_days[3].exercises, hevyExercises),
             },
             {
-                ...structuredClone(arms),
                 id: String(currentId++),
+                title: split.workout_days[4].day_title,
                 folder_id: week,
                 order: "4",
-                exercises: replaceHevyExercises(arms.exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split.workout_days[4].exercises, hevyExercises),
             },
         ];
 
@@ -386,7 +362,7 @@ export const buildFiveDayRoutine = async (chest: THevyRoutine, back: THevyRoutin
 };
 
 
-export const buildSevenDayRoutine = async (push: THevyRoutine, pull: THevyRoutine, legs: THevyRoutine, cardio: THevyRoutine, programLength: number): Promise<THevyRoutine[]> => {
+export const buildSevenDayRoutine = async (split: TTextToJsonResponse, programLength: number): Promise<THevyRoutine[]> => {
 
     const routines: THevyRoutine[] = [];
     const hevyExercises = await getHevyExercises();
@@ -396,53 +372,53 @@ export const buildSevenDayRoutine = async (push: THevyRoutine, pull: THevyRoutin
     for (let week = 0; week < programLength; week++) {
         const weekRoutines = [
             {
-                ...structuredClone(push),
                 id: String(currentId++),
+                title: split.workout_days[0].day_title,
                 folder_id: week,
                 order: "1",
-                exercises: replaceHevyExercises(push.exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split.workout_days[0].exercises, hevyExercises),
             },
             {
-                ...structuredClone(pull),
                 id: String(currentId++),
+                title: split.workout_days[1].day_title,
                 folder_id: week,
                 order: "2",
-                exercises: replaceHevyExercises(pull.exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split.workout_days[1].exercises, hevyExercises),
             },
             {
-                ...structuredClone(legs),
                 id: String(currentId++),
+                title: split.workout_days[2].day_title,
                 folder_id: week,
                 order: "3",
-                exercises: replaceHevyExercises(legs.exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split.workout_days[2].exercises, hevyExercises),
             },
             {
-                ...structuredClone(push),
                 id: String(currentId++),
+                title: split.workout_days[0].day_title,
                 folder_id: week,
                 order: "4",
-                exercises: replaceHevyExercises(push.exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split.workout_days[0].exercises, hevyExercises),
             },
             {
-                ...structuredClone(pull),
                 id: String(currentId++),
+                title: split.workout_days[1].day_title,
                 folder_id: week,
                 order: "4",
-                exercises: replaceHevyExercises(pull.exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split.workout_days[1].exercises, hevyExercises),
             },
             {
-                ...structuredClone(legs),
                 id: String(currentId++),
+                title: split.workout_days[2].day_title,
                 folder_id: week,
                 order: "4",
-                exercises: replaceHevyExercises(legs.exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split.workout_days[2].exercises, hevyExercises),
             },
             {
-                ...structuredClone(cardio),
                 id: String(currentId++),
+                title: split.workout_days[3].day_title,
                 folder_id: week,
                 order: "4",
-                exercises: replaceHevyExercises(cardio.exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split.workout_days[3].exercises, hevyExercises),
             },
         ];
 
@@ -453,7 +429,7 @@ export const buildSevenDayRoutine = async (push: THevyRoutine, pull: THevyRoutin
 };
 
 
-export const buildOneDayRoutine = async (day: THevyRoutine, programLength: number): Promise<THevyRoutine[]> => {
+export const buildOneDayRoutine = async (split: TTextToJsonResponse, programLength: number): Promise<THevyRoutine[]> => {
 
     const routines: THevyRoutine[] = [];
     const hevyExercises = await getHevyExercises();
@@ -463,11 +439,11 @@ export const buildOneDayRoutine = async (day: THevyRoutine, programLength: numbe
     for (let week = 0; week < programLength; week++) {
         const weekRoutines = [
             {
-                ...structuredClone(day),
                 id: String(currentId++),
+                title: split.workout_days[0].day_title,
                 folder_id: week,
                 order: "1",
-                exercises: replaceHevyExercises(day.exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split.workout_days[0].exercises, hevyExercises),
             },
 
         ];
