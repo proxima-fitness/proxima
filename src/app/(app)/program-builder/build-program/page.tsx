@@ -1,4 +1,6 @@
 import { BuildProgramPage } from "@/components/program-builder/BuildProgramPage";
+import { BuildProgramSkeleton } from "@/components/program-builder/BuildProgramSkeleton";
+import { Suspense } from "react";
 
 export const metadata = {
     title: "Build Program | AI Program Builder",
@@ -9,7 +11,9 @@ export default async function BuildProgram() {
 
     return (
         <div className={ `bg-white min-h-[1000px] overflow-x-scroll` }>
-            <BuildProgramPage />
+            <Suspense fallback={ <BuildProgramSkeleton /> }>
+                <BuildProgramPage />
+            </Suspense>
         </div>
     );
 }
