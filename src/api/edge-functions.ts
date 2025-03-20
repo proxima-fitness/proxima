@@ -185,6 +185,8 @@ export const postNsfwImageDetection = async (imageUrl: string) => {
 
 export const buildAiProgram = async (request: TTextToJsonRequest, isHevy: boolean) => {
 
+    console.log("isHevy",isHevy);
+
     if (request.empty === "true") {
         return emptyHevyRoutineProgram;
     }

@@ -8,7 +8,6 @@ import { getExercises } from "./exercises";
 import { getHevyExercises } from "./hevy";
 import { getExerciseGifIdForHevyExercise } from "@/utils/program-builder";
 import { buildAiProgram } from "./edge-functions";
-import { useMemo } from "react";
 
 /*********************************/
 /** CLIENT SIDE RENDERED HOOKS **/

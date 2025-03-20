@@ -37,7 +37,6 @@ export const ProgramCard: React.FC<IProps> = (props) => {
                     </div>
                 </div>
             </div>
-
         </>
     );
 };
