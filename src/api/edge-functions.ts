@@ -1,6 +1,7 @@
-import { aiRequest, buildProgram, buildPrompt } from "@/utils/program-builder";
+import { aiRequest, buildFallbackProgram, buildProgram, buildPrompt } from "@/utils/program-builder";
 import { supabaseKey, supabaseUrl } from ".";
 import { emptyHevyRoutineProgram } from "@/assets/constants";
+import { toast } from "sonner";
 
 interface TextToJsonRequestPayload {
     query: string;
@@ -216,4 +217,12 @@ export const buildAiProgram = async (request: TTextToJsonRequest, isHevy: boolea
         const program = await buildProgram(parsedResponse, Number(request.programLength), Number(request.daysPerWeek));
         return program;
     }
+
+    if (response === undefined) {
+        toast.warning("Some AI requests failed. Fallback workouts have been added in their place.");
+        return await buildFallbackProgram(Number(request.programLength), numberOfDaysPerWeek);
+    }
+
+    toast.error("Unable to generate a routine.");
+    return emptyHevyRoutineProgram;
 };

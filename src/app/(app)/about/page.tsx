@@ -8,6 +8,7 @@ export const metadata = {
   };
 
   export default function AboutPage() {
+
     return (
         <main className="min-h-screen px-4 py-10 bg-gray-100">
             <h1 className="text-5xl max-sm:text-3xl pl-28 max-sm:pl-0 max-sm:flex max-sm:justify-center font-bold text-gray-900 mb-6 text-left">
