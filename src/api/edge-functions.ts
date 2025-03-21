@@ -221,11 +221,12 @@ export const buildAiProgram = async (request: TTextToJsonRequest, isHevy: boolea
 
         if (response === undefined) {
             toast.warning("Some AI requests failed. Fallback workouts have been added in their place.");
+            console.error("Error, response was undefined when generating routines");
             return await buildFallbackProgram(Number(request.programLength), numberOfDaysPerWeek);
         }
 
     } catch (error: unknown) {
-        toast.error("Unable to generate routines");
+        toast.warning("Some AI requests failed. Fallback workouts have been added in their place.");
         console.error("Error generating routines", error);
         return await buildFallbackProgram(Number(request.programLength), Number(request.daysPerWeek));
     }
