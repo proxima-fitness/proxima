@@ -227,6 +227,6 @@ export const buildAiProgram = async (request: TTextToJsonRequest, isHevy: boolea
     } catch (error: unknown) {
         toast.error("Unable to generate routines");
         console.error("Error generating routines", error);
-        return emptyHevyRoutineProgram;
+        return await buildFallbackProgram(Number(request.programLength), Number(request.daysPerWeek));
     }
 };
