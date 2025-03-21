@@ -219,7 +219,7 @@ export const buildAiProgram = async (request: TTextToJsonRequest, isHevy: boolea
     }
 
     if (response === undefined) {
-        toast.warning("Some AI requests failed. Fallback workouts have been added in their place.")
+        toast.warning("Some AI requests failed. Fallback workouts have been added in their place.");
         return await buildFallbackProgram(Number(request.programLength), numberOfDaysPerWeek);
     }
 
