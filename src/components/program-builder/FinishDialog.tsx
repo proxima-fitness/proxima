@@ -116,7 +116,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                 </span>
                 <span>
                     { isPreview ?
-                        <PDFViewer className="w-full h-[60vh]">
+                        <PDFViewer className="w-full max-sm:h-[30vh] h-[60vh]">
                             { (isHevy && hevyRoutine) ?
                                 <HevyPdfRenderer hevyRoutine={ deFlattenHevyRoutine(hevyRoutine) } />
                             : program &&
