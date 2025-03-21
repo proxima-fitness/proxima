@@ -124,7 +124,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                             }
                         </PDFViewer>
                         :
-                        <Textarea className="h-[50vh]" readOnly aria-readonly value={ (isHevy && hevyRoutine) ? JSON.stringify(removeOrderHevy(hevyRoutine), null, 4) : program && JSON.stringify(program, null, 4) } />
+                        <Textarea className="max-sm:h-[30vh] h-[50vh]" readOnly aria-readonly value={ (isHevy && hevyRoutine) ? JSON.stringify(removeOrderHevy(hevyRoutine), null, 4) : program && JSON.stringify(program, null, 4) } />
                     }
                 </span>
                 <span className="w-full flex flex-row max-sm:flex-col items-center justify-between max-sm:justify-center gap-4">
