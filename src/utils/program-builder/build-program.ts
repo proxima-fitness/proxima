@@ -2,6 +2,7 @@ import { getHevyExercises } from "@/api/hevy";
 import { replaceTextToJsonExercisesHevy } from "./format-responses";
 import { postTextToJson } from "@/api/edge-functions";
 import { toast } from "sonner";
+import { fallbackCBLSA, fallbackOneDay, fallbackPPL, fallbackSevenDay, fallbackUpperLower } from "@/assets/constants";
 
 export const buildPrompt = (
     search: string, // goes into AI Prompt
@@ -106,6 +107,45 @@ export const aiRequest = async (numberOfDaysPerWeek: number, promptBase: string)
     } catch (error: unknown) {
         toast.error("Unexpected error while generating routines.");
         console.error("Error generating routines:",error);
+    }
+
+};
+
+// Returns a default program if the AI failed
+export const buildFallbackProgram = async (programLength: number, numberOfDaysPerWeek: number) => {
+
+    if (programLength === 0) {
+        programLength = 12;
+    }
+
+    if (numberOfDaysPerWeek === 0) {
+        numberOfDaysPerWeek = 6;
+    }
+
+    if (numberOfDaysPerWeek === 1) {
+        // 1 Day per week program
+        const one_day = await buildOneDayRoutine(fallbackOneDay, programLength);
+        return one_day;
+
+    } else if (numberOfDaysPerWeek === 2 || numberOfDaysPerWeek === 4) {
+        // An Upper / Lower Program
+        const ul = await buildUpperLowerRoutine(fallbackUpperLower, programLength, numberOfDaysPerWeek);
+        return ul;
+
+    } else if (numberOfDaysPerWeek === 3 || numberOfDaysPerWeek === 6) {
+        // A Push / Pull / Leg Program
+        const ppl = await buildPushPullLegsRoutine(fallbackPPL, programLength, numberOfDaysPerWeek);
+        return ppl;
+
+    } else if (numberOfDaysPerWeek === 5) {
+        // Chest / Back / Legs / Shoulders / Arms
+        const five_day = await buildFiveDayRoutine(fallbackCBLSA, programLength);
+        return five_day;
+
+    } else if (numberOfDaysPerWeek === 7) {
+        // Push / Pull / Legs / Cardio
+        const seven_day = await buildSevenDayRoutine(fallbackSevenDay, programLength);
+        return seven_day;
     }
 
 };

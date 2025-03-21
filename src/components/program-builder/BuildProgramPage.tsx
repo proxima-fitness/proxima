@@ -9,6 +9,7 @@ import { useMemo } from "react";
 
 export const BuildProgramPage: React.FC = () => {
 
+    const { isHevy } = useIsHevy();
     const searchParams = useSearchParams();
 
     const empty = searchParams.get('empty') ?? '';
@@ -30,7 +31,6 @@ export const BuildProgramPage: React.FC = () => {
     const excludeSpecializations = searchParams.get('excludeSpecializations') ?? '';
     const healthIssues = searchParams.get('healthIssues') ?? '';
 
-    const { isHevy } = useIsHevy();
     const request = useMemo(() => ({
         empty,
         search,
