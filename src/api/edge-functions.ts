@@ -186,43 +186,47 @@ export const postNsfwImageDetection = async (imageUrl: string) => {
 
 export const buildAiProgram = async (request: TTextToJsonRequest, isHevy: boolean) => {
 
-    console.log("isHevy",isHevy);
+    try {
+        console.log("isHevy",isHevy);
 
-    if (request.empty === "true") {
+        if (request.empty === "true") {
+            return emptyHevyRoutineProgram;
+        }
+
+        const promptBase = buildPrompt(
+            request.search,
+            request.sex,
+            request.age,
+            request.activityLevel,
+            request.goals,
+            request.specialization,
+            request.equipment,
+            request.focusAreas,
+            request.difficultyLevel,
+            request.excludeAreas,
+            request.excludeEquipment,
+            request.excludeSpecializations,
+            request.healthIssues,
+        );
+
+        const numberOfDaysPerWeek = Number(request.daysPerWeek);
+        const response = await aiRequest(numberOfDaysPerWeek, promptBase);
+
+        if (response !== undefined) {
+            const parsedResponse = JSON.parse(response);
+
+            const program = await buildProgram(parsedResponse, Number(request.programLength), Number(request.daysPerWeek));
+            return program;
+        }
+
+        if (response === undefined) {
+            toast.warning("Some AI requests failed. Fallback workouts have been added in their place.");
+            return await buildFallbackProgram(Number(request.programLength), numberOfDaysPerWeek);
+        }
+
+    } catch (error: unknown) {
+        toast.error("Unable to generate routines");
+        console.error("Error generating routines", error);
         return emptyHevyRoutineProgram;
     }
-
-    const promptBase = buildPrompt(
-        request.search,
-        request.sex,
-        request.age,
-        request.activityLevel,
-        request.goals,
-        request.specialization,
-        request.equipment,
-        request.focusAreas,
-        request.difficultyLevel,
-        request.excludeAreas,
-        request.excludeEquipment,
-        request.excludeSpecializations,
-        request.healthIssues,
-    );
-
-    const numberOfDaysPerWeek = Number(request.daysPerWeek);
-    const response = await aiRequest(numberOfDaysPerWeek, promptBase);
-
-    if (response !== undefined) {
-        const parsedResponse = JSON.parse(response);
-
-        const program = await buildProgram(parsedResponse, Number(request.programLength), Number(request.daysPerWeek));
-        return program;
-    }
-
-    if (response === undefined) {
-        toast.warning("Some AI requests failed. Fallback workouts have been added in their place.");
-        return await buildFallbackProgram(Number(request.programLength), numberOfDaysPerWeek);
-    }
-
-    toast.error("Unable to generate a routine.");
-    return emptyHevyRoutineProgram;
 };

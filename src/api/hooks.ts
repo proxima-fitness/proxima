@@ -51,6 +51,7 @@ export const useBuildAiProgram = (request: TTextToJsonRequest, isHevy: boolean) 
         queryFn: () => buildAiProgram(request, isHevy),
         enabled: !!request && isHevy !== undefined,
         refetchOnWindowFocus: false,
+        retry: false,
     });
 };
 
