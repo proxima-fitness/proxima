@@ -14,7 +14,8 @@
   "lint-staged": {
     "*.{ts,tsx,js}": [
       "eslint --fix",
-      "prettier --write"
+      "prettier --write",
+      "next build"
     ]
   },
   "dependencies": {
