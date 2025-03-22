@@ -1,7 +1,12 @@
 {
   "extends": [
     "next/core-web-vitals",
-    "next/typescript"
+    "next/typescript",
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -10,6 +15,7 @@
       },
       "ecmaVersion": 2023
   },
+  "plugins": ["react", "react-hooks", "@typescript-eslint", "prettier"],
   "rules": {
         "semi": "error",
         "comma-dangle": ["error", "always-multiline"],
@@ -41,22 +47,42 @@
     "@next/next/no-img-element": "off",
         "@typescript-eslint/member-ordering": "error",
         "@typescript-eslint/camelcase": "off",
-        "@typescript-eslint/no-unused-vars": ["error", {
-            "ignoreRestSiblings": true
-        }],
-    "@typescript-eslint/no-unused-vars": "warn",
-   "@typescript-eslint/naming-convention": [
+        "@typescript-eslint/naming-convention": [
             "error",
             {
-                "selector": "interface",
-                "format": [
-                    "PascalCase"
-                ]
-                // "custom": {
-                //     "regex": "^I[A-Z]",
-                //     "match": true
-                // }
-            }
-        ]
+              "selector": "interface",
+              "format": ["PascalCase"],
+              "custom": {
+                "regex": "^I[A-Z]",
+                "match": true,
+              },
+            },
+          ],      
+        "@typescript-eslint/no-unused-vars": [
+            "error",
+            {
+              "ignoreRestSiblings": true,
+            },
+          ],
+          "@typescript-eslint/ban-ts-comment": [
+      "error",
+      {
+        "ts-ignore": "allow-with-description",
+      },
+    ],
+        //   "@typescript-eslint/no-unused-vars": "warn",
+//    "@typescript-eslint/naming-convention": [
+//             "error",
+//             {
+//                 "selector": "interface",
+//                 "format": [
+//                     "PascalCase"
+//                 ]
+//                 // "custom": {
+//                 //     "regex": "^I[A-Z]",
+//                 //     "match": true
+//                 // }
+//             }
+//         ]
     }
 }

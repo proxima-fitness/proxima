@@ -1,0 +1,5 @@
+# remove * when we are ready to run prettier against whole codebase
+*  
+.next
+node_modules
+public

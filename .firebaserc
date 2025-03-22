@@ -1,0 +1,16 @@
+{
+  "projects": {
+    "landing": "socialfitness-29753"
+  },
+  "targets": {
+    "socialfitness-29753": {
+      "hosting": {
+        "proximafitness": [
+          "proxima-app"
+        ]
+      }
+    }
+  },
+  "etags": {},
+  "dataconnectEmulatorConfig": {}
+}
