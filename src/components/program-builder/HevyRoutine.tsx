@@ -10,6 +10,7 @@ import { HevyGenerateDayDialog } from "./hevy/HevyGenerateDayDialog";
 import { IOption } from "@/components/ui/multi-select";
 import { appendOrderToHevyRoutines, getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy } from "@/utils/program-builder";
 import { getHevyExerciseFromLocalStorageByID } from "@/utils/general/helpers";
+import { toast } from "sonner";
 
 interface IProps {
     program: THevyRoutine[];
@@ -125,6 +126,14 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
 
     // Adds an empty day to the selected week
     const handleAddDay = (folder_id: number) => {
+
+        const daysInFolder = hevyProgram.filter((day) => day.folder_id === folder_id);
+
+        if (daysInFolder.length >= 7) {
+            toast.error("Maximum 7 days per week");
+            return;
+        }
+
         setHevyProgram((prev) => {
             const nthDayOrder = prev.filter((day) => day.folder_id === folder_id).length + 1;
 
