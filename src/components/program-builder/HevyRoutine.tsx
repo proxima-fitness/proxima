@@ -7,7 +7,7 @@ import {  useHevyExercises } from "@/api/hooks";
 import { HevyColumn } from "./hevy/HevyColumn";
 import { HevyAddExerciseDialog } from "./hevy/HevyAddExerciseDialog";
 import { HevyGenerateDayDialog } from "./hevy/HevyGenerateDayDialog";
-import { Option } from "@/components/ui/multi-select";
+import { IOption } from "@/components/ui/multi-select";
 import { appendOrderToHevyRoutines, getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy } from "@/utils/program-builder";
 import { getHevyExerciseFromLocalStorageByID } from "@/utils/general/helpers";
 
@@ -56,7 +56,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     };
 
     // // Duplicates the selected day to other days in the program on the selected week
-    const handleDuplicateDay = (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayOrderArray: Option[]) => {
+    const handleDuplicateDay = (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayOrderArray: IOption[]) => {
 
         const toDayOrders = toDayOrderArray.map((day) => Number(day.value)).sort((a, b) => a - b);
 

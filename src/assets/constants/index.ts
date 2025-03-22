@@ -1,6 +1,6 @@
 import { people03, people02, people01, people04, people05, people06, instagram, linkedin, star, reddit, twitter } from "public";
 import humanizeDuration from "humanize-duration";
-import { Option } from '@/components/ui/multi-select';
+import { IOption } from '@/components/ui/multi-select';
 
 export const programLengths = ["1","2","3","4","5","6","7","8","9","10","11","12"];
 export const repMaxes = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"];
@@ -5587,17 +5587,17 @@ export const coolQuotes: TQuote[] = [
     { quote: "U mirin brah ?", author: "Zyzz (RIP)"},
 ];
 
-export const sexOptions: Option[] = [
+export const sexOptions: IOption[] = [
     { label: "Male", value: "male"},
     { label: "Female", value: "female"},
 ];
 
-export const ageOptions: Option[] = Array.from({ length: 100 - 14 + 1 }, (_, i) => {
+export const ageOptions: IOption[] = Array.from({ length: 100 - 14 + 1 }, (_, i) => {
     const age = (i + 14).toString();
     return { label: age, value: age };
 } );
 
-export const dayPerWeekOptions: Option[] = [
+export const dayPerWeekOptions: IOption[] = [
     { label: "1x per week", value: "1"},
     { label: "2x per week", value: "2" },
     { label: "3x per week", value: "3" },
@@ -5607,7 +5607,7 @@ export const dayPerWeekOptions: Option[] = [
     { label: "7x per week", value: "7" },
 ];
 
-export const specificDaysOptions: Option[] = [
+export const specificDaysOptions: IOption[] = [
     { label: "Mon", value: "monday"},
     { label: "Tue", value: "tuesday" },
     { label: "Wed", value: "wednesday" },
@@ -5617,17 +5617,17 @@ export const specificDaysOptions: Option[] = [
     { label: "Sun", value: "sunday" },
 ];
 
-export const programLengthOptions: Option[] = Array.from({ length: 12 }, (_, i) => {
+export const programLengthOptions: IOption[] = Array.from({ length: 12 }, (_, i) => {
     const programLength = (i + 1).toString();
     return { label: `${programLength} Week${programLength === "1" ? "": "s"}`, value: programLength };
 } );
 
-export const workoutDurationOptions: Option[] = Array.from({ length: 18 }, (_, i) => {
+export const workoutDurationOptions: IOption[] = Array.from({ length: 18 }, (_, i) => {
     const duration = ((i+1)*10).toString();
     return { label: `${duration} Mins`, value: duration };
 } );
 
-export const activityLevelOptions: Option[] = [
+export const activityLevelOptions: IOption[] = [
     { label: "Sedentary", value: "sedentary"},
     { label: "Light activity", value: "light activity" },
     { label: "Moderate activity", value: "moderate activity" },
@@ -5635,7 +5635,7 @@ export const activityLevelOptions: Option[] = [
     { label: "Extreme activity", value: "extreme activity" },
 ];
 
-export const goalsOptions: Option[] = [
+export const goalsOptions: IOption[] = [
     { label: "Build muscle", value: "build muscle"},
     { label: "Improve fitness", value: "improve fitness" },
     { label: "Reduce back pain", value: "reduce back pain" },
@@ -5651,7 +5651,7 @@ export const goalsOptions: Option[] = [
     { label: "Burn fat", value: "burn fat" },
 ];
 
-export const specializationOptions: Option[] = [
+export const specializationOptions: IOption[] = [
     { label: "Bodybuilding", value: "bodybuilding"},
     { label: "Powerbuilding", value: "powerbuilding" },
     { label: "Powerlifting", value: "powerlifting"},
@@ -5661,7 +5661,7 @@ export const specializationOptions: Option[] = [
     { label: "Calisthenics", value: "calisthenics" },
 ];
 
-export const equipmentOptions: Option[] = [
+export const equipmentOptions: IOption[] = [
     { label: "Barbell", value: "barbell"},
     { label: "Dumbbell", value: "dumbbell"},
     { label: "Kettlebell", value: "kettlebell"},
@@ -5672,7 +5672,7 @@ export const equipmentOptions: Option[] = [
     { label: "Cardio", value: "cardio"},
 ];
 
-export const focusAreasOptions: Option[] = [
+export const focusAreasOptions: IOption[] = [
     { label: "Back", value: "back"},
     { label: "Arms", value: "arms"},
     { label: "Shoulders", value: "shoulders"},
@@ -5683,14 +5683,14 @@ export const focusAreasOptions: Option[] = [
     { label: "Full body", value: "full body"},
 ];
 
-export const difficultyOptions: Option[] = [
+export const difficultyOptions: IOption[] = [
     { label: "Beginner", value: "beginner"},
     { label: "Novice", value: "novice"},
     { label: "Intermediate", value: "intermediate"},
     { label: "Advanced", value: "advanced"},
 ];
 
-export const healthIssuesOptions: Option[] = [
+export const healthIssuesOptions: IOption[] = [
     { label: "Post-covid recovery", value: "post-covid recovery"},
     { label: "Cannot jump", value: "cannot jump"},
     { label: "Back or hernia", value: "back or hernia"},

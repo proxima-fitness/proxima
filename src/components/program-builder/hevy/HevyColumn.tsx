@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { DropIndicator } from "@/components/drag-and-drop/DropIndicator";
 import { HevyDayCard } from "./HevyDayCard";
 import { HevyDuplicateWeek } from "./HevyDuplicateWeek";
-import { Option } from "@/components/ui/multi-select";
+import { IOption } from "@/components/ui/multi-select";
 import { reorderHevy } from "@/utils/program-builder";
 
 interface IProps {
@@ -20,7 +20,7 @@ interface IProps {
     handleEditTitle: (id: string, title: string) => void;
     handleIsEditExercise: (isEditExercise: boolean) => void;
     handleDuplicateWeek: (fromWeekIndex: number, toWeekIndexes: number[]) => void;
-    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: Option[]) => void;
+    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;
     handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
     handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
 }

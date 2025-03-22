@@ -5,7 +5,7 @@ import { CopyIcon, PlusIcon } from "lucide-react";
 import { DayCard } from "../program-builder/DayCard";
 import { Button } from "@/components/ui/button";
 import { DuplicateWeek } from "../program-builder/DuplicateWeek";
-import { Option } from "@/components/ui/multi-select";
+import { IOption } from "@/components/ui/multi-select";
 import { reorder } from "@/utils/program-builder";
 
 interface IProps {
@@ -20,7 +20,7 @@ interface IProps {
     handleEditTitle: (id: string, day_title: string) => void;
     handleIsEditExercise: (isEditExercise: boolean) => void;
     handleDuplicateWeek: (fromWeekIndex: number, toWeekIndexes: number[]) => void;
-    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: Option[]) => void
+    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void
     handleOpenAddExerciseDialog: (addExerciseDialog: TDialog) => void;
     handleDeleteExercise: (weekOrder: number, dayOrder: number, exerciseIndex: number) => void;
 }

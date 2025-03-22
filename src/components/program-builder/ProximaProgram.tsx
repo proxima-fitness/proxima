@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AddExerciseDialog } from "./AddExerciseDialog";
-import { Option } from "@/components/ui/multi-select";
+import { IOption } from "@/components/ui/multi-select";
 import { GenerateDayDialog } from "./GenerateDayDialog";
 import { useExercises } from "@/api/hooks";
 import { Column } from "../drag-and-drop/Column";
@@ -52,7 +52,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     };
 
     // Duplicates the selected day to other days in the program on the selected week
-    const handleDuplicateDay = (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayOrderArray: Option[]) => {
+    const handleDuplicateDay = (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayOrderArray: IOption[]) => {
 
         const toDayOrders = toDayOrderArray.map((day) => Number(day.value)).sort((a, b) => a - b);
 

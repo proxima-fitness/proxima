@@ -22,7 +22,7 @@ import MultiSelect from '@/components/ui/multi-select';
 import { activityLevelOptions, ageOptions, dayPerWeekOptions, difficultyOptions, equipmentOptions, focusAreasOptions, goalsOptions, healthIssuesOptions, programLengthOptions, sexOptions, specializationOptions, specificDaysOptions, workoutDurationOptions } from "@/assets/constants";
 import Link from "next/link";
 import { useIsHevy } from "@/contexts/HevyContext";
-import { Option } from "@/components/ui/multi-select";
+import { IOption } from "@/components/ui/multi-select";
 
 export const AiSearchDialog: React.FC = () => {
 
@@ -33,19 +33,19 @@ export const AiSearchDialog: React.FC = () => {
     const [sex, setSex] = useState<string>("");
     const [age, setAge] = useState<string>("");
     const [daysPerWeek, setDaysPerWeek] = useState<string>("");
-    const [specificDays, setSpecificDays] = useState<Option[]>([]);
+    const [specificDays, setSpecificDays] = useState<IOption[]>([]);
     const [programLength, setProgramLength] = useState<string>("");
     const [workoutDuration, setWorkoutDuration] = useState<string>("");
     const [activityLevel, setActivityLevel] = useState<string>("");
-    const [goals, setGoals] = useState<Option[]>([]);
-    const [specialization, setSpecialization] = useState<Option[]>([]);
-    const [equipment, setEquipment] = useState<Option[]>([]);
-    const [focusAreas, setFocusAreas] = useState<Option[]>([]);
-    const [difficultyLevel, setDifficultyLevel] = useState<Option[]>([]);
-    const [excludeAreas, setExcludeAreas] = useState<Option[]>([]);
-    const [excludeEquipment, setExcludeEquipment] = useState<Option[]>([]);
-    const [excludeSpecializations, setExcludeSpecializations] = useState<Option[]>([]);
-    const [healthIssues, setHealthIssues] = useState<Option[]>([]);
+    const [goals, setGoals] = useState<IOption[]>([]);
+    const [specialization, setSpecialization] = useState<IOption[]>([]);
+    const [equipment, setEquipment] = useState<IOption[]>([]);
+    const [focusAreas, setFocusAreas] = useState<IOption[]>([]);
+    const [difficultyLevel, setDifficultyLevel] = useState<IOption[]>([]);
+    const [excludeAreas, setExcludeAreas] = useState<IOption[]>([]);
+    const [excludeEquipment, setExcludeEquipment] = useState<IOption[]>([]);
+    const [excludeSpecializations, setExcludeSpecializations] = useState<IOption[]>([]);
+    const [healthIssues, setHealthIssues] = useState<IOption[]>([]);
 
     const [workoutSchema, setWorkoutSchema] = useState("hevy");
     const [advancedSettingsOpen, toggleAdvancedSettingsOpen] = useReducer(prev => !prev, false);

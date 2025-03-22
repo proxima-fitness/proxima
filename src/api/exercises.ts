@@ -24,6 +24,10 @@ export const getExerciseID = async (user:User, name: string, language: "english"
     }
 };
 
+export const pretendFunction = () => {
+    console.log("pretend function");
+};
+
 // GET EXISTING EXERCISES STORED BY PROXIMA FITNESS (CACHES IN LOCALSTORAGE)
 export const getExercises = async () => {
     const cacheKey = 'existing-exercises';

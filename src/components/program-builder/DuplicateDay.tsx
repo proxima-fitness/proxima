@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import MultiSelect, { Option } from "@/components/ui/multi-select";
+import MultiSelect, { IOption } from "@/components/ui/multi-select";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
@@ -12,7 +12,7 @@ interface IProps {
     programLength: number;
     duplicateDayOpen: boolean;
     setDuplicateDayOpen: (duplicateDayOpen: boolean) => void;
-    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: Option[]) => void;
+    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;
 }
 
 export const DuplicateDay: React.FC<IProps> = (props) => {
@@ -28,8 +28,8 @@ export const DuplicateDay: React.FC<IProps> = (props) => {
 
     const programLengthArray = Array.from({ length: programLength }, (_, index) => index + 1);
     const daysArray = Array.from({length: 7 }, (_, index) => index + 1);
-    const daysOptions: Option[] = daysArray.map((d) => ({ label: `Day ${d}`, value: String(d)}));
-    const [selectedDays, setSelectedDays] = useState<Option[]>([]);
+    const daysOptions: IOption[] = daysArray.map((d) => ({ label: `Day ${d}`, value: String(d)}));
+    const [selectedDays, setSelectedDays] = useState<IOption[]>([]);
     const [selectedWeek, setSelectedWeek ] = useState<string>(String(Number(weekOrder) + 1));
 
     return (

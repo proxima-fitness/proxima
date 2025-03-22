@@ -7,7 +7,7 @@ import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/comp
 import { Button } from "../ui/button";
 import { DuplicateDay } from "./DuplicateDay";
 import { useState, FC } from "react";
-import { Option } from "@/components/ui/multi-select";
+import { IOption } from "@/components/ui/multi-select";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -31,7 +31,7 @@ interface IProps {
     handleDeleteDay: (id: string) => void;
     handleOpenGenerateDayDialog: (generateDayDialog: TDialog) => void;
     handleOpenAddExerciseDialog: (addExerciseDialog: TDialog) => void;
-    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: Option[]) => void;    // handleGenerateDayDialog: (generateDayDialog: TDialog) => void;
+    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;    // handleGenerateDayDialog: (generateDayDialog: TDialog) => void;
     handleDeleteExercise: (weekOrder: number, dayOrder: number, exerciseIndex: number) => void;
     handleIsEditExercise: (isEditExercise: boolean) => void;
 }

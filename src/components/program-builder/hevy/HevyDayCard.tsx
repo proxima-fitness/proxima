@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { DropIndicator } from "@/components/drag-and-drop/DropIndicator";
 import { HevyExerciseVisualizer } from "./HevyExerciseVisualizer";
 import { HevyDuplicateDay } from "./HevyDuplicateDay";
-import { Option } from "@/components/ui/multi-select";
+import { IOption } from "@/components/ui/multi-select";
 import { convertHevyExerciseIntoHevyAddExercise } from "@/utils/program-builder";
 
 interface IProps {
@@ -30,7 +30,7 @@ interface IProps {
     handleDeleteDay: (id: string) => void;
     handleOpenGenerateDayDialog: (generateDayDialog: THevyDialog) => void;
     handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
-    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: Option[]) => void;    // handleGenerateDayDialog: (generateDayDialog: TDialog) => void;
+    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;    // handleGenerateDayDialog: (generateDayDialog: TDialog) => void;
     handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
     handleIsEditExercise: (isEditExercise: boolean) => void;
 }
