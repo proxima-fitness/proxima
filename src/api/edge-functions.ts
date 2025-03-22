@@ -3,20 +3,20 @@ import { supabaseKey, supabaseUrl } from ".";
 import { emptyHevyRoutineProgram } from "@/assets/constants";
 import { toast } from "sonner";
 
-interface TextToJsonRequestPayload {
+interface ITextToJsonRequestPayload {
     query: string;
     schemaType: string;
 }
 
-interface ImageToTextRequestPayload {
+interface IImageToTextRequestPayload {
     imageUrl: string;
 }
 
-interface SpeechToTextRequestPayload {
+interface ISpeechToTextRequestPayload {
     base64Audio: string;
 }
 
-interface ChatRequestPayload {
+interface IChatRequestPayload {
     prompt: string;
 }
 
@@ -30,7 +30,7 @@ const nsfw_image_detection = "/functions/v1/nsfw-image-detection";
 export const postChatPrompt = async (prompt: string, onChunk: (chunk: string) => void ): Promise<void> => {
 
     const url = supabaseUrl + chat;
-    const payload: ChatRequestPayload = { prompt };
+    const payload: IChatRequestPayload = { prompt };
 
     try {
         const response = await fetch(url, {
@@ -55,7 +55,7 @@ export const postChatPrompt = async (prompt: string, onChunk: (chunk: string) =>
         const reader = response.body.getReader();
         const decoder = new TextDecoder("utf-8");
 
-        // eslint-disable-next-line no-constant-condition
+         
         while (true) {
             const { done, value } = await reader.read();
             if (done) {
@@ -74,7 +74,7 @@ export const postChatPrompt = async (prompt: string, onChunk: (chunk: string) =>
 export const postTextToJson = async (query: string, schemaType: TTextToJsonSchema) => {
 
     const url = supabaseUrl + text_to_json;
-    const payload: TextToJsonRequestPayload = { query, schemaType };
+    const payload: ITextToJsonRequestPayload = { query, schemaType };
 
     try {
         const response = await fetch(url, {
@@ -105,7 +105,7 @@ export const postTextToJson = async (query: string, schemaType: TTextToJsonSchem
 export const postImageToText = async (imageUrl: string) => {
 
     const url = supabaseUrl + image_to_text;
-    const payload: ImageToTextRequestPayload = { imageUrl };
+    const payload: IImageToTextRequestPayload = { imageUrl };
 
     try {
         const response = await fetch(url, {
@@ -132,7 +132,7 @@ export const postImageToText = async (imageUrl: string) => {
 export const postSpeechToText = async (base64Audio: string) => {
 
     const url = supabaseUrl + speech_to_text;
-    const payload: SpeechToTextRequestPayload = { base64Audio };
+    const payload: ISpeechToTextRequestPayload = { base64Audio };
 
     try {
         const response = await fetch(url, {
@@ -159,7 +159,7 @@ export const postSpeechToText = async (base64Audio: string) => {
 export const postNsfwImageDetection = async (imageUrl: string) => {
 
     const url = supabaseUrl + nsfw_image_detection;
-    const payload: ImageToTextRequestPayload = { imageUrl };
+    const payload: IImageToTextRequestPayload = { imageUrl };
 
     try {
         const response = await fetch(url, {

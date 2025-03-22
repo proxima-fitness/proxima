@@ -238,7 +238,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     const numberOfWeeksArr = Array.from({ length: numberOfWeeks }, (_, i) => i);
 
     useEffect(() => {
-        if (typeof window !== undefined) {
+        if (typeof window !== "undefined") {
             localStorage.setItem("hevy-program-in-progress", JSON.stringify(hevyProgram));
         }
     }, [hevyProgram]);

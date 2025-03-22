@@ -184,7 +184,7 @@ type THevyIntensityTypes = {
     weight_kg?: number[],
 }
 
-interface IsHevyContextType {
+interface IIsHevyContextType {
     isHevy: boolean;
     setIsHevy: (value: boolean) => void;
 }
@@ -297,7 +297,7 @@ type TBlog = {
     updated_at: string;
     title: string;
     subtitle: string;
-    content: Object;
+    content: object;
     time: number;
     media_url: string; // just the filename (icon.png)
     image_url?: string; // the public url e.g. (https://api.blog.co/icon.png)

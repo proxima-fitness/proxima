@@ -26,17 +26,17 @@ interface IProps {
   onSelectionCancel?: () => void;
 }
 
-interface RowData {
+interface IRowData {
   filteredItems: TExercise[];
   selectItem: (item: TExercise) => void;
 //   language: "english" | "espanol" | "portugues" | "francais";
 }
 
 // Define the Row component props
-interface RowProps {
+interface IRowProps {
   index: number;
   style: React.CSSProperties;
-  data: RowData;
+  data: IRowData;
 }
 
 export const ExerciseSearchBar: React.FC<IProps> = (props) => {
@@ -84,7 +84,7 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
         handleSelected(item);
     };
 
-    const ExerciseSearchBarRow: React.FC<RowProps> = (props) => {
+    const ExerciseSearchBarRow: React.FC<IRowProps> = (props) => {
 
         const { index, style, data } = props;
         const item = data.filteredItems[index];

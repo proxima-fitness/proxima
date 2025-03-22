@@ -207,7 +207,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     const [flattenedProgramDays, setFlattenedProgramDays] = useState<TProgramCreatorDay[]>(flattenProgram(appendWeekOrderAndIdToProgramDays(program)));
 
     useEffect(() => {
-        if (typeof window !== undefined) {
+        if (typeof window !== "undefined") {
             localStorage.setItem("program-in-progress", JSON.stringify(deFlattenProgram(flattenedProgramDays)));
         }
     }, [flattenedProgramDays]);

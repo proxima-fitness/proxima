@@ -2,7 +2,7 @@
 
 import { createContext, useContext, ReactNode, useState } from 'react';
 
-const IsHevyContext = createContext<IsHevyContextType | undefined>(undefined);
+const IsHevyContext = createContext<IIsHevyContextType | undefined>(undefined);
 
 export const IsHevyProvider = ({ children }: { children: ReactNode }) => {
     const [isHevy, setIsHevy] = useState(true);

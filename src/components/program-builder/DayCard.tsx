@@ -92,7 +92,7 @@ export const DayCard: FC<IProps> = (props) => {
                             { editTitleOpen ?
                                 <Input
                                     value={ currentTitle }
-                                    onInput={ (event) => setCurrentTitle(String(event.currentTarget.value) ?? "") }
+                                    onInput={ (event) => setCurrentTitle(String(event.currentTarget.value)) }
                                     onBlur={ (event) => {
                                         handleEditTitle(day?.id ?? "", String(event.currentTarget.value));
                                         setEditTitleOpen(false);

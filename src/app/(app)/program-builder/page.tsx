@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AiSearchDialog } from "@/components/program-builder/AiSearchDialog";
 import styles from "@/style";
 import { MessageSquareWarningIcon } from "lucide-react";

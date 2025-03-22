@@ -41,7 +41,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
         };
 
         useEffect(() => {
-            if (typeof window !== undefined) {
+            if (typeof window !== "undefined") {
                 const localStorageProgram = localStorage.getItem(isHevy ? "hevy-program-in-progress" : "program-in-progress");
                 if (localStorageProgram) {
                     if (isHevy) {

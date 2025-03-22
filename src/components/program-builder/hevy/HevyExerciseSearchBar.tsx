@@ -28,16 +28,16 @@ interface IProps {
     onSelectionCancel?: () => void;
 }
 
-interface RowData {
+interface IRowData {
     filteredItems: THevyExerciseTemplate[];
     selectItem: (item: THevyExerciseTemplate) => void;
 }
 
   // Define the Row component props
-interface RowProps {
+interface IRowProps {
     index: number;
     style: React.CSSProperties;
-    data: RowData;
+    data: IRowData;
 }
 
 export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
@@ -83,7 +83,7 @@ export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
         handleSelected(item);
     };
 
-    const ExerciseSearchBarRow: React.FC<RowProps> = (props) => {
+    const ExerciseSearchBarRow: React.FC<IRowProps> = (props) => {
 
         const {
             index,

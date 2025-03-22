@@ -38,9 +38,9 @@ export const RichText: React.FC<IProps> = (props) => {
             case "paragraph":
                 return <p className='py-4' key={ index }>{node.children?.map(renderNode)}</p>;
             case "heading":
-                const HeadingTag = node.tag || "h1";
+                { const HeadingTag = node.tag || "h1";
                 const fontSize = (HeadingTag === "h6" ? "text-base" : HeadingTag === "h5" ? "text-lg" : HeadingTag === "h4" ? "text-xl" : HeadingTag === "h3" ? "text-2xl" : HeadingTag === "h2" ? "text-3xl" : HeadingTag === "h1" ? "text-4xl" : "text-base");
-                return <HeadingTag className={ `${fontSize}` } key={ index }>{node.children.map(renderNode)}</HeadingTag>;
+                return <HeadingTag className={ `${fontSize}` } key={ index }>{node.children.map(renderNode)}</HeadingTag>; }
             case "text":
                 return <span key={ index }>{node.text}</span>;
             case "quote":

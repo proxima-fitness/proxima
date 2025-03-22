@@ -23,11 +23,11 @@ const badgeVariants = cva(
   },
 );
 
-export interface BadgeProps
+export interface IBadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {}
 
-function DialogBadge({ className, variant, ...props }: BadgeProps) {
+function DialogBadge({ className, variant, ...props }: IBadgeProps) {
   return (
       <span className={ cn(badgeVariants({ variant }), className) } { ...props } />
   );

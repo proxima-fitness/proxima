@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ProgramsSlugLayout } from "@/components/programs/ProgramsSlugLayout";
 
 export const metadata = {
