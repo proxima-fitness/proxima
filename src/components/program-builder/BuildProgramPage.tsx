@@ -6,6 +6,7 @@ import { HevyRoutine } from "./HevyRoutine";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { useBuildAiProgram } from "@/api/hooks";
 import { useMemo } from "react";
+import { ProximaProgram } from "./ProximaProgram";
 
 export const BuildProgramPage: React.FC = () => {
 
@@ -73,15 +74,20 @@ export const BuildProgramPage: React.FC = () => {
 
     const { data: program, isLoading: loadingProgram } =  useBuildAiProgram(request, isHevy);
 
+    if (loadingProgram) {
+        return (
+            <BuildProgramSkeleton />
+        );
+    }
+
     return (
         <div className="max-sm:px-2 sm:pl-8">
-            { loadingProgram ?
-                <BuildProgramSkeleton />
-            : (isHevy && program !== undefined) &&
-                <HevyRoutine program={ program } />
-            // : (!isHevy && program !== undefined) &&
-            //     <div></div>
-                // <ProximaProgram program={ sortWorkouts(program.schedule_workouts) } />
+            { program !== undefined && isHevy &&
+                <HevyRoutine program={ program as THevyRoutine[] } />
+            }
+
+            { program !== undefined && !isHevy &&
+                <ProximaProgram program={ program as TProgramCreatorDay[][] } />
             }
         </div>
     );

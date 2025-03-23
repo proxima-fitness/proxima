@@ -1,6 +1,7 @@
-import { aiRequest, buildFallbackProgram, buildProgram, buildPrompt } from "@/utils/program-builder";
 import { supabaseKey, supabaseUrl } from ".";
 import { emptyHevyRoutineProgram } from "@/assets/constants";
+import { aiRequest, buildFallbackProgram, buildProgram, buildPrompt } from "@/utils/program-builder";
+import { buildHevyFallbackProgram, buildHevyProgram } from "@/utils/program-builder/build-hevy-program";
 import { toast } from "sonner";
 
 interface ITextToJsonRequestPayload {
@@ -55,7 +56,7 @@ export const postChatPrompt = async (prompt: string, onChunk: (chunk: string) =>
         const reader = response.body.getReader();
         const decoder = new TextDecoder("utf-8");
 
-         
+
         while (true) {
             const { done, value } = await reader.read();
             if (done) {
@@ -214,20 +215,37 @@ export const buildAiProgram = async (request: TTextToJsonRequest, isHevy: boolea
 
         if (response !== undefined) {
             const parsedResponse = JSON.parse(response);
+            let program;
 
-            const program = await buildProgram(parsedResponse, Number(request.programLength), Number(request.daysPerWeek));
+            if (isHevy) {
+                program = await buildHevyProgram(parsedResponse, Number(request.programLength), Number(request.daysPerWeek));
+            } else {
+                program = await buildProgram(parsedResponse, Number(request.programLength), Number(request.daysPerWeek));
+                console.log("PROGRAM:", program);
+            }
+
             return program;
         }
 
         if (response === undefined) {
             toast.warning("Some AI requests failed. Fallback workouts have been added in their place.");
             console.error("Error, response was undefined when generating routines");
-            return await buildFallbackProgram(Number(request.programLength), numberOfDaysPerWeek);
+            if (isHevy) {
+                return await buildHevyFallbackProgram(Number(request.programLength), numberOfDaysPerWeek);
+
+            } else {
+                return await buildFallbackProgram(Number(request.programLength), numberOfDaysPerWeek);
+            }
         }
 
     } catch (error: unknown) {
         toast.warning("Some AI requests failed. Fallback workouts have been added in their place.");
         console.error("Error generating routines", error);
-        return await buildFallbackProgram(Number(request.programLength), Number(request.daysPerWeek));
+        if (isHevy) {
+            return await buildHevyFallbackProgram(Number(request.programLength), Number(request.daysPerWeek));
+
+        } else {
+            return await buildFallbackProgram(Number(request.programLength), Number(request.daysPerWeek));
+        }
     }
 };
