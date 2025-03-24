@@ -72,7 +72,7 @@ export const postHevyRoutineProgram = async (id: string, hevyRoutines: THevyRout
 
     try {
         const programUploadObject: { [key: string]: unknown } = {
-            id: uuidv4(),
+            id: id,
             hevy_routines: hevyRoutines,
             title: 'My AI Program',
             details: null,
