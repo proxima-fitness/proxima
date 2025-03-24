@@ -14,7 +14,7 @@ export const metadata = {
         <div className={ `bg-white ${styles.flexCenter} flex-col` }>
             <div className={ `${styles.boxWidth}` }>
                 <div className="h-[80vh] flex flex-col max-sm:gap-0 items-center justify-center gap-6">
-                    <div className="font-main text-4xl font-bold">Build your Program</div>
+                    <div className="font-main text-4xl font-bold text-center">Build your Program</div>
                     <div className="flex flex-row max-sm:flex-col max-sm:pt-8 justify-center items-center gap-6">
                         <AiSearchDialog />
                         <Link
