@@ -9,7 +9,7 @@ import {
   } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import  { Button } from "@/components/ui/button";
-import { SearchIcon, SparklesIcon, ChevronDownIcon, ChevronUpIcon, PlayIcon } from "lucide-react";
+import { SearchIcon, SparklesIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import {
     Select,
     SelectContent,
@@ -81,7 +81,23 @@ export const AiSearchDialog: React.FC = () => {
     return (
         <Dialog>
             <span className="flex items-center justify-center">
-                <DialogTrigger className="xl:my-[450px] max-sm:my-24 lg:my-[250px] h-[60px] text-white rounded-xl w-[200px] bg-lightSecondary font-main uppercase flex items-center justify-center gap-4"><PlayIcon />Start With AI</DialogTrigger>
+                {/* <DialogTrigger
+                    className="xl:my-[450px] max-sm:my-24 lg:my-[250px] h-[60px] text-white rounded-xl w-[200px] bg-lightSecondary font-main uppercase flex items-center justify-center gap-4"
+                >
+                        <PlayIcon />
+                        Build With AI
+                </DialogTrigger> */}
+                <DialogTrigger
+                    className="h-16 text-white rounded-xl w-[200px] bg-lightSecondary font-main flex items-center justify-center gap-4 group relative border-2 border-lightSecondary hover:border-lightSecondary hover:bg-lightSecondary shadow-md transition-all duration-300 hover:shadow-lg"
+                >
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="absolute bottom-0 left-0 w-0 h-1 bg-gray-300 group-hover:w-full transition-all duration-300"></div>
+                    </div>
+                    <span className="relative flex items-center justify-center gap-2 text-lg font-medium">
+                    <SparklesIcon />
+                        Build With AI
+                    </span>
+                </DialogTrigger>
             </span>
             <DialogContent hideClose className="max-w-5xl overflow-y-auto w-full max-sm:max-h-[90%]">
                 <DialogTitle>
