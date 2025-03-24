@@ -159,7 +159,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                             onClick={ handleUuid }
                             className="max-sm:w-auto w-92 h-10 uppercase bg-lightSecondary hover:text-white hover:bg-lightSecondary text-white"
                         >
-                            Save Program (Feature Coming Soon...)
+                            Save Program to Hevy
                             <LogInIcon />
                         </Button>
                     </span>
