@@ -79,14 +79,17 @@ export const FinishDialog: React.FC<IProps> = (props) => {
 
     const handleUuid = () => {
         const new_id = uuidv4();
-        copyAndSendUUID(new_id);
-        setUuid(new_id);
+        if (new_id !== undefined) {
+            copyAndSendUUID(new_id);
+            setUuid(new_id);
+        }
+
     };
 
-    const copyAndSendUUID = async (uuid: string) => {
-        navigator.clipboard.writeText(uuid);
-        if (hevyRoutine !== undefined) {
-            await postHevyRoutineProgram(uuid, hevyRoutine);
+    const copyAndSendUUID = async (new_id: string) => {
+        navigator.clipboard.writeText(new_id);
+        if (hevyRoutine !== undefined ) {
+            await postHevyRoutineProgram(new_id, hevyRoutine);
         }
         toast.success("Program ID Copied to Clipboard");
         setIsProgramId(true);

@@ -457,3 +457,72 @@ export const convertProgramCreatorExerciseToAddExercise = (programCreatorExercis
     };
 };
 
+// // Returns the proxima exercise exercise_id for a specific hevy exercise using fuzzy matching
+// export const getExerciseForHevyExercise = async (exercise_name: string) => {
+//     // Fuse Fuzzy match options
+//     const options = {
+//         isCaseSensitive: false,
+//         includeScore: false,
+//         minMatchCharLength: 2,
+//         shouldSort: true,
+//         threshold: 0.6,
+//         keys: [
+//             "name_english",
+//         ],
+//     };
+
+//     const proximaExercises = await getExercises();
+
+//     const fuse = new Fuse(proximaExercises, options);
+//     const fuseResults = fuse?.search(exercise_name, { limit: 1});
+//     if (!fuseResults) {
+//         return;
+//     }
+
+//     return fuseResults?.[0]?.item;
+// };
+
+// // Converts THevyRoutine[] into TProgramCreatorDay[][]
+// export const convertHevyRoutinesIntoProgramCreatorDays = async (routines: THevyRoutine[]) => {
+//     const programDaysMap: Record<number, TProgramCreatorDay[]> = {};
+
+//     for (const routine of routines) {
+//         const weekIndex = routine.folder_id ?? 0;
+//         if (!programDaysMap[weekIndex]) {
+//             programDaysMap[weekIndex] = [];
+//         }
+
+//         const exercises = await Promise.all(
+//             routine.exercises.map(async (exercise) => {
+//                 const proximaExercise = await getExerciseForHevyExercise(exercise.title);
+//                 return {
+//                     exercise: {
+//                     id: proximaExercise?.id ?? "",
+//                     name_english: proximaExercise?.name_english ?? "",
+//                     name_espanol: proximaExercise?.name_espanol ?? "",
+//                     name_portugues: proximaExercise?.name_portugues ?? "",
+//                     name_francais: proximaExercise?.name_francais ?? "",
+//                     },
+//                     sets: exercise.sets.length,
+//                     reps_type: {
+//                         reps: exercise.sets.map((set) => set.reps),
+//                     },
+//                     intensity: {
+//                         rpe: exercise.sets.map((set) => set.rpe),
+//                         weights: exercise.sets.map((set) => set.weight_kg), // This may be a problem if user has both rpe and weights
+//                     },
+//                 };
+//             }),
+//         );
+
+//       const programDay: TProgramCreatorDay = {
+//         order: routine.order ?? "1",
+//         day_title: routine.title,
+//         exercises,
+//       };
+
+//       programDaysMap[weekIndex].push(programDay);
+//     }
+
+//     return Object.values(programDaysMap);
+// };

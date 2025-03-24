@@ -36,7 +36,7 @@ export const getExerciseIdForHevyExercise = async (exercise_name: string) => {
         includeScore: false,
         minMatchCharLength: 2,
         shouldSort: true,
-        threshold: 0.2,
+        threshold: 0.6,
         keys: [
             "name_english",
         ],
