@@ -4,10 +4,10 @@
 import styles from "../../style";
 import { GetStarted } from "./GetStarted";
 import programs_classic_device from "../../../public/programs-classic-device.png";
-import program_creator_white from "../../../public/program-creator-white.png";
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { useEffect } from "react";
+import { ai_program_builder } from "public";
 
 export const Hero: React.FC = () => {
 
@@ -33,7 +33,7 @@ export const Hero: React.FC = () => {
             </div>
 
             <div className={ `flex-1 flex ${styles.flexCenter} md:my-0 mt-24 mb-10 relative` } >
-                <img src={ (program_creator_white as any).src } alt="Program Creator Image" className="relative z-[5]" />
+                <img src={ (ai_program_builder as any).src } alt="Program Creator Image" className="relative z-[5]" />
                 <div className="hidden md:block">
                     <img src={ (programs_classic_device as any).src } alt="Profile Page Image" className="absolute z-[6] max-w-[160px] h-auto -inset-10 top-24" />
                 </div>

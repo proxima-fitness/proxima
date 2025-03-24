@@ -40,6 +40,7 @@ import reddit from "./reddit.svg";
 import qr_code from "./qr-code.svg";
 import quotes from "./quotes.svg";
 import proxima_logo_black from "./proxima_logo_black.svg";
+import ai_program_builder from "./ai-program-builder.png";
 
 export {
     qr_code,
@@ -56,6 +57,7 @@ export {
     programs_pastel_device,
     arrow_up,
     close,
+    ai_program_builder,
     core_strength,
     deadlift,
     Discount,
