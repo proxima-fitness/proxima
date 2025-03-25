@@ -132,12 +132,12 @@ type THevyExercise = {
 type THevySets = {
     index: number; // Index indicating the order of the set in the routine.
     type: string; // The type of set. This can be one of 'normal', 'warmup', 'dropset', 'failure'
-    weight_kg: number; // Weight lifted in kilograms
-    reps: number; // Number of reps logged for the set
-    distance_meters: number; // Number of meters logged for the set
-    duration_seconds: number; // Number of seconds logged for the set
-    rpe: number; // The RPE logged for the set
-    custom_metric: number; // Custom metric logged for the set (Currently only used to log floors or steps for stair machine exercises)
+    weight_kg: number | null; // Weight lifted in kilograms
+    reps: number | null; // Number of reps logged for the set
+    distance_meters: number | null; // Number of meters logged for the set
+    duration_seconds: number | null; // Number of seconds logged for the set
+    rpe: number | null; // The RPE logged for the set
+    custom_metric: number | null; // Custom metric logged for the set (Currently only used to log floors or steps for stair machine exercises)
 }
 
 type THevyExerciseTemplates = {

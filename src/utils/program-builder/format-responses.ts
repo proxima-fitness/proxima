@@ -200,7 +200,6 @@ export const replaceTextToJsonExercisesHevy = (exercises: {
             const match = fuseResults?.[0]?.item;
 
             if (!match) return [];
-
                 return [{
                     index: index,
                     title: match?.title ?? "",
@@ -210,12 +209,12 @@ export const replaceTextToJsonExercisesHevy = (exercises: {
                     sets: Array.from({length: exercise.sets}, (_, setIndex) => ({
                         index: setIndex,
                         type: "normal",
-                        weight_kg: 0,
+                        weight_kg: null,
                         reps: exercise?.reps ?? 8,
-                        distance_meters: 0,
-                        duration_seconds: 0,
+                        distance_meters: null,
+                        duration_seconds: null,
                         rpe: exercise?.rpe ?? 9,
-                        custom_metric: 0,
+                        custom_metric: null,
                     })),
                 }];
         });
@@ -363,34 +362,36 @@ export const convertHevyExerciseIntoHevyAddExercise = (exercise: THevyExercise):
     const firstSet = exercise.sets[0];
 
     let repTypeValue: THevyAddExercise["repTypeValue"] = "reps";
-    if (firstSet.distance_meters > 0) {
+    if (firstSet.distance_meters !== null && firstSet.distance_meters > 0) {
       repTypeValue = "distance_meters";
-    } else if (firstSet.duration_seconds > 0) {
+    } else if (firstSet.duration_seconds !== null && firstSet.duration_seconds > 0) {
       repTypeValue = "duration_seconds";
-    } else if (firstSet.custom_metric > 0) {
+    } else if (firstSet.custom_metric !== null && firstSet.custom_metric > 0) {
       repTypeValue = "custom_metric";
     }
 
     // Determine intensityValue
     const intensityValue: THevyAddExercise["intensityValue"] =
-      firstSet.weight_kg > 0 ? "weight_kg" : "rpe";
+      firstSet.weight_kg ?? 0 > 0 ? "weight_kg" : "rpe";
 
     // Map values from sets
     const reps = exercise.sets.map(set => {
-      switch (repTypeValue) {
-        case "reps":
-          return set.reps;
-        case "distance_meters":
-          return set.distance_meters;
-        case "duration_seconds":
-          return set.duration_seconds;
-        case "custom_metric":
-          return set.custom_metric;
-      }
+        switch (repTypeValue) {
+            case "reps":
+                return set.reps ?? 0;
+            case "distance_meters":
+                return set.distance_meters ?? 0;
+            case "duration_seconds":
+                return set.duration_seconds ?? 0;
+            case "custom_metric":
+                return set.custom_metric ?? 0;
+            default:
+                return 0;
+        }
     });
 
-    const intensityData = exercise.sets.map(set =>
-      intensityValue === "weight_kg" ? set.weight_kg : set.rpe,
+    const intensityData: number[] = exercise.sets.map(set =>
+        intensityValue === "weight_kg" ? (set.weight_kg ?? 0) : (set.rpe ?? 0),
     );
 
     return {

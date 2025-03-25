@@ -63,7 +63,7 @@ export const HevyRoutineSchedule: React.FC<IProps> = (props) => {
                                                     { exercise.sets.length }
                                                 </div>
                                                 <div className="min-w-[33%] flex flex-col justify-center items-center">
-                                                    { exercise.sets[0] && exercise.sets[0].reps > 0 && (
+                                                    { exercise.sets[0] && exercise.sets[0].reps !== null && exercise.sets[0].reps > 0 && (
                                                         exercise.sets.every((reps, i, arr) => reps.reps === arr[0].reps) ? (
                                                             <div>{exercise.sets[0].reps}</div>
                                                         ) : (
@@ -72,7 +72,7 @@ export const HevyRoutineSchedule: React.FC<IProps> = (props) => {
                                                             ))
                                                         )
                                                     )}
-                                                    { exercise.sets[0] && exercise.sets[0].distance_meters > 0 && (
+                                                    { exercise.sets[0] && exercise.sets[0].distance_meters !== null && exercise.sets[0].distance_meters > 0 && (
                                                         exercise.sets.every((reps, i, arr) => reps.distance_meters === arr[0].distance_meters) ? (
                                                             <div>{exercise.sets[0].distance_meters} m</div>
                                                         ) : (
@@ -81,16 +81,16 @@ export const HevyRoutineSchedule: React.FC<IProps> = (props) => {
                                                             ))
                                                         )
                                                     )}
-                                                    { exercise.sets[0] && exercise.sets[0].duration_seconds > 0 && (
+                                                    { exercise.sets[0] && exercise.sets[0].duration_seconds !== null && exercise.sets[0].duration_seconds > 0 && (
                                                         exercise.sets.every((reps, i, arr) => reps.duration_seconds === arr[0].duration_seconds) ? (
                                                             <div>{ shortEnglishHumanizer(exercise.sets[0].duration_seconds * 1000) } s</div>
                                                         ) : (
                                                             exercise.sets.map((set, index) => (
-                                                                <div key={ index } className={ set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : "" }>{ shortEnglishHumanizer(set.duration_seconds * 1000) } s</div>
+                                                                <div key={ index } className={ set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : "" }>{ set.duration_seconds !== null && shortEnglishHumanizer(set.duration_seconds * 1000) } s</div>
                                                             ))
                                                         )
                                                     )}
-                                                    { exercise.sets[0] && exercise.sets[0].custom_metric > 0 && (
+                                                    { exercise.sets[0] && exercise.sets[0].custom_metric !== null && exercise.sets[0].custom_metric > 0 && (
                                                         exercise.sets.every((reps, i, arr) => reps.custom_metric === arr[0].custom_metric) ? (
                                                             <div>{exercise.sets[0].custom_metric}</div>
                                                         ) : (
@@ -101,7 +101,7 @@ export const HevyRoutineSchedule: React.FC<IProps> = (props) => {
                                                     )}
                                                 </div>
                                                 <div className="min-w-[33%] flex flex-col justify-center items-center">
-                                                    { exercise.sets[0] && exercise.sets[0].weight_kg > 0 && (
+                                                    { exercise.sets[0] && exercise.sets[0].weight_kg !== null && exercise.sets[0].weight_kg > 0 && (
                                                         exercise.sets.every((intensity, i, arr) => intensity.weight_kg === arr[0].weight_kg) ? (
                                                             <div>{exercise.sets[0].weight_kg} kg</div>
                                                         ) : (
@@ -110,7 +110,7 @@ export const HevyRoutineSchedule: React.FC<IProps> = (props) => {
                                                             ))
                                                         )
                                                     )}
-                                                    { exercise.sets[0] && exercise.sets[0].rpe > 0 && (
+                                                    { exercise.sets[0] && exercise.sets[0].rpe !== null && exercise.sets[0].rpe > 0 && (
                                                         exercise.sets.every((intensity, i, arr) => intensity.rpe === arr[0].rpe) ? (
                                                             <div>{exercise.sets[0].rpe} RPE</div>
                                                         ) : (

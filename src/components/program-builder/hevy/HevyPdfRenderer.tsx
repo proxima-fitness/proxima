@@ -188,7 +188,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                         { exercise.sets.length }
                                                     </Text>
                                                     <Text>
-                                                        { exercise.sets[0] && exercise.sets[0].reps > 0 && (
+                                                        { exercise.sets[0] && exercise.sets[0].reps !== null && exercise.sets[0].reps > 0 && (
                                                                 exercise.sets.every((reps, i, arr) => reps.reps === arr[0].reps) ? (
                                                                     <Text>{exercise.sets[0].reps}</Text>
                                                                 ) : (
@@ -197,7 +197,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                                     ))
                                                                 )
                                                             )}
-                                                        { exercise.sets[0] && exercise.sets[0].distance_meters > 0 && (
+                                                        { exercise.sets[0] && exercise.sets[0].distance_meters !== null && exercise.sets[0].distance_meters > 0 && (
                                                                 exercise.sets.every((reps, i, arr) => reps.distance_meters === arr[0].distance_meters) ? (
                                                                     <Text>{exercise.sets[0].distance_meters} m</Text>
                                                                 ) : (
@@ -206,16 +206,16 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                                     ))
                                                                 )
                                                             )}
-                                                        { exercise.sets[0] && exercise.sets[0].duration_seconds > 0 && (
+                                                        { exercise.sets[0] && exercise.sets[0].duration_seconds !== null && exercise.sets[0].duration_seconds > 0 && (
                                                                 exercise.sets.every((reps, i, arr) => reps.duration_seconds === arr[0].duration_seconds) ? (
                                                                     <Text>{shortEnglishHumanizer(exercise.sets[0].duration_seconds * 1000)} s</Text>
                                                                 ) : (
                                                                     exercise.sets.map((set, index) => (
-                                                                        <Text key={ index } style={ { color: set.type === "warmup" ? "#FFFFFF" : "#000000", backgroundColor: set.type === "warmup" ? "#cbd5e1" : "#f8f8f8", paddingHorizontal: "4px", borderRadius: "4px" } }>{ shortEnglishHumanizer(set.duration_seconds * 1000) } s</Text>
+                                                                        <Text key={ index } style={ { color: set.type === "warmup" ? "#FFFFFF" : "#000000", backgroundColor: set.type === "warmup" ? "#cbd5e1" : "#f8f8f8", paddingHorizontal: "4px", borderRadius: "4px" } }>{ set.duration_seconds !== null && shortEnglishHumanizer(set.duration_seconds * 1000) } s</Text>
                                                                     ))
                                                                 )
                                                             )}
-                                                        { exercise.sets[0] && exercise.sets[0].custom_metric > 0 && (
+                                                        { exercise.sets[0] && exercise.sets[0].custom_metric !== null && exercise.sets[0].custom_metric > 0 && (
                                                                 exercise.sets.every((reps, i, arr) => reps.custom_metric === arr[0].custom_metric) ? (
                                                                     <Text>{exercise.sets[0].custom_metric}</Text>
                                                                 ) : (
@@ -226,7 +226,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                             )}
                                                     </Text>
                                                     <Text style={ { display: "flex", flexDirection: "column" } }>
-                                                        { exercise.sets[0] && exercise.sets[0].weight_kg > 0 && (
+                                                        { exercise.sets[0] && exercise.sets[0].weight_kg !== null && exercise.sets[0].weight_kg > 0 && (
                                                             exercise.sets.every((intensity, i, arr) => intensity.weight_kg === arr[0].weight_kg) ? (
                                                                 <Text>{exercise.sets[0].weight_kg} kg</Text>
                                                             ) : (
@@ -235,7 +235,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                                 ))
                                                             )
                                                         )}
-                                                        { exercise.sets[0] && exercise.sets[0].rpe > 0 && (
+                                                        { exercise.sets[0] && exercise.sets[0].rpe !== null && exercise.sets[0].rpe > 0 && (
                                                             exercise.sets.every((intensity, i, arr) => intensity.rpe === arr[0].rpe) ? (
                                                                 <Text>{exercise.sets[0].rpe} RPE</Text>
                                                             ) : (
