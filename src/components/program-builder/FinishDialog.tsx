@@ -89,10 +89,11 @@ export const FinishDialog: React.FC<IProps> = (props) => {
     const copyAndSendUUID = async (new_id: string) => {
         navigator.clipboard.writeText(new_id);
         if (hevyRoutine !== undefined ) {
+            toast.success("Program ID Copied to Clipboard");
+            setIsProgramId(true);
+            toast.info("Submitting Program in background.")
             await postHevyRoutineProgram(new_id, hevyRoutine);
         }
-        toast.success("Program ID Copied to Clipboard");
-        setIsProgramId(true);
     };
 
     const finishDialog = () => {
