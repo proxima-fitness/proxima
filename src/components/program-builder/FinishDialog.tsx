@@ -31,7 +31,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
         const { isHevy } = useIsHevy();
         const [program, setProgram] = useState<TProgramCreatorDay[][]>();
         const [hevyRoutine, setHevyRoutine] = useState<THevyRoutine[]>();
-        const [isPreview, setIsPreview] = useState(false);
+        const [isPreview, setIsPreview] = useState(true);
         const [isProgramId, setIsProgramId] = useState(false);
         const [uuid, setUuid] = useState<string>("");
 
