@@ -193,9 +193,9 @@ export const buildOneDayRoutine = async (split: TTextToJsonResponse, programLeng
     for (let week = 0; week < programLength; week++) {
         const weeks = [
             {
-                day_title: split.workout_days[0].day_title,
+                day_title: split?.workout_days[0]?.day_title ?? "",
                 order: "1",
-                exercises: replaceTextToJsonExercises(split.workout_days[0].exercises, exercises),
+                exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? [], exercises),
             },
 
         ];
@@ -215,19 +215,19 @@ export const buildPushPullLegsRoutine = async (split: TTextToJsonResponse, progr
         for (let week = 0; week < programLength; week++) {
             const weeks = [
                 {
-                    day_title: split.workout_days[0].day_title,
+                    day_title: split?.workout_days[0]?.day_title ?? "",
                     order: "1",
-                    exercises: replaceTextToJsonExercises(split.workout_days[0].exercises, exercises),
+                    exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? [], exercises),
                 },
                 {
-                    day_title: split.workout_days[1].day_title,
+                    day_title: split?.workout_days[1]?.day_title ?? "",
                     order: "2",
-                    exercises: replaceTextToJsonExercises(split.workout_days[1].exercises, exercises),
+                    exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? [], exercises),
                 },
                 {
-                    day_title: split.workout_days[2].day_title,
+                    day_title: split?.workout_days[2]?.day_title ?? "",
                     order: "3",
-                    exercises: replaceTextToJsonExercises(split.workout_days[2].exercises, exercises),
+                    exercises: replaceTextToJsonExercises(split?.workout_days[2]?.exercises ?? [], exercises),
                 },
             ];
 
@@ -237,34 +237,34 @@ export const buildPushPullLegsRoutine = async (split: TTextToJsonResponse, progr
         for (let week = 0; week < programLength; week++) {
             const weeks = [
                 {
-                    day_title: split.workout_days[0].day_title,
+                    day_title: split?.workout_days[0]?.day_title ?? "",
                     order: "1",
-                    exercises: replaceTextToJsonExercises(split.workout_days[0].exercises, exercises),
+                    exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? [], exercises),
                 },
                 {
-                    day_title: split.workout_days[1].day_title,
+                    day_title: split?.workout_days[1]?.day_title ?? "",
                     order: "2",
-                    exercises: replaceTextToJsonExercises(split.workout_days[1].exercises, exercises),
+                    exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? [], exercises),
                 },
                 {
-                    day_title: split.workout_days[2].day_title,
+                    day_title: split?.workout_days[2]?.day_title ?? "",
                     order: "3",
-                    exercises: replaceTextToJsonExercises(split.workout_days[3].exercises, exercises),
+                    exercises: replaceTextToJsonExercises(split?.workout_days[3]?.exercises ?? [], exercises),
                 },
                 {
-                    day_title: split.workout_days[0].day_title,
+                    day_title: split?.workout_days[0]?.day_title ?? "",
                     order: "4",
-                    exercises: replaceTextToJsonExercises(split.workout_days[0].exercises, exercises),
+                    exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? [], exercises),
                 },
                 {
-                    day_title: split.workout_days[1].day_title,
+                    day_title: split?.workout_days[1]?.day_title ?? "",
                     order: "5",
-                    exercises: replaceTextToJsonExercises(split.workout_days[1].exercises, exercises),
+                    exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? [], exercises),
                 },
                 {
-                    day_title: split.workout_days[2].day_title,
+                    day_title: split?.workout_days[2]?.day_title ?? "",
                     order: "6",
-                    exercises: replaceTextToJsonExercises(split.workout_days[2].exercises, exercises),
+                    exercises: replaceTextToJsonExercises(split?.workout_days[2]?.exercises ?? [], exercises),
                 },
             ];
 
@@ -286,14 +286,14 @@ export const buildUpperLowerRoutine = async (split: TTextToJsonResponse, program
         for (let week = 0; week < programLength; week++) {
             const weeks = [
                 {
-                    day_title: split.workout_days[0].day_title,
+                    day_title: split?.workout_days[0]?.day_title ?? "",
                     order: "1",
-                    exercises: replaceTextToJsonExercises(split.workout_days[0].exercises, exercises),
+                    exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? [], exercises),
                 },
                 {
-                    day_title: split.workout_days[1].day_title,
+                    day_title: split?.workout_days[1]?.day_title ?? "",
                     order: "2",
-                    exercises: replaceTextToJsonExercises(split.workout_days[1].exercises, exercises),
+                    exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? [], exercises),
                 },
 
             ];
@@ -304,24 +304,24 @@ export const buildUpperLowerRoutine = async (split: TTextToJsonResponse, program
         for (let week = 0; week < programLength; week++) {
             const weeks = [
                 {
-                    day_title: split.workout_days[0].day_title,
+                    day_title: split?.workout_days[0]?.day_title ?? "",
                     order: "1",
-                    exercises: replaceTextToJsonExercises(split.workout_days[0].exercises, exercises),
+                    exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? [], exercises),
                 },
                 {
-                    day_title: split.workout_days[1].day_title,
+                    day_title: split?.workout_days[1]?.day_title ?? "",
                     order: "2",
-                    exercises: replaceTextToJsonExercises(split.workout_days[1].exercises, exercises),
+                    exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? [], exercises),
                 },
                 {
-                    day_title: split.workout_days[0].day_title,
+                    day_title: split?.workout_days[0]?.day_title ?? "",
                     order: "3",
-                    exercises: replaceTextToJsonExercises(split.workout_days[0].exercises, exercises),
+                    exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? [], exercises),
                 },
                 {
-                    day_title: split.workout_days[1].day_title,
+                    day_title: split?.workout_days[1]?.day_title ?? "",
                     order: "4",
-                    exercises: replaceTextToJsonExercises(split.workout_days[1].exercises, exercises),
+                    exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? [], exercises),
                 },
 
             ];
@@ -342,29 +342,29 @@ export const buildFiveDayRoutine = async (split: TTextToJsonResponse, programLen
     for (let week = 0; week < programLength; week++) {
         const weeks = [
             {
-                day_title: split.workout_days[0].day_title,
+                day_title: split?.workout_days[0]?.day_title ?? "",
                 order: "1",
-                exercises: replaceTextToJsonExercises(split.workout_days[0].exercises, exercises),
+                exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? [], exercises),
             },
             {
-                day_title: split.workout_days[1].day_title,
+                day_title: split?.workout_days[1]?.day_title ?? "",
                 order: "2",
-                exercises: replaceTextToJsonExercises(split.workout_days[1].exercises, exercises),
+                exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? [], exercises),
             },
             {
-                day_title: split.workout_days[2].day_title,
+                day_title: split?.workout_days[2]?.day_title ?? "",
                 order: "3",
-                exercises: replaceTextToJsonExercises(split.workout_days[2].exercises, exercises),
+                exercises: replaceTextToJsonExercises(split?.workout_days[2]?.exercises ?? [], exercises),
             },
             {
-                day_title: split.workout_days[3].day_title,
+                day_title: split?.workout_days[3]?.day_title ?? "",
                 order: "4",
-                exercises: replaceTextToJsonExercises(split.workout_days[3].exercises, exercises),
+                exercises: replaceTextToJsonExercises(split?.workout_days[3]?.exercises ?? [], exercises),
             },
             {
-                day_title: split.workout_days[4].day_title,
+                day_title: split?.workout_days[4]?.day_title ?? "",
                 order: "4",
-                exercises: replaceTextToJsonExercises(split.workout_days[4].exercises, exercises),
+                exercises: replaceTextToJsonExercises(split?.workout_days[4]?.exercises ?? [], exercises),
             },
         ];
 
@@ -383,39 +383,39 @@ export const buildHevySevenDayRoutine = async (split: TTextToJsonResponse, progr
     for (let week = 0; week < programLength; week++) {
         const weeks = [
             {
-                day_title: split.workout_days[0].day_title,
+                day_title: split?.workout_days[0]?.day_title ?? "",
                 order: "1",
-                exercises: replaceTextToJsonExercises(split.workout_days[0].exercises, exercises),
+                exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? [], exercises),
             },
             {
-                day_title: split.workout_days[1].day_title,
+                day_title: split?.workout_days[1]?.day_title ?? "",
                 order: "2",
-                exercises: replaceTextToJsonExercises(split.workout_days[1].exercises, exercises),
+                exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? [], exercises),
             },
             {
-                day_title: split.workout_days[2].day_title,
+                day_title: split?.workout_days[2]?.day_title ?? "",
                 order: "3",
-                exercises: replaceTextToJsonExercises(split.workout_days[2].exercises, exercises),
+                exercises: replaceTextToJsonExercises(split?.workout_days[2]?.exercises ?? [], exercises),
             },
             {
-                day_title: split.workout_days[0].day_title,
+                day_title: split?.workout_days[0]?.day_title ?? "",
                 order: "4",
-                exercises: replaceTextToJsonExercises(split.workout_days[0].exercises, exercises),
+                exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? [], exercises),
             },
             {
-                day_title: split.workout_days[1].day_title,
+                day_title: split?.workout_days[1]?.day_title ?? "",
                 order: "4",
-                exercises: replaceTextToJsonExercises(split.workout_days[1].exercises, exercises),
+                exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? [], exercises),
             },
             {
-                day_title: split.workout_days[2].day_title,
+                day_title: split?.workout_days[2]?.day_title ?? "",
                 order: "4",
-                exercises: replaceTextToJsonExercises(split.workout_days[2].exercises, exercises),
+                exercises: replaceTextToJsonExercises(split?.workout_days[2]?.exercises ?? [], exercises),
             },
             {
-                day_title: split.workout_days[3].day_title,
+                day_title: split?.workout_days[3]?.day_title ?? "",
                 order: "4",
-                exercises: replaceTextToJsonExercises(split.workout_days[3].exercises, exercises),
+                exercises: replaceTextToJsonExercises(split?.workout_days[3]?.exercises ?? [], exercises),
             },
         ];
 
