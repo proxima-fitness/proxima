@@ -41,6 +41,7 @@ import qr_code from "./qr-code.svg";
 import quotes from "./quotes.svg";
 import proxima_logo_black from "./proxima_logo_black.svg";
 import ai_program_builder from "./ai-program-builder.png";
+import profile_mobile_device_classic from "./profile-mobile-device-classic.png";
 
 export {
     qr_code,
@@ -79,6 +80,7 @@ export {
     people05,
     people06,
     profile_mobile_device_white,
+    profile_mobile_device_classic,
     program_creator_mobile_white_with_device,
     program_creator_white,
     programs_classic_device,
