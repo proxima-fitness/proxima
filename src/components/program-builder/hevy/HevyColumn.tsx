@@ -23,6 +23,8 @@ interface IProps {
     handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;
     handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
     handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
+    focusedCardId: string;
+    setFocusedCardId: (focusedCardId: string) => void;
 }
 
 export const HevyColumn: React.FC<IProps> = (props) => {
@@ -42,6 +44,8 @@ export const HevyColumn: React.FC<IProps> = (props) => {
         handleDuplicateDay,
         handleOpenAddExerciseDialog,
         handleDeleteExercise,
+        focusedCardId,
+        setFocusedCardId,
     } = props;
 
     const [active, setActive] = useState(false);
@@ -214,6 +218,8 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                             handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
                             handleIsEditExercise={ handleIsEditExercise }
                             handleDeleteExercise={ handleDeleteExercise }
+                            focusedCardId={ focusedCardId }
+                            setFocusedCardId={ setFocusedCardId }
                         />
                 ); } ) }
                 <DropIndicator beforeId={ null } weekOrder={ String(folder_id) } />

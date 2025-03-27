@@ -128,16 +128,10 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
             return;
         }
 
-        const updatedDay = {
-            ...newDayRoutine[0],
-            weekOrder: weekOrder.toString(),
-            order: dayOrder.toString(),
-        };
-
         setFlattenedProgramDays((prevDays) =>
             prevDays.map((day) =>
-                day.weekOrder === weekOrder.toString() && day.order === dayOrder.toString()
-                    ? { ...updatedDay, id: day.id }
+                day.weekOrder === String(weekOrder) && day.order === String(dayOrder)
+                    ? { day_title: newDayRoutine[0][0].day_title ?? day.day_title, exercises: newDayRoutine[0][0].exercises ?? day.exercises, order: String(dayOrder), weekOrder: String(weekOrder),  id: day.id }
                     : day
             )
         );
@@ -231,6 +225,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     };
 
     const [flattenedProgramDays, setFlattenedProgramDays] = useState<TProgramCreatorDay[]>(flattenProgram(appendWeekOrderAndIdToProgramDays(program)));
+    const [focusedCardId, setFocusedCardId] = useState<string>("");
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -258,6 +253,8 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                         handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
                         handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
                         handleDeleteExercise={ handleDeleteExercise }
+                        focusedCardId={ focusedCardId }
+                        setFocusedCardId={ setFocusedCardId }
                     />
                 ) ) }
             </div>

@@ -259,6 +259,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     };
 
     const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>(appendOrderToHevyRoutines(program));
+    const [focusedCardId, setFocusedCardId] = useState<string>("");
     const numberOfWeeks = getNumberRoutineFolders(hevyProgram);
     const numberOfWeeksArr = Array.from({ length: numberOfWeeks }, (_, i) => i);
 
@@ -288,6 +289,8 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                         handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
                         handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
                         handleDeleteExercise={ handleDeleteExercise }
+                        focusedCardId={ focusedCardId }
+                        setFocusedCardId={ setFocusedCardId }
                     />
                 ) ) }
             </div>

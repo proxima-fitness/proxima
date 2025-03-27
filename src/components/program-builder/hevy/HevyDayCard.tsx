@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { EllipsisIcon, CopyIcon, PlusIcon } from "lucide-react";
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -33,6 +33,8 @@ interface IProps {
     handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;    // handleGenerateDayDialog: (generateDayDialog: TDialog) => void;
     handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
     handleIsEditExercise: (isEditExercise: boolean) => void;
+    focusedCardId: string;
+    setFocusedCardId: (focusedCardId: string) => void;
 }
 
 export const HevyDayCard: React.FC<IProps> = (props) => {
@@ -50,6 +52,8 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         handleOpenGenerateDayDialog,
         handleDeleteExercise,
         handleIsEditExercise,
+        focusedCardId,
+        setFocusedCardId,
     } = props;
 
     const [duplicateDayOpen, setDuplicateDayOpen] = useState(false);
@@ -61,6 +65,10 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
             handleOpenAddExerciseDialog({folder_id: currentWeek, dayOrder: currentDay, isOpen: true, exerciseIndex: exerciseIndex, editExercise: convertHevyExerciseIntoHevyAddExercise(editExercise) });
     };
 
+    const handleFocus = () => {
+        setFocusedCardId(day.id ?? "");
+    }
+
     const cardVal: THevyCard = {
         title,
         order: day?.order ?? "",
@@ -69,6 +77,41 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         id: day?.id ?? "",
         folder_id,
     };
+
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (focusedCardId === day.id) {
+                if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "e") {
+                    event.preventDefault();
+                    setEditTitleOpen(true);
+                } else if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "d") {
+                    event.preventDefault();
+                    handleDeleteDay(day.id);
+                }
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [day.id, day.order, focusedCardId, folder_id, handleDeleteDay, handleOpenGenerateDayDialog]);
+
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (focusedCardId === day.id) {
+                if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "g") {
+                    event.preventDefault();
+                    handleOpenGenerateDayDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true });
+                }
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [day.id, day.order, focusedCardId, folder_id, handleDeleteDay, handleOpenGenerateDayDialog]);
 
     return (
         <>
@@ -80,7 +123,10 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                 onDragStart={ (e: DragEvent) => handleDragStart(e, cardVal) }
                 className="cursor-grab rounded active:cursor-grabbing gap-4"
             >
-                <Card className="w-[100%] group py-4 px-4 sm:min-w-[440px] sm:max-w-[440px] bg-lightGray my-2">
+                <Card
+                    tabIndex={ 0 }
+                    onClick={ handleFocus }
+                    className="border-[4px] border-gray-100 focus:border-lightSecondary w-[100%] group py-4 px-4 sm:min-w-[440px] sm:max-w-[440px] bg-lightGray my-2">
                     <div className="flex flex-row justify-between items-center">
                         <div className="font-main text-xl flex flex-row">
                             Day {day.order}

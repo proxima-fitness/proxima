@@ -1,5 +1,5 @@
 import { supabaseKey, supabaseUrl } from ".";
-import { emptyHevyRoutineProgram } from "@/assets/constants";
+import { emptyHevyRoutineProgram, emptyProximaProgram } from "@/assets/constants";
 import { aiRequest, buildFallbackProgram, buildProgram, buildPrompt } from "@/utils/program-builder";
 import { buildHevyFallbackProgram, buildHevyProgram } from "@/utils/program-builder/build-hevy-program";
 import { toast } from "sonner";
@@ -190,7 +190,11 @@ export const buildAiProgram = async (request: TTextToJsonRequest, isHevy: boolea
     try {
 
         if (request.empty === "true") {
-            return emptyHevyRoutineProgram;
+            if (isHevy) {
+                return emptyHevyRoutineProgram;
+            } else {
+                return emptyProximaProgram;
+            }
         }
 
         const promptBase = buildPrompt(
