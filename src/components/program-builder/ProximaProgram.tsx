@@ -6,7 +6,8 @@ import { IOption } from "@/components/ui/multi-select";
 import { GenerateDayDialog } from "./GenerateDayDialog";
 import { useExercises } from "@/api/hooks";
 import { Column } from "../drag-and-drop/Column";
-import { addExerciseToProgramCreatorExerciseConverter, appendWeekOrderAndIdToProgramDays, deFlattenProgram, flattenProgram, reorder } from "@/utils/program-builder";
+import { addExerciseToProgramCreatorExerciseConverter, aiRequest, appendWeekOrderAndIdToProgramDays, buildProgram, deFlattenProgram, flattenProgram, reorder } from "@/utils/program-builder";
+import { toast } from "sonner";
 
 interface IProps {
     program: TProgramCreatorDay[][];
@@ -112,9 +113,34 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     };
 
     // Will re-generate the currently selected day based on a prompt
-    const handleGenerateDay = (weekOrder: number, dayOrder:number, prompt: string) => {
-        // Do AI re-generation of a day here
-        console.log(weekOrder, dayOrder, prompt);
+    const handleGenerateDay = async (weekOrder: number, dayOrder: number, prompt: string) => {
+        const response = await aiRequest(1, prompt);
+        if (!response) {
+            toast.error("Error generating day");
+            return;
+        }
+
+        const parsedResponse = JSON.parse(response);
+        const newDayRoutine = await buildProgram(parsedResponse, 1, 1);
+
+        if (!newDayRoutine || !Array.isArray(newDayRoutine) || newDayRoutine.length === 0) {
+            toast.error("Generated routine is invalid");
+            return;
+        }
+
+        const updatedDay = {
+            ...newDayRoutine[0],
+            weekOrder: weekOrder.toString(),
+            order: dayOrder.toString(),
+        };
+
+        setFlattenedProgramDays((prevDays) =>
+            prevDays.map((day) =>
+                day.weekOrder === weekOrder.toString() && day.order === dayOrder.toString()
+                    ? { ...updatedDay, id: day.id }
+                    : day
+            )
+        );
     };
 
 

@@ -8,9 +8,10 @@ import { HevyColumn } from "./hevy/HevyColumn";
 import { HevyAddExerciseDialog } from "./hevy/HevyAddExerciseDialog";
 import { HevyGenerateDayDialog } from "./hevy/HevyGenerateDayDialog";
 import { IOption } from "@/components/ui/multi-select";
-import { appendOrderToHevyRoutines, getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy } from "@/utils/program-builder";
+import { aiRequest, appendOrderToHevyRoutines, getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy } from "@/utils/program-builder";
 import { getHevyExerciseFromLocalStorageByID } from "@/utils/general/helpers";
 import { toast } from "sonner";
+import { buildHevyProgram } from "@/utils/program-builder/build-hevy-program";
 
 interface IProps {
     program: THevyRoutine[];
@@ -118,9 +119,24 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     };
 
     // // Will re-generate the currently selected day based on a prompt
-    const handleGenerateDay = (folder_id: number, dayOrder:number, prompt: string) => {
-        // TODO: Do AI re-generation of a day here
-        console.log(folder_id, dayOrder, prompt);
+    const handleGenerateDay = async (folder_id: number, dayOrder:number, prompt: string) => {
+        const response = await aiRequest(1, prompt);
+        if (response === undefined) {
+            toast.error("Error generating day");
+            return;
+        }
+
+        const parsedResponse = JSON.parse(response);
+        const oneDayRoutine = await buildHevyProgram(parsedResponse,1,1);
+        if (oneDayRoutine) {
+            setHevyProgram((prevProgram) =>
+                prevProgram.map((routine) =>
+                    routine.folder_id === folder_id && routine.order === dayOrder.toString()
+                        ? { exercises: oneDayRoutine[0].exercises, id: routine.id, folder_id, order: dayOrder.toString(), title: oneDayRoutine[0].title ?? routine.title }
+                        : routine
+                )
+            );
+        }
     };
 
 
