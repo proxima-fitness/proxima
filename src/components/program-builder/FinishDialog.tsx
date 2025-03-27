@@ -186,12 +186,17 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                                 ID is automatically copied to clipboard
                             </span>
                             <a href="https://app.proximafitness.com/" className="w-full">
-                                <Button
-                                    className="w-full h-10 uppercase bg-lightSecondary hover:text-white hover:bg-lightSecondary text-white"
-                                >
+                            <Button
+                                className="h-16 text-white rounded-xl w-full bg-lightSecondary font-main flex items-center justify-center gap-4 group relative border-2 border-lightSecondary hover:border-lightSecondary hover:bg-lightSecondary shadow-md transition-all duration-300 hover:shadow-lg"
+                            >
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="absolute bottom-0 left-0 w-0 h-1 bg-gray-300 group-hover:w-full transition-all duration-300"></div>
+                                </div>
+                                <span className="relative flex items-center justify-center gap-2 text-lg font-medium">
                                     Sign in to view your Program
                                     <LogInIcon />
-                                </Button>
+                                </span>
+                            </Button>
                             </a>
                         </DialogContent>)
                     : finishDialog()

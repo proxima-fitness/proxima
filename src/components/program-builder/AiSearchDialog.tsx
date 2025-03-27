@@ -81,12 +81,6 @@ export const AiSearchDialog: React.FC = () => {
     return (
         <Dialog>
             <span className="flex items-center justify-center">
-                {/* <DialogTrigger
-                    className="xl:my-[450px] max-sm:my-24 lg:my-[250px] h-[60px] text-white rounded-xl w-[200px] bg-lightSecondary font-main uppercase flex items-center justify-center gap-4"
-                >
-                        <PlayIcon />
-                        Build With AI
-                </DialogTrigger> */}
                 <DialogTrigger
                     className="h-16 text-white rounded-xl w-[200px] bg-lightSecondary font-main flex items-center justify-center gap-4 group relative border-2 border-lightSecondary hover:border-lightSecondary hover:bg-lightSecondary shadow-md transition-all duration-300 hover:shadow-lg"
                 >
