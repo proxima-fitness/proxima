@@ -3,19 +3,27 @@
   <url>
     <loc>https://proximafitness.com/</loc>
   </url>
-  <url>
-    <loc>https://proximafitness.com/#home</loc>
+    <url>
+    <loc>https://proximafitness.com/programs</loc>
   </url>
   <url>
-    <loc>https://proximafitness.com/#programs</loc>
+    <loc>https://proximafitness.com/program-builder</loc>
   </url>
   <url>
-    <loc>https://proximafitness.com/#create-programs</loc>
+    <loc>https://proximafitness.com/about</loc>
   </url>
   <url>
-    <loc>https://proximafitness.com/#faqs</loc>
+    <loc>https://proximafitness.com/download</loc>
   </url>
   <url>
-    <loc>https://proximafitness.com/#cta</loc>
+    <loc>https://proximafitness.com/blog</loc>
   </url>
+    <url>
+    <loc>https://proximafitness.com/privacy</loc>
+  </url>
+  <url>
+    <loc>https://proximafitness.com/terms-of-use</loc>
+  </url>
+
+
 </urlset>
