@@ -16,6 +16,10 @@ import NextTopLoader from 'nextjs-toploader';
 export const metadata: Metadata = {
     title: 'Proxima Fitness | AI Workout Builder & Program Directory',
     description: 'Proxima Fitness is an AI Workout Builder and Programs Directory. This is the Proxima Landing page, where you can sign in to the Proxima Web builder and get started building programs right away, or download the Proxima Fitness App on the App Store or Play Store',
+    icons: {
+        icon: "/favicon.svg", // Use SVG favicon
+        shortcut: "/favicon.svg",
+      },
 };
 
 const russo_one = Russo_One({
@@ -40,6 +44,7 @@ export default function RootLayout({
     return (
         <html lang="en" className={ `${exo.className} ${russo_one.className}` }>
             <head>
+                <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
                 <meta name="theme-color" content="#000000" />
             </head>
             <body>

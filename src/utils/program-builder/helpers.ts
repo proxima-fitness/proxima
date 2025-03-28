@@ -81,5 +81,3 @@ export const getMaxFolderId = (routines: THevyRoutine[]): number => {
         return routine.folder_id > max ? routine.folder_id : max;
         }, routines[0].folder_id);
 };
-
-
