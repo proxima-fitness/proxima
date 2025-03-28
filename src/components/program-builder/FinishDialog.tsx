@@ -33,6 +33,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
         const [hevyRoutine, setHevyRoutine] = useState<THevyRoutine[]>();
         const [isPreview, setIsPreview] = useState(true);
         const [isProgramId, setIsProgramId] = useState(false);
+        const [savingRoutine, setSavingRoutine] = useState(false);
         const [uuid, setUuid] = useState<string>("");
 
         const handleCloseDialog = () => {
@@ -87,12 +88,16 @@ export const FinishDialog: React.FC<IProps> = (props) => {
     };
 
     const copyAndSendUUID = async (new_id: string) => {
+        setSavingRoutine(true);
         navigator.clipboard.writeText(new_id);
         if (hevyRoutine !== undefined ) {
             toast.success("Program ID Copied to Clipboard");
             setIsProgramId(true);
             toast.info("Submitting Program in background.")
             await postHevyRoutineProgram(new_id, hevyRoutine);
+            setSavingRoutine(false);
+        } else {
+            setSavingRoutine(false);
         }
     };
 
@@ -185,18 +190,19 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                             <span className="flex items-center justify-center font-sm">
                                 ID is automatically copied to clipboard
                             </span>
-                            <a href="https://app.proximafitness.com/" className="w-full">
-                            <Button
-                                className="h-16 text-white rounded-xl w-full bg-lightSecondary font-main flex items-center justify-center gap-4 group relative border-2 border-lightSecondary hover:border-lightSecondary hover:bg-lightSecondary shadow-md transition-all duration-300 hover:shadow-lg"
-                            >
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="absolute bottom-0 left-0 w-0 h-1 bg-gray-300 group-hover:w-full transition-all duration-300"></div>
-                                </div>
-                                <span className="relative flex items-center justify-center gap-2 text-lg font-medium">
-                                    Sign in to view your Program
-                                    <LogInIcon />
-                                </span>
-                            </Button>
+                            <a href="https://app.proximafitness.com/" className={`w-full  ${savingRoutine ? "pointer-events-none" : "" }`}>
+                                <Button
+                                    disabled={ savingRoutine }
+                                    className="h-16 text-white rounded-xl w-full bg-lightSecondary font-main flex items-center justify-center gap-4 group relative border-2 border-lightSecondary hover:border-lightSecondary hover:bg-lightSecondary shadow-md transition-all duration-300 hover:shadow-lg"
+                                >
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <div className="absolute bottom-0 left-0 w-0 h-1 bg-gray-300 group-hover:w-full transition-all duration-300"></div>
+                                    </div>
+                                    <span className="relative flex items-center justify-center gap-2 text-lg font-medium">
+                                        Sign in to view your Program
+                                        <LogInIcon />
+                                    </span>
+                                </Button>
                             </a>
                         </DialogContent>)
                     : finishDialog()
