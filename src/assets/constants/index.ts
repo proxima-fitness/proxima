@@ -5633,11 +5633,11 @@ export const footerLinks = [
     links: [
       {
         name: "Terms of Use",
-        link: "https://proximafitness.com/terms-of-use",
+        link: "/terms-of-use",
       },
       {
         name: "Privacy Policy",
-        link: "https://proximafitness.com/privacy",
+        link: "/privacy",
       },
       {
         name: "Blog",

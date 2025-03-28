@@ -28,14 +28,14 @@ export const Footer: React.FC = () => {
                             <ul className="list-none mt-4">
                                 {footerlink.links.map((link, index) => (
                                     <Link
-                        href={ link.link }
-                        key={ link.name }
-                    >
+                                        href={ link.link }
+                                        key={ link.name }
+                                    >
                                         <li
-                        className={ `font-main font-normal text-[16px] leading-[24px] text-dimWhite hover:text-secondary cursor-pointer ${
-                            index !== footerlink.links.length - 1 ? "mb-4" : "mb-0"
-                        }` }
-                        >
+                                        className={ `font-main font-normal text-[16px] leading-[24px] text-dimWhite hover:text-secondary cursor-pointer ${
+                                            index !== footerlink.links.length - 1 ? "mb-4" : "mb-0"
+                                        }` }
+                                        >
                                             {link.name}
                                         </li>
                                     </Link>
