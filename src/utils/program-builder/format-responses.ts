@@ -324,17 +324,17 @@ export const convertHevyExerciseIntoHevyAddExercise = (exercise: THevyExercise):
     const firstSet = exercise.sets[0];
 
     let repTypeValue: THevyAddExercise["repTypeValue"] = "reps";
-    if (firstSet.distance_meters !== null && firstSet.distance_meters > 0) {
+    if (firstSet?.distance_meters !== null && firstSet?.distance_meters > 0) {
       repTypeValue = "distance_meters";
-    } else if (firstSet.duration_seconds !== null && firstSet.duration_seconds > 0) {
+    } else if (firstSet?.duration_seconds !== null && firstSet?.duration_seconds > 0) {
       repTypeValue = "duration_seconds";
-    } else if (firstSet.custom_metric !== null && firstSet.custom_metric > 0) {
+    } else if (firstSet?.custom_metric !== null && firstSet?.custom_metric > 0) {
       repTypeValue = "custom_metric";
     }
 
     // Determine intensityValue
     const intensityValue: THevyAddExercise["intensityValue"] =
-      firstSet.weight_kg ?? 0 > 0 ? "weight_kg" : "rpe";
+      firstSet?.weight_kg ?? 0 > 0 ? "weight_kg" : "rpe";
 
     // Map values from sets
     const reps = exercise.sets.map(set => {

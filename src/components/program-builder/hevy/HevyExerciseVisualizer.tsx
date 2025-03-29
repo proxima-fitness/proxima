@@ -1,5 +1,5 @@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { SquarePenIcon, Trash2Icon } from "lucide-react";
+import { Trash2Icon } from "lucide-react";
 import { HevyExerciseGif } from "./HevyExerciseGif";
 interface IProps {
     day: THevyRoutine;
@@ -22,11 +22,18 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
             { day?.exercises?.map((exercise : THevyExercise, i: number) => (
                 <TooltipProvider key={ "Week" + (Number(folder_id) + 1) + "Day" + i } delayDuration={ 0 }>
                     <Tooltip>
-                        <TooltipTrigger className="w-full min-h-14">
+                        <TooltipTrigger onClick={ () => handleEdit(folder_id, Number(day.order), i, exercise ) } className="w-full min-h-14">
                             <div className="flex flex-row justify-between items-center text-sm border-b-2 py-2 border-gray-200">
                                 <div className="flex flex-row gap-2 items-center justify-start max-w-[50%]">
                                     <div className="text-lightSecondary pr-1">
-                                        { i + 1}
+                                        <span className="hidden sm:block">{ i + 1}</span>
+                                        <Trash2Icon
+                                            className="block sm:hidden"
+                                            onClick={ (event) => {
+                                                event.stopPropagation();
+                                                handleDeleteExercise(Number(folder_id), Number(day.order), i)
+                                            } }
+                                        />
                                     </div>
                                     <HevyExerciseGif thumbnailOrImage={ "thmb" } name={ exercise.title } resolution={ "180" } file_type={ 'jpg' } />
                                     <div>{ exercise.title }</div>
@@ -97,9 +104,6 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                             </div>
                         </TooltipTrigger>
                         <TooltipContent side="right" className="bg-lightSecondary text-white flex flex-row gap-2">
-                            <SquarePenIcon className="cursor-pointer" onClick={ () => {
-                                handleEdit(folder_id, Number(day.order), i, exercise );
-                        } } />
                             <Trash2Icon
                             className="cursor-pointer"
                             onClick={ () => {
