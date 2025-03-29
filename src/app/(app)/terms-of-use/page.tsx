@@ -25,7 +25,7 @@ export const metadata = {
                         In this section 3, <strong>“Purposes”</strong> means: (a) the use and access of the Website and Applications, and any services therein.</p>
 
                     <h2>4. Your Account</h2>
-                    <p>You must create an account in order to use certain Services, in which case you will be required to provide certain account information, such as your email address, and to create a UserID and password (collectively, your <strong>“Credentials”</strong>). You are solely responsible for: (a) providing accurate and complete account information and keeping that information up to date; (b) keeping your Credentials confidential; and (c) all activities associated with your account, whether those activities were performed by you or someone else. You must immediately report any unauthorized use of your Credentials or your account to: jackhanlon.uvsd@gmail.com </p>
+                    <p>You must create an account in order to use certain Services, in which case you will be required to provide certain account information, such as your email address, and to create a UserID and password (collectively, your <strong>“Credentials”</strong>). You are solely responsible for: (a) providing accurate and complete account information and keeping that information up to date; (b) keeping your Credentials confidential; and (c) all activities associated with your account, whether those activities were performed by you or someone else. You must immediately report any unauthorized use of your Credentials or your account to: jack@proximafitness.com </p>
 
                     <h2>5. Privacy</h2>
                     Any personal information collected from you in connection with your use of the Proxima Fitness Resources, including your account information, is collected, used and disclosed in accordance with the Website Privacy Policy, which is incorporated by reference into and forms part of these Terms of Use.
@@ -67,7 +67,7 @@ export const metadata = {
                     <h2>13. General</h2>
                     These Terms of Use (including the Privacy Policy) are the entire agreement between you and Proxima Fitness with respect to their subject matter.  In these Terms of Use: (a) headings are inserted for convenience only and will not be used in interpreting or construing any provision of these Terms of Use; and (b) “including” is not intended to be limiting, regardless of whether it is expressly stated not to be so. If any provision of these Terms of Use is invalid, illegal or unenforceable, that provision will be severed from these Terms of Use and all other provisions will remain in full force and effect.  These Terms of Use will be governed by and construed in accordance with the laws of Proxima Fitness of British Columbia and the applicable laws of Canada.  By accessing the Website and/or using any Services or Content, you consent to the exclusive jurisdiction and venue of the courts of British Columbia, sitting in Victoria, for the hearing of any dispute arising from or related to these Terms of Use.
 
-                    <strong>Last updated:  January 25, 2024</strong>
+                    <strong>Last updated:  March 29, 2025</strong>
                 </div>
             </section>
         </main>
