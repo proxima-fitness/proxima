@@ -12,6 +12,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Analytics } from "@vercel/analytics/react";
 import NextTopLoader from 'nextjs-toploader';
+import { PostHogClientProvider } from "@/utils/PostHogClientProvider";
 
 export const metadata: Metadata = {
     title: 'Proxima Fitness | AI Workout Builder & Program Directory',
@@ -61,17 +62,19 @@ export default function RootLayout({
                             </div>
                         </div>
                         <main id="root">
-                            <QueryProvider>
-                                <IsHevyProvider>
-                                    <Analytics />
-                                    <NextTopLoader
-                                        showSpinner={ false }
-                                        color="#00f6ff"
-                                    />
-                                    {children}
-                                </IsHevyProvider>
-                                <Toaster richColors />
-                            </QueryProvider>
+                            <PostHogClientProvider>
+                                <QueryProvider>
+                                    <IsHevyProvider>
+                                        <Analytics />
+                                        <NextTopLoader
+                                            showSpinner={ false }
+                                            color="#00f6ff"
+                                        />
+                                        {children}
+                                    </IsHevyProvider>
+                                    <Toaster richColors />
+                                </QueryProvider>
+                            </PostHogClientProvider>
                         </main>
                         <div className={ `bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
                             <div className={ `${styles.boxWidth}` }>
