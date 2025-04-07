@@ -5712,6 +5712,7 @@ export const coolQuotes: TQuote[] = [
     { quote: "Man cannot remake himself without Suffering, for he is both the Marble and the Sculptor", author: "Alexis Carrel" },
     { quote: "I hated every minute of training, but I said, ‘Don’t Quit. Suffer now and live the rest of your life as a Champion!", author: "Muhammad Ali"},
     { quote: "U mirin brah ?", author: "Zyzz (RIP)"},
+    { quote: "From the moment I realised the weakness of my flesh, it disgusted me. I craved the strength and certainty of steel. I aspired for the immortal machine.", author: "Unknown"},
 ];
 
 export const sexOptions: IOption[] = [
