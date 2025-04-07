@@ -17,7 +17,7 @@ import {
     SelectTrigger,
     SelectValue,
   } from "@/components/ui/select";
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import MultiSelect from '@/components/ui/multi-select';
 import { activityLevelOptions, ageOptions, dayPerWeekOptions, difficultyOptions, equipmentOptions, focusAreasOptions, goalsOptions, healthIssuesOptions, programLengthOptions, sexOptions, specializationOptions, specificDaysOptions, workoutDurationOptions } from "@/assets/constants";
 import Link from "next/link";
@@ -27,7 +27,6 @@ import { IOption } from "@/components/ui/multi-select";
 export const AiSearchDialog: React.FC = () => {
 
     const { setIsHevy } = useIsHevy();
-
 
     const [search, setSearch] = useState<string>("");
     const [sex, setSex] = useState<string>("");
@@ -78,6 +77,8 @@ export const AiSearchDialog: React.FC = () => {
             return params.toString();
     };
 
+    const submitRef = useRef<HTMLAnchorElement>(null);
+
     return (
         <Dialog>
             <span className="flex items-center justify-center">
@@ -96,8 +97,20 @@ export const AiSearchDialog: React.FC = () => {
             <DialogContent hideClose className="max-w-5xl overflow-y-auto w-full max-sm:max-h-[90%]">
                 <DialogTitle>
                     <span className="flex flex-row max-sm:flex-col max-sm:items-end gap-2">
-                        <Input autoFocus value={ search } onChange={ (event) => setSearch(event.target.value) } startIcon={ SearchIcon } placeholder="Tell me about your ideal program..." />
+                        <Input
+                            autoFocus
+                            value={ search }
+                            onChange={ (event) => setSearch(event.target.value) }
+                            startIcon={ SearchIcon }
+                            placeholder="Tell me about your ideal program..."
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && submitRef.current !== null) {
+                                    submitRef.current.click();
+                                }
+                            }}
+                        />
                         <Link
+                            ref={ submitRef }
                             target="_self"
                             rel="noopener noreferrer"
                             href={ `/program-builder/build-program?${handleDefineQueryParams()}` }
@@ -144,6 +157,16 @@ export const AiSearchDialog: React.FC = () => {
                                     ))}
                                 </SelectContent>
                             </Select>
+                            <Select value={ programLength } onValueChange={ (value) => setProgramLength(value) }>
+                                <SelectTrigger autoFocus className="h-10">
+                                    <SelectValue placeholder="Program length" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    { programLengthOptions.map((length) => (
+                                        <SelectItem key={ length.value } value={ length.value }>{ length.label }</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                             <Select value={ daysPerWeek } onValueChange={ (value) => setDaysPerWeek(value) }>
                                 <SelectTrigger autoFocus className="h-10">
                                     <SelectValue placeholder="How many days per week?" />
@@ -166,16 +189,6 @@ export const AiSearchDialog: React.FC = () => {
                                     </p>
                               ) }
                             />
-                            <Select value={ programLength } onValueChange={ (value) => setProgramLength(value) }>
-                                <SelectTrigger autoFocus className="h-10">
-                                    <SelectValue placeholder="Program length" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    { programLengthOptions.map((length) => (
-                                        <SelectItem key={ length.value } value={ length.value }>{ length.label }</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
                             <Select value={ workoutDuration } onValueChange={ (value) => setWorkoutDuration(value) }>
                                 <SelectTrigger autoFocus className="h-10">
                                     <SelectValue placeholder="Workout duration" />
@@ -263,7 +276,7 @@ export const AiSearchDialog: React.FC = () => {
                                 onChange={ (value) => setExcludeAreas(value) }
                                 badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                                 defaultOptions={ focusAreasOptions }
-                                placeholder="Focus areas"
+                                placeholder="Exclude these focus areas"
                                 emptyIndicator={ (
                                     <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
                                         no results found.
@@ -275,7 +288,7 @@ export const AiSearchDialog: React.FC = () => {
                                 onChange={ (value) => setExcludeEquipment(value) }
                                 badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                                 defaultOptions={ equipmentOptions }
-                                placeholder="Equipment"
+                                placeholder="Exclude this equipment"
                                 emptyIndicator={ (
                                     <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
                                         no results found.
@@ -287,7 +300,7 @@ export const AiSearchDialog: React.FC = () => {
                                 onChange={ (value) => setExcludeSpecializations(value) }
                                 badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                                 defaultOptions={ specializationOptions }
-                                placeholder="Specialization"
+                                placeholder="Exclude these specializations"
                                 emptyIndicator={ (
                                     <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
                                         no results found.
@@ -299,7 +312,7 @@ export const AiSearchDialog: React.FC = () => {
                                 onChange={ (value) => setHealthIssues(value) }
                                 badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                                 defaultOptions={ healthIssuesOptions }
-                                placeholder="Health Issues"
+                                placeholder="I have these health issues"
                                 emptyIndicator={ (
                                     <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
                                         no results found.
