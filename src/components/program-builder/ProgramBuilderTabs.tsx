@@ -10,7 +10,7 @@ export const ProgramBuilderTabs: React.FC = () => {
     return (
         <Tabs value={ isHevy ? "hevy" : "proxima" } className="max-sm:hidden w-[33%] flex items-center justify-center">
             <TabsList>
-                <TabsTrigger onClick={ () => setIsHevy(true) } value="hevy">Hevy Routine</TabsTrigger>
+                <TabsTrigger onClick={ () => setIsHevy(true) } value="hevy">Hevy Routines</TabsTrigger>
                 <TabsTrigger onClick={ () => setIsHevy(false) } value="proxima">Proxima Program</TabsTrigger>
             </TabsList>
         </Tabs>

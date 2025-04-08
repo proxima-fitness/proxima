@@ -328,7 +328,7 @@ export const AiSearchDialog: React.FC = () => {
                             <SelectValue placeholder="Workout Schema" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="hevy">Hevy Routine</SelectItem>
+                            <SelectItem value="hevy">Hevy Routines</SelectItem>
                             <SelectItem value="proxima">Proxima Program</SelectItem>
                         </SelectContent>
                     </Select>
