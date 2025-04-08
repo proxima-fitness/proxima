@@ -15,6 +15,7 @@ import { HevyPdfRenderer } from "./hevy/HevyPdfRenderer";
 import { postHevyRoutineProgram } from "@/api/hevy";
 import { v4 as uuidv4 } from "uuid";
 import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts, removeOrderHevy } from "@/utils/program-builder";
+import { Spinner } from "../ui/spinner";
 
 interface IProps {
     openFinishDialog: boolean;
@@ -199,7 +200,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                                         <div className="absolute bottom-0 left-0 w-0 h-1 bg-gray-300 group-hover:w-full transition-all duration-300"></div>
                                     </div>
                                     <span className="relative flex items-center justify-center gap-2 text-lg font-medium">
-                                        Sign in to view your Program
+                                        { savingRoutine ? <Spinner>Loading...</Spinner> : "Sign in to view your Program" }
                                         <LogInIcon />
                                     </span>
                                 </Button>
