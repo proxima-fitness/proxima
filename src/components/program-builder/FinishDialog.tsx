@@ -94,7 +94,6 @@ export const FinishDialog: React.FC<IProps> = (props) => {
         if (hevyRoutine !== undefined ) {
             toast.success("Program ID Copied to Clipboard");
             setIsProgramId(true);
-            toast.info("Submitting Program in background.")
             await postHevyRoutineProgram(new_id, hevyRoutine);
             setSavingRoutine(false);
         } else {
@@ -200,7 +199,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                                         <div className="absolute bottom-0 left-0 w-0 h-1 bg-gray-300 group-hover:w-full transition-all duration-300"></div>
                                     </div>
                                     <span className="relative flex items-center justify-center gap-2 text-lg font-medium">
-                                        { savingRoutine ? <Spinner>Loading...</Spinner> : <span>Sign in to view your Program <LogInIcon /></span> }
+                                        { savingRoutine ? <Spinner>Loading...</Spinner> : <div className="flex flex-row gap-4">Sign in to view your Program <LogInIcon /></div> }
                                     </span>
                                 </Button>
                             </a>
