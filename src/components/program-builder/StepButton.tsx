@@ -25,7 +25,13 @@ export const StepButton: React.FC = () => {
 
     if (isProgramBuilder && !isBuildProgram && !isReviewProgram) {
         return (
-            <div></div>
+            <Button
+                disabled
+                variant="ghost"
+                className="w-80"
+            >
+        </Button>
+
         );
     } else if (isProgramBuilder && isBuildProgram && !isReviewProgram) {
         return (
