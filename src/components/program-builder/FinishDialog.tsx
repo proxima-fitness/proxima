@@ -188,7 +188,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                                 Your Program ID is {uuid}
                             </span>
                             <span className="flex items-center justify-center font-sm">
-                                ID is automatically copied to clipboard
+                                ID is automatically copied for you
                             </span>
                             <a href="https://app.proximafitness.com/" className={`w-full  ${savingRoutine ? "pointer-events-none" : "" }`}>
                                 <Button
@@ -199,7 +199,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                                         <div className="absolute bottom-0 left-0 w-0 h-1 bg-gray-300 group-hover:w-full transition-all duration-300"></div>
                                     </div>
                                     <span className="relative flex items-center justify-center gap-2 text-lg font-medium">
-                                        { savingRoutine ? <Spinner>Loading...</Spinner> : <div className="flex flex-row gap-4">Sign in to view your Program <LogInIcon /></div> }
+                                        { savingRoutine ? <Spinner>Loading...</Spinner> : <div className="flex flex-row justify-between items-center gap-4">Sign in to view your Program <LogInIcon /></div> }
                                     </span>
                                 </Button>
                             </a>
