@@ -34,8 +34,8 @@ export const StepButton: React.FC = () => {
                 className="w-[33%] flex items-center justify-end"
             >
                 <Button
-                    variant="ghost"
-                    className="text-black"
+                    variant="default"
+                    className="text-white bg-lightSecondary hover:bg-lightSecondary"
                 >
                     Review Program
                     <ArrowRightIcon />
@@ -48,8 +48,8 @@ export const StepButton: React.FC = () => {
             <>
                 <Button
                     onClick={ () => setOpenFinishDialog(true) }
-                    variant="ghost"
-                    className="text-black"
+                    variant="default"
+                    className="text-white bg-lightSecondary hover:bg-lightSecondary"
                 >
                     Finish
                     <ArrowRightIcon />

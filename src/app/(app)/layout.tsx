@@ -53,7 +53,7 @@ export default function RootLayout({
                     <div className="max-sm:block hidden">
                         <AppSidebar />
                     </div>
-                    <div className="bg-primary w-full overflow-hidden">
+                    <div className="w-full bg-primary">
                         <div className={ `${styles.paddingXNav} ${styles.flexCenter}` }>
                             <div className={ `${styles.boxWidth}` }>
                                 <IsHevyProvider>

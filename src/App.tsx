@@ -52,7 +52,7 @@ const App = () => {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <>
+        <div className="overflow-hidden">
             <DownloadPopup isOpen={ isOpen } setIsOpen={ setIsOpen } isMobile={ isMobile } />
             <div className={ `bg-primary ${styles.flexStart}` }>
                 <div className={ `${styles.boxWidth}` }>
@@ -88,7 +88,7 @@ const App = () => {
                     <CallToAction />
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 

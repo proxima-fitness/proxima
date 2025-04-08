@@ -13,7 +13,7 @@ export const Navbar: React.FC = () => {
                 <img src={ (proxima_logo as any).src } alt="Proxima Logo" className="max-sm:hidden h-[50px] w-[auto]" />
             </Link>
 
-            <ul className="list-none sm:flex hidden justify-end items-center flex-1 z-[6]">
+            <ul className="list-none sm:flex hidden justify-end items-center flex-1 z-6">
                 { navLinks.map((nav, index) => {
                     return (
                         <div key={ index }>
