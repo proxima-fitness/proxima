@@ -94,7 +94,7 @@ export const AiSearchDialog: React.FC = () => {
                     </span>
                 </DialogTrigger>
             </span>
-            <DialogContent hideClose className="max-w-5xl overflow-y-auto w-full max-sm:max-h-[90%]">
+            <DialogContent hideClose className="max-w-5xl overflow-y-auto overflow-x-hidden w-full max-sm:max-h-[90%]">
                 <DialogTitle>
                     <span className="flex flex-row max-sm:flex-col max-sm:items-end gap-2">
                         <Input
@@ -113,9 +113,10 @@ export const AiSearchDialog: React.FC = () => {
                             ref={ submitRef }
                             target="_self"
                             rel="noopener noreferrer"
+                            className="max-sm:w-full h-10"
                             href={ `/program-builder/build-program?${handleDefineQueryParams()}` }
                         >
-                            <Button className="w-[auto] h-[auto] bg-[#33bbcf] text-white">
+                            <Button className="w-[auto] max-sm:w-full h-10 font-bold bg-[#33bbcf] text-white">
                                 <SparklesIcon /> Build
                             </Button>
                         </Link>
@@ -134,8 +135,8 @@ export const AiSearchDialog: React.FC = () => {
                     }
                 </DialogDescription>
                 { advancedSettingsOpen &&
-                    <span className="flex flex-row justify-between gap-5">
-                        <span className="grid grid-cols-2 max-sm:grid-cols-1 max-sm:basis-3/3 gap-5 flex-grow-[2] basis-2/3 pr-4 border-r-2">
+                    <span className="flex flex-row justify-between gap-5 max-sm:gap-2">
+                        <span className="grid grid-cols-2 max-sm:grid-cols-1 max-sm:basis-1/2 max-sm:gap-2 max-sm:pr-2 gap-5 sm:flex-grow-[2] basis-2/3 pr-4 border-r-2">
                             <Select value={ sex } onValueChange={ (value) => setSex(value) }>
                                 <SelectTrigger autoFocus className="h-10">
                                     <SelectValue placeholder="Sex" />
@@ -276,7 +277,7 @@ export const AiSearchDialog: React.FC = () => {
                                 onChange={ (value) => setExcludeAreas(value) }
                                 badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                                 defaultOptions={ focusAreasOptions }
-                                placeholder="Exclude these focus areas"
+                                placeholder="Exclude focus areas"
                                 emptyIndicator={ (
                                     <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
                                         no results found.
@@ -288,7 +289,7 @@ export const AiSearchDialog: React.FC = () => {
                                 onChange={ (value) => setExcludeEquipment(value) }
                                 badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                                 defaultOptions={ equipmentOptions }
-                                placeholder="Exclude this equipment"
+                                placeholder="Exclude equipment"
                                 emptyIndicator={ (
                                     <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
                                         no results found.
@@ -300,7 +301,7 @@ export const AiSearchDialog: React.FC = () => {
                                 onChange={ (value) => setExcludeSpecializations(value) }
                                 badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                                 defaultOptions={ specializationOptions }
-                                placeholder="Exclude these specializations"
+                                placeholder="Exclude specializations"
                                 emptyIndicator={ (
                                     <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
                                         no results found.
@@ -312,7 +313,7 @@ export const AiSearchDialog: React.FC = () => {
                                 onChange={ (value) => setHealthIssues(value) }
                                 badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                                 defaultOptions={ healthIssuesOptions }
-                                placeholder="I have these health issues"
+                                placeholder="Health issues"
                                 emptyIndicator={ (
                                     <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
                                         no results found.
