@@ -3,6 +3,7 @@ import styles from "@/style";
 import { FileTextIcon, MessageSquareWarningIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { TitleSwapper } from "@/components/program-builder/TitleSwapper";
 
 export const metadata = {
     title: "AI Program Builder | Proxima Fitness",
@@ -10,11 +11,14 @@ export const metadata = {
   };
 
   export default function AiProgramBuilder() {
+
     return (
         <div className={ `bg-white ${styles.flexCenter} flex-col` }>
             <div className={ `${styles.boxWidth}` }>
                 <div className="h-[80vh] flex flex-col max-sm:gap-0 items-center justify-center gap-6">
-                    <div className="font-main text-4xl font-bold text-center">Build your Program</div>
+                    <div className="font-main text-4xl font-bold text-center text-swapper">
+                        <TitleSwapper />
+                    </div>
                     <div className="flex flex-row max-sm:flex-col max-sm:pt-8 justify-center items-center gap-6">
                         <AiSearchDialog />
                         <Link
