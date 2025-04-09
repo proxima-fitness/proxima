@@ -1,7 +1,7 @@
 "use client";
 import { motion } from "motion/react";
 
-const messages = ['Build your program', 'Edit at lightspeed', 'Deploy to your App', 'Unleash the Gains 💪'];
+const messages = ['Build your program', 'Edit at lightspeed', 'Start tracking immediately', 'Unleash the Gains 💪'];
 
 export const TitleSwapper: React.FC = () => {
 
