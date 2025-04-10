@@ -93,6 +93,6 @@ module.exports = {
 		xl: '1700px'
 	}
   },
-  // eslint-disable-next-line no-undef
+  // eslint-disable-next-line no-undef, @typescript-eslint/no-require-imports
   plugins: [require("tailwindcss-animate")],
 };

@@ -80,19 +80,19 @@ export const aiRequest = async (numberOfDaysPerWeek: number, promptBase: string)
 
         } else if (numberOfDaysPerWeek === 2 || numberOfDaysPerWeek === 4) {
             // An Upper / Lower Program
-            response = await postTextToJson(promptBase + "Create an Upper body and a Lower body workout", "ul_schema");
+            response = await postTextToJson(promptBase + "Create two distinct workouts based on the split provided. Otherwise, Upper Lower Split.", "ul_schema");
 
         } else if (numberOfDaysPerWeek === 3 || numberOfDaysPerWeek === 6) {
             // A Push / Pull / Leg Program
-            response = await postTextToJson(promptBase + "Create a Push Day, a Pull Day and a Leg Day workout", "ppl_schema");
+            response = await postTextToJson(promptBase + "Create three distinct workouts based on the split provided. Otherwise, a Push Day, a Pull Day and a Leg Day workout", "ppl_schema");
 
         } else if (numberOfDaysPerWeek === 5) {
             // Chest / Back / Legs / Shoulders / Arms
-            response = await postTextToJson(promptBase + "Create a Chest Day, a Back Day, a Leg Day workout, a Shoulder Day, and an Arm Day Workout", "ppl_schema");
+            response = await postTextToJson(promptBase + "Create five distinct workouts based on the split provided. Otherwise, Create a Chest Day, a Back Day, a Leg Day workout, a Shoulder Day, and an Arm Day Workout", "ppl_schema");
 
         } else if (numberOfDaysPerWeek === 7) {
             // Push / Pull / Legs / Cardio
-            response = await postTextToJson(promptBase + "Create a Push Day, a Pull Day, a Leg Day and a Cardio Day workout", "pplc_schema");
+            response = await postTextToJson(promptBase + "Create four distinct workouts based on the split provided. Otherwise, Create a Push Day, a Pull Day, a Leg Day and a Cardio Day workout", "pplc_schema");
 
         }
 
