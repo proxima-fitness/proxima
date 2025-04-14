@@ -15,7 +15,6 @@ import { HevyPdfRenderer } from "./hevy/HevyPdfRenderer";
 import { postHevyRoutineProgram } from "@/api/hevy";
 import { v4 as uuidv4 } from "uuid";
 import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts, removeOrderHevy } from "@/utils/program-builder";
-import { Spinner } from "../ui/spinner";
 
 interface IProps {
     openFinishDialog: boolean;
@@ -33,12 +32,10 @@ export const FinishDialog: React.FC<IProps> = (props) => {
     const [program, setProgram] = useState<TProgramCreatorDay[][]>();
     const [hevyRoutine, setHevyRoutine] = useState<THevyRoutine[]>();
     const [isPreview, setIsPreview] = useState(true);
-    const [isProgramId, setIsProgramId] = useState(false);
     const [savingRoutine, setSavingRoutine] = useState(false);
 
     const handleCloseDialog = () => {
         handleOpenFinishDialog(false);
-        setIsProgramId(false);
     };
 
     useEffect(() => {
@@ -47,7 +44,11 @@ export const FinishDialog: React.FC<IProps> = (props) => {
             setSavingRoutine(true);
             navigator.clipboard.writeText(new_id);
             if (hevyRoutine !== undefined ) {
-                await postHevyRoutineProgram(new_id, hevyRoutine);
+                const response = await postHevyRoutineProgram(new_id, hevyRoutine) as { status: string };
+                if (response?.status !== "success") {
+                    console.error("Error saving program");
+                    toast.error("Error saving program");
+                }
                 setSavingRoutine(false);
             } else {
                 setSavingRoutine(false);
@@ -102,111 +103,82 @@ export const FinishDialog: React.FC<IProps> = (props) => {
         return <div></div>;
     }
 
-    const finishDialog = () => {
-        return (
-            <DialogContent className="sm:max-w-5xl max-sm:w-screen h-[95%]">
-                <DialogTitle className="font-bold flex max-sm:flex-col max-sm:text-center items-center justify-center max-sm:pb-0 pb-4 gap-2 border-b-2">
-                    Congrats !!! You have created your first Program <PartyPopperIcon />
-                </DialogTitle>
-                <span className="flex flex-row justify-center items-center gap-2">
-                    <Button
-                        onClick={ () => setIsPreview(false) }
-                        variant={ isPreview ? "ghost" : "outline" }
-                        className="max-sm:w-auto w-56 h-10 uppercase"
-                    >
-                        View JSON
-                    </Button>
-                    <Button
-                        onClick={ () => setIsPreview(true) }
-                        variant={ isPreview ? "outline" : "ghost" }
-                        className="max-sm:w-auto w-56 h-10 uppercase"
-                    >
-                        Preview PDF
-                    </Button>
-                </span>
-                <span>
-                    { isPreview ?
-                        <PDFViewer className="w-full max-sm:h-[30vh] h-[60vh]">
-                            { (isHevy && hevyRoutine) ?
-                                <HevyPdfRenderer hevyRoutine={ deFlattenHevyRoutine(hevyRoutine) } />
-                            : program &&
-                                <PdfRenderer program={ programCreatorDayToScheduleWorkouts(program) } />
-                            }
-                        </PDFViewer>
-                        :
-                        <Textarea className="max-sm:h-[30vh] h-[50vh]" readOnly aria-readonly value={ (isHevy && hevyRoutine) ? JSON.stringify(removeOrderHevy(hevyRoutine), null, 4) : program && JSON.stringify(program, null, 4) } />
-                    }
-                </span>
-                <span className="w-full flex flex-row max-sm:flex-col items-center justify-between max-sm:justify-center gap-4">
-                    { isPreview ?
-                        <div>
-                        </div>
-                    :
-                        <div className="flex flex-row items-center justify-center gap-2">
-                            <span>
-                                <Button
-                                    onClick={ handleCopyJson }
-                                    variant="outline"
-                                    className="max-sm:w-auto w-56 h-10 uppercase"
-                                >
-                                    <CopyIcon /> Copy JSON
-                                </Button>
-                            </span>
-                            <span>
-                                <Button
-                                    onClick={ handleDownloadJson }
-                                    variant="outline"
-                                    className="max-sm:w-auto w-56 h-10 uppercase"
-                                >
-                                    <DownloadIcon /> Download JSON
-                                </Button>
-                            </span>
-                        </div>
-                    }
-                    <span>
-                        { savingRoutine && <span className="pr-4">Saving routine...</span> }
-                        <Button
-                            onClick={ () => setIsProgramId(true) }
-                            className="max-sm:w-auto w-92 h-10 uppercase bg-lightSecondary hover:text-white hover:bg-lightSecondary text-white"
-                        >
-                            Save Program
-                            <LogInIcon />
-                        </Button>
-                    </span>
-                </span>
-            </DialogContent>
-        );
-    };
-
     return (
         <>
             <Dialog open={ openFinishDialog } onOpenChange={ handleCloseDialog }>
-                { isProgramId ?
-                    (
-                        <DialogContent hideClose>
-                            <DialogTitle className="text-center">GET YOUR PROGRAM</DialogTitle>
-                            <span className="flex items-center justify-center">
-                                Leave No Gains On The Table
-                            </span>
-                            <span className="flex items-center justify-center font-sm">
-                                Sign in now to start training smarter and see real progress.
-                            </span>
+                <DialogContent className="sm:max-w-5xl max-sm:w-screen h-[95%]">
+                    <DialogTitle className="font-bold flex max-sm:flex-col max-sm:text-center items-center justify-center max-sm:pb-0 pb-4 gap-2 border-b-2">
+                        Congrats !!! You have created your first Program <PartyPopperIcon />
+                    </DialogTitle>
+                    <span className="flex flex-row justify-center items-center gap-2">
+                        <Button
+                            onClick={ () => setIsPreview(false) }
+                            variant={ isPreview ? "ghost" : "outline" }
+                            className="max-sm:w-auto w-56 h-12 uppercase"
+                        >
+                            View JSON
+                        </Button>
+                        <Button
+                            onClick={ () => setIsPreview(true) }
+                            variant={ isPreview ? "outline" : "ghost" }
+                            className="max-sm:w-auto w-56 h-12 uppercase"
+                        >
+                            Preview PDF
+                        </Button>
+                    </span>
+                    <span>
+                        { isPreview ?
+                            <PDFViewer className="w-full max-sm:h-[30vh] h-[60vh]">
+                                { (isHevy && hevyRoutine) ?
+                                    <HevyPdfRenderer hevyRoutine={ deFlattenHevyRoutine(hevyRoutine) } />
+                                : program &&
+                                    <PdfRenderer program={ programCreatorDayToScheduleWorkouts(program) } />
+                                }
+                            </PDFViewer>
+                            :
+                            <Textarea className="max-sm:h-[30vh] h-[50vh]" readOnly aria-readonly value={ (isHevy && hevyRoutine) ? JSON.stringify(removeOrderHevy(hevyRoutine), null, 4) : program && JSON.stringify(program, null, 4) } />
+                        }
+                    </span>
+                    <span className="w-full flex flex-row max-sm:flex-col items-center justify-between max-sm:justify-center gap-4">
+                        { isPreview ?
+                            <div>
+                            </div>
+                        :
+                            <div className="flex flex-row items-center justify-center gap-2">
+                                <span>
+                                    <Button
+                                        onClick={ handleCopyJson }
+                                        variant="outline"
+                                        className="max-sm:w-auto w-56 h-12 uppercase"
+                                    >
+                                        <CopyIcon /> Copy JSON
+                                    </Button>
+                                </span>
+                                <span>
+                                    <Button
+                                        onClick={ handleDownloadJson }
+                                        variant="outline"
+                                        className="max-sm:w-auto w-56 h-12 uppercase"
+                                    >
+                                        <DownloadIcon /> Download JSON
+                                    </Button>
+                                </span>
+                            </div>
+                        }
+                        <span>
+                            { savingRoutine && <span className="pr-4">Saving routine...</span> }
                             <a href="https://app.proximafitness.com/" className={`w-full  ${savingRoutine ? "pointer-events-none" : "" }`}>
                                 <Button
                                     disabled={ savingRoutine }
-                                    className="h-16 text-white rounded-xl w-full bg-lightSecondary font-main flex items-center justify-center gap-4 group relative border-2 border-lightSecondary hover:border-lightSecondary hover:bg-lightSecondary shadow-md transition-all duration-300 hover:shadow-lg"
+                                    className="max-sm:w-auto w-92 h-12 uppercase bg-lightSecondary hover:text-white hover:bg-lightSecondary text-white"
                                 >
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="absolute bottom-0 left-0 w-0 h-1 bg-gray-300 group-hover:w-full transition-all duration-300"></div>
-                                    </div>
-                                    <span className="relative flex items-center justify-center gap-2 text-lg font-medium">
-                                        { savingRoutine ? <Spinner>Loading...</Spinner> : <div className="flex flex-row justify-between items-center gap-4">Sign in to view your Program <LogInIcon /></div> }
-                                    </span>
+                                    Save Program
+                                    <LogInIcon />
                                 </Button>
                             </a>
-                        </DialogContent>)
-                    : finishDialog()
-                }
+                        </span>
+                    </span>
+                </DialogContent>
             </Dialog>
         </>
     );;

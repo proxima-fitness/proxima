@@ -163,7 +163,7 @@ export const postHevyRoutineProgram = async (id: string, hevyRoutines: THevyRout
                 return workoutError;
             }
         }
-        return { success: true };
+        return { status: "success" };
     } catch (error) {
         console.error('Unexpected error:', error);
         return error;
