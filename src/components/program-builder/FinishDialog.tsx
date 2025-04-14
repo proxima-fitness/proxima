@@ -164,6 +164,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                         </div>
                     }
                     <span>
+                        { savingRoutine && "Saving routine..." }
                         <Button
                             onClick={ () => setIsProgramId(true) }
                             className="max-sm:w-auto w-92 h-10 uppercase bg-lightSecondary hover:text-white hover:bg-lightSecondary text-white"
