@@ -29,31 +29,54 @@ export const FinishDialog: React.FC<IProps> = (props) => {
         handleOpenFinishDialog,
     } = props;
 
-        const { isHevy } = useIsHevy();
-        const [program, setProgram] = useState<TProgramCreatorDay[][]>();
-        const [hevyRoutine, setHevyRoutine] = useState<THevyRoutine[]>();
-        const [isPreview, setIsPreview] = useState(true);
-        const [isProgramId, setIsProgramId] = useState(false);
-        const [savingRoutine, setSavingRoutine] = useState(false);
-        const [uuid, setUuid] = useState<string>("");
+    const { isHevy } = useIsHevy();
+    const [program, setProgram] = useState<TProgramCreatorDay[][]>();
+    const [hevyRoutine, setHevyRoutine] = useState<THevyRoutine[]>();
+    const [isPreview, setIsPreview] = useState(true);
+    const [isProgramId, setIsProgramId] = useState(false);
+    const [savingRoutine, setSavingRoutine] = useState(false);
 
-        const handleCloseDialog = () => {
-            handleOpenFinishDialog(false);
-            setIsProgramId(false);
+    const handleCloseDialog = () => {
+        handleOpenFinishDialog(false);
+        setIsProgramId(false);
+    };
+
+    useEffect(() => {
+
+        const copyAndSendUUID = async (new_id: string) => {
+            setSavingRoutine(true);
+            navigator.clipboard.writeText(new_id);
+            if (hevyRoutine !== undefined ) {
+                await postHevyRoutineProgram(new_id, hevyRoutine);
+                setSavingRoutine(false);
+            } else {
+                setSavingRoutine(false);
+            }
         };
 
-        useEffect(() => {
-            if (typeof window !== "undefined") {
-                const localStorageProgram = localStorage.getItem(isHevy ? "hevy-program-in-progress" : "program-in-progress");
-                if (localStorageProgram) {
-                    if (isHevy) {
-                        setHevyRoutine(JSON.parse(localStorageProgram));
-                    } else {
-                        setProgram(JSON.parse(localStorageProgram));
-                    }
+        const handleUuid = () => {
+            const new_id = uuidv4();
+            if (new_id !== undefined) {
+                copyAndSendUUID(new_id);
+            }
+
+        };
+
+        handleUuid();
+    }, [hevyRoutine]);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const localStorageProgram = localStorage.getItem(isHevy ? "hevy-program-in-progress" : "program-in-progress");
+            if (localStorageProgram) {
+                if (isHevy) {
+                    setHevyRoutine(JSON.parse(localStorageProgram));
+                } else {
+                    setProgram(JSON.parse(localStorageProgram));
                 }
             }
-        }, [isHevy]);
+        }
+    }, [isHevy]);
 
     const handleCopyJson = () => {
         try {
@@ -78,28 +101,6 @@ export const FinishDialog: React.FC<IProps> = (props) => {
     if (!program && !hevyRoutine) {
         return <div></div>;
     }
-
-    const handleUuid = () => {
-        const new_id = uuidv4();
-        if (new_id !== undefined) {
-            copyAndSendUUID(new_id);
-            setUuid(new_id);
-        }
-
-    };
-
-    const copyAndSendUUID = async (new_id: string) => {
-        setSavingRoutine(true);
-        navigator.clipboard.writeText(new_id);
-        if (hevyRoutine !== undefined ) {
-            toast.success("Program ID Copied to Clipboard");
-            setIsProgramId(true);
-            await postHevyRoutineProgram(new_id, hevyRoutine);
-            setSavingRoutine(false);
-        } else {
-            setSavingRoutine(false);
-        }
-    };
 
     const finishDialog = () => {
         return (
@@ -164,8 +165,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                     }
                     <span>
                         <Button
-                            // disabled
-                            onClick={ handleUuid }
+                            onClick={ () => setIsProgramId(true) }
                             className="max-sm:w-auto w-92 h-10 uppercase bg-lightSecondary hover:text-white hover:bg-lightSecondary text-white"
                         >
                             Save Program
@@ -183,12 +183,12 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                 { isProgramId ?
                     (
                         <DialogContent hideClose>
-                            <DialogTitle className="text-center">PROGRAM ID</DialogTitle>
+                            <DialogTitle className="text-center">GET YOUR PROGRAM</DialogTitle>
                             <span className="flex items-center justify-center">
-                                Your Program ID is {uuid}
+                                Leave No Gains On The Table
                             </span>
                             <span className="flex items-center justify-center font-sm">
-                                ID is automatically copied for you
+                                Sign in now to start training smarter and see real progress.
                             </span>
                             <a href="https://app.proximafitness.com/" className={`w-full  ${savingRoutine ? "pointer-events-none" : "" }`}>
                                 <Button

@@ -60,10 +60,12 @@ export const StepButton: React.FC = () => {
                     Finish
                     <ArrowRightIcon />
                 </Button>
-                <FinishDialog
-                    handleOpenFinishDialog={ handleOpenFinishDialog }
-                    openFinishDialog={ openFinishDialog }
-                />
+                { openFinishDialog &&
+                    <FinishDialog
+                        handleOpenFinishDialog={ handleOpenFinishDialog }
+                        openFinishDialog={ openFinishDialog }
+                    />
+                }
             </>
 
         );
