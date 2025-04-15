@@ -4,6 +4,8 @@ import { FileTextIcon, MessageSquareWarningIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { TitleSwapper } from "@/components/program-builder/TitleSwapper";
+import { AvatarStack } from "@/components/avatar-stack";
+import { jack, people02, people03, people04, people05 } from "public";
 
 export const metadata = {
     title: "AI Program Builder | Proxima Fitness",
@@ -39,6 +41,18 @@ export const metadata = {
                             </Button>
                         </Link>
                     </div>
+                    <div className="pt-4 flex flex-col justify-center items-center">
+                        <AvatarStack
+                            avatars={[
+                                {name: "jack.hanlon", image:  jack.src},
+                                {name: "scottlhanlon", image: people03.src},
+                                {name: "jordan.vandesande", image: people04.src},
+                                {name: "marcola", image: people05.src},
+                                {name: "sina", image: people02.src}] }
+                        />
+                        3000+ lifters are building with Proxima
+                    </div>
+
                 </div>
                 <div className="bg-red-400 py-4 text-white hidden max-sm:flex max-sm:flex-col max-sm:justify-center max-sm:items-center text-center">
                     <MessageSquareWarningIcon />
