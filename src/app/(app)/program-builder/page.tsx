@@ -3,7 +3,6 @@ import styles from "@/style";
 import { FileTextIcon, MessageSquareWarningIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { TitleSwapper } from "@/components/program-builder/TitleSwapper";
 import { AvatarStack } from "@/components/avatar-stack";
 import { jack, people02, people03, people04, people05 } from "public";
 
@@ -18,8 +17,9 @@ export const metadata = {
         <div className={ `bg-white ${styles.flexCenter} flex-col` }>
             <div className={ `${styles.boxWidth}` }>
                 <div className="h-[80vh] flex flex-col max-sm:gap-0 items-center justify-center gap-6">
-                    <div className="font-main text-4xl font-bold text-center text-swapper">
-                        <TitleSwapper />
+                    <div className="text-center">
+                        <div className="font-main text-4xl font-bold uppercase">The AI Workout Program Builder</div>
+                        <div className="text-lg font-normal">Get a tailored workout program in seconds.</div>
                     </div>
                     <div className="flex flex-row max-sm:flex-col max-sm:pt-8 justify-center items-center gap-6">
                         <AiSearchDialog />
@@ -52,7 +52,6 @@ export const metadata = {
                         />
                         3000+ lifters are building with Proxima
                     </div>
-
                 </div>
                 <div className="bg-red-400 py-4 text-white hidden max-sm:flex max-sm:flex-col max-sm:justify-center max-sm:items-center text-center">
                     <MessageSquareWarningIcon />
