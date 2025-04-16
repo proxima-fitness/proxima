@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpIcon, MicIcon, PlusIcon, XIcon } from "lucide-react";
+import { ArrowUpIcon, MicIcon, PlusIcon, SparklesIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import {
     Sheet,
@@ -16,7 +16,7 @@ import { Input } from "../ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../dropzone";
 import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
-
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const ToolsTabs: React.FC = () => {
 
@@ -45,22 +45,33 @@ export const ToolsTabs: React.FC = () => {
         maxFileSize: 1000 * 1000 * 10, // 10MB,
     });
 
-
-
     return (
         <>
             <Sheet open={ aiEditorOpen } onOpenChange={ () => setAiEditorOpen(false) }>
-                {/* <div className="max-sm:hidden cursor-pointer text-sm flex flex-row gap-2 pr-4" onClick={ () => setAiEditorOpen(true) }>
+                <div className="max-sm:hidden cursor-pointer text-sm flex flex-row gap-2 pr-4" onClick={ () => setAiEditorOpen(true) }>
                     Edit
                     <SparklesIcon size="16" />
-                </div> */}
+                </div>
                 <SheetContent side="left" className="flex flex-col h-full">
                     <SheetHeader>
                         <SheetTitle>Chat [ ⌘b ]</SheetTitle>
                         <SheetDescription>
                         </SheetDescription>
                     </SheetHeader>
-                    <div className="mt-auto pb-8">
+                    <div className="mt-auto mb-auto">
+                        <ScrollArea className="h-[400px] rounded-md border p-2">
+                        Jokester began sneaking into the castle in the middle of the night and leaving
+  jokes all over the place: under the king's pillow, in his soup, even in the
+  royal toilet. The king was furious, but he couldn't seem to stop Jokester. And
+  then, one day, the people of the kingdom discovered that the jokes left by
+  Jokester were so funny that they couldn't help but laugh. And once they
+  started laughing, they couldn't stop.Jokester began sneaking into the castle in the middle of the night and leaving
+  jokes all over the place: under the king's pillow, in his soup, even in the
+  royal toilet. The king was furious, but he couldn't seem to stop Jokester. And
+  then, one day, the people of the kingdom discovered that the jokes left by
+  Jokester were so funny that they couldn't help but laugh. And once they
+  started laughing, they couldn't stop.
+                        </ScrollArea>
                         <Card
                             className="border-[4px] border-gray-100 bg-lightGray my-2"
                         >
@@ -105,7 +116,6 @@ export const ToolsTabs: React.FC = () => {
                                             </TooltipContent>
                                         </Tooltip>
                                     </TooltipProvider>
-
                                     <TooltipProvider delayDuration={ 0 }>
                                         <Tooltip>
                                             <TooltipTrigger className="">

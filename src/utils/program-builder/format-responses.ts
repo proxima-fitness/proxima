@@ -73,7 +73,6 @@ export const reorder = (days: TProgramCreatorDay[]) => {
 export const reorderHevy = (routines: THevyRoutine[]): THevyRoutine[] => {
     // Group routines by folder_id
     const groupedByFolder: Record<number, THevyRoutine[]> = routines.reduce((acc, item) => {
-        // if (typeof item.folder_id !== "number") return acc;
         if (!acc[item.folder_id]) acc[item.folder_id] = [];
         acc[item.folder_id].push(item);
         return acc;
@@ -89,6 +88,22 @@ export const reorderHevy = (routines: THevyRoutine[]): THevyRoutine[] => {
 
     return updatedRoutines;
 };
+
+// Sorting by day order not by order in the array
+export const sortHevyByOrder = (routines: THevyRoutine[]): THevyRoutine[] => {
+    const groupedByFolder: Record<number, THevyRoutine[]> = routines.reduce((acc, item) => {
+        if (!acc[item.folder_id]) acc[item.folder_id] = [];
+        acc[item.folder_id].push(item);
+        return acc;
+    }, {} as Record<number, THevyRoutine[]>);
+
+    const sortedRoutines = Object.values(groupedByFolder).flatMap((group) =>
+        group.sort((a, b) => Number(a.order) - Number(b.order))
+    );
+
+    return sortedRoutines;
+};
+
 
 export const removeOrderHevy = (routines: THevyRoutine[]): Omit<THevyRoutine, 'order'>[] => {
     return routines?.map(({ order, ...rest }) => rest);

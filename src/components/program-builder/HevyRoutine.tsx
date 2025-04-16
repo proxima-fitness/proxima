@@ -8,7 +8,7 @@ import { HevyColumn } from "./hevy/HevyColumn";
 import { HevyAddExerciseDialog } from "./hevy/HevyAddExerciseDialog";
 import { HevyGenerateDayDialog } from "./hevy/HevyGenerateDayDialog";
 import { IOption } from "@/components/ui/multi-select";
-import { aiRequest, appendOrderToHevyRoutines, getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy } from "@/utils/program-builder";
+import { aiRequest, appendOrderToHevyRoutines, getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy, sortHevyByOrder } from "@/utils/program-builder";
 import { getHevyExerciseFromLocalStorageByID } from "@/utils/general/helpers";
 import { toast } from "sonner";
 import { buildHevyProgram } from "@/utils/program-builder/build-hevy-program";
@@ -57,7 +57,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
         });
     };
 
-    // // Duplicates the selected day to other days in the program on the selected week
+    // Duplicates the selected day to other days in the program on the selected week
     const handleDuplicateDay = (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayOrderArray: IOption[]) => {
 
         const toDayOrders = toDayOrderArray.map((day) => Number(day.value)).sort((a, b) => a - b);
@@ -68,15 +68,15 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
             if (!dayToCopy) return prev;
 
             const existingDaysInTargetWeek = prev.filter((day) => Number(day.folder_id) === toWeekOrder);
-            const maxExistingOrder = Math.max(...existingDaysInTargetWeek.map((day) => Number(day.order)), 0);
+            const maxExistingOrderinTargetWeek = Math.max(...existingDaysInTargetWeek.map((day) => Number(day.order)), 0);
 
             let newId = Math.max(...prev.map((day) => Number(day.id)), 0) + 1;
             let updatedDays = [...prev];
 
             const maxToDayOrder = Math.max(...toDayOrders);
 
-            if (maxToDayOrder > maxExistingOrder) {
-                for (let i = maxExistingOrder + 1; i <= maxToDayOrder; i++) {
+            if (maxToDayOrder > maxExistingOrderinTargetWeek) {
+                for (let i = maxExistingOrderinTargetWeek + 1; i <= maxToDayOrder; i++) {
                     if (
                         !existingDaysInTargetWeek.some((day) => Number(day.order) === i) &&
                         !toDayOrders.includes(i)
@@ -92,8 +92,10 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                 }
             }
 
+            // Remove days that are going to be replaced
             updatedDays = updatedDays.filter((day) => !(day.folder_id === toWeekOrder && toDayOrders.includes(Number(day.order))));
 
+            // Add new days in their place
             const newDays = toDayOrders.map((dayOrder) => ({
                 ...dayToCopy,
                 id: String(newId++),
@@ -101,7 +103,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                 order: String(dayOrder),
             }));
 
-            return reorderHevy([...updatedDays, ...newDays]);
+            return sortHevyByOrder([...newDays,...updatedDays]);
         });
     };
 
