@@ -221,7 +221,7 @@ export const buildAiProgram = async (request: TTextToJsonRequest, isHevy: boolea
             let program;
 
             if (isHevy) {
-                program = await buildHevyProgram(parsedResponse, Number(request.programLength), Number(request.daysPerWeek));
+                program = await buildHevyProgram(parsedResponse, Number(request.programLength), Number(request.daysPerWeek), request.excludeAreas, request.excludeEquipment, request.healthIssues);
             } else {
                 program = await buildProgram(parsedResponse, Number(request.programLength), Number(request.daysPerWeek));
             }
