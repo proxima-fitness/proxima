@@ -102,7 +102,7 @@ export const AiSearchDialog: React.FC = () => {
                             value={ search }
                             onChange={ (event) => setSearch(event.target.value) }
                             startIcon={ SearchIcon }
-                            placeholder="Tell me about your ideal program..."
+                            placeholder="Ask Proxima to build your ideal program..."
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter' && submitRef.current !== null) {
                                     submitRef.current.click();

@@ -10,6 +10,24 @@ export const hevy_intensities = [{label: "RPE", value: "rpe"}, {label: "Weight (
 export const rep_types = [{label: "Reps", value: "reps"},{label: "Reps Max", value: "reps_max"},{label: "Reps Range", value: "reps_range"},{label: "Time", value: "time_taken"},{label: "Time Range", value:"time_range"},{label: "AMRAP", value: "amrap"}];
 export const intensities = [{label: "RPE", value: "rpe"},{ label: "% 1RM", value: "percent_rm" },{ label: "RPE Range", value: "rpe_range" }, {label: "Weights", value: "weights" }];
 export const lightColours = ["#DCF9C2", "#F4D1BD", "#E2F2F2", "#E0E1B9", "#D7FEC5", "#EEDACA", "#C5E0EA", "#EADEB5", "#CAC8D9", "#C2EAE6"];
+export const primaryMuscleGroups = [
+    {label: "Back", value: ["upper_back","lower_back","lats"]},
+    {label: "Arms", value: ["biceps", "triceps", "forearms"]},
+    {label: "Shoulders", value: ["shoulders", "traps", "neck"]},
+    {label: "Abs", value: ["abdominals"]},
+    {label: "Chest", value: ["chest", "triceps"]},
+    {label: "Legs", value: ["hamstrings", "glutes", "quadriceps"]},
+    {label: "Glutes", value: ["glutes"]},
+    {label: "Full Body", value: ["full_body"]}
+];
+export const healthIssuesMuscles = [
+    {label: "Post-covid recovery", value: ["cardio"]},
+    {label: "Cannot jump", value: ["quadriceps", "glutes", "hamstrings"]},
+    {label: "Back or hernia", value: ["upper_back", "lower_back", "traps", "neck", "abdominals", "lats"]},
+    {label: "Arms and shoulders", value: ["biceps", "triceps", "forearms", "shoulders", "traps"]},
+    {label: "Hip joints", value: ["glutes", "abdominals"]},
+    {label: "Knee injuries", value: ["quadriceps", "hamstrings", "glutes"]}
+];
 
 export const MuscleGroups = [
     { label: "All", value: "All Muscle Groups" },

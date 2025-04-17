@@ -41,7 +41,7 @@ export const buildHevyFallbackProgram = async (programLength: number, numberOfDa
 
 };
 
-export const buildHevyProgram = async (parsedResponse: TTextToJsonResponse, programLength: number, numberOfDaysPerWeek: number ) => {
+export const buildHevyProgram = async (parsedResponse: TTextToJsonResponse, programLength: number, numberOfDaysPerWeek: number, excludeAreas: string, excludeEquipment: string, healthIssues: string) => {
 
     if (programLength === 0) {
         programLength = 12;
@@ -53,31 +53,31 @@ export const buildHevyProgram = async (parsedResponse: TTextToJsonResponse, prog
 
     if (numberOfDaysPerWeek === 1) {
         // 1 Day per week program
-        const one_day = await buildHevyOneDayRoutine(parsedResponse, programLength);
+        const one_day = await buildHevyOneDayRoutine(parsedResponse, programLength, excludeAreas, excludeEquipment, healthIssues);
         return one_day;
 
     } else if (numberOfDaysPerWeek === 2 || numberOfDaysPerWeek === 4) {
         // An Upper / Lower Program
-        const ul = await buildHevyUpperLowerRoutine(parsedResponse, programLength, numberOfDaysPerWeek);
+        const ul = await buildHevyUpperLowerRoutine(parsedResponse, programLength, numberOfDaysPerWeek, excludeAreas, excludeEquipment, healthIssues);
         return ul;
 
     } else if (numberOfDaysPerWeek === 3 || numberOfDaysPerWeek === 6) {
         // A Push / Pull / Leg Program
-        const ppl = await buildHevyPushPullLegsRoutine(parsedResponse, programLength, numberOfDaysPerWeek);
+        const ppl = await buildHevyPushPullLegsRoutine(parsedResponse, programLength, numberOfDaysPerWeek, excludeAreas, excludeEquipment, healthIssues);
         return ppl;
     } else if (numberOfDaysPerWeek === 5) {
         // Chest / Back / Legs / Shoulders / Arms
-        const five_day = await buildHevyFiveDayRoutine(parsedResponse, programLength);
+        const five_day = await buildHevyFiveDayRoutine(parsedResponse, programLength, excludeAreas, excludeEquipment, healthIssues);
         return five_day;
 
     } else if (numberOfDaysPerWeek === 7) {
         // Push / Pull / Legs / Cardio
-        const seven_day = await buildHevySevenDayRoutine(parsedResponse, programLength);
+        const seven_day = await buildHevySevenDayRoutine(parsedResponse, programLength, excludeAreas, excludeEquipment, healthIssues);
         return seven_day;
     }
 };
 
-export const buildHevyOneDayRoutine = async (split: TTextToJsonResponse, programLength: number): Promise<THevyRoutine[]> => {
+export const buildHevyOneDayRoutine = async (split: TTextToJsonResponse, programLength: number, excludeAreas: string = "", excludeEquipment: string = "", healthIssues: string = ""): Promise<THevyRoutine[]> => {
 
     const routines: THevyRoutine[] = [];
     const hevyExercises = await getHevyExercises();
@@ -91,7 +91,7 @@ export const buildHevyOneDayRoutine = async (split: TTextToJsonResponse, program
                 title: split?.workout_days[0]?.day_title ?? fallbackOneDay.workout_days[0].day_title,
                 folder_id: week,
                 order: "1",
-                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[0]?.exercises ?? fallbackOneDay.workout_days[0].exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[0]?.exercises ?? fallbackOneDay.workout_days[0].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
             },
 
         ];
@@ -104,7 +104,7 @@ export const buildHevyOneDayRoutine = async (split: TTextToJsonResponse, program
 
 
 // Turns one routine returned from AI into a program
-export const buildHevyPushPullLegsRoutine = async (split: TTextToJsonResponse, programLength: number, numberOfDaysPerWeek: number): Promise<THevyRoutine[]> => {
+export const buildHevyPushPullLegsRoutine = async (split: TTextToJsonResponse, programLength: number, numberOfDaysPerWeek: number, excludeAreas: string = "", excludeEquipment: string = "", healthIssues: string = ""): Promise<THevyRoutine[]> => {
 
     const routines: THevyRoutine[] = [];
     const hevyExercises = await getHevyExercises();
@@ -119,21 +119,21 @@ export const buildHevyPushPullLegsRoutine = async (split: TTextToJsonResponse, p
                     title: split?.workout_days[0]?.day_title ?? fallbackPPL.workout_days[0].day_title,
                     folder_id: week,
                     order: "1",
-                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[0]?.exercises ?? fallbackPPL.workout_days[0].exercises, hevyExercises),
+                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[0]?.exercises ?? fallbackPPL.workout_days[0].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
                 },
                 {
                     id: String(currentId++),
                     title: split?.workout_days[1]?.day_title ?? fallbackPPL.workout_days[1].day_title,
                     folder_id: week,
                     order: "2",
-                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[1]?.exercises ?? fallbackPPL.workout_days[1].exercises, hevyExercises),
+                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[1]?.exercises ?? fallbackPPL.workout_days[1].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
                 },
                 {
                     id: String(currentId++),
                     title: split?.workout_days[2]?.day_title ?? fallbackPPL.workout_days[2].day_title,
                     folder_id: week,
                     order: "3",
-                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[2]?.exercises ?? fallbackPPL.workout_days[2].exercises, hevyExercises),
+                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[2]?.exercises ?? fallbackPPL.workout_days[2].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
                 },
             ];
 
@@ -147,42 +147,42 @@ export const buildHevyPushPullLegsRoutine = async (split: TTextToJsonResponse, p
                     title: split?.workout_days[0]?.day_title ?? fallbackPPL.workout_days[0].day_title,
                     folder_id: week,
                     order: "1",
-                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[0]?.exercises ?? fallbackPPL.workout_days[0].exercises, hevyExercises),
+                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[0]?.exercises ?? fallbackPPL.workout_days[0].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
                 },
                 {
                     id: String(currentId++),
                     title: split?.workout_days[1]?.day_title ?? fallbackPPL.workout_days[1].day_title,
                     folder_id: week,
                     order: "2",
-                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[1]?.exercises ?? fallbackPPL.workout_days[1].exercises, hevyExercises),
+                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[1]?.exercises ?? fallbackPPL.workout_days[1].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
                 },
                 {
                     id: String(currentId++),
                     title: split?.workout_days[2]?.day_title ?? fallbackPPL.workout_days[2].day_title,
                     folder_id: week,
                     order: "3",
-                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[2]?.exercises ?? fallbackPPL.workout_days[2].exercises, hevyExercises),
+                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[2]?.exercises ?? fallbackPPL.workout_days[2].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
                 },
                 {
                     id: String(currentId++),
                     title: split?.workout_days[0]?.day_title ?? fallbackPPL.workout_days[0].day_title,
                     folder_id: week,
                     order: "4",
-                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[0]?.exercises ?? fallbackPPL.workout_days[0].exercises, hevyExercises),
+                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[0]?.exercises ?? fallbackPPL.workout_days[0].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
                 },
                 {
                     id: String(currentId++),
                     title: split?.workout_days[1]?.day_title ?? fallbackPPL.workout_days[1].day_title,
                     folder_id: week,
                     order: "5",
-                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[1]?.exercises ?? fallbackPPL.workout_days[1].exercises, hevyExercises),
+                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[1]?.exercises ?? fallbackPPL.workout_days[1].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
                 },
                 {
                     id: String(currentId++),
                     title: split?.workout_days[2]?.day_title ?? fallbackPPL.workout_days[2].day_title,
                     folder_id: week,
                     order: "6",
-                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[2]?.exercises ?? fallbackPPL.workout_days[2].exercises, hevyExercises),
+                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[2]?.exercises ?? fallbackPPL.workout_days[2].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
                 },
             ];
 
@@ -194,7 +194,7 @@ export const buildHevyPushPullLegsRoutine = async (split: TTextToJsonResponse, p
     return routines;
 };
 
-export const buildHevyUpperLowerRoutine = async (split: TTextToJsonResponse, programLength: number, numberOfDaysPerWeek: number): Promise<THevyRoutine[]> => {
+export const buildHevyUpperLowerRoutine = async (split: TTextToJsonResponse, programLength: number, numberOfDaysPerWeek: number, excludeAreas: string = "", excludeEquipment: string = "", healthIssues: string = ""): Promise<THevyRoutine[]> => {
 
     const routines: THevyRoutine[] = [];
     const hevyExercises = await getHevyExercises();
@@ -209,14 +209,14 @@ export const buildHevyUpperLowerRoutine = async (split: TTextToJsonResponse, pro
                     title: split?.workout_days[0]?.day_title ?? fallbackUpperLower.workout_days[0].day_title,
                     folder_id: week,
                     order: "1",
-                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[0]?.exercises ?? fallbackUpperLower.workout_days[0].exercises, hevyExercises),
+                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[0]?.exercises ?? fallbackUpperLower.workout_days[0].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
                 },
                 {
                     id: String(currentId++),
                     title: split?.workout_days[1]?.day_title ?? fallbackUpperLower.workout_days[1].day_title,
                     folder_id: week,
                     order: "2",
-                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[1]?.exercises ?? fallbackUpperLower.workout_days[1].exercises, hevyExercises),
+                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[1]?.exercises ?? fallbackUpperLower.workout_days[1].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
                 },
 
             ];
@@ -231,28 +231,28 @@ export const buildHevyUpperLowerRoutine = async (split: TTextToJsonResponse, pro
                     title: split?.workout_days[0]?.day_title ?? fallbackUpperLower.workout_days[0].day_title,
                     folder_id: week,
                     order: "1",
-                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[0]?.exercises ?? fallbackUpperLower.workout_days[0].exercises, hevyExercises),
+                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[0]?.exercises ?? fallbackUpperLower.workout_days[0].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
                 },
                 {
                     id: String(currentId++),
                     title: split?.workout_days[1]?.day_title ?? fallbackUpperLower.workout_days[1].day_title,
                     folder_id: week,
                     order: "2",
-                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[1]?.exercises ?? fallbackUpperLower.workout_days[1].exercises, hevyExercises),
+                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[1]?.exercises ?? fallbackUpperLower.workout_days[1].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
                 },
                 {
                     id: String(currentId++),
                     title: split?.workout_days[0]?.day_title ?? fallbackUpperLower.workout_days[0].day_title,
                     folder_id: week,
                     order: "3",
-                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[0]?.exercises ?? fallbackUpperLower.workout_days[0].exercises, hevyExercises),
+                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[0]?.exercises ?? fallbackUpperLower.workout_days[0].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
                 },
                 {
                     id: String(currentId++),
                     title: split?.workout_days[1]?.day_title ?? fallbackUpperLower.workout_days[1].day_title,
                     folder_id: week,
                     order: "4",
-                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[1]?.exercises ?? fallbackUpperLower.workout_days[1].exercises, hevyExercises),
+                    exercises: replaceTextToJsonExercisesHevy(split?.workout_days[1]?.exercises ?? fallbackUpperLower.workout_days[1].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
                 },
 
             ];
@@ -265,7 +265,7 @@ export const buildHevyUpperLowerRoutine = async (split: TTextToJsonResponse, pro
 };
 
 
-export const buildHevyFiveDayRoutine = async (split: TTextToJsonResponse, programLength: number): Promise<THevyRoutine[]> => {
+export const buildHevyFiveDayRoutine = async (split: TTextToJsonResponse, programLength: number, excludeAreas: string = "", excludeEquipment: string = "", healthIssues: string = ""): Promise<THevyRoutine[]> => {
 
     const routines: THevyRoutine[] = [];
     const hevyExercises = await getHevyExercises();
@@ -279,35 +279,35 @@ export const buildHevyFiveDayRoutine = async (split: TTextToJsonResponse, progra
                 title: split?.workout_days[0]?.day_title ?? fallbackCBLSA.workout_days[0].day_title,
                 folder_id: week,
                 order: "1",
-                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[0]?.exercises ?? fallbackCBLSA.workout_days[0].exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[0]?.exercises ?? fallbackCBLSA.workout_days[0].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
             },
             {
                 id: String(currentId++),
                 title: split?.workout_days[1]?.day_title ?? fallbackCBLSA.workout_days[1].day_title,
                 folder_id: week,
                 order: "2",
-                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[1]?.exercises ?? fallbackCBLSA.workout_days[1].exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[1]?.exercises ?? fallbackCBLSA.workout_days[1].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
             },
             {
                 id: String(currentId++),
                 title: split?.workout_days[2]?.day_title ?? fallbackCBLSA.workout_days[2].day_title,
                 folder_id: week,
                 order: "3",
-                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[2]?.exercises ?? fallbackCBLSA.workout_days[2].exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[2]?.exercises ?? fallbackCBLSA.workout_days[2].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
             },
             {
                 id: String(currentId++),
                 title: split?.workout_days[3]?.day_title ?? fallbackCBLSA.workout_days[3].day_title,
                 folder_id: week,
                 order: "4",
-                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[3]?.exercises ?? fallbackCBLSA.workout_days[3].exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[3]?.exercises ?? fallbackCBLSA.workout_days[3].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
             },
             {
                 id: String(currentId++),
                 title: split?.workout_days[4]?.day_title ?? fallbackCBLSA.workout_days[4].day_title,
                 folder_id: week,
                 order: "4",
-                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[4]?.exercises ?? fallbackCBLSA.workout_days[4].exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[4]?.exercises ?? fallbackCBLSA.workout_days[4].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
             },
         ];
 
@@ -318,7 +318,7 @@ export const buildHevyFiveDayRoutine = async (split: TTextToJsonResponse, progra
 };
 
 
-export const buildHevySevenDayRoutine = async (split: TTextToJsonResponse, programLength: number): Promise<THevyRoutine[]> => {
+export const buildHevySevenDayRoutine = async (split: TTextToJsonResponse, programLength: number, excludeAreas: string = "", excludeEquipment: string = "", healthIssues: string = ""): Promise<THevyRoutine[]> => {
 
     const routines: THevyRoutine[] = [];
     const hevyExercises = await getHevyExercises();
@@ -332,49 +332,49 @@ export const buildHevySevenDayRoutine = async (split: TTextToJsonResponse, progr
                 title: split?.workout_days[0]?.day_title ?? fallbackSevenDay.workout_days[0].day_title,
                 folder_id: week,
                 order: "1",
-                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[0]?.exercises ?? fallbackSevenDay.workout_days[0].exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[0]?.exercises ?? fallbackSevenDay.workout_days[0].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
             },
             {
                 id: String(currentId++),
                 title: split?.workout_days[1]?.day_title ?? fallbackSevenDay.workout_days[1].day_title,
                 folder_id: week,
                 order: "2",
-                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[1]?.exercises ?? fallbackSevenDay.workout_days[1].exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[1]?.exercises ?? fallbackSevenDay.workout_days[1].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
             },
             {
                 id: String(currentId++),
                 title: split?.workout_days[2]?.day_title ?? fallbackSevenDay.workout_days[2].day_title,
                 folder_id: week,
                 order: "3",
-                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[2]?.exercises ?? fallbackSevenDay.workout_days[2].exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[2]?.exercises ?? fallbackSevenDay.workout_days[2].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
             },
             {
                 id: String(currentId++),
                 title: split?.workout_days[0]?.day_title ?? fallbackSevenDay.workout_days[0].day_title,
                 folder_id: week,
                 order: "4",
-                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[0]?.exercises ?? fallbackSevenDay.workout_days[0].exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[0]?.exercises ?? fallbackSevenDay.workout_days[0].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
             },
             {
                 id: String(currentId++),
                 title: split?.workout_days[1]?.day_title ?? fallbackSevenDay.workout_days[1].day_title,
                 folder_id: week,
                 order: "4",
-                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[1]?.exercises ?? fallbackSevenDay.workout_days[1].exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[1]?.exercises ?? fallbackSevenDay.workout_days[1].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
             },
             {
                 id: String(currentId++),
                 title: split?.workout_days[2]?.day_title ?? fallbackSevenDay.workout_days[2].day_title,
                 folder_id: week,
                 order: "4",
-                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[2]?.exercises ?? fallbackSevenDay.workout_days[2].exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[2]?.exercises ?? fallbackSevenDay.workout_days[2].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
             },
             {
                 id: String(currentId++),
                 title: split?.workout_days[3]?.day_title ?? fallbackSevenDay.workout_days[3].day_title,
                 folder_id: week,
                 order: "4",
-                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[3]?.exercises ?? fallbackSevenDay.workout_days[3].exercises, hevyExercises),
+                exercises: replaceTextToJsonExercisesHevy(split?.workout_days[3]?.exercises ?? fallbackSevenDay.workout_days[3].exercises, hevyExercises, excludeAreas, excludeEquipment, healthIssues),
             },
         ];
 

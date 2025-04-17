@@ -1,3 +1,4 @@
+import { healthIssuesMuscles, primaryMuscleGroups } from "@/assets/constants";
 import { amrapAsNumber, getExerciseFromLocalStorageByID } from "../general/helpers";
 import Fuse from "fuse.js";
 
@@ -184,14 +185,18 @@ export const getNumberRoutineFolders = (routines: THevyRoutine[]): number => {
     return maxFolderId - minFolderId + 1;
 };
 
-// Replaces the exercises pulled from the AI edge function text-to-json into a hevy exercise array
+/* Replaces the exercises pulled from the AI edge function text-to-json into a hevy exercise array */
 export const replaceTextToJsonExercisesHevy = (exercises: {
     reps: number;
     rpe: number;
     sets: number;
     title: string;
     }[],
-    hevyExercises: THevyExerciseTemplate[]):
+    hevyExercises: THevyExerciseTemplate[],
+    excludeAreas: string,
+    excludeEquipment: string,
+    healthIssues: string,
+):
     THevyExercise[] => {
 
     // Fuse Fuzzy match options
@@ -206,7 +211,42 @@ export const replaceTextToJsonExercisesHevy = (exercises: {
         ],
     };
 
-    const fuse = new Fuse(hevyExercises, options);
+    let filteredHevyExercises: THevyExerciseTemplate[] = [...hevyExercises];
+    // Enforce excluding equipment, focusAreas and health issues from the options in hevyExercises.
+    const excludedEq = excludeEquipment.split(",").map((e) => e.trim().toLowerCase());
+    const excludedAreas = excludeAreas.split(",").map((e) => e.trim().toLowerCase());
+    const excludedHealthIssues = healthIssues.split(",").map((e) => e.trim().toLowerCase());
+
+    if (excludedEq && excludedEq.some(eq => eq.trim() !== "")) {
+        filteredHevyExercises = filteredHevyExercises.filter((ex) => {
+            const title = ex.title.toLowerCase();
+            return !excludedEq.some((eq: string) => title.includes(eq));
+        });
+    }
+
+    if (excludedAreas && excludedAreas.some(eq => eq.trim() !== "")) {
+        const excludedMuscleGroups = primaryMuscleGroups
+        .filter(group => excludedAreas.includes(group.label.toLowerCase()))
+        .flatMap(group => group.value);
+
+        filteredHevyExercises = filteredHevyExercises.filter((ex) => {
+            const primaryMuscle = ex.primary_muscle_group;
+            return !excludedMuscleGroups.includes(primaryMuscle);
+        });
+    }
+
+    if (excludedHealthIssues && excludedHealthIssues.some(eq => eq.trim() !== "") ) {
+        const filteredHealthIssues = healthIssuesMuscles
+            .filter(group => excludedHealthIssues.includes(group.label.toLowerCase()))
+            .flatMap(group => group.value);
+
+        filteredHevyExercises = filteredHevyExercises.filter((ex) => {
+            const primaryMuscle = ex.primary_muscle_group;
+            return !filteredHealthIssues.includes(primaryMuscle);
+        })
+    }
+
+    const fuse = new Fuse(filteredHevyExercises, options);
     let updatedExercises: THevyExercise[] = [];
 
     if (exercises && exercises.length > 0) {

@@ -129,7 +129,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
         }
 
         const parsedResponse = JSON.parse(response);
-        const oneDayRoutine = await buildHevyProgram(parsedResponse,1,1);
+        const oneDayRoutine = await buildHevyProgram(parsedResponse,1,1,"","","");
         if (oneDayRoutine) {
             setHevyProgram((prevProgram) =>
                 prevProgram.map((routine) =>
