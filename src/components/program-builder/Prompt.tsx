@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpIcon, ChevronDownIcon, ChevronUpIcon, MicIcon } from "lucide-react";
+import { ArrowUpIcon, MicIcon, SettingsIcon, XIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 // import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../dropzone";
 import { Card } from "../ui/card";
@@ -102,13 +102,13 @@ export const Prompt: React.FC = () => {
                                 <TooltipTrigger className="">
                                     <span className="w-[66%]">
                                         <div onClick={ () => toggleAdvancedSettingsOpen() } className="w-[auto] h-[auto] flex flex-row gap-2 text-xs items-center pl-4">
-                                            Advanced settings { advancedSettingsOpen ? <ChevronUpIcon /> : <ChevronDownIcon /> }
+                                             { advancedSettingsOpen ? <SettingsIcon size="16" /> : <XIcon size="16" /> }
                                         </div>
                                     </span>
 
                                 </TooltipTrigger>
                                 <TooltipContent className="bg-gray-600 text-white rounded-lg">
-                                    <p>Upload files</p>
+                                    <p>Advanced Settings</p>
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
