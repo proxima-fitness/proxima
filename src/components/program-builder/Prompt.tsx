@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpIcon, BicepsFlexedIcon, BookOpenIcon, Calculator, FootprintsIcon, MicIcon, SettingsIcon, SquarePowerIcon, XIcon } from "lucide-react";
+import { ArrowUpIcon, BicepsFlexedIcon, BookOpenIcon, Calculator, ChevronDownIcon, ChevronUpIcon, FootprintsIcon, MicIcon, SquarePowerIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 // import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../dropzone";
 import { Card } from "../ui/card";
@@ -38,7 +38,7 @@ export const Prompt: React.FC = () => {
     const [workoutSchema, setWorkoutSchema] = useState("hevy");
 
     // const [dropzoneOpen, toggleDropzone] = useReducer(prev => !prev, false);
-    const [advancedSettingsOpen, toggleAdvancedSettingsOpen] = useReducer(prev => !prev, false);
+    const [advancedSettingsOpen, toggleAdvancedSettingsOpen] = useReducer(prev => !prev, true);
 
     useEffect(() => {
         setIsHevy(workoutSchema === "hevy" ? true : false);
@@ -100,8 +100,8 @@ export const Prompt: React.FC = () => {
                         <TooltipProvider delayDuration={ 0 }>
                             <Tooltip>
                                 <TooltipTrigger className="">
-                                    <div onClick={ () => toggleAdvancedSettingsOpen() } className="p-2 w-[auto] h-full flex flex-row gap-2 items-center pl-2">
-                                            { advancedSettingsOpen ? <XIcon size="16" /> : <SettingsIcon size="16" /> }
+                                    <div onClick={ () => toggleAdvancedSettingsOpen() } className="p-2 w-[auto] h-full flex text-lightSecondary flex-row gap-2 text-sm items-center pl-2">
+                                            Advanced Settings { advancedSettingsOpen ? <ChevronUpIcon size="16" /> : <ChevronDownIcon size="16" /> }
                                     </div>
                                 </TooltipTrigger>
                                 <TooltipContent className="bg-gray-600 text-white rounded-lg">
