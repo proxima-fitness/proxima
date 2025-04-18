@@ -81,7 +81,7 @@ export const Prompt: React.FC = () => {
     return (
         <div className="flex flex-col gap-4 w-full items-center">
             <Card
-                className="flex flex-col justify-between border-[4px] border-gray-100 bg-lightGray my-2 sm:w-[60%] max-sm:w-[90%] h-full"
+                className="flex flex-col justify-between border-[4px] border-gray-100 bg-lightGray my-2 sm:w-[65%] max-sm:w-[90%] h-full"
             >
                 <Textarea
                     autoFocus
@@ -144,7 +144,7 @@ export const Prompt: React.FC = () => {
                 } */}
             </Card>
             { advancedSettingsOpen &&
-                <Card className="border-none shadow-none sm:w-[60%] max-sm:w-[90%]">
+                <Card className="border-none shadow-none sm:w-[60%] max-sm:w-[90%] pb-8">
                     <span className="flex flex-row justify-between gap-5 max-sm:gap-2">
                         <span className="grid grid-cols-2 max-sm:grid-cols-1 max-sm:basis-1/2 max-sm:gap-2 max-sm:pr-2 gap-5 sm:flex-grow-[2] basis-2/3 pr-4 border-r-2">
                             <Select value={ sex } onValueChange={ (value) => setSex(value) }>
