@@ -1,30 +1,20 @@
 "use client";
 
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogTitle,
-    DialogTrigger,
-  } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import  { Button } from "@/components/ui/button";
-import { SearchIcon, SparklesIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-  } from "@/components/ui/select";
+import { ArrowUpIcon, ChevronDownIcon, ChevronUpIcon, MicIcon } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+// import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../dropzone";
+import { Card } from "../ui/card";
 import { useEffect, useReducer, useRef, useState } from "react";
-import MultiSelect from '@/components/ui/multi-select';
+// import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
+import { Textarea } from "../ui/textarea";
+import { Button } from "../ui/button";
+import MultiSelect, { IOption } from "../ui/multi-select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { activityLevelOptions, ageOptions, dayPerWeekOptions, difficultyOptions, equipmentOptions, focusAreasOptions, goalsOptions, healthIssuesOptions, programLengthOptions, sexOptions, specializationOptions, specificDaysOptions, workoutDurationOptions } from "@/assets/constants";
-import Link from "next/link";
 import { useIsHevy } from "@/contexts/HevyContext";
-import { IOption } from "@/components/ui/multi-select";
+import Link from "next/link";
 
-export const AiSearchDialog: React.FC = () => {
+export const Prompt: React.FC = () => {
 
     const { setIsHevy } = useIsHevy();
 
@@ -45,14 +35,22 @@ export const AiSearchDialog: React.FC = () => {
     const [excludeEquipment, setExcludeEquipment] = useState<IOption[]>([]);
     const [excludeSpecializations, setExcludeSpecializations] = useState<IOption[]>([]);
     const [healthIssues, setHealthIssues] = useState<IOption[]>([]);
-
     const [workoutSchema, setWorkoutSchema] = useState("hevy");
+
+    // const [dropzoneOpen, toggleDropzone] = useReducer(prev => !prev, false);
     const [advancedSettingsOpen, toggleAdvancedSettingsOpen] = useReducer(prev => !prev, false);
 
     useEffect(() => {
         setIsHevy(workoutSchema === "hevy" ? true : false);
     }, [workoutSchema, setIsHevy]);
 
+    // const props = useSupabaseUpload({
+    //     bucketName: 'test',
+    //     path: 'test',
+    //     allowedMimeTypes: ['image/*'],
+    //     maxFiles: 2,
+    //     maxFileSize: 1000 * 1000 * 10, // 10MB,
+    // });
 
     const handleDefineQueryParams = () => {
             const params = new URLSearchParams();
@@ -79,62 +77,77 @@ export const AiSearchDialog: React.FC = () => {
 
     const submitRef = useRef<HTMLAnchorElement>(null);
 
+
     return (
-        <Dialog>
-            <span className="flex items-center justify-center">
-                <DialogTrigger
-                    className="h-16 text-white rounded-xl w-[200px] bg-lightSecondary font-main flex items-center justify-center gap-4 group relative border-2 border-lightSecondary hover:border-lightSecondary hover:bg-lightSecondary shadow-md transition-all duration-300 hover:shadow-lg"
-                >
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="absolute bottom-0 left-0 w-0 h-1 bg-gray-300 group-hover:w-full transition-all duration-300"></div>
+        <div className="flex flex-col gap-4 w-full items-center">
+            <Card
+                className="flex flex-col justify-between border-[4px] border-gray-100 bg-lightGray my-2 sm:w-[60%] max-sm:w-[90%] h-full"
+            >
+                <Textarea
+                    autoFocus
+                    className="flex-grow bg-lightGray border-none border-b-0 focus-visible:ring-0 resize-none focus-visible:ring-offset-0 focus:outline-none shadow-none"
+                    value={ search }
+                    onChange={ (event) => setSearch(event.target.value) }
+                    placeholder="Ask Proxima to build..."
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && submitRef.current !== null) {
+                            submitRef.current.click();
+                        }
+                    }}
+                />
+                <div className="flex flex-none flex-row justify-between items-end">
+                    <div className="flex flex-row items-center justify-center">
+                        <TooltipProvider delayDuration={ 0 }>
+                            <Tooltip>
+                                <TooltipTrigger className="">
+                                    <span className="w-[66%]">
+                                        <div onClick={ () => toggleAdvancedSettingsOpen() } className="w-[auto] h-[auto] flex flex-row gap-2 text-xs items-center pl-4">
+                                            Advanced settings { advancedSettingsOpen ? <ChevronUpIcon /> : <ChevronDownIcon /> }
+                                        </div>
+                                    </span>
+
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-gray-600 text-white rounded-lg">
+                                    <p>Upload files</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                     </div>
-                    <span className="relative flex items-center justify-center gap-2 text-lg font-medium">
-                    <SparklesIcon />
-                        Build With AI
-                    </span>
-                </DialogTrigger>
-            </span>
-            <DialogContent hideClose className="max-w-5xl overflow-y-auto overflow-x-hidden w-full max-sm:max-h-[90%]">
-                <DialogTitle>
-                    <span className="flex flex-row max-sm:flex-col max-sm:items-end gap-2">
-                        <Input
-                            autoFocus
-                            value={ search }
-                            onChange={ (event) => setSearch(event.target.value) }
-                            startIcon={ SearchIcon }
-                            placeholder="Ask Proxima to build your ideal program..."
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' && submitRef.current !== null) {
-                                    submitRef.current.click();
-                                }
-                            }}
-                        />
-                        <Link
-                            ref={ submitRef }
-                            target="_self"
-                            rel="noopener noreferrer"
-                            className="max-sm:w-full h-10"
-                            href={ `/program-builder/build-program?${handleDefineQueryParams()}` }
-                        >
-                            <Button className="w-[auto] max-sm:w-full h-10 font-bold bg-[#33bbcf] text-white">
-                                <SparklesIcon /> Build
-                            </Button>
-                        </Link>
-                    </span>
-                </DialogTitle>
-                <DialogDescription className="flex flex-row justify-between items-center">
-                    <span className="w-[66%]">
-                        <Button onClick={ () => toggleAdvancedSettingsOpen() } variant="ghost" className="w-[auto] h-[auto]">
-                            Advanced settings { advancedSettingsOpen ? <ChevronUpIcon /> : <ChevronDownIcon /> }
-                        </Button>
-                    </span>
-                    { advancedSettingsOpen &&
-                        <span className="font-bold w-[33%] flex justify-center">
-                            Exclude
-                        </span>
-                    }
-                </DialogDescription>
-                { advancedSettingsOpen &&
+                    <div className="flex items-end gap-4">
+                        <TooltipProvider delayDuration={ 0 }>
+                            <Tooltip>
+                                <TooltipTrigger className="">
+                                    <div className="p-2">
+                                        <MicIcon size="16" />
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-gray-600 text-white rounded-lg">
+                                    <p>Dictate</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                                <Link
+                                    ref={ submitRef }
+                                    target="_self"
+                                    rel="noopener noreferrer"
+                                    className="max-sm:w-full"
+                                    href={ `/program-builder/build-program?${handleDefineQueryParams()}` }
+                                >
+                                    <Button disabled={ search.length === 0 } className={ `p-2 bg-lightSecondary text-white` }>
+                                        <ArrowUpIcon size="16" />
+                                    </Button>
+                                </Link>
+                    </div>
+                </div>
+                {/* { dropzoneOpen &&
+                    <Dropzone {...props}>
+                        <DropzoneEmptyState />
+                        <DropzoneContent />
+                    </Dropzone>
+                } */}
+            </Card>
+            { advancedSettingsOpen &&
+                <Card className="border-none shadow-none sm:w-[60%] max-sm:w-[90%]">
                     <span className="flex flex-row justify-between gap-5 max-sm:gap-2">
                         <span className="grid grid-cols-2 max-sm:grid-cols-1 max-sm:basis-1/2 max-sm:gap-2 max-sm:pr-2 gap-5 sm:flex-grow-[2] basis-2/3 pr-4 border-r-2">
                             <Select value={ sex } onValueChange={ (value) => setSex(value) }>
@@ -320,21 +333,19 @@ export const AiSearchDialog: React.FC = () => {
                                     </p>
                               ) }
                             />
+                            <Select onValueChange={ (value) => setWorkoutSchema(value) } value={ workoutSchema }>
+                                <SelectTrigger autoFocus className="h-10">
+                                    <SelectValue placeholder="Workout Schema" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="hevy">Hevy Routines</SelectItem>
+                                    <SelectItem value="proxima">Proxima Program</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </span>
                     </span>
-                }
-                <span className="flex flex-row justify-end items-center">
-                    <Select onValueChange={ (value) => setWorkoutSchema(value) } value={ workoutSchema }>
-                        <SelectTrigger autoFocus className="h-10 w-[180px]">
-                            <SelectValue placeholder="Workout Schema" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="hevy">Hevy Routines</SelectItem>
-                            <SelectItem value="proxima">Proxima Program</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </span>
-            </DialogContent>
-        </Dialog>
+                </Card>
+            }
+        </div>
     );
 };

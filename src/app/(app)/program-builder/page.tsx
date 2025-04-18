@@ -1,10 +1,8 @@
-import { AiSearchDialog } from "@/components/program-builder/AiSearchDialog";
 import styles from "@/style";
-import { FileTextIcon, MessageSquareWarningIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { MessageSquareWarningIcon } from "lucide-react";
 import { AvatarStack } from "@/components/avatar-stack";
 import { jack, people02, people03, people04, people05 } from "public";
+import { Prompt } from "@/components/program-builder/Prompt";
 
 export const metadata = {
     title: "AI Program Builder | Proxima Fitness",
@@ -16,14 +14,14 @@ export const metadata = {
     return (
         <div className={ `bg-white ${styles.flexCenter} flex-col` }>
             <div className={ `${styles.boxWidth}` }>
-                <div className="h-[80vh] flex flex-col max-sm:gap-0 items-center justify-center gap-6">
+                <div className="sm:mt-[200px] sm:mb-[300px] max-sm:h-full max-sm:mt-[150px] max-sm:mb-[150px] flex flex-col max-sm:gap-0 items-center justify-center gap-6">
                     <div className="text-center">
                         <div className="font-main text-4xl font-bold uppercase">The AI Workout Program Builder</div>
                         <div className="text-lg font-normal">Get a tailored workout program in seconds</div>
                     </div>
-                    <div className="flex flex-row max-sm:flex-col max-sm:pt-8 justify-center items-center gap-6">
-                        <AiSearchDialog />
-                        <Link
+                    <div className="flex flex-row max-sm:flex-col max-sm:pt-8 justify-center items-center w-full">
+                        <Prompt />
+                        {/* <Link
                             target="_self"
                             rel="noopener noreferrer"
                             href={ `/program-builder/build-program?empty=true` }
@@ -39,7 +37,7 @@ export const metadata = {
                                 Empty Template
                                 </span>
                             </Button>
-                        </Link>
+                        </Link> */}
                     </div>
                     <div className="pt-4 flex flex-col justify-center items-center">
                         <AvatarStack
