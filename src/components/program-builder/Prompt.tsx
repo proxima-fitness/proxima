@@ -100,12 +100,9 @@ export const Prompt: React.FC = () => {
                         <TooltipProvider delayDuration={ 0 }>
                             <Tooltip>
                                 <TooltipTrigger className="">
-                                    <span className="w-[66%]">
-                                        <div onClick={ () => toggleAdvancedSettingsOpen() } className="w-[auto] h-[auto] flex flex-row gap-2 text-xs items-center pl-4">
-                                             { advancedSettingsOpen ? <SettingsIcon size="16" /> : <XIcon size="16" /> }
-                                        </div>
-                                    </span>
-
+                                    <div onClick={ () => toggleAdvancedSettingsOpen() } className="p-2 w-[auto] h-full flex flex-row gap-2 items-center pl-2">
+                                            { advancedSettingsOpen ? <XIcon size="16" /> : <SettingsIcon size="16" /> }
+                                    </div>
                                 </TooltipTrigger>
                                 <TooltipContent className="bg-gray-600 text-white rounded-lg">
                                     <p>Advanced Settings</p>
