@@ -1,10 +1,8 @@
 import styles from "@/style";
-import { BicepsFlexedIcon, BookOpenIcon, Calculator, FootprintsIcon, MessageSquareWarningIcon, SquarePowerIcon } from "lucide-react";
+import { MessageSquareWarningIcon } from "lucide-react";
 import { AvatarStack } from "@/components/avatar-stack";
 import { jack, people02, people03, people04, people05 } from "public";
 import { Prompt } from "@/components/program-builder/Prompt";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
 export const metadata = {
     title: "AI Program Builder | Proxima Fitness",
@@ -23,37 +21,6 @@ export const metadata = {
                     </div>
                     <div className="flex flex-col max-sm:flex-col max-sm:pt-8 justify-center items-center w-full">
                         <Prompt />
-                        <div className="pt-2 flex flex-wrap justify-center gap-2 md:gap-3">
-                            <Link
-                                target="_self"
-                                rel="noopener noreferrer"
-                                href={ `/program-builder/build-program?empty=true` }
-                            >
-                                <Button variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
-                                    <BookOpenIcon  />
-                                    Empty Template
-                                </Button>
-                            </Link>
-                            <Button variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
-                                <BicepsFlexedIcon />
-                                PPL Program
-                            </Button>
-
-                            <Button variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
-                                <SquarePowerIcon />
-                                Smolov Jr.
-                            </Button>
-
-                            <Button variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
-                                <FootprintsIcon />
-                                Athletic Training
-                            </Button>
-
-                            <Button variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
-                                <Calculator />
-                                Weight loss Program
-                            </Button>
-                        </div>
                     </div>
                     <div className="pt-4 flex flex-col justify-center items-center">
                         <AvatarStack

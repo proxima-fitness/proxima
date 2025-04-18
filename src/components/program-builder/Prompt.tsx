@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpIcon, MicIcon, SettingsIcon, XIcon } from "lucide-react";
+import { ArrowUpIcon, BicepsFlexedIcon, BookOpenIcon, Calculator, FootprintsIcon, MicIcon, SettingsIcon, SquarePowerIcon, XIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 // import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../dropzone";
 import { Card } from "../ui/card";
@@ -79,7 +79,7 @@ export const Prompt: React.FC = () => {
 
 
     return (
-        <div className="flex flex-col gap-4 w-full items-center">
+        <div className="flex flex-col gap-2 w-full items-center">
             <Card
                 className="flex flex-col justify-between border-[4px] border-gray-100 bg-lightGray my-2 sm:w-[65%] max-sm:w-[90%] h-full"
             >
@@ -343,6 +343,38 @@ export const Prompt: React.FC = () => {
                     </span>
                 </Card>
             }
+            <div className="flex flex-wrap justify-center gap-2 md:gap-3">
+                <Link
+                    target="_self"
+                    rel="noopener noreferrer"
+                    href={ `/program-builder/build-program?empty=true` }
+                >
+                    <Button variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
+                        <BookOpenIcon  />
+                        Empty Template
+                    </Button>
+                </Link>
+                <Button onClick={ () => setSearch("Create a Push Pull Legs Program that is 6 days per week")} variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
+                    <BicepsFlexedIcon />
+                    PPL Program
+                </Button>
+
+                <Button onClick={ () => setSearch("Create a Smolov Jr. workout program following the Smolov Jr. pattern")} variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
+                    <SquarePowerIcon />
+                    Smolov Jr.
+                </Button>
+
+                <Button onClick={  () => setSearch("Create a functional training program tailored for football or soccer athletes" )} variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
+                    <FootprintsIcon />
+                    Athletic Training
+                </Button>
+
+                <Button onClick={ () => setSearch("Create a weight loss workout program that emphasizes cardio") } variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
+                    <Calculator />
+                    Weight loss Program
+                </Button>
+            </div>
+
         </div>
     );
 };
