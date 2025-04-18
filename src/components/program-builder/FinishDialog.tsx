@@ -121,14 +121,14 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                         <Button
                             onClick={ () => setIsPreview(true) }
                             variant={ isPreview ? "outline" : "ghost" }
-                            className="max-sm:w-auto w-56 h-12 uppercase"
+                            className="max-sm:w-auto max-sm:hidden w-56 h-12 uppercase"
                         >
                             Preview PDF
                         </Button>
                     </span>
                     <span>
                         { isPreview ?
-                            <PDFViewer className="w-full max-sm:h-[30vh] h-[60vh]">
+                            <PDFViewer className="max-sm:hidden w-full max-sm:h-[30vh] h-[60vh]">
                                 { (isHevy && hevyRoutine) ?
                                     <HevyPdfRenderer hevyRoutine={ deFlattenHevyRoutine(hevyRoutine) } />
                                 : program &&
@@ -170,7 +170,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
                             <a href="https://app.proximafitness.com/" className={`w-full  ${savingRoutine ? "pointer-events-none" : "" }`}>
                                 <Button
                                     disabled={ savingRoutine }
-                                    className="max-sm:w-auto w-92 h-12 uppercase bg-lightSecondary hover:text-white hover:bg-lightSecondary text-white"
+                                    className="max-sm:text-2xl max-sm:w-[30vh] max-sm:h-24 sm:w-92 h-12 uppercase bg-lightSecondary hover:text-white hover:bg-lightSecondary text-white"
                                 >
                                     Save Program
                                     <LogInIcon />
