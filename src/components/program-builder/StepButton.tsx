@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRightIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { FinishDialog } from "./FinishDialog";
+import { SaveDialog } from "./SaveDialog";
 
 export const StepButton: React.FC = () => {
 
@@ -13,10 +13,10 @@ export const StepButton: React.FC = () => {
     const path = usePathname();
     const segments = path.split("/").filter(Boolean);
 
-    const [openFinishDialog, setOpenFinishDialog] = useState(false);
+    const [openSaveDialog, setOpenSaveDialog] = useState(false);
 
-    const handleOpenFinishDialog = (openFinishDialog: boolean) => {
-        setOpenFinishDialog(openFinishDialog);
+    const handleOpenSaveDialog = (openSaveDialog: boolean) => {
+        setOpenSaveDialog(openSaveDialog);
     };
 
     const isProgramBuilder = segments.includes("program-builder");
@@ -53,17 +53,17 @@ export const StepButton: React.FC = () => {
         return (
             <>
                 <Button
-                    onClick={ () => setOpenFinishDialog(true) }
+                    onClick={ () => setOpenSaveDialog(true) }
                     variant="default"
                     className="text-white bg-lightSecondary hover:bg-lightSecondary"
                 >
-                    Finish
+                    Save
                     <ArrowRightIcon />
                 </Button>
-                { openFinishDialog &&
-                    <FinishDialog
-                        handleOpenFinishDialog={ handleOpenFinishDialog }
-                        openFinishDialog={ openFinishDialog }
+                { openSaveDialog &&
+                    <SaveDialog
+                        handleOpenSaveDialog={ handleOpenSaveDialog }
+                        openSaveDialog={ openSaveDialog }
                     />
                 }
             </>

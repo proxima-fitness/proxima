@@ -17,15 +17,15 @@ import { v4 as uuidv4 } from "uuid";
 import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts, removeOrderHevy } from "@/utils/program-builder";
 
 interface IProps {
-    openFinishDialog: boolean;
-    handleOpenFinishDialog: (openFinishDialog: boolean) => void;
+    openSaveDialog: boolean;
+    handleOpenSaveDialog: (openSaveDialog: boolean) => void;
 }
 
-export const FinishDialog: React.FC<IProps> = (props) => {
+export const SaveDialog: React.FC<IProps> = (props) => {
 
     const {
-        openFinishDialog,
-        handleOpenFinishDialog,
+        openSaveDialog,
+        handleOpenSaveDialog,
     } = props;
 
     const { isHevy } = useIsHevy();
@@ -35,7 +35,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
     const [savingRoutine, setSavingRoutine] = useState(false);
 
     const handleCloseDialog = () => {
-        handleOpenFinishDialog(false);
+        handleOpenSaveDialog(false);
     };
 
     useEffect(() => {
@@ -105,7 +105,7 @@ export const FinishDialog: React.FC<IProps> = (props) => {
 
     return (
         <>
-            <Dialog open={ openFinishDialog } onOpenChange={ handleCloseDialog }>
+            <Dialog open={ openSaveDialog } onOpenChange={ handleCloseDialog }>
                 <DialogContent className="sm:max-w-5xl max-sm:w-screen h-[95%]">
                     <DialogTitle className="font-bold flex max-sm:flex-col max-sm:text-center items-center justify-center max-sm:pb-0 pb-4 gap-2 border-b-2">
                         Congrats !!! You have created your first Program <PartyPopperIcon />
