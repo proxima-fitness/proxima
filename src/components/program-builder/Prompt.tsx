@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpIcon, BicepsFlexedIcon, BookOpenIcon, Calculator, ChevronDownIcon, ChevronUpIcon, FootprintsIcon, MicIcon, SquarePowerIcon } from "lucide-react";
+import { ArrowUpIcon, BicepsFlexedIcon, BookOpenIcon, Calculator, ChevronDownIcon, ChevronUpIcon, FootprintsIcon, InfoIcon, MicIcon, SearchIcon, SparklesIcon, SquarePowerIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 // import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../dropzone";
 import { Card } from "../ui/card";
@@ -8,17 +8,28 @@ import { useEffect, useReducer, useRef, useState } from "react";
 // import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
+import Link from "next/link";
 import MultiSelect, { IOption } from "../ui/multi-select";
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { Input } from "../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { activityLevelOptions, ageOptions, dayPerWeekOptions, difficultyOptions, equipmentOptions, focusAreasOptions, goalsOptions, healthIssuesOptions, programLengthOptions, sexOptions, specializationOptions, specificDaysOptions, workoutDurationOptions } from "@/assets/constants";
 import { useIsHevy } from "@/contexts/HevyContext";
-import Link from "next/link";
 
 export const Prompt: React.FC = () => {
 
     const { setIsHevy } = useIsHevy();
-
     const [search, setSearch] = useState<string>("");
+    // const [dropzoneOpen, toggleDropzone] = useReducer(prev => !prev, false);
+
+    // const props = useSupabaseUpload({
+    //     bucketName: 'test',
+    //     path: 'test',
+    //     allowedMimeTypes: ['image/*'],
+    //     maxFiles: 2,
+    //     maxFileSize: 1000 * 1000 * 10, // 10MB,
+    // });
+
     const [sex, setSex] = useState<string>("");
     const [age, setAge] = useState<string>("");
     const [daysPerWeek, setDaysPerWeek] = useState<string>("");
@@ -35,22 +46,14 @@ export const Prompt: React.FC = () => {
     const [excludeEquipment, setExcludeEquipment] = useState<IOption[]>([]);
     const [excludeSpecializations, setExcludeSpecializations] = useState<IOption[]>([]);
     const [healthIssues, setHealthIssues] = useState<IOption[]>([]);
-    const [workoutSchema, setWorkoutSchema] = useState("hevy");
 
-    // const [dropzoneOpen, toggleDropzone] = useReducer(prev => !prev, false);
+    const [workoutSchema, setWorkoutSchema] = useState("hevy");
     const [advancedSettingsOpen, toggleAdvancedSettingsOpen] = useReducer(prev => !prev, true);
 
     useEffect(() => {
         setIsHevy(workoutSchema === "hevy" ? true : false);
     }, [workoutSchema, setIsHevy]);
 
-    // const props = useSupabaseUpload({
-    //     bucketName: 'test',
-    //     path: 'test',
-    //     allowedMimeTypes: ['image/*'],
-    //     maxFiles: 2,
-    //     maxFileSize: 1000 * 1000 * 10, // 10MB,
-    // });
 
     const handleDefineQueryParams = () => {
             const params = new URLSearchParams();
@@ -75,306 +78,331 @@ export const Prompt: React.FC = () => {
             return params.toString();
     };
 
-    const submitRef = useRef<HTMLAnchorElement>(null);
 
+    const submitRef = useRef<HTMLAnchorElement>(null);
 
     return (
         <div className="flex flex-col gap-2 w-full items-center">
-            <Card
-                className="flex flex-col justify-between border-[4px] border-gray-100 bg-lightGray my-2 sm:w-[65%] max-sm:w-[90%] h-full"
-            >
-                <Textarea
-                    autoFocus
-                    className="flex-grow bg-lightGray border-none border-b-0 focus-visible:ring-0 resize-none focus-visible:ring-offset-0 focus:outline-none shadow-none"
-                    value={ search }
-                    onChange={ (event) => setSearch(event.target.value) }
-                    placeholder="Ask Proxima to build..."
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter' && submitRef.current !== null) {
-                            submitRef.current.click();
-                        }
-                    }}
-                />
-                <div className="flex flex-none flex-row justify-between items-end">
-                    <div className="flex flex-row items-center justify-center">
-                        <TooltipProvider delayDuration={ 0 }>
-                            <Tooltip>
-                                <TooltipTrigger className="">
-                                    <div onClick={ () => toggleAdvancedSettingsOpen() } className="p-2 w-[auto] h-full flex text-lightSecondary flex-row gap-2 text-sm items-center pl-2">
-                                            Advanced Settings { advancedSettingsOpen ? <ChevronUpIcon size="16" /> : <ChevronDownIcon size="16" /> }
-                                    </div>
-                                </TooltipTrigger>
-                                <TooltipContent className="bg-gray-600 text-white rounded-lg">
-                                    <p>Advanced Settings</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
-                    </div>
-                    <div className="flex items-end gap-4">
-                        <TooltipProvider delayDuration={ 0 }>
-                            <Tooltip>
-                                <TooltipTrigger className="">
-                                    <div className="p-2">
-                                        <MicIcon size="16" />
-                                    </div>
-                                </TooltipTrigger>
-                                <TooltipContent className="bg-gray-600 text-white rounded-lg">
-                                    <p>Dictate</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
-                                <Link
-                                    ref={ submitRef }
-                                    target="_self"
-                                    rel="noopener noreferrer"
-                                    className="max-sm:w-full"
-                                    href={ `/program-builder/build-program?${handleDefineQueryParams()}` }
-                                >
-                                    <Button disabled={ search.length === 0 } className={ `p-2 bg-lightSecondary text-white` }>
-                                        <ArrowUpIcon size="16" />
-                                    </Button>
-                                </Link>
-                    </div>
-                </div>
-                {/* { dropzoneOpen &&
-                    <Dropzone {...props}>
-                        <DropzoneEmptyState />
-                        <DropzoneContent />
-                    </Dropzone>
-                } */}
-            </Card>
-            { advancedSettingsOpen &&
-                <Card className="border-none shadow-none sm:w-[60%] max-sm:w-[90%] pb-8">
-                    <span className="flex flex-row justify-between gap-5 max-sm:gap-2">
-                        <span className="grid grid-cols-2 max-sm:grid-cols-1 max-sm:basis-1/2 max-sm:gap-2 max-sm:pr-2 gap-5 sm:flex-grow-[2] basis-2/3 pr-4 border-r-2">
-                            <Select value={ sex } onValueChange={ (value) => setSex(value) }>
-                                <SelectTrigger autoFocus className="h-10">
-                                    <SelectValue placeholder="Sex" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    { sexOptions.map((sx) => (
-                                        <SelectItem key={ sx.value } value={ sx.value }>{ sx.label }</SelectItem>
+            <Dialog>
 
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <Select value={ age } onValueChange={ (value) => setAge(value) }>
-                                <SelectTrigger autoFocus className="h-10">
-                                    <SelectValue placeholder="Age" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    { ageOptions.map((age) => (
-                                        <SelectItem key={ age.value } value={ age.value }>{ age.label }</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <Select value={ programLength } onValueChange={ (value) => setProgramLength(value) }>
-                                <SelectTrigger autoFocus className="h-10">
-                                    <SelectValue placeholder="Program length" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    { programLengthOptions.map((length) => (
-                                        <SelectItem key={ length.value } value={ length.value }>{ length.label }</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <Select value={ daysPerWeek } onValueChange={ (value) => setDaysPerWeek(value) }>
-                                <SelectTrigger autoFocus className="h-10">
-                                    <SelectValue placeholder="How many days per week?" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    { dayPerWeekOptions.map((days) => (
-                                        <SelectItem key={ days.value } value={ days.value }>{ days.label }</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <MultiSelect
-                                value={ specificDays }
-                                onChange={ (value) => setSpecificDays(value) }
-                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                defaultOptions={ specificDaysOptions }
-                                placeholder="Select specific days"
-                                emptyIndicator={ (
-                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                        no results found.
-                                    </p>
-                              ) }
-                            />
-                            <Select value={ workoutDuration } onValueChange={ (value) => setWorkoutDuration(value) }>
-                                <SelectTrigger autoFocus className="h-10">
-                                    <SelectValue placeholder="Workout duration" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    { workoutDurationOptions.map((duration) => (
-                                        <SelectItem key={ duration.value } value={ duration.value }>{ duration.label }</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <Select value={ activityLevel } onValueChange={ (value) => setActivityLevel(value) }>
-                                <SelectTrigger autoFocus className="h-10">
-                                    <SelectValue placeholder="Activity level" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    { activityLevelOptions.map((act) => (
-                                        <SelectItem key={ act.value } value={ act.value }>{ act.label }</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <MultiSelect
-                                value={ goals }
-                                onChange={ (value) => setGoals(value) }
-                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                defaultOptions={ goalsOptions }
-                                placeholder="Goals"
-                                emptyIndicator={ (
-                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                        no results found.
-                                    </p>
-                              ) }
-                            />
-                            <MultiSelect
-                                value={ specialization }
-                                onChange={ (value) => setSpecialization(value) }
-                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                defaultOptions={ specializationOptions }
-                                placeholder="Specialization"
-                                emptyIndicator={ (
-                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                        no results found.
-                                    </p>
-                              ) }
-                            />
-                            <MultiSelect
-                                value = { equipment }
-                                onChange={ (value) => setEquipment(value) }
-                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                defaultOptions={ equipmentOptions }
-                                placeholder="Equipment"
-                                emptyIndicator={ (
-                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                        no results found.
-                                    </p>
-                              ) }
-                            />
-                            <MultiSelect
-                                value = { focusAreas }
-                                onChange={ (value) => setFocusAreas(value) }
-                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                defaultOptions={ focusAreasOptions }
-                                placeholder="Focus areas"
-                                emptyIndicator={ (
-                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                        no results found.
-                                    </p>
-                              ) }
-                            />
-                            <MultiSelect
-                                value = { difficultyLevel }
-                                onChange={ (value) => setDifficultyLevel(value) }
-                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                defaultOptions={ difficultyOptions }
-                                placeholder="Difficulty"
-                                emptyIndicator={ (
-                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                        no results found.
-                                    </p>
-                              ) }
-                            />
-                        </span>
-                        <span className="grid grid-cols-1 flex-grow basis-1/3 ">
-                            <MultiSelect
-                                value = { excludeAreas }
-                                onChange={ (value) => setExcludeAreas(value) }
-                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                defaultOptions={ focusAreasOptions }
-                                placeholder="Exclude focus areas"
-                                emptyIndicator={ (
-                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                        no results found.
-                                    </p>
-                              ) }
-                            />
-                            <MultiSelect
-                                value = { excludeEquipment }
-                                onChange={ (value) => setExcludeEquipment(value) }
-                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                defaultOptions={ equipmentOptions }
-                                placeholder="Exclude equipment"
-                                emptyIndicator={ (
-                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                        no results found.
-                                    </p>
-                              ) }
-                            />
-                            <MultiSelect
-                                value = { excludeSpecializations }
-                                onChange={ (value) => setExcludeSpecializations(value) }
-                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                defaultOptions={ specializationOptions }
-                                placeholder="Exclude specializations"
-                                emptyIndicator={ (
-                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                        no results found.
-                                    </p>
-                              ) }
-                            />
-                            <MultiSelect
-                                value = { healthIssues }
-                                onChange={ (value) => setHealthIssues(value) }
-                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                defaultOptions={ healthIssuesOptions }
-                                placeholder="Health issues"
-                                emptyIndicator={ (
-                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                        no results found.
-                                    </p>
-                              ) }
-                            />
-                            <Select onValueChange={ (value) => setWorkoutSchema(value) } value={ workoutSchema }>
-                                <SelectTrigger autoFocus className="h-10">
-                                    <SelectValue placeholder="Workout Schema" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="hevy">Hevy Routines</SelectItem>
-                                    <SelectItem value="proxima">Proxima Program</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </span>
-                    </span>
-                </Card>
-            }
-            <div className="flex flex-wrap justify-center gap-2 md:gap-3">
-                <Link
-                    target="_self"
-                    rel="noopener noreferrer"
-                    href={ `/program-builder/build-program?empty=true` }
+                <Card
+                    className="flex flex-col justify-between border-[4px] border-gray-100 bg-lightGray my-2 sm:w-[65%] max-sm:w-[90%] h-full"
                 >
-                    <Button variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
-                        <BookOpenIcon  />
-                        Empty Template
+                    <Textarea
+                        autoFocus
+                        className="flex-grow bg-lightGray border-none border-b-0 focus-visible:ring-0 resize-none focus-visible:ring-offset-0 focus:outline-none shadow-none"
+                        value={ search }
+                        onChange={ (event) => setSearch(event.target.value) }
+                        placeholder="Ask Proxima to build..."
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && submitRef.current !== null) {
+                                submitRef.current.click();
+                            }
+                        }}
+                    />
+                    <div className="flex flex-none flex-row justify-end items-end">
+                        <div className="flex items-end gap-4">
+                            <TooltipProvider delayDuration={ 0 }>
+                                <Tooltip>
+                                    <TooltipTrigger className="">
+                                        <div className="p-2">
+                                            <MicIcon size="16" />
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="bg-gray-600 text-white rounded-lg">
+                                        <p>Dictate</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                                <DialogTrigger disabled={ search.length === 0 } className={ `${ search.length === 0 ? "opacity-50" : "" } p-2 bg-lightSecondary text-white rounded-sm` }>
+                                    <ArrowUpIcon size="16" />
+                                </DialogTrigger>
+                        </div>
+                    </div>
+                    {/* { dropzoneOpen &&
+                        <Dropzone {...props}>
+                            <DropzoneEmptyState />
+                            <DropzoneContent />
+                        </Dropzone>
+                    } */}
+                </Card>
+                <div className="flex flex-wrap justify-center gap-2 md:gap-3">
+                    <Link
+                        target="_self"
+                        rel="noopener noreferrer"
+                        href={ `/program-builder/build-program?empty=true` }
+                    >
+                        <Button variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
+                            <BookOpenIcon  />
+                            Empty Template
+                        </Button>
+                    </Link>
+                    <Button onClick={ () => setSearch("Create a Push Pull Legs Program that is 6 days per week")} variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
+                        <BicepsFlexedIcon />
+                        PPL Program
                     </Button>
-                </Link>
-                <Button onClick={ () => setSearch("Create a Push Pull Legs Program that is 6 days per week")} variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
-                    <BicepsFlexedIcon />
-                    PPL Program
-                </Button>
 
-                <Button onClick={ () => setSearch("Create a Smolov Jr. workout program following the Smolov Jr. pattern")} variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
-                    <SquarePowerIcon />
-                    Smolov Jr.
-                </Button>
+                    <Button onClick={ () => setSearch("Create a Smolov Jr. workout program following the Smolov Jr. pattern")} variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
+                        <SquarePowerIcon />
+                        Smolov Jr.
+                    </Button>
 
-                <Button onClick={  () => setSearch("Create a functional training program tailored for football or soccer athletes" )} variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
-                    <FootprintsIcon />
-                    Athletic Training
-                </Button>
+                    <Button onClick={  () => setSearch("Create a functional training program tailored for football or soccer athletes" )} variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
+                        <FootprintsIcon />
+                        Athletic Training
+                    </Button>
 
-                <Button onClick={ () => setSearch("Create a weight loss workout program that emphasizes cardio") } variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
-                    <Calculator />
-                    Weight loss Program
-                </Button>
-            </div>
+                    <Button onClick={ () => setSearch("Create a weight loss workout program that emphasizes cardio") } variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
+                        <Calculator />
+                        Weight loss Program
+                    </Button>
+                </div>
+                <DialogContent hideClose className="max-w-5xl overflow-y-auto overflow-x-hidden w-full max-sm:max-h-[90%]">
+                    <DialogTitle>
+                        <span className="flex flex-row max-sm:flex-col max-sm:items-end gap-2">
+                            <Input
+                                autoFocus
+                                value={ search }
+                                onChange={ (event) => setSearch(event.target.value) }
+                                startIcon={ SearchIcon }
+                                placeholder="Tell me about your ideal program..."
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && submitRef.current !== null) {
+                                        submitRef.current.click();
+                                    }
+                                }}
+                            />
+                            <Link
+                                ref={ submitRef }
+                                target="_self"
+                                rel="noopener noreferrer"
+                                className="max-sm:w-full h-10"
+                                href={ `/program-builder/build-program?${handleDefineQueryParams()}` }
+                            >
+                                <Button className="w-[auto] max-sm:w-full h-10 font-bold bg-[#33bbcf] text-white">
+                                    <SparklesIcon /> Build
+                                </Button>
+                            </Link>
+                        </span>
+                        <span className="text-lightSecondary text-sm flex flex-row gap-2 items-center justify-start pt-2">
+                            <InfoIcon />
+                            Recommended: Use advanced settings for best experience
+                        </span>
+                    </DialogTitle>
+                    <DialogDescription className="flex flex-row justify-between items-center">
+                        <span className="w-[66%]">
+                            <Button onClick={ () => toggleAdvancedSettingsOpen() } variant="ghost" className="w-[auto] h-[auto]">
+                                Advanced settings { advancedSettingsOpen ? <ChevronUpIcon /> : <ChevronDownIcon /> }
+                            </Button>
+                        </span>
+                        { advancedSettingsOpen &&
+                            <span className="font-bold w-[33%] flex justify-center">
+                                Exclude
+                            </span>
+                        }
+                    </DialogDescription>
+                    { advancedSettingsOpen &&
+                        <span className="flex flex-row justify-between gap-5 max-sm:gap-2">
+                            <span className="grid grid-cols-2 max-sm:grid-cols-1 max-sm:basis-1/2 max-sm:gap-2 max-sm:pr-2 gap-5 sm:flex-grow-[2] basis-2/3 pr-4 border-r-2">
+                                <Select value={ sex } onValueChange={ (value) => setSex(value) }>
+                                    <SelectTrigger autoFocus className="h-10">
+                                        <SelectValue placeholder="Sex" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        { sexOptions.map((sx) => (
+                                            <SelectItem key={ sx.value } value={ sx.value }>{ sx.label }</SelectItem>
 
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Select value={ age } onValueChange={ (value) => setAge(value) }>
+                                    <SelectTrigger autoFocus className="h-10">
+                                        <SelectValue placeholder="Age" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        { ageOptions.map((age) => (
+                                            <SelectItem key={ age.value } value={ age.value }>{ age.label }</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Select value={ programLength } onValueChange={ (value) => setProgramLength(value) }>
+                                    <SelectTrigger autoFocus className="h-10">
+                                        <SelectValue placeholder="Program length" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        { programLengthOptions.map((length) => (
+                                            <SelectItem key={ length.value } value={ length.value }>{ length.label }</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Select value={ daysPerWeek } onValueChange={ (value) => setDaysPerWeek(value) }>
+                                    <SelectTrigger autoFocus className="h-10">
+                                        <SelectValue placeholder="How many days per week?" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        { dayPerWeekOptions.map((days) => (
+                                            <SelectItem key={ days.value } value={ days.value }>{ days.label }</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <MultiSelect
+                                    value={ specificDays }
+                                    onChange={ (value) => setSpecificDays(value) }
+                                    badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
+                                    defaultOptions={ specificDaysOptions }
+                                    placeholder="Select specific days"
+                                    emptyIndicator={ (
+                                        <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                                            no results found.
+                                        </p>
+                                ) }
+                                />
+                                <Select value={ workoutDuration } onValueChange={ (value) => setWorkoutDuration(value) }>
+                                    <SelectTrigger autoFocus className="h-10">
+                                        <SelectValue placeholder="Workout duration" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        { workoutDurationOptions.map((duration) => (
+                                            <SelectItem key={ duration.value } value={ duration.value }>{ duration.label }</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Select value={ activityLevel } onValueChange={ (value) => setActivityLevel(value) }>
+                                    <SelectTrigger autoFocus className="h-10">
+                                        <SelectValue placeholder="Activity level" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        { activityLevelOptions.map((act) => (
+                                            <SelectItem key={ act.value } value={ act.value }>{ act.label }</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <MultiSelect
+                                    value={ goals }
+                                    onChange={ (value) => setGoals(value) }
+                                    badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
+                                    defaultOptions={ goalsOptions }
+                                    placeholder="Goals"
+                                    emptyIndicator={ (
+                                        <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                                            no results found.
+                                        </p>
+                                ) }
+                                />
+                                <MultiSelect
+                                    value={ specialization }
+                                    onChange={ (value) => setSpecialization(value) }
+                                    badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
+                                    defaultOptions={ specializationOptions }
+                                    placeholder="Specialization"
+                                    emptyIndicator={ (
+                                        <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                                            no results found.
+                                        </p>
+                                ) }
+                                />
+                                <MultiSelect
+                                    value = { equipment }
+                                    onChange={ (value) => setEquipment(value) }
+                                    badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
+                                    defaultOptions={ equipmentOptions }
+                                    placeholder="Equipment"
+                                    emptyIndicator={ (
+                                        <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                                            no results found.
+                                        </p>
+                                ) }
+                                />
+                                <MultiSelect
+                                    value = { focusAreas }
+                                    onChange={ (value) => setFocusAreas(value) }
+                                    badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
+                                    defaultOptions={ focusAreasOptions }
+                                    placeholder="Focus areas"
+                                    emptyIndicator={ (
+                                        <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                                            no results found.
+                                        </p>
+                                ) }
+                                />
+                                <MultiSelect
+                                    value = { difficultyLevel }
+                                    onChange={ (value) => setDifficultyLevel(value) }
+                                    badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
+                                    defaultOptions={ difficultyOptions }
+                                    placeholder="Difficulty"
+                                    emptyIndicator={ (
+                                        <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                                            no results found.
+                                        </p>
+                                ) }
+                                />
+                            </span>
+                            <span className="grid grid-cols-1 flex-grow basis-1/3 ">
+                                <MultiSelect
+                                    value = { excludeAreas }
+                                    onChange={ (value) => setExcludeAreas(value) }
+                                    badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
+                                    defaultOptions={ focusAreasOptions }
+                                    placeholder="Exclude focus areas"
+                                    emptyIndicator={ (
+                                        <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                                            no results found.
+                                        </p>
+                                ) }
+                                />
+                                <MultiSelect
+                                    value = { excludeEquipment }
+                                    onChange={ (value) => setExcludeEquipment(value) }
+                                    badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
+                                    defaultOptions={ equipmentOptions }
+                                    placeholder="Exclude equipment"
+                                    emptyIndicator={ (
+                                        <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                                            no results found.
+                                        </p>
+                                ) }
+                                />
+                                <MultiSelect
+                                    value = { excludeSpecializations }
+                                    onChange={ (value) => setExcludeSpecializations(value) }
+                                    badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
+                                    defaultOptions={ specializationOptions }
+                                    placeholder="Exclude specializations"
+                                    emptyIndicator={ (
+                                        <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                                            no results found.
+                                        </p>
+                                ) }
+                                />
+                                <MultiSelect
+                                    value = { healthIssues }
+                                    onChange={ (value) => setHealthIssues(value) }
+                                    badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
+                                    defaultOptions={ healthIssuesOptions }
+                                    placeholder="Health issues"
+                                    emptyIndicator={ (
+                                        <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                                            no results found.
+                                        </p>
+                                ) }
+                                />
+                            </span>
+                        </span>
+                    }
+                    <span className="flex flex-row justify-end items-center">
+                        <Select onValueChange={ (value) => setWorkoutSchema(value) } value={ workoutSchema }>
+                            <SelectTrigger autoFocus className="h-10 w-[180px]">
+                                <SelectValue placeholder="Workout Schema" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="hevy">Hevy Routines</SelectItem>
+                                <SelectItem value="proxima">Proxima Program</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </span>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
