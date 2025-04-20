@@ -10,7 +10,7 @@ import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import MultiSelect, { IOption } from "../ui/multi-select";
-import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { activityLevelOptions, ageOptions, dayPerWeekOptions, difficultyOptions, equipmentOptions, focusAreasOptions, goalsOptions, healthIssuesOptions, programLengthOptions, sexOptions, specializationOptions, specificDaysOptions, workoutDurationOptions } from "@/assets/constants";
@@ -50,6 +50,7 @@ export const Prompt: React.FC = () => {
 
     const [workoutSchema, setWorkoutSchema] = useState("hevy");
     const [advancedSettingsOpen, toggleAdvancedSettingsOpen] = useReducer(prev => !prev, true);
+    const [dialogOpen, setDialogOpen] = useState(false);
 
     useEffect(() => {
         setIsHevy(workoutSchema === "hevy" ? true : false);
@@ -116,8 +117,7 @@ export const Prompt: React.FC = () => {
 
     return (
         <div className="flex flex-col gap-2 w-full items-center">
-            <Dialog>
-
+            <Dialog open={ dialogOpen } onOpenChange={ () => setDialogOpen(false) }>
                 <Card
                     className="flex flex-col justify-between border-[4px] border-gray-100 bg-lightGray my-2 sm:w-[65%] max-sm:w-[90%] h-full"
                 >
@@ -126,12 +126,17 @@ export const Prompt: React.FC = () => {
                         className="flex-grow bg-lightGray border-none border-b-0 focus-visible:ring-0 resize-none focus-visible:ring-offset-0 focus:outline-none shadow-none"
                         value={ search }
                         onChange={ (event) => setSearch(event.target.value) }
-                        placeholder="Ask Proxima to build..."
                         onKeyDown={(e) => {
-                            if (e.key === 'Enter' && submitRef.current !== null) {
-                                submitRef.current.click();
+                            if (e.key === "Enter" && search.trim().length > 0) {
+                              e.preventDefault(); // prevent newline
+                              const inferred = inferDaysPerWeek(search);
+                              if (inferred) {
+                                setDaysPerWeek(inferred);
+                              }
+                              setDialogOpen(true); // open the dialog programmatically
                             }
-                        }}
+                          }}
+                        placeholder="Ask Proxima to build..."
                     />
                     <div className="flex flex-none flex-row justify-end items-end">
                         <div className="flex items-end gap-4">
@@ -147,18 +152,20 @@ export const Prompt: React.FC = () => {
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
-                                <DialogTrigger
-                                    onClick={() => {
-                                        const inferred = inferDaysPerWeek(search);
-                                        if (inferred) {
-                                            setDaysPerWeek(inferred);
-                                        }
-                                    }}
-                                    disabled={ search.length === 0 }
-                                    className={ `${ search.length === 0 ? "opacity-50" : "" } p-2 bg-lightSecondary text-white rounded-sm` }
-                                    >
-                                    <ArrowUpIcon size="16" />
-                                </DialogTrigger>
+                            <Button
+                                asChild
+                                onClick={() => {
+                                    const inferred = inferDaysPerWeek(search);
+                                    if (inferred) {
+                                        setDaysPerWeek(inferred);
+                                    }
+                                    setDialogOpen(true);
+                                }}
+                                disabled={ search.length === 0 }
+                                className={ `${ search.length === 0 ? "opacity-50" : "" } p-2 bg-lightSecondary text-white rounded-sm w-full cursor-pointer` }
+                                >
+                                <ArrowUpIcon size="16" />
+                            </Button>
                         </div>
                     </div>
                     {/* { dropzoneOpen &&
