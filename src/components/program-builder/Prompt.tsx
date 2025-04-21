@@ -15,7 +15,7 @@ import { Input } from "../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { activityLevelOptions, ageOptions, dayPerWeekOptions, difficultyOptions, equipmentOptions, focusAreasOptions, goalsOptions, healthIssuesOptions, programLengthOptions, sexOptions, specializationOptions, specificDaysOptions, workoutDurationOptions } from "@/assets/constants";
 import { useIsHevy } from "@/contexts/HevyContext";
-import nlp from 'compromise';
+import { inferDaysPerWeek } from "@/utils/program-builder";
 
 export const Prompt: React.FC = () => {
 
@@ -56,39 +56,6 @@ export const Prompt: React.FC = () => {
         setIsHevy(workoutSchema === "hevy" ? true : false);
     }, [workoutSchema, setIsHevy]);
 
-    const inferDaysPerWeek = (text: string) => {
-        const normalized = text.toLowerCase();
-
-        // Hardcoded common expressions
-        if (/every\s+day/.test(normalized)) return "7";
-        if (/every\s+other\s+day/.test(normalized))  return "3";
-        if (/weekends\s+only/.test(normalized)) return "2";
-        if (/couple\s+(times|days)/.test(normalized)) return "2";
-        if (/(few|several)\s+(days|times)/.test(normalized)) return "3";
-        if (/once\s+(a|per)?\s*week/.test(normalized)) return "1";
-
-        const doc = nlp(text);
-        const json = doc.json();
-
-        for (const sentence of json) {
-            for (const term of sentence.terms) {
-                if (term.tags.includes("Value")) {
-                    const val = term.number || parseInt(term.normal, 10);
-                    if (!isNaN(val) && val >= 1 && val <= 7) {
-                        const termIndex = sentence.terms.indexOf(term);
-                        const nextFew = sentence.terms.slice(termIndex, termIndex + 4).map((t: { normal: string; }) => t.normal).join(" ");
-                        if (/(day|days|times).*(week)/.test(nextFew)) {
-                            console.log(val.toString());
-                            return val.toString();
-                        }
-                    }
-                }
-            }
-        }
-
-        return "";
-    };
-
     const handleDefineQueryParams = () => {
             const params = new URLSearchParams();
             if (search) params.append("search", search);
@@ -111,7 +78,6 @@ export const Prompt: React.FC = () => {
 
             return params.toString();
     };
-
 
     const submitRef = useRef<HTMLAnchorElement>(null);
 
