@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpIcon, MicIcon, PlusIcon, SparklesIcon, XIcon } from "lucide-react";
+import { ArrowUpIcon, MicIcon, PlusIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import {
     Sheet,
@@ -48,10 +48,10 @@ export const ToolsTabs: React.FC = () => {
     return (
         <>
             <Sheet open={ aiEditorOpen } onOpenChange={ () => setAiEditorOpen(false) }>
-                <div className="max-sm:hidden cursor-pointer text-sm flex flex-row gap-2 pr-4" onClick={ () => setAiEditorOpen(true) }>
+                {/* <div className="max-sm:hidden cursor-pointer text-sm flex flex-row gap-2 pr-4" onClick={ () => setAiEditorOpen(true) }>
                     Edit
                     <SparklesIcon size="16" />
-                </div>
+                </div> */}
                 <SheetContent side="left" className="flex flex-col h-full">
                     <SheetHeader>
                         <SheetTitle>Chat [ ⌘b ]</SheetTitle>
