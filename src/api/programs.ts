@@ -160,7 +160,11 @@ export const getProgramThumbnailStatus = async (id?: string) => {
             console.error('Error checking program thumbnail exists:', error);
             return null;
         } else {
-            return data[0]?.name || null;
+            if (data[0]?.name === ".emptyFolderPlaceholder") {
+                return data[1]?.name;
+            } else {
+                return data[0]?.name || null;
+            }
         }
     } catch ( error: unknown) {
         console.error('Error checking program thumbnail exists',error);
