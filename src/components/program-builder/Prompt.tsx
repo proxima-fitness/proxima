@@ -157,7 +157,7 @@ export const Prompt: React.FC = () => {
                         PPL Program
                     </Button>
 
-                    <Button onClick={ () => setSearch("Create a Smolov Jr. workout program following the Smolov Jr. pattern")} variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
+                    <Button onClick={ () => setSearch("Create a Smolov Jr. workout program following the Smolov Jr. pattern. Smolov Jr is a short, high-frequency, high-volume squat program designed to rapidly increase 1-rep max strength over about 3 weeks. It is based on squatting 4 times per week, typically Monday, Wednesday, Friday, and Saturday, with the lifter performing 6 sets of 6 reps at 70% of their 1RM on Day 1, 7 sets of 5 reps at 75% on Day 2, 8 sets of 4 reps at 80% on Day 3, and 10 sets of 3 reps at 85% on Day 4. Each week, the lifter is supposed to increase all working weights by 5–10 pounds (2.5–5 kg). The program requires good recovery practices, is best suited for experienced lifters, and can be used for squat, bench press, or other major lifts.")} variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
                         <SquarePowerIcon />
                         Smolov Jr.
                     </Button>
