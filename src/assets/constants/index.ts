@@ -5670,6 +5670,10 @@ export const footerLinks = [
         name: "Email",
         link: "mailto:jack@proximafitness.com",
       },
+      {
+        name: "Give us Feedback",
+        link: "https://docs.google.com/forms/d/e/1FAIpQLSffqV8QEZ0fD5GspTsGZxZ1Ic9tjimb8Poxwg-8hDP_c6CCrg/viewform",
+      },
     ],
   },
   {
