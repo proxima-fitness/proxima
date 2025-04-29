@@ -2,7 +2,7 @@ import {
     Dialog,
     DialogContent,
     DialogTitle,
-  } from "@/components/ui/dialog";
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -12,9 +12,9 @@ import { PDFViewer } from '@react-pdf/renderer';
 import { PdfRenderer } from "../generic/PdfRenderer";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { HevyPdfRenderer } from "./hevy/HevyPdfRenderer";
-import { postHevyRoutineProgram } from "@/api/hevy";
 import { v4 as uuidv4 } from "uuid";
 import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts, removeOrderHevy } from "@/utils/program-builder";
+import { postAIProgram } from "@/app/(app)/actions";
 
 interface IProps {
     openSaveDialog: boolean;
@@ -40,34 +40,18 @@ export const SaveDialog: React.FC<IProps> = (props) => {
     };
 
     useEffect(() => {
-
-        const copyAndSendUUID = async (new_id: string) => {
-            setSavingRoutine(true);
-            navigator.clipboard.writeText(new_id);
-            if (hevyRoutine !== undefined ) {
-                const response = await postHevyRoutineProgram(new_id, hevyRoutine) as { status: string };
-                if (response?.status !== "success") {
-                    console.error("Error saving program");
-                    toast.error("Error saving program");
+        const saveProgram = async () => {
+            if (hevyRoutine !== undefined) {
+                const new_id = uuidv4();
+                if (new_id !== undefined) {
+                    setProgramId(new_id);
+                    setSavingRoutine(true);
+                    await postAIProgram(new_id, hevyRoutine);
+                    setSavingRoutine(false);
                 }
-                setSavingRoutine(false);
-            } else {
-                setSavingRoutine(false);
             }
-        };
-
-        const handleUuid = () => {
-            const new_id = uuidv4();
-            if (new_id !== undefined) {
-                setProgramId(new_id);
-                copyAndSendUUID(new_id);
-            }
-
-        };
-
-        if (hevyRoutine !== undefined) {
-            handleUuid();
         }
+        saveProgram();
     }, [hevyRoutine]);
 
     useEffect(() => {
@@ -171,9 +155,8 @@ export const SaveDialog: React.FC<IProps> = (props) => {
                         }
                         <span>
                             { savingRoutine && <span className="pr-4">Saving routine...</span> }
-                            <a href={ `https://app.proximafitness.com?program_id=${programId}` } className={`w-full  ${savingRoutine ? "pointer-events-none" : "" }`}>
+                            <a href={ `https://app.proximafitness.com?program_id=${programId}` } className="w-full">
                                 <Button
-                                    disabled={ savingRoutine }
                                     className="max-sm:text-2xl max-sm:w-[30vh] max-sm:h-24 sm:w-92 h-12 uppercase bg-lightSecondary hover:text-white hover:bg-lightSecondary text-white"
                                 >
                                     Save Program

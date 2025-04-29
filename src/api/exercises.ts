@@ -26,9 +26,12 @@ export const getExerciseID = async (user:User, name: string, language: "english"
 
 // GET EXISTING EXERCISES STORED BY PROXIMA FITNESS (CACHES IN LOCALSTORAGE)
 export const getExercises = async () => {
+    // Detect if running server side or on client and skip localStorage
+    const isServer = typeof window === 'undefined';
     const cacheKey = 'existing-exercises';
 
     try {
+        if (!isServer) {
             const cachedData = localStorage.getItem(cacheKey);
 
             if (cachedData && cachedData.length > 0) {
@@ -39,23 +42,25 @@ export const getExercises = async () => {
                     return exercises as TExercise[];
                 }
             }
+        }
 
-            const { data: exercises, error: exercisesError } = await supabase
-                .from('exercises')
-                .select('id,name_english,name_espanol,name_portugues,name_francais,gif_id')
-                .order("name_english", { ascending: true});
+        const { data: exercises, error: exercisesError } = await supabase
+            .from('exercises')
+            .select('id,name_english,name_espanol,name_portugues,name_francais,gif_id')
+            .order("name_english", { ascending: true});
 
-            if (exercisesError) {
-                console.error('Error fetching existing exercises:', exercisesError);
-                return [];
-            }
+        if (exercisesError) {
+            console.error('Error fetching existing exercises:', exercisesError);
+            return [];
+        }
 
+        if (!isServer) {
             localStorage.setItem(
                 cacheKey,
                 JSON.stringify({ exercises, timestamp: new Date().getTime() }),
             );
-
-            return exercises as TExercise[];
+        }
+        return exercises as TExercise[];
     } catch (error) {
         console.error('Error fetching existing exercises:', error);
     }
