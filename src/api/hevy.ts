@@ -102,7 +102,7 @@ export const postHevyRoutineProgram = async (id: string, hevyRoutines: THevyRout
             return fetchError || new Error('Program insertion failed');
         }
 
-        // STEP 2: Collect schedule objects for batch insert
+        // STEP 2: Prepare schedule uploads
         const scheduleUploads = hevyRoutines.map((routine) => ({
             id: uuidv4(),
             nthWeek: routine.folder_id + 1, // Assuming folder_id is 0-indexed
@@ -118,40 +118,48 @@ export const postHevyRoutineProgram = async (id: string, hevyRoutines: THevyRout
             return scheduleError;
         }
 
-        // STEP 3: Collect workout exercise objects for batch insert
+        // STEP 3: Collect all exercise lookup promises in parallel
+        const exerciseLookups = hevyRoutines.flatMap((routine, routineIndex) =>
+            (routine.exercises ?? []).map((exercise, exerciseIndex) => ({
+                promise: getExerciseIdForHevyExercise(exercise.title),
+                routineIndex,
+                exerciseIndex,
+            }))
+        );
+
+        const resolvedExerciseIds = await Promise.all(exerciseLookups.map((lookup) => lookup.promise));
+
+        // STEP 4: Build workout uploads based on resolved exercise IDs
         const workoutUploads: { [key: string]: unknown }[] = [];
 
-        for (let i = 0; i < scheduleUploads.length; i++) {
-            const schedule = scheduleUploads[i];
-            const routine = hevyRoutines[i];
+        for (let i = 0; i < exerciseLookups.length; i++) {
+            const exerciseId = resolvedExerciseIds[i];
+            const { routineIndex, exerciseIndex } = exerciseLookups[i];
+            const schedule = scheduleUploads[routineIndex];
+            const routine = hevyRoutines[routineIndex];
+            const exercise = routine.exercises?.[exerciseIndex];
 
-            if (routine.exercises) {
-                for (const exercise of routine.exercises) {
-                    const exerciseId = await getExerciseIdForHevyExercise(exercise.title);
-                    if (exerciseId) {
+            if (exercise && exerciseId && schedule) {
+                const reps = exercise.sets?.map((set) => set.reps) ?? null;
+                const timeTaken = exercise.sets?.map((set) => set.duration_seconds) ?? null;
+                const weights = exercise.sets?.map((set) => set.weight_kg) ?? null;
+                const rpe = exercise.sets?.map((set) => set.rpe) ?? null;
 
-                        const reps = exercise.sets?.map((set) => set.reps) ?? null;
-                        const timeTaken = exercise.sets?.map((set) => set.duration_seconds) ?? null;
-                        const weights = exercise.sets?.map((set) => set.weight_kg) ?? null;
-                        const rpe = exercise.sets?.map((set) => set.rpe) ?? null;
-
-                        workoutUploads.push({
-                            id: uuidv4(),
-                            schedule_id: schedule.id,
-                            exercise_id: exerciseId,
-                            reps: reps,
-                            reps_range: null,
-                            reps_max: null,
-                            amrap: null,
-                            time_taken: timeTaken?.[0] === null ? null : timeTaken,
-                            time_range: null,
-                            weights: weights?.[0] === null ? null : weights,
-                            rpe: rpe?.[0] === null ? null : rpe,
-                            rpe_range: null,
-                            percent_rm: null,
-                        });
-                    }
-                }
+                workoutUploads.push({
+                    id: uuidv4(),
+                    schedule_id: schedule.id,
+                    exercise_id: exerciseId,
+                    reps: reps,
+                    reps_range: null,
+                    reps_max: null,
+                    amrap: null,
+                    time_taken: timeTaken?.[0] === null ? null : timeTaken,
+                    time_range: null,
+                    weights: weights?.[0] === null ? null : weights,
+                    rpe: rpe?.[0] === null ? null : rpe,
+                    rpe_range: null,
+                    percent_rm: null,
+                });
             }
         }
 
@@ -163,6 +171,7 @@ export const postHevyRoutineProgram = async (id: string, hevyRoutines: THevyRout
                 return workoutError;
             }
         }
+
         return { status: "success" };
     } catch (error) {
         console.error('Unexpected error:', error);
