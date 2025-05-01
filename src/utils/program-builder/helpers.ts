@@ -29,15 +29,13 @@ export const getExerciseGifIdForHevyExercise = async (exercise_name: string) => 
 };
 
 // Returns the proxima exercise exercise_id for a specific hevy exercise using fuzzy matching
-export const getExerciseIdForHevyExercise = async (exercise_name: string) => {
+export const getExerciseIdForHevyExercise = async (exercise_name: string, proximaExercises: TExercise[]) => {
 
-    // Return early if exercise_name is empty or invalid
     if (!exercise_name || exercise_name.trim() === '') {
         console.warn('Invalid exercise name:', exercise_name);
         return null;
     }
 
-    // Fuse Fuzzy match options
     const options = {
         isCaseSensitive: false,
         includeScore: false,
@@ -50,7 +48,6 @@ export const getExerciseIdForHevyExercise = async (exercise_name: string) => {
     };
 
     try {
-        const proximaExercises = await getExercises();
 
         if (!proximaExercises || proximaExercises.length === 0) {
             console.warn('No exercises found.');
@@ -71,7 +68,6 @@ export const getExerciseIdForHevyExercise = async (exercise_name: string) => {
         console.error('Error during fuzzy search:', error);
         return null;
     }
-
 };
 
 export const getMaxFolderId = (routines: THevyRoutine[]): number => {

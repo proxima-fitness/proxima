@@ -2,6 +2,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { supabase } from ".";
 import { getExerciseIdForHevyExercise, getMaxFolderId } from "@/utils/program-builder";
+import { getExercises } from "./exercises";
 
 export const defaultFetch = async <T>(url: string, apiKey: string): Promise<T> => {
     const response = await fetch(url, {
@@ -118,10 +119,11 @@ export const postHevyRoutineProgram = async (id: string, hevyRoutines: THevyRout
             return scheduleError;
         }
 
+        const proximaExercises = await getExercises();
         // STEP 3: Collect all exercise lookup promises in parallel
         const exerciseLookups = hevyRoutines.flatMap((routine, routineIndex) =>
             (routine.exercises ?? []).map((exercise, exerciseIndex) => ({
-                promise: getExerciseIdForHevyExercise(exercise.title),
+                promise: getExerciseIdForHevyExercise(exercise.title, proximaExercises),
                 routineIndex,
                 exerciseIndex,
             }))
