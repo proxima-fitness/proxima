@@ -57,7 +57,7 @@ export const getExerciseGif = async (gif_id: string | undefined, resolution: "18
     }
     if (!gif_id || gif_id === "") return null;
     try {
-        const { data, error } = await supabase.storage.from('exercises').download(filePath);
+        const { data, error } = await supabase.storage.from('exercises-new').download(filePath);
         if (error) {
             console.error('Error fetching exercise GIF:', error);
             return null;
