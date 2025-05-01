@@ -134,7 +134,6 @@ export const inferDaysPerWeek = (text: string) => {
                     const termIndex = sentence.terms.indexOf(term);
                     const nextFew = sentence.terms.slice(termIndex, termIndex + 4).map((t: { normal: string; }) => t.normal).join(" ");
                     if (/(day|days|times).*(week|program)?/.test(nextFew)) {
-                        console.log(val.toString());
                         return val.toString();
                     }
                 }

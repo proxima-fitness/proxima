@@ -47,8 +47,28 @@ export const getProgramThumbnailStatus = async (id?: string) => {
     }
 };
 
+
 // EXERCISE GIF
 export const getExerciseGif = async (gif_id: string | undefined, resolution: "180" | "360", file_type: "jpg" | "gif") => {
+    let filePath = "";
+    if (file_type === "jpg") {
+        filePath = `${resolution}/${gif_id}/1.jpg`;
+    } else if (file_type === "gif") {
+        filePath = `${resolution}/${gif_id}/${gif_id}.gif`;
+    }
+    if (!gif_id || gif_id === "") return null;
+    try {
+        const { data } = supabase.storage.from('exercises-new').getPublicUrl(filePath);
+        return data?.publicUrl ?? null;
+
+    } catch (error: unknown) {
+        console.error('Error fetching exercise GIF:', error);
+        return null;
+    }
+};
+
+// EXERCISE GIF
+export const getPrivateExerciseGif = async (gif_id: string | undefined, resolution: "180" | "360", file_type: "jpg" | "gif") => {
     let filePath = "";
     if (file_type === "jpg") {
         filePath = `${resolution}/${gif_id}/1.jpg`;

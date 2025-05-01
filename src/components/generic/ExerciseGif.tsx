@@ -49,16 +49,16 @@ export const ExerciseGif: React.FC<IProps> = (props) => {
 
     return (
         <>
-            { exerciseGif instanceof Blob &&
+            { exerciseGif &&
             <>
                 { thumbnailOrImage === "thmb" &&
                     <div className="h-14 w-14 min-w-14 min-h-14 flex items-center justify-center">
-                        <img className="rounded-xl" alt="exercise GIF" src={ URL.createObjectURL(exerciseGif) } />
+                        <img className="rounded-xl" alt="exercise GIF" src={ exerciseGif } />
                     </div>
                 }
                 { thumbnailOrImage === "img" &&
                     <div className="h-full w-full flex items-center justify-center cursor-pointer">
-                        <img alt="exercise GIF" src={ URL.createObjectURL(exerciseGif) } />
+                        <img alt="exercise GIF" src={ exerciseGif } />
                     </div>
                 }
             </>
