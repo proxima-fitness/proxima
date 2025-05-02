@@ -13,6 +13,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Analytics } from "@vercel/analytics/react";
 import NextTopLoader from 'nextjs-toploader';
 import { PostHogClientProvider } from "@/utils/PostHogClientProvider";
+import { PreviewProvider } from "@/contexts/PreviewContext";
 
 export const metadata: Metadata = {
     title: 'Proxima Fitness | AI Workout Builder & Program Directory',
@@ -62,22 +63,26 @@ export default function RootLayout({
                     <div className="w-full bg-primary">
                         <div className={ `${styles.paddingXNav} ${styles.flexCenter}` }>
                             <div className={ `${styles.boxWidth}` }>
-                                <IsHevyProvider>
-                                    <Navbar />
-                                </IsHevyProvider>
+                                <PreviewProvider>
+                                    <IsHevyProvider>
+                                        <Navbar />
+                                    </IsHevyProvider>
+                                </PreviewProvider>
                             </div>
                         </div>
                         <main id="root">
                             <PostHogClientProvider>
                                 <QueryProvider>
-                                    <IsHevyProvider>
-                                        <Analytics />
-                                        <NextTopLoader
-                                            showSpinner={ false }
-                                            color="#00f6ff"
-                                        />
-                                        {children}
-                                    </IsHevyProvider>
+                                    <PreviewProvider>
+                                        <IsHevyProvider>
+                                            <Analytics />
+                                            <NextTopLoader
+                                                showSpinner={ false }
+                                                color="#00f6ff"
+                                            />
+                                            {children}
+                                        </IsHevyProvider>
+                                    </PreviewProvider>
                                     <Toaster richColors />
                                 </QueryProvider>
                             </PostHogClientProvider>

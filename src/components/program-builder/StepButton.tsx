@@ -1,14 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRightIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { SaveDialog } from "./SaveDialog";
+import { usePreview } from "@/contexts/PreviewContext";
 
 export const StepButton: React.FC = () => {
 
+    const { isPreview, setIsPreview } = usePreview();
 
     const path = usePathname();
     const segments = path.split("/").filter(Boolean);
@@ -20,36 +21,21 @@ export const StepButton: React.FC = () => {
     };
 
     const isProgramBuilder = segments.includes("program-builder");
-    const isBuildProgram = segments.includes("build-program");
-    const isReviewProgram = segments.includes("review-program");
 
-    if (isProgramBuilder && !isBuildProgram && !isReviewProgram) {
+
+    if (isProgramBuilder && !isPreview) {
         return (
             <Button
-                disabled
-                variant="ghost"
-                className="w-80"
+                variant="default"
+                className="text-white bg-lightSecondary hover:bg-lightSecondary"
+                onClick={ () => setIsPreview(true) }
             >
-        </Button>
-
-        );
-    } else if (isProgramBuilder && isBuildProgram && !isReviewProgram) {
-        return (
-            <Link
-                href={ `/program-builder/build-program/review-program` }
-                className="w-[33%] flex items-center justify-end"
-            >
-                <Button
-                    variant="default"
-                    className="text-white bg-lightSecondary hover:bg-lightSecondary"
-                >
-                    Review Program
-                    <ArrowRightIcon />
-                </Button>
-            </Link>
+                Review Program
+                <ArrowRightIcon />
+            </Button>
         );
 
-    } else if (isProgramBuilder && isBuildProgram && isReviewProgram) {
+    } else if (isProgramBuilder  && isPreview) {
         return (
             <>
                 <Button
@@ -70,5 +56,14 @@ export const StepButton: React.FC = () => {
 
         );
 
+    } else {
+        return (
+            <Button
+                disabled
+                variant="ghost"
+                className="w-80"
+            >
+        </Button>
+        )
     }
 };

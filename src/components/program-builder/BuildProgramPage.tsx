@@ -7,10 +7,16 @@ import { useIsHevy } from "@/contexts/HevyContext";
 import { useBuildAiProgram } from "@/api/hooks";
 import { useMemo } from "react";
 import { ProximaProgram } from "./ProximaProgram";
+import { usePreview } from "@/contexts/PreviewContext";
+import { HevyRoutineSchedule } from "./hevy/HevyRoutineSchedule";
+import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts } from "@/utils/program-builder";
+import { ProgramSchedule } from "../programs/ProgramSchedule";
 
 export const BuildProgramPage: React.FC = () => {
 
     const { isHevy } = useIsHevy();
+    const { isPreview } = usePreview();
+
     const searchParams = useSearchParams();
 
     const empty = searchParams.get('empty') ?? '';
@@ -73,22 +79,57 @@ export const BuildProgramPage: React.FC = () => {
     ]);
 
     const { data: program, isLoading: loadingProgram } =  useBuildAiProgram(request, isHevy);
-    console.log("Program AT GENERATION:",program);
-    if (loadingProgram) {
+
+    if (loadingProgram || program === undefined) {
         return (
             <BuildProgramSkeleton />
         );
     }
 
-    return (
-        <div className="max-sm:px-2 sm:pl-8">
-            { program !== undefined && isHevy &&
-                <HevyRoutine program={ program as THevyRoutine[] } />
-            }
+    // const [program, setProgram] = useState<TProgramCreatorDay[][]>();
+    // const [hevyRoutine, setHevyRoutine] = useState<THevyRoutine[]>();
 
-            { program !== undefined && !isHevy &&
-                <ProximaProgram program={ program as TProgramCreatorDay[][] } />
-            }
-        </div>
-    );
+    // useEffect(() => {
+    //     if (typeof window !== "undefined") {
+    //         const localStorageProgram = localStorage.getItem(isHevy ? "hevy-program-in-progress" : "program-in-progress");
+    //         if (localStorageProgram) {
+    //             if (isHevy) {
+    //                 setHevyRoutine(JSON.parse(localStorageProgram));
+    //             } else {
+    //                 setProgram(JSON.parse(localStorageProgram));
+    //             }
+    //         }
+    //     }
+    // }, [isHevy]);
+
+
+    if (isHevy) {
+        if (isPreview) {
+            return (
+                <div className="max-sm:px-2 sm:pl-8">
+                    <HevyRoutineSchedule deflatHevyRoutine={ deFlattenHevyRoutine(program as THevyRoutine[]) } />
+                </div>
+            );
+        } else {
+            return (
+                <div className="max-sm:px-2 sm:pl-8">
+                    <HevyRoutine program={ program as THevyRoutine[] } />
+                </div>
+            );
+        }
+    } else if (!isHevy) {
+        if (isPreview) {
+            return (
+                <div className="max-sm:px-2 sm:pl-8">
+                    <ProgramSchedule sortedWorkoutsByWeek={ programCreatorDayToScheduleWorkouts(program as TProgramCreatorDay[][]) } />
+                </div>
+            );
+        } else {
+            return (
+                <div className="max-sm:px-2 sm:pl-8">
+                    <ProximaProgram program={ program as TProgramCreatorDay[][] } />
+                </div>
+            );
+        }
+    }
 };

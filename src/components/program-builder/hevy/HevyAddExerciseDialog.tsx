@@ -102,11 +102,6 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
         }
 
         const id = exerciseID;
-        console.log("id:",id);
-        console.log("repTypeValue:",repTypeValue);
-        console.log("intensityValue:",intensityValue);
-        console.log("reps",reps);
-        console.log("intensityDta",intensityData);
         const exerciseData = { id, repTypeValue, intensityValue, reps, intensityData };
         const newExercise = (exerciseData as THevyAddExercise);
 
