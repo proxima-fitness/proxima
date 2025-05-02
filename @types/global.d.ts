@@ -189,6 +189,11 @@ interface IIsHevyContextType {
     setIsHevy: (value: boolean) => void;
 }
 
+interface IPreviewContextType {
+    isPreview: boolean;
+    setIsPreview: (value: boolean) => void;
+}
+
 /***********************************************************/
 
 type TProgramPage = {
