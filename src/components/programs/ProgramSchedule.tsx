@@ -56,7 +56,7 @@ export const ProgramSchedule: React.FC<IProps> = (props) => {
                                                 <div className="flex flex-row gap-4 max-w-[50%]">
                                                     <div className="text-[#33bbcf]">{exerciseIndex + 1}</div>
                                                     <div>
-                                                        <div className="font-normal text-sm">{ exercise?.exercises?.[`name_english`] }</div>
+                                                        <div className="font-third font-semibold text-sm">{ exercise?.exercises?.[`name_english`] }</div>
                                                     </div>
                                                     <div></div>
                                                 </div>

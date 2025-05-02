@@ -76,6 +76,10 @@ module.exports = {
 			second: [
 				'Exo',
 				'sans-serif'
+			],
+			third: [
+				'Inter',
+				'sans-serif'
 			]
 		},
 		borderRadius: {
