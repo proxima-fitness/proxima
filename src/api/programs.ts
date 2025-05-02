@@ -147,6 +147,20 @@ export const getProgramByID = async (program_id: string) => {
     }
 };
 
+// GET A SHARED PROGRAM BY SHARE ID
+export const getSharedProgram = async (shareId: string) => {
+    try {
+        const { data, error } = await supabase.from('programs').select('hevy_routines').eq('id', shareId);
+        if (error) {
+            console.error('Error fetching shared program:', error);
+        } else if (data && data.length > 0 ) {
+            return data as unknown as TProgram[];
+        }
+    } catch (error: unknown) {
+        throw Error(`Error fetching shared program: ${error}`);
+    }
+}
+
 // CHECK IF A PROGRAM THUMBNAIL EXISTS IN USERS S3 STORAGE FOLDER (PROGRAM Exists ?)
 export const getProgramThumbnailStatus = async (id?: string) => {
 

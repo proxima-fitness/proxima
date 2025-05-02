@@ -212,6 +212,7 @@ type TProgram = {
     difficulty: string[];
     user_id: string;
     thumbnail?: Blob;
+    hevy_routines?: THevyRoutine[];
 }
 
 type TDialog = {

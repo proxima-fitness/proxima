@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { BuildProgramSkeleton } from "./BuildProgramSkeleton";
 import { HevyRoutine } from "./HevyRoutine";
 import { useIsHevy } from "@/contexts/HevyContext";
-import { useBuildAiProgram } from "@/api/hooks";
+import { useBuildAiProgram, useSharedProgram } from "@/api/hooks";
 import { useMemo } from "react";
 import { ProximaProgram } from "./ProximaProgram";
 import { usePreview } from "@/contexts/PreviewContext";
@@ -19,6 +19,7 @@ export const BuildProgramPage: React.FC = () => {
 
     const searchParams = useSearchParams();
 
+    const shareId = searchParams.get('shareId') ?? '';
     const empty = searchParams.get('empty') ?? '';
     const search = searchParams.get('search') ?? '';
     const sex = searchParams.get('sex') ?? '';
@@ -78,58 +79,52 @@ export const BuildProgramPage: React.FC = () => {
         healthIssues,
     ]);
 
-    const { data: program, isLoading: loadingProgram } =  useBuildAiProgram(request, isHevy);
+    const { data: program, isLoading: loadingProgram } =  useBuildAiProgram(request, isHevy, shareId);
+    const { data: sharedProgram, isLoading: loadingSharedProgram } = useSharedProgram(shareId);
 
-    if (loadingProgram || program === undefined) {
+    if ((loadingProgram || program === undefined) && (loadingSharedProgram || sharedProgram === undefined)) {
         return (
             <BuildProgramSkeleton />
         );
     }
 
-    // const [program, setProgram] = useState<TProgramCreatorDay[][]>();
-    // const [hevyRoutine, setHevyRoutine] = useState<THevyRoutine[]>();
 
-    // useEffect(() => {
-    //     if (typeof window !== "undefined") {
-    //         const localStorageProgram = localStorage.getItem(isHevy ? "hevy-program-in-progress" : "program-in-progress");
-    //         if (localStorageProgram) {
-    //             if (isHevy) {
-    //                 setHevyRoutine(JSON.parse(localStorageProgram));
-    //             } else {
-    //                 setProgram(JSON.parse(localStorageProgram));
-    //             }
-    //         }
-    //     }
-    // }, [isHevy]);
-
-
-    if (isHevy) {
-        if (isPreview) {
-            return (
-                <div className="max-sm:px-2 sm:pl-8">
-                    <HevyRoutineSchedule deflatHevyRoutine={ deFlattenHevyRoutine(program as THevyRoutine[]) } />
-                </div>
-            );
-        } else {
-            return (
-                <div className="max-sm:px-2 sm:pl-8">
-                    <HevyRoutine program={ program as THevyRoutine[] } />
-                </div>
-            );
-        }
-    } else if (!isHevy) {
-        if (isPreview) {
-            return (
-                <div className="max-sm:px-2 sm:pl-8">
-                    <ProgramSchedule sortedWorkoutsByWeek={ programCreatorDayToScheduleWorkouts(program as TProgramCreatorDay[][]) } />
-                </div>
-            );
-        } else {
-            return (
-                <div className="max-sm:px-2 sm:pl-8">
-                    <ProximaProgram program={ program as TProgramCreatorDay[][] } />
-                </div>
-            );
+    if (shareId.length > 0 && sharedProgram !== undefined) {
+        return (
+            <div className="max-sm:px-2 sm:pl-8">
+                <HevyRoutineSchedule deflatHevyRoutine={ deFlattenHevyRoutine(sharedProgram[0].hevy_routines as THevyRoutine[]) } />
+            </div>
+        );
+    } else {
+        if (isHevy) {
+            if (isPreview) {
+                return (
+                    <div className="max-sm:px-2 sm:pl-8">
+                        <HevyRoutineSchedule deflatHevyRoutine={ deFlattenHevyRoutine(program as THevyRoutine[]) } />
+                    </div>
+                );
+            } else {
+                return (
+                    <div className="max-sm:px-2 sm:pl-8">
+                        <HevyRoutine program={ program as THevyRoutine[] } />
+                    </div>
+                );
+            }
+        } else if (!isHevy) {
+            if (isPreview) {
+                return (
+                    <div className="max-sm:px-2 sm:pl-8">
+                        <ProgramSchedule sortedWorkoutsByWeek={ programCreatorDayToScheduleWorkouts(program as TProgramCreatorDay[][]) } />
+                    </div>
+                );
+            } else {
+                return (
+                    <div className="max-sm:px-2 sm:pl-8">
+                        <ProximaProgram program={ program as TProgramCreatorDay[][] } />
+                    </div>
+                );
+            }
         }
     }
+
 };

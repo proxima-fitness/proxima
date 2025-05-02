@@ -1,11 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowRightIcon } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { ArrowRightIcon, ShareIcon } from "lucide-react";
 import { useState } from "react";
 import { SaveDialog } from "./SaveDialog";
 import { usePreview } from "@/contexts/PreviewContext";
+import { usePathname } from "next/navigation";
+import { ShareDialog } from "./ShareDialog";
 
 export const StepButton: React.FC = () => {
 
@@ -13,21 +14,22 @@ export const StepButton: React.FC = () => {
 
     const path = usePathname();
     const segments = path.split("/").filter(Boolean);
-
     const [openSaveDialog, setOpenSaveDialog] = useState(false);
+    const [openShareDialog, setOpenShareDialog] = useState(false);
 
     const handleOpenSaveDialog = (openSaveDialog: boolean) => {
         setOpenSaveDialog(openSaveDialog);
     };
+    const handleOpenShareDialog = (openShareDialog: boolean) => {
+        setOpenShareDialog(openShareDialog);
+    };
 
-    const isProgramBuilder = segments.includes("program-builder");
 
-
-    if (isProgramBuilder && !isPreview) {
+    if (!isPreview && segments.length !== 1) {
         return (
             <Button
                 variant="default"
-                className="text-white bg-lightSecondary hover:bg-lightSecondary"
+                className="text-white bg-lightSecondary hover:bg-black"
                 onClick={ () => setIsPreview(true) }
             >
                 Review Program
@@ -35,13 +37,22 @@ export const StepButton: React.FC = () => {
             </Button>
         );
 
-    } else if (isProgramBuilder  && isPreview) {
+    } else if (isPreview) {
         return (
-            <>
+            <div className="flex flex-row gap-2">
                 <Button
-                    onClick={ () => setOpenSaveDialog(true) }
+                    onClick={ () => handleOpenShareDialog(true) }
                     variant="default"
-                    className="text-white bg-lightSecondary hover:bg-lightSecondary"
+                    className="text-white bg-gray-400 hover:bg-black"
+                >
+                    Share
+                    <ShareIcon />
+                </Button>
+
+                <Button
+                    onClick={ () => handleOpenSaveDialog(true) }
+                    variant="default"
+                    className="text-white bg-lightSecondary hover:bg-black"
                 >
                     Save
                     <ArrowRightIcon />
@@ -52,7 +63,13 @@ export const StepButton: React.FC = () => {
                         openSaveDialog={ openSaveDialog }
                     />
                 }
-            </>
+                { openShareDialog &&
+                    <ShareDialog
+                        handleOpenShareDialog={ handleOpenShareDialog }
+                        openShareDialog={ openShareDialog }
+                    />
+                }
+            </div>
 
         );
 

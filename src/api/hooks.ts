@@ -1,7 +1,7 @@
 // USE OF REACT QUERY IS STRICTLY CLIENT-SIDE, USE SUPABASE SSR FOR SERVER SIDE
 import { useQuery } from "@tanstack/react-query";
 import { getBlogById, getBlogs } from "./blog";
-import { getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID } from "./programs";
+import { getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID, getSharedProgram } from "./programs";
 import { getOpUserId, getUserFullName, getUserMetaData } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getExercises } from "./exercises";
@@ -45,13 +45,21 @@ export const usePrograms = (limit?: number) => {
     });
 };
 
-export const useBuildAiProgram = (request: TTextToJsonRequest, isHevy: boolean) => {
+export const useBuildAiProgram = (request: TTextToJsonRequest, isHevy: boolean, shareId: string) => {
     return useQuery({
         queryKey: ['ai-program', isHevy, JSON.stringify(request)],
         queryFn: () => buildAiProgram(request, isHevy),
-        enabled: !!request && isHevy !== undefined,
+        enabled: !!request && isHevy !== undefined && shareId === "",
         refetchOnWindowFocus: false,
         retry: false,
+    });
+};
+
+export const useSharedProgram = (shareId: string) => {
+    return useQuery({
+        queryKey: ['shared-program', shareId],
+        queryFn: () => getSharedProgram(shareId),
+        enabled: shareId.length > 0,
     });
 };
 
