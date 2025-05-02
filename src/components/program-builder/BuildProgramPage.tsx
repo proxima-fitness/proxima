@@ -15,11 +15,13 @@ import { ProgramSchedule } from "../programs/ProgramSchedule";
 export const BuildProgramPage: React.FC = () => {
 
     const { isHevy } = useIsHevy();
-    const { isPreview } = usePreview();
+    const { isPreview, setIsPreview } = usePreview();
 
     const searchParams = useSearchParams();
 
     const shareId = searchParams.get('shareId') ?? '';
+    if (shareId.length > 0) setIsPreview(true);
+
     const empty = searchParams.get('empty') ?? '';
     const search = searchParams.get('search') ?? '';
     const sex = searchParams.get('sex') ?? '';

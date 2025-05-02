@@ -28,6 +28,7 @@ export const ShareDialog: React.FC<IProps> = (props) => {
     const { isHevy } = useIsHevy();
     const [program, setProgram] = useState<TProgramCreatorDay[][]>();
     const [hevyRoutine, setHevyRoutine] = useState<THevyRoutine[]>();
+    const [savingRoutine, setSavingRoutine] = useState(false);
     const [programId, setProgramId] = useState("");
 
     const handleCloseDialog = () => {
@@ -51,7 +52,9 @@ export const ShareDialog: React.FC<IProps> = (props) => {
                 const new_id = uuidv4();
                 if (new_id !== undefined) {
                     setProgramId(new_id);
+                    setSavingRoutine(true);
                     await postAIProgram(new_id, hevyRoutine);
+                    setSavingRoutine(false);
                 }
             }
         }
@@ -107,7 +110,7 @@ export const ShareDialog: React.FC<IProps> = (props) => {
                                 >
                                     <CopyIcon className="h-full w-full text-lightSecondary" />
                                 </Button>
-
+                                { savingRoutine && <>Saving...</> }
                             </div>
                         </span>
                     </span>
