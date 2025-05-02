@@ -1,6 +1,6 @@
 import "@/styles/global.css";
 
-import { Russo_One, Exo } from "next/font/google";
+import { Russo_One, Exo, Inter } from "next/font/google";
 import { Footer } from '@/components/footer/Footer';
 import { Navbar } from '@/components/header/Navbar';
 import QueryProvider from '@/utils/QueryProvider';
@@ -35,6 +35,12 @@ const exo = Exo({
     display: 'swap',
 });
 
+const inter = Inter({
+    weight: ["300", "400", "500", "600", "700"],
+    subsets: ['latin'],
+    display: 'swap',
+});
+
 
 export default function RootLayout({
     children,
@@ -43,7 +49,7 @@ export default function RootLayout({
     } ) {
 
     return (
-        <html lang="en" className={ `${exo.className} ${russo_one.className}` }>
+        <html lang="en" className={ `${exo.className} ${russo_one.className} ${inter.className}` }>
             <head>
                 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
                 <meta name="theme-color" content="#000000" />

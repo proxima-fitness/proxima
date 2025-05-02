@@ -52,11 +52,11 @@ export const ProgramSchedule: React.FC<IProps> = (props) => {
                                 >
                                     { day?.program_workout_exercises?.map((exercise: TSavedWorkoutExercise, exerciseIndex: number) => (
                                         <div key={ exerciseIndex }>
-                                            <div className="border-b-2 text-sm border-gray-200 flex flex-row justify-between font-extralight items-center py-2">
+                                            <div className="border-b-2 text-sm border-gray-200 flex flex-row justify-between font-light items-center py-2">
                                                 <div className="flex flex-row gap-4 max-w-[50%]">
                                                     <div className="text-[#33bbcf]">{exerciseIndex + 1}</div>
                                                     <div>
-                                                        <div className="font-normal text-sm">{ exercise?.exercises?.[`name_english`] }</div>
+                                                        <div className="font-third font-normal text-sm">{ exercise?.exercises?.[`name_english`] }</div>
                                                     </div>
                                                     <div></div>
                                                 </div>
