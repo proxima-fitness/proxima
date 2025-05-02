@@ -4,9 +4,7 @@ import { ProgramSearch } from "./ProgramSearch";
 
 export const Programs: React.FC = () => {
 
-    const { data: programs, isError: errorFetchingPrograms } = usePrograms();
-
-    const loadingPrograms = false;
+    const { data: programs, isError: errorFetchingPrograms, isLoading: loadingPrograms } = usePrograms();
 
     if (loadingPrograms) {
         return (
@@ -130,7 +128,6 @@ export const Programs: React.FC = () => {
                     </div>
                 </div>
             </>
-
         );
     }
 
