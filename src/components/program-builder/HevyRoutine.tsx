@@ -261,6 +261,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     };
 
     const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>(appendOrderToHevyRoutines(program));
+    console.log("hevyProgram:",hevyProgram);
     const [focusedCardId, setFocusedCardId] = useState<string>("");
     const numberOfWeeks = getNumberRoutineFolders(hevyProgram);
     const numberOfWeeksArr = Array.from({ length: numberOfWeeks }, (_, i) => i);

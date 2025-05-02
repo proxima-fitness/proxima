@@ -73,7 +73,7 @@ export const BuildProgramPage: React.FC = () => {
     ]);
 
     const { data: program, isLoading: loadingProgram } =  useBuildAiProgram(request, isHevy);
-
+    console.log("Program AT GENERATION:",program);
     if (loadingProgram) {
         return (
             <BuildProgramSkeleton />
