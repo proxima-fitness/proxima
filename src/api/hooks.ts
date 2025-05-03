@@ -1,7 +1,7 @@
 // USE OF REACT QUERY IS STRICTLY CLIENT-SIDE, USE SUPABASE SSR FOR SERVER SIDE
 import { useQuery } from "@tanstack/react-query";
 import { getBlogById, getBlogs } from "./blog";
-import { getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID, getSharedProgram } from "./programs";
+import { getCommunityAiPrograms, getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID, getSharedProgram } from "./programs";
 import { getOpUserId, getUserFullName, getUserMetaData } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getExercises } from "./exercises";
@@ -45,6 +45,7 @@ export const usePrograms = (limit?: number) => {
     });
 };
 
+// BUILD AN AI PROGRAM
 export const useBuildAiProgram = (request: TTextToJsonRequest, isHevy: boolean, shareId: string) => {
     return useQuery({
         queryKey: ['ai-program', isHevy, JSON.stringify(request)],
@@ -55,11 +56,19 @@ export const useBuildAiProgram = (request: TTextToJsonRequest, isHevy: boolean, 
     });
 };
 
+// FETCHES A SHARED PROGRAM BY SHARE ID
 export const useSharedProgram = (shareId: string) => {
     return useQuery({
         queryKey: ['shared-program', shareId],
         queryFn: () => getSharedProgram(shareId),
         enabled: shareId.length > 0,
+    });
+};
+
+export const useCommunityAiPrograms = () => {
+    return useQuery({
+        queryKey: ['community-ai-programs'],
+        queryFn: () => getCommunityAiPrograms(),
     });
 };
 

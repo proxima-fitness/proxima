@@ -13,8 +13,12 @@ export const ProgramsSection: React.FC = () => {
     const { data: programs, isLoading: loadingPrograms } = useExplorePagePrograms({ "specialization": ["Bodybuilding"] }, 6, 10);
 
     return (
-        <section id="programs" className={ layout.sectionTop } data-aos="fade-up"
-        data-aos-anchor-placement="top-bottom" data-aos-once="true"
+        <section
+            id="programs"
+            className={ layout.sectionTop }
+            data-aos="fade-up"
+            data-aos-anchor-placement="top-bottom"
+            data-aos-once="true"
         >
             <div className={ layout.sectionInfoCentered } style={ { display:"flex", justifyContent: "center", alignItems: "center" }    }>
                 <h2 className={ styles.heading2Programs }>

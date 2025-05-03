@@ -213,6 +213,7 @@ type TProgram = {
     user_id: string;
     thumbnail?: Blob;
     hevy_routines?: THevyRoutine[];
+    prompt?: string;
 }
 
 type TDialog = {
