@@ -31,6 +31,7 @@ export const ShareDialog: React.FC<IProps> = (props) => {
     const [savingRoutine, setSavingRoutine] = useState(false);
     const [programId, setProgramId] = useState("");
     const [prompt, setPrompt] = useState<string>("");
+
     const handleCloseDialog = () => {
         handleOpenShareDialog(false);
     };

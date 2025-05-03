@@ -31,7 +31,14 @@ export const AiProgramGrid: React.FC = () => {
                             </div>
 
                             <div className="absolute inset-0 rounded-lg bg-black bg-opacity-40 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
-                                <button className="my-2 py-2 w-[50%] hover:bg-black hover:text-white bg-white text-black rounded-lg shadow flex flex-row items-center justify-center gap-2"><EditIcon />Edit</button>
+                                <Link
+                                    href={ `/program-builder/build-program?shareId=${program.id}&edit=true` }
+                                    rel="noopener noreferrer"
+                                    className="w-[50%]"
+                                    target="_self"
+                                >
+                                    <button className="my-2 py-2 w-full hover:bg-black hover:text-white bg-white text-black rounded-lg shadow flex flex-row items-center justify-center gap-2"><EditIcon />Edit</button>
+                                </Link>
                                 <Link
                                     href={ `/program-builder/build-program?shareId=${program.id}` }
                                     rel="noopener noreferrer"

@@ -2,6 +2,7 @@
 
 import { useIsHevy } from "@/contexts/HevyContext";
 import { Redo2Icon } from "lucide-react";
+import Link from "next/link";
 import { quotes } from "public";
 import { useEffect, useState } from "react";
 
@@ -56,7 +57,14 @@ export const RecentProgramsGrid: React.FC = () => {
                     </div>
 
                     <div className="absolute inset-0 rounded-lg bg-black bg-opacity-40 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
-                        <button className="my-2 py-2 w-[50%] bg-white text-black hover:bg-black hover:text-white rounded-lg shadow flex flex-row items-center justify-center gap-2"><Redo2Icon />Resume</button>
+                        <Link
+                            href={ `/program-builder/build-program?shareId=${hevyRoutine[0].id}&edit=true` }
+                            target="_self"
+                            rel="noopener noreferrer"
+                            className="w-[50%]"
+                        >
+                            <button className="my-2 py-2 w-full bg-white text-black hover:bg-black hover:text-white rounded-lg shadow flex flex-row items-center justify-center gap-2"><Redo2Icon />Resume</button>
+                        </Link>
                     </div>
                 </div>
                 }

@@ -20,7 +20,13 @@ export const BuildProgramPage: React.FC = () => {
     const searchParams = useSearchParams();
 
     const shareId = searchParams.get('shareId') ?? '';
-    if (shareId.length > 0) setIsPreview(true);
+    const edit = searchParams.get('edit') ?? '';
+
+    if (edit === 'true') {
+        setIsPreview(false);
+    } else {
+        setIsPreview(true);
+    }
 
     const empty = searchParams.get('empty') ?? '';
     const search = searchParams.get('search') ?? '';
@@ -100,42 +106,33 @@ export const BuildProgramPage: React.FC = () => {
 
 
 
-    if (shareId.length > 0 && sharedProgram !== undefined) {
-        return (
-            <div className="max-sm:px-2 sm:pl-8">
-                <HevyRoutineSchedule deflatHevyRoutine={ deFlattenHevyRoutine(sharedProgram[0].hevy_routines as THevyRoutine[]) } />
-            </div>
-        );
-    } else {
-        if (isHevy) {
-            if (isPreview) {
-                return (
-                    <div className="max-sm:px-2 sm:pl-8">
-                        <HevyRoutineSchedule deflatHevyRoutine={ deFlattenHevyRoutine(program as THevyRoutine[]) } />
-                    </div>
-                );
-            } else {
-                return (
-                    <div className="max-sm:px-2 sm:pl-8">
-                        <HevyRoutine program={ program as THevyRoutine[] } />
-                    </div>
-                );
-            }
-        } else if (!isHevy) {
-            if (isPreview) {
-                return (
-                    <div className="max-sm:px-2 sm:pl-8">
-                        <ProgramSchedule sortedWorkoutsByWeek={ programCreatorDayToScheduleWorkouts(program as TProgramCreatorDay[][]) } />
-                    </div>
-                );
-            } else {
-                return (
-                    <div className="max-sm:px-2 sm:pl-8">
-                        <ProximaProgram program={ program as TProgramCreatorDay[][] } />
-                    </div>
-                );
-            }
+    if (isHevy) {
+        if (isPreview) {
+            return (
+                <div className="max-sm:px-2 sm:pl-8">
+                    <HevyRoutineSchedule deflatHevyRoutine={ shareId && shareId.length > 0 ? deFlattenHevyRoutine(sharedProgram?.[0]?.hevy_routines as THevyRoutine[]) : deFlattenHevyRoutine(program as THevyRoutine[]) } />
+                </div>
+            );
+        } else {
+            return (
+                <div className="max-sm:px-2 sm:pl-8">
+                    <HevyRoutine program={ shareId && shareId.length > 0 ? sharedProgram?.[0]?.hevy_routines as THevyRoutine[] : program as THevyRoutine[] } />
+                </div>
+            );
+        }
+    } else if (!isHevy) {
+        if (isPreview) {
+            return (
+                <div className="max-sm:px-2 sm:pl-8">
+                    <ProgramSchedule sortedWorkoutsByWeek={ programCreatorDayToScheduleWorkouts(program as TProgramCreatorDay[][]) } />
+                </div>
+            );
+        } else {
+            return (
+                <div className="max-sm:px-2 sm:pl-8">
+                    <ProximaProgram program={ program as TProgramCreatorDay[][] } />
+                </div>
+            );
         }
     }
-
 };
