@@ -59,7 +59,7 @@ export const ShareDialog: React.FC<IProps> = (props) => {
             }
         }
         saveProgram();
-    }, [hevyRoutine]);
+    }, [hevyRoutine, prompt]);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
