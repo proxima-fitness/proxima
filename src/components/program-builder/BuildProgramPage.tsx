@@ -5,7 +5,7 @@ import { BuildProgramSkeleton } from "./BuildProgramSkeleton";
 import { HevyRoutine } from "./HevyRoutine";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { useBuildAiProgram, useSharedProgram } from "@/api/hooks";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { ProximaProgram } from "./ProximaProgram";
 import { usePreview } from "@/contexts/PreviewContext";
 import { HevyRoutineSchedule } from "./hevy/HevyRoutineSchedule";
@@ -81,6 +81,13 @@ export const BuildProgramPage: React.FC = () => {
         healthIssues,
     ]);
 
+    // Save the prompt to local storage so that it can be saved to the database
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            localStorage.setItem("prompt", JSON.stringify(search));
+        }
+    }, [search]);
+
     const { data: program, isLoading: loadingProgram } =  useBuildAiProgram(request, isHevy, shareId);
     const { data: sharedProgram, isLoading: loadingSharedProgram } = useSharedProgram(shareId);
 
@@ -89,6 +96,8 @@ export const BuildProgramPage: React.FC = () => {
             <BuildProgramSkeleton />
         );
     }
+
+
 
 
     if (shareId.length > 0 && sharedProgram !== undefined) {

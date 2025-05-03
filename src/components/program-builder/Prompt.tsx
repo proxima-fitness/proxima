@@ -162,12 +162,12 @@ export const Prompt: React.FC = () => {
                         Smolov Jr.
                     </Button>
 
-                    <Button onClick={  () => setSearch("Create a functional training program tailored for football or soccer athletes" )} variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
+                    <Button onClick={  () => setSearch("Create 3 day a week functional training program tailored for football or soccer athletes" )} variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
                         <FootprintsIcon />
                         Athletic Training
                     </Button>
 
-                    <Button onClick={ () => setSearch("Create a weight loss workout program that emphasizes cardio") } variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
+                    <Button onClick={ () => setSearch("Create a weight loss workout program that emphasizes cardio (4x per week)") } variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
                         <Calculator />
                         Weight loss Program
                     </Button>

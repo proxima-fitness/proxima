@@ -4,6 +4,7 @@ import { AvatarStack } from "@/components/avatar-stack";
 import { jack, people02, people03, people04, people05 } from "public";
 import { Prompt } from "@/components/program-builder/Prompt";
 import { AiProgramGrid } from "@/components/program-builder/AiProgramGrid";
+import { RecentProgramsGrid } from "@/components/program-builder/RecentProgramsGrid";
 
 export const metadata = {
     title: "AI Program Builder | Proxima Fitness",
@@ -15,7 +16,7 @@ export default function AiProgramBuilder() {
     return (
         <div className={ `bg-white ${styles.flexCenter} flex-col` }>
             <div className={ `${styles.boxWidth}` }>
-                <div className="sm:mt-[200px] sm:mb-[200px] max-sm:h-full max-sm:mt-[150px] max-sm:mb-[150px] flex flex-col max-sm:gap-0 items-center justify-center gap-6">
+                <div className="sm:mt-[200px] sm:mb-[100px] max-sm:h-full max-sm:mt-[150px] max-sm:mb-[150px] flex flex-col max-sm:gap-0 items-center justify-center gap-6">
                     <div className="text-center">
                         <div className="font-main text-4xl font-bold uppercase">The AI Workout Program Builder</div>
                         <div className="text-lg font-normal">Get a tailored workout program in seconds</div>
@@ -50,6 +51,7 @@ export default function AiProgramBuilder() {
                     <MessageSquareWarningIcon />
                     Please use on a desktop computer for best experience
                 </div>
+                <RecentProgramsGrid />
                 <AiProgramGrid />
             </div>
         </div>

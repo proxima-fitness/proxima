@@ -67,7 +67,7 @@ export const getHevyExercises = async () => {
     }
 };
 
-export const postHevyRoutineProgram = async (id: string, hevyRoutines: THevyRoutine[]) => {
+export const postHevyRoutineProgram = async (id: string, hevyRoutines: THevyRoutine[], prompt: string) => {
     const weeks = getMaxFolderId(hevyRoutines) + 1;
 
     try {
@@ -82,6 +82,7 @@ export const postHevyRoutineProgram = async (id: string, hevyRoutines: THevyRout
             specialization: null,
             difficulty: null,
             explore: false,
+            prompt,
         };
 
         // STEP 1: Insert into programs table

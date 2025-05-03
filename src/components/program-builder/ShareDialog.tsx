@@ -30,7 +30,7 @@ export const ShareDialog: React.FC<IProps> = (props) => {
     const [hevyRoutine, setHevyRoutine] = useState<THevyRoutine[]>();
     const [savingRoutine, setSavingRoutine] = useState(false);
     const [programId, setProgramId] = useState("");
-
+    const [prompt, setPrompt] = useState<string>("");
     const handleCloseDialog = () => {
         handleOpenShareDialog(false);
     };
@@ -53,7 +53,7 @@ export const ShareDialog: React.FC<IProps> = (props) => {
                 if (new_id !== undefined) {
                     setProgramId(new_id);
                     setSavingRoutine(true);
-                    await postAIProgram(new_id, hevyRoutine);
+                    await postAIProgram(new_id, hevyRoutine, prompt);
                     setSavingRoutine(false);
                 }
             }
@@ -64,6 +64,10 @@ export const ShareDialog: React.FC<IProps> = (props) => {
     useEffect(() => {
         if (typeof window !== "undefined") {
             const localStorageProgram = localStorage.getItem(isHevy ? "hevy-program-in-progress" : "program-in-progress");
+            const localStoragePrompt = localStorage.getItem("prompt");
+            if (localStoragePrompt) {
+                setPrompt(localStoragePrompt);
+            }
             if (localStorageProgram) {
                 if (isHevy) {
                     setHevyRoutine(JSON.parse(localStorageProgram));

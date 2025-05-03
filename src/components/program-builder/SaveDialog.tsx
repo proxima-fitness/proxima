@@ -31,6 +31,7 @@ export const SaveDialog: React.FC<IProps> = (props) => {
     const { isHevy } = useIsHevy();
     const [program, setProgram] = useState<TProgramCreatorDay[][]>();
     const [hevyRoutine, setHevyRoutine] = useState<THevyRoutine[]>();
+    const [prompt, setPrompt] = useState<string>("");
     const [isPreview, setIsPreview] = useState(true);
     const [savingRoutine, setSavingRoutine] = useState(false);
     const [programId, setProgramId] = useState("");
@@ -46,17 +47,22 @@ export const SaveDialog: React.FC<IProps> = (props) => {
                 if (new_id !== undefined) {
                     setProgramId(new_id);
                     setSavingRoutine(true);
-                    await postAIProgram(new_id, hevyRoutine);
+                    await postAIProgram(new_id, hevyRoutine, prompt);
                     setSavingRoutine(false);
                 }
             }
         }
         saveProgram();
-    }, [hevyRoutine]);
+    }, [hevyRoutine, prompt]);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
             const localStorageProgram = localStorage.getItem(isHevy ? "hevy-program-in-progress" : "program-in-progress");
+            const localStoragePrompt = localStorage.getItem("prompt");
+            console.log(localStoragePrompt);
+            if (localStoragePrompt) {
+                setPrompt(localStoragePrompt);
+            }
             if (localStorageProgram) {
                 if (isHevy) {
                     setHevyRoutine(JSON.parse(localStorageProgram));
