@@ -10,8 +10,7 @@ import { ProgramCardLoading } from "../generic/ProgramCardLoading";
 
 export const ProgramsSection: React.FC = () => {
 
-    const { data: programs } = useExplorePagePrograms({ "specialization": ["Bodybuilding"] }, 6, 10);
-    const loadingPrograms = false;
+    const { data: programs, isLoading: loadingPrograms } = useExplorePagePrograms({ "specialization": ["Bodybuilding"] }, 6, 10);
 
     return (
         <section id="programs" className={ layout.sectionTop } data-aos="fade-up"
