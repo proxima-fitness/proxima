@@ -145,7 +145,7 @@ export const Prompt: React.FC = () => {
                     <Link
                         target="_self"
                         rel="noopener noreferrer"
-                        href={ `/program-builder/build-program?empty=true` }
+                        href={ `/program-builder/build-program?empty=true&edit=true` }
                     >
                         <Button variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
                             <BookOpenIcon  />
@@ -192,7 +192,7 @@ export const Prompt: React.FC = () => {
                                 target="_self"
                                 rel="noopener noreferrer"
                                 className="max-sm:w-full h-10"
-                                href={ `/program-builder/build-program?${handleDefineQueryParams()}` }
+                                href={ `/program-builder/build-program?${handleDefineQueryParams()}&edit=true` }
                             >
                                 <Button className="w-[auto] max-sm:w-full h-10 font-bold bg-[#33bbcf] text-white">
                                     <SparklesIcon /> Build

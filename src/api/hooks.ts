@@ -46,22 +46,22 @@ export const usePrograms = (limit?: number) => {
 };
 
 // BUILD AN AI PROGRAM
-export const useBuildAiProgram = (request: TTextToJsonRequest, isHevy: boolean, shareId: string) => {
+export const useBuildAiProgram = (request: TTextToJsonRequest, isHevy: boolean, shareId: string, resume: string) => {
     return useQuery({
         queryKey: ['ai-program', isHevy, JSON.stringify(request)],
         queryFn: () => buildAiProgram(request, isHevy),
-        enabled: !!request && isHevy !== undefined && shareId === "",
+        enabled: !!request && isHevy !== undefined && shareId === "" && resume === "",
         refetchOnWindowFocus: false,
         retry: false,
     });
 };
 
 // FETCHES A SHARED PROGRAM BY SHARE ID
-export const useSharedProgram = (shareId: string) => {
+export const useSharedProgram = (shareId: string, resume: string) => {
     return useQuery({
         queryKey: ['shared-program', shareId],
         queryFn: () => getSharedProgram(shareId),
-        enabled: shareId.length > 0,
+        enabled: shareId.length > 0 && resume === "",
     });
 };
 

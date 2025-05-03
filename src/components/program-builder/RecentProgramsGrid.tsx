@@ -17,7 +17,6 @@ export const RecentProgramsGrid: React.FC = () => {
         if (typeof window !== "undefined") {
             const localStorageProgram = localStorage.getItem(isHevy ? "hevy-program-in-progress" : "program-in-progress");
             const localStoragePrompt = localStorage.getItem("prompt");
-            console.log(localStoragePrompt);
             if (localStoragePrompt) {
                 setPrompt(localStoragePrompt);
             }
@@ -58,7 +57,7 @@ export const RecentProgramsGrid: React.FC = () => {
 
                     <div className="absolute inset-0 rounded-lg bg-black bg-opacity-40 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
                         <Link
-                            href={ `/program-builder/build-program?shareId=${hevyRoutine[0].id}&edit=true` }
+                            href={ `/program-builder/build-program?resume=true` }
                             target="_self"
                             rel="noopener noreferrer"
                             className="w-[50%]"

@@ -10,7 +10,6 @@ export const AiProgramGrid: React.FC = () => {
 
     const { data: programs } = useCommunityAiPrograms();
 
-    console.log(programs);
     return (
         <div className="flex flex-col gap-2">
             <span className="text-2xl px-8 pt-8">From the Community</span>

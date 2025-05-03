@@ -59,7 +59,6 @@ export const SaveDialog: React.FC<IProps> = (props) => {
         if (typeof window !== "undefined") {
             const localStorageProgram = localStorage.getItem(isHevy ? "hevy-program-in-progress" : "program-in-progress");
             const localStoragePrompt = localStorage.getItem("prompt");
-            console.log(localStoragePrompt);
             if (localStoragePrompt) {
                 setPrompt(localStoragePrompt);
             }

@@ -5,7 +5,7 @@ import { BuildProgramSkeleton } from "./BuildProgramSkeleton";
 import { HevyRoutine } from "./HevyRoutine";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { useBuildAiProgram, useSharedProgram } from "@/api/hooks";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ProximaProgram } from "./ProximaProgram";
 import { usePreview } from "@/contexts/PreviewContext";
 import { HevyRoutineSchedule } from "./hevy/HevyRoutineSchedule";
@@ -21,12 +21,23 @@ export const BuildProgramPage: React.FC = () => {
 
     const shareId = searchParams.get('shareId') ?? '';
     const edit = searchParams.get('edit') ?? '';
+    const resume = searchParams.get('resume') ?? '';
+    const [resumeProgram, setResumeProgram] = useState<THevyRoutine[]>();
 
-    if (edit === 'true') {
-        setIsPreview(false);
-    } else {
-        setIsPreview(true);
-    }
+    useEffect(() => {
+        if (edit === 'true') {
+            setIsPreview(false);
+        } else {
+            setIsPreview(true);
+        }
+
+        if (resume === 'true') {
+            const program = localStorage.getItem('hevy-program-in-progress');
+            if (program) {
+                setResumeProgram(JSON.parse(program));
+            }
+        }
+    }, [edit, setIsPreview, resume]);
 
     const empty = searchParams.get('empty') ?? '';
     const search = searchParams.get('search') ?? '';
@@ -94,17 +105,26 @@ export const BuildProgramPage: React.FC = () => {
         }
     }, [search]);
 
-    const { data: program, isLoading: loadingProgram } =  useBuildAiProgram(request, isHevy, shareId);
-    const { data: sharedProgram, isLoading: loadingSharedProgram } = useSharedProgram(shareId);
+    const { data: program, isLoading: loadingProgram } =  useBuildAiProgram(request, isHevy, shareId, resume);
+    const { data: sharedProgram, isLoading: loadingSharedProgram } = useSharedProgram(shareId, resume);
 
-    if ((loadingProgram || program === undefined) && (loadingSharedProgram || sharedProgram === undefined)) {
+    if ((loadingProgram || program === undefined) && (loadingSharedProgram || sharedProgram === undefined) && resume === "") {
         return (
             <BuildProgramSkeleton />
         );
     }
 
-
-
+    if (resume === "true") {
+        return (
+            resumeProgram && resumeProgram.length > 0 ? (
+                <div className="max-sm:px-2 sm:pl-8">
+                    <HevyRoutine program={ resumeProgram as THevyRoutine[] } />
+                </div>
+            ) : (
+                <BuildProgramSkeleton />
+            )
+        );
+    }
 
     if (isHevy) {
         if (isPreview) {
