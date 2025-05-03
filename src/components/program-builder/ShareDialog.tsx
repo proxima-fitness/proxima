@@ -5,11 +5,11 @@ import {
 } from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { CopyIcon, FlameIcon } from "lucide-react";
+import { BicepsFlexedIcon, CopyIcon } from "lucide-react";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { v4 as uuidv4 } from "uuid";
 import { postAIProgram } from "@/app/(app)/actions";
-import { facebook, instagram } from "public";
+import { facebook, reddit } from "public";
 import { Input } from "../ui/input";
 import { toast } from "sonner";
 
@@ -81,25 +81,35 @@ export const ShareDialog: React.FC<IProps> = (props) => {
     return (
         <>
             <Dialog open={ openShareDialog } onOpenChange={ handleCloseDialog }>
-                <DialogContent className="sm:max-w-5xl max-sm:w-screen h-[20%]">
+                <DialogContent className="sm:max-w-5xl max-sm:w-screen h-[30%]">
                     <DialogTitle className="font-bold font-main text-2xl flex max-sm:flex-col max-sm:text-center items-center justify-center max-sm:pb-0 pb-4 gap-2">
-                        Share your Proxima AI Program with your friends<FlameIcon />
+                        Share your Proxima AI Program with your friends<BicepsFlexedIcon />
                     </DialogTitle>
                     <span className="w-full flex flex-row max-sm:flex-col items-center justify-center max-sm:justify-center gap-4">
                         <span className="flex flex-row items-center justify-center gap-4">
-                            <Button
-                                className="h-16 w-16"
+                            {/* <Button
+                                className="h-16 w-16 bg-lightSecondary"
                             >
                                 <img src={ instagram.src } alt="Instagram" className="h-full w-full" />
-                            </Button>
-                            <Button
-                                className="h-16 w-16"
+                            </Button> */}
+                            <a href={ `https://www.facebook.com/sharer/sharer.php?u=https://proximafitness.com/program-builder/build-program?shareId=${programId}&title=Check+Out+My+Custom+Workout+Program+Built+By+Proxima+AI!` } target="_blank" rel="noopener noreferrer">
+                                <Button
+                                    className="h-16 w-16 bg-lightSecondary"
+                                >
+                                    <img src={ facebook.src } alt="Facebook" className="h-full w-full" />
+                                </Button>
+                            </a>
+                            <a href={ `https://www.reddit.com/submit?url=https://proximafitness.com/program-builder/build-program?shareId=${programId}&title=Check+Out+My+Custom+Workout+Program+Built+By+Proxima+AI!` } target="_blank" rel="noopener noreferrer">
+                                <Button
+                                    variant="outline"
+                                    className="h-16 w-16"
                             >
-                                <img src={ facebook.src } alt="Facebook" className="h-full w-full" />
+                                <img src={ reddit.src } alt="Reddit" className="h-full w-full" />
                             </Button>
+                            </a>
                             <div className="flex flex-row items-center justify-center gap-2">
                                 <Input
-                                    className="h-16 w-full"
+                                    className="h-16 max-sm:w-full sm:w-[400px]"
                                     readOnly
                                     value={ `https://proximafitness.com/program-builder/build-program?shareId=${programId}` }
                                 />
