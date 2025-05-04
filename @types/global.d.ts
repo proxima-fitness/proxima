@@ -40,6 +40,7 @@ type TExercise = {
     name_espanol: string;
     name_portugues: string;
     name_francais: string;
+    normalized_name_english: string;
 }
 
 /** A Hevy Routine in the Program Builder is defined as: */
@@ -154,6 +155,7 @@ type THevyExerciseTemplate = {
     secondary_muscle_groups: string[]; // The secondary muscle groups of the exercise
     is_custom: boolean; // indicating whether the exercise is a custom exercise
     equipment: string; // The exercise equipment
+    normalized_title: string; // The normalized title of the exercise
 }
 
 type THevyDialog = {

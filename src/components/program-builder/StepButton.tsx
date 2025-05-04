@@ -24,8 +24,17 @@ export const StepButton: React.FC = () => {
         setOpenShareDialog(openShareDialog);
     };
 
+    if (segments.length === 1) {
+        return (
+            <Button
+                disabled
+                variant="ghost"
+                className="w-80"
+            />
+        )
+    }
 
-    if (!isPreview && segments.length !== 1) {
+    if (!isPreview) {
         return (
             <Button
                 variant="default"
@@ -36,8 +45,7 @@ export const StepButton: React.FC = () => {
                 <ArrowRightIcon />
             </Button>
         );
-
-    } else if (isPreview) {
+    } else if (isPreview ) {
         return (
             <div className="flex flex-row gap-2">
                 <Button
@@ -73,14 +81,5 @@ export const StepButton: React.FC = () => {
 
         );
 
-    } else {
-        return (
-            <Button
-                disabled
-                variant="ghost"
-                className="w-80"
-            >
-        </Button>
-        )
     }
 };

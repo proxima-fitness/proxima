@@ -38,7 +38,7 @@ export const getHevyExercises = async () => {
 
             const { data: hevyExercises, error: hevyExercisesError } = await supabase
                 .from('hevy_exercise_templates')
-                .select('id, title, type, primary_muscle_group, secondary_muscle_groups, is_custom, equipment')
+                .select('id, title, type, primary_muscle_group, secondary_muscle_groups, is_custom, equipment, normalized_title')
                 .order("title", { ascending: true});
 
             if (hevyExercisesError) {

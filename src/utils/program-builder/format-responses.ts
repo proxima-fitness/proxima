@@ -205,11 +205,13 @@ export const replaceTextToJsonExercisesHevy = (exercises: {
         includeScore: false,
         minMatchCharLength: 2,
         shouldSort: true,
-        threshold: 0.6,
+        threshold: 0.5,
         keys: [
-            "title",
+            "normalized_title",
         ],
     };
+
+    console.log(exercises);
 
     let filteredHevyExercises: THevyExerciseTemplate[] = [...hevyExercises];
     // Enforce excluding equipment, focusAreas and health issues from the options in hevyExercises.
@@ -251,8 +253,10 @@ export const replaceTextToJsonExercisesHevy = (exercises: {
 
     if (exercises && exercises.length > 0) {
         updatedExercises = exercises.flatMap((exercise, index) => {
-            const fuseResults = fuse && fuse?.search(exercise?.title ?? "", { limit : 1});
+            console.log("normalizedTitle:", normalizeExerciseTitle(exercise?.title ?? ""));
+            const fuseResults = fuse && fuse?.search(normalizeExerciseTitle(exercise?.title ?? ""), { limit : 1});
             const match = fuseResults?.[0]?.item;
+            console.log("match:", match);
 
             if (!match) return [];
                 return [{
@@ -279,6 +283,15 @@ export const replaceTextToJsonExercisesHevy = (exercises: {
 
 };
 
+export const normalizeExerciseTitle = (title: string): string => {
+    return title
+    .toLowerCase()
+    .replace(/[()]/g, '')
+    .split(/[\s-]+/)
+    .sort()
+    .join(' ');
+};
+
 // Replaces the exercises pulled from the AI edge function text-to-json into an TProgramCreatorExercise array
 export const replaceTextToJsonExercises = (request_exercises: {
     reps: number;
@@ -294,7 +307,7 @@ export const replaceTextToJsonExercises = (request_exercises: {
         includeScore: false,
         minMatchCharLength: 2,
         shouldSort: true,
-        threshold: 0.6,
+        threshold: 0.5,
         keys: [
             "name_english",
         ],

@@ -46,7 +46,7 @@ export const getExercises = async () => {
 
         const { data: exercises, error: exercisesError } = await supabase
             .from('exercises')
-            .select('id,name_english,name_espanol,name_portugues,name_francais,gif_id')
+            .select('id,name_english,name_espanol,name_portugues,name_francais,gif_id, normalized_name_english')
             .order("name_english", { ascending: true});
 
         if (exercisesError) {

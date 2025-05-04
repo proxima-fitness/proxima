@@ -11,7 +11,9 @@ export const AiProgramGrid: React.FC = () => {
     const { data: programs } = useCommunityAiPrograms();
 
     return (
-        <div className="flex flex-col gap-2">
+        <>
+        { programs &&
+            <div className="flex flex-col gap-2">
             <span className="text-2xl px-8 pt-8">From the Community</span>
             <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 py-8 px-8">
                 { programs?.map((program) => (
@@ -51,5 +53,7 @@ export const AiProgramGrid: React.FC = () => {
                 ))}
             </div>
         </div>
+        }
+        </>
     );
 };
