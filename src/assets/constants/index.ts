@@ -5964,6 +5964,12 @@ export const equipmentOptions: IOption[] = [
     { label: "Smith machine", value: "smith machine"},
     { label: "Cable", value: "cable"},
     { label: "Cardio", value: "cardio"},
+    { label: "Band", value: "band"},
+    { label: "Suspension", value: "suspension"},
+    { label: "Resistance band", value: "resistance_band"},
+    { label: "Plate", value: "plate"},
+    { label: "Other", value: "other"},
+    { label: "None", value: "none"},
 ];
 
 export const focusAreasOptions: IOption[] = [

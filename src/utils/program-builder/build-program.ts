@@ -15,7 +15,7 @@ export const buildPrompt = (
     focusAreas: string, // goes into AI Prompt
     difficultyLevel: string, // goes into AI Prompt
     excludeAreas: string, // goes into AI Prompt
-    excludeEquipment: string, // goes into AI Prompt
+    // excludeEquipment: string, // goes into AI Prompt
     excludeSpecializations: string, // goes into AI Prompt
     healthIssues: string, // goes into AI Prompt
 ) => {
@@ -50,9 +50,9 @@ export const buildPrompt = (
     if (excludeAreas.length > 0) {
         prompt += excludeAreas;
     }
-    if (excludeEquipment.length > 0) {
-        prompt += excludeEquipment;
-    }
+    // if (excludeEquipment.length > 0) {
+    //     prompt += excludeEquipment;
+    // }
     if (excludeSpecializations.length > 0) {
         prompt += excludeSpecializations;
     }

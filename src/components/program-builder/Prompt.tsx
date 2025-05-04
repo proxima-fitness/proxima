@@ -44,7 +44,16 @@ export const Prompt: React.FC = () => {
     const [focusAreas, setFocusAreas] = useState<IOption[]>([]);
     const [difficultyLevel, setDifficultyLevel] = useState<IOption[]>([]);
     const [excludeAreas, setExcludeAreas] = useState<IOption[]>([]);
-    const [excludeEquipment, setExcludeEquipment] = useState<IOption[]>([]);
+    const [excludeEquipment, setExcludeEquipment] = useState<IOption[]>(
+        [
+            { label: "Band", value: "band" },
+            { label: "Suspension", value: "suspension" },
+            { label: "Resistance band", value: "resistance_band" },
+            { label: "Plate", value: "plate" },
+            { label: "Other", value: "other" },
+            { label: "None", value: "none" },
+        ]
+    );
     const [excludeSpecializations, setExcludeSpecializations] = useState<IOption[]>([]);
     const [healthIssues, setHealthIssues] = useState<IOption[]>([]);
 
