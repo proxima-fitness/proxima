@@ -57,7 +57,14 @@ export const getCommunityAiPrograms = async () => {
         if (error) {
             console.error('Error fetching community ai programs:', error);
         } else if (data && data.length > 0 ) {
-            return data as unknown as TProgram[];
+            const seen = new Set<string>();
+            const uniqueData = data.filter(program => {
+                if (seen.has(program.prompt)) return false;
+                seen.add(program.prompt);
+                return true;
+            });
+
+            return uniqueData as unknown as TProgram[];
         }
     } catch (error: unknown) {
         console.error('Error fetching community ai programs:', error);
