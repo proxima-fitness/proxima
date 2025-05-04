@@ -211,7 +211,6 @@ export const replaceTextToJsonExercisesHevy = (exercises: {
         ],
     };
 
-
     let filteredHevyExercises: THevyExerciseTemplate[] = [...hevyExercises];
     // Enforce excluding equipment, focusAreas and health issues from the options in hevyExercises.
     const excludedEq = excludeEquipment.split(",").map((e) => e.trim().toLowerCase());

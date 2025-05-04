@@ -208,6 +208,7 @@ export const buildAiProgram = async (request: TTextToJsonRequest, isHevy: boolea
             request.focusAreas,
             request.difficultyLevel,
             request.excludeAreas,
+            request.workoutDuration,
             // request.excludeEquipment,
             request.excludeSpecializations,
             request.healthIssues,
