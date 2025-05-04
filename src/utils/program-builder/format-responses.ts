@@ -211,7 +211,6 @@ export const replaceTextToJsonExercisesHevy = (exercises: {
         ],
     };
 
-    console.log(exercises);
 
     let filteredHevyExercises: THevyExerciseTemplate[] = [...hevyExercises];
     // Enforce excluding equipment, focusAreas and health issues from the options in hevyExercises.
@@ -253,10 +252,8 @@ export const replaceTextToJsonExercisesHevy = (exercises: {
 
     if (exercises && exercises.length > 0) {
         updatedExercises = exercises.flatMap((exercise, index) => {
-            console.log("normalizedTitle:", normalizeExerciseTitle(exercise?.title ?? ""));
             const fuseResults = fuse && fuse?.search(normalizeExerciseTitle(exercise?.title ?? ""), { limit : 1});
             const match = fuseResults?.[0]?.item;
-            console.log("match:", match);
 
             if (!match) return [];
                 return [{
