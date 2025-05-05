@@ -2,7 +2,7 @@ import styles from "@/style";
 import { GetStarted } from "../header/GetStarted";
 import { useOpUserMetadataSSR, useProgramByIdSSR, useUserFullNameSSR } from "@/api/hooks";
 import { ProgramDetails } from "./ProgramDetails";
-import { ProgramSchedule } from "./ProgramSchedule";
+import { ProgramSchedule } from "../program-builder/proxima/ProgramSchedule";
 import { sortWorkouts } from "@/utils/general/helpers";
 import { FC } from "react";
 

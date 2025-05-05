@@ -1,7 +1,7 @@
-import { Breadcrumbs } from "@/components/program-builder/Breadcrumbs";
-import { ProgramBuilderTabs } from "@/components/program-builder/ProgramBuilderTabs";
-import { StepButton } from "@/components/program-builder/StepButton";
-import { ToolsTabs } from "@/components/program-builder/ToolsTabs";
+import { Breadcrumbs } from "@/components/program-builder/shared/Breadcrumbs";
+import { ProgramBuilderTabs } from "@/components/program-builder/shared/ProgramBuilderTabs";
+import { StepButton } from "@/components/program-builder/shared/StepButton";
+import { ToolsTabs } from "@/components/program-builder/shared/ToolsTabs";
 
 export default async function ProgramBuilderLayout({
     children,

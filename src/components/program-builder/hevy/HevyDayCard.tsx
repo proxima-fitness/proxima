@@ -14,12 +14,11 @@ import {
   } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DropIndicator } from "@/components/drag-and-drop/DropIndicator";
+import { DropIndicator } from "@/components/program-builder/shared/DropIndicator";
 import { HevyExerciseVisualizer } from "./HevyExerciseVisualizer";
 import { HevyDuplicateDay } from "./HevyDuplicateDay";
 import { IOption } from "@/components/ui/multi-select";
-import { convertHevyExerciseIntoHevyAddExercise } from "@/utils/program-builder";
-
+import { convertHevyExerciseIntoHevyAddExercise } from "../utils";
 interface IProps {
     day: THevyRoutine;
     title: string;

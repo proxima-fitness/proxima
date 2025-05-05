@@ -4,8 +4,8 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { EllipsisIcon, CopyIcon, PlusIcon } from "lucide-react";
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Button } from "../ui/button";
-import { DuplicateDay } from "./DuplicateDay";
+import { Button } from "@/components/ui/button";
+import { DuplicateDay } from "@/components/program-builder/proxima/DuplicateDay";
 import { useState, FC, useEffect } from "react";
 import { IOption } from "@/components/ui/multi-select";
 import {
@@ -15,10 +15,10 @@ import {
     DropdownMenuShortcut,
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu";
-import { Input } from "../ui/input";
-import { DropIndicator } from "../drag-and-drop/DropIndicator";
-import { TooltipExerciseVisualizer } from "../generic/TooltipExerciseVisualizer";
-import { convertProgramCreatorExerciseToAddExercise } from "@/utils/program-builder";
+import { Input } from "@/components/ui/input";
+import { DropIndicator } from "@/components/program-builder/shared/DropIndicator";
+import { ExerciseVisualizer } from "@/components/program-builder/proxima/ExerciseVisualizer";
+import { convertProgramCreatorExerciseToAddExercise } from "../utils";
 
 interface IProps {
     day: TProgramCreatorDay;
@@ -79,40 +79,40 @@ export const DayCard: FC<IProps> = (props) => {
         weekOrder,
     };
 
-        useEffect(() => {
-            const handleKeyDown = (event: KeyboardEvent) => {
-                if (focusedCardId === day.id) {
-                    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "e") {
-                        event.preventDefault();
-                        setEditTitleOpen(true);
-                    } else if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "d") {
-                        event.preventDefault();
-                        handleDeleteDay(day.id);
-                    }
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (focusedCardId === day.id) {
+                if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "e") {
+                    event.preventDefault();
+                    setEditTitleOpen(true);
+                } else if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "d") {
+                    event.preventDefault();
+                    handleDeleteDay(day.id);
                 }
-            };
+            }
+        };
 
-            document.addEventListener("keydown", handleKeyDown);
-            return () => {
-                document.removeEventListener("keydown", handleKeyDown);
-            };
-        }, [day.id, day.order, focusedCardId, handleDeleteDay, handleOpenGenerateDayDialog]);
+        document.addEventListener("keydown", handleKeyDown);
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [day.id, day.order, focusedCardId, handleDeleteDay, handleOpenGenerateDayDialog]);
 
-        useEffect(() => {
-            const handleKeyDown = (event: KeyboardEvent) => {
-                if (focusedCardId === day.id) {
-                    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "g") {
-                        event.preventDefault();
-                        handleOpenGenerateDayDialog({ weekOrder: Number(weekOrder), dayOrder: Number(day.order), isOpen: true });
-                    }
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (focusedCardId === day.id) {
+                if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "g") {
+                    event.preventDefault();
+                    handleOpenGenerateDayDialog({ weekOrder: Number(weekOrder), dayOrder: Number(day.order), isOpen: true });
                 }
-            };
+            }
+        };
 
-            document.addEventListener("keydown", handleKeyDown);
-            return () => {
-                document.removeEventListener("keydown", handleKeyDown);
-            };
-        }, [day.id, day.order, focusedCardId, handleDeleteDay, handleOpenGenerateDayDialog, weekOrder]);
+        document.addEventListener("keydown", handleKeyDown);
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [day.id, day.order, focusedCardId, handleDeleteDay, handleOpenGenerateDayDialog, weekOrder]);
 
 
     return (
@@ -222,7 +222,7 @@ export const DayCard: FC<IProps> = (props) => {
                             </div>
                         </div>
                     </div>
-                    <TooltipExerciseVisualizer
+                    <ExerciseVisualizer
                             day={ day }
                             weekOrder={ weekOrder }
                             handleEdit={ handleEdit }

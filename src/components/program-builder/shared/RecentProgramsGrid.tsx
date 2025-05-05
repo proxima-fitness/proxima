@@ -36,6 +36,8 @@ export const RecentProgramsGrid: React.FC = () => {
         )
     }
 
+    console.log(prompt.length);
+
     return (
         <div className="flex flex-col gap-2 bg-gray-100">
             <span className="text-2xl px-8 pt-8 flex flex-row items-center justify-center gap-2">
@@ -53,7 +55,7 @@ export const RecentProgramsGrid: React.FC = () => {
                         />
                         <div className="p-4 space-y-2">
                             <div className="font-third text-sm overflow-hidden text-ellipsis line-clamp-5">
-                                { prompt }
+                                { prompt.length === 2 ? "No prompt provided" : prompt }
                             </div>
                         </div>
                     </div>

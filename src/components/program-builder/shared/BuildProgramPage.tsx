@@ -2,15 +2,15 @@
 
 import { useSearchParams } from "next/navigation";
 import { BuildProgramSkeleton } from "./BuildProgramSkeleton";
-import { HevyRoutine } from "./HevyRoutine";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { useBuildAiProgram, useSharedProgram } from "@/api/hooks";
 import { useEffect, useMemo, useState } from "react";
-import { ProximaProgram } from "./ProximaProgram";
+import { ProximaProgram } from "../proxima/ProximaProgram";
 import { usePreview } from "@/contexts/PreviewContext";
-import { HevyRoutineSchedule } from "./hevy/HevyRoutineSchedule";
-import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts } from "@/utils/program-builder";
-import { ProgramSchedule } from "../programs/ProgramSchedule";
+import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts } from "../utils";
+import { HevyRoutine } from "../hevy/HevyRoutine";
+import { HevyRoutineSchedule } from "../hevy/HevyRoutineSchedule";
+import { ProgramSchedule } from "../proxima/ProgramSchedule";
 
 export const BuildProgramPage: React.FC = () => {
 

@@ -9,12 +9,12 @@ import { Button } from "@/components/ui/button";
 import {  CopyIcon, DownloadIcon, LogInIcon, PartyPopperIcon } from "lucide-react";
 import { toast } from "sonner";
 import { PDFViewer } from '@react-pdf/renderer';
-import { PdfRenderer } from "../generic/PdfRenderer";
 import { useIsHevy } from "@/contexts/HevyContext";
-import { HevyPdfRenderer } from "./hevy/HevyPdfRenderer";
 import { v4 as uuidv4 } from "uuid";
-import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts, removeOrderHevy } from "@/utils/program-builder";
+import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts, removeOrderHevy } from "../utils";
 import { postAIProgram } from "@/app/(app)/actions";
+import { HevyPdfRenderer } from "../hevy/HevyPdfRenderer";
+import { PdfRenderer } from "../proxima/PdfRenderer";
 
 interface IProps {
     openSaveDialog: boolean;

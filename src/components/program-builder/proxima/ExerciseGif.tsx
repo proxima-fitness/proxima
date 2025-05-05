@@ -1,6 +1,6 @@
-import { useExerciseGif } from "../../api/hooks";
+import { useExerciseGif } from "@/api/hooks";
 import { useMemo, useState } from "react";
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { lightColours } from "@/assets/constants";
 import { getInitials } from "@/utils/general/helpers";
 

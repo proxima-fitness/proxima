@@ -10,7 +10,7 @@ import { useIsHevy } from "@/contexts/HevyContext";
 import { v4 as uuidv4 } from "uuid";
 import { postAIProgram } from "@/app/(app)/actions";
 import { facebook, reddit } from "public";
-import { Input } from "../ui/input";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 interface IProps {

@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { DropIndicator } from "./DropIndicator";
+import { DropIndicator } from "../shared/DropIndicator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CopyIcon, PlusIcon } from "lucide-react";
-import { DayCard } from "../program-builder/DayCard";
+import { DayCard } from "./DayCard";
 import { Button } from "@/components/ui/button";
-import { DuplicateWeek } from "../program-builder/DuplicateWeek";
+import { DuplicateWeek } from "./DuplicateWeek";
 import { IOption } from "@/components/ui/multi-select";
-import { reorder } from "@/utils/program-builder";
+import { reorder } from "../utils";
 
 interface IProps {
     title: string;

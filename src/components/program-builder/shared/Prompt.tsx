@@ -1,21 +1,22 @@
 "use client";
 
 import { ArrowUpIcon, BicepsFlexedIcon, BookOpenIcon, Calculator, ChevronDownIcon, ChevronUpIcon, FootprintsIcon, InfoIcon, MicIcon, SearchIcon, SparklesIcon, SquarePowerIcon } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 // import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../dropzone";
-import { Card } from "../ui/card";
+import { Card } from "@/components/ui/card";
 import { useEffect, useReducer, useRef, useState } from "react";
 // import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
-import { Textarea } from "../ui/textarea";
-import { Button } from "../ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import MultiSelect, { IOption } from "../ui/multi-select";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "../ui/dialog";
-import { Input } from "../ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import MultiSelect, { IOption } from "@/components/ui/multi-select";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { activityLevelOptions, ageOptions, dayPerWeekOptions, difficultyOptions, equipmentOptions, focusAreasOptions, goalsOptions, healthIssuesOptions, programLengthOptions, sexOptions, specializationOptions, specificDaysOptions, workoutDurationOptions } from "@/assets/constants";
 import { useIsHevy } from "@/contexts/HevyContext";
-import { inferDaysPerWeek } from "@/utils/program-builder";
+import { inferDaysPerWeek } from "../utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export const Prompt: React.FC = () => {
 

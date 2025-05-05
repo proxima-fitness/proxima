@@ -1,5 +1,5 @@
 import { shortEnglishHumanizer } from "@/assets/constants";
-import { Card } from "../ui/card";
+import { Card } from "@/components/ui/card";
 
 interface IProps {
     sortedWorkoutsByWeek: TScheduleWorkouts[][];

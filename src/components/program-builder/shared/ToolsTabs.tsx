@@ -11,10 +11,10 @@ import {
 } from "@/components/ui/sheet"
 import { SquarePenIcon } from "lucide-react";
 import { useEffect, useReducer, useState } from "react";
-import { Card } from "../ui/card";
-import { Input } from "../ui/input";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
-import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../dropzone";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/dropzone";
 import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
 import { ScrollArea } from "@/components/ui/scroll-area";
 

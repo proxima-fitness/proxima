@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { intensities, rep_types } from "@/assets/constants";
 import { getExerciseFromLocalStorageByID, getExerciseFromLocalStorageByName } from "@/utils/general/helpers";
-import { ExerciseSearchBar } from "../generic/ExerciseSearchBar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { Input } from "../ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { PlusIcon, Trash2Icon, XIcon } from "lucide-react";
-import { addExerciseToProgramCreatorExerciseConverter, convertProgramCreatorExerciseToAddExercise } from "@/utils/program-builder";
+import { addExerciseToProgramCreatorExerciseConverter, convertProgramCreatorExerciseToAddExercise } from "../utils";
+import { ExerciseSearchBar } from "@/components/program-builder/proxima/ExerciseSearchBar";
 
 interface IProps {
     addExerciseDialog: TDialog;

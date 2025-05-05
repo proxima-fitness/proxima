@@ -6,8 +6,8 @@ import { getOpUserId, getUserFullName, getUserMetaData } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getExercises } from "./exercises";
 import { getHevyExercises } from "./hevy";
-import { getExerciseGifIdForHevyExercise } from "@/utils/program-builder";
 import { buildAiProgram } from "./edge-functions";
+import { getExerciseGifIdForHevyExercise } from "@/components/program-builder/utils";
 
 /*********************************/
 /** CLIENT SIDE RENDERED HOOKS **/

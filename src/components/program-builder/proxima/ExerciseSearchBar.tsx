@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import Fuse from "fuse.js";
-import { Input } from "../ui/input";
-import { ExerciseGif } from "./ExerciseGif";
+import { Input } from "../../ui/input";
 import { SearchIcon } from "lucide-react";
 import { FixedSizeList as List } from 'react-window';
+import { ExerciseGif } from "./ExerciseGif";
 
 // Fuse Fuzzy match options
 const options = {

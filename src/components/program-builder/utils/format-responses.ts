@@ -1,5 +1,5 @@
 import { healthIssuesMuscles, primaryMuscleGroups } from "@/assets/constants";
-import { amrapAsNumber, getExerciseFromLocalStorageByID } from "../general/helpers";
+import { amrapAsNumber, getExerciseFromLocalStorageByID } from "@/utils/general/helpers";
 import Fuse from "fuse.js";
 
 // Used to add week order and Id to program days for the drag and drop

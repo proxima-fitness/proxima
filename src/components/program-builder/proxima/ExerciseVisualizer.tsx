@@ -1,7 +1,7 @@
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ExerciseGif } from "./ExerciseGif";
 import { SquarePenIcon, Trash2Icon } from "lucide-react";
+import { ExerciseGif } from "./ExerciseGif";
 
 interface IProps {
     day: TProgramCreatorDay;
@@ -10,7 +10,7 @@ interface IProps {
     handleDeleteExercise: (weekOrder: number, dayOrder: number, exerciseIndex: number) => void;
 }
 
-export const TooltipExerciseVisualizer: React.FC<IProps> = (props) => {
+export const ExerciseVisualizer: React.FC<IProps> = (props) => {
 
     const {
         day,

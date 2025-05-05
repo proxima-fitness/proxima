@@ -1,7 +1,7 @@
 import { supabaseKey, supabaseUrl } from ".";
 import { emptyHevyRoutineProgram, emptyProximaProgram } from "@/assets/constants";
-import { aiRequest, buildFallbackProgram, buildProgram, buildPrompt } from "@/utils/program-builder";
-import { buildHevyFallbackProgram, buildHevyProgram } from "@/utils/program-builder/build-hevy-program";
+import { aiRequest, buildFallbackProgram, buildProgram, buildPrompt } from "@/components/program-builder/utils";
+import { buildHevyFallbackProgram, buildHevyProgram } from "@/components/program-builder/utils/build-hevy-program";
 import { toast } from "sonner";
 
 interface ITextToJsonRequestPayload {

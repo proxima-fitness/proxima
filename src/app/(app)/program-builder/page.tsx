@@ -2,9 +2,9 @@ import styles from "@/style";
 import { MessageSquareWarningIcon } from "lucide-react";
 import { AvatarStack } from "@/components/avatar-stack";
 import { jack, people02, people03, people04, people05 } from "public";
-import { Prompt } from "@/components/program-builder/Prompt";
-import { AiProgramGrid } from "@/components/program-builder/AiProgramGrid";
-import { RecentProgramsGrid } from "@/components/program-builder/RecentProgramsGrid";
+import { Prompt } from "@/components/program-builder/shared/Prompt";
+import { AiProgramGrid } from "@/components/program-builder/shared/AiProgramGrid";
+import { RecentProgramsGrid } from "@/components/program-builder/shared/RecentProgramsGrid";
 
 export const metadata = {
     title: "AI Program Builder | Proxima Fitness",

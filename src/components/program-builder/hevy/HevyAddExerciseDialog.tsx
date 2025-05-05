@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { HevyExerciseSearchBar } from "./HevyExerciseSearchBar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getExerciseGifIdForHevyExercise } from "@/utils/program-builder";
+import { getExerciseGifIdForHevyExercise } from "../utils";
 
 interface IProps {
     addExerciseDialog: THevyDialog;

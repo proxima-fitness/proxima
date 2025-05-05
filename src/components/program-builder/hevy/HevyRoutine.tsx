@@ -4,14 +4,14 @@
 
 import { useEffect, useState } from "react";
 import {  useHevyExercises } from "@/api/hooks";
-import { HevyColumn } from "./hevy/HevyColumn";
-import { HevyAddExerciseDialog } from "./hevy/HevyAddExerciseDialog";
-import { HevyGenerateDayDialog } from "./hevy/HevyGenerateDayDialog";
+import { HevyColumn } from "./HevyColumn";
+import { HevyAddExerciseDialog } from "./HevyAddExerciseDialog";
+import { HevyGenerateDayDialog } from "./HevyGenerateDayDialog";
 import { IOption } from "@/components/ui/multi-select";
-import { aiRequest, appendOrderToHevyRoutines, getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy, sortHevyByOrder } from "@/utils/program-builder";
 import { getHevyExerciseFromLocalStorageByID } from "@/utils/general/helpers";
 import { toast } from "sonner";
-import { buildHevyProgram } from "@/utils/program-builder/build-hevy-program";
+import { aiRequest, appendOrderToHevyRoutines, getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy, sortHevyByOrder } from "../utils";
+import { buildHevyProgram } from "../utils/build-hevy-program";
 
 interface IProps {
     program: THevyRoutine[];

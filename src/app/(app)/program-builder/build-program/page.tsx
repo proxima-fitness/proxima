@@ -1,5 +1,5 @@
-import { BuildProgramPage } from "@/components/program-builder/BuildProgramPage";
-import { BuildProgramSkeleton } from "@/components/program-builder/BuildProgramSkeleton";
+import { BuildProgramPage } from "@/components/program-builder/shared/BuildProgramPage";
+import { BuildProgramSkeleton } from "@/components/program-builder/shared/BuildProgramSkeleton";
 import { Suspense } from "react";
 
 export const metadata = {

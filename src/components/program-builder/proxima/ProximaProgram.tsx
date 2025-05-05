@@ -5,8 +5,8 @@ import { AddExerciseDialog } from "./AddExerciseDialog";
 import { IOption } from "@/components/ui/multi-select";
 import { GenerateDayDialog } from "./GenerateDayDialog";
 import { useExercises } from "@/api/hooks";
-import { Column } from "../drag-and-drop/Column";
-import { addExerciseToProgramCreatorExerciseConverter, aiRequest, appendWeekOrderAndIdToProgramDays, buildProgram, deFlattenProgram, flattenProgram, reorder } from "@/utils/program-builder";
+import { Column } from "./Column";
+import { addExerciseToProgramCreatorExerciseConverter, aiRequest, appendWeekOrderAndIdToProgramDays, buildProgram, deFlattenProgram, flattenProgram, reorder } from "../utils";
 import { toast } from "sonner";
 
 interface IProps {
