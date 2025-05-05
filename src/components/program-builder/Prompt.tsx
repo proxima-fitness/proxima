@@ -46,6 +46,7 @@ export const Prompt: React.FC = () => {
     const [excludeAreas, setExcludeAreas] = useState<IOption[]>([]);
     const [excludeEquipment, setExcludeEquipment] = useState<IOption[]>(
         [
+            { label: "Bodyweight", value: "bodyweight" },
             { label: "Band", value: "band" },
             { label: "Suspension", value: "suspension" },
             { label: "Resistance band", value: "resistance_band" },
