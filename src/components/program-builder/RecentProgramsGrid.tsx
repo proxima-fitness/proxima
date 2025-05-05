@@ -1,7 +1,7 @@
 "use client";
 
 import { useIsHevy } from "@/contexts/HevyContext";
-import { Redo2Icon } from "lucide-react";
+import { Redo2Icon, StepForwardIcon } from "lucide-react";
 import Link from "next/link";
 import { quotes } from "public";
 import { useEffect, useState } from "react";
@@ -37,11 +37,14 @@ export const RecentProgramsGrid: React.FC = () => {
     }
 
     return (
-        <div className="flex flex-col gap-2">
-            <span className="text-2xl px-8 pt-8">Resume Building Program</span>
+        <div className="flex flex-col gap-2 bg-gray-100">
+            <span className="text-2xl px-8 pt-8 flex flex-row items-center justify-center gap-2">
+                <StepForwardIcon />
+                Resume Building Program
+            </span>
             <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 py-8 px-8">
                 { hevyRoutine &&
-                    <div key={ hevyRoutine[0].id } className="relative group bg-lightGray h-[200px] rounded-lg shadow-lg">
+                    <div key={ hevyRoutine[0].id } className="relative group bg-white h-[200px] rounded-lg shadow-lg">
                     <div className="absolute inset-0 transition duration-300 group-hover:blur-sm z-0">
                         <img
                             src={quotes.src}
