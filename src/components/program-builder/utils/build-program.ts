@@ -200,6 +200,7 @@ export const buildOneDayRoutine = async (split: TTextToJsonResponse, programLeng
                 day_title: split?.workout_days[0]?.day_title ?? fallbackOneDay.workout_days[0].day_title,
                 order: "1",
                 exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackOneDay.workout_days[0].exercises, exercises),
+                notes: "",
             },
 
         ];
@@ -221,16 +222,19 @@ export const buildPushPullLegsRoutine = async (split: TTextToJsonResponse, progr
                 {
                     day_title: split?.workout_days[0]?.day_title ?? fallbackPPL.workout_days[0].day_title,
                     order: "1",
+                    notes: "",
                     exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackPPL.workout_days[0].exercises, exercises),
                 },
                 {
                     day_title: split?.workout_days[1]?.day_title ?? fallbackPPL.workout_days[1].day_title,
                     order: "2",
+                    notes: "",
                     exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackPPL.workout_days[1].exercises, exercises),
                 },
                 {
                     day_title: split?.workout_days[2]?.day_title ?? fallbackPPL.workout_days[2].day_title,
                     order: "3",
+                    notes: "",
                     exercises: replaceTextToJsonExercises(split?.workout_days[2]?.exercises ?? fallbackPPL.workout_days[2].exercises, exercises),
                 },
             ];
@@ -243,31 +247,37 @@ export const buildPushPullLegsRoutine = async (split: TTextToJsonResponse, progr
                 {
                     day_title: split?.workout_days[0]?.day_title ?? fallbackPPL.workout_days[0].day_title,
                     order: "1",
+                    notes: "",
                     exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackPPL.workout_days[0].exercises, exercises),
                 },
                 {
                     day_title: split?.workout_days[1]?.day_title ?? fallbackPPL.workout_days[1].day_title,
                     order: "2",
+                    notes: "",
                     exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackPPL.workout_days[1].exercises, exercises),
                 },
                 {
                     day_title: split?.workout_days[2]?.day_title ?? fallbackPPL.workout_days[2].day_title,
                     order: "3",
+                    notes: "",
                     exercises: replaceTextToJsonExercises(split?.workout_days[3]?.exercises ?? fallbackPPL.workout_days[2].exercises, exercises),
                 },
                 {
                     day_title: split?.workout_days[0]?.day_title ?? fallbackPPL.workout_days[0].day_title,
                     order: "4",
+                    notes: "",
                     exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackPPL.workout_days[0].exercises, exercises),
                 },
                 {
                     day_title: split?.workout_days[1]?.day_title ?? fallbackPPL.workout_days[1].day_title,
                     order: "5",
+                    notes: "",
                     exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackPPL.workout_days[1].exercises, exercises),
                 },
                 {
                     day_title: split?.workout_days[2]?.day_title ?? fallbackPPL.workout_days[2].day_title,
                     order: "6",
+                    notes: "",
                     exercises: replaceTextToJsonExercises(split?.workout_days[2]?.exercises ?? fallbackPPL.workout_days[2].exercises, exercises),
                 },
             ];
@@ -292,11 +302,13 @@ export const buildUpperLowerRoutine = async (split: TTextToJsonResponse, program
                 {
                     day_title: split?.workout_days[0]?.day_title ?? fallbackUpperLower.workout_days[0].day_title,
                     order: "1",
+                    notes: "",
                     exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackUpperLower.workout_days[0].exercises, exercises),
                 },
                 {
                     day_title: split?.workout_days[1]?.day_title ?? fallbackUpperLower.workout_days[1].day_title,
                     order: "2",
+                    notes: "",
                     exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackUpperLower.workout_days[1].exercises, exercises),
                 },
 
@@ -310,21 +322,25 @@ export const buildUpperLowerRoutine = async (split: TTextToJsonResponse, program
                 {
                     day_title: split?.workout_days[0]?.day_title ?? fallbackUpperLower.workout_days[0].day_title,
                     order: "1",
+                    notes: "",
                     exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackUpperLower.workout_days[0].exercises, exercises),
                 },
                 {
                     day_title: split?.workout_days[1]?.day_title ?? fallbackUpperLower.workout_days[1].day_title,
                     order: "2",
+                    notes: "",
                     exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackUpperLower.workout_days[1].exercises, exercises),
                 },
                 {
                     day_title: split?.workout_days[0]?.day_title ?? fallbackUpperLower.workout_days[0].day_title,
                     order: "3",
+                    notes: "",
                     exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackUpperLower.workout_days[0].exercises, exercises),
                 },
                 {
                     day_title: split?.workout_days[1]?.day_title ?? fallbackUpperLower.workout_days[1].day_title,
                     order: "4",
+                    notes: "",
                     exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackUpperLower.workout_days[1].exercises, exercises),
                 },
 
@@ -348,26 +364,31 @@ export const buildFiveDayRoutine = async (split: TTextToJsonResponse, programLen
             {
                 day_title: split?.workout_days[0]?.day_title ?? fallbackCBLSA.workout_days[0].day_title,
                 order: "1",
+                notes: "",
                 exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackCBLSA.workout_days[0].exercises, exercises),
             },
             {
                 day_title: split?.workout_days[1]?.day_title ?? fallbackCBLSA.workout_days[1].day_title,
                 order: "2",
+                notes: "",
                 exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackCBLSA.workout_days[1].exercises, exercises),
             },
             {
                 day_title: split?.workout_days[2]?.day_title ?? fallbackCBLSA.workout_days[2].day_title,
                 order: "3",
+                notes: "",
                 exercises: replaceTextToJsonExercises(split?.workout_days[2]?.exercises ?? fallbackCBLSA.workout_days[2].exercises, exercises),
             },
             {
                 day_title: split?.workout_days[3]?.day_title ?? fallbackCBLSA.workout_days[3].day_title,
                 order: "4",
+                notes: "",
                 exercises: replaceTextToJsonExercises(split?.workout_days[3]?.exercises ?? fallbackCBLSA.workout_days[3].exercises, exercises),
             },
             {
                 day_title: split?.workout_days[4]?.day_title ?? fallbackCBLSA.workout_days[4].day_title,
-                order: "4",
+                order: "5",
+                notes: "",
                 exercises: replaceTextToJsonExercises(split?.workout_days[4]?.exercises ?? fallbackCBLSA.workout_days[4].exercises, exercises),
             },
         ];
@@ -389,36 +410,43 @@ export const buildHevySevenDayRoutine = async (split: TTextToJsonResponse, progr
             {
                 day_title: split?.workout_days[0]?.day_title ?? fallbackSevenDay.workout_days[0].day_title,
                 order: "1",
+                notes: "",
                 exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackSevenDay.workout_days[0].exercises, exercises),
             },
             {
                 day_title: split?.workout_days[1]?.day_title ?? fallbackSevenDay.workout_days[1].day_title,
                 order: "2",
+                notes: "",
                 exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackSevenDay.workout_days[1].exercises, exercises),
             },
             {
                 day_title: split?.workout_days[2]?.day_title ?? fallbackSevenDay.workout_days[2].day_title,
                 order: "3",
+                notes: "",
                 exercises: replaceTextToJsonExercises(split?.workout_days[2]?.exercises ?? fallbackSevenDay.workout_days[2].exercises, exercises),
             },
             {
                 day_title: split?.workout_days[0]?.day_title ?? fallbackSevenDay.workout_days[0].day_title,
                 order: "4",
+                notes: "",
                 exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackSevenDay.workout_days[0].exercises, exercises),
             },
             {
                 day_title: split?.workout_days[1]?.day_title ?? fallbackSevenDay.workout_days[1].day_title,
-                order: "4",
+                order: "5",
+                notes: "",
                 exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackSevenDay.workout_days[1].exercises, exercises),
             },
             {
                 day_title: split?.workout_days[2]?.day_title ?? fallbackSevenDay.workout_days[2].day_title,
-                order: "4",
+                order: "6",
+                notes: "",
                 exercises: replaceTextToJsonExercises(split?.workout_days[2]?.exercises ?? fallbackSevenDay.workout_days[2].exercises, exercises),
             },
             {
                 day_title: split?.workout_days[3]?.day_title ?? fallbackSevenDay.workout_days[3].day_title,
-                order: "4",
+                order: "7",
+                notes: "",
                 exercises: replaceTextToJsonExercises(split?.workout_days[3]?.exercises ?? fallbackSevenDay.workout_days[3].exercises, exercises),
             },
         ];

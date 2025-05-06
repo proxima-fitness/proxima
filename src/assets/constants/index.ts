@@ -253,6 +253,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "1",
         title: "",
+        notes: "",
         folder_id: 0,
         updated_at: "2025-03-07T12:00:00Z",
         created_at: "2025-03-01T12:00:00Z",
@@ -261,6 +262,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "2",
         title: "",
+        notes: "",
         folder_id: 0,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -269,6 +271,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "3",
         title: "",
+        notes: "",
         folder_id: 1,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -277,6 +280,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "4",
         title: "",
+        notes: "",
         folder_id: 1,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -285,6 +289,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "5",
         title: "",
+        notes: "",
         folder_id: 2,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -293,6 +298,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "6",
         title: "",
+        notes: "",
         folder_id: 2,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -301,6 +307,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "7",
         title: "",
+        notes: "",
         folder_id: 3,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -309,6 +316,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "8",
         title: "",
+        notes: "",
         folder_id: 3,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -317,6 +325,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "9",
         title: "",
+        notes: "",
         folder_id: 4,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -325,6 +334,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "10",
         title: "",
+        notes: "",
         folder_id: 4,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -333,6 +343,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "11",
         title: "",
+        notes: "",
         folder_id: 5,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -341,6 +352,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "12",
         title: "",
+        notes: "",
         folder_id: 5,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -349,6 +361,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "13",
         title: "",
+        notes: "",
         folder_id: 6,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -357,6 +370,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "14",
         title: "",
+        notes: "",
         folder_id: 6,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -365,6 +379,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "15",
         title: "",
+        notes: "",
         folder_id: 7,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -373,6 +388,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "16",
         title: "",
+        notes: "",
         folder_id: 7,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -381,6 +397,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "17",
         title: "",
+        notes: "",
         folder_id: 8,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -389,6 +406,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "18",
         title: "",
+        notes: "",
         folder_id: 8,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -397,6 +415,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "19",
         title: "",
+        notes: "",
         folder_id: 9,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -405,6 +424,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "20",
         title: "",
+        notes: "",
         folder_id: 9,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -413,6 +433,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "21",
         title: "",
+        notes: "",
         folder_id: 10,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -421,6 +442,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "22",
         title: "",
+        notes: "",
         folder_id: 10,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -429,6 +451,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "23",
         title: "",
+        notes: "",
         folder_id: 11,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -437,6 +460,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "24",
         title: "",
+        notes: "",
         folder_id: 11,
         updated_at: "2025-03-07T12:30:00Z",
         created_at: "2025-03-02T12:00:00Z",
@@ -450,6 +474,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
         {
             "order": "1",
             "day_title": "",
+            "notes": "",
             "exercises": [
                 {
                     "exercise": {
@@ -659,6 +684,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
         },
         {
             "day_title": "",
+            "notes": "",
             "order": "2",
             "exercises": [
                 {
@@ -871,6 +897,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
     [
         {
             "day_title": "",
+            "notes": "",
             "order": "1",
             "exercises": [
                 {
@@ -1082,6 +1109,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
         {
             "day_title": "",
             "order": "2",
+            "notes": "",
             "exercises": [
                 {
                     "exercise": {
@@ -1293,6 +1321,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
     [
         {
             "order": "1",
+            "notes": "",
             "exercises": [
                 {
                     "exercise": {
@@ -1502,6 +1531,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
         },
         {
             "order": "2",
+            "notes": "",
             "exercises": [
                 {
                     "exercise": {
@@ -1713,6 +1743,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
     [
         {
             "order": "1",
+            "notes": "",
             "exercises": [
                 {
                     "exercise": {
@@ -1922,6 +1953,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
         },
         {
             "order": "2",
+            "notes": "",
             "exercises": [
                 {
                     "exercise": {
@@ -2133,6 +2165,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
     [
         {
             "order": "1",
+            "notes": "",
             "exercises": [
                 {
                     "exercise": {
@@ -2342,6 +2375,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
         },
         {
             "order": "2",
+            "notes": "",
             "exercises": [
                 {
                     "exercise": {
@@ -2553,6 +2587,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
     [
         {
             "order": "1",
+            "notes": "",
             "exercises": [
                 {
                     "exercise": {
@@ -2762,6 +2797,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
         },
         {
             "order": "2",
+            "notes": "",
             "exercises": [
                 {
                     "exercise": {
@@ -2973,6 +3009,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
     [
         {
             "order": "1",
+            "notes": "",
             "exercises": [
                 {
                     "exercise": {
@@ -3182,6 +3219,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
         },
         {
             "order": "2",
+            "notes": "",
             "exercises": [
                 {
                     "exercise": {
@@ -3393,6 +3431,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
     [
         {
             "order": "1",
+            "notes": "",
             "exercises": [
                 {
                     "exercise": {
@@ -3602,6 +3641,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
         },
         {
             "order": "2",
+            "notes": "",
             "exercises": [
                 {
                     "exercise": {
@@ -3813,6 +3853,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
     [
         {
             "order": "1",
+            "notes": "",
             "exercises": [
                 {
                     "exercise": {
@@ -4022,6 +4063,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
         },
         {
             "order": "2",
+            "notes": "",
             "exercises": [
                 {
                     "exercise": {
@@ -4233,6 +4275,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
     [
         {
             "order": "1",
+            "notes": "",
             "exercises": [
                 {
                     "exercise": {
@@ -4442,6 +4485,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
         },
         {
             "order": "2",
+            "notes": "",
             "exercises": [
                 {
                     "exercise": {
@@ -4653,6 +4697,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
     [
         {
             "order": "1",
+            "notes": "",
             "exercises": [
                 {
                     "exercise": {
@@ -4862,7 +4907,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
         },
         {
             "order": "2",
-            "day_title": "",
+            "notes": "",
             "exercises": [
                 {
                     "exercise": {
@@ -5074,6 +5119,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
     [
         {
             "order": "1",
+            "notes": "",
             "exercises": [
                 {
                     "exercise": {
@@ -5283,6 +5329,7 @@ export const exampleProximaProgram: TProgramCreatorDay[][] = [
         },
         {
             "order": "2",
+            "notes": "",
             "exercises": [
                 {
                     "exercise": {
@@ -5498,10 +5545,12 @@ export const emptyProximaProgram: TProgramCreatorDay[][] = [
         {
             "order": "1",
             "day_title": "",
+            "notes": "",
             "exercises": [],
         },
         {
             "day_title": "",
+            "notes": "",
             "order": "2",
             "exercises": [],
         },
@@ -5509,11 +5558,13 @@ export const emptyProximaProgram: TProgramCreatorDay[][] = [
     [
         {
             "day_title": "",
+            "notes": "",
             "order": "1",
             "exercises": [],
         },
         {
             "day_title": "",
+            "notes": "",
             "order": "2",
             "exercises": [],
         },
@@ -5521,101 +5572,120 @@ export const emptyProximaProgram: TProgramCreatorDay[][] = [
     [
         {
             "order": "1",
+            "notes": "",
             "exercises": [],
         },
         {
             "order": "2",
+            "notes": "",
             "exercises": [],
         },
     ],
     [
         {
             "order": "1",
+            "notes": "",
             "exercises": [],
         },
         {
             "order": "2",
+            "notes": "",
             "exercises": [],
         },
     ],
     [
         {
             "order": "1",
+            "notes": "",
             "exercises": [],
         },
         {
             "order": "2",
+            "notes": "",
             "exercises": [],
         },
     ],
     [
         {
             "order": "1",
+            "notes": "",
             "exercises": [],
         },
         {
             "order": "2",
+            "notes": "",
             "exercises": [],
         },
     ],
     [
         {
             "order": "1",
+            "notes": "",
             "exercises": [],
         },
         {
             "order": "2",
+            "notes": "",
             "exercises": [],
         },
     ],
     [
         {
             "order": "1",
+            "notes": "",
             "exercises": [],
         },
         {
             "order": "2",
+            "notes": "",
             "exercises": [],
         },
     ],
     [
         {
             "order": "1",
+            "notes": "",
             "exercises": [],
         },
         {
             "order": "2",
+            "notes": "",
             "exercises": [],
         },
     ],
     [
         {
             "order": "1",
+            "notes": "",
             "exercises": [],
         },
         {
             "order": "2",
+            "notes": "",
             "exercises": [],
         },
     ],
     [
         {
             "order": "1",
+            "notes": "",
             "exercises": [],
         },
         {
             "order": "2",
-            "day_title": "",
+            "notes": "",
             "exercises": [],
         },
     ],
     [
         {
             "order": "1",
+            "notes": "",
             "exercises": [],
         },
         {
             "order": "2",
+            "notes": "",
             "exercises": [],
         },
     ],

@@ -1,6 +1,6 @@
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { NotebookTextIcon, SquarePenIcon, Trash2Icon } from "lucide-react";
+import { NotebookTextIcon, Trash2Icon } from "lucide-react";
 import { ExerciseGif } from "./ExerciseGif";
 
 interface IProps {
@@ -24,7 +24,7 @@ export const ExerciseVisualizer: React.FC<IProps> = (props) => {
             { day?.exercises?.map((exercise : TProgramCreatorExercise, i: number) => (
                 <TooltipProvider key={ "Week" + (Number(weekOrder) + 1) + "Day" + i } delayDuration={ 0 }>
                     <Tooltip>
-                        <TooltipTrigger className="w-full min-h-14">
+                        <TooltipTrigger asChild onClick={ () => handleEdit(Number(weekOrder), Number(day.order), i, exercise ) } className="w-full min-h-14">
                             <div className="flex flex-row justify-between items-center text-sm border-b-2 py-2 border-gray-200">
                                 <div className="flex flex-row gap-2 items-center justify-start max-w-[50%]">
                                     <div className="text-lightSecondary pr-1">
@@ -194,7 +194,6 @@ export const ExerciseVisualizer: React.FC<IProps> = (props) => {
                         </TooltipTrigger>
                         <TooltipContent side="right" className="bg-lightSecondary text-white flex flex-row gap-2">
                             <NotebookTextIcon className="cursor-pointer" />
-                            <SquarePenIcon className="cursor-pointer" onClick={ () => handleEdit(Number(weekOrder), Number(day.order), i, exercise ) } />
                             <Trash2Icon
                                 className="cursor-pointer"
                                 onClick={ () => {

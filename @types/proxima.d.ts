@@ -7,6 +7,7 @@ type TProgramCreatorDay = {
     exercises?: TProgramCreatorExercise[];
     /* These two fields are used for the drag and drop but not stored in the DB */
     weekOrder?: string; // 0-indexed
+    notes: string; // Day notes
     id?: string;
 }
 

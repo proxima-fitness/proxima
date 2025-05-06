@@ -16,6 +16,7 @@ interface IProps {
     setFlattenedProgramDays: (flattenedProgramDays: TProgramCreatorDay[]) => void;
     handleAddDay: (weekOrder: string) => void;
     handleOpenGenerateDayDialog: (generateDayDialog: TDialog) => void;
+    handleOpenAddNoteDialog: (addNoteDialog: TDialog) => void;
     handleDeleteDay: (id: string) => void;
     handleEditTitle: (id: string, day_title: string) => void;
     handleIsEditExercise: (isEditExercise: boolean) => void;
@@ -37,6 +38,7 @@ export const Column: React.FC<IProps> = (props) => {
         setFlattenedProgramDays,
         handleAddDay,
         handleOpenGenerateDayDialog,
+        handleOpenAddNoteDialog,
         handleDeleteDay,
         handleEditTitle,
         handleIsEditExercise,
@@ -217,6 +219,7 @@ export const Column: React.FC<IProps> = (props) => {
                             handleDuplicateDay={ handleDuplicateDay }
                             handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
                             handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
+                            handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
                             handleIsEditExercise={ handleIsEditExercise }
                             handleDeleteExercise={ handleDeleteExercise }
                             focusedCardId={ focusedCardId }

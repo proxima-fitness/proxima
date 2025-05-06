@@ -12,6 +12,7 @@ import { getHevyExerciseFromLocalStorageByID } from "@/utils/general/helpers";
 import { toast } from "sonner";
 import { aiRequest, appendOrderToHevyRoutines, getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy, sortHevyByOrder } from "../utils";
 import { buildHevyProgram } from "../utils/build-hevy-program";
+import { HevyAddNoteDialog } from "./HevyAddNoteDialog";
 
 interface IProps {
     program: THevyRoutine[];
@@ -28,6 +29,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
 
     const [addExerciseDialog, setAddExerciseDialog] = useState<THevyDialog>({folder_id: 0, dayOrder: 0, isOpen: false});
     const [generateDayDialog, setGenerateDayDialog] = useState<THevyDialog>({folder_id: 0, dayOrder: 0, isOpen: false});
+    const [addNoteDialog, setAddNoteDialog] = useState<THevyDialog>({folder_id: 0, dayOrder: 0, isOpen: false});
     const [isEditExercise, setIsEditExercise] = useState(false);
 
     const handleIsEditExercise = (isEditExercise: boolean) => {
@@ -87,6 +89,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                             order: String(i),
                             exercises: [],
                             title: "",
+                            notes: "",
                         });
                     }
                 }
@@ -107,7 +110,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
         });
     };
 
-    // // // State for opening the Add Exercise Dialog with the correct week and day
+    // State for opening the Add Exercise Dialog with the correct week and day
     const handleOpenAddExerciseDialog = (addExerciseDialog: THevyDialog) => {
         if (addExerciseDialog.isOpen === false) {
             setIsEditExercise(false);
@@ -115,9 +118,14 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
         setAddExerciseDialog(addExerciseDialog);
     };
 
-    // // // State for opening the Generate Day Dialog with the correct week and day
+    // State for opening the Generate Day Dialog with the correct week and day
     const handleOpenGenerateDayDialog = (generateDayDialog: THevyDialog) => {
         setGenerateDayDialog(generateDayDialog);
+    };
+
+    // State for opening the Add Note Dialog with the correct week and day
+    const handleOpenAddNoteDialog = (addNoteDialog: THevyDialog) => {
+        setAddNoteDialog(addNoteDialog);
     };
 
     // // Will re-generate the currently selected day based on a prompt
@@ -134,7 +142,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
             setHevyProgram((prevProgram) =>
                 prevProgram.map((routine) =>
                     routine.folder_id === folder_id && routine.order === dayOrder.toString()
-                        ? { exercises: oneDayRoutine[0].exercises, id: routine.id, folder_id, order: dayOrder.toString(), title: oneDayRoutine[0].title ?? routine.title }
+                        ? { exercises: oneDayRoutine[0].exercises, id: routine.id, folder_id, order: dayOrder.toString(), title: oneDayRoutine[0].title ?? routine.title, notes: "" }
                         : routine
                 )
             );
@@ -163,6 +171,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                 order: String(nthDayOrder),
                 exercises: [],
                 title: "",
+                notes: "",
             };
 
             return [...prev, newEmptyDay];
@@ -230,6 +239,18 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
         });
     };
 
+    // Adds a note to the selected day (routine)
+    const handleAddRoutineNote = (folder_id: number, dayOrder: number, prompt: string) => {
+        setHevyProgram((prev) => {
+            return prev.map((day) => {
+                if (Number(day.folder_id) === folder_id && Number(day.order) === dayOrder) {
+                    return { ...day, notes: prompt };
+                }
+                return day;
+            });
+        });
+    };
+
     // // Edits an exercise on a workout day
     const handleEditExercise = async (editExercise: THevyDialog) => {
 
@@ -290,6 +311,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                         handleDuplicateDay={ handleDuplicateDay }
                         handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
                         handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
+                        handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
                         handleDeleteExercise={ handleDeleteExercise }
                         focusedCardId={ focusedCardId }
                         setFocusedCardId={ setFocusedCardId }
@@ -309,6 +331,11 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                 handleGenerateDay={ handleGenerateDay }
                 generateDayDialog={ generateDayDialog }
                 handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
+            />
+            <HevyAddNoteDialog
+                handleAddRoutineNote={ handleAddRoutineNote }
+                addNoteDialog={ addNoteDialog }
+                handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
             />
         </>
     );

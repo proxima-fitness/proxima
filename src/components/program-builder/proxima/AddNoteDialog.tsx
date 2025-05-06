@@ -20,24 +20,24 @@ import {
   } from "@/components/ui/form";
 
 interface IProps {
-    handleGenerateDay: (currentWeekIndex: number, currentDayIndex: number, prompt: string) => void;
-    generateDayDialog: TDialog;
-    handleOpenGenerateDayDialog: (generateDayDialog: TDialog) => void;
+    handleAddDayNote: (currentWeekIndex: number, currentDayIndex: number, prompt: string) => void;
+    addNoteDialog: TDialog;
+    handleOpenAddNoteDialog: (addNoteDialog: TDialog) => void;
 }
 
 export const AddNoteDialog: React.FC<IProps> = (props) => {
 
     const {
-        handleGenerateDay,
-        generateDayDialog,
-        handleOpenGenerateDayDialog,
+        handleAddDayNote,
+        addNoteDialog,
+        handleOpenAddNoteDialog,
     } = props;
 
     const formSchema = z.object({
         prompt: z.string().min(0, {
-            message: "Please provide a prompt to Re-generate the selected day",
+            message: "Please provide a prompt to add a note to the selected day",
         }).max(300, {
-            message: "Prompts cannot exceed 300 characters",
+            message: "Notes cannot exceed 300 characters",
         }),
     });
 
@@ -49,12 +49,12 @@ export const AddNoteDialog: React.FC<IProps> = (props) => {
     });
 
     const onSubmit = (values: z.infer<typeof formSchema>) => {
-        handleGenerateDay(generateDayDialog.weekOrder, generateDayDialog.dayOrder, values.prompt);
-        handleOpenGenerateDayDialog({weekOrder: 0, dayOrder: 0, isOpen: false});
+        handleAddDayNote(addNoteDialog.weekOrder, addNoteDialog.dayOrder, values.prompt);
+        handleOpenAddNoteDialog({weekOrder: 0, dayOrder: 0, isOpen: false});
     };
 
     return (
-        <Dialog open={ generateDayDialog.isOpen } onOpenChange={ () => handleOpenGenerateDayDialog({weekOrder: 0, dayOrder: 0, isOpen: false}) } >
+        <Dialog open={ addNoteDialog.isOpen } onOpenChange={ () => handleOpenAddNoteDialog({weekOrder: 0, dayOrder: 0, isOpen: false}) } >
 
             <DialogContent hideClose className="max-w-5xl w-full">
                 <DialogTitle>
@@ -69,7 +69,7 @@ export const AddNoteDialog: React.FC<IProps> = (props) => {
                                                 <FormControl>
                                                     <Input
                                                     startIcon={ SearchIcon }
-                                                    placeholder={ `Describe your desired Week ${generateDayDialog.weekOrder + 1} Day ${generateDayDialog.dayOrder}` }
+                                                    placeholder={ `Enter workout notes for Week ${addNoteDialog.weekOrder + 1} Day ${addNoteDialog.dayOrder}` }
                                                     { ...field }
                                                 />
                                                 </FormControl>
@@ -80,7 +80,7 @@ export const AddNoteDialog: React.FC<IProps> = (props) => {
                                 <Button
                                         type="submit"
                                         className="w-[auto] h-10 bg-[#33bbcf] text-white">
-                                    <SparklesIcon /> Generate
+                                    <SparklesIcon /> Add Note
                                 </Button>
                             </form>
                         </Form>

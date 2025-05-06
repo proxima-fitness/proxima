@@ -8,6 +8,7 @@ import { useExercises } from "@/api/hooks";
 import { Column } from "./Column";
 import { addExerciseToProgramCreatorExerciseConverter, aiRequest, appendWeekOrderAndIdToProgramDays, buildProgram, deFlattenProgram, flattenProgram, reorder } from "../utils";
 import { toast } from "sonner";
+import { AddNoteDialog } from "./AddNoteDialog";
 
 interface IProps {
     program: TProgramCreatorDay[][];
@@ -25,6 +26,8 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     const [addExerciseDialog, setAddExerciseDialog] = useState<TDialog>({weekOrder: 0, dayOrder: 0, isOpen: false});
     const [generateDayDialog, setGenerateDayDialog] = useState<TDialog>({weekOrder: 0, dayOrder: 0, isOpen: false});
     const [isEditExercise, setIsEditExercise] = useState(false);
+    const [addNoteDialog, setAddNoteDialog] = useState<TDialog>({weekOrder: 0, dayOrder: 0, isOpen: false});
+
 
     const handleIsEditExercise = (isEditExercise: boolean) => {
         setIsEditExercise(isEditExercise);
@@ -81,6 +84,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                             weekOrder: String(toWeekOrder),
                             order: String(i),
                             exercises: [],
+                            notes: "",
                         });
                     }
                 }
@@ -112,6 +116,11 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
         setGenerateDayDialog(generateDayDialog);
     };
 
+    // State for opening the Add Note Dialog with the correct week and day
+    const handleOpenAddNoteDialog = (addNoteDialog: TDialog) => {
+        setAddNoteDialog(addNoteDialog);
+    };
+
     // Will re-generate the currently selected day based on a prompt
     const handleGenerateDay = async (weekOrder: number, dayOrder: number, prompt: string) => {
         const response = await aiRequest(1, prompt);
@@ -131,7 +140,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
         setFlattenedProgramDays((prevDays) =>
             prevDays.map((day) =>
                 day.weekOrder === String(weekOrder) && day.order === String(dayOrder)
-                    ? { day_title: newDayRoutine[0][0].day_title ?? day.day_title, exercises: newDayRoutine[0][0].exercises ?? day.exercises, order: String(dayOrder), weekOrder: String(weekOrder),  id: day.id }
+                    ? { day_title: newDayRoutine[0][0].day_title ?? day.day_title, exercises: newDayRoutine[0][0].exercises ?? day.exercises, order: String(dayOrder), weekOrder: String(weekOrder), notes: "", id: day.id }
                     : day
             )
         );
@@ -148,6 +157,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                 weekOrder,
                 order: String(nthDayOrder),
                 exercises: [],
+                notes: "",
             };
 
             return [...prev, newEmptyDay];
@@ -196,6 +206,18 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                         ...day,
                         exercises: day?.exercises ? [...day.exercises, exercise] : [exercise],
                     };
+                }
+                return day;
+            });
+        });
+    };
+
+    // Adds a note to the selected day
+    const handleAddDayNote = (weekOrder: number, dayOrder: number, prompt: string) => {
+        setFlattenedProgramDays((prev) => {
+            return prev.map((day) => {
+                if (Number(day.weekOrder) === weekOrder && Number(day.order) === dayOrder) {
+                    return { ...day, notes: prompt };
                 }
                 return day;
             });
@@ -252,6 +274,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                         handleDuplicateDay={ handleDuplicateDay }
                         handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
                         handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
+                        handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
                         handleDeleteExercise={ handleDeleteExercise }
                         focusedCardId={ focusedCardId }
                         setFocusedCardId={ setFocusedCardId }
@@ -271,6 +294,11 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
                 handleGenerateDay={ handleGenerateDay }
                 generateDayDialog={ generateDayDialog }
                 handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
+            />
+            <AddNoteDialog
+                addNoteDialog={ addNoteDialog }
+                handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
+                handleAddDayNote={ handleAddDayNote }
             />
         </>
     );

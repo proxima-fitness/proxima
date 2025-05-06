@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
-import { EllipsisIcon, CopyIcon, PlusIcon } from "lucide-react";
+import { EllipsisIcon, CopyIcon, PlusIcon, NotebookTextIcon } from "lucide-react";
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { DuplicateDay } from "@/components/program-builder/proxima/DuplicateDay";
@@ -31,6 +31,7 @@ interface IProps {
     handleDeleteDay: (id: string) => void;
     handleOpenGenerateDayDialog: (generateDayDialog: TDialog) => void;
     handleOpenAddExerciseDialog: (addExerciseDialog: TDialog) => void;
+    handleOpenAddNoteDialog: (addNoteDialog: TDialog) => void;
     handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;    // handleGenerateDayDialog: (generateDayDialog: TDialog) => void;
     handleDeleteExercise: (weekOrder: number, dayOrder: number, exerciseIndex: number) => void;
     handleIsEditExercise: (isEditExercise: boolean) => void;
@@ -49,6 +50,7 @@ export const DayCard: FC<IProps> = (props) => {
         programLength,
         handleEditTitle,
         handleOpenAddExerciseDialog,
+        handleOpenAddNoteDialog,
         handleDuplicateDay,
         handleOpenGenerateDayDialog,
         handleDeleteExercise,
@@ -153,13 +155,14 @@ export const DayCard: FC<IProps> = (props) => {
                                     autoFocus
                                 />
                                 :
-                                <>
+                                <div className="line-clamp-1 px-4">
                                     {day?.day_title ?? ""}
-                                </>
+                                </div>
                             }
                         </div>
                         <div className="flex flex-row gap-2">
-                            {/* <TooltipProvider delayDuration={ 0 }>
+                            { day.notes && day.notes.length > 0 &&
+                            <TooltipProvider delayDuration={ 0 }>
                                 <Tooltip>
                                     <TooltipTrigger
                                         className="cursor-pointer group-hover:opacity-100 group-active:opacity-100 group-hover:pointer-events-auto group-active:pointer-events-auto opacity-0 pointer-events-none"
@@ -169,10 +172,11 @@ export const DayCard: FC<IProps> = (props) => {
                                         </div>
                                     </TooltipTrigger>
                                     <TooltipContent className="bg-gray-600 text-white rounded-lg">
-                                        <p>This is the routine note content and will be displayed here</p>
+                                        <p>{ day.notes }</p>
                                     </TooltipContent>
                                 </Tooltip>
-                            </TooltipProvider> */}
+                            </TooltipProvider>
+                            }
                             <DropdownMenu>
                                 <DropdownMenuTrigger
                                     className="cursor-pointer group-hover:opacity-100 group-active:opacity-100 group-hover:pointer-events-auto group-active:pointer-events-auto opacity-0 pointer-events-none"
@@ -189,7 +193,7 @@ export const DayCard: FC<IProps> = (props) => {
                                         Edit Title
                                         <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={ () => setEditTitleOpen(true) } className="cursor-pointer">
+                                    <DropdownMenuItem onClick={ () => handleOpenAddNoteDialog({ weekOrder: Number(weekOrder), dayOrder: Number(day.order), isOpen: true }) } className="cursor-pointer">
                                         Add Note
                                         <DropdownMenuShortcut>⌘N</DropdownMenuShortcut>
                                     </DropdownMenuItem>

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
-import { EllipsisIcon, CopyIcon, PlusIcon } from "lucide-react";
+import { EllipsisIcon, CopyIcon, PlusIcon, NotebookTextIcon } from "lucide-react";
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useEffect, useState } from "react";
 import {
@@ -28,6 +28,7 @@ interface IProps {
     handleEditTitle: (id: string, title: string) => void;
     handleDeleteDay: (id: string) => void;
     handleOpenGenerateDayDialog: (generateDayDialog: THevyDialog) => void;
+    handleOpenAddNoteDialog: (addNoteDialog: THevyDialog) => void;
     handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
     handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;    // handleGenerateDayDialog: (generateDayDialog: TDialog) => void;
     handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
@@ -47,6 +48,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         programLength,
         handleEditTitle,
         handleOpenAddExerciseDialog,
+        handleOpenAddNoteDialog,
         handleDuplicateDay,
         handleOpenGenerateDayDialog,
         handleDeleteExercise,
@@ -148,26 +150,26 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                     autoFocus
                                 />
                                 :
-                                <>
+                                <div className="line-clamp-1 px-4">
                                     {day.title}
-                                </>
+                                </div>
                             }
                         </div>
                         <div className="flex flex-row gap-2">
-                            {/* <TooltipProvider delayDuration={ 0 }>
+                            { day.notes && day.notes.length > 0 &&
+                            <TooltipProvider delayDuration={ 0 }>
                                 <Tooltip>
                                     <TooltipTrigger
                                         className="cursor-pointer group-hover:opacity-100 group-active:opacity-100 group-hover:pointer-events-auto group-active:pointer-events-auto opacity-0 pointer-events-none"
                                     >
-                                        <div onClick={ () => setDuplicateDayOpen(true) }>
-                                            <NotebookTextIcon className="cursor-pointer" />
-                                        </div>
+                                        <NotebookTextIcon className="cursor-pointer" />
                                     </TooltipTrigger>
                                     <TooltipContent className="bg-gray-600 text-white rounded-lg">
-                                        <p>This is the routine note content and will be displayed here</p>
+                                        <p>{ day.notes }</p>
                                     </TooltipContent>
                                 </Tooltip>
-                            </TooltipProvider> */}
+                            </TooltipProvider>
+                            }
                             <DropdownMenu>
                                 <DropdownMenuTrigger
                                     className="cursor-pointer group-hover:opacity-100 group-active:opacity-100 group-hover:pointer-events-auto group-active:pointer-events-auto opacity-0 pointer-events-none"
@@ -188,7 +190,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                         Edit Title
                                         <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={ () => setEditTitleOpen(true) } className="cursor-pointer">
+                                    <DropdownMenuItem onClick={ () => handleOpenAddNoteDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true }) } className="cursor-pointer">
                                         Add Note
                                         <DropdownMenuShortcut>⌘N</DropdownMenuShortcut>
                                     </DropdownMenuItem>

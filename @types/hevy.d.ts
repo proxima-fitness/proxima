@@ -23,7 +23,7 @@ type THevyRoutine = {
     updated_at?: string; // ISO 8601 timestamp of when the routine was last updated. example: 2021-09-14T12:00:00Z
     created_at?: string; // ISO 8601 timestamp of when the routine was created. example: 2021-09-14T12:00:00Z
     exercises: THevyExercise[];
-
+    notes: string; // Routine notes on the routine
     /* This field are used for the drag and drop but not stored in the DB */
     order?: string // The day this Routine is assigned on (1-indexed)
 }
