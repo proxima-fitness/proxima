@@ -110,6 +110,7 @@ export const postHevyRoutineProgram = async (id: string, hevyRoutines: THevyRout
             nthWeek: routine.folder_id + 1, // Assuming folder_id is 0-indexed
             nthDay: Number(routine?.order || '1'), // Default to 1 if missing
             day_title: routine.title,
+            day_notes: routine?.notes ?? "",
             program_id: id,
         }));
 
