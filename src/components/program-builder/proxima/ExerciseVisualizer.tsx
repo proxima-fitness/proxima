@@ -35,14 +35,14 @@ export const ExerciseVisualizer: React.FC<IProps> = (props) => {
                                         <div className="">
                                             { exercise.exercise?.name_english }
                                         </div>
-                                        <Tooltip>
+                                        {/* <Tooltip>
                                             <TooltipTrigger asChild>
                                                 <NotebookTextIcon  className="h-4"/>
                                         </TooltipTrigger>
                                         <TooltipContent className="bg-lightSecondary text-white">
                                             This is a note
                                             </TooltipContent>
-                                        </Tooltip>
+                                        </Tooltip> */}
                                     </div>
 
                                 </div>

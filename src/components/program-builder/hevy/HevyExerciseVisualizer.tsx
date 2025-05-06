@@ -40,14 +40,14 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                         <div className="">
                                             { exercise.title }
                                         </div>
-                                        <Tooltip>
+                                        {/* <Tooltip>
                                             <TooltipTrigger asChild>
                                                 <NotebookTextIcon  className="h-4"/>
                                         </TooltipTrigger>
                                         <TooltipContent className="bg-lightSecondary text-white">
                                             This is a note
                                             </TooltipContent>
-                                        </Tooltip>
+                                        </Tooltip> */}
                                     </div>
                                 </div>
                                 <div className="text-center flex flex-row items-center justify-end max-w-[50%] w-[50%] h-full">
