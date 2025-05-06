@@ -5,7 +5,7 @@ import { getCommunityAiPrograms, getExplorePageProgramDetails, getExplorePagePro
 import { getOpUserId, getUserFullName, getUserMetaData } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getExercises } from "./exercises";
-import { getHevyExercises } from "./hevy";
+import { getHevyExercises } from "../components/program-builder/api/hevy";
 import { buildAiProgram } from "./edge-functions";
 import { getExerciseGifIdForHevyExercise } from "@/components/program-builder/utils";
 

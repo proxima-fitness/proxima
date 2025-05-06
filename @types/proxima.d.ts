@@ -1,0 +1,134 @@
+/** A Proxima Program in the Program Builder is defined as: */
+/***********************************************************/
+
+type TProgramCreatorDay = {
+    order: string, // 1-indexed
+    day_title?: string;
+    exercises?: TProgramCreatorExercise[];
+    /* These two fields are used for the drag and drop but not stored in the DB */
+    weekOrder?: string; // 0-indexed
+    id?: string;
+}
+
+type TProgramCreatorExercise = {
+    exercise?: TExercise;
+    sets?: number;
+    reps_type?: TRepsTypes;
+    intensity?: TIntensityTypes;
+}
+
+type TIntensityTypes = {
+    rpe?: number[];
+    rpe_range?: number[][];
+    percent_rm?: number[];
+    weights?: number[];
+}
+
+type TRepsTypes = {
+    reps?: number[];
+    reps_range?: number[][];
+    reps_max?: number[];
+    amrap?: string[];
+    time_taken?: number[];
+    time_range?: number[][];
+}
+
+type TExercise = {
+    id: string;
+    gif_id?: string;
+    instructions?: string[];
+    name_english: string;
+    name_espanol: string;
+    name_portugues: string;
+    name_francais: string;
+    normalized_name_english: string;
+}
+
+type TProgramPage = {
+    program: TProgram[];
+    schedule: TProgramDetails[];
+}
+
+type TProgram = {
+    id: string;
+    title: string;
+    details: string;
+    program_length: number;
+    workout_duration: number;
+    equipment: string;
+    specialization: string[];
+    difficulty: string[];
+    user_id: string;
+    thumbnail?: Blob;
+    hevy_routines?: THevyRoutine[];
+    prompt?: string;
+}
+
+type TDialog = {
+    weekOrder: number;
+    dayOrder: number;
+    isOpen: boolean;
+    exerciseIndex?: number; // location of exercise to be edited
+    editExercise?: TAddExercise; // current value of exercise to be edited
+}
+
+type TAddExercise = {
+    id: string;
+    repTypeValue: "reps" | "reps_max" | "reps_range" | "time_taken" | "time_range" | "amrap" ;
+    intensityValue: "percent_rm" | "rpe_range" | "rpe" | "weights";
+    reps: number[]; // DATA for any rep type that is not a range
+    intensityData: number[]; // DATA for any intensity that is not a range
+    repsWithTimeAndRepRange: number[][]; // DATA for rep/time range
+    intensityDataWithRPERange: number[][]; // DATA for rpe range
+}
+
+
+type TProgramDetails = {
+    id?: string;
+    title?: string;
+    schedule_workouts: TScheduleWorkouts[];
+}
+
+type TScheduleWorkouts = {
+    nthDay: number;
+    nthWeek: number;
+    day_title?: string;
+    program_workout_exercises: TSavedWorkoutExercise[];
+}
+
+type TSavedWorkoutExercise = {
+    reps?: number[];
+    reps_max?: number[];
+    reps_range?: number[][];
+    time_taken?: number[];
+    time_range?: number[][];
+    amrap?: string[];
+    rpe?: number[];
+    rpe_range?: number[][];
+    percent_rm?: number[];
+    weights?: number[];
+    exercises?: TExercise;
+}
+
+type TAPIProgramWorkoutExercises = {
+    reps?: number[];
+    weights?: number[];
+    reps_max?: number[];
+    reps_range?: number[][] ;
+    rpe?: number[];
+    rpe_range?: number[][];
+    time_taken?: number[];
+    time_range?: number[][];
+    amrap?: string[];
+    percent_rm?: number[];
+    exercises: TExercise;
+};
+
+type TCard = {
+    title: string,
+    order: string,
+    day_title: string,
+    exercises: TProgramCreatorExercise[],
+    id: string,
+    weekOrder: string,
+}

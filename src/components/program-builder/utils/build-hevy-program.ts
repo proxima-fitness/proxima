@@ -1,4 +1,4 @@
-import { getHevyExercises } from "@/api/hevy";
+import { getHevyExercises } from "@/components/program-builder/api/hevy";
 import { fallbackCBLSA, fallbackOneDay, fallbackPPL, fallbackSevenDay, fallbackUpperLower } from "@/assets/constants";
 import { replaceTextToJsonExercisesHevy } from "./format-responses";
 
