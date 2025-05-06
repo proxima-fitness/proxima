@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
-import { EllipsisIcon, CopyIcon, PlusIcon } from "lucide-react";
+import { EllipsisIcon, CopyIcon, PlusIcon, NotebookTextIcon } from "lucide-react";
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { DuplicateDay } from "@/components/program-builder/proxima/DuplicateDay";
@@ -158,7 +158,21 @@ export const DayCard: FC<IProps> = (props) => {
                                 </>
                             }
                         </div>
-                        <div className="flex flex-row gap-4">
+                        <div className="flex flex-row gap-2">
+                            <TooltipProvider delayDuration={ 0 }>
+                                <Tooltip>
+                                    <TooltipTrigger
+                                        className="cursor-pointer group-hover:opacity-100 group-active:opacity-100 group-hover:pointer-events-auto group-active:pointer-events-auto opacity-0 pointer-events-none"
+                                    >
+                                        <div onClick={ () => setDuplicateDayOpen(true) }>
+                                            <NotebookTextIcon className="cursor-pointer" />
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="bg-gray-600 text-white rounded-lg">
+                                        <p>This is the routine note content and will be displayed here</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
                             <DropdownMenu>
                                 <DropdownMenuTrigger
                                     className="cursor-pointer group-hover:opacity-100 group-active:opacity-100 group-hover:pointer-events-auto group-active:pointer-events-auto opacity-0 pointer-events-none"
@@ -167,13 +181,17 @@ export const DayCard: FC<IProps> = (props) => {
                                     <EllipsisIcon />
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="start" side="bottom">
-                                    <DropdownMenuItem className="cursor-pointer" onClick={ () => handleDeleteDay(day?.id ?? "") }>
+                                    <DropdownMenuItem className="cursor-pointer bg-red-500 text-white hover:bg-red-500" onClick={ () => handleDeleteDay(day?.id ?? "") }>
                                         Delete Day
                                         <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={ () => setEditTitleOpen(true) } className="cursor-pointer">
                                         Edit Title
                                         <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={ () => setEditTitleOpen(true) } className="cursor-pointer">
+                                        Add Note
+                                        <DropdownMenuShortcut>⌘N</DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={ () => {
                                         handleOpenGenerateDayDialog({ weekOrder: Number(weekOrder), dayOrder: Number(day.order), isOpen: true });

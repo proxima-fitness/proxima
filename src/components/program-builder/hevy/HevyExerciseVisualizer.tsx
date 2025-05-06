@@ -1,5 +1,5 @@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Trash2Icon } from "lucide-react";
+import { NotebookTextIcon, Trash2Icon } from "lucide-react";
 import { HevyExerciseGif } from "./HevyExerciseGif";
 interface IProps {
     day: THevyRoutine;
@@ -22,7 +22,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
             { day?.exercises?.map((exercise : THevyExercise, i: number) => (
                 <TooltipProvider key={ "Week" + (Number(folder_id) + 1) + "Day" + i } delayDuration={ 0 }>
                     <Tooltip>
-                        <TooltipTrigger onClick={ () => handleEdit(folder_id, Number(day.order), i, exercise ) } className="w-full min-h-14">
+                        <TooltipTrigger asChild onClick={ () => handleEdit(folder_id, Number(day.order), i, exercise ) } className="w-full min-h-14">
                             <div className="flex flex-row justify-between items-center text-sm border-b-2 py-2 border-gray-200">
                                 <div className="flex flex-row gap-2 items-center justify-start max-w-[50%]">
                                     <div className="text-lightSecondary pr-1">
@@ -36,7 +36,19 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                         />
                                     </div>
                                     <HevyExerciseGif thumbnailOrImage={ "thmb" } name={ exercise.title } resolution={ "180" } file_type={ 'jpg' } />
-                                    <div>{ exercise.title }</div>
+                                    <div className="flex flex-row items-center justify-between">
+                                        <div className="">
+                                            { exercise.title }
+                                        </div>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <NotebookTextIcon  className="h-4"/>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="bg-lightSecondary text-white">
+                                            This is a note
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </div>
                                 </div>
                                 <div className="text-center flex flex-row items-center justify-end max-w-[50%] w-[50%] h-full">
                                     <div className="min-w-[33%] flex flex-col justify-center items-center">
@@ -104,11 +116,12 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                             </div>
                         </TooltipTrigger>
                         <TooltipContent side="right" className="bg-lightSecondary text-white flex flex-row gap-2">
+                            <NotebookTextIcon className="cursor-pointer" />
                             <Trash2Icon
-                            className="cursor-pointer"
-                            onClick={ () => {
-                                handleDeleteExercise(Number(folder_id), Number(day.order), i);
-                            } } />
+                                className="cursor-pointer"
+                                onClick={ () => {
+                                    handleDeleteExercise(Number(folder_id), Number(day.order), i);
+                                } } />
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>

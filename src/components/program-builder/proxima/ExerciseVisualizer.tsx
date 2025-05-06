@@ -1,6 +1,6 @@
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { SquarePenIcon, Trash2Icon } from "lucide-react";
+import { NotebookTextIcon, SquarePenIcon, Trash2Icon } from "lucide-react";
 import { ExerciseGif } from "./ExerciseGif";
 
 interface IProps {
@@ -31,7 +31,20 @@ export const ExerciseVisualizer: React.FC<IProps> = (props) => {
                                         { i + 1}
                                     </div>
                                     <ExerciseGif thumbnailOrImage={ "thmb" } name={ exercise.exercise?.name_english ?? "" } gif_id={ exercise.exercise?.gif_id ?? "" } resolution={ "180" } file_type={ 'jpg' } />
-                                    <div>{ exercise.exercise?.name_english }</div>
+                                    <div className="flex flex-row items-center justify-between">
+                                        <div className="">
+                                            { exercise.exercise?.name_english }
+                                        </div>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <NotebookTextIcon  className="h-4"/>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="bg-lightSecondary text-white">
+                                            This is a note
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </div>
+
                                 </div>
                                 <div className="text-center flex flex-row items-center justify-end max-w-[50%] w-[50%] h-full">
                                     <div className="min-w-[33%] flex flex-col justify-center items-center">
@@ -180,6 +193,7 @@ export const ExerciseVisualizer: React.FC<IProps> = (props) => {
                             </div>
                         </TooltipTrigger>
                         <TooltipContent side="right" className="bg-lightSecondary text-white flex flex-row gap-2">
+                            <NotebookTextIcon className="cursor-pointer" />
                             <SquarePenIcon className="cursor-pointer" onClick={ () => handleEdit(Number(weekOrder), Number(day.order), i, exercise ) } />
                             <Trash2Icon
                                 className="cursor-pointer"
