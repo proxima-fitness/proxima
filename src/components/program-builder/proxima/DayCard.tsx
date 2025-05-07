@@ -116,6 +116,22 @@ export const DayCard: FC<IProps> = (props) => {
         };
     }, [day.id, day.order, focusedCardId, handleDeleteDay, handleOpenGenerateDayDialog, weekOrder]);
 
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (focusedCardId === day.id) {
+                if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "i") {
+                    event.preventDefault();
+                    handleOpenAddNoteDialog({ weekOrder: Number(weekOrder), dayOrder: Number(day.order), isOpen: true });
+                }
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [day.id, day.order, focusedCardId, handleDeleteDay, handleOpenGenerateDayDialog, handleOpenAddNoteDialog, weekOrder]);
+
 
     return (
         <>
@@ -195,7 +211,7 @@ export const DayCard: FC<IProps> = (props) => {
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={ () => handleOpenAddNoteDialog({ weekOrder: Number(weekOrder), dayOrder: Number(day.order), isOpen: true }) } className="cursor-pointer">
                                         Add Note
-                                        <DropdownMenuShortcut>⌘N</DropdownMenuShortcut>
+                                        <DropdownMenuShortcut>⌘I</DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={ () => {
                                         handleOpenGenerateDayDialog({ weekOrder: Number(weekOrder), dayOrder: Number(day.order), isOpen: true });

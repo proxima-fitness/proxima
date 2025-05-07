@@ -1,27 +1,25 @@
 import { ProgramsSlugLayout } from "@/components/programs/ProgramsSlugLayout";
 
-export const metadata = {
-    title: "Search Programs | Proxima Fitness",
-    description: "Search from a list of Free Workout Programs on Proxima",
-};
+export async function generateMetadata({ params }: { params: { slug: string[] } }) {
+    const rawTitle = params.slug[1]?.replace(/-/g, ' ') ?? "Program";
+    const formattedTitle = rawTitle.charAt(0).toUpperCase() + rawTitle.slice(1);
 
-  export default async function ProgramsSlugPage({
+    return {
+        title: `${formattedTitle} | Proxima Fitness`,
+        description: `View details about the ${formattedTitle} program on Proxima Fitness.`,
+    };
+}
+
+export default function ProgramsSlugPage({
     params,
-  }: {
-    params: Promise < {
-      slug: string[]
-    } > ;
-  }) {
-
-    const {
-        slug,
-    } = await params;
+}: {
+    params: { slug: string[] };
+}) {
+    const slug = params.slug;
 
     return (
-        <>
-            <div className={ `bg-white flex items-center justify-center flex-col px-12 max-sm:px-2 py-6` }>
-                <ProgramsSlugLayout id={ slug[0] } />
-            </div>
-        </>
+        <div className="bg-white flex items-center justify-center flex-col px-12 max-sm:px-2 py-6">
+            <ProgramsSlugLayout id={slug[0]} />
+        </div>
     );
-};
+}
