@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 
 export const RecentProgramsGrid: React.FC = () => {
 
-    const { isHevy } = useIsHevy();
+    const { isHevy, setIsHevy } = useIsHevy();
     const [prompt, setPrompt] = useState<string>("");
     const [hevyRoutine, setHevyRoutine] = useState<THevyRoutine[]>();
     const [program, setProgram] = useState<TProgramCreatorDay[][]>();
@@ -42,15 +42,19 @@ export const RecentProgramsGrid: React.FC = () => {
                 <StepForwardIcon />
                 Resume Building Program
             </span>
+            <span className="text-xs text-center pt-4">Without signing in you can have one active program for each schema at a time. Click on a program to resume building it.</span>
             <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 py-8 px-8">
                 { hevyRoutine &&
                     <div key={ hevyRoutine[0].id } className="relative group bg-white h-[200px] rounded-lg shadow-lg">
                     <div className="absolute inset-0 transition duration-300 group-hover:blur-sm z-0">
-                        <img
-                            src={quotes.src}
-                            alt="Program Thumbnail"
-                            className="p-4 object-contain"
-                        />
+                        <div className="flex flex-row items-center justify-start gap-2 font-main text-sm">
+                            <img
+                                src={quotes.src}
+                                alt="Program Thumbnail"
+                                className="p-4 object-contain"
+                            />
+                            Hevy Routines Program
+                        </div>
                         <div className="p-4 space-y-2">
                             <div className="font-third text-sm overflow-hidden text-ellipsis line-clamp-5">
                                 { prompt.length === 2 ? "No prompt provided" : prompt }
@@ -71,13 +75,16 @@ export const RecentProgramsGrid: React.FC = () => {
                 </div>
                 }
                 { program &&
-                    <div key={ program[0][0].id } className="relative group bg-lightGray h-[200px] rounded-lg shadow-lg">
+                    <div key={ program[0][0].id } className="relative group bg-white h-[200px] rounded-lg shadow-lg">
                         <div className="absolute inset-0 transition duration-300 group-hover:blur-sm z-0">
-                            <img
-                                src={quotes.src}
-                                alt="Program Thumbnail"
-                                className="p-4 object-contain"
-                            />
+                            <div className="flex flex-row items-center justify-start gap-2 font-main text-sm">
+                                <img
+                                    src={quotes.src}
+                                    alt="Program Thumbnail"
+                                    className="p-4 object-contain"
+                                />
+                                Proxima Program
+                            </div>
                             <div className="p-4 space-y-2">
                                 <div className="font-third text-sm overflow-hidden text-ellipsis line-clamp-5">
                                         {/* {program[0][0].prompt ? program[0][0].prompt : program[0][0].id} */}
@@ -86,7 +93,14 @@ export const RecentProgramsGrid: React.FC = () => {
                         </div>
 
                         <div className="absolute inset-0 rounded-lg bg-black bg-opacity-40 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
-                            <button className="my-2 py-2 w-[50%] bg-white text-black hover:bg-black hover:text-white rounded-lg shadow flex flex-row items-center justify-center gap-2"><Redo2Icon/>Resume</button>
+                            <Link
+                                href={ `/program-builder/build-program?resume=true` }
+                                target="_self"
+                                rel="noopener noreferrer"
+                                className="w-[50%]"
+                            >
+                                <button onClick={ () => setIsHevy(false) } className="my-2 py-2 w-full bg-white text-black hover:bg-black hover:text-white rounded-lg shadow flex flex-row items-center justify-center gap-2"><Redo2Icon />Resume</button>
+                            </Link>
                         </div>
                     </div>
                 }

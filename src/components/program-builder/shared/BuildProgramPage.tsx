@@ -22,7 +22,8 @@ export const BuildProgramPage: React.FC = () => {
     const shareId = searchParams.get('shareId') ?? '';
     const edit = searchParams.get('edit') ?? '';
     const resume = searchParams.get('resume') ?? '';
-    const [resumeProgram, setResumeProgram] = useState<THevyRoutine[]>();
+    const [resumeHevyProgram, setResumeHevyProgram] = useState<THevyRoutine[]>();
+    const [resumeProximaProgram, setResumeProximaProgram] = useState<TProgramCreatorDay[][]>();
 
     useEffect(() => {
         if (edit === 'true') {
@@ -32,12 +33,19 @@ export const BuildProgramPage: React.FC = () => {
         }
 
         if (resume === 'true') {
-            const program = localStorage.getItem('hevy-program-in-progress');
-            if (program) {
-                setResumeProgram(JSON.parse(program));
+            if (isHevy) {
+                const program = localStorage.getItem('hevy-program-in-progress');
+                if (program) {
+                    setResumeHevyProgram(JSON.parse(program));
+                }
+            } else {
+                const program = localStorage.getItem('program-in-progress');
+                if (program) {
+                    setResumeProximaProgram(JSON.parse(program));
+                }
             }
         }
-    }, [edit, setIsPreview, resume]);
+    }, [edit, setIsPreview, resume, isHevy]);
 
     const empty = searchParams.get('empty') ?? '';
     const search = searchParams.get('search') ?? '';
@@ -115,15 +123,29 @@ export const BuildProgramPage: React.FC = () => {
     }
 
     if (resume === "true") {
-        return (
-            resumeProgram && resumeProgram.length > 0 ? (
-                <div className="max-sm:px-2 sm:pl-8">
-                    <HevyRoutine program={ resumeProgram as THevyRoutine[] } />
-                </div>
-            ) : (
-                <BuildProgramSkeleton />
-            )
-        );
+        if (isHevy) {
+            if (!resumeHevyProgram) {
+                return (
+                    <BuildProgramSkeleton />
+                );
+            }
+            if (resumeHevyProgram) {
+                return (
+                    <HevyRoutine program={ resumeHevyProgram as THevyRoutine[] } />
+                );
+            }
+        } else if (!isHevy) {
+            if (!resumeProximaProgram) {
+                return (
+                    <BuildProgramSkeleton />
+                );
+            }
+            if (resumeProximaProgram) {
+                return (
+                    <ProximaProgram program={ resumeProximaProgram as TProgramCreatorDay[][] } />
+                );
+            }
+        }
     }
 
     if (isHevy) {
