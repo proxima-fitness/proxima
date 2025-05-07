@@ -6,6 +6,7 @@ interface IProps {
     folder_id: number;
     handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
     handleEdit: (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: THevyExercise) => void;
+    handleOpenAddExerciseNoteDialog: (addExerciseNoteDialog: THevyDialog) => void;
 }
 
 export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
@@ -15,6 +16,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
         folder_id,
         handleEdit,
         handleDeleteExercise,
+        handleOpenAddExerciseNoteDialog,
     } = props;
 
     return (
@@ -40,14 +42,16 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                         <div className="">
                                             { exercise.title }
                                         </div>
-                                        {/* <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <NotebookTextIcon  className="h-4"/>
-                                        </TooltipTrigger>
-                                        <TooltipContent className="bg-lightSecondary text-white">
-                                            This is a note
-                                            </TooltipContent>
-                                        </Tooltip> */}
+                                        { exercise.notes && (
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <NotebookTextIcon  className="h-4"/>
+                                            </TooltipTrigger>
+                                            <TooltipContent className="bg-lightSecondary text-white">
+                                                { exercise.notes }
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="text-center flex flex-row items-center justify-end max-w-[50%] w-[50%] h-full">
@@ -116,7 +120,10 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                             </div>
                         </TooltipTrigger>
                         <TooltipContent side="right" className="bg-lightSecondary text-white flex flex-row gap-2">
-                            <NotebookTextIcon className="cursor-pointer" />
+                            <NotebookTextIcon
+                                className="cursor-pointer"
+                                    onClick={ () => handleOpenAddExerciseNoteDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), exerciseIndex: i, isOpen: true}) }
+                            />
                             <Trash2Icon
                                 className="cursor-pointer"
                                 onClick={ () => {

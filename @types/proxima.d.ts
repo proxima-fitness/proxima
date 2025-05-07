@@ -12,6 +12,7 @@ type TProgramCreatorDay = {
 }
 
 type TProgramCreatorExercise = {
+    notes?: string;
     exercise?: TExercise;
     sets?: number;
     reps_type?: TRepsTypes;

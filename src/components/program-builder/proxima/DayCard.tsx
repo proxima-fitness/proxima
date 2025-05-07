@@ -32,6 +32,7 @@ interface IProps {
     handleOpenGenerateDayDialog: (generateDayDialog: TDialog) => void;
     handleOpenAddExerciseDialog: (addExerciseDialog: TDialog) => void;
     handleOpenAddNoteDialog: (addNoteDialog: TDialog) => void;
+    handleOpenAddExerciseNoteDialog: (addExerciseNoteDialog: TDialog) => void;
     handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;    // handleGenerateDayDialog: (generateDayDialog: TDialog) => void;
     handleDeleteExercise: (weekOrder: number, dayOrder: number, exerciseIndex: number) => void;
     handleIsEditExercise: (isEditExercise: boolean) => void;
@@ -51,6 +52,7 @@ export const DayCard: FC<IProps> = (props) => {
         handleEditTitle,
         handleOpenAddExerciseDialog,
         handleOpenAddNoteDialog,
+        handleOpenAddExerciseNoteDialog,
         handleDuplicateDay,
         handleOpenGenerateDayDialog,
         handleDeleteExercise,
@@ -265,6 +267,7 @@ export const DayCard: FC<IProps> = (props) => {
                             weekOrder={ weekOrder }
                             handleEdit={ handleEdit }
                             handleDeleteExercise={ handleDeleteExercise }
+                            handleOpenAddExerciseNoteDialog={ handleOpenAddExerciseNoteDialog }
                         />
                     <div
                         className="flex items-center justify-center"

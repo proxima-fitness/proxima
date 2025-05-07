@@ -8,6 +8,7 @@ interface IProps {
     weekOrder: string;
     handleEdit: (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: TProgramCreatorExercise) => void;
     handleDeleteExercise: (weekOrder: number, dayOrder: number, exerciseIndex: number) => void;
+    handleOpenAddExerciseNoteDialog: (addExerciseNoteDialog: TDialog) => void;
 }
 
 export const ExerciseVisualizer: React.FC<IProps> = (props) => {
@@ -17,6 +18,7 @@ export const ExerciseVisualizer: React.FC<IProps> = (props) => {
         weekOrder,
         handleDeleteExercise,
         handleEdit,
+        handleOpenAddExerciseNoteDialog,
     } = props;
 
     return (
@@ -35,14 +37,16 @@ export const ExerciseVisualizer: React.FC<IProps> = (props) => {
                                         <div className="">
                                             { exercise.exercise?.name_english }
                                         </div>
-                                        {/* <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <NotebookTextIcon  className="h-4"/>
-                                        </TooltipTrigger>
-                                        <TooltipContent className="bg-lightSecondary text-white">
-                                            This is a note
-                                            </TooltipContent>
-                                        </Tooltip> */}
+                                        { exercise?.notes && (
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <NotebookTextIcon  className="h-4"/>
+                                            </TooltipTrigger>
+                                            <TooltipContent className="bg-lightSecondary text-white">
+                                                { exercise?.notes }
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        ) }
                                     </div>
 
                                 </div>
@@ -193,7 +197,10 @@ export const ExerciseVisualizer: React.FC<IProps> = (props) => {
                             </div>
                         </TooltipTrigger>
                         <TooltipContent side="right" className="bg-lightSecondary text-white flex flex-row gap-2">
-                            <NotebookTextIcon className="cursor-pointer" />
+                            <NotebookTextIcon
+                                className="cursor-pointer"
+                                    onClick={ () => handleOpenAddExerciseNoteDialog({weekOrder: Number(weekOrder), dayOrder: Number(day.order), exerciseIndex: i, isOpen: true}) }
+                            />
                             <Trash2Icon
                                 className="cursor-pointer"
                                 onClick={ () => {

@@ -30,6 +30,7 @@ interface IProps {
     handleOpenGenerateDayDialog: (generateDayDialog: THevyDialog) => void;
     handleOpenAddNoteDialog: (addNoteDialog: THevyDialog) => void;
     handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
+    handleOpenAddExerciseNoteDialog: (addExerciseNoteDialog: THevyDialog) => void;
     handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;    // handleGenerateDayDialog: (generateDayDialog: TDialog) => void;
     handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
     handleIsEditExercise: (isEditExercise: boolean) => void;
@@ -48,6 +49,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         programLength,
         handleEditTitle,
         handleOpenAddExerciseDialog,
+        handleOpenAddExerciseNoteDialog,
         handleOpenAddNoteDialog,
         handleDuplicateDay,
         handleOpenGenerateDayDialog,
@@ -265,6 +267,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                             folder_id={ folder_id }
                             handleEdit={ handleEdit }
                             handleDeleteExercise={ handleDeleteExercise }
+                            handleOpenAddExerciseNoteDialog={ handleOpenAddExerciseNoteDialog }
                         />
                     </div>
                     <div

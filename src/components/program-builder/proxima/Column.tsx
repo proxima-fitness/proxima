@@ -23,6 +23,7 @@ interface IProps {
     handleDuplicateWeek: (fromWeekIndex: number, toWeekIndexes: number[]) => void;
     handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void
     handleOpenAddExerciseDialog: (addExerciseDialog: TDialog) => void;
+    handleOpenAddExerciseNoteDialog: (addExerciseNoteDialog: TDialog) => void;
     handleDeleteExercise: (weekOrder: number, dayOrder: number, exerciseIndex: number) => void;
     focusedCardId: string;
     setFocusedCardId: (focusedCardId: string) => void;
@@ -45,6 +46,7 @@ export const Column: React.FC<IProps> = (props) => {
         handleDuplicateWeek,
         handleDuplicateDay,
         handleOpenAddExerciseDialog,
+        handleOpenAddExerciseNoteDialog,
         handleDeleteExercise,
         focusedCardId,
         setFocusedCardId,
@@ -220,6 +222,7 @@ export const Column: React.FC<IProps> = (props) => {
                             handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
                             handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
                             handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
+                            handleOpenAddExerciseNoteDialog={ handleOpenAddExerciseNoteDialog }
                             handleIsEditExercise={ handleIsEditExercise }
                             handleDeleteExercise={ handleDeleteExercise }
                             focusedCardId={ focusedCardId }
