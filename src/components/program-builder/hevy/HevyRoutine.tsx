@@ -293,7 +293,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                             exercises: day.exercises.map((exercise, index) => index === editExercise.exerciseIndex ? {
                                 index: day.exercises.length + 1,
                                 title: exerciseTemplate?.title ?? "",
-                                notes: "",
+                                notes: exercise?.notes ?? "",
                                 exercise_template_id: exerciseTemplate?.id ?? "",
                                 supersets_id: null,
                                 sets: sets,
