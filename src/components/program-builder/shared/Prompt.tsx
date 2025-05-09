@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpIcon, BicepsFlexedIcon, BookOpenIcon, Calculator, ChevronDownIcon, ChevronUpIcon, FootprintsIcon, InfoIcon, MicIcon, SearchIcon, SparklesIcon, SquarePowerIcon } from "lucide-react";
+import { ArrowUpIcon, BicepsFlexedIcon, BookOpenIcon, Calculator, ChevronDownIcon, ChevronUpIcon, FootprintsIcon, InfoIcon, MicIcon, PlayIcon, SearchIcon, SparklesIcon, SquarePowerIcon } from "lucide-react";
 // import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../dropzone";
 import { Card } from "@/components/ui/card";
 import { useEffect, useReducer, useRef, useState } from "react";
@@ -17,6 +17,7 @@ import { useIsHevy } from "@/contexts/HevyContext";
 import { inferDaysPerWeek } from "../utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { toast } from "sonner";
 
 export const Prompt: React.FC = () => {
 
@@ -95,8 +96,11 @@ export const Prompt: React.FC = () => {
     return (
         <div className="flex flex-col gap-2 w-full items-center">
             <Dialog open={ dialogOpen } onOpenChange={ () => setDialogOpen(false) }>
+                <span className="flex items-center justify-center">
+                    <Button onClick={ () => setDialogOpen(true) } className="my-12 sm:hidden h-[60px] text-white rounded-xl w-[200px] bg-lightSecondary hover:bg-lightSecondary font-main uppercase flex items-center justify-center gap-4"><PlayIcon />Start</Button>
+                </span>
                 <Card
-                    className="flex flex-col justify-between border-[4px] border-gray-100 bg-lightGray my-2 sm:w-[65%] max-sm:w-[90%] h-full"
+                    className="max-sm:hidden flex flex-col justify-between border-[4px] border-gray-100 bg-lightGray my-2 sm:w-[65%] max-sm:w-[90%] h-full"
                 >
                     <Textarea
                         autoFocus
@@ -163,22 +167,22 @@ export const Prompt: React.FC = () => {
                             Empty Template
                         </Button>
                     </Link>
-                    <Button onClick={ () => setSearch("Create a Push Pull Legs Program that is 6 days per week")} variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
+                    <Button onClick={ () => { setSearch("Create a Push Pull Legs Program that is 6 days per week"); toast.info("PPL selected"); } } variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
                         <BicepsFlexedIcon />
                         PPL Program
                     </Button>
 
-                    <Button onClick={ () => setSearch("Create a Smolov Jr. workout program following the Smolov Jr. pattern. Smolov Jr is a short, high-frequency, high-volume squat program designed to rapidly increase 1-rep max strength over about 3 weeks. It is based on squatting 4 times per week, typically Monday, Wednesday, Friday, and Saturday, with the lifter performing 6 sets of 6 reps at 70% of their 1RM on Day 1, 7 sets of 5 reps at 75% on Day 2, 8 sets of 4 reps at 80% on Day 3, and 10 sets of 3 reps at 85% on Day 4. Each week, the lifter is supposed to increase all working weights by 5–10 pounds (2.5–5 kg). The program requires good recovery practices, is best suited for experienced lifters, and can be used for squat, bench press, or other major lifts.")} variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
+                    <Button onClick={ () => { setSearch("Create a Smolov Jr. workout program following the Smolov Jr. pattern. Smolov Jr is a short, high-frequency, high-volume squat program designed to rapidly increase 1-rep max strength over about 3 weeks. It is based on squatting 4 times per week, typically Monday, Wednesday, Friday, and Saturday, with the lifter performing 6 sets of 6 reps at 70% of their 1RM on Day 1, 7 sets of 5 reps at 75% on Day 2, 8 sets of 4 reps at 80% on Day 3, and 10 sets of 3 reps at 85% on Day 4. Each week, the lifter is supposed to increase all working weights by 5–10 pounds (2.5–5 kg). The program requires good recovery practices, is best suited for experienced lifters, and can be used for squat, bench press, or other major lifts."); toast.info("Smolov Jr. selected"); } } variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
                         <SquarePowerIcon />
                         Smolov Jr.
                     </Button>
 
-                    <Button onClick={  () => setSearch("Create 3 day a week functional training program tailored for football or soccer athletes" )} variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
+                    <Button onClick={  () => { setSearch("Create 3 day a week functional training program tailored for football or soccer athletes"); toast.info("Athletic Training selected"); } } variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
                         <FootprintsIcon />
                         Athletic Training
                     </Button>
 
-                    <Button onClick={ () => setSearch("Create a weight loss workout program that emphasizes cardio (4x per week)") } variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
+                    <Button onClick={ () => { setSearch("Create a weight loss workout program that emphasizes cardio (4x per week)"); toast.info("Weight Loss Program selected"); } } variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
                         <Calculator />
                         Weight loss Program
                     </Button>
