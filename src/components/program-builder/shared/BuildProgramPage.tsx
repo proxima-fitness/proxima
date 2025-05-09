@@ -7,15 +7,12 @@ import { useBuildAiProgram, useSharedProgram } from "@/api/hooks";
 import { useEffect, useMemo, useState } from "react";
 import { ProximaProgram } from "../proxima/ProximaProgram";
 import { usePreview } from "@/contexts/PreviewContext";
-import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts } from "../utils";
 import { HevyRoutine } from "../hevy/HevyRoutine";
-import { HevyRoutineSchedule } from "../hevy/HevyRoutineSchedule";
-import { ProgramSchedule } from "../proxima/ProgramSchedule";
 
 export const BuildProgramPage: React.FC = () => {
 
     const { isHevy } = useIsHevy();
-    const { isPreview, setIsPreview } = usePreview();
+    const { setIsPreview } = usePreview();
 
     const searchParams = useSearchParams();
 
@@ -149,32 +146,16 @@ export const BuildProgramPage: React.FC = () => {
     }
 
     if (isHevy) {
-        if (isPreview) {
-            return (
-                <div className="max-sm:px-2 sm:pl-8">
-                    <HevyRoutineSchedule deflatHevyRoutine={ shareId && shareId.length > 0 ? deFlattenHevyRoutine(sharedProgram?.[0]?.hevy_routines as THevyRoutine[]) : deFlattenHevyRoutine(program as THevyRoutine[]) } />
-                </div>
-            );
-        } else {
-            return (
-                <div className="max-sm:px-2 sm:pl-8">
-                    <HevyRoutine program={ shareId && shareId.length > 0 ? sharedProgram?.[0]?.hevy_routines as THevyRoutine[] : program as THevyRoutine[] } />
-                </div>
-            );
-        }
+        return (
+            <div className="max-sm:px-2 sm:pl-8">
+                <HevyRoutine program={ shareId && shareId.length > 0 ? sharedProgram?.[0]?.hevy_routines as THevyRoutine[] : program as THevyRoutine[] } />
+            </div>
+        );
     } else if (!isHevy) {
-        if (isPreview) {
-            return (
-                <div className="max-sm:px-2 sm:pl-8">
-                    <ProgramSchedule sortedWorkoutsByWeek={ programCreatorDayToScheduleWorkouts(program as TProgramCreatorDay[][]) } />
-                </div>
-            );
-        } else {
-            return (
-                <div className="max-sm:px-2 sm:pl-8">
-                    <ProximaProgram program={ program as TProgramCreatorDay[][] } />
-                </div>
-            );
-        }
+        return (
+            <div className="max-sm:px-2 sm:pl-8">
+                <ProximaProgram program={ program as TProgramCreatorDay[][] } />
+            </div>
+        );
     }
 };

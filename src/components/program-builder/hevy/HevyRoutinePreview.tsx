@@ -5,7 +5,7 @@ interface IProps {
     deflatHevyRoutine: THevyRoutine[][];
 }
 
-export const HevyRoutineSchedule: React.FC<IProps> = (props) => {
+export const HevyRoutinePreview: React.FC<IProps> = (props) => {
 
     const {
         deflatHevyRoutine,

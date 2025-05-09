@@ -5,7 +5,7 @@ interface IProps {
     sortedWorkoutsByWeek: TScheduleWorkouts[][];
 }
 
-export const ProgramSchedule: React.FC<IProps> = (props) => {
+export const ProgramPreview: React.FC<IProps> = (props) => {
 
     const {
         sortedWorkoutsByWeek,

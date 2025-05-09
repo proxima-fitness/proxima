@@ -10,10 +10,12 @@ import { HevyGenerateDayDialog } from "./HevyGenerateDayDialog";
 import { IOption } from "@/components/ui/multi-select";
 import { getHevyExerciseFromLocalStorageByID } from "@/utils/general/helpers";
 import { toast } from "sonner";
-import { aiRequest, appendOrderToHevyRoutines, getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy, sortHevyByOrder } from "../utils";
+import { aiRequest, appendOrderToHevyRoutines, deFlattenHevyRoutine, getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy, sortHevyByOrder } from "../utils";
 import { buildHevyProgram } from "../utils/build-hevy-program";
 import { HevyAddNoteDialog } from "./HevyAddNoteDialog";
 import { HevyExerciseNotesDialog } from "./HevyExerciseNotesDialog";
+import { HevyRoutinePreview } from "./HevyRoutinePreview";
+import { usePreview } from "@/contexts/PreviewContext";
 
 interface IProps {
     program: THevyRoutine[];
@@ -27,6 +29,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data: exercises }  = useHevyExercises(); // Pre-populating the HevyAddExerciseDialog
+    const { isPreview } = usePreview();
 
     const [addExerciseDialog, setAddExerciseDialog] = useState<THevyDialog>({folder_id: 0, dayOrder: 0, isOpen: false});
     const [generateDayDialog, setGenerateDayDialog] = useState<THevyDialog>({folder_id: 0, dayOrder: 0, isOpen: false});
@@ -324,55 +327,64 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
 
     return (
         <>
-            <div className="flex flex-row gap-4 h-full w-full">
-                { numberOfWeeksArr.map((_, index) => (
-                    <HevyColumn
-                        key={ `Week ${index + 1}` }
-                        title={ `Week ${index + 1}` }
-                        programLength={ numberOfWeeks }
-                        hevyProgram={ hevyProgram }
-                        folder_id={ index }
-                        setHevyProgram={ setHevyProgram }
-                        handleAddDay={ handleAddDay }
-                        handleDeleteDay={ handleDeleteDay }
-                        handleEditTitle={ handleEditTitle }
-                        handleIsEditExercise={ handleIsEditExercise }
-                        handleDuplicateWeek={ handleDuplicateWeek }
-                        handleDuplicateDay={ handleDuplicateDay }
+            { isPreview ?
+                <div className="max-sm:px-2 sm:pl-8">
+                    <HevyRoutinePreview deflatHevyRoutine={ deFlattenHevyRoutine(hevyProgram) } />
+                </div>
+            :
+                <>
+                    <div className="flex flex-row gap-4 h-full w-full">
+                        { numberOfWeeksArr.map((_, index) => (
+                            <HevyColumn
+                                key={ `Week ${index + 1}` }
+                                title={ `Week ${index + 1}` }
+                                programLength={ numberOfWeeks }
+                                hevyProgram={ hevyProgram }
+                                folder_id={ index }
+                                setHevyProgram={ setHevyProgram }
+                                handleAddDay={ handleAddDay }
+                                handleDeleteDay={ handleDeleteDay }
+                                handleEditTitle={ handleEditTitle }
+                                handleIsEditExercise={ handleIsEditExercise }
+                                handleDuplicateWeek={ handleDuplicateWeek }
+                                handleDuplicateDay={ handleDuplicateDay }
+                                handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
+                                handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
+                                handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
+                                handleOpenAddExerciseNoteDialog={ handleOpenAddExerciseNoteDialog }
+                                handleDeleteExercise={ handleDeleteExercise }
+                                focusedCardId={ focusedCardId }
+                                setFocusedCardId={ setFocusedCardId }
+                            />
+                        ) ) }
+                    </div>
+                    { addExerciseDialog.isOpen &&
+                        <HevyAddExerciseDialog
+                            addExerciseDialog={ addExerciseDialog }
+                            isEditExercise={ isEditExercise }
+                            handleEditExercise={ handleEditExercise }
+                            handleAddExercise={ handleAddExercise }
+                            handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
+                        />
+                    }
+                    <HevyGenerateDayDialog
+                        handleGenerateDay={ handleGenerateDay }
+                        generateDayDialog={ generateDayDialog }
                         handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
-                        handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
-                        handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
-                        handleOpenAddExerciseNoteDialog={ handleOpenAddExerciseNoteDialog }
-                        handleDeleteExercise={ handleDeleteExercise }
-                        focusedCardId={ focusedCardId }
-                        setFocusedCardId={ setFocusedCardId }
                     />
-                ) ) }
-            </div>
-            { addExerciseDialog.isOpen &&
-                <HevyAddExerciseDialog
-                    addExerciseDialog={ addExerciseDialog }
-                    isEditExercise={ isEditExercise }
-                    handleEditExercise={ handleEditExercise }
-                    handleAddExercise={ handleAddExercise }
-                    handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
-                />
+                    <HevyAddNoteDialog
+                        handleAddRoutineNote={ handleAddRoutineNote }
+                        addNoteDialog={ addNoteDialog }
+                        handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
+                    />
+                    <HevyExerciseNotesDialog
+                        handleAddExerciseNote={ handleAddExerciseNote }
+                        addExerciseNoteDialog={ addExerciseNoteDialog }
+                        handleOpenAddExerciseNoteDialog={ handleOpenAddExerciseNoteDialog }
+                    />
+                </>
+
             }
-            <HevyGenerateDayDialog
-                handleGenerateDay={ handleGenerateDay }
-                generateDayDialog={ generateDayDialog }
-                handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
-            />
-            <HevyAddNoteDialog
-                handleAddRoutineNote={ handleAddRoutineNote }
-                addNoteDialog={ addNoteDialog }
-                handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
-            />
-            <HevyExerciseNotesDialog
-                handleAddExerciseNote={ handleAddExerciseNote }
-                addExerciseNoteDialog={ addExerciseNoteDialog }
-                handleOpenAddExerciseNoteDialog={ handleOpenAddExerciseNoteDialog }
-            />
         </>
     );
 };

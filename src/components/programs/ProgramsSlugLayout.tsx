@@ -2,7 +2,7 @@ import styles from "@/style";
 import { GetStarted } from "../header/GetStarted";
 import { useOpUserMetadataSSR, useProgramByIdSSR, useUserFullNameSSR } from "@/api/hooks";
 import { ProgramDetails } from "./ProgramDetails";
-import { ProgramSchedule } from "../program-builder/proxima/ProgramSchedule";
+import { ProgramPreview } from "../program-builder/proxima/ProgramPreview";
 import { sortWorkouts } from "@/utils/general/helpers";
 import { FC } from "react";
 
@@ -51,7 +51,7 @@ export const ProgramsSlugLayout: FC<IProps> =  async (props) => {
                 </div>
             </div>
             { sortedWorkoutsByWeek &&
-                <ProgramSchedule sortedWorkoutsByWeek={ sortedWorkoutsByWeek } />
+                <ProgramPreview sortedWorkoutsByWeek={ sortedWorkoutsByWeek } />
             }
         </>
     );

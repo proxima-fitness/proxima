@@ -6,10 +6,12 @@ import { IOption } from "@/components/ui/multi-select";
 import { GenerateDayDialog } from "./GenerateDayDialog";
 import { useExercises } from "@/api/hooks";
 import { Column } from "./Column";
-import { addExerciseToProgramCreatorExerciseConverter, aiRequest, appendWeekOrderAndIdToProgramDays, buildProgram, deFlattenProgram, flattenProgram, reorder } from "../utils";
+import { addExerciseToProgramCreatorExerciseConverter, aiRequest, appendWeekOrderAndIdToProgramDays, buildProgram, deFlattenProgram, flattenProgram, programCreatorDayToScheduleWorkouts, reorder } from "../utils";
 import { toast } from "sonner";
 import { AddNoteDialog } from "./AddNoteDialog";
 import { ExerciseNotesDialog } from "./ExerciseNotesDialog";
+import { ProgramPreview } from "./ProgramPreview";
+import { usePreview } from "@/contexts/PreviewContext";
 
 interface IProps {
     program: TProgramCreatorDay[][];
@@ -23,6 +25,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data: exercises }  = useExercises();
+    const { isPreview } = usePreview();
 
     const [addExerciseDialog, setAddExerciseDialog] = useState<TDialog>({weekOrder: 0, dayOrder: 0, isOpen: false});
     const [generateDayDialog, setGenerateDayDialog] = useState<TDialog>({weekOrder: 0, dayOrder: 0, isOpen: false});
@@ -277,55 +280,64 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
 
     return (
         <>
-            <div className="flex flex-row gap-4 h-full w-full">
-                { program.map((_, index) => (
-                    <Column
-                        key={ `Week ${index + 1}` }
-                        title={ `Week ${index + 1}` }
-                        programLength={ program.length }
-                        flattenedProgramDays={ flattenedProgramDays }
-                        weekOrder={ String(index) }
-                        setFlattenedProgramDays={ setFlattenedProgramDays }
-                        handleAddDay={ handleAddDay }
-                        handleDeleteDay={ handleDeleteDay }
-                        handleEditTitle={ handleEditTitle }
-                        handleIsEditExercise={ handleIsEditExercise }
-                        handleDuplicateWeek={ handleDuplicateWeek }
-                        handleDuplicateDay={ handleDuplicateDay }
-                        handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
-                        handleOpenAddExerciseNoteDialog={ handleOpenAddExerciseNoteDialog }
+            { isPreview ?
+                <div className="max-sm:px-2 sm:pl-8">
+                    <ProgramPreview sortedWorkoutsByWeek={ programCreatorDayToScheduleWorkouts(deFlattenProgram(flattenedProgramDays)) } />
+                </div>
+            :
+
+                <>
+                <div className="flex flex-row gap-4 h-full w-full">
+                    { program.map((_, index) => (
+                        <Column
+                            key={ `Week ${index + 1}` }
+                            title={ `Week ${index + 1}` }
+                            programLength={ program.length }
+                            flattenedProgramDays={ flattenedProgramDays }
+                            weekOrder={ String(index) }
+                            setFlattenedProgramDays={ setFlattenedProgramDays }
+                            handleAddDay={ handleAddDay }
+                            handleDeleteDay={ handleDeleteDay }
+                            handleEditTitle={ handleEditTitle }
+                            handleIsEditExercise={ handleIsEditExercise }
+                            handleDuplicateWeek={ handleDuplicateWeek }
+                            handleDuplicateDay={ handleDuplicateDay }
+                            handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
+                            handleOpenAddExerciseNoteDialog={ handleOpenAddExerciseNoteDialog }
+                            handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
+                            handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
+                            handleDeleteExercise={ handleDeleteExercise }
+                            focusedCardId={ focusedCardId }
+                            setFocusedCardId={ setFocusedCardId }
+                        />
+                    ) ) }
+                </div>
+                { addExerciseDialog.isOpen &&
+                    <AddExerciseDialog
+                        addExerciseDialog={ addExerciseDialog }
+                        isEditExercise={ isEditExercise }
+                        handleEditExercise={ handleEditExercise }
+                        handleAddExercise={ handleAddExercise }
                         handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
-                        handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
-                        handleDeleteExercise={ handleDeleteExercise }
-                        focusedCardId={ focusedCardId }
-                        setFocusedCardId={ setFocusedCardId }
                     />
-                ) ) }
-            </div>
-            { addExerciseDialog.isOpen &&
-                <AddExerciseDialog
-                    addExerciseDialog={ addExerciseDialog }
-                    isEditExercise={ isEditExercise }
-                    handleEditExercise={ handleEditExercise }
-                    handleAddExercise={ handleAddExercise }
-                    handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
+                }
+                <GenerateDayDialog
+                    handleGenerateDay={ handleGenerateDay }
+                    generateDayDialog={ generateDayDialog }
+                    handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
                 />
+                <AddNoteDialog
+                    addNoteDialog={ addNoteDialog }
+                    handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
+                    handleAddDayNote={ handleAddDayNote }
+                />
+                <ExerciseNotesDialog
+                    handleAddExerciseNote={ handleAddExerciseNote }
+                    addExerciseNoteDialog={ addExerciseNoteDialog }
+                    handleOpenAddExerciseNoteDialog={ handleOpenAddExerciseNoteDialog }
+                />
+                </>
             }
-            <GenerateDayDialog
-                handleGenerateDay={ handleGenerateDay }
-                generateDayDialog={ generateDayDialog }
-                handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
-            />
-            <AddNoteDialog
-                addNoteDialog={ addNoteDialog }
-                handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
-                handleAddDayNote={ handleAddDayNote }
-            />
-            <ExerciseNotesDialog
-                handleAddExerciseNote={ handleAddExerciseNote }
-                addExerciseNoteDialog={ addExerciseNoteDialog }
-                handleOpenAddExerciseNoteDialog={ handleOpenAddExerciseNoteDialog }
-            />
         </>
     );
 };
