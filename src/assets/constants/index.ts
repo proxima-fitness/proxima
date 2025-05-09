@@ -5875,6 +5875,7 @@ export const footerLinks = [
         name: "Blog",
         link: "/blog",
       },
+
     ],
   },
   {
@@ -5885,18 +5886,25 @@ export const footerLinks = [
         link: "mailto:jack@proximafitness.com",
       },
       {
-        name: "Give us Feedback",
+        name: "Survey",
         link: "https://docs.google.com/forms/d/e/1FAIpQLSffqV8QEZ0fD5GspTsGZxZ1Ic9tjimb8Poxwg-8hDP_c6CCrg/viewform",
       },
+      {
+        name: "Feedback",
+        link: "https://proximafitness.featurebase.app/"
+      }
     ],
   },
   {
-    title: "Coaches",
+    title: "Feature Requests",
     links: [
-      {
-        name: "Become a Coach",
-        link: "https://app.proximafitness.com/becoming-a-coach",
-      },
+        { name: "Roadmap",
+            link: "https://proximafitness.featurebase.app/roadmap"
+        },
+        {
+            name: "Changelog",
+            link: "https://proximafitness.featurebase.app/changelog"
+        },
     ],
   },
 ];
