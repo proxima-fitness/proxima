@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Tooltip } from "@/components/ui/tooltip";
 import { ActivityIcon, TrendingDownIcon } from "lucide-react";
 import { SkullIcon } from "lucide-react";
+import { useState } from "react";
 
 interface IProps {
     setIndex: number;
@@ -16,11 +17,12 @@ export const ToggleSetTypes = (props: IProps) => {
 
     const { setIndex, setType, handleSetType } = props;
 
+    const [currentValue, setCurrentValue] = useState(setType);
 
     return (
         <>
             <TooltipProvider delayDuration={ 0 }>
-                <ToggleGroup value={ setType } onValueChange={ (value) => handleSetType(value, setIndex) } type="single" size="sm">
+                <ToggleGroup value={ currentValue } onValueChange={ (value: string) => { handleSetType(value, setIndex); setCurrentValue(value); } } type="single" size="sm">
                     <Tooltip>
                         <TooltipTrigger asChild className="">
                             <ToggleGroupItem value="warmup" aria-label="Toggle warmup">
@@ -33,7 +35,7 @@ export const ToggleSetTypes = (props: IProps) => {
                     </Tooltip>
                     <Tooltip>
                         <TooltipTrigger asChild className="">
-                            <ToggleGroupItem value="drop" aria-label="Toggle drop">
+                            <ToggleGroupItem value="dropset" aria-label="Toggle drop">
                                 <TrendingDownIcon className="w-4 h-4" />
                             </ToggleGroupItem>
                         </TooltipTrigger>

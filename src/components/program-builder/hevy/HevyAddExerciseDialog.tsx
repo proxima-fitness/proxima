@@ -60,6 +60,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
     // 3 SECTIONS: SETS, REPS, INTENSITY. reps and intensity are inputs.
     const [ reps, setReps ] = useState<number[] | undefined>(isEditExercise ? undefined : [8,8,8,8]);
     const [ setTypes, setSetTypes ] = useState<string[]>(["normal","normal","normal","normal"]);
+
     const [ intensityData, setIntensityData ] = useState<number[] | undefined>(isEditExercise ? undefined : [9,9,9,9]);
 
     const [ repTypeValue, setRepTypeValue ] = useState(isEditExercise ? undefined : hevy_rep_types[0].value);
@@ -174,112 +175,110 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                 <DialogTitle className="font-bold flex items-center justify-center">
                     Add Exercise to Week {addExerciseDialog.folder_id + 1} Day {addExerciseDialog.dayOrder}
                 </DialogTitle>
-                <div className={ "modal-content__centered" } onMouseDown={(e) => e.preventDefault()}>
-                    { loadingHevyExercises ?
-                        <div style={ { display: "flex",width: "100%", height: "358px", textAlign: "center", justifyContent: "center", alignItems: "center"} }>
-                            <Skeleton className="w-full h-full"></Skeleton>
+                { loadingHevyExercises ?
+                    <div style={ { display: "flex",width: "100%", height: "358px", textAlign: "center", justifyContent: "center", alignItems: "center"} }>
+                        <Skeleton className="w-full h-full"></Skeleton>
+                    </div>
+                : exercises !== undefined &&
+                    <HevyExerciseSearchBar
+                        title={ "Exercise" }
+                        items={ exercises }
+                        handleSelected= { handleSelected }
+                        selectedName={ selectedName }
+                        isEditing={ isEditing }
+                        handleIsEditing={ handleIsEditing }
+                    />
+                }
+
+                <div className="mt-4">
+
+                    <div className="flex flex-row justify-center gap-2 items-center w-full pb-4">
+                        <div className="flex items-start justify-start w-[10%]">
+                            Set
                         </div>
-                    : exercises !== undefined &&
-                        <HevyExerciseSearchBar
-                            title={ "Exercise" }
-                            items={ exercises }
-                            handleSelected= { handleSelected }
-                            selectedName={ selectedName }
-                            isEditing={ isEditing }
-                            handleIsEditing={ handleIsEditing }
-                        />
-                    }
+                        <div className="w-[33%]">
+                            <Select value={ repTypeValue } aria-label="rep type" onValueChange={ (value) => handleSwapRepTypeValue(value) }>
+                                <SelectTrigger autoFocus className="h-10">
+                                    <SelectValue placeholder="Reps" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    { hevy_rep_types.map((rep_type) => (
+                                        <SelectItem key={ rep_type.value } value={ rep_type.value }>{ rep_type.label }</SelectItem>
+                                        ) ) }
+                                </SelectContent>
 
-                    <div className="mt-4">
+                            </Select>
+                        </div>
+                        <div className="w-[33%]">
+                            <Select value={ intensityValue } aria-label="intensity" onValueChange={ (value) => setIntensityValue(value) }>
+                                <SelectTrigger autoFocus className="h-10">
+                                    <SelectValue placeholder="Intensity" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    { hevy_intensities.map((intensity) => (
+                                        <SelectItem key={ intensity.value } value={ intensity.value }>{ intensity.label }</SelectItem>
+                                        ) ) }
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            { editSetType ? <XIcon className="cursor-pointer" onClick={ toggleEditSetType } /> : <ExpandIcon className="cursor-pointer" onClick={ toggleEditSetType } /> }
+                        </div>
+                    </div>
 
-                        <div className="flex flex-row justify-center gap-2 items-center w-full pb-4">
-                            <div className="flex items-start justify-start w-[10%]">
-                                Set
+                    { (reps && reps.length > 0) && reps?.map((rep: string | number, index: number) => (
+                        <div
+                            key={ "Set" + index }
+                            className={ `flex flex-row justify-center gap-2 items-center w-full py-1 ${ setTypes[index] === "warmup" ? "bg-gray-300" : setTypes[index] === "dropset" ? "bg-[#33bbcf]" : setTypes[index] === "failure" ? "bg-[#01579B]" : "" }` }>
+                            <div className="flex items-center justify-start w-[10%]">
+                                { index + 1 }
                             </div>
                             <div className="w-[33%]">
-                                <Select value={ repTypeValue } aria-label="rep type" onValueChange={ (value) => handleSwapRepTypeValue(value) }>
-                                    <SelectTrigger autoFocus className="h-10">
-                                        <SelectValue placeholder="Reps" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        { hevy_rep_types.map((rep_type) => (
-                                            <SelectItem key={ rep_type.value } value={ rep_type.value }>{ rep_type.label }</SelectItem>
-                                            ) ) }
-                                    </SelectContent>
-
-                                </Select>
+                                <Input
+                                    type="number"
+                                    placeholder={ (repTypeValue === "duration_seconds") ? "Secs" : repTypeValue === "distance_meters" ? "Meters" : "Reps" }
+                                    inputMode="decimal"
+                                    autoFocus
+                                    value={ rep || '' }
+                                    onInput={ (event) => handleSaveReps(event.currentTarget.value ?? "0", index) }
+                                    onBlur={ (event) => handleSaveReps(event.target.value ?? "0", index) }
+                                    onKeyDown={ (e) => {
+                                        if (e.key === 'Enter') {
+                                            handleSaveReps((e.target as HTMLInputElement).value,index);
+                                    }
+                                    } }
+                                />
                             </div>
                             <div className="w-[33%]">
-                                <Select value={ intensityValue } aria-label="intensity" onValueChange={ (value) => setIntensityValue(value) }>
-                                    <SelectTrigger autoFocus className="h-10">
-                                        <SelectValue placeholder="Intensity" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        { hevy_intensities.map((intensity) => (
-                                            <SelectItem key={ intensity.value } value={ intensity.value }>{ intensity.label }</SelectItem>
-                                            ) ) }
-                                    </SelectContent>
-                                </Select>
+                                <Input
+                                    type="number"
+                                    inputMode="decimal"
+                                    value={ intensityData?.[index] ?? "0" }
+                                    onInput={ (e) => handleUpdatingIntensity(e.currentTarget.value ?? "0", index) }
+                                    onBlur={ (e) => handleSaveIntensity(e.target.value ?? "0", index) }
+                                    onKeyDown={ (e) => {
+                                        if (e.key === 'Enter') {
+                                            handleSaveIntensity((e.target as HTMLInputElement).value,index);
+                                    }
+                                    } }
+                                    autoFocus
+                                />
                             </div>
-                            <div>
-                                { editSetType ? <XIcon className="cursor-pointer" onClick={ toggleEditSetType } /> : <ExpandIcon className="cursor-pointer" onClick={ toggleEditSetType } /> }
-                            </div>
+                            { editSetType && <ToggleSetTypes setIndex={ index } setType={ setTypes[index] } handleSetType={ handleSetType } /> }
+                            <Trash2Icon className="cursor-pointer" onClick={ () => deleteSet(index) } />
                         </div>
+                    ) )
 
-                        { (reps && reps.length > 0) && reps?.map((rep: string | number, index: number) => (
-                            <div
-                                key={ "Set" + index }
-                                className={ `flex flex-row justify-center gap-2 items-center w-full py-1` }>
-                                <div className="flex items-center justify-start w-[10%]">
-                                    { index + 1 }
-                                </div>
-                                <div className="w-[33%]">
-                                    <Input
-                                        // type="number"
-                                        placeholder={ (repTypeValue === "duration_seconds") ? "Secs" : repTypeValue === "distance_meters" ? "Meters" : "Reps" }
-                                        // inputMode="decimal"
-                                        value={ rep || '' }
-                                        onInput={ (event) => handleSaveReps(event.currentTarget.value ?? "0", index) }
-                                        onBlur={ (event) => handleSaveReps(event.target.value ?? "0", index) }
-                                        onKeyDown={ (e) => {
-                                            if (e.key === 'Enter') {
-                                                handleSaveReps((e.target as HTMLInputElement).value,index);
-                                        }
-                                        } }
-                                        autoFocus
-                                    />
-                                </div>
-                                <div className="w-[33%]">
-                                    <Input
-                                        // type="number"
-                                        // inputMode="decimal"
-                                        value={ intensityData?.[index] ?? "0" }
-                                        onInput={ (e) => handleUpdatingIntensity(e.currentTarget.value ?? "0", index) }
-                                        onBlur={ (e) => handleSaveIntensity(e.target.value ?? "0", index) }
-                                        onKeyDown={ (e) => {
-                                            if (e.key === 'Enter') {
-                                                handleSaveIntensity((e.target as HTMLInputElement).value,index);
-                                        }
-                                        } }
-                                        autoFocus
-                                    />
-                                </div>
-                                { editSetType && <ToggleSetTypes setIndex={ index } setType={ setTypes[index] } handleSetType={ handleSetType } /> }
-                                <Trash2Icon className="cursor-pointer" onClick={ () => deleteSet(index) } />
-                            </div>
-                        ) )
-
-                    }
-                    <div className="pt-4 flex justify-center items-center" onClick={ () => addSet() }>
-                        <Button
-                            variant="ghost"
-                            className="w-full h-10 mx-14 uppercase"
-                        >
-                            <PlusIcon /> Add Set
-                        </Button>
-                    </div>
-                    <SetTypesLegend />
-                    </div>
+                }
+                <div className="pt-4 flex justify-center items-center" onClick={ () => addSet() }>
+                    <Button
+                        variant="ghost"
+                        className="w-full h-10 mx-14 uppercase"
+                    >
+                        <PlusIcon /> Add Set
+                    </Button>
+                </div>
+                <SetTypesLegend />
                 </div>
                 <span className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4">
                     <span className="w-full flex items-center justify-center">
