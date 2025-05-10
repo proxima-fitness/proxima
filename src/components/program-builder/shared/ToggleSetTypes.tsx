@@ -7,20 +7,22 @@ import { ActivityIcon, TrendingDownIcon } from "lucide-react";
 import { SkullIcon } from "lucide-react";
 
 interface IProps {
+    setIndex: number;
     setType: string;
-    handleSetType: (setType: string) => void;
+    handleSetType: (value: string, index: number) => void
 }
 
 export const ToggleSetTypes = (props: IProps) => {
 
-    const { setType, handleSetType } = props;
+    const { setIndex, setType, handleSetType } = props;
+
 
     return (
         <>
             <TooltipProvider delayDuration={ 0 }>
-                <ToggleGroup value={ setType } onValueChange={ handleSetType } type="single" size="sm">
+                <ToggleGroup value={ setType } onValueChange={ (value) => handleSetType(value, setIndex) } type="single" size="sm">
                     <Tooltip>
-                        <TooltipTrigger className="">
+                        <TooltipTrigger asChild className="">
                             <ToggleGroupItem value="warmup" aria-label="Toggle warmup">
                                 <ActivityIcon className="w-4 h-4" />
                             </ToggleGroupItem>
@@ -30,7 +32,7 @@ export const ToggleSetTypes = (props: IProps) => {
                         </TooltipContent>
                     </Tooltip>
                     <Tooltip>
-                        <TooltipTrigger className="">
+                        <TooltipTrigger asChild className="">
                             <ToggleGroupItem value="drop" aria-label="Toggle drop">
                                 <TrendingDownIcon className="w-4 h-4" />
                             </ToggleGroupItem>
@@ -40,7 +42,7 @@ export const ToggleSetTypes = (props: IProps) => {
                         </TooltipContent>
                     </Tooltip>
                     <Tooltip>
-                        <TooltipTrigger className="">
+                        <TooltipTrigger asChild className="">
                             <ToggleGroupItem value="failure" aria-label="Toggle failure">
                                 <SkullIcon className="w-4 h-4" />
                             </ToggleGroupItem>
@@ -51,7 +53,6 @@ export const ToggleSetTypes = (props: IProps) => {
                     </Tooltip>
                 </ToggleGroup>
             </TooltipProvider>
-
         </>
     );
 };

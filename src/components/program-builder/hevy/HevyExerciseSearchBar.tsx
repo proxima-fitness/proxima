@@ -95,30 +95,27 @@ export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
             <div
                 key={ item.id }
                 style={ style }
+                onClick={ () => data.selectItem(item) }
+                className='h-full w-full flex flex-row gap-4 cursor-pointer items-center'
             >
+                <HevyExerciseGif
+                    thumbnailOrImage="thmb"
+                    name={ item.title }
+                    resolution="180"
+                    file_type="jpg"
+                />
                 <div
-                    onClick={ () => data.selectItem(item) }
-                    className='h-full w-full flex flex-row gap-4 cursor-pointer items-center'
+                    className="w-full flex flex-col justify-center items-start h-14"
                 >
-                    <HevyExerciseGif
-                        thumbnailOrImage="thmb"
-                        name={ item.title }
-                        resolution="180"
-                        file_type="jpg"
-                    />
-                    <div
-                        className="w-full flex flex-col justify-center items-start h-14"
-                    >
-                        { item.title }
-                        {/* <span style={ { fontSize: '10px' } }>
-                            { item.muscleGroups.map((muscleGroup, index) => (
-                                <span key={ index }>
-                                    {muscleGroup[language]}
-                                    {index < item.muscleGroups.length - 1 ? ', ' : ''}
-                                </span>
-                                    ) ) }
-                        </span> */}
-                    </div>
+                    { item.title }
+                    {/* <span style={ { fontSize: '10px' } }>
+                        { item.muscleGroups.map((muscleGroup, index) => (
+                            <span key={ index }>
+                                {muscleGroup[language]}
+                                {index < item.muscleGroups.length - 1 ? ', ' : ''}
+                            </span>
+                                ) ) }
+                    </span> */}
                 </div>
             </div>
         );

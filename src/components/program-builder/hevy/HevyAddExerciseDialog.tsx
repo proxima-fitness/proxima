@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { HevyExerciseSearchBar } from "./HevyExerciseSearchBar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SetTypesLegend } from "../shared/SetTypesLegend";
+import { ToggleSetTypes } from "../shared/ToggleSetTypes";
 
 interface IProps {
     addExerciseDialog: THevyDialog;
@@ -58,10 +59,17 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 
     // 3 SECTIONS: SETS, REPS, INTENSITY. reps and intensity are inputs.
     const [ reps, setReps ] = useState<number[] | undefined>(isEditExercise ? undefined : [8,8,8,8]);
+    const [ setTypes, setSetTypes ] = useState<string[]>(["normal","normal","normal","normal"]);
     const [ intensityData, setIntensityData ] = useState<number[] | undefined>(isEditExercise ? undefined : [9,9,9,9]);
 
     const [ repTypeValue, setRepTypeValue ] = useState(isEditExercise ? undefined : hevy_rep_types[0].value);
     const [ intensityValue, setIntensityValue ] = useState(isEditExercise ? undefined : hevy_intensities[0].value);
+
+    const handleSetType = (value: string, index: number) => {
+        const updatedSetTypes = [...setTypes];
+        updatedSetTypes[index] = value;
+        setSetTypes(updatedSetTypes);
+    };
 
     const handleSaveIntensity = (value: string | number , index: number) => {
         let updatedWeights: number[] = [];
@@ -166,7 +174,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                 <DialogTitle className="font-bold flex items-center justify-center">
                     Add Exercise to Week {addExerciseDialog.folder_id + 1} Day {addExerciseDialog.dayOrder}
                 </DialogTitle>
-                <div className={ "modal-content__centered" }>
+                <div className={ "modal-content__centered" } onMouseDown={(e) => e.preventDefault()}>
                     { loadingHevyExercises ?
                         <div style={ { display: "flex",width: "100%", height: "358px", textAlign: "center", justifyContent: "center", alignItems: "center"} }>
                             <Skeleton className="w-full h-full"></Skeleton>
@@ -256,7 +264,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                                         autoFocus
                                     />
                                 </div>
-                                {/* { editSetType && <ToggleSetTypes setType={ setType } handleSetType={ handleSetType } /> } */}
+                                { editSetType && <ToggleSetTypes setIndex={ index } setType={ setTypes[index] } handleSetType={ handleSetType } /> }
                                 <Trash2Icon className="cursor-pointer" onClick={ () => deleteSet(index) } />
                             </div>
                         ) )
