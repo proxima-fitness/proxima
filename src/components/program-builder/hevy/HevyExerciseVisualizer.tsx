@@ -64,7 +64,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                             <div>{exercise.sets[0].reps}</div>
                                         ) : (
                                             exercise.sets.map((set, index) => (
-                                                <div key={ index } className={ set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : "" }>{ set.reps }</div>
+                                                <div key={ index } className={ `${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>{ set.reps }</div>
                                             ))
                                         )
                                     )}
@@ -73,7 +73,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                             <div>{exercise.sets[0].distance_meters} m</div>
                                         ) : (
                                             exercise.sets.map((set, index) => (
-                                                <div key={ index } className={ set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : "" }>{ set.distance_meters } m</div>
+                                                <div key={ index } className={ `${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>{ set.distance_meters } m</div>
                                             ))
                                         )
                                     )}
@@ -82,7 +82,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                             <div>{exercise.sets[0].duration_seconds} s</div>
                                         ) : (
                                             exercise.sets.map((set, index) => (
-                                                <div key={ index } className={ set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : "" }>{ set.duration_seconds } s</div>
+                                                <div key={ index } className={ `${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>{ set.duration_seconds } s</div>
                                             ))
                                         )
                                     )}
@@ -91,7 +91,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                             <div>{exercise.sets[0].custom_metric}</div>
                                         ) : (
                                             exercise.sets.map((set, index) => (
-                                                <div key={ index } className={ set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : "" }>{ set.custom_metric }</div>
+                                                <div key={ index } className={ `${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>{ set.custom_metric }</div>
                                             ))
                                         )
                                     )}
@@ -102,7 +102,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                             <div>{exercise.sets[0].weight_kg} kg</div>
                                         ) : (
                                             exercise.sets.map((set, index) => (
-                                                <div key={ index } className={ set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : "" }>{ set.weight_kg } kg</div>
+                                                <div key={ index } className={ `${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>{ set.weight_kg } kg</div>
                                             ))
                                         )
                                     )}
@@ -111,7 +111,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                             <div>{exercise.sets[0].rpe} RPE</div>
                                         ) : (
                                             exercise.sets.map((set, index) => (
-                                                <div key={ index } className={ set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : "" }>{ set.rpe } RPE</div>
+                                                <div key={ index } className={ `${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>{ set.rpe } RPE</div>
                                             ))
                                         )
                                     )}

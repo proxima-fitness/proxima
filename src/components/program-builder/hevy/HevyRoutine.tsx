@@ -254,7 +254,6 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     const handleAddRoutineNote = (folder_id: number, dayOrder: number, prompt: string) => {
         setHevyProgram((prev) => {
             return prev.map((day) => {
-                console.log(Number(day.folder_id), folder_id, Number(day.order), dayOrder);
                 if (Number(day.folder_id) === folder_id && Number(day.order) === dayOrder) {
                     return { ...day, notes: prompt };
                 }
@@ -265,7 +264,6 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
 
     // Adds a note to an exercise on a workout day
     const handleAddExerciseNote = (folder_id: number, dayOrder: number, exerciseIndex: number, prompt: string) => {
-        console.log("entered handleAddExerciseNote", folder_id, dayOrder, exerciseIndex, prompt);
         setHevyProgram((prev) => {
             return prev.map((day) => {
                 if (Number(day.folder_id) === folder_id && Number(day.order) === dayOrder) {
@@ -312,9 +310,6 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     };
 
     const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>(appendOrderToHevyRoutines(program));
-    useEffect(() => {
-        console.log("hevyProgram in HevyRoutine", hevyProgram);
-    }, [hevyProgram]);
     const [focusedCardId, setFocusedCardId] = useState<string>("");
     const numberOfWeeks = getNumberRoutineFolders(hevyProgram);
     const numberOfWeeksArr = Array.from({ length: numberOfWeeks }, (_, i) => i);

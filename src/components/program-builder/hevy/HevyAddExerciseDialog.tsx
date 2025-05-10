@@ -3,16 +3,16 @@
 import { useHevyExercises } from "@/api/hooks";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { hevy_intensities, hevy_rep_types } from "@/assets/constants";
 import { getHevyExerciseFromLocalStorageByID, getHevyExerciseFromLocalStorageByName } from "@/utils/general/helpers";
 import { toast } from "sonner";
-import { PlusIcon, Trash2Icon, XIcon } from "lucide-react";
+import { ExpandIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { HevyExerciseSearchBar } from "./HevyExerciseSearchBar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getExerciseGifIdForHevyExercise } from "../utils";
+import { SetTypesLegend } from "../shared/SetTypesLegend";
 
 interface IProps {
     addExerciseDialog: THevyDialog;
@@ -36,20 +36,20 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 
     const [ exerciseID, setExerciseID ] = useState<string>();
     const [ selectedName, setSelectedName ] = useState<string>("");
-    const [ selectedGifID, setSelectedGifID ] = useState<string>();
     const [ isEditing, setIsEditing ] = useState(true);
+    const [ editSetType, toggleEditSetType ] = useReducer(prev => !prev, false);
 
     const handleIsEditing = (isEditing: boolean) => {
         setIsEditing(isEditing);
     };
+
+
 
     const handleSelected = async (item: THevyExerciseTemplate) => {
         const fetchedExerciseItem = await getHevyExerciseFromLocalStorageByName(item.title);
         if (fetchedExerciseItem) {
             setExerciseID(fetchedExerciseItem.id);
             setSelectedName(fetchedExerciseItem.title);
-            const gif_id = await getExerciseGifIdForHevyExercise(fetchedExerciseItem.title);
-            setSelectedGifID(gif_id);
         }
         setIsEditing(false);
     };
@@ -152,7 +152,6 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 
             if (exercise) {
                 setSelectedName(exercise[`title`]);
-                setSelectedGifID(await getExerciseGifIdForHevyExercise(exercise.title));
             }
         };
         if (isEditExercise) {
@@ -178,7 +177,6 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                             items={ exercises }
                             handleSelected= { handleSelected }
                             selectedName={ selectedName }
-                            selectedGifID={ selectedGifID }
                             isEditing={ isEditing }
                             handleIsEditing={ handleIsEditing }
                         />
@@ -216,7 +214,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                                 </Select>
                             </div>
                             <div>
-                                <XIcon className="opacity-0 pointer-events-none" />
+                                { editSetType ? <XIcon className="cursor-pointer" onClick={ toggleEditSetType } /> : <ExpandIcon className="cursor-pointer" onClick={ toggleEditSetType } /> }
                             </div>
                         </div>
 
@@ -258,11 +256,12 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                                         autoFocus
                                     />
                                 </div>
+                                {/* { editSetType && <ToggleSetTypes setType={ setType } handleSetType={ handleSetType } /> } */}
                                 <Trash2Icon className="cursor-pointer" onClick={ () => deleteSet(index) } />
                             </div>
                         ) )
+
                     }
-                    </div>
                     <div className="pt-4 flex justify-center items-center" onClick={ () => addSet() }>
                         <Button
                             variant="ghost"
@@ -270,6 +269,8 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                         >
                             <PlusIcon /> Add Set
                         </Button>
+                    </div>
+                    <SetTypesLegend />
                     </div>
                 </div>
                 <span className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4">

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { FixedSizeList as List } from "react-window";
 import Fuse from "fuse.js";
-import { SearchIcon } from 'lucide-react';
+import { EditIcon, SearchIcon } from 'lucide-react';
 import { HevyExerciseGif } from './HevyExerciseGif';
 import { Input } from '@/components/ui/input';
 
@@ -20,7 +20,6 @@ const options = {
 interface IProps {
     items: THevyExerciseTemplate[];
     selectedName: string;
-    selectedGifID: string | undefined;
     isEditing: boolean;
     handleSelected: (item: THevyExerciseTemplate) => Promise<void>;
     handleIsEditing: (isEditing: boolean) => void;
@@ -45,7 +44,6 @@ export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
     const {
         items,
         selectedName,
-        selectedGifID,
         isEditing,
         handleIsEditing,
         handleSelected,
@@ -175,17 +173,13 @@ export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
             ) :
             (
                 <div onClick={ () => handleIsEditing(true) }>
-                    <center><h2>{ selectedName }</h2></center>
-                    { selectedGifID && selectedGifID.length > 0 &&
-                        <>
-                            <HevyExerciseGif
-                                name={ selectedName }
-                                thumbnailOrImage={ "img" }
-                                resolution={ "360" }
-                                file_type={ "gif" }
-                            />
-                        </>
-             }
+                    <center><h2 className="flex flex-row gap-2 items-center justify-center cursor-pointer">{ selectedName }<EditIcon className="w-4 h-4" /></h2></center>
+                    <HevyExerciseGif
+                        name={ selectedName }
+                        thumbnailOrImage={ "img" }
+                        resolution={ "360" }
+                        file_type={ "gif" }
+                    />
                 </div>
             )}
         </>

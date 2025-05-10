@@ -59,7 +59,7 @@ export const HevyExerciseGif: React.FC<IProps> = (props) => {
                         </div>
                     ) : (
                         <div className={`${containerClass} flex items-center justify-center`}>
-                        <div className="text-xl font-bold">{getInitials(name)}</div>
+                            <div className="text-xl font-bold">{getInitials(name)}</div>
                         </div>
                     )}
                 </>
