@@ -62,9 +62,11 @@ type TTextToJsonResponse = {
     workout_days: {
         day_title: string;
         exercises: {
-            reps: number;
-            rpe: number;
-            sets: number;
+            sets: {
+                type: string;
+                reps: number;
+                rpe: number;
+            }[];
             title: string;
         }[];
     }[];

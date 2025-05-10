@@ -220,6 +220,7 @@ export const buildAiProgram = async (request: TTextToJsonRequest, isHevy: boolea
         if (response !== undefined) {
             const parsedResponse = JSON.parse(response);
             let program;
+            toast.success("Proxima AI Routines Generated. Building Program Structure...");
 
             if (isHevy) {
                 program = await buildHevyProgram(parsedResponse, Number(request.programLength), Number(request.daysPerWeek), request.excludeAreas, request.excludeEquipment, request.healthIssues);

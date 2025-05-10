@@ -51,6 +51,8 @@ export const buildHevyProgram = async (parsedResponse: TTextToJsonResponse, prog
         numberOfDaysPerWeek = 6;
     }
 
+    console.log(parsedResponse);
+
     if (numberOfDaysPerWeek === 1) {
         // 1 Day per week program
         const one_day = await buildHevyOneDayRoutine(parsedResponse, programLength, excludeAreas, excludeEquipment, healthIssues);

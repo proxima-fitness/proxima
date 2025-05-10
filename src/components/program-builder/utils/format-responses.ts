@@ -187,9 +187,11 @@ export const getNumberRoutineFolders = (routines: THevyRoutine[]): number => {
 
 /* Replaces the exercises pulled from the AI edge function text-to-json into a hevy exercise array */
 export const replaceTextToJsonExercisesHevy = (exercises: {
-    reps: number;
-    rpe: number;
-    sets: number;
+    sets: {
+        type: string;
+        reps: number;
+        rpe: number;
+    }[];
     title: string;
     }[],
     hevyExercises: THevyExerciseTemplate[],
@@ -261,14 +263,14 @@ export const replaceTextToJsonExercisesHevy = (exercises: {
                     notes: "",
                     exercise_template_id: match?.id ?? "",
                     supersets_id: null,
-                    sets: Array.from({length: exercise.sets}, (_, setIndex) => ({
+                    sets: Array.from({length: exercise.sets.length}, (_, setIndex) => ({
                         index: setIndex,
                         type: "normal",
                         weight_kg: null,
-                        reps: exercise?.reps ?? 8,
+                        reps: exercise?.sets[setIndex]?.reps ?? 8,
                         distance_meters: null,
                         duration_seconds: null,
-                        rpe: exercise?.rpe ?? 9,
+                        rpe: exercise?.sets[setIndex]?.rpe ?? 9,
                         custom_metric: null,
                     })),
                 }];
@@ -290,9 +292,11 @@ export const normalizeExerciseTitle = (title: string): string => {
 
 // Replaces the exercises pulled from the AI edge function text-to-json into an TProgramCreatorExercise array
 export const replaceTextToJsonExercises = (request_exercises: {
-    reps: number;
-    rpe: number;
-    sets: number;
+    sets: {
+        type: string;
+        reps: number;
+        rpe: number;
+    }[];
     title: string;
     }[],
     exercises: TExercise[]): TProgramCreatorExercise[] => {
@@ -321,9 +325,9 @@ export const replaceTextToJsonExercises = (request_exercises: {
 
                 return [{
                     exercise: match,
-                    sets: exercise.sets,
-                    reps_type: { reps: Array(exercise.sets).fill(exercise.reps) },
-                    intensity: { rpe: Array(exercise.sets).fill(exercise.rpe) }
+                    sets: exercise.sets.length,
+                    reps_type: { reps: exercise.sets.map(set => set.reps) },
+                    intensity: { rpe: exercise.sets.map(set => set.rpe) }
                 }];
         });
     }
