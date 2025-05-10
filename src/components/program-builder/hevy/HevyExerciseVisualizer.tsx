@@ -60,7 +60,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                     </div>
                                     <div className="min-w-[33%] flex flex-col justify-center items-center">
                                         { exercise.sets[0] && exercise.sets[0].reps !== null && exercise.sets[0].reps > 0 && (
-                                        exercise.sets.every((reps, i, arr) => reps.reps === arr[0].reps) ? (
+                                        (exercise.sets.every((reps, i, arr) => reps.reps === arr[0].reps) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type) )? (
                                             <div>{exercise.sets[0].reps}</div>
                                         ) : (
                                             exercise.sets.map((set, index) => (
@@ -69,7 +69,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                         )
                                     )}
                                         { exercise.sets[0] && exercise.sets[0].distance_meters !== null && exercise.sets[0].distance_meters > 0 && (
-                                        exercise.sets.every((reps, i, arr) => reps.distance_meters === arr[0].distance_meters) ? (
+                                        (exercise.sets.every((reps, i, arr) => reps.distance_meters === arr[0].distance_meters) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type) )? (
                                             <div>{exercise.sets[0].distance_meters} m</div>
                                         ) : (
                                             exercise.sets.map((set, index) => (
@@ -78,7 +78,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                         )
                                     )}
                                         { exercise.sets[0] && exercise.sets[0].duration_seconds !== null && exercise.sets[0].duration_seconds > 0 && (
-                                        exercise.sets.every((reps, i, arr) => reps.duration_seconds === arr[0].duration_seconds) ? (
+                                        (exercise.sets.every((reps, i, arr) => reps.duration_seconds === arr[0].duration_seconds) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type) )? (
                                             <div>{exercise.sets[0].duration_seconds} s</div>
                                         ) : (
                                             exercise.sets.map((set, index) => (
@@ -87,7 +87,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                         )
                                     )}
                                         { exercise.sets[0] && exercise.sets[0].custom_metric !== null && exercise.sets[0].custom_metric > 0 && (
-                                        exercise.sets.every((reps, i, arr) => reps.custom_metric === arr[0].custom_metric) ? (
+                                        (exercise.sets.every((reps, i, arr) => reps.custom_metric === arr[0].custom_metric) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type) )? (
                                             <div>{exercise.sets[0].custom_metric}</div>
                                         ) : (
                                             exercise.sets.map((set, index) => (

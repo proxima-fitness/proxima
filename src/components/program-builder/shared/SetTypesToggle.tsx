@@ -9,11 +9,11 @@ import { useState } from "react";
 
 interface IProps {
     setIndex: number;
-    setType: string;
-    handleSetType: (value: string, index: number) => void
+    setType: ("normal" | "warmup" | "dropset" | "failure");
+    handleSetType: (value: "normal" | "warmup" | "dropset" | "failure", index: number) => void
 }
 
-export const ToggleSetTypes = (props: IProps) => {
+export const SetTypesToggle = (props: IProps) => {
 
     const { setIndex, setType, handleSetType } = props;
 
@@ -22,7 +22,7 @@ export const ToggleSetTypes = (props: IProps) => {
     return (
         <>
             <TooltipProvider delayDuration={ 0 }>
-                <ToggleGroup value={ currentValue } onValueChange={ (value: string) => { handleSetType(value, setIndex); setCurrentValue(value); } } type="single" size="sm">
+                <ToggleGroup value={ currentValue } onValueChange={ (value: "normal" | "warmup" | "dropset" | "failure") => { handleSetType(value, setIndex); setCurrentValue(value); } } type="single" size="sm">
                     <Tooltip>
                         <TooltipTrigger asChild className="">
                             <ToggleGroupItem value="warmup" aria-label="Toggle warmup">

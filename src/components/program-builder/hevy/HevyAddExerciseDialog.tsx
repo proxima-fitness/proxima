@@ -13,7 +13,8 @@ import { Input } from "@/components/ui/input";
 import { HevyExerciseSearchBar } from "./HevyExerciseSearchBar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SetTypesLegend } from "../shared/SetTypesLegend";
-import { ToggleSetTypes } from "../shared/ToggleSetTypes";
+import { SetTypesToggle } from "../shared/SetTypesToggle";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface IProps {
     addExerciseDialog: THevyDialog;
@@ -59,14 +60,14 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 
     // 3 SECTIONS: SETS, REPS, INTENSITY. reps and intensity are inputs.
     const [ reps, setReps ] = useState<number[] | undefined>(isEditExercise ? undefined : [8,8,8,8]);
-    const [ setTypes, setSetTypes ] = useState<string[]>(["normal","normal","normal","normal"]);
+    const [ setTypes, setSetTypes ] = useState<("normal" | "warmup" | "dropset" | "failure")[]>(isEditExercise ? addExerciseDialog.editExercise?.setTypes ?? ["normal","normal","normal","normal"] : ["normal","normal","normal","normal"]);
 
     const [ intensityData, setIntensityData ] = useState<number[] | undefined>(isEditExercise ? undefined : [9,9,9,9]);
 
     const [ repTypeValue, setRepTypeValue ] = useState(isEditExercise ? undefined : hevy_rep_types[0].value);
     const [ intensityValue, setIntensityValue ] = useState(isEditExercise ? undefined : hevy_intensities[0].value);
 
-    const handleSetType = (value: string, index: number) => {
+    const handleSetType = (value: "normal" | "warmup" | "dropset" | "failure", index: number) => {
         const updatedSetTypes = [...setTypes];
         updatedSetTypes[index] = value;
         setSetTypes(updatedSetTypes);
@@ -111,7 +112,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
         }
 
         const id = exerciseID;
-        const exerciseData = { id, repTypeValue, intensityValue, reps, intensityData };
+        const exerciseData = { id, repTypeValue, intensityValue, reps, intensityData, setTypes };
         const newExercise = (exerciseData as THevyAddExercise);
 
         if (isEditExercise) {
@@ -126,6 +127,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
     const deleteSet = (index: number) => {
         if (reps) {
             setReps(reps.filter((_: number, i: number) => i !== index));
+            setSetTypes(setTypes.filter((_: string, i: number) => i !== index));
         }
         if (intensityData) {
             setIntensityData(intensityData.filter((_: number, i: number) => i !== index));
@@ -136,7 +138,11 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
         if (!reps) {
             setReps([8]);
         } else {
-            if (reps.length < 10) setReps([...reps, 8]);
+            if (reps.length < 10)
+                {
+                    setReps([...reps, 8]);
+                    setSetTypes([...setTypes, "normal"]);
+                }
         }
         if (!intensityData) {
             setIntensityData([9]);
@@ -189,9 +195,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                         handleIsEditing={ handleIsEditing }
                     />
                 }
-
                 <div className="mt-4">
-
                     <div className="flex flex-row justify-center gap-2 items-center w-full pb-4">
                         <div className="flex items-start justify-start w-[10%]">
                             Set
@@ -222,7 +226,20 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                             </Select>
                         </div>
                         <div>
-                            { editSetType ? <XIcon className="cursor-pointer" onClick={ toggleEditSetType } /> : <ExpandIcon className="cursor-pointer" onClick={ toggleEditSetType } /> }
+                            { editSetType ?
+                                <XIcon className="cursor-pointer" onClick={ toggleEditSetType } />
+                                :
+                                <TooltipProvider delayDuration={ 0 }>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <ExpandIcon className="cursor-pointer" onClick={ toggleEditSetType } />
+                                        </TooltipTrigger>
+                                        <TooltipContent className="bg-gray-600 text-white rounded-lg">
+                                            Edit Set Types
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            }
                         </div>
                     </div>
 
@@ -264,7 +281,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                                     autoFocus
                                 />
                             </div>
-                            { editSetType && <ToggleSetTypes setIndex={ index } setType={ setTypes[index] } handleSetType={ handleSetType } /> }
+                            { editSetType && <SetTypesToggle setIndex={ index } setType={ setTypes[index] } handleSetType={ handleSetType } /> }
                             <Trash2Icon className="cursor-pointer" onClick={ () => deleteSet(index) } />
                         </div>
                     ) )

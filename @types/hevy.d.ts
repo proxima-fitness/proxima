@@ -80,6 +80,7 @@ type THevyAddExercise = {
     intensityValue: "rpe" | "weight_kg";
     reps: number[] | null; // DATA for any rep type that is not a range
     intensityData: number[] | null; // DATA for any intensity that is not a range
+    setTypes: ("normal" | "warmup" | "dropset" | "failure")[];
 }
 
 type THevyRepsTypes = {

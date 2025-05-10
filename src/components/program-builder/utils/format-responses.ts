@@ -367,7 +367,7 @@ export const hevyAddExerciseToHevySetsConverter = (addExercise: THevyAddExercise
     const sets: THevySets[] = (addExercise.reps ?? []).map((rep, setIndex) => {
         return {
             index: setIndex,
-            type: "normal", // Defaulting to normal, TODO: allow user to select this
+            type: addExercise.setTypes[setIndex],
             weight_kg: addExercise.intensityValue === "weight_kg" ? addExercise.intensityData?.[setIndex] ?? null: null,
             reps: addExercise.repTypeValue.includes("reps") ? rep ?? null : null,
             distance_meters: addExercise.repTypeValue.includes("distance_meters") ? rep ?? null : null,
@@ -427,6 +427,7 @@ export const convertHevyExerciseIntoHevyAddExercise = (exercise: THevyExercise):
         intensityValue,
         reps,
         intensityData,
+        setTypes: exercise.sets.map(set => (set.type) as ("normal" | "warmup" | "dropset" | "failure")),
     };
 };
 
