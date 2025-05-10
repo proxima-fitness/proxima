@@ -13,7 +13,7 @@ export default async function BuildProgram() {
     return (
         <div className={ `bg-white min-h-[1000px] overflow-x-scroll` }>
             <Suspense fallback={ <BuildProgramSkeleton /> }>
-                <div className="flex flex-col gap-96 justify-start items-start">
+                <div className="flex flex-col justify-start items-start">
                     <BuildProgramPage />
                     <SetTypesLegend />
                 </div>

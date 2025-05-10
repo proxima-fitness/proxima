@@ -110,8 +110,11 @@ export const BuildProgramPage: React.FC = () => {
         }
     }, [search]);
 
-    const { data: program, isLoading: loadingProgram } =  useBuildAiProgram(request, isHevy, shareId, resume);
-    const { data: sharedProgram, isLoading: loadingSharedProgram } = useSharedProgram(shareId, resume);
+    const { data: program } =  useBuildAiProgram(request, isHevy, shareId, resume);
+    const { data: sharedProgram } = useSharedProgram(shareId, resume);
+
+    const loadingProgram = true;
+    const loadingSharedProgram = true;
 
     if ((loadingProgram || program === undefined) && (loadingSharedProgram || sharedProgram === undefined) && resume === "") {
         return (
