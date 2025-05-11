@@ -32,6 +32,7 @@ type THevyExercise = {
     index: number; // Index indicating the order of the exercise in the routine.
     title: string; // Title of the exercise
     notes: string; // Routine notes on the exercise
+    rest_seconds: string | null; // The rest time in seconds
     exercise_template_id: string; // The id of the exercise template. This can be used to fetch the exercise template.
     supersets_id: number | null; // The id of the superset that the exercise belongs to. A value of null indicates the exercise is not part of a superset.
     sets: THevySets[];
@@ -81,6 +82,7 @@ type THevyAddExercise = {
     reps: number[] | null; // DATA for any rep type that is not a range
     intensityData: number[] | null; // DATA for any intensity that is not a range
     setTypes: ("normal" | "warmup" | "dropset" | "failure")[];
+    restSeconds: string | null;
 }
 
 type THevyRepsTypes = {

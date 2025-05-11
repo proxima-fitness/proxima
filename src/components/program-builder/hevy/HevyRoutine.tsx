@@ -241,6 +241,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                                 exercise_template_id: exercise.id,
                                 supersets_id: null,
                                 sets: sets,
+                                rest_seconds: exercise?.restSeconds ?? null,
                             },
                             ],
                     };
@@ -298,6 +299,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                                 exercise_template_id: exerciseTemplate?.id ?? "",
                                 supersets_id: null,
                                 sets: sets,
+                                rest_seconds: editExercise?.editExercise?.restSeconds ?? null,
                             } : exercise),
                         };
                     }

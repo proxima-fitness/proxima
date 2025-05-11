@@ -7,7 +7,7 @@ import { useEffect, useReducer, useState } from "react";
 import { hevy_intensities, hevy_rep_types } from "@/assets/constants";
 import { getHevyExerciseFromLocalStorageByID, getHevyExerciseFromLocalStorageByName } from "@/utils/general/helpers";
 import { toast } from "sonner";
-import { ExpandIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
+import { ExpandIcon, PlusIcon, TimerIcon, Trash2Icon, XIcon } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { HevyExerciseSearchBar } from "./HevyExerciseSearchBar";
@@ -57,6 +57,8 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
     };
 
     const [ editingSetWeight, setEditingSetWeight ] = useState([false,false,false,false]);
+    const [ restTimeOpen, setRestTimeOpen ] = useState(false);
+    const [ restSeconds, setRestSeconds ] = useState(isEditExercise ? addExerciseDialog.editExercise?.restSeconds ?? "0" : "0");
 
     // 3 SECTIONS: SETS, REPS, INTENSITY. reps and intensity are inputs.
     const [ reps, setReps ] = useState<number[] | undefined>(isEditExercise ? undefined : [8,8,8,8]);
@@ -112,7 +114,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
         }
 
         const id = exerciseID;
-        const exerciseData = { id, repTypeValue, intensityValue, reps, intensityData, setTypes };
+        const exerciseData = { id, repTypeValue, intensityValue, reps, intensityData, setTypes, restSeconds };
         const newExercise = (exerciseData as THevyAddExercise);
 
         if (isEditExercise) {
@@ -195,6 +197,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                         handleIsEditing={ handleIsEditing }
                     />
                 }
+
                 <div className="mt-4">
                     <div className="flex flex-row justify-center gap-2 items-center w-full pb-4">
                         <div className="flex items-start justify-start w-[10%]">
@@ -287,14 +290,22 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                     ) )
 
                 }
-                <div className="pt-4 flex justify-center items-center" onClick={ () => addSet() }>
+                <div className="pt-4 px-20 flex justify-center items-center gap-2">
                     <Button
+                        onClick={ () => addSet() }
                         variant="ghost"
-                        className="w-full h-10 mx-14 uppercase"
+                        className="w-full h-10 uppercase"
                     >
                         <PlusIcon /> Add Set
                     </Button>
+                    { !restTimeOpen &&
+                        <Button onClick={ () => setRestTimeOpen(true) } variant="ghost" className="w-full h-10 uppercase">
+                            <TimerIcon /> Rest Time
+                        </Button>
+                    }
+                    { restTimeOpen && <Input type="number" placeholder="Rest Time (secs)" value={ restSeconds } onChange={ (e) => setRestSeconds(e.target.value) } /> }
                 </div>
+
                 <SetTypesLegend />
                 </div>
                 <span className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4">

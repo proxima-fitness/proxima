@@ -262,10 +262,11 @@ export const replaceTextToJsonExercisesHevy = (exercises: {
                     title: match?.title ?? "",
                     notes: "",
                     exercise_template_id: match?.id ?? "",
+                    rest_seconds: null,
                     supersets_id: null,
                     sets: Array.from({length: exercise.sets.length}, (_, setIndex) => ({
                         index: setIndex,
-                        type: "normal",
+                        type: exercise?.sets[setIndex]?.type ?? "normal",
                         weight_kg: null,
                         reps: exercise?.sets[setIndex]?.reps ?? 8,
                         distance_meters: null,
@@ -432,6 +433,7 @@ export const convertHevyExerciseIntoHevyAddExercise = (exercise: THevyExercise):
         intensityValue,
         reps,
         intensityData,
+        restSeconds: exercise.rest_seconds,
         setTypes: exercise.sets.map(set => (set.type) as ("normal" | "warmup" | "dropset" | "failure")),
     };
 };
