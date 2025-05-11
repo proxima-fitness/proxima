@@ -359,6 +359,7 @@ export const addExerciseToProgramCreatorExerciseConverter = async (addExercise: 
     const newExercise = {
         exercise: await getExerciseFromLocalStorageByID(addExercise.id),
         sets: sets,
+        sets_type: addExercise.setTypes,
         reps_type: { [ addExercise.repTypeValue ] : addReps },
         intensity: { [ addExercise.intensityValue ]: addIntensity},
     } as TProgramCreatorExercise;
@@ -443,7 +444,7 @@ export const convertProgramCreatorExerciseToAddExercise = (programCreatorExercis
       throw new Error("Missing exercise data.");
     }
 
-    const { exercise, reps_type, intensity } = programCreatorExercise;
+    const { exercise, reps_type, intensity, sets_type } = programCreatorExercise;
 
     // Determine repTypeValue
     const repTypeValue =
@@ -483,6 +484,7 @@ export const convertProgramCreatorExerciseToAddExercise = (programCreatorExercis
       id: exercise.id,
       repTypeValue,
       intensityValue,
+      setTypes: sets_type ?? ["normal","normal","normal","normal"],
       reps,
       intensityData,
       repsWithTimeAndRepRange,

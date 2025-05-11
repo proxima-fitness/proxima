@@ -51,6 +51,7 @@ export const ExerciseVisualizer: React.FC<IProps> = (props) => {
 
                                 </div>
                                 <div className="text-center flex flex-row items-center justify-end max-w-[50%] w-[50%] h-full">
+                                    { /* SETS */}
                                     <div className="min-w-[33%] flex flex-col justify-center items-center">
                                         { exercise.reps_type?.reps && (
                                             exercise.reps_type.reps.every((reps, i, arr) => reps === arr[0]) ? (
@@ -107,61 +108,63 @@ export const ExerciseVisualizer: React.FC<IProps> = (props) => {
                                             )
                                         )}
                                     </div>
+                                    { /* REPS */}
                                     <div className="min-w-[33%] flex flex-col justify-center items-center">
                                         { exercise.reps_type?.amrap && "AMRAP" }
                                         { exercise.reps_type?.reps && (
-                                            exercise.reps_type.reps.every((reps, i, arr) => reps === arr[0]) ? (
+                                            exercise.reps_type.reps.every((reps, i, arr) => reps === arr[0]) && Array.isArray(exercise.sets_type) && exercise.sets_type.every((setType, i, arr) => setType === arr[0]) ? (
                                                 <div>{exercise.reps_type.reps[0]}</div>
                                             ) : (
                                                 exercise.reps_type.reps.map((repsNumber, index) => (
-                                                    <div key={ index }>{ repsNumber }</div>
+                                                    <div key={ index } className={ `${exercise?.sets_type?.[index] === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : exercise?.sets_type?.[index] === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : exercise?.sets_type?.[index] === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>{ repsNumber }</div>
                                                 ))
                                             )
                                         )}
                                         { exercise.reps_type?.reps_max && (
-                                            exercise.reps_type.reps_max.every((reps, i, arr) => reps === arr[0]) ? (
+                                            exercise.reps_type.reps_max.every((reps, i, arr) => reps === arr[0]) && Array.isArray(exercise.sets_type) && exercise.sets_type.every((setType, i, arr) => setType === arr[0]) ? (
                                                 <div>{">"} {exercise.reps_type.reps_max[0]}</div>
                                             ) : (
                                                 exercise.reps_type.reps_max.map((repsNumber, index) => (
-                                                    <div key={ index }>{">"} { repsNumber }</div>
+                                                    <div key={ index } className={ `${exercise?.sets_type?.[index] === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : exercise?.sets_type?.[index] === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : exercise?.sets_type?.[index] === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>{">"} { repsNumber }</div>
                                                 ))
                                             )
                                         )}
                                         { exercise.reps_type?.reps_range && (
-                                            exercise.reps_type.reps_range.every((range, i, arr) => JSON.stringify(range) === JSON.stringify(arr[0])) ? (
+                                            exercise.reps_type.reps_range.every((range, i, arr) => JSON.stringify(range) === JSON.stringify(arr[0])) && Array.isArray(exercise.sets_type) && exercise.sets_type.every((setType, i, arr) => setType === arr[0]) ? (
                                                 <div>{ exercise.reps_type.reps_range[0][0]}-{exercise.reps_type.reps_range[0][1] }</div>
                                             ) : (
                                                 exercise.reps_type.reps_range.map((range, index) => (
-                                                    <div key={ index }>{range[0]} - {range[1]}</div>
+                                                    <div key={ index } className={ `${exercise?.sets_type?.[index] === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : exercise?.sets_type?.[index] === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : exercise?.sets_type?.[index] === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>{range[0]} - {range[1]}</div>
                                                 ))
                                             )
                                         )}
                                         { exercise.reps_type?.time_taken && (
-                                            exercise.reps_type.time_taken.every((reps, i, arr) => reps === arr[0]) ? (
+                                            exercise.reps_type.time_taken.every((reps, i, arr) => reps === arr[0]) && Array.isArray(exercise.sets_type) && exercise.sets_type.every((setType, i, arr) => setType === arr[0]) ? (
                                                 <div>{exercise.reps_type.time_taken[0]} s</div>
                                             ) : (
                                                 exercise.reps_type.time_taken.map((repsNumber, index) => (
-                                                    <div key={ index }>{ repsNumber } s</div>
+                                                    <div key={ index } className={ `${exercise?.sets_type?.[index] === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : exercise?.sets_type?.[index] === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : exercise?.sets_type?.[index] === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>{ repsNumber } s</div>
                                                 ))
                                             )
                                         )}
                                         { exercise.reps_type?.time_range && (
-                                            exercise.reps_type.time_range.every((range, i, arr) => JSON.stringify(range) === JSON.stringify(arr[0])) ? (
+                                            exercise.reps_type.time_range.every((range, i, arr) => JSON.stringify(range) === JSON.stringify(arr[0])) && Array.isArray(exercise.sets_type) && exercise.sets_type.every((setType, i, arr) => setType === arr[0]) ? (
                                                 <div>{ exercise.reps_type.time_range[0][0]}-{exercise.reps_type.time_range[0][1] } s</div>
                                             ) : (
                                                 exercise.reps_type.time_range.map((range, index) => (
-                                                    <div key={ index }>{range[0]} - {range[1]} s</div>
+                                                    <div key={ index } className={ `${exercise?.sets_type?.[index] === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : exercise?.sets_type?.[index] === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : exercise?.sets_type?.[index] === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>{range[0]} - {range[1]} s</div>
                                                 ))
                                             )
                                         )}
                                     </div>
+                                    { /* INTENSITY */}
                                     <div className="min-w-[33%] flex flex-col justify-center items-center">
                                         { exercise.intensity?.percent_rm && (
                                             exercise.intensity.percent_rm.every((perVal, i, arr) => perVal === arr[0]) ? (
                                                 <div>{ exercise.intensity.percent_rm[0]}% 1RM</div>
                                             ) : (
                                                 exercise.intensity.percent_rm.map((perVal, index) => (
-                                                    <div key={ index }>{perVal} % 1RM</div>
+                                                    <div key={ index } className={ `${exercise?.sets_type?.[index] === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : exercise?.sets_type?.[index] === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : exercise?.sets_type?.[index] === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>{perVal} % 1RM</div>
                                                 ))
                                             )
                                         )}
@@ -170,7 +173,7 @@ export const ExerciseVisualizer: React.FC<IProps> = (props) => {
                                                 <div>{exercise.intensity.rpe[0]} RPE</div>
                                             ) : (
                                                 exercise.intensity.rpe.map((rpeVal, index) => (
-                                                    <div key={ index }>{rpeVal} RPE</div>
+                                                    <div key={ index } className={ `${exercise?.sets_type?.[index] === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : exercise?.sets_type?.[index] === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : exercise?.sets_type?.[index] === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>{rpeVal} RPE</div>
                                                 ))
                                             )
                                         )}
@@ -179,7 +182,7 @@ export const ExerciseVisualizer: React.FC<IProps> = (props) => {
                                                 <div>{exercise.intensity.weights[0]} lbs</div>
                                             ) : (
                                                 exercise.intensity.weights.map((weightVal, index) => (
-                                                    <div key={ index }>{ weightVal } lbs</div>
+                                                    <div key={ index } className={ `${exercise?.sets_type?.[index] === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : exercise?.sets_type?.[index] === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : exercise?.sets_type?.[index] === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>{ weightVal } lbs</div>
                                                 ))
                                             )
                                         )}
@@ -188,7 +191,7 @@ export const ExerciseVisualizer: React.FC<IProps> = (props) => {
                                                 <div>{ exercise.intensity.rpe_range[0][0]}-{exercise.intensity.rpe_range[0][1] } RPE</div>
                                             ) : (
                                                 exercise.intensity.rpe_range.map((range, index) => (
-                                                    <div key={ index }>{range[0]} - {range[1]} RPE</div>
+                                                    <div key={ index } className={ `${exercise?.sets_type?.[index] === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : exercise?.sets_type?.[index] === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : exercise?.sets_type?.[index] === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>{range[0]} - {range[1]} RPE</div>
                                                 ))
                                             )
                                         )}

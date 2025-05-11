@@ -3,15 +3,19 @@
 import { useExercises } from "@/api/hooks";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { intensities, rep_types } from "@/assets/constants";
 import { getExerciseFromLocalStorageByID, getExerciseFromLocalStorageByName } from "@/utils/general/helpers";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { PlusIcon, Trash2Icon, XIcon } from "lucide-react";
+import { ExpandIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
 import { addExerciseToProgramCreatorExerciseConverter, convertProgramCreatorExerciseToAddExercise } from "../utils";
 import { ExerciseSearchBar } from "@/components/program-builder/proxima/ExerciseSearchBar";
+import { SetTypesToggle } from "../shared/SetTypesToggle";
+import { TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Tooltip } from "@/components/ui/tooltip";
 
 interface IProps {
     addExerciseDialog: TDialog;
@@ -37,6 +41,14 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
     const [ selectedName, setSelectedName ] = useState<string>("");
     const [ selectedGifID, setSelectedGifID ] = useState<string>();
     const [ isEditing, setIsEditing ] = useState(true);
+    const [ editSetType, toggleEditSetType ] = useReducer(prev => !prev, false);
+    const [ setTypes, setSetTypes ] = useState<("normal" | "warmup" | "dropset" | "failure")[]>(isEditExercise ? addExerciseDialog.editExercise?.setTypes ?? ["normal","normal","normal","normal"] : ["normal","normal","normal","normal"]);
+
+    const handleSetType = (setType: "normal" | "warmup" | "dropset" | "failure", index: number) => {
+        const updatedSetTypes = [...setTypes];
+        updatedSetTypes[index] = setType;
+        setSetTypes(updatedSetTypes);
+    };
 
     const handleIsEditing = (isEditing: boolean) => {
         setIsEditing(isEditing);
@@ -129,7 +141,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
         }
 
         const id = exerciseID;
-        const exerciseData = { id, repTypeValue, intensityValue, reps, intensityData, repsWithTimeAndRepRange, intensityDataWithRPERange };
+        const exerciseData = { id, repTypeValue, intensityValue, reps, intensityData, repsWithTimeAndRepRange, intensityDataWithRPERange, setTypes };
         const newExercise: TProgramCreatorExercise = await addExerciseToProgramCreatorExerciseConverter(exerciseData as TAddExercise);
 
         if (isEditExercise) {
@@ -144,9 +156,11 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
     const deleteSet = (index: number) => {
         if (reps) {
             setReps(reps.filter((_: number, i: number) => i !== index));
+            setSetTypes(setTypes.filter((_,i) => i !== index));
         }
         if (repsWithTimeAndRepRange) {
             setRepsWithTimeAndRepRange(repsWithTimeAndRepRange.filter((_,i) => i !== index));
+            setSetTypes(setTypes.filter((_,i) => i !== index));
         }
         if (intensityData) {
             setIntensityData(intensityData.filter((_: number, i: number) => i !== index));
@@ -160,14 +174,22 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
         if (repTypeValue === "time_range" || repTypeValue === "reps_range") {
             if (!repsWithTimeAndRepRange) {
                 setRepsWithTimeAndRepRange([[8,12]]);
+                setSetTypes([...setTypes, "normal"]);
             } else {
-                if (repsWithTimeAndRepRange.length < 10) setRepsWithTimeAndRepRange([...repsWithTimeAndRepRange, [8,12]]);
+                if (repsWithTimeAndRepRange.length < 10) {
+                    setRepsWithTimeAndRepRange([...repsWithTimeAndRepRange, [8,12]]);
+                    setSetTypes([...setTypes, "normal"]);
+                }
             }
         } else {
             if (!reps) {
                 setReps([8]);
+                setSetTypes([...setTypes, "normal"]);
             } else {
-                if (reps.length < 10) setReps([...reps, 8]);
+                if (reps.length < 10) {
+                    setReps([...reps, 8]);
+                    setSetTypes([...setTypes, "normal"]);
+                }
             }
         }
         if (!intensityData) {
@@ -264,14 +286,27 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                                 </Select>
                             </div>
                             <div>
-                                <XIcon className="opacity-0 pointer-events-none" />
-                            </div>
+                            { editSetType ?
+                                <XIcon className="cursor-pointer" onClick={ toggleEditSetType } />
+                                :
+                                <TooltipProvider delayDuration={ 0 }>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <ExpandIcon className="cursor-pointer" onClick={ toggleEditSetType } />
+                                        </TooltipTrigger>
+                                        <TooltipContent className="bg-gray-600 text-white rounded-lg">
+                                            Edit Set Types
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            }
+                        </div>
                         </div>
 
                         { (reps && reps.length > 0) ? reps?.map((rep: string | number, index: number) => (
                             <div
                                 key={ "Set" + index }
-                                className={ `flex flex-row justify-center gap-2 items-center w-full py-2` }>
+                                className={ `flex flex-row justify-center gap-2 items-center w-full py-1 ${ setTypes[index] === "warmup" ? "bg-gray-300" : setTypes[index] === "dropset" ? "bg-[#33bbcf]" : setTypes[index] === "failure" ? "bg-[#01579B]" : "" }` }>
                                 <div className="flex items-center justify-start w-[10%]">
                                     { index + 1 }
                                 </div>
@@ -352,6 +387,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                                 }
 
                                 </div>
+                                { editSetType && <SetTypesToggle setIndex={ index } setType={ setTypes[index] } handleSetType={ handleSetType } /> }
                                 <Trash2Icon className="cursor-pointer" onClick={ () => deleteSet(index) } />
                             </div>
 
@@ -361,7 +397,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                     :   (repsWithTimeAndRepRange && repsWithTimeAndRepRange.length > 0 && repsWithTimeAndRepRange?.map((repRange: number[], index) => (
                         <div
                             key={ "Set" + index }
-                            className={ `flex flex-row justify-center gap-2 items-center w-full py-2` }>
+                            className={ `flex flex-row justify-center gap-2 items-center w-full py-1 ${ setTypes[index] === "warmup" ? "bg-gray-300" : setTypes[index] === "dropset" ? "bg-[#33bbcf]" : setTypes[index] === "failure" ? "bg-[#01579B]" : "" }` }>
                             <div className="flex items-center justify-start w-[10%]">
                                 { index + 1 }
                             </div>
@@ -451,6 +487,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                             }
 
                             </div>
+                            { editSetType && <SetTypesToggle setIndex={ index } setType={ setTypes[index] } handleSetType={ handleSetType } /> }
                             <Trash2Icon className="cursor-pointer" onClick={ () => deleteSet(index) } />
                         </div>
                     )))

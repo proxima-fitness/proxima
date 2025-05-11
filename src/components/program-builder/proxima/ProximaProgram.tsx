@@ -270,6 +270,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     };
 
     const [flattenedProgramDays, setFlattenedProgramDays] = useState<TProgramCreatorDay[]>(flattenProgram(appendWeekOrderAndIdToProgramDays(program)));
+    console.log(flattenedProgramDays);
     const [focusedCardId, setFocusedCardId] = useState<string>("");
 
     useEffect(() => {

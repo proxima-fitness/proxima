@@ -15,6 +15,7 @@ type TProgramCreatorExercise = {
     notes?: string;
     exercise?: TExercise;
     sets?: number;
+    sets_type?: ("normal" | "warmup" | "dropset" | "failure")[];
     reps_type?: TRepsTypes;
     intensity?: TIntensityTypes;
 }
@@ -82,6 +83,7 @@ type TAddExercise = {
     intensityData: number[]; // DATA for any intensity that is not a range
     repsWithTimeAndRepRange: number[][]; // DATA for rep/time range
     intensityDataWithRPERange: number[][]; // DATA for rpe range
+    setTypes: ("normal" | "warmup" | "dropset" | "failure")[];
 }
 
 
