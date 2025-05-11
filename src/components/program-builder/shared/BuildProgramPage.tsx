@@ -148,13 +148,13 @@ export const BuildProgramPage: React.FC = () => {
 
     if (isHevy) {
         return (
-            <div className="max-sm:px-2 sm:pl-8">
+            <div className="sm:pl-8">
                 <HevyRoutine program={ shareId && shareId.length > 0 ? sharedProgram?.[0]?.hevy_routines as THevyRoutine[] : program as THevyRoutine[] } />
             </div>
         );
     } else if (!isHevy) {
         return (
-            <div className="max-sm:px-2 sm:pl-8">
+            <div className="sm:pl-8">
                 <ProximaProgram program={ program as TProgramCreatorDay[][] } />
             </div>
         );

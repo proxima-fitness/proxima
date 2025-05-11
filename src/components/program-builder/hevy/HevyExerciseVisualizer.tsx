@@ -24,10 +24,10 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
             { day?.exercises?.map((exercise : THevyExercise, i: number) => (
                 <TooltipProvider key={ "Week" + (Number(folder_id) + 1) + "Day" + i } delayDuration={ 0 }>
                     <Tooltip>
-                        <TooltipTrigger asChild onClick={ () => handleEdit(folder_id, Number(day.order), i, exercise ) } className="w-full min-h-14">
-                            <div className="flex flex-row justify-between items-center text-sm border-b-2 py-2 border-gray-200">
+                        <TooltipTrigger asChild onClick={ () => handleEdit(folder_id, Number(day.order), i, exercise ) } className="w-full min-h-14 border-gray-200">
+                            <div className="flex flex-row justify-between items-center text-sm border-b-2 py-2">
                                 <div className="flex flex-row gap-2 items-center justify-start max-w-[50%]">
-                                    <div className="text-lightSecondary pr-1">
+                                    <div className="text-lightSecondary pr-1 border-r-[6px] rounded-sm border-[#7900ff]">
                                         <span className="hidden sm:block">{ i + 1}</span>
                                         <Trash2Icon
                                             className="block sm:hidden"
@@ -54,7 +54,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                         )}
                                     </div>
                                 </div>
-                                <div className="text-center flex flex-row items-center justify-end max-w-[50%] w-[50%] h-full">
+                                <div className="text-center flex flex-row items-center justify-end max-w-[50%] w-[50%]">
                                     <div className="min-w-[33%] flex flex-col justify-center items-center">
                                         { exercise.sets.length }
                                     </div>
@@ -63,7 +63,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                         (exercise.sets.every((reps, i, arr) => reps.reps === arr[0].reps) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type) )? (
                                             <div className="flex flex-row">
                                                 {exercise.sets[0].reps}
-                                                {exercise.rest_seconds &&
+                                                {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 &&
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
                                                         <TimerIcon className="h-4" />
@@ -78,7 +78,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                             exercise.sets.map((set, index) => (
                                                 <div key={ index } className={ `flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>
                                                     { set.reps }
-                                                    {exercise.rest_seconds &&
+                                                    {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 &&
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
                                                             <TimerIcon className="h-4" />
@@ -95,7 +95,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                         { exercise.sets[0] && exercise.sets[0].distance_meters !== null && exercise.sets[0].distance_meters > 0 && (
                                         (exercise.sets.every((reps, i, arr) => reps.distance_meters === arr[0].distance_meters) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type) )? (
                                             <div className="flex flex-row">{exercise.sets[0].distance_meters} m
-                                                {exercise.rest_seconds &&
+                                                {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 &&
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
                                                     <TimerIcon className="h-4" />
@@ -109,7 +109,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                             exercise.sets.map((set, index) => (
                                                 <div key={ index } className={ `flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>
                                                     { set.distance_meters } m
-                                                    {exercise.rest_seconds &&
+                                                    {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 &&
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
                                                             <TimerIcon className="h-4" />
@@ -125,7 +125,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                         { exercise.sets[0] && exercise.sets[0].duration_seconds !== null && exercise.sets[0].duration_seconds > 0 && (
                                         (exercise.sets.every((reps, i, arr) => reps.duration_seconds === arr[0].duration_seconds) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type) )? (
                                             <div className="flex flex-row">{exercise.sets[0].duration_seconds} s
-                                            {exercise.rest_seconds &&
+                                            {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 &&
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
                                                     <TimerIcon className="h-4" />
@@ -139,7 +139,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                             exercise.sets.map((set, index) => (
                                                 <div key={ index } className={ `flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>
                                                     { set.duration_seconds } s
-                                                    {exercise.rest_seconds &&
+                                                    {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 &&
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
                                                             <TimerIcon className="h-4" />
@@ -154,7 +154,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                     )}
                                         { exercise.sets[0] && exercise.sets[0].custom_metric !== null && exercise.sets[0].custom_metric > 0 && (
                                         (exercise.sets.every((reps, i, arr) => reps.custom_metric === arr[0].custom_metric) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type) )? (
-                                            <div className="flex flex-row">{exercise.sets[0].custom_metric} {exercise.rest_seconds &&
+                                            <div className="flex flex-row">{exercise.sets[0].custom_metric} {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 &&
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
                                                         <TimerIcon className="h-4" />
@@ -167,7 +167,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                             exercise.sets.map((set, index) => (
                                                 <div key={ index } className={ `flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>
                                                     { set.custom_metric }
-                                                    {exercise.rest_seconds &&
+                                                    {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 &&
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
                                                             <TimerIcon className="h-4" />
@@ -181,7 +181,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                         )
                                     )}
                                     </div>
-                                    <div className="min-w-[33%] flex flex-col justify-center items-center">
+                                    <div className="min-w-[33%] flex flex-col justify-center items-center h-full">
                                         { exercise.sets[0] && exercise.sets[0].weight_kg !== null && exercise.sets[0].weight_kg > 0 && (
                                         exercise.sets.every((intensity, i, arr) => intensity.weight_kg === arr[0].weight_kg) ? (
                                             <div>{exercise.sets[0].weight_kg} kg</div>

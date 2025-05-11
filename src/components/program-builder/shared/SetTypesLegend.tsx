@@ -1,6 +1,6 @@
 
 import { Badge } from "@/components/ui/badge"
-import { ActivityIcon, DumbbellIcon, SkullIcon, TrendingDownIcon } from "lucide-react"
+import { ActivityIcon, DumbbellIcon, LinkIcon, SkullIcon, TrendingDownIcon } from "lucide-react"
 
 export const SetTypesLegend = () => {
     return (
@@ -10,6 +10,7 @@ export const SetTypesLegend = () => {
             <Badge variant="outline" className="text-xs gap-2"><DumbbellIcon className="w-4 h-4" /> Working Set</Badge>
             <Badge variant="outline" className="bg-[#33bbcf] text-white border-none text-xs gap-2"><TrendingDownIcon className="w-4 h-4" /> Drop Set</Badge>
             <Badge variant="outline" className="bg-[#01579B] text-white border-none text-xs gap-2"><SkullIcon className="w-4 h-4" /> Failure Set</Badge>
+            <Badge variant="outline" className="bg-[#7900ff] text-white border-none text-xs gap-2"><LinkIcon className="w-4 h-4" /> Superset</Badge>
         </div>
     )
 }

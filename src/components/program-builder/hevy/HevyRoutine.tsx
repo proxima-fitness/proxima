@@ -325,7 +325,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     return (
         <>
             { isPreview ?
-                <div className="max-sm:px-2 sm:pl-8">
+                <div className="sm:pl-8">
                     <HevyRoutinePreview deflatHevyRoutine={ deFlattenHevyRoutine(hevyProgram) } />
                 </div>
             :
