@@ -54,7 +54,7 @@ export const HevyExerciseNotesDialog: React.FC<IProps> = (props) => {
     };
 
     return (
-        <Dialog open={ addExerciseNoteDialog.isOpen } onOpenChange={ () => handleOpenAddExerciseNoteDialog({folder_id: 0, dayOrder: 0, isOpen: false}) } >
+        <Dialog open={ addExerciseNoteDialog.isOpen } modal={ addExerciseNoteDialog.isOpen } onOpenChange={ () => handleOpenAddExerciseNoteDialog({folder_id: 0, dayOrder: 0, isOpen: false}) } >
 
             <DialogContent hideClose className="max-w-5xl w-full">
                 <DialogTitle>

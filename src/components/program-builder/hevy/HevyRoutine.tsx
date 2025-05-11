@@ -369,16 +369,20 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                         generateDayDialog={ generateDayDialog }
                         handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
                     />
-                    <HevyAddNoteDialog
-                        handleAddRoutineNote={ handleAddRoutineNote }
-                        addNoteDialog={ addNoteDialog }
-                        handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
-                    />
-                    <HevyExerciseNotesDialog
-                        handleAddExerciseNote={ handleAddExerciseNote }
-                        addExerciseNoteDialog={ addExerciseNoteDialog }
-                        handleOpenAddExerciseNoteDialog={ handleOpenAddExerciseNoteDialog }
-                    />
+                    { addNoteDialog.isOpen &&
+                        <HevyAddNoteDialog
+                            handleAddRoutineNote={ handleAddRoutineNote }
+                            addNoteDialog={ addNoteDialog }
+                            handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
+                        />
+                    }
+                    { addExerciseNoteDialog.isOpen &&
+                        <HevyExerciseNotesDialog
+                            handleAddExerciseNote={ handleAddExerciseNote }
+                            addExerciseNoteDialog={ addExerciseNoteDialog }
+                            handleOpenAddExerciseNoteDialog={ handleOpenAddExerciseNoteDialog }
+                        />
+                    }
                 </>
 
             }

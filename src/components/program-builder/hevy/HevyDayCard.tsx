@@ -62,6 +62,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
     const [duplicateDayOpen, setDuplicateDayOpen] = useState(false);
     const [editTitleOpen, setEditTitleOpen] = useState(false);
     const [currentTitle, setCurrentTitle] = useState(day.title ?? "");
+    const [dropdownOpen, setDropdownOpen] = useState(false);
 
     const handleEdit = (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: THevyExercise ) => {
             handleIsEditExercise(true);
@@ -179,7 +180,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                             <TooltipProvider delayDuration={ 0 }>
                                 <Tooltip>
                                     <TooltipTrigger
-                                        className="cursor-pointer group-hover:opacity-100 group-active:opacity-100 group-hover:pointer-events-auto group-active:pointer-events-auto opacity-0 pointer-events-none"
+                                        className="cursor-pointer group-hover:opacity-100 group-active:opacity-100 opacity-0"
                                     >
                                         <NotebookTextIcon className="cursor-pointer" />
                                     </TooltipTrigger>
@@ -189,9 +190,10 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                 </Tooltip>
                             </TooltipProvider>
                             }
-                            <DropdownMenu>
+                            <DropdownMenu open={ dropdownOpen } onOpenChange={ () => setDropdownOpen(false) }>
                                 <DropdownMenuTrigger
-                                    className="cursor-pointer group-hover:opacity-100 group-active:opacity-100 group-hover:pointer-events-auto group-active:pointer-events-auto opacity-0 pointer-events-none"
+                                    onClick={ () => setDropdownOpen(true) }
+                                    className="cursor-pointer group-hover:opacity-100 group-active:opacity-100 opacity-0"
                                     asChild
                                 >
                                     <EllipsisIcon />
@@ -205,16 +207,17 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                         Delete Day
                                         <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={ () => setEditTitleOpen(true) } className="cursor-pointer">
+                                    <DropdownMenuItem onClick={ () => { setEditTitleOpen(true); setDropdownOpen(false) } } className="cursor-pointer">
                                         Edit Title
                                         <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={ () => handleOpenAddNoteDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true }) } className="cursor-pointer">
+                                    <DropdownMenuItem onClick={ () => { handleOpenAddNoteDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true }); setDropdownOpen(false) } } className="cursor-pointer">
                                         Add Note
                                         <DropdownMenuShortcut>⌘I</DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={ () => {
                                         handleOpenGenerateDayDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true });
+                                        setDropdownOpen(false);
                                     } }
                                         className="cursor-pointer"
                                     >
@@ -226,7 +229,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                             <TooltipProvider delayDuration={ 0 }>
                                 <Tooltip>
                                     <TooltipTrigger
-                                        className="cursor-pointer group-hover:opacity-100 group-active:opacity-100 group-hover:pointer-events-auto group-active:pointer-events-auto opacity-0 pointer-events-none"
+                                        className="cursor-pointer group-hover:opacity-100 group-active:opacity-100 opacity-0 "
                                     >
                                         <div onClick={ () => setDuplicateDayOpen(true) }>
                                             <CopyIcon />
