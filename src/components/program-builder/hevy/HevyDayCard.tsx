@@ -120,7 +120,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (focusedCardId === day.id) {
-                if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "i") {
+                if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "v") {
                     event.preventDefault();
                     handleOpenAddNoteDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true });
                 }
@@ -132,6 +132,22 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
             document.removeEventListener("keydown", handleKeyDown);
         };
     }, [day.id, day.order, focusedCardId, folder_id, handleDeleteDay, handleOpenGenerateDayDialog, handleOpenAddNoteDialog]);
+
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (focusedCardId === day.id) {
+                if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "a") {
+                    event.preventDefault();
+                }
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [day.id, day.order, focusedCardId]);
+
 
 
     return (
@@ -213,7 +229,11 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={ () => { handleOpenAddNoteDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true }); setDropdownOpen(false) } } className="cursor-pointer">
                                         Add Note
-                                        <DropdownMenuShortcut>⌘I</DropdownMenuShortcut>
+                                        <DropdownMenuShortcut>⌘V</DropdownMenuShortcut>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                        Add Supersets
+                                        <DropdownMenuShortcut>⌘A</DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={ () => {
                                         handleOpenGenerateDayDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true });

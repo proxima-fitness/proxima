@@ -210,6 +210,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                                 className="cursor-pointer"
                                     onClick={ () => handleOpenAddExerciseNoteDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), exerciseIndex: i, isOpen: true}) }
                             />
+
                             <Trash2Icon
                                 className="cursor-pointer"
                                 onClick={ () => {
