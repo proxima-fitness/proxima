@@ -89,19 +89,19 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
 
         if (appliedEquipmentFilter && appliedEquipmentFilter.length > 0) {
             filteredItems = filteredItems.filter((item: TProgram) =>
-                appliedEquipmentFilter.some((filter) => item.equipment.includes(filter)),
+                item.equipment && appliedEquipmentFilter.some((filter) => item.equipment.includes(filter)),
             );
         }
 
         if (appliedSpecializationFilter && appliedSpecializationFilter.length > 0) {
             filteredItems = filteredItems.filter((item: TProgram) =>
-                appliedSpecializationFilter.some((filter) => item.specialization.includes(filter)),
+                item.specialization && appliedSpecializationFilter.some((filter) => item.specialization.includes(filter)),
             );
         }
 
         if (appliedDifficultyFilter && appliedDifficultyFilter.length > 0) {
             filteredItems = filteredItems.filter((item: TProgram) =>
-                appliedDifficultyFilter.some((filter) => item.difficulty.includes(filter)),
+                item.difficulty && appliedDifficultyFilter.some((filter) => item.difficulty.includes(filter)),
             );
         }
 

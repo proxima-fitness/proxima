@@ -128,7 +128,8 @@ export const getPrograms = async (limit?: number) => {
     try {
         let query = supabase
             .from('programs')
-            .select('id,title,details,program_length,workout_duration,equipment,specialization,difficulty,user_id').eq('explore', true);
+            .select('id,title,details,program_length,workout_duration,equipment,specialization,difficulty,user_id, saves').eq('explore', true)
+            .order('saves', { ascending: false });
 
         if (limit !== undefined) {
             query = query.limit(limit);
@@ -218,14 +219,12 @@ export const getProgramThumbnailByID = async (id: string) => {
                 const { data, error } = await supabase.storage.from('programs').download(id + "/" + fileName);
                 if (error) {
                     console.error('Error fetching program thumbnail:', error);
-                    throw Error(`Error fetching program thumbnail: ${error}`);
                 } else {
                     return data;
                 }
             }
     } catch (error: unknown) {
         console.error('Error fetching program thumbnail:', error);
-        throw Error(`Error fetching program thumbnail: ${error}`);
     }
 };
 

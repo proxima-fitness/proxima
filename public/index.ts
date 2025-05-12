@@ -42,6 +42,7 @@ import quotes from "./quotes.svg";
 import proxima_logo_black from "./proxima_logo_black.svg";
 import ai_program_builder from "./ai-program-builder.png";
 import profile_mobile_device_classic from "./profile-mobile-device-classic.png";
+import thumbnail from "./thumbnail.svg";
 
 export {
     qr_code,
@@ -88,4 +89,5 @@ export {
     twitter,
     reddit,
     proxima_logo_small,
+    thumbnail,
 }

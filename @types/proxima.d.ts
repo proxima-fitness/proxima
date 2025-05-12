@@ -65,6 +65,7 @@ type TProgram = {
     thumbnail?: Blob;
     hevy_routines?: THevyRoutine[];
     prompt?: string;
+    saves: number;
 }
 
 type TDialog = {
