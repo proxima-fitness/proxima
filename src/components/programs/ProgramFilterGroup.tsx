@@ -84,7 +84,7 @@ export const ProgramFilterGroup: React.FC<IProps> = (props) => {
 
     return (
         <div className="px-2 pt-4">
-            <div className="text-sm">{filter.title}</div>
+            <div className="text-sm font-bold">{filter.title}</div>
             { filter.component === "badge" ? (
                 <div className="flex flex-row gap-2 flex-wrap pt-2">
                     { filter.values.map((filter) => {

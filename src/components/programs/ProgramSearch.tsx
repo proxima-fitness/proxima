@@ -148,7 +148,7 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
                                 </div>
                             }
                         </div>
-                        <div className="grid grid-cols-3 max-sm:grid-cols-1">
+                        <div className="grid grid-cols-3 max-md:grid-cols-2 max-sm:grid-cols-1">
                             { filterGroupOptions.map((group) => (
                                 <ProgramFilterGroup
                                     key={ group.type }
@@ -169,7 +169,7 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
                     </div>
                 </Card>
             </div>
-            <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 py-8">
+            <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 max-md:grid-cols-2 py-8">
                 { filteredPrograms?.map((program) => (
                     <Link
                         key={ program.id }
