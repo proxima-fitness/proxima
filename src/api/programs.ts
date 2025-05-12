@@ -6,9 +6,10 @@ export const getExplorePagePrograms = async (filters?: TProgramFilters, limit?: 
         let query = supabase
             .from('programs')
             .select(
-                'id, title, details, program_length, workout_duration, equipment, specialization, difficulty, user_id',
+                'id, title, details, program_length, workout_duration, equipment, specialization, difficulty, user_id, saves',
             )
-            .eq('explore', true);
+            .eq('explore', true)
+            .order('saves', { ascending: false });
 
         if (filters) {
             for (const [key, value] of Object.entries(filters)) {
