@@ -27,7 +27,8 @@ export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
                         <TooltipTrigger asChild onClick={ () => handleEdit(folder_id, Number(day.order), i, exercise ) } className="w-full min-h-14 border-gray-200">
                             <div className="flex flex-row justify-between items-center text-sm border-b-2 py-2">
                                 <div className="flex flex-row gap-2 items-center justify-start max-w-[50%]">
-                                    <div className="text-lightSecondary pr-1 border-r-[6px] rounded-sm border-[#7900ff]">
+                                    <div className="text-lightSecondary pr-1 ">
+                                        { /* TODO: Add border-r-[6px] rounded-sm border-[#7900ff]*/}
                                         <span className="hidden sm:block">{ i + 1}</span>
                                         <Trash2Icon
                                             className="block sm:hidden"
