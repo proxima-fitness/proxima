@@ -81,7 +81,7 @@ export const postHevyRoutineProgram = async (id: string, hevyRoutines: THevyRout
             equipment: request?.equipment ?? null,
             specialization: request?.specialization ? request.specialization.split(',').map(s => s.trim()) : null,
             difficulty: request?.difficultyLevel ? request.difficultyLevel.split(',').map(s => s.trim()) : null,
-            explore: request?.explore ?? false,
+            explore: request?.explore === "true" ? true : false,
             prompt,
         };
 

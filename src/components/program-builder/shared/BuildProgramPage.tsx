@@ -62,6 +62,8 @@ export const BuildProgramPage: React.FC = () => {
     const excludeEquipment = searchParams.get('excludeEquipment') ?? '';
     const excludeSpecializations = searchParams.get('excludeSpecializations') ?? '';
     const healthIssues = searchParams.get('healthIssues') ?? '';
+    const programTitle = searchParams.get('programTitle') ?? '';
+    const explore = searchParams.get('explore') ?? '';
 
     const request = useMemo(() => ({
         empty,
@@ -82,6 +84,8 @@ export const BuildProgramPage: React.FC = () => {
         excludeEquipment,
         excludeSpecializations,
         healthIssues,
+        programTitle,
+        explore,
       } as TTextToJsonRequest), [
         empty,
         search,
@@ -101,6 +105,8 @@ export const BuildProgramPage: React.FC = () => {
         excludeEquipment,
         excludeSpecializations,
         healthIssues,
+        programTitle,
+        explore,
     ]);
 
     // Save the prompt to local storage so that it can be saved to the database

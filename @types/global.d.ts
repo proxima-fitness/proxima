@@ -103,7 +103,7 @@ type TTextToJsonRequest = {
     excludeSpecializations: string; // goes into AI Prompt
     healthIssues: string; // goes into AI Prompt
     programTitle: string; // goes into AI Prompt
-    explore: boolean; // goes into AI Prompt
+    explore: string; // goes into AI Prompt
 }
 
 
