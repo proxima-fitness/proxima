@@ -129,7 +129,7 @@ export const BuildProgramPage: React.FC = () => {
             }
             if (resumeHevyProgram) {
                 return (
-                    <HevyRoutine program={ resumeHevyProgram as THevyRoutine[] } />
+                    <HevyRoutine request={ request } program={ resumeHevyProgram as THevyRoutine[] } />
                 );
             }
         } else if (!isHevy) {
@@ -140,7 +140,7 @@ export const BuildProgramPage: React.FC = () => {
             }
             if (resumeProximaProgram) {
                 return (
-                    <ProximaProgram program={ resumeProximaProgram as TProgramCreatorDay[][] } />
+                    <ProximaProgram request={ request } program={ resumeProximaProgram as TProgramCreatorDay[][] } />
                 );
             }
         }
@@ -149,13 +149,13 @@ export const BuildProgramPage: React.FC = () => {
     if (isHevy) {
         return (
             <div className="sm:pl-8">
-                <HevyRoutine program={ shareId && shareId.length > 0 ? sharedProgram?.[0]?.hevy_routines as THevyRoutine[] : program as THevyRoutine[] } />
+                <HevyRoutine request={ request } program={ shareId && shareId.length > 0 ? sharedProgram?.[0]?.hevy_routines as THevyRoutine[] : program as THevyRoutine[] } />
             </div>
         );
     } else if (!isHevy) {
         return (
             <div className="sm:pl-8">
-                <ProximaProgram program={ program as TProgramCreatorDay[][] } />
+                <ProximaProgram request={ request } program={ program as TProgramCreatorDay[][] } />
             </div>
         );
     }

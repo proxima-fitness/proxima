@@ -67,21 +67,21 @@ export const getHevyExercises = async () => {
     }
 };
 
-export const postHevyRoutineProgram = async (id: string, hevyRoutines: THevyRoutine[], prompt: string) => {
+export const postHevyRoutineProgram = async (id: string, hevyRoutines: THevyRoutine[], prompt: string, request: TTextToJsonRequest) => {
     const weeks = getMaxFolderId(hevyRoutines) + 1;
 
     try {
         const programUploadObject = {
             id,
             hevy_routines: hevyRoutines,
-            title: 'My AI Program',
-            details: null,
+            title: request?.programTitle ?? "My AI Program",
+            details: request?.search ?? "",
             program_length: weeks,
-            workout_duration: null,
-            equipment: null,
-            specialization: null,
-            difficulty: null,
-            explore: false,
+            workout_duration: request?.workoutDuration ? Number(request.workoutDuration) : null,
+            equipment: request?.equipment ?? null,
+            specialization: request?.specialization ? request.specialization.split(',').map(s => s.trim()) : null,
+            difficulty: request?.difficultyLevel ? request.difficultyLevel.split(',').map(s => s.trim()) : null,
+            explore: request?.explore ?? false,
             prompt,
         };
 

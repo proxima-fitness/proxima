@@ -18,6 +18,8 @@ import { inferDaysPerWeek } from "../utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { toast } from "sonner";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 export const Prompt: React.FC = () => {
 
@@ -63,6 +65,8 @@ export const Prompt: React.FC = () => {
     const [workoutSchema, setWorkoutSchema] = useState("hevy");
     const [advancedSettingsOpen, toggleAdvancedSettingsOpen] = useReducer(prev => !prev, true);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [explore, toggleExplore] = useReducer(prev => !prev, true);
+    const [programTitle, setProgramTitle] = useState("My AI Program");
 
     useEffect(() => {
         setIsHevy(workoutSchema === "hevy" ? true : false);
@@ -87,6 +91,8 @@ export const Prompt: React.FC = () => {
             if (excludeEquipment.length > 0) params.append("excludeEquipment", (excludeEquipment.map(option => option.value).join(', ')));
             if (excludeSpecializations.length > 0) params.append("excludeSpecializations", (excludeSpecializations.map(option => option.value).join(', ')));
             if (healthIssues.length > 0) params.append("healthIssues", (healthIssues.map(option => option.value).join(', ')));
+            if (programTitle) params.append("programTitle", programTitle);
+            if (explore) params.append("explore", "true");
 
             return params.toString();
     };
@@ -420,17 +426,35 @@ export const Prompt: React.FC = () => {
                             </span>
                         </span>
                     }
-                    <span className="flex flex-row justify-end items-center">
-                        <Select onValueChange={ (value) => setWorkoutSchema(value) } value={ workoutSchema }>
+                    <span className="flex flex-row justify-between items-center">
+                        <span className="flex flex-col gap-2 grow basis-0 w-0">
+                            <span className="grid w-full max-w-sm items-center gap-1.5">
+                            <Label htmlFor="title">Program Title</Label>
+                            <Input
+                                type="text"
+                                id="title"
+                                placeholder="Program Title"
+                                className="w-full"
+                                value={ programTitle }
+                                onChange={ (event) => setProgramTitle(event.target.value) }
+                            />
+                            </span>
+                            <span className="w-full flex flex-row items-end justify-start gap-2">
+                            <Checkbox checked={ explore } onCheckedChange={ toggleExplore } className="w-4 h-4 data-[state=checked]:bg-[#33bbcf] data-[state=checked]:text-white" id="explore" />
+                            <Label htmlFor="explore" className="text-xs text-gray-600">Share program with community</Label>
+                            </span>
+                        </span>
+                        <Select onValueChange={(value) => setWorkoutSchema(value)} value={workoutSchema}>
                             <SelectTrigger autoFocus className="h-10 w-[180px]">
-                                <SelectValue placeholder="Workout Schema" />
+                            <SelectValue placeholder="Workout Schema" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="hevy">Hevy Routines</SelectItem>
-                                <SelectItem value="proxima">Proxima Program</SelectItem>
+                            <SelectItem value="hevy">Hevy Routines</SelectItem>
+                            <SelectItem value="proxima">Proxima Program</SelectItem>
                             </SelectContent>
                         </Select>
                     </span>
+
                 </DialogContent>
             </Dialog>
         </div>

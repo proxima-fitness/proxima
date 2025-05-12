@@ -19,12 +19,14 @@ import { usePreview } from "@/contexts/PreviewContext";
 
 interface IProps {
     program: THevyRoutine[];
+    request: TTextToJsonRequest;
 }
 
 export const HevyRoutine: React.FC<IProps> = (props) => {
 
     const {
         program,
+        request,
     } = props;
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -319,8 +321,9 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     useEffect(() => {
         if (typeof window !== "undefined") {
             localStorage.setItem("hevy-program-in-progress", JSON.stringify(hevyProgram));
+            localStorage.setItem("hevy-request", JSON.stringify(request));
         }
-    }, [hevyProgram]);
+    }, [hevyProgram, request]);
 
     return (
         <>

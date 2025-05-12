@@ -15,12 +15,14 @@ import { usePreview } from "@/contexts/PreviewContext";
 
 interface IProps {
     program: TProgramCreatorDay[][];
+    request: TTextToJsonRequest;
 }
 
 export const ProximaProgram: React.FC<IProps> = (props) => {
 
     const {
         program,
+        request,
     } = props;
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -275,8 +277,9 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     useEffect(() => {
         if (typeof window !== "undefined") {
             localStorage.setItem("program-in-progress", JSON.stringify(deFlattenProgram(flattenedProgramDays)));
+            localStorage.setItem("request", JSON.stringify(request));
         }
-    }, [flattenedProgramDays]);
+    }, [flattenedProgramDays, request]);
 
     return (
         <>

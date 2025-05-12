@@ -31,7 +31,7 @@ export const ShareDialog: React.FC<IProps> = (props) => {
     const [savingRoutine, setSavingRoutine] = useState(false);
     const [programId, setProgramId] = useState("");
     const [prompt, setPrompt] = useState<string>("");
-
+    const [request, setRequest] = useState<TTextToJsonRequest>();
     const handleCloseDialog = () => {
         handleOpenShareDialog(false);
     };
@@ -49,23 +49,24 @@ export const ShareDialog: React.FC<IProps> = (props) => {
 
     useEffect(() => {
         const saveProgram = async () => {
-            if (hevyRoutine !== undefined) {
+            if (hevyRoutine !== undefined && request !== undefined) {
                 const new_id = uuidv4();
                 if (new_id !== undefined) {
                     setProgramId(new_id);
                     setSavingRoutine(true);
-                    await postAIProgram(new_id, hevyRoutine, prompt);
+                    await postAIProgram(new_id, hevyRoutine, prompt, request);
                     setSavingRoutine(false);
                 }
             }
         }
         saveProgram();
-    }, [hevyRoutine, prompt]);
+    }, [hevyRoutine, prompt, request]);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
             const localStorageProgram = localStorage.getItem(isHevy ? "hevy-program-in-progress" : "program-in-progress");
             const localStoragePrompt = localStorage.getItem("prompt");
+            const localStorageRequest = localStorage.getItem( isHevy ? "hevy-request" : "request");
             if (localStoragePrompt) {
                 setPrompt(localStoragePrompt);
             }
@@ -75,6 +76,9 @@ export const ShareDialog: React.FC<IProps> = (props) => {
                 } else {
                     setProgram(JSON.parse(localStorageProgram));
                 }
+            }
+            if (localStorageRequest) {
+                setRequest(JSON.parse(localStorageRequest));
             }
         }
     }, [isHevy]);
