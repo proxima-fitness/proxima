@@ -3,26 +3,69 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRightIcon, ShareIcon } from "lucide-react";
 import { useState } from "react";
-import { SaveDialog } from "./SaveDialog";
 import { usePreview } from "@/contexts/PreviewContext";
 import { usePathname } from "next/navigation";
 import { ShareDialog } from "./ShareDialog";
+import { useIsHevy } from "@/contexts/HevyContext";
+import { postAIProgram } from "@/app/(app)/actions";
+import { v4 as uuidv4 } from "uuid";
 
 export const StepButton: React.FC = () => {
 
     const { isPreview, setIsPreview } = usePreview();
-
+    const { isHevy } = useIsHevy();
     const path = usePathname();
     const segments = path.split("/").filter(Boolean);
-    const [openSaveDialog, setOpenSaveDialog] = useState(false);
     const [openShareDialog, setOpenShareDialog] = useState(false);
 
-    const handleOpenSaveDialog = (openSaveDialog: boolean) => {
-        setOpenSaveDialog(openSaveDialog);
-    };
+    const [savingRoutine, setSavingRoutine] = useState(false);
+    const [programId, setProgramId] = useState("");
+
+
+
+    // const handleOpenSaveDialog = (openSaveDialog: boolean) => {
+    //     setOpenSaveDialog(openSaveDialog);
+    // };
     const handleOpenShareDialog = (openShareDialog: boolean) => {
         setOpenShareDialog(openShareDialog);
     };
+
+
+    const saveProgram = async () => {
+        setIsPreview(true);
+        if (typeof window !== "undefined") {
+            const localStorageProgram = localStorage.getItem(isHevy ? "hevy-program-in-progress" : "program-in-progress");
+            const localStoragePrompt = localStorage.getItem("prompt");
+            const localStorageRequest = localStorage.getItem( isHevy ? "hevy-request" : "request");
+
+            let parsedProgram: THevyRoutine[] | TProgramCreatorDay[][] | undefined;
+
+
+            if (localStorageProgram) {
+                if (isHevy) {
+                    parsedProgram = JSON.parse(localStorageProgram) as THevyRoutine[];
+                } else {
+                    parsedProgram = JSON.parse(localStorageProgram) as TProgramCreatorDay[][];
+                }
+            }
+            let parsedRequest: TTextToJsonRequest | undefined;
+            if (localStorageRequest) {
+                parsedRequest = JSON.parse(localStorageRequest);
+            }
+
+            if (parsedProgram !== undefined && parsedRequest !== undefined && isHevy) {
+                const new_id = uuidv4();
+                if (new_id !== undefined) {
+                    console.log("New ID", new_id);
+                    setProgramId(new_id);
+                    setSavingRoutine(true);
+                    await postAIProgram(new_id, parsedProgram as THevyRoutine[], localStoragePrompt ?? "", parsedRequest);
+                    setSavingRoutine(false);
+                }
+            }
+        }
+    }
+
 
     if (segments.length === 1) {
         return (
@@ -39,7 +82,7 @@ export const StepButton: React.FC = () => {
             <Button
                 variant="default"
                 className="text-white bg-lightSecondary hover:bg-black"
-                onClick={ () => setIsPreview(true) }
+                onClick={ saveProgram }
             >
                 Finish and Review
                 <ArrowRightIcon />
@@ -57,25 +100,27 @@ export const StepButton: React.FC = () => {
                     <ShareIcon />
                 </Button>
 
-                <Button
-                    onClick={ () => handleOpenSaveDialog(true) }
-                    variant="default"
-                    className="text-white bg-lightSecondary hover:bg-black"
-                >
-                    <span className="hidden sm:inline">Sign in to save</span>
-                    <span className="sm:hidden">Save</span>
-                    <ArrowRightIcon />
-                </Button>
-                { openSaveDialog &&
-                    <SaveDialog
-                        handleOpenSaveDialog={ handleOpenSaveDialog }
-                        openSaveDialog={ openSaveDialog }
-                    />
-                }
+                <a href={ `https://app.proximafitness.com?program_id=${programId}` } className="w-full">
+                    <Button
+                        variant="default"
+                        className="text-white bg-lightSecondary hover:bg-black"
+                    >
+                        { !savingRoutine ?
+                            <>
+                                <span className="hidden sm:inline">Sign in to save</span>
+                                <span className="sm:hidden">Save</span>
+                            </>
+                        :
+                            <span className="">Saving...</span>
+                        }
+                        <ArrowRightIcon />
+                    </Button>
+                </a>
                 { openShareDialog &&
                     <ShareDialog
                         handleOpenShareDialog={ handleOpenShareDialog }
                         openShareDialog={ openShareDialog }
+                        programId={ programId }
                     />
                 }
             </div>

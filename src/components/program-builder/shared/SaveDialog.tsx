@@ -3,18 +3,16 @@ import {
     DialogContent,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {  CopyIcon, DownloadIcon, LogInIcon, PartyPopperIcon } from "lucide-react";
-import { toast } from "sonner";
-import { PDFViewer } from '@react-pdf/renderer';
-import { useIsHevy } from "@/contexts/HevyContext";
-import { v4 as uuidv4 } from "uuid";
-import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts, removeOrderHevy } from "../utils";
-import { postAIProgram } from "@/app/(app)/actions";
-import { HevyPdfRenderer } from "../hevy/HevyPdfRenderer";
-import { PdfRenderer } from "../proxima/PdfRenderer";
+import {   PartyPopperIcon } from "lucide-react";
+// import { PDFViewer } from '@react-pdf/renderer';
+// import { useIsHevy } from "@/contexts/HevyContext";
+// import { v4 as uuidv4 } from "uuid";
+// import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts, removeOrderHevy } from "../utils";
+// import { postAIProgram } from "@/app/(app)/actions";
+// import { HevyPdfRenderer } from "../hevy/HevyPdfRenderer";
+// import { PdfRenderer } from "../proxima/PdfRenderer";
 
 interface IProps {
     openSaveDialog: boolean;
@@ -28,78 +26,36 @@ export const SaveDialog: React.FC<IProps> = (props) => {
         handleOpenSaveDialog,
     } = props;
 
-    const { isHevy } = useIsHevy();
-    const [program, setProgram] = useState<TProgramCreatorDay[][]>();
-    const [hevyRoutine, setHevyRoutine] = useState<THevyRoutine[]>();
-    const [prompt, setPrompt] = useState<string>("");
     const [isPreview, setIsPreview] = useState(true);
-    const [savingRoutine, setSavingRoutine] = useState(false);
-    const [programId, setProgramId] = useState("");
-    const [request, setRequest] = useState<TTextToJsonRequest>();
 
     const handleCloseDialog = () => {
         handleOpenSaveDialog(false);
     };
 
-    useEffect(() => {
-        const saveProgram = async () => {
-            if (hevyRoutine !== undefined && request !== undefined) {
-                const new_id = uuidv4();
-                if (new_id !== undefined) {
-                    setProgramId(new_id);
-                    setSavingRoutine(true);
-                    await postAIProgram(new_id, hevyRoutine, prompt, request);
-                    setSavingRoutine(false);
-                }
-            }
-        }
-        saveProgram();
-    }, [hevyRoutine, prompt, request]);
 
-    useEffect(() => {
-        if (typeof window !== "undefined") {
-            const localStorageProgram = localStorage.getItem(isHevy ? "hevy-program-in-progress" : "program-in-progress");
-            const localStoragePrompt = localStorage.getItem("prompt");
-            const localStorageRequest = localStorage.getItem( isHevy ? "hevy-request" : "request");
-            if (localStoragePrompt) {
-                setPrompt(localStoragePrompt);
-            }
-            if (localStorageProgram) {
-                if (isHevy) {
-                    setHevyRoutine(JSON.parse(localStorageProgram));
-                } else {
-                    setProgram(JSON.parse(localStorageProgram));
-                }
-            }
-            if (localStorageRequest) {
-                setRequest(JSON.parse(localStorageRequest));
-            }
-        }
-    }, [isHevy]);
+    // const handleCopyJson = () => {
+    //     try {
+    //         navigator.clipboard.writeText(JSON.stringify(program));
+    //     } catch (error: unknown) {
+    //         console.error("Error copying to clipboard",error);
+    //         toast.error("Error copying to clipboard");
+    //     }
+    //     toast.success("Copied to clipboard");
+    // };
 
-    const handleCopyJson = () => {
-        try {
-            navigator.clipboard.writeText(JSON.stringify(program));
-        } catch (error: unknown) {
-            console.error("Error copying to clipboard",error);
-            toast.error("Error copying to clipboard");
-        }
-        toast.success("Copied to clipboard");
-    };
+    // const handleDownloadJson = () => {
+    //     const dataStr = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(program));
+    //     const download = document.createElement("a");
+    //     download.setAttribute("href", dataStr);
+    //     download.setAttribute("download", "program" + ".json");
+    //     document.body.appendChild(download);
+    //     download.click();
+    //     download.remove();
+    // };
 
-    const handleDownloadJson = () => {
-        const dataStr = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(program));
-        const download = document.createElement("a");
-        download.setAttribute("href", dataStr);
-        download.setAttribute("download", "program" + ".json");
-        document.body.appendChild(download);
-        download.click();
-        download.remove();
-    };
-
-    if (!program && !hevyRoutine) {
-        return <div></div>;
-    }
+    // if (!program && !hevyRoutine) {
+    //     return <div></div>;
+    // }
 
     return (
         <>
@@ -125,7 +81,7 @@ export const SaveDialog: React.FC<IProps> = (props) => {
                         </Button>
                     </span>
                     <span>
-                        { isPreview ?
+                        {/* { isPreview ?
                             <PDFViewer className="max-sm:hidden w-full max-sm:h-[30vh] h-[60vh]">
                                 { (isHevy && hevyRoutine) ?
                                     <HevyPdfRenderer hevyRoutine={ deFlattenHevyRoutine(hevyRoutine) } />
@@ -135,10 +91,10 @@ export const SaveDialog: React.FC<IProps> = (props) => {
                             </PDFViewer>
                             :
                             <Textarea className="max-sm:h-[30vh] h-[50vh]" readOnly aria-readonly value={ (isHevy && hevyRoutine) ? JSON.stringify(removeOrderHevy(hevyRoutine), null, 4) : program && JSON.stringify(program, null, 4) } />
-                        }
+                        } */}
                     </span>
                     <span className="w-full flex flex-row max-sm:flex-col items-center justify-between max-sm:justify-center gap-4">
-                        { isPreview ?
+                        {/* { isPreview ?
                             <div>
                             </div>
                         :
@@ -162,9 +118,9 @@ export const SaveDialog: React.FC<IProps> = (props) => {
                                     </Button>
                                 </span>
                             </div>
-                        }
+                        } */}
                         <span>
-                            { savingRoutine && <span className="pr-4"></span> }
+                            {/* { savingRoutine && <span className="pr-4"></span> }
                             <a href={ `https://app.proximafitness.com?program_id=${programId}` } className="w-full">
                                 <Button
                                     disabled={ savingRoutine }
@@ -178,7 +134,7 @@ export const SaveDialog: React.FC<IProps> = (props) => {
                                     }
 
                                 </Button>
-                            </a>
+                            </a> */ }
                         </span>
                     </span>
                 </DialogContent>
