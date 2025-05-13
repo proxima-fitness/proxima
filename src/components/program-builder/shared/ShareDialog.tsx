@@ -8,6 +8,7 @@ import { BicepsFlexedIcon, CopyIcon } from "lucide-react";
 import { facebook, reddit } from "public";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useSearchParams } from "next/navigation";
 
 interface IProps {
     openShareDialog: boolean;
@@ -16,6 +17,8 @@ interface IProps {
 }
 
 export const ShareDialog: React.FC<IProps> = (props) => {
+    const searchParams = useSearchParams();
+    const shareId = searchParams.get('shareId');
 
     const {
         openShareDialog,
@@ -29,7 +32,7 @@ export const ShareDialog: React.FC<IProps> = (props) => {
 
     const handleCopyShareId = () => {
         try {
-            navigator.clipboard.writeText(`https://proximafitness.com/program-builder/build-program?shareId=${programId}`);
+            navigator.clipboard.writeText(`https://proximafitness.com/program-builder/build-program?shareId=${shareId || programId}`);
         } catch (error: unknown) {
             console.error("Error copying to clipboard",error);
             toast.error("Error copying to clipboard");
@@ -46,26 +49,26 @@ export const ShareDialog: React.FC<IProps> = (props) => {
                     </DialogTitle>
                     <span className="w-full flex flex-row max-sm:flex-col items-center justify-center max-sm:justify-center gap-4">
                         <span className="flex flex-row items-center justify-center gap-4">
-                            <a href={ `https://www.facebook.com/sharer/sharer.php?u=https://proximafitness.com/program-builder/build-program?shareId=${programId}&title=Check+Out+My+Custom+Workout+Program+Built+By+Proxima+AI!` } target="_blank" rel="noopener noreferrer">
+                            <a href={ `https://www.facebook.com/sharer/sharer.php?u=https://proximafitness.com/program-builder/build-program?shareId=${shareId || programId}&title=Check+Out+My+Custom+Workout+Program+Built+By+Proxima+AI!` } target="_blank" rel="noopener noreferrer">
                                 <Button
                                     className="h-16 w-16 bg-lightSecondary"
                                 >
                                     <img src={ facebook.src } alt="Facebook" className="h-full w-full" />
                                 </Button>
                             </a>
-                            <a href={ `https://www.reddit.com/submit?url=https://proximafitness.com/program-builder/build-program?shareId=${programId}&title=Check+Out+My+Custom+Workout+Program+Built+By+Proxima+AI!` } target="_blank" rel="noopener noreferrer">
+                            <a href={ `https://www.reddit.com/submit?url=https://proximafitness.com/program-builder/build-program?shareId=${shareId || programId}&title=Check+Out+My+Custom+Workout+Program+Built+By+Proxima+AI!` } target="_blank" rel="noopener noreferrer">
                                 <Button
                                     variant="outline"
                                     className="h-16 w-16"
-                            >
-                                <img src={ reddit.src } alt="Reddit" className="h-full w-full" />
-                            </Button>
+                                >
+                                    <img src={ reddit.src } alt="Reddit" className="h-full w-full" />
+                                </Button>
                             </a>
                             <div className="flex flex-row items-center justify-center gap-2">
                                 <Input
                                     className="h-16 max-sm:w-full sm:w-[400px]"
                                     readOnly
-                                    value={ `https://proximafitness.com/program-builder/build-program?shareId=${programId}` }
+                                    value={ `https://proximafitness.com/program-builder/build-program?shareId=${shareId || programId}` }
                                 />
                                 <Button
                                     variant="outline"
@@ -80,5 +83,5 @@ export const ShareDialog: React.FC<IProps> = (props) => {
                 </DialogContent>
             </Dialog>
         </>
-    );;
+    );
 };
