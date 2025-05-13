@@ -1,4 +1,6 @@
+import { ProgramFallback } from "@/components/generic/ProgramFallback";
 import { ProgramsSlugLayout } from "@/components/programs/ProgramsSlugLayout";
+import { Suspense } from "react";
 
 export async function generateMetadata({ params }: { params: { slug: string[] } }) {
     const rawTitle = params.slug[1]?.replace(/-/g, ' ') ?? "Program";
@@ -19,7 +21,9 @@ export default function ProgramsSlugPage({
 
     return (
         <div className="bg-white flex items-center justify-center flex-col px-12 max-sm:px-2 py-6">
-            <ProgramsSlugLayout id={slug[0]} />
+            <Suspense fallback={ <ProgramFallback /> }>
+                <ProgramsSlugLayout id={slug[0]} />
+            </Suspense>
         </div>
     );
 }
