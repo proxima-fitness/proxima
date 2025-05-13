@@ -44,7 +44,7 @@ export default function AiProgramBuilder() {
                                 {name: "alexalydiarose", image: people02.src},
                             ] }
                         />
-                        4000+ lifters are building with Proxima
+                        4500+ lifters are building with Proxima
                     </div>
                 </div>
                 <div className="bg-red-400 py-4 text-white hidden max-sm:flex max-sm:flex-col max-sm:justify-center max-sm:items-center text-center">

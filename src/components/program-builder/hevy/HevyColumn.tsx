@@ -119,7 +119,7 @@ export const HevyColumn: React.FC<IProps> = (props) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         indicators.forEach((i: any) => {
             if (!(i instanceof HTMLElement)) {
-            throw new TypeError(`Expected a object of Type HTMLElement`);
+                console.error(`Expected a object of Type HTMLElement`);
             }
             i.style.opacity = "0";
         });

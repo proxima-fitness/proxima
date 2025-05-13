@@ -173,7 +173,8 @@ export const useUserMetadataSSR = (id: string) => {
 export const useOpUserMetadataSSR = async (id: string) => {
     const userId = await getOpUserId(id);
     if (!userId) {
-        throw new Error("User ID not found");
+         console.error("User ID not found");
+         return { first_name: "Anonymous", last_name: "", username: "anonymous", bio: "", created_at: "" };
     }
 
     return getUserMetaData(userId);
@@ -187,7 +188,8 @@ export const useProgramOpUserId = (program_id: string) => {
 export const useOpProfilePictureByIdSSR = async (id: string) => {
     const userId = await getOpUserId(id);
     if (!userId) {
-        throw new Error("User ID not found");
+        console.error("User ID not found");
+        return null;
     }
     return await getProfilePicByID(userId);
 };
@@ -195,7 +197,7 @@ export const useOpProfilePictureByIdSSR = async (id: string) => {
 export const useBlogByIdSSR = async (id: string) => {
     const blog = await getBlogById(Number(id));
     if (!blog) {
-        throw new Error("Blog not found");
+        console.error("Blog not found");
     }
     return blog as unknown as TBlog;
 };
@@ -210,7 +212,7 @@ export const useBlogsSSR = async () => {
 //     const programs = await getExplorePagePrograms(42);
 
 //     if (!programs) {
-//         throw new Error("Programs not found");
+//         console.error("Programs not found");
 //     }
 
 //     const programsWithThumbnails = await Promise.all(

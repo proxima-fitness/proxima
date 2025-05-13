@@ -114,13 +114,11 @@ export const getExplorePageProgramDetails = async (program_id: string) => {
 
             if (error) {
                 console.error('Error fetching program details:', error);
-                throw Error(`Error fetching program details: ${error}`);
             } else if (data && data.length > 0 ) {
                 return data as unknown as TProgramDetails[];
             }
     } catch (error: unknown) {
         console.error('Error fetching program details:', error);
-        throw Error(`Error fetching program details: ${error}`);
     }
 };
 
@@ -167,7 +165,7 @@ export const getProgramByID = async (program_id: string) => {
             return data as unknown as TProgram[];
         }
     } catch (error: unknown) {
-        throw Error(`Error fetching explore page programs: ${error}`);
+        console.error(`Error fetching explore page programs: ${error}`);
     }
 };
 
@@ -181,7 +179,7 @@ export const getSharedProgram = async (shareId: string) => {
             return data as unknown as TProgram[];
         }
     } catch (error: unknown) {
-        throw Error(`Error fetching shared program: ${error}`);
+        console.error(`Error fetching shared program: ${error}`);
     }
 }
 

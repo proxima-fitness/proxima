@@ -14,7 +14,7 @@ export const defaultFetch = async <T>(url: string, apiKey: string): Promise<T> =
     });
 
     if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        console.error(`HTTP error! Status: ${response.status}`);
     }
 
     return (await response.json()) as T;

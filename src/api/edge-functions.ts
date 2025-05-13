@@ -119,7 +119,7 @@ export const postImageToText = async (imageUrl: string) => {
         });
 
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            console.error('Network response was not ok');
         }
 
       const data = await response.json();
@@ -146,7 +146,7 @@ export const postSpeechToText = async (base64Audio: string) => {
         });
 
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            console.error('Network response was not ok');
         }
 
       const data = await response.json();
@@ -173,7 +173,7 @@ export const postNsfwImageDetection = async (imageUrl: string) => {
         });
 
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            console.error('Network response was not ok');
         }
 
       const data = await response.json();
