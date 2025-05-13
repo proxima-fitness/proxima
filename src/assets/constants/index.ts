@@ -10,6 +10,14 @@ export const hevy_intensities = [{label: "RPE", value: "rpe"}, {label: "Weight (
 export const rep_types = [{label: "Reps", value: "reps"},{label: "Reps Max", value: "reps_max"},{label: "Reps Range", value: "reps_range"},{label: "Time", value: "time_taken"},{label: "Time Range", value:"time_range"},{label: "AMRAP", value: "amrap"}];
 export const intensities = [{label: "RPE", value: "rpe"},{ label: "% 1RM", value: "percent_rm" },{ label: "RPE Range", value: "rpe_range" }, {label: "Weights", value: "weights" }];
 export const lightColours = ["#DCF9C2", "#F4D1BD", "#E2F2F2", "#E0E1B9", "#D7FEC5", "#EEDACA", "#C5E0EA", "#EADEB5", "#CAC8D9", "#C2EAE6"];
+
+export const programBuilderSteps = [
+    { title: "Step 1", description: "Prompt your Program" },
+    { title: "Step 2", description: "Edit and Refine" },
+    { title: "Step 3", description: "Finish and Review" },
+    { title: "Step 4", description: "Sign in and Start Tracking" },
+];
+
 export const primaryMuscleGroups = [
     {label: "Back", value: ["upper_back","lower_back","lats"]},
     {label: "Arms", value: ["biceps", "triceps", "forearms"]},

@@ -16,6 +16,9 @@ import { HevyAddNoteDialog } from "./HevyAddNoteDialog";
 import { HevyExerciseNotesDialog } from "./HevyExerciseNotesDialog";
 import { HevyRoutinePreview } from "./HevyRoutinePreview";
 import { usePreview } from "@/contexts/PreviewContext";
+import { Stepper } from "@/components/ui/stepper";
+import { programBuilderSteps } from "@/assets/constants";
+import { SetTypesLegend } from "../shared/SetTypesLegend";
 
 interface IProps {
     program: THevyRoutine[];
@@ -329,11 +332,19 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
         <>
             { isPreview ?
                 <div className="sm:pl-8">
+                    <div className="flex flex-row justify-start items-center max-sm:px-24 pb-4 gap-16">
+                        <Stepper steps={programBuilderSteps} currentStep={3} />
+                        <SetTypesLegend />
+                    </div>
                     <HevyRoutinePreview deflatHevyRoutine={ deFlattenHevyRoutine(hevyProgram) } />
                 </div>
             :
                 <>
-                    <div className="flex flex-row gap-4 h-full w-full">
+                    <div className="flex flex-row justify-start items-center max-sm:px-24 pb-4 gap-16">
+                        <Stepper steps={programBuilderSteps} currentStep={2} />
+                        <SetTypesLegend />
+                    </div>
+                    <div className="flex flex-row gap-4 h-full w-full border-t-4 border-lightGray">
                         { numberOfWeeksArr.map((_, index) => (
                             <HevyColumn
                                 key={ `Week ${index + 1}` }

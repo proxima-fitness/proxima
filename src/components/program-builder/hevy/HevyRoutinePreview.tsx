@@ -12,7 +12,7 @@ export const HevyRoutinePreview: React.FC<IProps> = (props) => {
     } = props;
 
     return (
-        <div className="flex flex-row max-sm:flex-col max-sm:w-screen overflow-auto sm:p-2 gap-4">
+        <div className="flex flex-row max-sm:flex-col max-sm:w-screen overflow-auto sm:p-2 gap-4 border-t-4 border-lightGray pt-2">
             { deflatHevyRoutine.map((week, index) => (
                 <div className="w-screen sm:w-full" key={ `Week ${index}` }>
                     <span className="bg-white p-2 font-main">Week {index + 1}</span>

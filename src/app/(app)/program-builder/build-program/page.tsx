@@ -1,6 +1,5 @@
 import { BuildProgramPage } from "@/components/program-builder/shared/BuildProgramPage";
 import { BuildProgramSkeleton } from "@/components/program-builder/shared/BuildProgramSkeleton";
-import { SetTypesLegend } from "@/components/program-builder/shared/SetTypesLegend";
 import { Suspense } from "react";
 
 export const metadata = {
@@ -15,7 +14,6 @@ export default async function BuildProgram() {
             <Suspense fallback={ <BuildProgramSkeleton /> }>
                 <div className="flex flex-col justify-start items-start">
                     <BuildProgramPage />
-                    <SetTypesLegend />
                 </div>
             </Suspense>
         </div>

@@ -197,6 +197,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                         handleIsEditing={ handleIsEditing }
                     />
                 }
+                    <SetTypesLegend />
 
                 <div className="mt-4">
                     <div className="flex flex-row justify-center gap-2 items-center w-full pb-4">
@@ -305,8 +306,6 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                     }
                     { restTimeOpen && <Input type="number" placeholder="Rest Time (secs)" value={ restSeconds } onChange={ (e) => setRestSeconds(e.target.value) } /> }
                 </div>
-
-                <SetTypesLegend />
                 </div>
                 <span className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4">
                     <span className="w-full flex items-center justify-center">

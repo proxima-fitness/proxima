@@ -41,7 +41,7 @@ export const StepButton: React.FC = () => {
                 className="text-white bg-lightSecondary hover:bg-black"
                 onClick={ () => setIsPreview(true) }
             >
-                Review Program
+                Finish and Review
                 <ArrowRightIcon />
             </Button>
         );
@@ -62,7 +62,8 @@ export const StepButton: React.FC = () => {
                     variant="default"
                     className="text-white bg-lightSecondary hover:bg-black"
                 >
-                    Save
+                    <span className="hidden sm:inline">Sign in to save</span>
+                    <span className="sm:hidden">Save</span>
                     <ArrowRightIcon />
                 </Button>
                 { openSaveDialog &&
