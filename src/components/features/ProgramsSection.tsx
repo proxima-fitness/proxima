@@ -26,7 +26,7 @@ export const ProgramsSection: React.FC = () => {
                 </h2>
             </div>
             { loadingPrograms ?
-                <div className="pt-14 px-24">
+                <div className="sm:pt-14 sm:px-24">
                     <ProgramCardLoading />
                 </div>
             :   (

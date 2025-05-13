@@ -15,10 +15,6 @@ export const ProgramCard: React.FC<IProps> = (props) => {
         program,
     } = props;
 
-    if (program.title === "My AI Program") {
-        console.log(program.thumbnail);
-    }
-
     return (
         <>
             <div className="w-full max-w-md mx-auto">

@@ -56,7 +56,6 @@ export const StepButton: React.FC = () => {
             if (parsedProgram !== undefined && parsedRequest !== undefined && isHevy) {
                 const new_id = uuidv4();
                 if (new_id !== undefined) {
-                    console.log("New ID", new_id);
                     setProgramId(new_id);
                     setSavingRoutine(true);
                     await postAIProgram(new_id, parsedProgram as THevyRoutine[], localStoragePrompt ?? "", parsedRequest);
