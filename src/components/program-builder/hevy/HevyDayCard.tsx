@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
-import { EllipsisIcon, CopyIcon, PlusIcon, NotebookTextIcon } from "lucide-react";
+import { EllipsisIcon, CopyIcon, PlusIcon, NotebookTextIcon, LinkIcon } from "lucide-react";
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useEffect, useState } from "react";
 import {
@@ -299,6 +299,9 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                             handleOpenAddExerciseDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true});
                          } }>
                         <Button variant="ghost" className="mt-1 w-full font-bold uppercase h-12 hover:bg-gray-200 text-black"><PlusIcon />Add Exercise</Button>
+                    </div>
+                    <div className="flex flex-row justify-between items-center">
+                        <Button variant="ghost" className="mt-1 w-full font-bold bg-lightGray text-lightSecondary uppercase hover:text-lightSecondary hover:bg-gray-200 h-12 border-2 border-lightSecondary"><LinkIcon />Create Superset</Button>
                     </div>
                 </Card>
             </motion.div>
