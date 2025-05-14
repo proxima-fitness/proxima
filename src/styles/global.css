@@ -314,3 +314,84 @@ ul {
     33.33% { opacity: 0; }
     100% { opacity: 0; }
   }
+
+
+
+  /* STYLES FOR THE ANIMATED ROTATING TEXT */
+  .fixedHeading {
+    position: relative;
+    white-space: nowrap;
+    margin: 0;
+    padding: 0;
+    line-height: 1.2;
+  }
+
+  .staticText {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  .animationWrapper {
+    display: inline-flex;
+    position: relative;
+    perspective: 1200px;
+    justify-content: center;
+    align-items: center;
+    vertical-align: middle;
+    overflow: hidden;
+  }
+
+  .staticPhrase {
+    display: block;
+    text-align: center;
+  }
+
+  .outgoing,
+  .incoming {
+    display: block;
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+    left: 0;
+    right: 0;
+  }
+
+  .outgoing {
+    animation: outAnimation 1.2s cubic-bezier(0.645, 0.045, 0.355, 1.0) forwards;
+    transform-origin: center center;
+  }
+
+  .incoming {
+    animation: inAnimation 1.2s cubic-bezier(0.645, 0.045, 0.355, 1.0) forwards;
+    transform-origin: center center;
+    opacity: 0;
+  }
+
+  @keyframes outAnimation {
+    0% {
+      transform: rotateX(0deg);
+      opacity: 1;
+      filter: blur(0px);
+    }
+    100% {
+      transform: rotateX(-90deg);
+      opacity: 0;
+      filter: blur(4px);
+    }
+  }
+
+  @keyframes inAnimation {
+    0% {
+      transform: rotateX(90deg);
+      opacity: 0;
+      filter: blur(4px);
+    }
+    100% {
+      transform: rotateX(0deg);
+      opacity: 1;
+      filter: blur(0px);
+    }
+  }

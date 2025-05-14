@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ProgramCard } from "../programs/ProgramCard";
 import { useExplorePagePrograms } from "@/api/hooks";
 import { ProgramCardLoading } from "../generic/ProgramCardLoading";
+import AnimatedRotatingText from "../generic/AnimatedRotatingText";
 
 
 export const ProgramsSection: React.FC = () => {
@@ -22,7 +23,7 @@ export const ProgramsSection: React.FC = () => {
         >
             <div className={ layout.sectionInfoCentered } style={ { display:"flex", justifyContent: "center", alignItems: "center" }    }>
                 <h2 className={ styles.heading2Programs }>
-                    Train Popular <span style={ { color: "#33bbcf" } }>Science Based</span> Programs
+                    <AnimatedRotatingText />
                 </h2>
             </div>
             { loadingPrograms ?
@@ -49,7 +50,7 @@ export const ProgramsSection: React.FC = () => {
                 )
             }
             <div className="flex items-center justify-center">
-                <Link href="/programs"><Button text={ "Search Programs" } styles={ `mt-10` } /></Link>
+                <Link href="/programs"><Button text={ "Search Programs" } styles={ `mt-10 bg-lightSecondary text-white` } /></Link>
             </div>
         </section>
     );
