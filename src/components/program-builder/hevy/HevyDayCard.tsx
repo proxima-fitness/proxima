@@ -150,7 +150,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                 .map((e) => e.supersets_id)
         )).sort((a, b) => (a || 0) - (b || 0));
 
-        let nextId = 1;
+        let nextId = 0;
         for (const currentId of currentSupersetIds) {
             if (currentId !== nextId) {
                 return nextId;

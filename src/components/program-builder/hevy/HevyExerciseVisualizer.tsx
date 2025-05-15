@@ -49,7 +49,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                         <Tooltip>
                             <TooltipTrigger asChild onClick={() => editHandler(Number(folder_id), Number(day.order), i, exercise)} className={`w-full min-h-14 border-gray-200 cursor-pointer ${isSelected ? 'bg-lightSecondary text-white' : ''}`}>
                                     <div>
-                                        {exercise.supersets_id && !editMode && (
+                                        {exercise.supersets_id !== null && exercise.supersets_id !== undefined && !editMode && (
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -60,13 +60,13 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             >
                                                 <span className="flex flex-row justify-between items-center w-full">
                                                     <XIcon className="w-4 h-4" />
-                                                    <span className="text-sm flex flex-row items-center gap-2"> <LinkIcon className="w-4 h-4" /> Superset {exercise.supersets_id}</span>
+                                                    <span className="text-sm flex flex-row items-center gap-2"> <LinkIcon className="w-4 h-4" /> Superset {exercise.supersets_id + 1}</span>
                                                 </span>
                                             </button>
                                         )}
-                                        { exercise.supersets_id && editMode && (
+                                        { exercise.supersets_id !== null && exercise.supersets_id !== undefined && editMode && (
                                                 <span className="flex flex-row justify-end items-center w-full pt-2">
-                                                <span className="text-sm flex flex-row items-center gap-2"> <LinkIcon className="w-4 h-4" /> Superset {exercise.supersets_id}</span>
+                                                <span className="text-sm flex flex-row items-center gap-2"> <LinkIcon className="w-4 h-4" /> Superset {exercise.supersets_id + 1}</span>
                                             </span>
                                         ) }
                                 <div className={`flex flex-row justify-between items-center text-sm border-b-2 ${exercise.supersets_id && !editMode ? 'pb-2' : 'py-2'}  relative`}>
