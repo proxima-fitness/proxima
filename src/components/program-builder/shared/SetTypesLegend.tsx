@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
-import { ActivityIcon, DumbbellIcon, LinkIcon, SkullIcon, TrendingDownIcon, InfoIcon } from "lucide-react"
+import { ActivityIcon, DumbbellIcon, SkullIcon, TrendingDownIcon, InfoIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export const SetTypesLegend = () => {
@@ -38,12 +38,6 @@ export const SetTypesLegend = () => {
             <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
               <Badge variant="outline" className="text-xs gap-2 w-full justify-start">
                 <DumbbellIcon className="w-4 h-4" /> Working Set
-              </Badge>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}>
-              <Badge variant="outline" className="bg-secondary border-none text-xs gap-2 w-full justify-start">
-                <LinkIcon className="w-4 h-4" /> Superset
               </Badge>
             </motion.div>
 

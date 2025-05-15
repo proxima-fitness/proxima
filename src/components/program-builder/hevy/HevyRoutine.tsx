@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -284,6 +282,70 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
         });
     };
 
+    const getNextSupersetId = (day: THevyRoutine) => {
+        const currentSupersetIds = Array.from(new Set(
+            day.exercises
+                .filter((e) => e.supersets_id !== null)
+                .map((e) => e.supersets_id)
+        )).sort((a, b) => (a || 0) - (b || 0));
+
+        let nextId = 0;
+        for (const currentId of currentSupersetIds) {
+            if (currentId !== nextId) {
+                return nextId;
+            }
+            nextId++;
+        }
+        return nextId;
+    };
+
+    const handleCreateSuperset = (dayId: string, selectedExercises: number[]) => {
+        if (selectedExercises.length < 2) {
+            return;
+        }
+        setHevyProgram((prev) => {
+            return prev.map((routine) => {
+                if (routine.id === dayId) {
+                    const nextSupersetId = getNextSupersetId(routine);
+                    return {
+                        ...routine,
+                        exercises: routine.exercises.map((exercise, index) => {
+                            if (selectedExercises.includes(index)) {
+                                return {
+                                    ...exercise,
+                                    supersets_id: nextSupersetId,
+                                };
+                            }
+                            return exercise;
+                        }),
+                    };
+                }
+                return routine;
+            });
+        });
+    };
+
+    const handleRemoveFromSuperset = (dayId: string, exerciseIndex: number) => {
+        setHevyProgram((prev) => {
+            return prev.map((routine) => {
+                if (routine.id === dayId) {
+                    return {
+                        ...routine,
+                        exercises: routine.exercises.map((exercise, index) => {
+                            if (index === exerciseIndex) {
+                                return {
+                                    ...exercise,
+                                    supersets_id: null,
+                                };
+                            }
+                            return exercise;
+                        }),
+                    };
+                }
+                return routine;
+            });
+        });
+    };
 
     // // Edits an exercise on a workout day
     const handleEditExercise = async (editExercise: THevyDialog) => {
@@ -317,6 +379,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     };
 
     const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>(appendOrderToHevyRoutines(program));
+    console.log(hevyProgram);
     const [focusedCardId, setFocusedCardId] = useState<string>("");
     const numberOfWeeks = getNumberRoutineFolders(hevyProgram);
     const numberOfWeeksArr = Array.from({ length: numberOfWeeks }, (_, i) => i);
@@ -366,6 +429,8 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                                 handleDeleteExercise={ handleDeleteExercise }
                                 focusedCardId={ focusedCardId }
                                 setFocusedCardId={ setFocusedCardId }
+                                handleCreateSuperset={ handleCreateSuperset }
+                                handleRemoveFromSuperset={ handleRemoveFromSuperset }
                             />
                         ) ) }
                     </div>

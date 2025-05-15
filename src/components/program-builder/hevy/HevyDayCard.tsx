@@ -31,11 +31,13 @@ interface IProps {
     handleOpenAddNoteDialog: (addNoteDialog: THevyDialog) => void;
     handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
     handleOpenAddExerciseNoteDialog: (addExerciseNoteDialog: THevyDialog) => void;
-    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;    // handleGenerateDayDialog: (generateDayDialog: TDialog) => void;
+    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;
     handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
     handleIsEditExercise: (isEditExercise: boolean) => void;
     focusedCardId: string;
     setFocusedCardId: (focusedCardId: string) => void;
+    handleCreateSuperset: (dayId: string, selectedExercises: number[]) => void;
+    handleRemoveFromSuperset: (dayId: string, exerciseIndex: number) => void;
 }
 
 export const HevyDayCard: React.FC<IProps> = (props) => {
@@ -57,12 +59,16 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         handleIsEditExercise,
         focusedCardId,
         setFocusedCardId,
+        handleCreateSuperset,
+        handleRemoveFromSuperset,
     } = props;
 
     const [duplicateDayOpen, setDuplicateDayOpen] = useState(false);
     const [editTitleOpen, setEditTitleOpen] = useState(false);
     const [currentTitle, setCurrentTitle] = useState(day.title ?? "");
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [editMode, setEditMode] = useState(false);
+    const [selectedExercises, setSelectedExercises] = useState<number[]>([]);
 
     const handleEdit = (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: THevyExercise ) => {
             handleIsEditExercise(true);
@@ -133,22 +139,27 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         };
     }, [day.id, day.order, focusedCardId, folder_id, handleDeleteDay, handleOpenGenerateDayDialog, handleOpenAddNoteDialog]);
 
-    useEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (focusedCardId === day.id) {
-                if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "a") {
-                    event.preventDefault();
-                }
-            }
-        };
-
-        document.addEventListener("keydown", handleKeyDown);
-        return () => {
-            document.removeEventListener("keydown", handleKeyDown);
-        };
-    }, [day.id, day.order, focusedCardId]);
+    const toggleExerciseSelection = (exerciseIndex: number) => {
+        if (selectedExercises.includes(exerciseIndex)) {
+            setSelectedExercises(selectedExercises.filter((id) => id !== exerciseIndex));
+        } else {
+            setSelectedExercises([...selectedExercises, exerciseIndex]);
+        }
+    };
 
 
+    const createSuperset = () => {
+        if (selectedExercises.length < 2) {
+            return;
+        }
+        handleCreateSuperset(day.id, selectedExercises);
+        setSelectedExercises([]);
+        setEditMode(false);
+    };
+
+    const removeFromSuperset = (exerciseIndex: number) => {
+        handleRemoveFromSuperset(day.id, exerciseIndex);
+    };
 
     return (
         <>
@@ -231,10 +242,6 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                         Add Note
                                         <DropdownMenuShortcut>⌘V</DropdownMenuShortcut>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                        Add Supersets
-                                        <DropdownMenuShortcut>⌘A</DropdownMenuShortcut>
-                                    </DropdownMenuItem>
                                     <DropdownMenuItem onClick={ () => {
                                         handleOpenGenerateDayDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true });
                                         setDropdownOpen(false);
@@ -291,6 +298,10 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                             handleEdit={ handleEdit }
                             handleDeleteExercise={ handleDeleteExercise }
                             handleOpenAddExerciseNoteDialog={ handleOpenAddExerciseNoteDialog }
+                            editMode={editMode}
+                            selectedExercises={selectedExercises}
+                            toggleExerciseSelection={toggleExerciseSelection}
+                            removeFromSuperset={removeFromSuperset}
                         />
                     </div>
                     <div
@@ -301,7 +312,48 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                         <Button variant="ghost" className="mt-1 w-full font-bold uppercase h-12 hover:bg-gray-200 text-black"><PlusIcon />Add Exercise</Button>
                     </div>
                     <div className="flex flex-row justify-between items-center">
-                        <Button variant="ghost" className="mt-1 w-full font-bold bg-lightGray text-lightSecondary uppercase hover:text-lightSecondary hover:bg-gray-200 h-12 border-2 border-lightSecondary"><LinkIcon />Create Superset</Button>
+                        {editMode ? (
+                            <div className="w-full p-4 bg-[#e6f7f9] border-t border-[#33bbcf]">
+                                <div className="flex justify-between items-center mb-2">
+                                    <div className="font-medium flex items-center">
+                                        <LinkIcon className="w-4 h-4 mr-1" />
+                                        Create Superset
+                                    </div>
+                                </div>
+                                <div className="text-sm text-gray-600 mb-3">
+                                    {selectedExercises.length === 0
+                                        ? 'Select exercises to group into a superset'
+                                        : `${selectedExercises.length} exercise${selectedExercises.length !== 1 ? 's' : ''} selected`}
+                                </div>
+                                <div className="flex space-x-3">
+                                    <button
+                                        onClick={createSuperset}
+                                        disabled={selectedExercises.length < 2}
+                                        className={`flex-1 py-2 rounded-md font-medium
+                                            ${selectedExercises.length < 2 ? 'bg-lightSecondary opacity-50 text-white' : 'bg-lightSecondary text-white hover:bg-black'}`}
+                                    >
+                                        Create Superset
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setEditMode(false);
+                                            setSelectedExercises([]);
+                                        }}
+                                        className="flex-1 py-2 rounded-md font-medium border border-gray-300 hover:bg-gray-100"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <Button
+                                variant="ghost"
+                                className="mt-1 w-full font-bold bg-lightGray text-lightSecondary uppercase hover:text-lightSecondary hover:bg-gray-200 h-12 border-2 border-lightSecondary"
+                                onClick={() => setEditMode(true)}
+                            >
+                                <LinkIcon className="mr-2" />Create Superset
+                            </Button>
+                        )}
                     </div>
                 </Card>
             </motion.div>

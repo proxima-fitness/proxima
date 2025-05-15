@@ -1,225 +1,303 @@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { NotebookTextIcon, TimerIcon, Trash2Icon } from "lucide-react";
+import { LinkIcon, NotebookTextIcon, TimerIcon, Trash2Icon, XIcon } from "lucide-react";
 import { HevyExerciseGif } from "./HevyExerciseGif";
+
 interface IProps {
     day: THevyRoutine;
     folder_id: number;
     handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
     handleEdit: (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: THevyExercise) => void;
     handleOpenAddExerciseNoteDialog: (addExerciseNoteDialog: THevyDialog) => void;
+    editMode: boolean;
+    selectedExercises: number[];
+    toggleExerciseSelection: (exerciseIndex: number) => void;
+    removeFromSuperset: (exerciseIndex: number) => void;
 }
 
-export const HevyExerciseVisualizer: React.FC<IProps> =  (props) => {
-
+export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
     const {
         day,
         folder_id,
         handleEdit,
         handleDeleteExercise,
         handleOpenAddExerciseNoteDialog,
+        editMode,
+        selectedExercises,
+        toggleExerciseSelection,
+        removeFromSuperset,
     } = props;
+
+    const editHandler = (folder_id: number, dayOrder: number, i: number, exercise: THevyExercise) => {
+        if (editMode) {
+            return;
+        } else {
+            handleEdit(folder_id, Number(day.order), i, exercise);
+        }
+    }
 
     return (
         <div>
-            { day?.exercises?.map((exercise : THevyExercise, i: number) => (
-                <TooltipProvider key={ "Week" + (Number(folder_id) + 1) + "Day" + i } delayDuration={ 0 }>
-                    <Tooltip>
-                        <TooltipTrigger asChild onClick={ () => handleEdit(folder_id, Number(day.order), i, exercise ) } className="w-full min-h-14 border-gray-200">
-                            <div className="flex flex-row justify-between items-center text-sm border-b-2 py-2">
-                                <div className="flex flex-row gap-2 items-center justify-start max-w-[50%]">
-                                    <div className="text-lightSecondary pr-1 ">
-                                        { /* TODO: Add border-r-[6px] rounded-sm border-[#7900ff]*/}
-                                        <span className="hidden sm:block">{ i + 1}</span>
-                                        <Trash2Icon
-                                            className="block sm:hidden"
-                                            onClick={ (event) => {
-                                                event.stopPropagation();
-                                                handleDeleteExercise(Number(folder_id), Number(day.order), i)
-                                            } }
-                                        />
-                                    </div>
-                                    <HevyExerciseGif thumbnailOrImage={ "thmb" } name={ exercise.title } resolution={ "180" } file_type={ 'jpg' } />
-                                    <div className="flex flex-row items-center justify-between">
-                                        <div className="">
-                                            { exercise.title }
-                                        </div>
-                                        { exercise.notes && (
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <NotebookTextIcon  className="h-4"/>
-                                            </TooltipTrigger>
-                                            <TooltipContent className="bg-lightSecondary text-white">
-                                                { exercise.notes }
-                                                </TooltipContent>
-                                            </Tooltip>
+            {day?.exercises?.map((exercise: THevyExercise, i: number) => {
+                // const isFirstInSuperset = exercise.supersets_id !== null &&
+                //     day.exercises.findIndex(e => e.supersets_id === exercise.supersets_id) === i;
+                // const isLastInSuperset = exercise.supersets_id !== null &&
+                //     day.exercises.findIndex((e, idx) => e.supersets_id === exercise.supersets_id && idx > i) === -1;
+                const isSelected = selectedExercises.includes(i);
+
+                return (
+                    <TooltipProvider key={"Week" + (Number(folder_id) + 1) + "Day" + i} delayDuration={0}>
+                        <Tooltip>
+                            <TooltipTrigger asChild onClick={() => editHandler(Number(folder_id), Number(day.order), i, exercise)} className={`w-full min-h-14 border-gray-200 cursor-pointer ${isSelected ? 'bg-lightSecondary text-white' : ''}`}>
+                                    <div>
+                                        {exercise.supersets_id !== null && exercise.supersets_id !== undefined && !editMode && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    removeFromSuperset(i);
+                                                }}
+                                                className="text-black w-full pt-2 hover:text-red-500"
+                                                title="Remove from superset"
+                                            >
+                                                <span className="flex flex-row justify-between items-center w-full">
+                                                    <XIcon className="w-4 h-4" />
+                                                    <span className="text-sm flex flex-row items-center gap-2"> <LinkIcon className="w-4 h-4" /> Superset {exercise.supersets_id + 1}</span>
+                                                </span>
+                                            </button>
                                         )}
-                                    </div>
-                                </div>
-                                <div className="text-center flex flex-row items-center justify-end max-w-[50%] w-[50%]">
-                                    <div className="min-w-[33%] flex flex-col justify-center items-center">
-                                        { exercise.sets.length }
-                                    </div>
-                                    <div className="min-w-[33%] flex flex-col justify-center items-center">
-                                        { exercise.sets[0] && exercise.sets[0].reps !== null && exercise.sets[0].reps > 0 && (
-                                        (exercise.sets.every((reps, i, arr) => reps.reps === arr[0].reps) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type) )? (
-                                            <div className="flex flex-row">
-                                                {exercise.sets[0].reps}
-                                                {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 &&
+                                        { exercise.supersets_id !== null && exercise.supersets_id !== undefined && editMode && (
+                                                <span className="flex flex-row justify-end items-center w-full pt-2">
+                                                <span className="text-sm flex flex-row items-center gap-2"> <LinkIcon className="w-4 h-4" /> Superset {exercise.supersets_id + 1}</span>
+                                            </span>
+                                        ) }
+                                <div className={`flex flex-row justify-between items-center text-sm border-b-2 ${exercise.supersets_id && !editMode ? 'pb-2' : 'py-2'}  relative`}>
+                                    {/* Superset indicator */}
+                                    {/* {exercise.supersets_id && !isLastInSuperset && (
+                                        <div className="absolute left-5 top-full w-0.5 bg-blue-400 h-4 z-10"></div>
+                                    )} */}
+                                    {/* {isFirstInSuperset && (
+                                        <div className="flex items-center px-5 pt-2 text-sm text-blue-600">
+                                            <span>{exercise.supersets_id}</span>
+                                        </div>
+                                    )} */}
+                                    <div className="flex flex-row gap-2 items-center justify-start max-w-[50%]">
+                                        <div className="text-lightSecondary pr-1">
+                                            {editMode ? (
+                                                <div className="">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isSelected}
+                                                        onChange={() => toggleExerciseSelection(i)}
+                                                        className="w-4 h-4 accent-white"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <span className="hidden sm:block">{i + 1}</span>
+                                            )}
+                                            <Trash2Icon
+                                                className="block sm:hidden"
+                                                onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    handleDeleteExercise(Number(folder_id), Number(day.order), i);
+                                                }}
+                                            />
+                                        </div>
+                                        <HevyExerciseGif thumbnailOrImage={"thmb"} name={exercise.title} resolution={"180"} file_type={'jpg'} />
+                                        <div className="flex flex-row items-center justify-between">
+                                            <div className="">
+                                                {exercise.title}
+                                            </div>
+                                            {exercise.notes && (
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <TimerIcon className="h-4" />
+                                                        <NotebookTextIcon className="h-4" />
                                                     </TooltipTrigger>
                                                     <TooltipContent className="bg-lightSecondary text-white">
-                                                        {exercise.rest_seconds} s
+                                                        {exercise.notes}
                                                     </TooltipContent>
                                                 </Tooltip>
-                                                }
-                                            </div>
-                                        ) : (
-                                            exercise.sets.map((set, index) => (
-                                                <div key={ index } className={ `flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>
-                                                    { set.reps }
-                                                    {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 &&
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <TimerIcon className="h-4" />
-                                                        </TooltipTrigger>
-                                                        <TooltipContent className="bg-lightSecondary text-white">
-                                                            {exercise.rest_seconds} s
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                }
-                                                </div>
-                                            ))
-                                        )
-                                    )}
-                                        { exercise.sets[0] && exercise.sets[0].distance_meters !== null && exercise.sets[0].distance_meters > 0 && (
-                                        (exercise.sets.every((reps, i, arr) => reps.distance_meters === arr[0].distance_meters) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type) )? (
-                                            <div className="flex flex-row">{exercise.sets[0].distance_meters} m
-                                                {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 &&
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <TimerIcon className="h-4" />
-                                                </TooltipTrigger>
-                                                <TooltipContent className="bg-lightSecondary text-white">
-                                                    {exercise.rest_seconds} s
-                                                </TooltipContent>
-                                            </Tooltip>
-                                            }</div>
-                                        ) : (
-                                            exercise.sets.map((set, index) => (
-                                                <div key={ index } className={ `flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>
-                                                    { set.distance_meters } m
-                                                    {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 &&
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <TimerIcon className="h-4" />
-                                                        </TooltipTrigger>
-                                                        <TooltipContent className="bg-lightSecondary text-white">
-                                                            {exercise.rest_seconds} s
-                                                        </TooltipContent>
-                                                    </Tooltip> }
-                                                </div>
-                                            ))
-                                        )
-                                    )}
-                                        { exercise.sets[0] && exercise.sets[0].duration_seconds !== null && exercise.sets[0].duration_seconds > 0 && (
-                                        (exercise.sets.every((reps, i, arr) => reps.duration_seconds === arr[0].duration_seconds) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type) )? (
-                                            <div className="flex flex-row">{exercise.sets[0].duration_seconds} s
-                                            {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 &&
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <TimerIcon className="h-4" />
-                                                </TooltipTrigger>
-                                                <TooltipContent className="bg-lightSecondary text-white">
-                                                    {exercise.rest_seconds} s
-                                                </TooltipContent>
-                                            </Tooltip>
-                                            }</div>
-                                        ) : (
-                                            exercise.sets.map((set, index) => (
-                                                <div key={ index } className={ `flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>
-                                                    { set.duration_seconds } s
-                                                    {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 &&
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <TimerIcon className="h-4" />
-                                                        </TooltipTrigger>
-                                                        <TooltipContent className="bg-lightSecondary text-white">
-                                                            {exercise.rest_seconds} s
-                                                        </TooltipContent>
-                                                    </Tooltip> }
-                                                </div>
-                                            ))
-                                        )
-                                    )}
-                                        { exercise.sets[0] && exercise.sets[0].custom_metric !== null && exercise.sets[0].custom_metric > 0 && (
-                                        (exercise.sets.every((reps, i, arr) => reps.custom_metric === arr[0].custom_metric) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type) )? (
-                                            <div className="flex flex-row">{exercise.sets[0].custom_metric} {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 &&
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <TimerIcon className="h-4" />
-                                                    </TooltipTrigger>
-                                                    <TooltipContent className="bg-lightSecondary text-white">
-                                                        {exercise.rest_seconds} s
-                                                    </TooltipContent>
-                                                </Tooltip> }</div>
-                                        ) : (
-                                            exercise.sets.map((set, index) => (
-                                                <div key={ index } className={ `flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>
-                                                    { set.custom_metric }
-                                                    {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 &&
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <TimerIcon className="h-4" />
-                                                        </TooltipTrigger>
-                                                        <TooltipContent className="bg-lightSecondary text-white">
-                                                            {exercise.rest_seconds} s
-                                                        </TooltipContent>
-                                                    </Tooltip> }
-                                                </div>
-                                            ))
-                                        )
-                                    )}
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="min-w-[33%] flex flex-col justify-center items-center h-full">
-                                        { exercise.sets[0] && exercise.sets[0].weight_kg !== null && exercise.sets[0].weight_kg > 0 && (
-                                        exercise.sets.every((intensity, i, arr) => intensity.weight_kg === arr[0].weight_kg) ? (
-                                            <div>{exercise.sets[0].weight_kg} kg</div>
-                                        ) : (
-                                            exercise.sets.map((set, index) => (
-                                                <div key={ index } className={ `${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>{ set.weight_kg } kg</div>
-                                            ))
-                                        )
-                                    )}
-                                        { exercise.sets[0] && exercise.sets[0].rpe !== null && exercise.sets[0].rpe > 0 && (
-                                        exercise.sets.every((intensity, i, arr) => intensity.rpe === arr[0].rpe) ? (
-                                            <div>{exercise.sets[0].rpe} RPE</div>
-                                        ) : (
-                                            exercise.sets.map((set, index) => (
-                                                <div key={ index } className={ `${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>{ set.rpe } RPE</div>
-                                            ))
-                                        )
-                                    )}
+                                    <div className="text-center flex flex-row items-center justify-end max-w-[50%] w-[50%]">
+                                        <div className="min-w-[33%] flex flex-col justify-center items-center">
+                                            {exercise.sets.length}
+                                        </div>
+                                        <div className="min-w-[33%] flex flex-col justify-center items-center">
+                                            {exercise.sets[0] && exercise.sets[0].reps !== null && exercise.sets[0].reps > 0 && (
+                                                (exercise.sets.every((reps, i, arr) => reps.reps === arr[0].reps) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type)) ? (
+                                                    <div className="flex flex-row">
+                                                        {exercise.sets[0].reps}
+                                                        {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 && (
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <TimerIcon className="h-4" />
+                                                                </TooltipTrigger>
+                                                                <TooltipContent className="bg-lightSecondary text-white">
+                                                                    {exercise.rest_seconds} s
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    exercise.sets.map((set, index) => (
+                                                        <div key={index} className={`flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
+                                                            {set.reps}
+                                                            {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 && (
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <TimerIcon className="h-4" />
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent className="bg-lightSecondary text-white">
+                                                                        {exercise.rest_seconds} s
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            )}
+                                                        </div>
+                                                    ))
+                                                )
+                                            )}
+                                            {exercise.sets[0] && exercise.sets[0].distance_meters !== null && exercise.sets[0].distance_meters > 0 && (
+                                                (exercise.sets.every((reps, i, arr) => reps.distance_meters === arr[0].distance_meters) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type)) ? (
+                                                    <div className="flex flex-row">{exercise.sets[0].distance_meters} m
+                                                        {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 && (
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <TimerIcon className="h-4" />
+                                                                </TooltipTrigger>
+                                                                <TooltipContent className="bg-lightSecondary text-white">
+                                                                    {exercise.rest_seconds} s
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    exercise.sets.map((set, index) => (
+                                                        <div key={index} className={`flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
+                                                            {set.distance_meters} m
+                                                            {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 && (
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <TimerIcon className="h-4" />
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent className="bg-lightSecondary text-white">
+                                                                        {exercise.rest_seconds} s
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            )}
+                                                        </div>
+                                                    ))
+                                                )
+                                            )}
+                                            {exercise.sets[0] && exercise.sets[0].duration_seconds !== null && exercise.sets[0].duration_seconds > 0 && (
+                                                (exercise.sets.every((reps, i, arr) => reps.duration_seconds === arr[0].duration_seconds) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type)) ? (
+                                                    <div className="flex flex-row">{exercise.sets[0].duration_seconds} s
+                                                        {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 && (
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <TimerIcon className="h-4" />
+                                                                </TooltipTrigger>
+                                                                <TooltipContent className="bg-lightSecondary text-white">
+                                                                    {exercise.rest_seconds} s
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    exercise.sets.map((set, index) => (
+                                                        <div key={index} className={`flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
+                                                            {set.duration_seconds} s
+                                                            {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 && (
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <TimerIcon className="h-4" />
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent className="bg-lightSecondary text-white">
+                                                                        {exercise.rest_seconds} s
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            )}
+                                                        </div>
+                                                    ))
+                                                )
+                                            )}
+                                            {exercise.sets[0] && exercise.sets[0].custom_metric !== null && exercise.sets[0].custom_metric > 0 && (
+                                                (exercise.sets.every((reps, i, arr) => reps.custom_metric === arr[0].custom_metric) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type)) ? (
+                                                    <div className="flex flex-row">{exercise.sets[0].custom_metric}
+                                                        {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 && (
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <TimerIcon className="h-4" />
+                                                                </TooltipTrigger>
+                                                                <TooltipContent className="bg-lightSecondary text-white">
+                                                                    {exercise.rest_seconds} s
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    exercise.sets.map((set, index) => (
+                                                        <div key={index} className={`flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
+                                                            {set.custom_metric}
+                                                            {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 && (
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <TimerIcon className="h-4" />
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent className="bg-lightSecondary text-white">
+                                                                        {exercise.rest_seconds} s
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            )}
+                                                        </div>
+                                                    ))
+                                                )
+                                            )}
+                                        </div>
+                                        <div className="min-w-[33%] flex flex-col justify-center items-center h-full">
+                                            {exercise.sets[0] && exercise.sets[0].weight_kg !== null && exercise.sets[0].weight_kg > 0 && (
+                                                exercise.sets.every((intensity, i, arr) => intensity.weight_kg === arr[0].weight_kg) ? (
+                                                    <div>{exercise.sets[0].weight_kg} kg</div>
+                                                ) : (
+                                                    exercise.sets.map((set, index) => (
+                                                        <div key={index} className={`${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
+                                                            {set.weight_kg} kg
+                                                        </div>
+                                                    ))
+                                                )
+                                            )}
+                                            {exercise.sets[0] && exercise.sets[0].rpe !== null && exercise.sets[0].rpe > 0 && (
+                                                exercise.sets.every((intensity, i, arr) => intensity.rpe === arr[0].rpe) ? (
+                                                    <div>{exercise.sets[0].rpe} RPE</div>
+                                                ) : (
+                                                    exercise.sets.map((set, index) => (
+                                                        <div key={index} className={`${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
+                                                            {set.rpe} RPE
+                                                        </div>
+                                                    ))
+                                                )
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </TooltipTrigger>
-                        <TooltipContent side="right" className="bg-lightSecondary text-white flex flex-row gap-2">
-                            <NotebookTextIcon
-                                className="cursor-pointer"
-                                    onClick={ () => handleOpenAddExerciseNoteDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), exerciseIndex: i, isOpen: true}) }
-                            />
-
-                            <Trash2Icon
-                                className="cursor-pointer"
-                                onClick={ () => {
-                                    handleDeleteExercise(Number(folder_id), Number(day.order), i);
-                                } } />
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-        ))}
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="bg-lightSecondary text-white flex flex-row gap-2">
+                                <NotebookTextIcon
+                                    className="cursor-pointer"
+                                    onClick={() => handleOpenAddExerciseNoteDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), exerciseIndex: i, isOpen: true})}
+                                />
+                                <Trash2Icon
+                                    className="cursor-pointer"
+                                    onClick={() => {
+                                        handleDeleteExercise(Number(folder_id), Number(day.order), i);
+                                    }}
+                                />
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                );
+            })}
         </div>
     );
 };
