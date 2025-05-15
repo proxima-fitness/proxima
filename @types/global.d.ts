@@ -68,6 +68,7 @@ type TTextToJsonResponse = {
                 rpe: number;
             }[];
             title: string;
+            supersets_id: number | null;
         }[];
     }[];
 }

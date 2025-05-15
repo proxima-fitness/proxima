@@ -193,6 +193,7 @@ export const replaceTextToJsonExercisesHevy = (exercises: {
         rpe: number;
     }[];
     title: string;
+    supersets_id: number | null;
     }[],
     hevyExercises: THevyExerciseTemplate[],
     excludeAreas: string,
@@ -263,7 +264,7 @@ export const replaceTextToJsonExercisesHevy = (exercises: {
                     notes: "",
                     exercise_template_id: match?.id ?? "",
                     rest_seconds: null,
-                    supersets_id: null,
+                    supersets_id: exercise?.supersets_id ?? null,
                     sets: Array.from({length: exercise.sets.length}, (_, setIndex) => ({
                         index: setIndex,
                         type: exercise?.sets[setIndex]?.type ?? "normal",
