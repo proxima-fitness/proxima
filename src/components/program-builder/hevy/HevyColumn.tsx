@@ -27,6 +27,8 @@ interface IProps {
     handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
     focusedCardId: string;
     setFocusedCardId: (focusedCardId: string) => void;
+    handleCreateSuperset: (dayId: string, selectedExercises: number[]) => void;
+    handleRemoveFromSuperset: (dayId: string, exerciseIndex: number) => void;
 }
 
 export const HevyColumn: React.FC<IProps> = (props) => {
@@ -50,6 +52,8 @@ export const HevyColumn: React.FC<IProps> = (props) => {
         handleDeleteExercise,
         focusedCardId,
         setFocusedCardId,
+        handleCreateSuperset,
+        handleRemoveFromSuperset,
     } = props;
 
     const [active, setActive] = useState(false);
@@ -226,8 +230,11 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                             handleDeleteExercise={ handleDeleteExercise }
                             focusedCardId={ focusedCardId }
                             setFocusedCardId={ setFocusedCardId }
+                            handleCreateSuperset={ handleCreateSuperset }
+                            handleRemoveFromSuperset={ handleRemoveFromSuperset }
                         />
-                ); } ) }
+                    );
+                })}
                 <DropIndicator beforeId={ null } weekOrder={ String(folder_id) } />
                 <div className="flex flex-row justify-center items-center">
                     <Button

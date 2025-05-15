@@ -31,11 +31,13 @@ interface IProps {
     handleOpenAddNoteDialog: (addNoteDialog: THevyDialog) => void;
     handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
     handleOpenAddExerciseNoteDialog: (addExerciseNoteDialog: THevyDialog) => void;
-    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;    // handleGenerateDayDialog: (generateDayDialog: TDialog) => void;
+    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;
     handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
     handleIsEditExercise: (isEditExercise: boolean) => void;
     focusedCardId: string;
     setFocusedCardId: (focusedCardId: string) => void;
+    handleCreateSuperset: (dayId: string, selectedExercises: number[]) => void;
+    handleRemoveFromSuperset: (dayId: string, exerciseIndex: number) => void;
 }
 
 export const HevyDayCard: React.FC<IProps> = (props) => {
@@ -57,6 +59,8 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         handleIsEditExercise,
         focusedCardId,
         setFocusedCardId,
+        handleCreateSuperset,
+        handleRemoveFromSuperset,
     } = props;
 
     const [duplicateDayOpen, setDuplicateDayOpen] = useState(false);
@@ -143,53 +147,18 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         }
     };
 
-    const getNextSupersetId = () => {
-        const currentSupersetIds = Array.from(new Set(
-            day.exercises
-                .filter((e) => e.supersets_id !== null)
-                .map((e) => e.supersets_id)
-        )).sort((a, b) => (a || 0) - (b || 0));
-
-        let nextId = 0;
-        for (const currentId of currentSupersetIds) {
-            if (currentId !== nextId) {
-                return nextId;
-            }
-            nextId++;
-        }
-        return nextId;
-    };
 
     const createSuperset = () => {
         if (selectedExercises.length < 2) {
             return;
         }
-        const nextSupersetId = getNextSupersetId();
-        day.exercises = day.exercises.map((exercise, index) => {
-            if (selectedExercises.includes(index)) {
-                return {
-                    ...exercise,
-                    supersets_id: nextSupersetId,
-                };
-            }
-            return exercise;
-        });
-        handleEditTitle(day.id, day.title);
+        handleCreateSuperset(day.id, selectedExercises);
         setSelectedExercises([]);
         setEditMode(false);
     };
 
     const removeFromSuperset = (exerciseIndex: number) => {
-        day.exercises = day.exercises.map((exercise, index) => {
-            if (index === exerciseIndex) {
-                return {
-                    ...exercise,
-                    supersets_id: null,
-                };
-            }
-            return exercise;
-        });
-        handleEditTitle(day.id, day.title);
+        handleRemoveFromSuperset(day.id, exerciseIndex);
     };
 
     return (
