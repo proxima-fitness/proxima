@@ -52,7 +52,7 @@ export default function RootLayout({
     return (
         <html lang="en" className={ `${exo.className} ${russo_one.className} ${inter.className}` }>
             <head>
-                <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+                <link rel="icon" href="/favicon.ico" type="image/x-icon" />
                 <meta name="theme-color" content="#000000" />
             </head>
             <body>
