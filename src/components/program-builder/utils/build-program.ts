@@ -1,7 +1,7 @@
 import { postTextToJson } from "@/api/edge-functions";
 import { getExercises } from "@/api/exercises";
 import { toast } from "sonner";
-import { replaceTextToJsonExercises } from "./format-responses";
+import { replaceTextToJsonExercises } from "./scoring-system";
 import { fallbackCBLSA, fallbackOneDay, fallbackPPL, fallbackSevenDay, fallbackUpperLower } from "@/assets/constants";
 
 export const buildPrompt = (

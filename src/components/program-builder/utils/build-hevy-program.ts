@@ -1,6 +1,6 @@
 import { getHevyExercises } from "@/components/program-builder/api/hevy";
 import { fallbackCBLSA, fallbackOneDay, fallbackPPL, fallbackSevenDay, fallbackUpperLower } from "@/assets/constants";
-import { replaceTextToJsonExercisesHevy } from "./format-responses";
+import { replaceTextToJsonExercisesHevy } from "./scoring-system";
 
 // Returns a default program if the AI failed
 export const buildHevyFallbackProgram = async (programLength: number, numberOfDaysPerWeek: number) => {
@@ -43,6 +43,7 @@ export const buildHevyFallbackProgram = async (programLength: number, numberOfDa
 
 export const buildHevyProgram = async (parsedResponse: TTextToJsonResponse, programLength: number, numberOfDaysPerWeek: number, excludeAreas: string, excludeEquipment: string, healthIssues: string) => {
 
+    console.log("parsedResponse", parsedResponse);
     if (programLength === 0) {
         programLength = 12;
     }
