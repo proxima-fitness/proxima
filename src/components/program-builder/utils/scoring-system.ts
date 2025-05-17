@@ -16,7 +16,7 @@ const MODIFIERS = [
   // Equipment
   "barbell", "dumbbell", "machine", "kettlebell", "band", "cable", "smith", "trap bar", "bodyweight",
   // Form/Technique
-  "sumo", "bulgarian", "preacher", "romanian", "incline", "decline", "goblet", "front", "rear", "seated", "lying", "standing", "single", "split", "kipping", "pendlay",
+  "sumo", "bulgarian", "preacher", "romanian", "incline", "decline", "goblet", "front", "rear", "seated", "lying", "standing", "single", "split", "kipping", "pendlay", "lateral",
   // Grip/Width
   "wide", "narrow", "neutral", "overhand", "underhand", "neutral grip", "diamond"
 ];
@@ -60,7 +60,7 @@ const MODIFIER_WEIGHTS = {
 
   const categorizeModifier = (mod: string): keyof typeof MODIFIER_WEIGHTS => {
     const m = mod.toLowerCase();
-    if (["sumo", "bulgarian", "preacher", "romanian", "incline", "decline", "goblet", "front", "rear", "seated", "lying", "standing", "single", "split", "kipping", "pendlay"].includes(m)) return "form";
+    if (["sumo", "bulgarian", "preacher", "romanian", "incline", "decline", "goblet", "front", "rear", "seated", "lying", "standing", "single", "split", "kipping", "pendlay", "lateral"].includes(m)) return "form";
     if (["barbell", "dumbbell", "machine", "kettlebell", "band", "cable", "smith", "trap bar", "bodyweight"].includes(m)) return "equipment";
     if (["wide", "narrow", "neutral", "overhand", "underhand", "neutral grip", "diamond"].includes(m)) return "grip";
     return "default";
