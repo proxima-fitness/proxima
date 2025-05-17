@@ -233,7 +233,7 @@ export const Column: React.FC<IProps> = (props) => {
                 <div className="flex flex-row justify-center items-center">
                     <Button
                         onClick={ () => handleAddDay(weekOrder) }
-                        className="mb-4 w-44 font-bold uppercase h-12 rounded-lg bg-lightSecondary hover:bg-lightSecondary text-white">
+                        className="mb-4 w-44 font-bold uppercase h-12 rounded-lg bg-lightSecondary hover:bg-black text-white">
                         <PlusIcon />
                         Add Day
                     </Button>
