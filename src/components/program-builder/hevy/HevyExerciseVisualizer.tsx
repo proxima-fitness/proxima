@@ -27,9 +27,10 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
         removeFromSuperset,
     } = props;
 
-    const editHandler = (folder_id: number, dayOrder: number, i: number, exercise: THevyExercise) => {
+    const editHandler = (e: React.MouseEvent<HTMLButtonElement>, folder_id: number, dayOrder: number, i: number, exercise: THevyExercise) => {
         if (editMode) {
-            return;
+            e.stopPropagation();
+            toggleExerciseSelection(i);
         } else {
             handleEdit(folder_id, Number(day.order), i, exercise);
         }
@@ -38,16 +39,12 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
     return (
         <div>
             {day?.exercises?.map((exercise: THevyExercise, i: number) => {
-                // const isFirstInSuperset = exercise.supersets_id !== null &&
-                //     day.exercises.findIndex(e => e.supersets_id === exercise.supersets_id) === i;
-                // const isLastInSuperset = exercise.supersets_id !== null &&
-                //     day.exercises.findIndex((e, idx) => e.supersets_id === exercise.supersets_id && idx > i) === -1;
                 const isSelected = selectedExercises.includes(i);
 
                 return (
                     <TooltipProvider key={"Week" + (Number(folder_id) + 1) + "Day" + i} delayDuration={0}>
                         <Tooltip>
-                            <TooltipTrigger asChild onClick={() => editHandler(Number(folder_id), Number(day.order), i, exercise)} className={`w-full min-h-14 border-gray-200 cursor-pointer ${isSelected ? 'bg-lightSecondary text-white' : ''}`}>
+                            <TooltipTrigger asChild onClick={(e) => editHandler(e, Number(folder_id), Number(day.order), i, exercise)} className={`w-full min-h-14 border-gray-200 cursor-pointer ${isSelected ? 'bg-lightSecondary text-white' : ''}`}>
                                     <div>
                                         {exercise.supersets_id !== null && exercise.supersets_id !== undefined && !editMode && (
                                             <button
@@ -70,25 +67,15 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             </span>
                                         ) }
                                 <div className={`flex flex-row justify-between items-center text-sm border-b-2 ${exercise.supersets_id && !editMode ? 'pb-2' : 'py-2'}  relative`}>
-                                    {/* Superset indicator */}
-                                    {/* {exercise.supersets_id && !isLastInSuperset && (
-                                        <div className="absolute left-5 top-full w-0.5 bg-blue-400 h-4 z-10"></div>
-                                    )} */}
-                                    {/* {isFirstInSuperset && (
-                                        <div className="flex items-center px-5 pt-2 text-sm text-blue-600">
-                                            <span>{exercise.supersets_id}</span>
-                                        </div>
-                                    )} */}
                                     <div className="flex flex-row gap-2 items-center justify-start max-w-[50%]">
                                         <div className="text-lightSecondary pr-1">
                                             {editMode ? (
-                                                <div className="">
+                                                <div className="" onClick={(e) => e.stopPropagation()}>
                                                     <input
                                                         type="checkbox"
                                                         checked={isSelected}
                                                         onChange={() => toggleExerciseSelection(i)}
                                                         className="w-4 h-4 accent-white"
-                                                        onClick={(e) => e.stopPropagation()}
                                                     />
                                                 </div>
                                             ) : (
