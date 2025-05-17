@@ -3,6 +3,9 @@ import Fuse, { FuseResult } from "fuse.js";
 
 export const bestMatch = (exercises: FuseResult<THevyExerciseTemplate>[], title: string) => {
     const parsedTitle = parseExerciseTitle(title);
+    exercises.forEach(exercise => {
+        console.log("exercise:", exercise.item.normalized_title, "score:", nlpScore(parsedTitle, parseExerciseTitle(exercise.item.normalized_title)));
+    });
     const bestMatch = exercises.reduce((best, current) => {
         return nlpScore(parsedTitle, parseExerciseTitle(current.item.normalized_title)) > nlpScore(parsedTitle, parseExerciseTitle(best.item.normalized_title)) ? current : best;
     }, exercises[0]);
@@ -10,27 +13,50 @@ export const bestMatch = (exercises: FuseResult<THevyExerciseTemplate>[], title:
 }
 
 const BASE_MOVEMENTS = [
-  "squat", "press", "row", "curl", "deadlift", "lunge", "lunges", "extension", "raise", "fly", "pull", "push", "crunch", "plank", "dip", "dips", "shrug", "up"
+  "squat", "squats", "press", "presses", "row", "rows", "curl", "curls", "deadlift", "deadlifts", "lunge", "lunges", "extension", "extensions", "raise", "raises", "fly", "flies", "pull", "pulls", "push", "pushes", "crunch", "crunches", "plank", "planks", "dip", "dips", "shrug", "shrugs", "up", "ups",
+  "pull up", "pull ups", "push up", "push ups", "plank", "planks", "twist", "twists"
 ];
 const MODIFIERS = [
   // Equipment
   "barbell", "dumbbell", "machine", "kettlebell", "band", "cable", "smith", "trap bar", "bodyweight",
   // Form/Technique
-  "sumo", "bulgarian", "preacher", "romanian", "incline", "decline", "goblet", "front", "rear", "seated", "lying", "standing", "single", "split", "kipping", "pendlay", "lateral",
+  "assisted","romanian","bulgarian","russian","negative", "sumo", "preacher", "romanian", "incline", "decline", "goblet", "front", "rear", "seated", "lying", "standing", "single", "split", "kipping", "pendlay", "lateral",
   // Grip/Width
-  "wide", "narrow", "neutral", "overhand", "underhand", "neutral grip", "diamond"
+  "wide", "narrow", "neutral", "overhand", "underhand", "neutral grip", "diamond",
+    //Muscle
+    "tricep", "triceps", "bicep", "biceps", "chest", "shoulder", "shoulders", "back", "legs", "quads", "hamstrings", "calves", "abs", "core",
 ];
 
 export const parseExerciseTitle = (title: string): { base: string, modifiers: string[] } => {
-  // Remove parentheses and tokenize
-  const tokens = title.replace(/[()-]/g, " ").toLowerCase().split(/\s+/);
+  // First normalize hyphenated exercises
+  const normalizedTitle = title
+    .replace(/push-up/gi, "push up")
+    .replace(/pull-up/gi, "pull up")
+    .replace(/[()]/g, " ")
+    .toLowerCase();
+
+  // Then tokenize
+  const tokens = normalizedTitle.split(/\s+/);
 
   let base = "";
   const modifiers: string[] = [];
 
+  // Helper function to check if a token is a base movement (including plural forms)
+  const isBaseMovement = (token: string) => {
+    return BASE_MOVEMENTS.some(movement => {
+      // Check exact match
+      if (movement === token) return true;
+      // Check if one is plural of the other
+      if (movement.endsWith('s') && movement.slice(0, -1) === token) return true;
+      if (token.endsWith('s') && token.slice(0, -1) === movement) return true;
+      return false;
+    });
+  };
+
   for (const token of tokens) {
-    if (BASE_MOVEMENTS.includes(token)) {
-      base = token;
+    if (isBaseMovement(token)) {
+      // Store the singular form if it's a plural
+      base = token.endsWith('s') ? token.slice(0, -1) : token;
     } else if (MODIFIERS.includes(token)) {
       modifiers.push(token);
     } else {
@@ -55,52 +81,54 @@ const MODIFIER_WEIGHTS = {
     form: { missing: -5, match: 3 },
     equipment: { missing: -3, match: 2 },
     grip: { missing: -2, match: 2 },
+    muscle: { missing: -8, match: 5 },  // New category for muscle groups
     default: { missing: -2, match: 2 }
-  };
+};
 
-  const categorizeModifier = (mod: string): keyof typeof MODIFIER_WEIGHTS => {
+const categorizeModifier = (mod: string): keyof typeof MODIFIER_WEIGHTS => {
     const m = mod.toLowerCase();
-    if (["sumo", "bulgarian", "preacher", "romanian", "incline", "decline", "goblet", "front", "rear", "seated", "lying", "standing", "single", "split", "kipping", "pendlay", "lateral"].includes(m)) return "form";
+    if (["negative", "sumo", "bulgarian", "preacher", "romanian", "incline", "decline", "goblet", "front", "rear", "seated", "lying", "standing", "single", "split", "kipping", "pendlay", "lateral", "russian", "romanian", "bulgarian"].includes(m)) return "form";
     if (["barbell", "dumbbell", "machine", "kettlebell", "band", "cable", "smith", "trap bar", "bodyweight"].includes(m)) return "equipment";
     if (["wide", "narrow", "neutral", "overhand", "underhand", "neutral grip", "diamond"].includes(m)) return "grip";
+    if (["tricep", "triceps", "bicep", "biceps", "chest", "shoulder", "shoulders", "back", "legs", "quads", "hamstrings", "calves", "abs", "core"].includes(m)) return "muscle";
     return "default";
-  }
+}
 
-  /**
-   * Scores the similarity between two parsed exercise objects (with base and modifiers)
-   * @param llmParsed { base: string, modifiers: string[] }
-   * @param dbParsed { base: string, modifiers: string[] }
-   * @returns {number} score
-   */
-  export const nlpScore = (
-    llmParsed: { base: string, modifiers: string[] },
-    dbParsed: { base: string, modifiers: string[] }
-  ): number => {
-    let score = 0;
-    if (llmParsed.base === dbParsed.base) score += 10;
+/**
+ * Scores the similarity between two parsed exercise objects (with base and modifiers)
+ * @param llmParsed { base: string, modifiers: string[] }
+ * @param dbParsed { base: string, modifiers: string[] }
+ * @returns {number} score
+ */
+export const nlpScore = (
+  llmParsed: { base: string, modifiers: string[] },
+  dbParsed: { base: string, modifiers: string[] }
+): number => {
+  let score = 0;
+  if (llmParsed.base === dbParsed.base) score += 25;
 
-    for (const dbMod of dbParsed.modifiers) {
+  for (const dbMod of dbParsed.modifiers) {
       const category = categorizeModifier(dbMod);
       const weights = MODIFIER_WEIGHTS[category];
       if (llmParsed.modifiers.includes(dbMod)) {
-        score += weights.match;
+          score += weights.match;
       } else {
-        score += weights.missing;
+          score += weights.missing;
       }
-    }
-
-    // Extra credit if both LLM and DB are minimal/generic
-    if (llmParsed.modifiers.length === 0 && dbParsed.modifiers.length === 0) score += 2;
-
-    return score;
   }
+
+  // Extra credit if both LLM and DB are minimal/generic
+  if (llmParsed.modifiers.length === 0 && dbParsed.modifiers.length === 0) score += 2;
+
+  return score;
+}
 
 
 export const normalizeExerciseTitle = (title: string): string => {
     return title
     .toLowerCase()
     .replace(/[()]/g, '')
-    .split(/[\s-]+/)
+    .split(/\s+/)  // Only split on spaces, preserve hyphens
     .sort()
     .join(' ');
 };
@@ -128,7 +156,7 @@ export const replaceTextToJsonExercisesHevy = (exercises: {
         includeScore: false,
         minMatchCharLength: 2,
         shouldSort: true,
-        threshold: 0.5,
+        threshold: 0.7,  // Increased threshold to be less strict
         keys: [
             "normalized_title",
         ],
@@ -174,7 +202,7 @@ export const replaceTextToJsonExercisesHevy = (exercises: {
 
     if (exercises && exercises.length > 0) {
         updatedExercises = exercises.flatMap((exercise, index) => {
-            const fuseResults = fuse && fuse?.search(normalizeExerciseTitle(exercise?.title ?? ""), { limit : 5});
+            const fuseResults = fuse && fuse?.search(normalizeExerciseTitle(exercise?.title ?? ""), { limit : 10});
             const match = fuseResults?.[0]?.item;
             const selectedMatch = bestMatch(fuseResults, exercise?.title ?? "");
 
