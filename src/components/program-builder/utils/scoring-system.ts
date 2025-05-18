@@ -3,9 +3,6 @@ import Fuse, { FuseResult } from "fuse.js";
 
 export const bestMatch = (exercises: FuseResult<THevyExerciseTemplate>[], title: string) => {
     const parsedTitle = parseExerciseTitle(title);
-    exercises.forEach(exercise => {
-        console.log("exercise:", exercise.item.normalized_title, "score:", nlpScore(parsedTitle, parseExerciseTitle(exercise.item.normalized_title)));
-    });
     const bestMatch = exercises.reduce((best, current) => {
         return nlpScore(parsedTitle, parseExerciseTitle(current.item.normalized_title)) > nlpScore(parsedTitle, parseExerciseTitle(best.item.normalized_title)) ? current : best;
     }, exercises[0]);
@@ -206,7 +203,7 @@ export const replaceTextToJsonExercisesHevy = (exercises: {
             const match = fuseResults?.[0]?.item;
             const selectedMatch = bestMatch(fuseResults, exercise?.title ?? "");
 
-            console.log("{expected:",normalizeExerciseTitle(exercise?.title ?? ""), ",actual:", selectedMatch.item.normalized_title, "},");
+            // console.log("{expected:",normalizeExerciseTitle(exercise?.title ?? ""), ",actual:", selectedMatch.item.normalized_title, "},");
 
             if (!match) return [];
                 return [{

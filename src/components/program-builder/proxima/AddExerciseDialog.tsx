@@ -391,10 +391,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                                 <Trash2Icon className="cursor-pointer" onClick={ () => deleteSet(index) } />
                             </div>
 
-                        ) )
-
-
-                    :   (repsWithTimeAndRepRange && repsWithTimeAndRepRange.length > 0 && repsWithTimeAndRepRange?.map((repRange: number[], index) => (
+                        ) ) : (repsWithTimeAndRepRange && repsWithTimeAndRepRange.length > 0 && repsWithTimeAndRepRange?.map((repRange: number[], index) => (
                         <div
                             key={ "Set" + index }
                             className={ `flex flex-row justify-center gap-2 items-center w-full py-1 ${ setTypes[index] === "warmup" ? "bg-gray-300" : setTypes[index] === "dropset" ? "bg-[#33bbcf]" : setTypes[index] === "failure" ? "bg-[#01579B]" : "" }` }>

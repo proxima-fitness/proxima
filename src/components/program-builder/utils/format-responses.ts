@@ -205,7 +205,7 @@ export const addExerciseToProgramCreatorExerciseConverter = async (addExercise: 
         addIntensity = addExercise.intensityData;
     }
 
-    const newExercise = {
+    return {
         exercise: await getExerciseFromLocalStorageByID(addExercise.id),
         sets: sets,
         sets_type: addExercise.setTypes,
@@ -213,7 +213,6 @@ export const addExerciseToProgramCreatorExerciseConverter = async (addExercise: 
         intensity: { [ addExercise.intensityValue ]: addIntensity},
     } as TProgramCreatorExercise;
 
-    return newExercise;
 };
 
 // Convertes TAddExercise to THevyExercise type

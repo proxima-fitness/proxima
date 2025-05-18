@@ -43,7 +43,6 @@ export const buildHevyFallbackProgram = async (programLength: number, numberOfDa
 
 export const buildHevyProgram = async (parsedResponse: TTextToJsonResponse, programLength: number, numberOfDaysPerWeek: number, excludeAreas: string, excludeEquipment: string, healthIssues: string) => {
 
-    console.log("parsedResponse", parsedResponse);
     if (programLength === 0) {
         programLength = 12;
     }
