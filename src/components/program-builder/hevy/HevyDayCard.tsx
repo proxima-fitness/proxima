@@ -174,7 +174,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                 <Card
                     tabIndex={ 0 }
                     onClick={ handleFocus }
-                    className="border-[4px] border-gray-100 focus:border-lightSecondary w-[100%] group py-4 px-4 sm:min-w-[440px] sm:max-w-[440px] bg-lightGray my-2">
+                    className="border-[4px] border-gray-100 focus:border-gray-300 w-[100%] group py-4 px-4 sm:min-w-[440px] sm:max-w-[440px] bg-lightGray my-2">
                     <div className="flex flex-row justify-between items-center">
                         <div className="font-main text-xl flex flex-row">
                             Day {day.order}
