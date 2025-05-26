@@ -16,7 +16,7 @@ export default function AiProgramBuilder() {
     return (
         <div className={ `bg-white ${styles.flexCenter} flex-col` }>
             <div className={ `${styles.boxWidth}` }>
-                <div className="sm:mt-[200px] sm:mb-[100px] max-sm:h-full max-sm:mt-[150px] max-sm:mb-[150px] flex flex-col max-sm:gap-0 items-center justify-center gap-6">
+                <div className="sm:mt-[120px] sm:mb-[100px] max-sm:h-full max-sm:mt-[50px] max-sm:mb-[150px] flex flex-col max-sm:gap-0 items-center justify-center gap-6">
                     <div className="text-center">
                         <div className="font-main text-4xl font-bold uppercase">The AI Workout Program Builder</div>
                         <div className="text-lg font-normal">Get a tailored workout program in seconds</div>
