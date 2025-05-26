@@ -11,7 +11,7 @@ import AnimatedRotatingText from "../generic/AnimatedRotatingText";
 
 export const ProgramsSection: React.FC = () => {
 
-    const { data: programs, isLoading: loadingPrograms } = useExplorePagePrograms({ "specialization": ["Bodybuilding"] }, 6);
+    const { data: programs, isLoading: loadingPrograms } = useExplorePagePrograms(undefined,6, undefined);
 
     return (
         <section
