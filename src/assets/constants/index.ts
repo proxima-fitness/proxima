@@ -5966,6 +5966,7 @@ export const coolQuotes: TQuote[] = [
     { quote: "U mirin brah ?", author: "Zyzz (RIP)"},
     { quote: "From the moment I realised the weakness of my flesh, it disgusted me. I craved the strength and certainty of steel. I aspired for the immortal machine.", author: "Unknown"},
     { quote: "Because you might as well be dead. Seriously, if you always put limits on what you can do, physical or anything else, it’ll spread over into the rest of your life. It’ll spread into your work, into your morality, into your entire being. There are no limits. There are plateaus, but you must not stay there, you must go beyond them. If it kills you, it kills you. A man must constantly exceed his level.", author: "Bruce Lee"},
+    { quote: "Where your road ends, mine begins", author: "David Goggins"},
 ];
 
 export const sexOptions: IOption[] = [
