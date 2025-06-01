@@ -52,17 +52,19 @@ const App = () => {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <div className="overflow-hidden">
+        <div className={`overflow-hidden`}>
             <DownloadPopup isOpen={ isOpen } setIsOpen={ setIsOpen } isMobile={ isMobile } />
-            <div className={ `bg-primary ${styles.flexStart}` }>
-                <div className={ `${styles.boxWidth}` }>
-                    <Hero />
+            <div className={ `sm:pt-16 pt-6`}>
+                <div className={ `bg-primary ${styles.flexStart}` }>
+                    <div className={ `${styles.boxWidth}` }>
+                        <Hero />
+                    </div>
                 </div>
-            </div>
 
-            <div className={ `bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
-                <div className={ `${styles.boxWidth}` }>
-                    <Stats />
+                <div className={ `bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
+                    <div className={ `${styles.boxWidth}` }>
+                        <Stats />
+                    </div>
                 </div>
             </div>
             <div className={ `bg-white ${styles.paddingX} ${styles.flexCenter} flex-col` }>

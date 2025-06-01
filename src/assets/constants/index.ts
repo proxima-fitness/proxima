@@ -5803,7 +5803,7 @@ export const feedback = [
     {
         id: "feedback-1",
         content:
-            "Lots of cool programs, and super easy to use UI. Would definitely recommend trying out the free version",
+            "Lots of cool programs, and super easy to use UI. Would definitely recommend trying out the pro version",
         name: "Scott Hanlon",
         title: "Proxima Member · 2024.05.03",
         img: people03.src,
