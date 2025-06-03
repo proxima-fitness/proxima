@@ -100,6 +100,7 @@ export const StepButton: React.FC = () => {
                     <Button
                         variant="default"
                         className="text-white bg-lightSecondary hover:bg-black"
+                        disabled={ savingRoutine }
                     >
                         { !savingRoutine ?
                             <>
@@ -107,7 +108,7 @@ export const StepButton: React.FC = () => {
                                 <span className="sm:hidden">Save</span>
                             </>
                         :
-                            <span className="">Saving...</span>
+                            <span className="">Saving... (30s)</span>
                         }
                         <ArrowRightIcon />
                     </Button>
