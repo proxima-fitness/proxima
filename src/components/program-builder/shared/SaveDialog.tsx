@@ -10,7 +10,6 @@ import {   PartyPopperIcon } from "lucide-react";
 // import { useIsHevy } from "@/contexts/HevyContext";
 // import { v4 as uuidv4 } from "uuid";
 // import { deFlattenHevyRoutine, programCreatorDayToScheduleWorkouts, removeOrderHevy } from "../utils";
-// import { postAIProgram } from "@/app/(app)/actions";
 // import { HevyPdfRenderer } from "../hevy/HevyPdfRenderer";
 // import { PdfRenderer } from "../proxima/PdfRenderer";
 
