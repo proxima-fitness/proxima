@@ -1,6 +1,7 @@
 import { getExercises } from "@/api/exercises";
 import nlp from "compromise";
 import Fuse from "fuse.js";
+import { normalizeExerciseTitle } from "./scoring-system";
 
 // Returns the proxima exercise gif_id for a specific hevy exercise using fuzzy matching
 export const getExerciseGifIdForHevyExercise = async (exercise_name: string) => {
@@ -13,14 +14,14 @@ export const getExerciseGifIdForHevyExercise = async (exercise_name: string) => 
         shouldSort: true,
         threshold: 0.2,
         keys: [
-            "name_english",
+            "normalized_name_english",
         ],
     };
 
     const proximaExercises = await getExercises();
 
     const fuse = new Fuse(proximaExercises, options);
-    const fuseResults = fuse?.search(exercise_name, { limit: 1});
+    const fuseResults = fuse?.search(normalizeExerciseTitle(exercise_name), { limit: 1});
     if (!fuseResults) {
         return "";
     }
@@ -43,7 +44,7 @@ export const getExerciseIdForHevyExercise = async (exercise_name: string, proxim
         shouldSort: true,
         threshold: 0.8,
         keys: [
-            "name_english",
+            "normalized_name_english",
         ],
     };
 
@@ -55,10 +56,10 @@ export const getExerciseIdForHevyExercise = async (exercise_name: string, proxim
         }
 
         const fuse = new Fuse(proximaExercises, options);
-        const fuseResults = fuse.search(exercise_name, { limit: 1 });
+        const fuseResults = fuse.search(normalizeExerciseTitle(exercise_name), { limit: 1 });
 
         if (!fuseResults || fuseResults.length === 0) {
-            console.warn('No matching exercises found for:', exercise_name);
+            console.warn('No matching exercises found for:', normalizeExerciseTitle(exercise_name));
             return null;
         }
 
