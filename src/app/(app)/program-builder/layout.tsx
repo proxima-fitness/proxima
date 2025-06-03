@@ -2,6 +2,7 @@ import { Breadcrumbs } from "@/components/program-builder/shared/Breadcrumbs";
 import { ProgramBuilderTabs } from "@/components/program-builder/shared/ProgramBuilderTabs";
 import { StepButton } from "@/components/program-builder/shared/StepButton";
 import { ToolsTabs } from "@/components/program-builder/shared/ToolsTabs";
+import { Suspense } from "react";
 
 export default async function ProgramBuilderLayout({
     children,
@@ -15,7 +16,9 @@ export default async function ProgramBuilderLayout({
                 <Breadcrumbs />
                 <ProgramBuilderTabs />
                 <ToolsTabs />
-                <StepButton />
+                <Suspense fallback={null}>
+                    <StepButton />
+                </Suspense>
             </div>
             {children}
         </div>

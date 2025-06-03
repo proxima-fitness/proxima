@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRightIcon, ShareIcon } from "lucide-react";
 import { useState } from "react";
 import { usePreview } from "@/contexts/PreviewContext";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { ShareDialog } from "./ShareDialog";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { postAIProgram } from "@/app/(app)/actions";
@@ -15,21 +15,18 @@ export const StepButton: React.FC = () => {
     const { isPreview, setIsPreview } = usePreview();
     const { isHevy } = useIsHevy();
     const path = usePathname();
+    const searchParams = useSearchParams();
+    const shareId = searchParams.get('shareId') ?? '';
+
     const segments = path.split("/").filter(Boolean);
     const [openShareDialog, setOpenShareDialog] = useState(false);
 
     const [savingRoutine, setSavingRoutine] = useState(false);
     const [programId, setProgramId] = useState("");
 
-
-
-    // const handleOpenSaveDialog = (openSaveDialog: boolean) => {
-    //     setOpenSaveDialog(openSaveDialog);
-    // };
     const handleOpenShareDialog = (openShareDialog: boolean) => {
         setOpenShareDialog(openShareDialog);
     };
-
 
     const saveProgram = async () => {
         setIsPreview(true);
@@ -99,7 +96,7 @@ export const StepButton: React.FC = () => {
                     <ShareIcon />
                 </Button>
 
-                <a href={ `https://app.proximafitness.com?program_id=${programId}` } className="w-full">
+                <a href={ `https://app.proximafitness.com?program_id=${programId.length > 0 ? programId : shareId}` } className="w-full">
                     <Button
                         variant="default"
                         className="text-white bg-lightSecondary hover:bg-black"
