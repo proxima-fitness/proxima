@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowRightIcon, ShareIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePreview } from "@/contexts/PreviewContext";
 import { usePathname } from "next/navigation";
 import { ShareDialog } from "./ShareDialog";
@@ -15,11 +15,22 @@ export const StepButton: React.FC = () => {
     const { isPreview, setIsPreview } = usePreview();
     const { isHevy } = useIsHevy();
     const path = usePathname();
+
     const segments = path.split("/").filter(Boolean);
     const [openShareDialog, setOpenShareDialog] = useState(false);
 
     const [savingRoutine, setSavingRoutine] = useState(false);
     const [programId, setProgramId] = useState("");
+
+    const [shareId, setShareId] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get("shareId");
+            setShareId(id);
+        }
+    }, []);
 
 
 
@@ -99,7 +110,7 @@ export const StepButton: React.FC = () => {
                     <ShareIcon />
                 </Button>
 
-                <a href={ `https://app.proximafitness.com?program_id=${programId}` } className="w-full">
+                <a href={ `https://app.proximafitness.com?program_id=${programId.length > 0 ? programId : shareId}` } className="w-full">
                     <Button
                         variant="default"
                         className="text-white bg-lightSecondary hover:bg-black"
