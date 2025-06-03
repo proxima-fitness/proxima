@@ -54,7 +54,13 @@ export const getExplorePagePrograms = async (filters?: TProgramFilters, limit?: 
 // GET THE COMMUNITY AI PROGRAMS
 export const getCommunityAiPrograms = async () => {
     try {
-        const { data, error } = await supabase.from('programs').select('prompt, id').eq('title', 'My AI Program').not('prompt', 'is', null).eq("explore", true);
+        const { data, error } = await
+            supabase.from('programs')
+            .select('prompt, id')
+            .eq('title', 'My AI Program')
+            .not('prompt', 'is', null)
+            .neq('prompt', '""')
+            .eq("explore", true);
         if (error) {
             console.error('Error fetching community ai programs:', error);
         } else if (data && data.length > 0 ) {
