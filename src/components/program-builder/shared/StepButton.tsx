@@ -2,9 +2,9 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowRightIcon, ShareIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { usePreview } from "@/contexts/PreviewContext";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { ShareDialog } from "./ShareDialog";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { postAIProgram } from "@/app/(app)/actions";
@@ -15,6 +15,8 @@ export const StepButton: React.FC = () => {
     const { isPreview, setIsPreview } = usePreview();
     const { isHevy } = useIsHevy();
     const path = usePathname();
+    const searchParams = useSearchParams();
+    const shareId = searchParams.get('shareId') ?? '';
 
     const segments = path.split("/").filter(Boolean);
     const [openShareDialog, setOpenShareDialog] = useState(false);
@@ -22,25 +24,9 @@ export const StepButton: React.FC = () => {
     const [savingRoutine, setSavingRoutine] = useState(false);
     const [programId, setProgramId] = useState("");
 
-    const [shareId, setShareId] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (typeof window !== "undefined") {
-            const params = new URLSearchParams(window.location.search);
-            const id = params.get("shareId");
-            setShareId(id);
-        }
-    }, []);
-
-
-
-    // const handleOpenSaveDialog = (openSaveDialog: boolean) => {
-    //     setOpenSaveDialog(openSaveDialog);
-    // };
     const handleOpenShareDialog = (openShareDialog: boolean) => {
         setOpenShareDialog(openShareDialog);
     };
-
 
     const saveProgram = async () => {
         setIsPreview(true);
