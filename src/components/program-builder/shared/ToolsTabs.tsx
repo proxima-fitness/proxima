@@ -61,16 +61,16 @@ export const ToolsTabs: React.FC = () => {
                     <div className="mt-auto mb-auto">
                         <ScrollArea className="h-[400px] rounded-md border p-2">
                         Jokester began sneaking into the castle in the middle of the night and leaving
-  jokes all over the place: under the king's pillow, in his soup, even in the
-  royal toilet. The king was furious, but he couldn't seem to stop Jokester. And
-  then, one day, the people of the kingdom discovered that the jokes left by
-  Jokester were so funny that they couldn't help but laugh. And once they
-  started laughing, they couldn't stop.Jokester began sneaking into the castle in the middle of the night and leaving
-  jokes all over the place: under the king's pillow, in his soup, even in the
-  royal toilet. The king was furious, but he couldn't seem to stop Jokester. And
-  then, one day, the people of the kingdom discovered that the jokes left by
-  Jokester were so funny that they couldn't help but laugh. And once they
-  started laughing, they couldn't stop.
+                            jokes all over the place: under the king's pillow, in his soup, even in the
+                            royal toilet. The king was furious, but he couldn't seem to stop Jokester. And
+                            then, one day, the people of the kingdom discovered that the jokes left by
+                            Jokester were so funny that they couldn't help but laugh. And once they
+                            started laughing, they couldn't stop.Jokester began sneaking into the castle in the middle of the night and leaving
+                            jokes all over the place: under the king's pillow, in his soup, even in the
+                            royal toilet. The king was furious, but he couldn't seem to stop Jokester. And
+                            then, one day, the people of the kingdom discovered that the jokes left by
+                            Jokester were so funny that they couldn't help but laugh. And once they
+                            started laughing, they couldn't stop.
                         </ScrollArea>
                         <Card
                             className="border-[4px] border-gray-100 bg-lightGray my-2"
