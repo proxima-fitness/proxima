@@ -7,8 +7,8 @@ import { usePreview } from "@/contexts/PreviewContext";
 import { usePathname, useSearchParams } from "next/navigation";
 import { ShareDialog } from "./ShareDialog";
 import { useIsHevy } from "@/contexts/HevyContext";
-import { postAIProgram } from "@/app/(app)/actions";
 import { v4 as uuidv4 } from "uuid";
+import { createProgram } from "@/app/api/programs/programs";
 
 export const StepButton: React.FC = () => {
 
@@ -55,7 +55,7 @@ export const StepButton: React.FC = () => {
                 if (new_id !== undefined) {
                     setProgramId(new_id);
                     setSavingRoutine(true);
-                    await postAIProgram(new_id, parsedProgram as THevyRoutine[], localStoragePrompt ?? "", parsedRequest);
+                    await createProgram(new_id, parsedProgram as THevyRoutine[], localStoragePrompt ?? "", parsedRequest);
                     setSavingRoutine(false);
                 }
             }
@@ -100,6 +100,7 @@ export const StepButton: React.FC = () => {
                     <Button
                         variant="default"
                         className="text-white bg-lightSecondary hover:bg-black"
+                        disabled={ savingRoutine }
                     >
                         { !savingRoutine ?
                             <>
@@ -107,7 +108,7 @@ export const StepButton: React.FC = () => {
                                 <span className="sm:hidden">Save</span>
                             </>
                         :
-                            <span className="">Saving...</span>
+                            <span className="">Saving... (30s)</span>
                         }
                         <ArrowRightIcon />
                     </Button>

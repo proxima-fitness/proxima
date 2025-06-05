@@ -69,6 +69,7 @@ export const getHevyExercises = async () => {
 
 export const postHevyRoutineProgram = async (id: string, hevyRoutines: THevyRoutine[], prompt: string, request: TTextToJsonRequest) => {
     const weeks = getMaxFolderId(hevyRoutines) + 1;
+    const BATCH_SIZE = 50; // Process exercises in batches of 50
 
     try {
         const programUploadObject = {
@@ -92,87 +93,79 @@ export const postHevyRoutineProgram = async (id: string, hevyRoutines: THevyRout
             return programsError;
         }
 
-        // Ensure the program exists before proceeding
-        const { data: programExists, error: fetchError } = await supabase
-            .from('programs')
-            .select('*')
-            .eq('id', id)
-            .single();
-
-        if (fetchError || !programExists) {
-            console.error('Program not found after insert:', fetchError);
-            return fetchError || new Error('Program insertion failed');
-        }
-
-        // STEP 2: Prepare schedule uploads
+        // STEP 2: Prepare and insert schedule uploads in batches
         const scheduleUploads = hevyRoutines.map((routine) => ({
             id: uuidv4(),
-            nthWeek: routine.folder_id + 1, // Assuming folder_id is 0-indexed
-            nthDay: Number(routine?.order || '1'), // Default to 1 if missing
+            nthWeek: routine.folder_id + 1,
+            nthDay: Number(routine?.order || '1'),
             day_title: routine.title,
             day_notes: routine?.notes ?? "",
             program_id: id,
         }));
 
-        // Insert schedules in batch
-        const { error: scheduleError } = await supabase.from('schedule_workouts').insert(scheduleUploads);
-        if (scheduleError) {
-            console.error('Error inserting schedule workouts:', scheduleError);
-            return scheduleError;
-        }
-
-        const proximaExercises = await getExercises();
-        // STEP 3: Collect all exercise lookup promises in parallel
-        const exerciseLookups = hevyRoutines.flatMap((routine, routineIndex) =>
-            (routine.exercises ?? []).map((exercise, exerciseIndex) => ({
-                promise: getExerciseIdForHevyExercise(exercise.title, proximaExercises),
-                routineIndex,
-                exerciseIndex,
-            }))
-        );
-
-        const resolvedExerciseIds = await Promise.all(exerciseLookups.map((lookup) => lookup.promise));
-
-        // STEP 4: Build workout uploads based on resolved exercise IDs
-        const workoutUploads: { [key: string]: unknown }[] = [];
-
-        for (let i = 0; i < exerciseLookups.length; i++) {
-            const exerciseId = resolvedExerciseIds[i];
-            const { routineIndex, exerciseIndex } = exerciseLookups[i];
-            const schedule = scheduleUploads[routineIndex];
-            const routine = hevyRoutines[routineIndex];
-            const exercise = routine.exercises?.[exerciseIndex];
-
-            if (exercise && exerciseId && schedule) {
-                const reps = exercise.sets?.map((set) => set.reps) ?? null;
-                const timeTaken = exercise.sets?.map((set) => set.duration_seconds) ?? null;
-                const weights = exercise.sets?.map((set) => set.weight_kg) ?? null;
-                const rpe = exercise.sets?.map((set) => set.rpe) ?? null;
-
-                workoutUploads.push({
-                    id: uuidv4(),
-                    schedule_id: schedule.id,
-                    exercise_id: exerciseId,
-                    reps: reps,
-                    reps_range: null,
-                    reps_max: null,
-                    amrap: null,
-                    time_taken: timeTaken?.[0] === null ? null : timeTaken,
-                    time_range: null,
-                    weights: weights?.[0] === null ? null : weights,
-                    rpe: rpe?.[0] === null ? null : rpe,
-                    rpe_range: null,
-                    percent_rm: null,
-                });
+        // Insert schedules in batches
+        for (let i = 0; i < scheduleUploads.length; i += BATCH_SIZE) {
+            const batch = scheduleUploads.slice(i, i + BATCH_SIZE);
+            const { error: scheduleError } = await supabase.from('schedule_workouts').insert(batch);
+            if (scheduleError) {
+                console.error('Error inserting schedule workouts batch:', scheduleError);
+                return scheduleError;
             }
         }
 
-        // Insert workouts in batch if any exist
-        if (workoutUploads.length > 0) {
-            const { error: workoutError } = await supabase.from('program_workout_exercises').insert(workoutUploads);
-            if (workoutError) {
-                console.error('Error inserting program workout exercises:', workoutError);
-                return workoutError;
+        const proximaExercises = await getExercises();
+
+        // STEP 3: Process exercises in batches
+        const allWorkoutUploads: { [key: string]: unknown }[] = [];
+
+        for (let i = 0; i < hevyRoutines.length; i += BATCH_SIZE) {
+            const routineBatch = hevyRoutines.slice(i, i + BATCH_SIZE);
+
+            // Process each routine in the batch
+            for (const routine of routineBatch) {
+                const schedule = scheduleUploads[i + routineBatch.indexOf(routine)];
+                if (!schedule) continue;
+
+                const exercisePromises = (routine.exercises ?? []).map(async (exercise) => {
+                    const exerciseId = await getExerciseIdForHevyExercise(exercise.title, proximaExercises);
+                    if (!exerciseId) return null;
+
+                    const reps = exercise.sets?.map((set) => set.reps) ?? null;
+                    const timeTaken = exercise.sets?.map((set) => set.duration_seconds) ?? null;
+                    const weights = exercise.sets?.map((set) => set.weight_kg) ?? null;
+                    const rpe = exercise.sets?.map((set) => set.rpe) ?? null;
+
+                    return {
+                        id: uuidv4(),
+                        schedule_id: schedule.id,
+                        exercise_id: exerciseId,
+                        reps: reps,
+                        reps_range: null,
+                        reps_max: null,
+                        amrap: null,
+                        time_taken: timeTaken?.[0] === null ? null : timeTaken,
+                        time_range: null,
+                        weights: weights?.[0] === null ? null : weights,
+                        rpe: rpe?.[0] === null ? null : rpe,
+                        rpe_range: null,
+                        percent_rm: null,
+                    };
+                });
+
+                const batchResults = await Promise.all(exercisePromises);
+                allWorkoutUploads.push(...batchResults.filter((result): result is NonNullable<typeof result> => result !== null));
+            }
+        }
+
+        // STEP 4: Insert workouts in batches
+        for (let i = 0; i < allWorkoutUploads.length; i += BATCH_SIZE) {
+            const batch = allWorkoutUploads.slice(i, i + BATCH_SIZE);
+            if (batch.length > 0) {
+                const { error: workoutError } = await supabase.from('program_workout_exercises').insert(batch);
+                if (workoutError) {
+                    console.error('Error inserting program workout exercises batch:', workoutError);
+                    return workoutError;
+                }
             }
         }
 
