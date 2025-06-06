@@ -35,7 +35,7 @@ export const DownloadPopup: React.FC<IProps> = (props) => {
                     } }
                     />
                             </a>
-                            <a href="https://app.proximafitness.com/">
+                            <a href="https://play.google.com/store/apps/details?id=com.proximafitness.app&hl=en_CA">
                                 <img src={ (google as any).src } alt="google"
                         style={ {
                             width: "150px",
