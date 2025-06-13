@@ -106,6 +106,3 @@ type TTextToJsonRequest = {
     programTitle: string; // goes into AI Prompt
     explore: string; // goes into AI Prompt
 }
-
-
-

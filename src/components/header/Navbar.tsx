@@ -4,15 +4,18 @@ import { Button } from "../generic/Button";
 import { NavDrawer } from "./NavDrawer";
 import { proxima_logo } from "public";
 import Link from 'next/link';
+import { supabase } from "@/api";
 
-export const Navbar: React.FC = () => {
+export const Navbar: React.FC = async () => {
+
+    const { data } = await supabase.auth.getUser()
 
     return (
         <nav className="w-full flex py-2 justify-between items-center navbar">
             <Link href={ "/" } >
                 <img src={ (proxima_logo as any).src } alt="Proxima Logo" className="max-sm:hidden h-[50px] w-[auto]" />
             </Link>
-
+            { data?.user?.email ? `${data.user.email} logged in` : "" }
             <ul className="list-none sm:flex hidden justify-end items-center flex-1 z-6">
                 { navLinks.map((nav, index) => {
                     return (

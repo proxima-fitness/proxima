@@ -14,6 +14,7 @@ import { Analytics } from "@vercel/analytics/react";
 import NextTopLoader from 'nextjs-toploader';
 import { PostHogClientProvider } from "@/utils/PostHogClientProvider";
 import { PreviewProvider } from "@/contexts/PreviewContext";
+import { SessionProvider } from "@/contexts/SessionContext";
 
 export const metadata: Metadata = {
     title: 'Proxima Fitness | AI Workout Builder & Program Directory',
@@ -56,44 +57,46 @@ export default function RootLayout({
                 <meta name="theme-color" content="#000000" />
             </head>
             <body>
-                <SidebarProvider>
-                    <div className="max-sm:block hidden">
-                        <AppSidebar />
-                    </div>
-                    <div className="w-full bg-primary">
-                        <div className={ `${styles.paddingXNav} ${styles.flexCenter}` }>
-                            <div className={ `${styles.boxWidth}` }>
-                                <PreviewProvider>
-                                    <IsHevyProvider>
-                                        <Navbar />
-                                    </IsHevyProvider>
-                                </PreviewProvider>
-                            </div>
+                <SessionProvider>
+                    <SidebarProvider>
+                        <div className="max-sm:block hidden">
+                            <AppSidebar />
                         </div>
-                        <main id="root">
-                            <PostHogClientProvider>
-                                <QueryProvider>
+                        <div className="w-full bg-primary">
+                            <div className={ `${styles.paddingXNav} ${styles.flexCenter}` }>
+                                <div className={ `${styles.boxWidth}` }>
                                     <PreviewProvider>
                                         <IsHevyProvider>
-                                            <Analytics />
-                                            <NextTopLoader
-                                                showSpinner={ false }
-                                                color="#00f6ff"
-                                            />
-                                            {children}
+                                            <Navbar />
                                         </IsHevyProvider>
                                     </PreviewProvider>
-                                    <Toaster richColors />
-                                </QueryProvider>
-                            </PostHogClientProvider>
-                        </main>
-                        <div className={ `bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
-                            <div className={ `${styles.boxWidth}` }>
-                                <Footer />
+                                </div>
+                            </div>
+                            <main id="root">
+                                <PostHogClientProvider>
+                                    <QueryProvider>
+                                        <PreviewProvider>
+                                            <IsHevyProvider>
+                                                <Analytics />
+                                                <NextTopLoader
+                                                    showSpinner={ false }
+                                                    color="#00f6ff"
+                                                />
+                                                {children}
+                                            </IsHevyProvider>
+                                        </PreviewProvider>
+                                        <Toaster richColors />
+                                    </QueryProvider>
+                                </PostHogClientProvider>
+                            </main>
+                            <div className={ `bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
+                                <div className={ `${styles.boxWidth}` }>
+                                    <Footer />
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </SidebarProvider>
+                    </SidebarProvider>
+                </SessionProvider>
             </body>
         </html>
     );
