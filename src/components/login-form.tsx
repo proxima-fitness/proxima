@@ -48,7 +48,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
           <form onSubmit={handleSocialLogin}>
             <div className="flex flex-col gap-6">
               {error && <p className="text-sm text-destructive-500">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full text-white" disabled={isLoading}>
                 {isLoading ? 'Logging in...' : 'Continue with Google'}
               </Button>
             </div>
