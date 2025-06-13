@@ -6,7 +6,7 @@ export async function updateSession(request: NextRequest) {
     let supabaseResponse = NextResponse.next({
         request,
     });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_KEY!,
@@ -33,10 +33,7 @@ export async function updateSession(request: NextRequest) {
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
 
-/** JACK COMMENTED THIS SECTION OUT. ADD BACK IN IN FUTURE IF WANT LOGIN FUNCTIONALITY ON LANDING PAGE */
-//   const {
-//     data: { user },
-//   } = await supabase.auth.getUser()
+  await supabase.auth.getUser()
 
 //   if (
 //     !user &&
