@@ -1,7 +1,6 @@
 "use client";
 
 import { useHevyExercises } from "@/api/hooks";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useEffect, useReducer, useState } from "react";
 import { hevy_intensities, hevy_rep_types } from "@/assets/constants";
@@ -15,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SetTypesLegend } from "../shared/SetTypesLegend";
 import { SetTypesToggle } from "../shared/SetTypesToggle";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Drawer, DrawerContent, DrawerFooter, DrawerTitle } from "@/components/ui/drawer";
 
 interface IProps {
     addExerciseDialog: THevyDialog;
@@ -44,8 +44,6 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
     const handleIsEditing = (isEditing: boolean) => {
         setIsEditing(isEditing);
     };
-
-
 
     const handleSelected = async (item: THevyExerciseTemplate) => {
         const fetchedExerciseItem = await getHevyExerciseFromLocalStorageByName(item.title);
@@ -178,152 +176,163 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
     }, [isEditExercise, addExerciseDialog.editExercise?.id, addExerciseDialog.editExercise?.intensityData, addExerciseDialog.editExercise?.intensityValue, addExerciseDialog.editExercise?.repTypeValue, addExerciseDialog.editExercise?.reps]);
 
     return (
-        <Dialog open={ addExerciseDialog.isOpen } modal={ addExerciseDialog.isOpen } onOpenChange={ () => handleOpenAddExerciseDialog({ folder_id: 0, dayOrder: 0, isOpen: false} ) }>
-            <DialogContent hideClose className="max-w-4xl w-full max-xl:h-[85%] 2xl:h-[70%] overflow-y-auto">
-                <DialogTitle className="font-bold flex items-center justify-center">
-                    Add Exercise to Week {addExerciseDialog.folder_id + 1} Day {addExerciseDialog.dayOrder}
-                </DialogTitle>
-                { loadingHevyExercises ?
-                    <div style={ { display: "flex",width: "100%", height: "358px", textAlign: "center", justifyContent: "center", alignItems: "center"} }>
-                        <Skeleton className="w-full h-full"></Skeleton>
-                    </div>
-                : exercises !== undefined &&
-                    <HevyExerciseSearchBar
-                        title={ "Exercise" }
-                        items={ exercises }
-                        handleSelected= { handleSelected }
-                        selectedName={ selectedName }
-                        isEditing={ isEditing }
-                        handleIsEditing={ handleIsEditing }
-                    />
-                }
-                    <SetTypesLegend />
-
-                <div className="mt-4">
-                    <div className="flex flex-row justify-center gap-2 items-center w-full pb-4">
-                        <div className="flex items-start justify-start w-[10%]">
-                            Set
+        <Drawer
+            open={ addExerciseDialog.isOpen }
+            modal={ addExerciseDialog.isOpen }
+            onOpenChange={
+                () => handleOpenAddExerciseDialog({ folder_id: 0, dayOrder: 0, isOpen: false} )
+            }
+        >
+            <DrawerContent
+                className="max-h-[98%] sm:max-h-[100%] sm:max-w-[50%]"
+            >
+                <div className="overflow-y-scroll mx-auto w-full max-w-3xl">
+                    <DrawerTitle className="font-bold flex items-center justify-center">
+                        Add Exercise to Week {addExerciseDialog.folder_id + 1} Day {addExerciseDialog.dayOrder}
+                    </DrawerTitle>
+                    { loadingHevyExercises ?
+                        <div style={ { display: "flex",width: "100%", height: "358px", textAlign: "center", justifyContent: "center", alignItems: "center"} }>
+                            <Skeleton className="w-full h-full"></Skeleton>
                         </div>
-                        <div className="w-[33%]">
-                            <Select value={ repTypeValue } aria-label="rep type" onValueChange={ (value) => handleSwapRepTypeValue(value) }>
-                                <SelectTrigger autoFocus className="h-10">
-                                    <SelectValue placeholder="Reps" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    { hevy_rep_types.map((rep_type) => (
-                                        <SelectItem key={ rep_type.value } value={ rep_type.value }>{ rep_type.label }</SelectItem>
-                                        ) ) }
-                                </SelectContent>
-
-                            </Select>
-                        </div>
-                        <div className="w-[33%]">
-                            <Select value={ intensityValue } aria-label="intensity" onValueChange={ (value) => setIntensityValue(value) }>
-                                <SelectTrigger autoFocus className="h-10">
-                                    <SelectValue placeholder="Intensity" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    { hevy_intensities.map((intensity) => (
-                                        <SelectItem key={ intensity.value } value={ intensity.value }>{ intensity.label }</SelectItem>
-                                        ) ) }
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div>
-                            { editSetType ?
-                                <XIcon className="cursor-pointer" onClick={ toggleEditSetType } />
-                                :
-                                <TooltipProvider delayDuration={ 0 }>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <ExpandIcon className="cursor-pointer" onClick={ toggleEditSetType } />
-                                        </TooltipTrigger>
-                                        <TooltipContent className="bg-gray-600 text-white rounded-lg">
-                                            Edit Set Types
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                            }
-                        </div>
-                    </div>
-
-                    { (reps && reps.length > 0) && reps?.map((rep: string | number, index: number) => (
-                        <div
-                            key={ "Set" + index }
-                            className={ `flex flex-row justify-center gap-2 items-center w-full py-1 ${ setTypes[index] === "warmup" ? "bg-gray-300" : setTypes[index] === "dropset" ? "bg-[#33bbcf]" : setTypes[index] === "failure" ? "bg-[#01579B]" : "" }` }>
-                            <div className="flex items-center justify-start w-[10%]">
-                                { index + 1 }
-                            </div>
-                            <div className="w-[33%]">
-                                <Input
-                                    type="number"
-                                    placeholder={ (repTypeValue === "duration_seconds") ? "Secs" : repTypeValue === "distance_meters" ? "Meters" : "Reps" }
-                                    inputMode="decimal"
-                                    autoFocus
-                                    value={ rep || '' }
-                                    onInput={ (event) => handleSaveReps(event.currentTarget.value ?? "0", index) }
-                                    onBlur={ (event) => handleSaveReps(event.target.value ?? "0", index) }
-                                    onKeyDown={ (e) => {
-                                        if (e.key === 'Enter') {
-                                            handleSaveReps((e.target as HTMLInputElement).value,index);
-                                    }
-                                    } }
-                                />
-                            </div>
-                            <div className="w-[33%]">
-                                <Input
-                                    type="number"
-                                    inputMode="decimal"
-                                    value={ intensityData?.[index] ?? "0" }
-                                    onInput={ (e) => handleUpdatingIntensity(e.currentTarget.value ?? "0", index) }
-                                    onBlur={ (e) => handleSaveIntensity(e.target.value ?? "0", index) }
-                                    onKeyDown={ (e) => {
-                                        if (e.key === 'Enter') {
-                                            handleSaveIntensity((e.target as HTMLInputElement).value,index);
-                                    }
-                                    } }
-                                    autoFocus
-                                />
-                            </div>
-                            { editSetType && <SetTypesToggle setIndex={ index } setType={ setTypes[index] } handleSetType={ handleSetType } /> }
-                            <Trash2Icon className="cursor-pointer" onClick={ () => deleteSet(index) } />
-                        </div>
-                    ) )
-
-                }
-                <div className="pt-4 px-20 flex justify-center items-center gap-2">
-                    <Button
-                        onClick={ () => addSet() }
-                        variant="ghost"
-                        className="w-full h-10 uppercase"
-                    >
-                        <PlusIcon /> Add Set
-                    </Button>
-                    { !restTimeOpen &&
-                        <Button onClick={ () => setRestTimeOpen(true) } variant="ghost" className="w-full h-10 uppercase">
-                            <TimerIcon /> Rest Time
-                        </Button>
+                    : exercises !== undefined &&
+                        <HevyExerciseSearchBar
+                            title={ "Exercise" }
+                            items={ exercises }
+                            handleSelected= { handleSelected }
+                            selectedName={ selectedName }
+                            isEditing={ isEditing }
+                            handleIsEditing={ handleIsEditing }
+                        />
                     }
-                    { restTimeOpen && <Input type="number" placeholder="Rest Time (secs)" value={ restSeconds } onChange={ (e) => setRestSeconds(e.target.value) } /> }
-                </div>
-                </div>
-                <span className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4">
-                    <span className="w-full flex items-center justify-center">
-                        <Button onClick={ () => handleOpenAddExerciseDialog({folder_id: 0, dayOrder: 0, isOpen: false} ) } variant="ghost" className="w-full h-12">
-                            Cancel
-                        </Button>
-                    </span>
-                    <span className="w-full flex items-center justify-center">
+                        <SetTypesLegend />
+
+                    <div className="mt-4">
+                        <div className="flex flex-row justify-center gap-2 items-center w-full pb-4">
+                            <div className="flex items-start justify-start w-[10%]">
+                                Set
+                            </div>
+                            <div className="w-[33%]">
+                                <Select value={ repTypeValue } aria-label="rep type" onValueChange={ (value) => handleSwapRepTypeValue(value) }>
+                                    <SelectTrigger autoFocus className="h-10">
+                                        <SelectValue placeholder="Reps" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        { hevy_rep_types.map((rep_type) => (
+                                            <SelectItem key={ rep_type.value } value={ rep_type.value }>{ rep_type.label }</SelectItem>
+                                            ) ) }
+                                    </SelectContent>
+
+                                </Select>
+                            </div>
+                            <div className="w-[33%]">
+                                <Select value={ intensityValue } aria-label="intensity" onValueChange={ (value) => setIntensityValue(value) }>
+                                    <SelectTrigger autoFocus className="h-10">
+                                        <SelectValue placeholder="Intensity" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        { hevy_intensities.map((intensity) => (
+                                            <SelectItem key={ intensity.value } value={ intensity.value }>{ intensity.label }</SelectItem>
+                                            ) ) }
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div>
+                                { editSetType ?
+                                    <XIcon className="cursor-pointer" onClick={ toggleEditSetType } />
+                                    :
+                                    <TooltipProvider delayDuration={ 0 }>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <ExpandIcon className="cursor-pointer" onClick={ toggleEditSetType } />
+                                            </TooltipTrigger>
+                                            <TooltipContent className="bg-gray-600 text-white rounded-lg">
+                                                Edit Set Types
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                }
+                            </div>
+                        </div>
+
+                        { (reps && reps.length > 0) && reps?.map((rep: string | number, index: number) => (
+                            <div
+                                key={ "Set" + index }
+                                className={ `flex flex-row justify-center gap-2 items-center w-full py-1 ${ setTypes[index] === "warmup" ? "bg-gray-300" : setTypes[index] === "dropset" ? "bg-[#33bbcf]" : setTypes[index] === "failure" ? "bg-[#01579B]" : "" }` }>
+                                <div className="flex items-center justify-start w-[10%]">
+                                    { index + 1 }
+                                </div>
+                                <div className="w-[33%]">
+                                    <Input
+                                        type="number"
+                                        placeholder={ (repTypeValue === "duration_seconds") ? "Secs" : repTypeValue === "distance_meters" ? "Meters" : "Reps" }
+                                        inputMode="decimal"
+                                        autoFocus
+                                        value={ rep || '' }
+                                        onInput={ (event) => handleSaveReps(event.currentTarget.value ?? "0", index) }
+                                        onBlur={ (event) => handleSaveReps(event.target.value ?? "0", index) }
+                                        onKeyDown={ (e) => {
+                                            if (e.key === 'Enter') {
+                                                handleSaveReps((e.target as HTMLInputElement).value,index);
+                                        }
+                                        } }
+                                    />
+                                </div>
+                                <div className="w-[33%]">
+                                    <Input
+                                        type="number"
+                                        inputMode="decimal"
+                                        value={ intensityData?.[index] ?? "0" }
+                                        onInput={ (e) => handleUpdatingIntensity(e.currentTarget.value ?? "0", index) }
+                                        onBlur={ (e) => handleSaveIntensity(e.target.value ?? "0", index) }
+                                        onKeyDown={ (e) => {
+                                            if (e.key === 'Enter') {
+                                                handleSaveIntensity((e.target as HTMLInputElement).value,index);
+                                        }
+                                        } }
+                                        autoFocus
+                                    />
+                                </div>
+                                { editSetType && <SetTypesToggle setIndex={ index } setType={ setTypes[index] } handleSetType={ handleSetType } /> }
+                                <Trash2Icon className="cursor-pointer" onClick={ () => deleteSet(index) } />
+                            </div>
+                        ) )
+
+                    }
+                    <div className="pt-4 px-20 flex justify-center items-center gap-2">
                         <Button
-                            onClick={ () => handleSave() }
+                            onClick={ () => addSet() }
                             variant="ghost"
-                            className="bg-lightSecondary text-white hover:bg-lightSecondary w-full h-12"
+                            className="w-full h-10 uppercase"
                         >
-                            {isEditExercise ? "Edit" : "Add"}
+                            <PlusIcon /> Add Set
                         </Button>
-                    </span>
-                </span>
-            </DialogContent>
-        </Dialog>
+                        { !restTimeOpen &&
+                            <Button onClick={ () => setRestTimeOpen(true) } variant="ghost" className="w-full h-10 uppercase">
+                                <TimerIcon /> Rest Time
+                            </Button>
+                        }
+                        { restTimeOpen && <Input type="number" placeholder="Rest Time (secs)" value={ restSeconds } onChange={ (e) => setRestSeconds(e.target.value) } /> }
+                    </div>
+                    </div>
+                </div>
+
+                    <DrawerFooter className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4">
+                        <span className="w-full flex items-center justify-center">
+                            <Button onClick={ () => handleOpenAddExerciseDialog({folder_id: 0, dayOrder: 0, isOpen: false} ) } variant="ghost" className="w-full h-12">
+                                Cancel
+                            </Button>
+                        </span>
+                        <span className="w-full flex items-center justify-center">
+                            <Button
+                                onClick={ () => handleSave() }
+                                variant="ghost"
+                                className="bg-lightSecondary text-white hover:bg-lightSecondary w-full h-12"
+                            >
+                                {isEditExercise ? "Edit" : "Add"}
+                            </Button>
+                        </span>
+                    </DrawerFooter>
+            </DrawerContent>
+        </Drawer>
     );
 };

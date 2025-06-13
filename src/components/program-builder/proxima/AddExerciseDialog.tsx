@@ -1,7 +1,6 @@
 "use client";
 
 import { useExercises } from "@/api/hooks";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useEffect, useReducer, useState } from "react";
 import { intensities, rep_types } from "@/assets/constants";
@@ -16,6 +15,7 @@ import { SetTypesToggle } from "../shared/SetTypesToggle";
 import { TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Tooltip } from "@/components/ui/tooltip";
+import { Drawer, DrawerContent, DrawerFooter, DrawerTitle } from "@/components/ui/drawer";
 
 interface IProps {
     addExerciseDialog: TDialog;
@@ -237,11 +237,14 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
     }, [isEditExercise, addExerciseDialog.editExercise?.id, addExerciseDialog.editExercise?.intensityData, addExerciseDialog.editExercise?.intensityDataWithRPERange, addExerciseDialog.editExercise?.intensityValue, addExerciseDialog.editExercise?.repTypeValue, addExerciseDialog.editExercise?.reps, addExerciseDialog.editExercise?.repsWithTimeAndRepRange]);
 
     return (
-        <Dialog open={ addExerciseDialog.isOpen } onOpenChange={ () => handleOpenAddExerciseDialog({ weekOrder: 0, dayOrder: 0, isOpen: false} ) }>
-            <DialogContent hideClose className="max-w-4xl w-full max-xl:h-[75%] 2xl:h-[70%] overflow-y-auto">
-                <DialogTitle className="font-bold flex items-center justify-center">
+        <Drawer open={ addExerciseDialog.isOpen } onOpenChange={ () => handleOpenAddExerciseDialog({ weekOrder: 0, dayOrder: 0, isOpen: false} ) }>
+            <DrawerContent
+                className="max-h-[98%] sm:max-h-[100%] sm:max-w-[50%]"
+            >
+                <div className="overflow-y-scroll mx-auto w-full max-w-3xl">
+                <DrawerTitle className="font-bold flex items-center justify-center">
                     Add Exercise to Week {addExerciseDialog.weekOrder + 1} Day {addExerciseDialog.dayOrder}
-                </DialogTitle>
+                </DrawerTitle>
                 <div className={ "modal-content__centered" }>
                     { exercises &&
                         <ExerciseSearchBar
@@ -499,7 +502,8 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                         </Button>
                     </div>
                 </div>
-                <span className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4">
+                </div>
+                <DrawerFooter className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4">
                     <span className="w-full flex items-center justify-center">
                         <Button onClick={ () => handleOpenAddExerciseDialog({weekOrder: 0, dayOrder: 0, isOpen: false} ) } variant="ghost" className="w-full h-12">
                             Cancel
@@ -514,8 +518,8 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                             {isEditExercise ? "Edit" : "Add"}
                         </Button>
                     </span>
-                </span>
-            </DialogContent>
-        </Dialog>
+                </DrawerFooter>
+            </DrawerContent>
+        </Drawer>
     );
 };
