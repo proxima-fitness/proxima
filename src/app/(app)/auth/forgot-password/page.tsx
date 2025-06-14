@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ForgotPasswordForm } from '@/components/forgot-password-form'
+import { ForgotPasswordForm } from '@/components/auth/forgot-password-form'
 import { ai_program_builder, completed_sets } from 'public'
 
 export default function Page() {

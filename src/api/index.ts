@@ -18,6 +18,11 @@ if (!process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_BLOG_KEY) {
     console.error('Supabase blog key is missing. Check your environment variables.');
     throw Error('Supabase blog key is missing. Check your environment variables.');}
 
+if (!process.env.NEXT_PUBLIC_REACT_APP_CAPTCHA_SITE_KEY) {
+    console.error('captcha sitekey is missing. Check your environment variables.');
+    throw Error('captcha sitekey is missing. Check your environment variables.');
+}
+
 
 export const supabaseUrl = process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_URL ?? "";
 
@@ -30,3 +35,5 @@ export const supabaseBlogKey = process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_BLOG_K
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 export const supablog = createClient(supabaseBlogUrl, supabaseBlogKey);
+
+export const sitekey = process.env.NEXT_PUBLIC_REACT_APP_CAPTCHA_SITE_KEY ?? "";

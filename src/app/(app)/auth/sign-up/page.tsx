@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { SignUpForm } from '@/components/sign-up-form'
+import { SignUpForm } from '@/components/auth/sign-up-form'
 import { ai_program_builder, completed_sets } from 'public'
 
 export default function Page() {

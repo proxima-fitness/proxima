@@ -1,23 +1,24 @@
+"use client";
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { navLinks } from "../../assets/constants/index";
 import { Button } from "../generic/Button";
 import { NavDrawer } from "./NavDrawer";
 import { proxima_logo } from "public";
 import Link from 'next/link';
-import { supabase } from "@/api";
+import { usePathname } from 'next/navigation';
 
-export const Navbar: React.FC = async () => {
+export const Navbar: React.FC = () => {
 
-    const { data } = await supabase.auth.getUser()
+    const pathname = usePathname();
 
     return (
         <nav className="w-full flex py-2 justify-between items-center navbar">
             <Link href={ "/" } >
                 <img src={ (proxima_logo as any).src } alt="Proxima Logo" className="max-sm:hidden h-[50px] w-[auto]" />
             </Link>
-            { data?.user?.email ? `${data.user.email} logged in` : "" }
             <ul className="list-none sm:flex hidden justify-end items-center flex-1 z-6">
-                { navLinks.map((nav, index) => {
+                { pathname !== '/auth/login' && pathname !== '/auth/sign-up' && pathname !== '/auth/forgot-password' && navLinks.map((nav, index) => {
                     return (
                         <div key={ index }>
                             { nav.id === "cta" ?
