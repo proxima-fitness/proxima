@@ -1,4 +1,6 @@
 import { resetPassword, signInViaEmail, signUpViaEmail } from "@/api/authentication";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { toast } from "sonner";
 
 export const handleSignUpViaEmail =
     (   email: string,
@@ -8,25 +10,19 @@ export const handleSignUpViaEmail =
         turnstileToken: string,
         firstName: string,
         lastName: string | undefined,
-        setShowGuest: (showGuest: boolean ) => void,
-        setShowSocialMediaLogins: (showSocialMediaLogins: boolean ) => void,
-        setAccountCreated: (accountCreated: boolean) => void,
-        setIsPasswordMismatchToastOpen: (isPasswordMismatchToastOpen: boolean) => void,
-        setIsEmailPasswordUserNameToastOpen: (isEmailPasswordUserNameToastOpen: boolean) => void,
+        router: AppRouterInstance,
     ) => {
         if (email !== "" && password !== "" && confirmPassword !== "" && userName !== "" && turnstileToken != "") {
             if (password === confirmPassword) {
                 const account = signUpViaEmail(email, password, turnstileToken, userName, firstName, lastName);
                 if (account !== null && account !== undefined) {
-                    setShowGuest(false);
-                    setShowSocialMediaLogins(false);
-                    setAccountCreated(true);
+                    router.push('/auth/sign-up-success')
                 }
             } else {
-                setIsPasswordMismatchToastOpen(true);
+                toast.error("Passwords must match");
             }
         } else {
-            setIsEmailPasswordUserNameToastOpen(true);
+            toast.error("Please enter an Email, Password and Username");
         }
 };
 

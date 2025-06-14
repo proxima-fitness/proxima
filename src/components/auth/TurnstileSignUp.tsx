@@ -2,6 +2,7 @@ import Turnstile from "react-turnstile";
 import { useState } from "react";
 import { sitekey } from "@/api";
 import { handleSignUpViaEmail } from "../program-builder/utils/authentication";
+import { useRouter } from "next/navigation";
 
 interface IProps {
     email: string,
@@ -10,11 +11,6 @@ interface IProps {
     userName: string,
     firstName: string,
     lastName: string | undefined,
-    handleShowGuest: (showGuest: boolean ) => void,
-    handleShowSocialMediaLogins: (showSocialMediaLogins: boolean ) => void,
-    handleAccountCreated: (accountCreated: boolean) => void,
-    handlePasswordMismatchToast: (isPasswordMismatchToastOpen: boolean) => void,
-    handleEmailPasswordUserNameToast: (isEmailPasswordUserNameToastOpen: boolean) => void,
 }
 
 export const TurnstileSignUp: React.FC<IProps> = (props) => {
@@ -26,33 +22,17 @@ export const TurnstileSignUp: React.FC<IProps> = (props) => {
         userName,
         firstName,
         lastName,
-        handleShowGuest,
-        handleShowSocialMediaLogins,
-        handleAccountCreated,
-        handlePasswordMismatchToast,
-        handleEmailPasswordUserNameToast,
     } = props;
 
-    // const turnstile = useTurnstile();
     const [ signingUp, setSigningUp ] = useState(false);
+    const router = useRouter();
 
     return (
-    //   <Turnstile
-    //     sitekey={ sitekey }
-    //     onVerify={ (token) => {
-    //         fetch("/login", {
-    //         method: "POST",
-    //         body: JSON.stringify({ token }),
-    //         }).then((response) => {
-    //         if (!response.ok) turnstile.reset();
-    //         });
-    //     } }
-    // />
         <>
             <Turnstile
                 sitekey={ sitekey }
                 onVerify={ (token) => {
-                    handleSignUpViaEmail(email, password, confirmPassword, userName, token, firstName, lastName, handleShowGuest, handleShowSocialMediaLogins, handleAccountCreated, handlePasswordMismatchToast, handleEmailPasswordUserNameToast);
+                    handleSignUpViaEmail(email, password, confirmPassword, userName, token, firstName, lastName, router);
                     setSigningUp(true);
                 } }
             />
