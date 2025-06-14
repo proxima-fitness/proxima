@@ -213,7 +213,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                             </div>
                             <div className="w-[33%]">
                                 <Select value={ repTypeValue } aria-label="rep type" onValueChange={ (value) => handleSwapRepTypeValue(value) }>
-                                    <SelectTrigger autoFocus className="h-10">
+                                    <SelectTrigger  className="h-10">
                                         <SelectValue placeholder="Reps" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -226,7 +226,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                             </div>
                             <div className="w-[33%]">
                                 <Select value={ intensityValue } aria-label="intensity" onValueChange={ (value) => setIntensityValue(value) }>
-                                    <SelectTrigger autoFocus className="h-10">
+                                    <SelectTrigger  className="h-10">
                                         <SelectValue placeholder="Intensity" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -266,7 +266,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                                         type="number"
                                         placeholder={ (repTypeValue === "duration_seconds") ? "Secs" : repTypeValue === "distance_meters" ? "Meters" : "Reps" }
                                         inputMode="decimal"
-                                        autoFocus
+
                                         value={ rep || '' }
                                         onInput={ (event) => handleSaveReps(event.currentTarget.value ?? "0", index) }
                                         onBlur={ (event) => handleSaveReps(event.target.value ?? "0", index) }
@@ -289,7 +289,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                                                 handleSaveIntensity((e.target as HTMLInputElement).value,index);
                                         }
                                         } }
-                                        autoFocus
+
                                     />
                                 </div>
                                 { editSetType && <SetTypesToggle setIndex={ index } setType={ setTypes[index] } handleSetType={ handleSetType } /> }

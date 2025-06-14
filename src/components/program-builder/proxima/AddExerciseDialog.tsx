@@ -265,7 +265,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                             </div>
                             <div className="w-[33%]">
                                 <Select value={ repTypeValue } aria-label="rep type" onValueChange={ (value) => handleSwapRepTypeValue(value) }>
-                                    <SelectTrigger autoFocus className="h-10">
+                                    <SelectTrigger  className="h-10">
                                         <SelectValue placeholder="Reps" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -278,7 +278,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                             </div>
                             <div className="w-[33%]">
                                 <Select value={ intensityValue } aria-label="intensity" onValueChange={ (value) => setIntensityValue(value) }>
-                                    <SelectTrigger autoFocus className="h-10">
+                                    <SelectTrigger  className="h-10">
                                         <SelectValue placeholder="Intensity" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -319,7 +319,6 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                                                 disabled
                                                 type="number"
                                                 placeholder="AMRAP"
-                                                autoFocus
                                             />
                                         ) :
                                         <Input
@@ -334,7 +333,6 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                                                         handleSaveReps((e.target as HTMLInputElement).value,index);
                                                 }
                                                 } }
-                                                autoFocus
                                             />
                                     }
                                 </div>
@@ -354,7 +352,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                                                             handleSaveIntensityRange((e.target as HTMLInputElement).value,index,"start");
                                                     }
                                                     } }
-                                                    autoFocus
+
                                                 />
                                                 <div style={ { marginRight: "20px" } }>-</div>
                                                 <Input
@@ -368,7 +366,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                                                             handleSaveIntensityRange((e.target as HTMLInputElement).value,index,"end");
                                                     }
                                                     } }
-                                                    autoFocus
+
                                                 />
                                             </div>
                                         </>
@@ -385,7 +383,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                                                     handleSaveIntensity((e.target as HTMLInputElement).value,index);
                                             }
                                             } }
-                                            autoFocus
+
                                         />
                                 }
 
@@ -416,7 +414,6 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                                                 handleSaveRepsRange((e.target as HTMLInputElement).value, index,"start");
                                             }
                                         } }
-                                        autoFocus
                                     />
                                     <div className="mr-4">-</div>
                                     <Input
@@ -431,7 +428,6 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                                                 handleSaveRepsRange((e.target as HTMLInputElement).value, index,"end");
                                             }
                                         } }
-                                        autoFocus
                                     />
                                 </div>
                             </div>
@@ -451,7 +447,6 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                                                         handleSaveIntensityRange((e.target as HTMLInputElement).value,index,"start");
                                                 }
                                                 } }
-                                                autoFocus
                                             />
                                             <div style={ { marginRight: "20px" } }>-</div>
                                             <Input
@@ -465,7 +460,6 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                                                         handleSaveIntensityRange((e.target as HTMLInputElement).value,index,"end");
                                                 }
                                                 } }
-                                                autoFocus
                                             />
                                         </div>
                                     </>
@@ -482,7 +476,6 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                                                 handleSaveIntensity((e.target as HTMLInputElement).value,index);
                                         }
                                         } }
-                                        autoFocus
                                     />
                             }
 
