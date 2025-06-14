@@ -31,6 +31,7 @@ export const TurnstileSignIn: React.FC<IProps> = (props) => {
             <Turnstile
                 sitekey={ sitekey }
                 onVerify={ async (token) => {
+                    setSigningIn(true);
                     const status = await handleSignInViaEmail(email, password, token);
                     if (status instanceof AuthError) {
                         toast.error("Error signing in: " + status.message);
@@ -40,8 +41,7 @@ export const TurnstileSignIn: React.FC<IProps> = (props) => {
                         turnstile.reset();
 
                     } else {
-                        setSigningIn(true);
-                        router.push('/protected')
+                        router.push('/program-builder')
                     }
                 } }
             />
