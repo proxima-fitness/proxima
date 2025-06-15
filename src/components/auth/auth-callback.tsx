@@ -14,7 +14,7 @@ export const AuthCallback = () => {
         const code = searchParams.get('code')
 
         if (code) {
-            const { error } = await supabase.auth.exchangeCodeForSession(code)
+            const { error } = await supabase.auth.exchangeCodeForSession(code);
             if (error) {
             console.error('Client-side code exchange failed:', error)
             router.replace('/auth/error')
