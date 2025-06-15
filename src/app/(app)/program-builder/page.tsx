@@ -5,7 +5,6 @@ import { jack, people02, people03, people04, people05 } from "public";
 import { Prompt } from "@/components/program-builder/shared/Prompt";
 import { AiProgramGrid } from "@/components/program-builder/shared/AiProgramGrid";
 import { RecentProgramsGrid } from "@/components/program-builder/shared/RecentProgramsGrid";
-import { AuthCallback } from "../auth/AuthCallback";
 
 export const metadata = {
     title: "AI Program Builder | Proxima Fitness",
@@ -24,7 +23,6 @@ export default function AiProgramBuilder() {
                     </div>
                     <div className="flex flex-col max-sm:flex-col max-sm:pt-8 justify-center items-center w-full">
                         <Prompt />
-                        <AuthCallback />
                     </div>
                     <div className="pt-4 flex flex-col justify-center items-center">
                         <AvatarStack
