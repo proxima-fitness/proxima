@@ -6,12 +6,14 @@ import { sitekey } from "@/api";
 
 interface IProps {
     email: string,
+    setSuccess: (success: boolean) => void,
 }
 
 export const TurnstileResetPassword: React.FC<IProps> = (props) => {
 
     const {
         email,
+        setSuccess,
     } = props;
 
     // const turnstile = useTurnstile();
@@ -37,6 +39,7 @@ export const TurnstileResetPassword: React.FC<IProps> = (props) => {
                     const response: {status: string; data: unknown} | undefined = await handleResetPasswordRequest(email, token);
                     if (response && response?.status === "success") {
                         toast.success(response?.data as string ?? "success");
+                        setSuccess(true);
                     } else {
                         toast.error(response?.data as string ?? "Unknown error occured while logging in");
                     }

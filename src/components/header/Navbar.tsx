@@ -14,12 +14,10 @@ const NavItems = (pathname: string) => {
     const { session } = useSessionContext();
 
     if (pathname === "/auth/login" || pathname === "/auth/sign-up" || pathname === "/auth/forgot-password") {
-        console.log("entered 1");
         return (
             <></>
         )
     } else if (session?.user) {
-        console.log("entered 2");
         return authenticatedNavLinks.map((nav, index) => {
             return (
                 <div key={ index }>
@@ -51,7 +49,6 @@ const NavItems = (pathname: string) => {
             );
         })
     } else {
-        console.log("entered 3");
         return navLinks.map((nav, index) => {
             return (
                 <div key={ index }>

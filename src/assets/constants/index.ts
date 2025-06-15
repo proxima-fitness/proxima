@@ -5762,9 +5762,13 @@ export const authenticatedNavLinks = [
         title: "AI Program Builder",
     },
     {
-        id: "settings",
-        title: "Settings"
-    }
+        id: "log-in",
+        title: "Log in",
+    },
+    {
+        id: "cta",
+        title: "Download App",
+    },
 ];
 
 export const navLinks = [
