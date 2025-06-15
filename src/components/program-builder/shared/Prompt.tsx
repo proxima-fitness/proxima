@@ -20,9 +20,17 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { useSessionContext } from "@/contexts/SessionContext";
+import { Session } from "@supabase/supabase-js";
 
-export const Prompt: React.FC = () => {
+interface IProps {
+    sessionData: Session | null;
+}
 
+export const Prompt: React.FC<IProps> = ({ sessionData }) => {
+
+    const { setSession } = useSessionContext();
+    setSession(sessionData);
     const { setIsHevy } = useIsHevy();
     const [search, setSearch] = useState<string>("");
     // const [dropzoneOpen, toggleDropzone] = useReducer(prev => !prev, false);

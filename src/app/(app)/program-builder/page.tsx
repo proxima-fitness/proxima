@@ -5,13 +5,17 @@ import { jack, people02, people03, people04, people05 } from "public";
 import { Prompt } from "@/components/program-builder/shared/Prompt";
 import { AiProgramGrid } from "@/components/program-builder/shared/AiProgramGrid";
 import { RecentProgramsGrid } from "@/components/program-builder/shared/RecentProgramsGrid";
+import { createClient } from "@/utils/supabase/client";
 
 export const metadata = {
     title: "AI Program Builder | Proxima Fitness",
     description: "Generate a custom program with AI. Build your ideal program fast.",
 };
 
-export default function AiProgramBuilder() {
+export default async function AiProgramBuilder() {
+
+    const supabase = createClient();
+    const { data } = await supabase.auth.getSession();
 
     return (
         <div className={ `bg-white ${styles.flexCenter} flex-col` }>
@@ -22,7 +26,7 @@ export default function AiProgramBuilder() {
                         <div className="text-lg font-normal">Get a tailored workout program in seconds</div>
                     </div>
                     <div className="flex flex-col max-sm:flex-col max-sm:pt-8 justify-center items-center w-full">
-                        <Prompt />
+                        <Prompt sessionData={ data.session } />
                     </div>
                     <div className="pt-4 flex flex-col justify-center items-center">
                         <AvatarStack
