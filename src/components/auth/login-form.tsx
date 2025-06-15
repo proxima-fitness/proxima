@@ -43,7 +43,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: provider,
                 options: {
-                redirectTo: `https://proximafitness.com/auth/oauth?next=/protected`,
+                redirectTo: `https://proximafitness.com/auth/oauth?next=/program-builder`,
                 },
             })
 

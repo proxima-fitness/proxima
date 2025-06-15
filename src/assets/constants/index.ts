@@ -5748,6 +5748,25 @@ export const filterGroupOptions: TFilterGroupOption[] = [
     },
 ];
 
+export const authenticatedNavLinks = [
+    {
+        id: "exercises",
+        title: "Exercises",
+    },
+    {
+        id: "programs",
+        title: "Programs"
+    },
+    {
+        id: "program-builder",
+        title: "AI Program Builder",
+    },
+    {
+        id: "settings",
+        title: "Settings"
+    }
+];
+
 export const navLinks = [
     {
         id: "programs",
