@@ -30,7 +30,13 @@ interface IProps {
 export const Prompt: React.FC<IProps> = ({ sessionData }) => {
 
     const { setSession } = useSessionContext();
-    setSession(sessionData);
+
+    useEffect(() => {
+        if (sessionData) {
+            setSession(sessionData);
+        }
+    }, [sessionData, setSession]);
+
     const { setIsHevy } = useIsHevy();
     const [search, setSearch] = useState<string>("");
     // const [dropzoneOpen, toggleDropzone] = useReducer(prev => !prev, false);

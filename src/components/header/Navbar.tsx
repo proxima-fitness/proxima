@@ -16,6 +16,7 @@ import { signOutUser } from "@/api/authentication";
 
 const NavItems = (pathname: string) => {
     const { session } = useSessionContext();
+    console.log("Session in Navbar", session);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [openConnectHevyDialog, setOpenConnectHevyDialog] = useState(false);
 
