@@ -5,9 +5,10 @@ import { getCommunityAiPrograms, getExplorePageProgramDetails, getExplorePagePro
 import { getOpUserId, getUserFullName, getUserMetaData } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getExercises } from "./exercises";
-import { getHevyExercises } from "../components/program-builder/api/hevy";
+import { getHevyApiKey, getHevyExercises } from "../components/program-builder/api/hevy";
 import { buildAiProgram } from "./edge-functions";
 import { getExerciseGifIdForHevyExercise } from "@/components/program-builder/utils";
+import { User } from "@supabase/supabase-js";
 
 /*********************************/
 /** CLIENT SIDE RENDERED HOOKS **/
@@ -136,6 +137,15 @@ export const useExerciseGif = (gif_id: string | undefined, resolution: "180" | "
         queryKey: [ "exercise-gif", exercise_name, gif_id, resolution, file_type ],
         queryFn: () => getExerciseGif(gif_id, resolution, file_type),
         enabled: !!gif_id,
+    });
+};
+
+// FETCHES THE HEVY API KEY FOR A USER
+export const useHevySecret = (user: User | undefined) => {
+    return useQuery({
+        queryKey: ["hevy_api_key"],
+        queryFn: () => getHevyApiKey(user),
+        enabled: !!user,
     });
 };
 

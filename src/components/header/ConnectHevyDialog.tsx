@@ -1,0 +1,86 @@
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import { useState } from "react";
+import { postHevyApikey, updateHevyApiKey } from "../program-builder/api/hevy";
+import { useSessionContext } from "@/contexts/SessionContext";
+import { toast } from "sonner";
+import { validate } from "uuid";
+import { useQueryClient } from "@tanstack/react-query";
+import { useHevySecret } from "@/api/hooks";
+import { LockIcon, LockOpenIcon } from "lucide-react";
+
+interface IProps {
+    openConnectHevyDialog: boolean;
+    handleOpenConnectHevyDialog: (openConnectHevyDialog: boolean) => void;
+}
+
+export const ConnectHevyDialog: React.FC<IProps> = (props) => {
+
+    const {
+        openConnectHevyDialog,
+        handleOpenConnectHevyDialog,
+    } = props;
+
+    const { session } = useSessionContext();
+    const { data: hevyApiKey } = useHevySecret(session?.user);
+    const [inputValue, setInputValue] = useState("");
+    const queryClient = useQueryClient();
+
+    const handleConnectHevy = async () => {
+        const isValidUuid = validate(inputValue);
+        if (isValidUuid) {
+            if (hevyApiKey && hevyApiKey.length > 0) {
+                if ( session !== null ) {
+                    const updatedApiKey = await updateHevyApiKey(session.user, inputValue);
+                    if (updatedApiKey) {
+                        toast.success("Hevy API Key saved successfully");
+                        queryClient.invalidateQueries({ queryKey: [ "hevy_api_key" ] });
+                    }
+                }
+            } else {
+                if (session !== null) {
+                    const newApiKey = await postHevyApikey(session.user,inputValue);
+                    if (newApiKey && newApiKey.success) {
+                        toast.success("Hevy API Key saved successfully");
+                        queryClient.invalidateQueries({ queryKey: [ "hevy_api_key" ] });
+                        handleOpenConnectHevyDialog(false);
+                    } else {
+                        toast.error("Error saving Hevy API Key");
+                    }
+                }
+            }
+        } else {
+            toast.error("Invalid Hevy API Key");
+        }
+    };
+    return (
+        <Dialog open={openConnectHevyDialog} onOpenChange={handleOpenConnectHevyDialog}>
+            <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
+                <DialogHeader>
+                    <DialogTitle>{ hevyApiKey && hevyApiKey.length > 0 ? <span className="text-lightSecondary flex justify-start items-center gap-2"><LockIcon /> Update Hevy API Key</span> : <span className="text-lightSecondary"><LockOpenIcon />Connect Hevy App</span> }</DialogTitle>
+                    <DialogDescription>
+                        Sync your data with your Proxima account
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="grid flex-1 gap-2">
+                    <Label htmlFor="api-key">
+                        Paste Hevy API Key
+                    </Label>
+                    <Input
+                        id="api-key"
+                        type="text"
+                        placeholder="5xxxxxxx-exxx-6xxx-sxxx-6xxxxxxxxxxx"
+                        value={inputValue}
+                        onInput={(e) => setInputValue(e.currentTarget.value)}
+                        autoFocus
+                    />
+                </div>
+                <DialogFooter className="sm:justify-start">
+                    <Button className="bg-lightSecondary text-white" onClick={ handleConnectHevy }>{ hevyApiKey && hevyApiKey.length > 0 ? "Update" : "Connect" }</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}

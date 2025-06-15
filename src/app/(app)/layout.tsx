@@ -58,44 +58,44 @@ export default function RootLayout({
             </head>
             <body>
                 <SessionProvider>
-                    <SidebarProvider>
-                        <div className="max-sm:block hidden">
-                            <AppSidebar />
-                        </div>
-                        <div className="w-full bg-primary">
-                            <div className={ `${styles.paddingXNav} ${styles.flexCenter}` }>
-                                <div className={ `${styles.boxWidth}` }>
-                                    <PreviewProvider>
-                                        <IsHevyProvider>
-                                            <Navbar />
-                                        </IsHevyProvider>
-                                    </PreviewProvider>
-                                </div>
+                    <QueryProvider>
+                        <SidebarProvider>
+                            <div className="max-sm:block hidden">
+                                <AppSidebar />
                             </div>
-                            <main id="root">
-                                <PostHogClientProvider>
-                                    <QueryProvider>
+                            <div className="w-full bg-primary">
+                                <div className={ `${styles.paddingXNav} ${styles.flexCenter}` }>
+                                    <div className={ `${styles.boxWidth}` }>
                                         <PreviewProvider>
                                             <IsHevyProvider>
-                                                <Analytics />
-                                                <NextTopLoader
-                                                    showSpinner={ false }
-                                                    color="#00f6ff"
-                                                />
-                                                {children}
+                                                <Navbar />
                                             </IsHevyProvider>
                                         </PreviewProvider>
-                                        <Toaster richColors />
-                                    </QueryProvider>
-                                </PostHogClientProvider>
-                            </main>
-                            <div className={ `bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
-                                <div className={ `${styles.boxWidth}` }>
-                                    <Footer />
+                                    </div>
+                                </div>
+                                <main id="root">
+                                    <PostHogClientProvider>
+                                            <PreviewProvider>
+                                                <IsHevyProvider>
+                                                    <Analytics />
+                                                    <NextTopLoader
+                                                        showSpinner={ false }
+                                                        color="#00f6ff"
+                                                    />
+                                                    {children}
+                                                </IsHevyProvider>
+                                            </PreviewProvider>
+                                            <Toaster richColors />
+                                    </PostHogClientProvider>
+                                </main>
+                                <div className={ `bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
+                                    <div className={ `${styles.boxWidth}` }>
+                                        <Footer />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </SidebarProvider>
+                        </SidebarProvider>
+                    </QueryProvider>
                 </SessionProvider>
             </body>
         </html>

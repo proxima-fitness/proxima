@@ -13,9 +13,10 @@ import { Themes } from "./components/features/Themes";
 import { CallToAction } from "./components/call-to-action/CallToAction";
 import { Faq } from "./components/faqs/Faq";
 import { ProgramsSection } from "./components/features/ProgramsSection";
+import { useSessionContext } from "@/contexts/SessionContext";
 
 const App = () => {
-
+    const { session } = useSessionContext();
     const { registerHandler } = useExitIntent({
         desktop: {
           delayInSecondsToTrigger: 4,
@@ -33,7 +34,9 @@ const App = () => {
     registerHandler({
       id: 'desktop',
       handler: () => {
-        setIsOpen(true);
+        if (!session?.user) {
+          setIsOpen(true);
+        }
       },
       context: ['onDesktop'],
     });
@@ -42,8 +45,10 @@ const App = () => {
     registerHandler({
       id: 'mobile',
       handler: () => {
-        setIsMobile(true);
-        setIsOpen(true);
+        if (!session?.user) {
+          setIsMobile(true);
+          setIsOpen(true);
+        }
       },
       context: ['onMobile'],
     });
@@ -53,7 +58,7 @@ const App = () => {
 
     return (
         <div className={`overflow-hidden`}>
-            <DownloadPopup isOpen={ isOpen } setIsOpen={ setIsOpen } isMobile={ isMobile } />
+            {!session?.user && <DownloadPopup isOpen={ isOpen } setIsOpen={ setIsOpen } isMobile={ isMobile } />}
             <div className={ `sm:pt-16 pt-6`}>
                 <div className={ `bg-primary ${styles.flexStart}` }>
                     <div className={ `${styles.boxWidth}` }>

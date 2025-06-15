@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { supabase } from "../../../api";
 import { getExerciseIdForHevyExercise, getMaxFolderId } from "@/components/program-builder/utils";
 import { getExercises } from "../../../api/exercises";
+import { User } from "@supabase/supabase-js";
 
 export const defaultFetch = async <T>(url: string, apiKey: string): Promise<T> => {
     const response = await fetch(url, {
@@ -174,4 +175,112 @@ export const postHevyRoutineProgram = async (id: string, hevyRoutines: THevyRout
         console.error('Unexpected error:', error);
         return error;
     }
+};
+
+
+/**
+ * POSTS USER'S HEVY API KEY TO THEIR SUPABASE USER ACCOUNT
+ * @param user - The user
+ * @param secret - The hevy api key
+ * @returns The hevy api key
+ */
+export const postHevyApikey = async (user: User, secret: string) => {
+
+    try {
+        if (user) {
+            const { data: apiKeySaved, error: apiKeyError } = await supabase.rpc('insert_secret', {
+                secret,
+            });
+
+            if (apiKeyError) {
+                console.error("Error saving Hevy API Key", apiKeyError);
+                return { success: false, data: [] };
+            } else {
+                return { success: true, data: apiKeySaved};
+            }
+        }
+    } catch (error: unknown) {
+        console.error("Error saving Hevy API Key", error);
+    }
+};
+
+/**
+ * GETS USER'S HEVY API KEY FROM THEIR SUPABASE USER ACCOUNT
+ * @param user - The user
+ * @returns The hevy api key
+ */
+export const getHevyApiKey = async (user: User | undefined) => {
+
+    try {
+        if (user) {
+            const secretName = `hevy_api_key_${user.id}`;
+            const { data: hevyApiKey, error: hevyApiKeyError } = await supabase.rpc('read_secret', {
+                secret_name: secretName,
+            });
+
+            if (hevyApiKeyError) {
+                console.error("Error accessing Hevy API Key", hevyApiKeyError);
+                return "";
+            } else {
+                return hevyApiKey;
+            }
+        }
+    } catch (error: unknown) {
+        console.error("Error accessing Hevy API key", error);
+    }
+};
+
+/**
+ * DELETES USER'S HEVY API KEY FROM THEIR SUPABASE USER ACCOUNT
+ * @param user - The user
+ * @returns The hevy api key
+ */
+export const deleteHevyApiKey = async (user: User) => {
+
+    try {
+        if (user) {
+            const secretName = `hevy_api_key_${user.id}`;
+            const { error: deletionError } = await supabase.rpc('delete_secret', {
+                secret_name: secretName,
+            });
+
+            if (deletionError) {
+                console.error("Error deleting Hevy API Key", deletionError);
+                return false;
+            } else {
+                return true;
+            }
+        }
+    } catch (error: unknown) {
+        console.error("Error deleting Hevy API Key", error);
+    }
+
+};
+
+
+/**
+ * UPDATES USER'S HEVY API KEY IN THEIR SUPABASE USER ACCOUNT
+ * @param user - The user
+ * @param secret - The hevy api key
+ * @returns The hevy api key
+ */
+export const updateHevyApiKey = async (user: User, secret: string): Promise<boolean> => {
+
+    if (await deleteHevyApiKey(user)) {
+        const apiKeySaved = await postHevyApikey(user, secret);
+        if (apiKeySaved && apiKeySaved.success) {
+            return true;
+        }
+    }
+
+    return false;
+};
+
+/**
+ * DELAYS FOR A SPECIFIC AMOUNT OF TIME
+ * @param ms - The amount of time to delay
+ * @returns The delayed time
+ */
+export const delay = (ms: number) => {
+    return new Promise(resolve => setTimeout(resolve, ms));
 };

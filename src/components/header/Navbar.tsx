@@ -9,9 +9,20 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSessionContext } from "@/contexts/SessionContext";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { ConnectHevyDialog } from "./ConnectHevyDialog";
+import { useEffect, useState } from "react";
 
 const NavItems = (pathname: string) => {
     const { session } = useSessionContext();
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [openConnectHevyDialog, setOpenConnectHevyDialog] = useState(false);
+
+    useEffect(() => {
+        if (openConnectHevyDialog) {
+          setDropdownOpen(false); // Force dropdown to close
+        }
+      }, [openConnectHevyDialog]);
 
     if (pathname === "/auth/login" || pathname === "/auth/sign-up" || pathname === "/auth/forgot-password") {
         return (
@@ -30,12 +41,45 @@ const NavItems = (pathname: string) => {
                         key={ nav.id }
                         className={ `font-main font-normal cursor-pointer text-[16px] text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
                     >
-                            <Avatar>
-                                <AvatarImage src={ session?.user?.user_metadata.avatar_url } />
-                                <AvatarFallback>
-                                    { session?.user?.user_metadata.full_name.charAt(0) }
-                                </AvatarFallback>
-                            </Avatar>
+                        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+                            <DropdownMenuTrigger asChild>
+                                <div className="cursor-pointer flex flex-row items-center">
+                                    <Avatar>
+                                        <AvatarImage src={ session?.user?.user_metadata.avatar_url } />
+                                        <AvatarFallback>
+                                            { session?.user?.user_metadata.full_name.charAt(0) }
+                                        </AvatarFallback>
+                                    </Avatar>
+                                </div>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuLabel>
+                                    Hi, { session?.user?.user_metadata.full_name }
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onSelect={(e) => {
+                                    e.preventDefault();
+                                    setOpenConnectHevyDialog(true);
+                                }}>
+                                    Connect Hevy App
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="bg-red-400 text-white">
+                                    Log out
+                                    <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <ConnectHevyDialog
+                            openConnectHevyDialog={openConnectHevyDialog}
+                            handleOpenConnectHevyDialog={(open) => {
+                                setOpenConnectHevyDialog(open);
+                                // Ensure dropdown is reset when dialog closes
+                                if (!open) {
+                                  setDropdownOpen(false);
+                                }
+                              }}
+                            />
                         </li>
                     :
                         <li
