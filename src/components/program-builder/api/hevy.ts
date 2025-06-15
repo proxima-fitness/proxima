@@ -209,7 +209,7 @@ export const postHevyApikey = async (user: User, secret: string) => {
  * @param user - The user
  * @returns The hevy api key
  */
-export const getHevyApiKey = async (user: User | undefined) => {
+export const getHevyApiKey = async (user: User | undefined | null) => {
 
     try {
         if (user) {

@@ -14,7 +14,7 @@ import { Analytics } from "@vercel/analytics/react";
 import NextTopLoader from 'nextjs-toploader';
 import { PostHogClientProvider } from "@/utils/PostHogClientProvider";
 import { PreviewProvider } from "@/contexts/PreviewContext";
-import { SessionProvider } from "@/contexts/SessionContext";
+import { UserProvider } from "@/contexts/UserContext";
 
 export const metadata: Metadata = {
     title: 'Proxima Fitness | AI Workout Builder & Program Directory',
@@ -57,7 +57,7 @@ export default function RootLayout({
                 <meta name="theme-color" content="#000000" />
             </head>
             <body>
-                <SessionProvider>
+                <UserProvider>
                     <QueryProvider>
                         <SidebarProvider>
                             <div className="max-sm:block hidden">
@@ -96,7 +96,7 @@ export default function RootLayout({
                             </div>
                         </SidebarProvider>
                     </QueryProvider>
-                </SessionProvider>
+                </UserProvider>
             </body>
         </html>
     );

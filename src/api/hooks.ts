@@ -141,7 +141,7 @@ export const useExerciseGif = (gif_id: string | undefined, resolution: "180" | "
 };
 
 // FETCHES THE HEVY API KEY FOR A USER
-export const useHevySecret = (user: User | undefined) => {
+export const useHevySecret = (user: User | undefined | null) => {
     return useQuery({
         queryKey: ["hevy_api_key"],
         queryFn: () => getHevyApiKey(user),

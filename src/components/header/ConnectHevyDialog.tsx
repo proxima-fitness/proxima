@@ -4,7 +4,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { useState } from "react";
 import { postHevyApikey, updateHevyApiKey } from "../program-builder/api/hevy";
-import { useSessionContext } from "@/contexts/SessionContext";
+import { useUserContext } from "@/contexts/UserContext";
 import { toast } from "sonner";
 import { validate } from "uuid";
 import { useQueryClient } from "@tanstack/react-query";
@@ -23,8 +23,8 @@ export const ConnectHevyDialog: React.FC<IProps> = (props) => {
         handleOpenConnectHevyDialog,
     } = props;
 
-    const { session } = useSessionContext();
-    const { data: hevyApiKey } = useHevySecret(session?.user);
+    const { user } = useUserContext();
+    const { data: hevyApiKey } = useHevySecret(user);
     const [inputValue, setInputValue] = useState("");
     const queryClient = useQueryClient();
 
@@ -32,16 +32,16 @@ export const ConnectHevyDialog: React.FC<IProps> = (props) => {
         const isValidUuid = validate(inputValue);
         if (isValidUuid) {
             if (hevyApiKey && hevyApiKey.length > 0) {
-                if ( session !== null ) {
-                    const updatedApiKey = await updateHevyApiKey(session.user, inputValue);
+                if ( user !== null ) {
+                    const updatedApiKey = await updateHevyApiKey(user, inputValue);
                     if (updatedApiKey) {
                         toast.success("Hevy API Key saved successfully");
                         queryClient.invalidateQueries({ queryKey: [ "hevy_api_key" ] });
                     }
                 }
             } else {
-                if (session !== null) {
-                    const newApiKey = await postHevyApikey(session.user,inputValue);
+                if (user !== null) {
+                    const newApiKey = await postHevyApikey(user,inputValue);
                     if (newApiKey && newApiKey.success) {
                         toast.success("Hevy API Key saved successfully");
                         queryClient.invalidateQueries({ queryKey: [ "hevy_api_key" ] });

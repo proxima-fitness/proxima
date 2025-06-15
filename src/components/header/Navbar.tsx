@@ -7,7 +7,7 @@ import { NavDrawer } from "./NavDrawer";
 import { proxima_logo } from "public";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useSessionContext } from "@/contexts/SessionContext";
+import { useUserContext } from "@/contexts/UserContext";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { ConnectHevyDialog } from "./ConnectHevyDialog";
@@ -15,8 +15,8 @@ import { useEffect, useState } from "react";
 import { signOutUser } from "@/api/authentication";
 
 const NavItems = (pathname: string) => {
-    const { session } = useSessionContext();
-    console.log("Session in Navbar", session);
+    const { user } = useUserContext();
+    console.log("User in Navbar", user);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [openConnectHevyDialog, setOpenConnectHevyDialog] = useState(false);
 
@@ -30,7 +30,7 @@ const NavItems = (pathname: string) => {
         return (
             <></>
         )
-    } else if (session?.user) {
+    } else if (user) {
         return authenticatedNavLinks.map((nav, index) => {
             return (
                 <div key={ index }>
@@ -47,16 +47,16 @@ const NavItems = (pathname: string) => {
                             <DropdownMenuTrigger asChild>
                                 <div className="cursor-pointer flex flex-row items-center">
                                     <Avatar>
-                                        <AvatarImage src={ session?.user?.user_metadata.avatar_url } />
+                                        <AvatarImage src={ user?.user_metadata.avatar_url } />
                                         <AvatarFallback>
-                                            { session?.user?.user_metadata.full_name.charAt(0) }
+                                            { user?.user_metadata.full_name.charAt(0) }
                                         </AvatarFallback>
                                     </Avatar>
                                 </div>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
                                 <DropdownMenuLabel>
-                                    Hi, { session?.user?.user_metadata.full_name }
+                                    Hi, { user?.user_metadata.full_name }
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onSelect={(e) => {

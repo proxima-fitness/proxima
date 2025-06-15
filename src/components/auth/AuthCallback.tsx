@@ -2,12 +2,12 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSessionContext } from "@/contexts/SessionContext";
+import { useUserContext } from "@/contexts/UserContext";
 import { supabase } from "@/api";
 
 const AuthCallback = () => {
 
-    const { setSession } = useSessionContext();
+    const { setUser } = useUserContext();
     const router = useRouter();
 
     useEffect(() => {
@@ -17,14 +17,14 @@ const AuthCallback = () => {
         if (error) {
             console.error("Auth callback error:", error);
             router.push("/auth/login");
-        } else if (data.session) {
-            setSession(data.session);
+        } else if (data?.session && data.session.user) {
+            setUser(data.session.user);
             router.push("/program-builder");
         }
     };
 
     fetchSession();
-  }, [router, setSession]);
+  }, [router, setUser]);
 
     return (
         <div className="flex justify-center items-center h-screen">

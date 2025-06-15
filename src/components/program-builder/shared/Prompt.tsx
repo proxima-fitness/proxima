@@ -20,22 +20,22 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { useSessionContext } from "@/contexts/SessionContext";
-import { Session } from "@supabase/supabase-js";
+import { useUserContext } from "@/contexts/UserContext";
+import { User } from "@supabase/supabase-js";
 
 interface IProps {
-    sessionData: Session | null;
+    userData: User | null;
 }
 
-export const Prompt: React.FC<IProps> = ({ sessionData }) => {
+export const Prompt: React.FC<IProps> = ({ userData }) => {
 
-    const { setSession } = useSessionContext();
+    const { setUser } = useUserContext();
 
     useEffect(() => {
-        if (sessionData) {
-            setSession(sessionData);
+        if (userData) {
+            setUser(userData);
         }
-    }, [sessionData, setSession]);
+    }, [userData, setUser]);
 
     const { setIsHevy } = useIsHevy();
     const [search, setSearch] = useState<string>("");

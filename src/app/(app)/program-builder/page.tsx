@@ -15,7 +15,7 @@ export const metadata = {
 export default async function AiProgramBuilder() {
 
     const supabase = createClient();
-    const { data } = await supabase.auth.getSession();
+    const { data } = await supabase.auth.getUser();
 
     return (
         <div className={ `bg-white ${styles.flexCenter} flex-col` }>
@@ -26,7 +26,7 @@ export default async function AiProgramBuilder() {
                         <div className="text-lg font-normal">Get a tailored workout program in seconds</div>
                     </div>
                     <div className="flex flex-col max-sm:flex-col max-sm:pt-8 justify-center items-center w-full">
-                        <Prompt sessionData={ data.session } />
+                        <Prompt userData={ data.user } />
                     </div>
                     <div className="pt-4 flex flex-col justify-center items-center">
                         <AvatarStack
