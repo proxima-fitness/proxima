@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { ConnectHevyDialog } from "./ConnectHevyDialog";
 import { useEffect, useState } from "react";
+import { signOutUser } from "@/api/authentication";
 
 const NavItems = (pathname: string) => {
     const { session } = useSessionContext();
@@ -64,7 +65,7 @@ const NavItems = (pathname: string) => {
                                     Connect Hevy App
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="bg-red-400 text-white">
+                                <DropdownMenuItem onClick={() => signOutUser()} className="bg-red-400 text-white">
                                     Log out
                                     <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
                                 </DropdownMenuItem>
