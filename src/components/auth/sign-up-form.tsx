@@ -162,8 +162,8 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
                   <Label htmlFor="username">{(formState?.errors?.username?.message && formState?.errors?.username?.message.length > 0)  ? formState.errors.username.message : "Username"}</Label>
                 </div>
                 <Input
-                  id="repeat-password"
-                  type="password"
+                  id="username"
+                  type="text"
                   required
                   value={ watchUserName }
                   onInput={ (e) => {
@@ -182,8 +182,8 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
                   <Label htmlFor="first-name">{(formState?.errors?.firstName?.message && formState?.errors?.firstName?.message.length > 0)  ? formState.errors.firstName.message : "First Name"}</Label>
                 </div>
                 <Input
-                    id="repeat-password"
-                    type="password"
+                    id="first-name"
+                    type="text"
                     required
                     value={ watchFirstName }
                     onInput={(e) => {
@@ -202,8 +202,8 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
                   <Label htmlFor="last-name">{(formState?.errors?.lastName?.message && formState?.errors?.lastName?.message.length > 0)  ? formState.errors.lastName.message : "Last Name"}</Label>
                 </div>
                 <Input
-                    id="repeat-password"
-                    type="password"
+                    id="last-name"
+                    type="text"
                     required
                     value={ watchLastName }
                     onInput={ (e) => {
