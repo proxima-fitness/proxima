@@ -37,6 +37,8 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
         }
     }, [userData, setUser]);
 
+    console.log("user data in prompt", userData);
+
     const { setIsHevy } = useIsHevy();
     const [search, setSearch] = useState<string>("");
     // const [dropzoneOpen, toggleDropzone] = useReducer(prev => !prev, false);
