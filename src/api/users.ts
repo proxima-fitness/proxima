@@ -42,7 +42,6 @@ export const getUserFullName = async (id: string | undefined, id_type: "program"
                     eq("id",userId[0].user_id);
 
                 if (fullNameError) {
-                    console.error("Error fetching users full name", fullNameError);
                     return "Anonymous";
                 } else {
                     if (fullName[0].first_name && fullName[0].last_name && fullName[0].first_name !== null && fullName[0].last_name !== null) {

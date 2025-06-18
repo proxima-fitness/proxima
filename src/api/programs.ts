@@ -1,4 +1,6 @@
+import { User } from "@supabase/supabase-js";
 import { supabase } from ".";
+import { v4 as uuidv4 } from 'uuid';
 
 // GET THE PROGRAMS DISPLAYED ON THE EXPLORE PAGE
 export const getExplorePagePrograms = async (filters?: TProgramFilters, limit?: number, offset?: number): Promise<TProgram[]> => {
@@ -260,5 +262,27 @@ export const getProgramThumbnailByIDViaPublicUrl = async (id: string) => {
         return publicData.publicUrl;
     } catch (err) {
         console.error('Error fetching thumbnail public URL:', err);
+    }
+};
+
+// POST A NEW SUBSCRIBER TO PROGRAM WITH PROGRAM ID
+export const postNewProgramSubscriber = async (user: User, program_id: string) => {
+
+    try {
+        const subscriberObject: { [key: string]: unknown } = {};
+        subscriberObject['id'] = uuidv4();
+        subscriberObject['user_id'] = user.id;
+        subscriberObject['program_id'] = program_id;
+
+        const { error: subscriberError } = await supabase.from('program_subscribers').insert([
+            subscriberObject,
+        ]);
+
+        if (subscriberError) {
+            return subscriberError;
+        }
+
+    } catch (error: unknown ) {
+        console.error("Error Joining Program",error);
     }
 };
