@@ -23,7 +23,7 @@ export const useBlogs = (limit: number, offset: number) => {
 };
 
 // FETCHES THE FULL NAME OF A USER BY ID
-export const useUserFullName = (id: string, id_type: "program" | "user") => {
+export const useUserFullName = (id: string | undefined, id_type: "program" | "user") => {
     return useQuery({
         queryKey: ["full-name", id, id_type],
         queryFn: () => getUserFullName(id, id_type),

@@ -203,8 +203,6 @@ export const replaceTextToJsonExercisesHevy = (exercises: {
             const match = fuseResults?.[0]?.item;
             const selectedMatch = bestMatch(fuseResults, exercise?.title ?? "");
 
-            // console.log("{expected:",normalizeExerciseTitle(exercise?.title ?? ""), ",actual:", selectedMatch.item.normalized_title, "},");
-
             if (!match) return [];
                 return [{
                     index: index,

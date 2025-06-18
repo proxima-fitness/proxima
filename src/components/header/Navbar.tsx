@@ -9,29 +9,36 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useUserContext } from "@/contexts/UserContext";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { ConnectHevyDialog } from "./ConnectHevyDialog";
 import { useEffect, useState } from "react";
 import { signOutUser } from "@/api/authentication";
-import { createClient } from '@/utils/supabase/client';
+import { useUserFullName } from "@/api/hooks";
+
+// Client-side function to call the server-side sign out API
+const signOutServer = async () => {
+    try {
+        const response = await fetch('/api/auth/signout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            console.error('Failed to sign out on server');
+        }
+    } catch (error) {
+        console.error('Error calling sign out API:', error);
+    }
+};
 
 const NavItems = (pathname: string) => {
-    const { user, setUser } = useUserContext();
+    // this should get the user if they logged in server side (via social logins)
+    const { user } = useUserContext();
+    const { data: userFullName } = useUserFullName(user?.id, "user");
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [openConnectHevyDialog, setOpenConnectHevyDialog] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        const checkSession = async () => {
-            const supabase = createClient();
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session?.user) {
-                setUser(session.user);
-            }
-            setIsLoading(false);
-        };
-        checkSession();
-    }, [setUser]);
 
     useEffect(() => {
         if (openConnectHevyDialog) {
@@ -41,10 +48,6 @@ const NavItems = (pathname: string) => {
 
     if (pathname === "/auth/login" || pathname === "/auth/sign-up" || pathname === "/auth/forgot-password") {
         return <></>;
-    }
-
-    if (isLoading) {
-        return <div className="h-10 w-10 rounded-full bg-gray-200 animate-pulse" />;
     }
 
     if (user) {
@@ -64,28 +67,30 @@ const NavItems = (pathname: string) => {
                             <DropdownMenuTrigger asChild>
                                 <div className="cursor-pointer flex flex-row items-center">
                                     <Avatar>
-                                        <AvatarImage src={ user?.user_metadata.avatar_url } />
+                                        <AvatarImage src={ user?.user_metadata?.avatar_url } />
                                         <AvatarFallback>
-                                            { user?.user_metadata.full_name.charAt(0) }
+                                            { userFullName?.charAt(0) }
                                         </AvatarFallback>
                                     </Avatar>
                                 </div>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
                                 <DropdownMenuLabel>
-                                    Hi, { user?.user_metadata.full_name }
+                                    Hi, { userFullName }
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onSelect={(e) => {
                                     e.preventDefault();
                                     setOpenConnectHevyDialog(true);
-                                }}>
+                                }} className="cursor-pointer">
                                     Connect Hevy App
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => signOutUser()} className="bg-red-400 text-white">
+                                <DropdownMenuItem onClick={async () => {
+                                    await signOutUser();
+                                    await signOutServer();
+                                }} className="bg-red-400 hover:bg-red-500 text-white cursor-pointer">
                                     Log out
-                                    <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>

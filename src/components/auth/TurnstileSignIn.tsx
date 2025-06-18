@@ -23,7 +23,6 @@ export const TurnstileSignIn: React.FC<IProps> = (props) => {
     const turnstile = useTurnstile();
     const router = useRouter();
     const [ signingIn, setSigningIn ] = useState(false);
-    console.log("SITE KEY:", sitekey);
 
     return (
         <>

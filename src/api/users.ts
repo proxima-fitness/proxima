@@ -18,9 +18,13 @@ export const getOpUserId = async (program_id: string) => {
     }
 };
 // Gets the users full name
-export const getUserFullName = async (id: string, id_type: "program" | "user") => {
+export const getUserFullName = async (id: string | undefined, id_type: "program" | "user") => {
     if (id_type === "program") {
         try {
+
+            if (!id) {
+                return "Anonymous";
+            }
 
             const { data: userId, error: userIdError } = await
                 supabase.from("programs").

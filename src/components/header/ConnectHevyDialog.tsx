@@ -25,7 +25,7 @@ export const ConnectHevyDialog: React.FC<IProps> = (props) => {
 
     const { user } = useUserContext();
     const { data: hevyApiKey } = useHevySecret(user);
-    const [inputValue, setInputValue] = useState("");
+    const [inputValue, setInputValue] = useState(hevyApiKey ?? "");
     const queryClient = useQueryClient();
 
     const handleConnectHevy = async () => {
@@ -59,9 +59,20 @@ export const ConnectHevyDialog: React.FC<IProps> = (props) => {
         <Dialog open={openConnectHevyDialog} onOpenChange={handleOpenConnectHevyDialog}>
             <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
                 <DialogHeader>
-                    <DialogTitle>{ hevyApiKey && hevyApiKey.length > 0 ? <span className="text-lightSecondary flex justify-start items-center gap-2"><LockIcon /> Update Hevy API Key</span> : <span className="text-lightSecondary"><LockOpenIcon />Connect Hevy App</span> }</DialogTitle>
+                    <DialogTitle>
+                        { hevyApiKey && hevyApiKey.length > 0 ?
+                        <span className="text-lightSecondary flex justify-start items-center gap-2">
+                            <LockIcon />
+                            Update Hevy API Key
+                        </span>
+                        :
+                        <span className="text-lightSecondary flex justify-start items-center gap-2">
+                            <LockOpenIcon />
+                            Connect Hevy App
+                        </span> }
+                    </DialogTitle>
                     <DialogDescription>
-                        Sync your data with your Proxima account
+                        { hevyApiKey && hevyApiKey.length > 0 ? "You are connected to your Hevy account" : "Sync your data with your Proxima account" }
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid flex-1 gap-2">
