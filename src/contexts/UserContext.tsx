@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '@supabase/supabase-js';
-import { supabase } from '@/api';
+import { createClient } from '@/utils/supabase/client';
 
 interface ISessionContextValue {
     user: User | null;
@@ -13,6 +13,7 @@ const UserContext = createContext<ISessionContextValue | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
+    const supabase = createClient();
 
     useEffect(() => {
         const getSession = async () => {
@@ -27,7 +28,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         });
 
         return () => subscription.unsubscribe();
-    }, []);
+    }, [supabase.auth]);
 
     return (
         <UserContext.Provider value={ { user, setUser } }>

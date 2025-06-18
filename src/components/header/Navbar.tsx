@@ -13,24 +13,41 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { ConnectHevyDialog } from "./ConnectHevyDialog";
 import { useEffect, useState } from "react";
 import { signOutUser } from "@/api/authentication";
+import { createClient } from '@/utils/supabase/client';
 
 const NavItems = (pathname: string) => {
-    const { user } = useUserContext();
-    console.log("User in Navbar", user);
+    const { user, setUser } = useUserContext();
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [openConnectHevyDialog, setOpenConnectHevyDialog] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const checkSession = async () => {
+            const supabase = createClient();
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+                setUser(session.user);
+            }
+            setIsLoading(false);
+        };
+        checkSession();
+    }, [setUser]);
 
     useEffect(() => {
         if (openConnectHevyDialog) {
-          setDropdownOpen(false); // Force dropdown to close
+          setDropdownOpen(false);
         }
-      }, [openConnectHevyDialog]);
+    }, [openConnectHevyDialog]);
 
     if (pathname === "/auth/login" || pathname === "/auth/sign-up" || pathname === "/auth/forgot-password") {
-        return (
-            <></>
-        )
-    } else if (user) {
+        return <></>;
+    }
+
+    if (isLoading) {
+        return <div className="h-10 w-10 rounded-full bg-gray-200 animate-pulse" />;
+    }
+
+    if (user) {
         return authenticatedNavLinks.map((nav, index) => {
             return (
                 <div key={ index }>
@@ -76,7 +93,6 @@ const NavItems = (pathname: string) => {
                             openConnectHevyDialog={openConnectHevyDialog}
                             handleOpenConnectHevyDialog={(open) => {
                                 setOpenConnectHevyDialog(open);
-                                // Ensure dropdown is reset when dialog closes
                                 if (!open) {
                                   setDropdownOpen(false);
                                 }
@@ -124,7 +140,6 @@ const NavItems = (pathname: string) => {
 };
 
 export const Navbar: React.FC = () => {
-
     const pathname = usePathname();
 
     return (
@@ -139,6 +154,6 @@ export const Navbar: React.FC = () => {
                 <NavDrawer />
             </div>
         </nav>
-  );
+    );
 };
 
