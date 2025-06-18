@@ -35,7 +35,7 @@ const signOutServer = async () => {
 
 const NavItems = (pathname: string) => {
     // this should get the user if they logged in server side (via social logins)
-    const { user } = useUserContext();
+    const { user, isLoading } = useUserContext();
     const { data: userFullName } = useUserFullName(user?.id, "user");
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [openConnectHevyDialog, setOpenConnectHevyDialog] = useState(false);
@@ -48,6 +48,35 @@ const NavItems = (pathname: string) => {
 
     if (pathname === "/auth/login" || pathname === "/auth/sign-up" || pathname === "/auth/forgot-password") {
         return <></>;
+    }
+
+    // Don't render authentication-dependent content while loading
+    if (isLoading) {
+        return navLinks.map((nav, index) => {
+            return (
+                <div key={ index }>
+                    { nav.id === "cta" ?
+                        <Link href="/download">
+                            <Button text={ "Download App" } styles={ `py-2` } />
+                        </Link>
+                    : nav.id === "log-in" ?
+                        <li
+                        key={ nav.id }
+                        className={ `font-main font-normal cursor-pointer text-[16px] text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
+                    >
+                            <div className="w-8 h-8 bg-gray-300 rounded-full animate-pulse"></div>
+                        </li>
+                    :
+                        <li
+                            key={ nav.id }
+                            className={ `font-main font-normal cursor-pointer text-[16px] text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
+                        >
+                            <Link href={ `/${nav.id}` }>{nav.title}</Link>
+                        </li>
+                    }
+                </div>
+            );
+        })
     }
 
     if (user) {
