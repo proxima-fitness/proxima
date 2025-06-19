@@ -49,6 +49,7 @@ export const ProgramCard: React.FC<IProps> = (props) => {
                                         href={ `/program-builder/build-program?shareId=${program.id}&edit=true` }
                                         rel="noopener noreferrer"
                                         target="_self"
+                                        onClick={ (e) => e.preventDefault() }
                                         className="my-2 py-2 w-[50%] hover:bg-black hover:text-white bg-white text-black rounded-lg shadow flex flex-row items-center justify-center gap-2">
                                         <EditIcon />Edit
                                     </Link>
