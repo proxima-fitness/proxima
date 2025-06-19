@@ -219,7 +219,6 @@ export const getHevyApiKey = async (user: User | undefined | null) => {
             });
 
             if (hevyApiKeyError) {
-                console.error("Error accessing Hevy API Key", hevyApiKeyError);
                 return "";
             } else {
                 return hevyApiKey;

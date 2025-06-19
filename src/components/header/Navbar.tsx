@@ -14,6 +14,8 @@ import { ConnectHevyDialog } from "./ConnectHevyDialog";
 import { useEffect, useState } from "react";
 import { signOutUser } from "@/api/authentication";
 import { useUserFullName } from "@/api/hooks";
+import { useIsHevy } from "@/contexts/HevyContext";
+import { toast } from "sonner";
 
 // Client-side function to call the server-side sign out API
 const signOutServer = async () => {
@@ -39,6 +41,7 @@ const NavItems = (pathname: string) => {
     const { data: userFullName } = useUserFullName(user?.id, "user");
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [openConnectHevyDialog, setOpenConnectHevyDialog] = useState(false);
+    const { isHevy, setIsHevy } = useIsHevy();
 
     useEffect(() => {
         if (openConnectHevyDialog) {
@@ -113,6 +116,36 @@ const NavItems = (pathname: string) => {
                                     setOpenConnectHevyDialog(true);
                                 }} className="cursor-pointer">
                                     Connect Hevy App
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
+                                    Workout Format
+                                </DropdownMenuLabel>
+                                <DropdownMenuItem
+                                    onSelect={(e) => {
+                                        e.preventDefault();
+                                        toast.success("Proxima Mode selected");
+                                        setIsHevy(false);
+                                    }}
+                                    className={`cursor-pointer focus:text-current ${!isHevy ? 'bg-lightSecondary text-white hover:text-white hover:bg-lightSecondary focus:text-white focus:bg-lightSecondary' : 'bg-white hover:bg-white'}`}
+                                >
+                                    <div className="flex flex-col">
+                                        <span className="font-medium">Proxima Format</span>
+                                        <span className="text-xs text-gray-500 text-wrap max-w-[200px]">700+ exercises, rep ranges, rpe ranges, amrap ...</span>
+                                    </div>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onSelect={(e) => {
+                                        e.preventDefault();
+                                        toast.success("Hevy-Compatible Mode selected");
+                                        setIsHevy(true);
+                                    }}
+                                    className={`cursor-pointer focus:text-current ${isHevy ? 'bg-lightSecondary text-white hover:text-white hover:bg-lightSecondary focus:text-white focus:bg-lightSecondary' : 'bg-white hover:bg-white'}`}
+                                >
+                                    <div className="flex flex-col">
+                                        <span className="font-medium">Hevy Format</span>
+                                        <span className="text-xs text-gray-500 text-wrap max-w-[200px]">400+ exercises, custom exercises,routines ...</span>
+                                    </div>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={async () => {
