@@ -124,7 +124,7 @@ const NavItems = (pathname: string) => {
                                 <DropdownMenuItem
                                     onSelect={(e) => {
                                         e.preventDefault();
-                                        toast.success("Proxima Format selected");
+                                        toast.info("Proxima Format selected");
                                         setIsHevy(false);
                                     }}
                                     className={`cursor-pointer focus:text-current ${!isHevy ? 'bg-lightSecondary text-white hover:text-white hover:bg-lightSecondary focus:text-white focus:bg-lightSecondary' : 'bg-white hover:bg-white'}`}
@@ -137,7 +137,7 @@ const NavItems = (pathname: string) => {
                                 <DropdownMenuItem
                                     onSelect={(e) => {
                                         e.preventDefault();
-                                        toast.success("Hevy-Compatible Format selected");
+                                        toast.info("Hevy-Compatible Format selected");
                                         setIsHevy(true);
                                     }}
                                     className={`cursor-pointer focus:text-current ${isHevy ? 'bg-lightSecondary text-white hover:text-white hover:bg-lightSecondary focus:text-white focus:bg-lightSecondary' : 'bg-white hover:bg-white'}`}
