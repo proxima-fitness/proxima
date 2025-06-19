@@ -148,25 +148,18 @@ const NavItems = (pathname: string) => {
         return navLinks.map((nav, index) => {
             return (
                 <div key={ index }>
-                    { nav.id === "cta" ?
+                    { nav.id === "cta" ? (
                         <Link href="/download">
-                            <Button text={ "Download App" } styles={ `py-2` } />
+                            <Button text="Download App" styles="py-2" />
                         </Link>
-                    : nav.id === "log-in" ?
-                        <li
-                        key={ nav.id }
-                        className={ `font-main font-normal cursor-pointer text-[16px] text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
-                    >
-                            <a href="https://app.proximafitness.com/">Log In</a>
-                        </li>
-                    :
+                    ) : (
                         <li
                             key={ nav.id }
                             className={ `font-main font-normal cursor-pointer text-[16px] text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
                         >
                             <Link href={ `/${nav.id}` }>{nav.title}</Link>
                         </li>
-                    }
+                    )}
                 </div>
             );
         })
