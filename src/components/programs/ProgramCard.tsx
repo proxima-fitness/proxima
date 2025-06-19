@@ -7,7 +7,6 @@ import { Users2Icon, EditIcon, SaveIcon } from "lucide-react";
 import { useUserContext } from "@/contexts/UserContext";
 import { postNewProgramSubscriber } from "@/api/programs";
 import { toast } from "sonner";
-import Link from "next/link";
 
 interface IProps {
     program: TProgram;
@@ -23,6 +22,7 @@ export const ProgramCard: React.FC<IProps> = (props) => {
 
     const handleSave = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
+        e.stopPropagation();
         if (user) {
             postNewProgramSubscriber(user, program.id);
             toast.success("Program saved to your account. View it in the Proxima app.");
@@ -45,14 +45,15 @@ export const ProgramCard: React.FC<IProps> = (props) => {
                         />
                         {user && (
                             <div className="absolute inset-0 rounded-t-lg bg-black bg-opacity-40 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
-                                    <Link
-                                        href={ `/program-builder/build-program?shareId=${program.id}&edit=true` }
-                                        rel="noopener noreferrer"
-                                        target="_self"
-                                        onClick={ (e) => e.preventDefault() }
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            window.location.href = `/program-builder/build-program?shareId=${program.id}&edit=true`;
+                                        }}
                                         className="my-2 py-2 w-[50%] hover:bg-black hover:text-white bg-white text-black rounded-lg shadow flex flex-row items-center justify-center gap-2">
                                         <EditIcon />Edit
-                                    </Link>
+                                    </button>
                                 <button onClick={ (e) => handleSave(e) } className="my-2 py-2 w-[50%] hover:bg-black hover:text-white bg-lightSecondary text-white rounded-lg shadow flex flex-row items-center justify-center gap-2">
                                     <SaveIcon />Save
                                 </button>
