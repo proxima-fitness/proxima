@@ -4,7 +4,7 @@ import { useHevyCustomExercises, useHevyExercises, useHevySecret } from "@/api/h
 import { Button } from "@/components/ui/button";
 import { useEffect, useReducer, useState, useMemo } from "react";
 import { hevy_intensities, hevy_rep_types } from "@/assets/constants";
-import { getHevyExerciseFromLocalStorageByID, getHevyExerciseFromLocalStorageByName } from "@/utils/general/helpers";
+import { getHevyExerciseFromLocalStorageByID } from "@/utils/general/helpers";
 import { toast } from "sonner";
 import { ExpandIcon, PlusIcon, TimerIcon, Trash2Icon, XIcon } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -63,11 +63,10 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
     };
 
     const handleSelected = async (item: THevyExerciseTemplate) => {
-        const fetchedExerciseItem = await getHevyExerciseFromLocalStorageByName(item.title);
-        if (fetchedExerciseItem) {
-            setExerciseID(fetchedExerciseItem.id);
-            setSelectedName(fetchedExerciseItem.title);
-        }
+
+        // const fetchedExerciseItem = await getHevyExerciseFromLocalStorageByName(item.title);
+        setExerciseID(item.id);
+        setSelectedName(item.title);
         setIsEditing(false);
     };
 
