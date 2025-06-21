@@ -39,7 +39,6 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     const [generateDayDialog, setGenerateDayDialog] = useState<THevyDialog>({folder_id: 0, dayOrder: 0, isOpen: false});
     const [addNoteDialog, setAddNoteDialog] = useState<THevyDialog>({folder_id: 0, dayOrder: 0, isOpen: false});
     const [addExerciseNoteDialog, setAddExerciseNoteDialog] = useState<THevyDialog>({folder_id: 0, dayOrder: 0, isOpen: false});
-
     const [isEditExercise, setIsEditExercise] = useState(false);
 
     const handleIsEditExercise = (isEditExercise: boolean) => {
@@ -254,6 +253,34 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
         });
     };
 
+    // Adds a routine as a day to the selected week
+    const handleAddRoutineAsDay = (routine: THevyRoutine, folder_id: number) => {
+
+        const daysInFolder = hevyProgram.filter((day) => day.folder_id === folder_id);
+
+        if (daysInFolder.length >= 7) {
+            toast.error("Maximum 7 days per week");
+            return;
+        }
+
+        setHevyProgram((prev) => {
+            const nthDayOrder = prev.filter((day) => day.folder_id === folder_id).length + 1;
+
+            const maxId = Math.max(...prev.map((d) => Number(d.id)));
+
+            const newEmptyDay: THevyRoutine = {
+                id: String(maxId + 1),
+                folder_id,
+                order: String(nthDayOrder),
+                exercises: routine.exercises,
+                title: routine.title ?? "",
+                notes: routine.notes ?? "",
+            };
+
+            return [...prev, newEmptyDay];
+        });
+    };
+
     // Adds a note to the selected day (routine)
     const handleAddRoutineNote = (folder_id: number, dayOrder: number, prompt: string) => {
         setHevyProgram((prev) => {
@@ -433,6 +460,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                                 setFocusedCardId={ setFocusedCardId }
                                 handleCreateSuperset={ handleCreateSuperset }
                                 handleRemoveFromSuperset={ handleRemoveFromSuperset }
+                                handleAddRoutineAsDay={ handleAddRoutineAsDay }
                             />
                         ) ) }
                     </div>
@@ -464,6 +492,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                             handleOpenAddExerciseNoteDialog={ handleOpenAddExerciseNoteDialog }
                         />
                     }
+
                 </>
 
             }

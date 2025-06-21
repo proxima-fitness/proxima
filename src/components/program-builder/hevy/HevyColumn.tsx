@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { CopyIcon, PlusIcon } from "lucide-react";
+import { BookOpen, CopyIcon, Plus, PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropIndicator } from "@/components/program-builder/shared/DropIndicator";
 import { HevyDayCard } from "./HevyDayCard";
 import { HevyDuplicateWeek } from "./HevyDuplicateWeek";
 import { IOption } from "@/components/ui/multi-select";
 import { reorderHevy } from "../utils";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { HevyAddRoutineDialog } from "./HevyAddRoutineDialog";
 
 interface IProps {
     title: string;
@@ -29,6 +31,7 @@ interface IProps {
     setFocusedCardId: (focusedCardId: string) => void;
     handleCreateSuperset: (dayId: string, selectedExercises: number[]) => void;
     handleRemoveFromSuperset: (dayId: string, exerciseIndex: number) => void;
+    handleAddRoutineAsDay: (routine: THevyRoutine, folder_id: number) => void;
 }
 
 export const HevyColumn: React.FC<IProps> = (props) => {
@@ -54,11 +57,15 @@ export const HevyColumn: React.FC<IProps> = (props) => {
         setFocusedCardId,
         handleCreateSuperset,
         handleRemoveFromSuperset,
+        handleAddRoutineAsDay,
     } = props;
 
     const [active, setActive] = useState(false);
 
     const [duplicateWeekOpen, setDuplicateWeekOpen] = useState(false);
+    const [routineDialogOpen, setRoutineDialogOpen] = useState(false);
+
+    const [dropdownOpen, setDropdownOpen] = useState(false);
 
     const handleDuplicateWeekOpen = (duplicateWeekOpen: boolean) => {
         setDuplicateWeekOpen(duplicateWeekOpen);
@@ -236,13 +243,33 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                     );
                 })}
                 <DropIndicator beforeId={ null } weekOrder={ String(folder_id) } />
-                <div className="flex flex-row justify-center items-center">
-                    <Button
-                        onClick={ () => handleAddDay(folder_id) }
-                        className="mb-4 w-44 font-bold uppercase h-12 rounded-lg bg-lightSecondary hover:bg-black text-white">
-                        <PlusIcon />
-                        Add Day
-                    </Button>
+                <div className="flex justify-center">
+                    <DropdownMenu open={ dropdownOpen } onOpenChange={ () => setDropdownOpen(false) }>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                onClick={ () => setDropdownOpen(true) }
+                                className="mb-4 w-44 font-bold uppercase h-12 rounded-lg bg-lightSecondary hover:bg-black text-white">
+                                <PlusIcon />
+                                Add Day
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem
+                                className="cursor-pointer"
+                                onClick={ () => handleAddDay(folder_id) }
+                            >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Empty Day
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                className="cursor-pointer"
+                                onClick={ () => { setRoutineDialogOpen(true); setDropdownOpen(false); } }
+                            >
+                            <BookOpen className="w-4 h-4 mr-2" />
+                            Add Hevy Routine
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
             <HevyDuplicateWeek
@@ -252,6 +279,14 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                 setDuplicateWeekOpen={ setDuplicateWeekOpen }
                 handleDuplicateWeek={ handleDuplicateWeek }
             />
+            { routineDialogOpen &&
+                <HevyAddRoutineDialog
+                    routineDialogOpen={ routineDialogOpen }
+                    setRoutineDialogOpen={ setRoutineDialogOpen }
+                    folder_id={ folder_id }
+                    handleAddRoutineAsDay={ handleAddRoutineAsDay }
+                />
+            }
         </div>
     );
   };

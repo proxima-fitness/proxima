@@ -21,6 +21,7 @@ export const defaultFetch = async <T>(url: string, apiKey: string): Promise<T> =
     return (await response.json()) as T;
 };
 
+// GETS CUSTOM EXERCISES FROM HEVY
 export const getHevyCustomExercises = async (user: User | undefined | null, apiKey: string): Promise<THevyExerciseTemplate[]> => {
     if (!user) return [];
 
@@ -55,6 +56,41 @@ export const getHevyCustomExercises = async (user: User | undefined | null, apiK
 
     return customExercises;
 };
+
+// GETS HEVY ROUTINES FROM HEVY
+export const getHevyRoutines = async (user: User | undefined | null, apiKey: string) => {
+
+    if  (!user) return [];
+
+    const syncedRoutines: THevyRoutine[] = [];
+
+    for (let i = 1; i <= 10; i++) {
+        const url = `https://api.hevyapp.com/v1/routines?page=${i}&pageSize=10`;
+
+        try {
+            const result = await defaultFetch<{ routines: THevyRoutine[] }>(url, apiKey);
+            const routines = result.routines;
+
+            if ( !routines || (routines && routines.length === 0) ) {
+                break;
+            }
+
+            syncedRoutines.push(...routines);
+
+            // If we get less than 10 routines, we've reached the last page
+            if (routines.length < 10) {
+                break;
+            }
+
+        } catch (error) {
+            console.error("Error fetching Hevy routines:", error);
+                break;
+            }
+        }
+
+    return syncedRoutines;
+};
+
 
 // GET Hevy EXERCISES STORED BY PROXIMA FITNESS (CACHES IN LOCALSTORAGE)
 export const getHevyExercises = async () => {
