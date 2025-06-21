@@ -57,6 +57,111 @@ export const getHevyCustomExercises = async (user: User | undefined | null, apiK
     return customExercises;
 };
 
+export const getHevyPrograms = async (user: User | undefined | null, apiKey: string) => {
+    try {
+        if (!user) {
+            return [];
+        }
+
+        if (!apiKey) {
+            return [];
+        }
+
+        const routines = await getHevyRoutines(user, apiKey);
+
+        if (!routines || routines.length === 0) {
+            return [];
+        }
+
+        // Group routines by folder_id
+        const programsByFolder: { [folderId: number]: THevyRoutine[] } = {};
+
+        routines.forEach((routine) => {
+            const folderId = routine.folder_id;
+            // Skip routines with invalid folder_id
+            if (folderId === undefined || folderId === null || isNaN(folderId)) {
+                console.warn("Skipping routine with invalid folder_id:", routine);
+                return;
+            }
+            if (!programsByFolder[folderId]) {
+                programsByFolder[folderId] = [];
+            }
+            programsByFolder[folderId].push(routine);
+        });
+
+        // Convert to array of programs, sorted by folder_id
+        const programs = Object.keys(programsByFolder)
+            .map(Number)
+            .sort((a, b) => a - b)
+            .map((folderId) => programsByFolder[folderId])
+            .filter((program) => program && program.length > 0); // Filter out undefined or empty programs
+
+
+        // Add program titles by fetching routine folder information
+        const programsWithTitles: { program_title: string, program: THevyRoutine[] }[] = [];
+        for (const program of programs) {
+            // Additional safety check
+            if (!program || !Array.isArray(program) || program.length === 0) {
+                console.warn("Skipping invalid program:", program);
+                continue;
+            }
+
+            try {
+                const routineFolder = await getHevyRoutineFolder(apiKey, program[0].folder_id);
+
+                programsWithTitles.push({
+                    program_title: routineFolder?.title || `Program ${program[0].folder_id}`,
+                    program: program
+                });
+            } catch (error) {
+                console.error(`Error fetching folder for program ${program[0].folder_id}:`, error);
+                // Still add the program with a fallback title
+                programsWithTitles.push({
+                    program_title: `Program ${program[0].folder_id}`,
+                    program: program
+                });
+            }
+        }
+
+        return programsWithTitles;
+    } catch (error) {
+        console.error("Error in getHevyPrograms:", error);
+        return [];
+    }
+};
+
+// Get individual routine folder
+export const getHevyRoutineFolder = async (apiKey: string, folderId: number) => {
+    try {
+        const url = `https://api.hevyapp.com/v1/routine_folders/${folderId}`;
+        const response = await defaultFetch<THevyRoutineFolder>(url, apiKey);
+        return response;
+    } catch (error) {
+        console.error(`Error fetching routine folder ${folderId}:`, error);
+        return null;
+    }
+};
+
+// GET /v1/routine_folders. Get a paginated list of routien folders available on the account.
+// https://api.hevyapp.com/docs/#/RoutineFolders/get_v1_routine_folders
+/**
+ * GETS A PAGINATED LIST OF ROUTINE FOLDERS AVAILABLE ON THE ACCOUNT
+ * @param apiKey - The hevy api key
+ * @param page - The page number
+ * @returns The routine folders
+ */
+export const getRoutineFolders = async (apiKey: string, page: number) => {
+    try {
+        const response = await defaultFetch<THevyRoutineFolderResponse>(`https://api.hevyapp.com/v1/routine_folders?page=${page}&pageSize=10`, apiKey);
+        if (response) {
+            return response;
+        }
+    } catch (error: unknown) {
+        console.error("Error fetching routine folders", error);
+        return undefined;
+    }
+};
+
 // GETS HEVY ROUTINES FROM HEVY
 export const getHevyRoutines = async (user: User | undefined | null, apiKey: string) => {
 

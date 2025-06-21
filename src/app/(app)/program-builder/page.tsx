@@ -6,6 +6,7 @@ import { Prompt } from "@/components/program-builder/shared/Prompt";
 import { AiProgramGrid } from "@/components/program-builder/shared/AiProgramGrid";
 import { RecentProgramsGrid } from "@/components/program-builder/shared/RecentProgramsGrid";
 import { createClient } from "@/utils/supabase/server";
+import { ConditionalHevyGrid } from "@/components/program-builder/hevy/ConditionalHevyGrid";
 
 export const metadata = {
     title: "AI Program Builder | Proxima Fitness",
@@ -55,6 +56,7 @@ export default async function AiProgramBuilder() {
                     Please use on a desktop computer for best experience
                 </div>
                 <RecentProgramsGrid />
+                <ConditionalHevyGrid />
                 <AiProgramGrid />
             </div>
         </div>

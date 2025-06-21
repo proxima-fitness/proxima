@@ -5,7 +5,7 @@ import { getCommunityAiPrograms, getExplorePageProgramDetails, getExplorePagePro
 import { getOpUserId, getUserFullName, getUserMetaData } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getExercises } from "./exercises";
-import { getHevyApiKey, getHevyCustomExercises, getHevyExercises, getHevyRoutines } from "../components/program-builder/api/hevy";
+import { getHevyApiKey, getHevyCustomExercises, getHevyExercises, getHevyPrograms, getHevyRoutines } from "../components/program-builder/api/hevy";
 import { buildAiProgram } from "./edge-functions";
 import { getExerciseGifIdForHevyExercise } from "@/components/program-builder/utils";
 import { User } from "@supabase/supabase-js";
@@ -14,6 +14,14 @@ import { User } from "@supabase/supabase-js";
 /** CLIENT SIDE RENDERED HOOKS **/
 /*********************************/
 
+// FETCHES THE HEVY PROGRAMS
+export const useHevyPrograms = (user: User | undefined | null, hevyApiKey: string) => {
+    return useQuery({
+        queryKey: ["hevy-programs"],
+        queryFn: () => getHevyPrograms(user, hevyApiKey),
+        enabled: !!user && !!hevyApiKey,
+    });
+};
 // FETCHES THE HEVY ROUTINES
 export const useHevyRoutines = (user: User | undefined | null, hevyApiKey: string) => {
     return useQuery({

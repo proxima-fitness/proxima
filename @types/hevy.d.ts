@@ -8,6 +8,12 @@
 
 // Hevy Routine Types
 
+type THevyRoutineFolderResponse = {
+    page: number;
+    page_count: number;
+    routine_folders: THevyRoutineFolder[];
+}
+
 type THevyRoutineFolder = {
     id: number; // The routine folder ID
     index: number; // The routine folder index. Describes the order of the folder in the list.
