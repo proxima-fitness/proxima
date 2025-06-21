@@ -21,6 +21,41 @@ export const defaultFetch = async <T>(url: string, apiKey: string): Promise<T> =
     return (await response.json()) as T;
 };
 
+export const getHevyCustomExercises = async (user: User | undefined | null, apiKey: string): Promise<THevyExerciseTemplate[]> => {
+    if (!user) return [];
+
+    const customExercises: THevyExerciseTemplate[] = [];
+
+    for (let i = 1; i <= 10; i++) {
+        const url = `https://api.hevyapp.com/v1/exercise_templates?page=${i}&pageSize=100`;
+
+        try {
+            const result = await defaultFetch<{ exercise_templates: THevyExerciseTemplate[] }>(url, apiKey);
+            const exercises = result.exercise_templates;
+
+            if ( !exercises || (exercises && exercises.length === 0) ) {
+                break;
+            }
+
+            const isCustomExercise = exercises.filter((exercise) => exercise.is_custom);
+
+            customExercises.push(...isCustomExercise);
+
+            // If we get less than 100 exercises, we've reached the last page
+            if (exercises.length < 100) {
+                break;
+            }
+
+        } catch (error) {
+            console.error("Error fetching Hevy custom exercises:", error);
+            break;
+        }
+
+    }
+
+    return customExercises;
+};
+
 // GET Hevy EXERCISES STORED BY PROXIMA FITNESS (CACHES IN LOCALSTORAGE)
 export const getHevyExercises = async () => {
     const cacheKey = 'hevy-exercises';

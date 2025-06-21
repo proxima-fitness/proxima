@@ -5,7 +5,7 @@ import { getCommunityAiPrograms, getExplorePageProgramDetails, getExplorePagePro
 import { getOpUserId, getUserFullName, getUserMetaData } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getExercises } from "./exercises";
-import { getHevyApiKey, getHevyExercises } from "../components/program-builder/api/hevy";
+import { getHevyApiKey, getHevyCustomExercises, getHevyExercises } from "../components/program-builder/api/hevy";
 import { buildAiProgram } from "./edge-functions";
 import { getExerciseGifIdForHevyExercise } from "@/components/program-builder/utils";
 import { User } from "@supabase/supabase-js";
@@ -13,6 +13,15 @@ import { User } from "@supabase/supabase-js";
 /*********************************/
 /** CLIENT SIDE RENDERED HOOKS **/
 /*********************************/
+
+// FETCHES THE HEVY CUSTOM EXERCISES
+export const useHevyCustomExercises = (user: User | undefined | null, hevyApiKey: string) => {
+    return useQuery({
+        queryKey: ["hevy-custom-exercises"],
+        queryFn: () => getHevyCustomExercises(user, hevyApiKey),
+        enabled: !!user && !!hevyApiKey,
+    });
+};
 
 // GET ALL BLOGS
 export const useBlogs = (limit: number, offset: number) => {

@@ -36,6 +36,7 @@ export const BuildProgramSkeleton: FC = () => {
                     <Skeleton className="rounded-xl h-full w-full" />
                 </div>
             </div>
+
             <div className="pb-4 rounded-lg flex flex-row flex-nowrap gap-2">
                 <div className="min-w-[440px] max-w-[440px] h-[40px]">
                     <Skeleton className="rounded-xl h-full w-full" />

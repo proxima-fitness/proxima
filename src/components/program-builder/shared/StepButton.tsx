@@ -65,11 +65,7 @@ export const StepButton: React.FC = () => {
 
     if (segments.length === 1) {
         return (
-            <Button
-                disabled
-                variant="ghost"
-                className="w-80"
-            />
+            <></>
         )
     }
 

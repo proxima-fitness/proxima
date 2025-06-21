@@ -291,7 +291,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
 
                 <>
                 <div className="flex flex-row gap-4 h-full w-full">
-                    { program.map((_, index) => (
+                    { program && program.map((_, index) => (
                         <Column
                             key={ `Week ${index + 1}` }
                             title={ `Week ${index + 1}` }

@@ -13,9 +13,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { ConnectHevyDialog } from "./ConnectHevyDialog";
 import { useEffect, useState } from "react";
 import { signOutUser } from "@/api/authentication";
-import { useUserFullName } from "@/api/hooks";
+import { useHevySecret, useUserFullName } from "@/api/hooks";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { toast } from "sonner";
+import { LockIcon } from "lucide-react";
 
 // Client-side function to call the server-side sign out API
 const signOutServer = async () => {
@@ -39,6 +40,8 @@ const NavItems = (pathname: string) => {
     // this should get the user if they logged in server side (via social logins)
     const { user, isLoading } = useUserContext();
     const { data: userFullName } = useUserFullName(user?.id, "user");
+    const { data: hevyApiKey } = useHevySecret(user);
+
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [openConnectHevyDialog, setOpenConnectHevyDialog] = useState(false);
     const { isHevy, setIsHevy } = useIsHevy();
@@ -115,7 +118,14 @@ const NavItems = (pathname: string) => {
                                     e.preventDefault();
                                     setOpenConnectHevyDialog(true);
                                 }} className="cursor-pointer">
-                                    Connect Hevy App
+                                    { hevyApiKey && hevyApiKey.length > 0 ?
+                                        <div className="flex flex-row items-center gap-2 text-green-500">
+                                            <LockIcon className="w-4 h-4" />
+                                            Connected to Hevy App
+                                        </div>
+                                    :
+                                        "Connect Hevy App"
+                                    }
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuLabel className="text-xs text-gray-500 font-normal">

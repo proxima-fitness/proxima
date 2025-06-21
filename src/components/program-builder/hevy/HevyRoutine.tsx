@@ -17,6 +17,7 @@ import { usePreview } from "@/contexts/PreviewContext";
 import { Stepper } from "@/components/ui/stepper";
 import { programBuilderSteps } from "@/assets/constants";
 import { SetTypesLegend } from "../shared/SetTypesLegend";
+import { useUserContext } from "@/contexts/UserContext";
 
 interface IProps {
     program: THevyRoutine[];
@@ -33,6 +34,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data: exercises }  = useHevyExercises(); // Pre-populating the HevyAddExerciseDialog
     const { isPreview } = usePreview();
+    const { user } = useUserContext();
 
     const [addExerciseDialog, setAddExerciseDialog] = useState<THevyDialog>({folder_id: 0, dayOrder: 0, isOpen: false});
     const [generateDayDialog, setGenerateDayDialog] = useState<THevyDialog>({folder_id: 0, dayOrder: 0, isOpen: false});
@@ -394,19 +396,23 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
         <>
             { isPreview ?
                 <div className="sm:pl-8">
-                    <div className="flex flex-row justify-start items-center max-sm:px-24 pb-4 gap-16">
-                        <Stepper steps={programBuilderSteps} currentStep={3} />
-                        <SetTypesLegend />
-                    </div>
+                    { !user &&
+                        <div className="flex flex-row justify-start items-center max-sm:px-24 pb-4 gap-16">
+                            <Stepper steps={programBuilderSteps} currentStep={3} />
+                            <SetTypesLegend />
+                        </div>
+                    }
                     <HevyRoutinePreview deflatHevyRoutine={ deFlattenHevyRoutine(hevyProgram) } />
                 </div>
             :
                 <>
-                    <div className="flex flex-row justify-start items-center max-sm:px-24 pb-4 gap-16">
-                        <Stepper steps={programBuilderSteps} currentStep={2} />
-                        <SetTypesLegend />
-                    </div>
-                    <div className="flex flex-row gap-4 h-full w-full border-t-4 border-lightGray">
+                    { !user &&
+                        <div className="flex flex-row justify-start items-center max-sm:px-24 pb-4 gap-16">
+                            <Stepper steps={programBuilderSteps} currentStep={2} />
+                            <SetTypesLegend />
+                        </div>
+                    }
+                    <div className={`flex flex-row gap-4 h-full w-full ${!user ? "border-t-4 border-lightGray" : ""}`}>
                         { numberOfWeeksArr.map((_, index) => (
                             <HevyColumn
                                 key={ `Week ${index + 1}` }

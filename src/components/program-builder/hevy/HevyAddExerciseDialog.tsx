@@ -1,8 +1,8 @@
 "use client";
 
-import { useHevyExercises } from "@/api/hooks";
+import { useHevyCustomExercises, useHevyExercises, useHevySecret } from "@/api/hooks";
 import { Button } from "@/components/ui/button";
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer, useState, useMemo } from "react";
 import { hevy_intensities, hevy_rep_types } from "@/assets/constants";
 import { getHevyExerciseFromLocalStorageByID, getHevyExerciseFromLocalStorageByName } from "@/utils/general/helpers";
 import { toast } from "sonner";
@@ -15,6 +15,7 @@ import { SetTypesLegend } from "../shared/SetTypesLegend";
 import { SetTypesToggle } from "../shared/SetTypesToggle";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Drawer, DrawerContent, DrawerFooter, DrawerTitle } from "@/components/ui/drawer";
+import { useUserContext } from "@/contexts/UserContext";
 
 interface IProps {
     addExerciseDialog: THevyDialog;
@@ -34,7 +35,23 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
         handleOpenAddExerciseDialog,
     } = props;
 
+    const { user } = useUserContext();
+    const { data: hevyApiKey } = useHevySecret(user);
+
     const { data: exercises, isLoading: loadingHevyExercises } = useHevyExercises();
+    const { data: customExercises, isLoading: loadingCustomExercises } = useHevyCustomExercises(user, hevyApiKey);
+
+    // Combine custom exercises with regular exercises, placing custom exercises at the front
+    const combinedExercises = useMemo(() => {
+        if (!exercises && !customExercises) return undefined;
+
+        const custom = customExercises || [];
+        const regular = exercises || [];
+
+        return [...custom, ...regular];
+    }, [exercises, customExercises]);
+
+    const isLoading = loadingHevyExercises || loadingCustomExercises;
 
     const [ exerciseID, setExerciseID ] = useState<string>();
     const [ selectedName, setSelectedName ] = useState<string>("");
@@ -190,14 +207,14 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                     <DrawerTitle className="font-bold flex items-center justify-center">
                         Add Exercise to Week {addExerciseDialog.folder_id + 1} Day {addExerciseDialog.dayOrder}
                     </DrawerTitle>
-                    { loadingHevyExercises ?
+                    { isLoading ?
                         <div style={ { display: "flex",width: "100%", height: "358px", textAlign: "center", justifyContent: "center", alignItems: "center"} }>
                             <Skeleton className="w-full h-full"></Skeleton>
                         </div>
-                    : exercises !== undefined &&
+                        : combinedExercises !== undefined &&
                         <HevyExerciseSearchBar
                             title={ "Exercise" }
-                            items={ exercises }
+                            items={ combinedExercises }
                             handleSelected= { handleSelected }
                             selectedName={ selectedName }
                             isEditing={ isEditing }

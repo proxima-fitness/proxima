@@ -3,6 +3,8 @@ import { amrapAsNumber, getExerciseFromLocalStorageByID } from "@/utils/general/
 // Used to add week order and Id to program days for the drag and drop
 export const appendWeekOrderAndIdToProgramDays = (program: TProgramCreatorDay[][]) => {
 
+    if (!program || program.length === 0) return [];
+
     let idCounter = 1;
 
     const updatedProgram = program.map((week, index) =>

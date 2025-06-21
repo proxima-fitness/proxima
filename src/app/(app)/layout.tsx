@@ -59,42 +59,38 @@ export default function RootLayout({
             <body>
                 <UserProvider>
                     <QueryProvider>
-                        <SidebarProvider>
-                            <div className="max-sm:block hidden">
-                                <AppSidebar />
-                            </div>
-                            <div className="w-full bg-primary">
-                                <div className={ `${styles.paddingXNav} ${styles.flexCenter}` }>
-                                    <div className={ `${styles.boxWidth}` }>
-                                        <PreviewProvider>
-                                            <IsHevyProvider>
-                                                <Navbar />
-                                            </IsHevyProvider>
-                                        </PreviewProvider>
+                        <IsHevyProvider>
+                            <PreviewProvider>
+                                <SidebarProvider>
+                                    <div className="max-sm:block hidden">
+                                        <AppSidebar />
                                     </div>
-                                </div>
-                                <main id="root">
-                                    <PostHogClientProvider>
-                                            <PreviewProvider>
-                                                <IsHevyProvider>
-                                                    <Analytics />
-                                                    <NextTopLoader
-                                                        showSpinner={ false }
-                                                        color="#00f6ff"
-                                                    />
-                                                    {children}
-                                                </IsHevyProvider>
-                                            </PreviewProvider>
-                                            <Toaster richColors />
-                                    </PostHogClientProvider>
-                                </main>
-                                <div className={ `bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
-                                    <div className={ `${styles.boxWidth}` }>
-                                        <Footer />
+                                    <div className="w-full bg-primary">
+                                        <div className={ `${styles.paddingXNav} ${styles.flexCenter}` }>
+                                            <div className={ `${styles.boxWidth}` }>
+                                                    <Navbar />
+                                            </div>
+                                        </div>
+                                        <main id="root">
+                                            <PostHogClientProvider>
+                                                            <Analytics />
+                                                            <NextTopLoader
+                                                                showSpinner={ false }
+                                                                color="#00f6ff"
+                                                            />
+                                                            {children}
+                                                    <Toaster richColors />
+                                                </PostHogClientProvider>
+                                        </main>
+                                        <div className={ `bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
+                                            <div className={ `${styles.boxWidth}` }>
+                                                <Footer />
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        </SidebarProvider>
+                                </SidebarProvider>
+                            </PreviewProvider>
+                        </IsHevyProvider>
                     </QueryProvider>
                 </UserProvider>
             </body>
