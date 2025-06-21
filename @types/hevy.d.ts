@@ -76,7 +76,7 @@ type THevyDialog = {
 }
 
 type THevyAddExercise = {
-    id: string;
+    selectedExercise: THevyExerciseTemplate;
     repTypeValue: "reps" | "distance_meters" | "duration_seconds" | "custom_metric";
     intensityValue: "rpe" | "weight_kg";
     reps: number[] | null; // DATA for any rep type that is not a range

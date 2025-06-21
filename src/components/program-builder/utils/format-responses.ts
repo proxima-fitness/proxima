@@ -1,4 +1,4 @@
-import { amrapAsNumber, getExerciseFromLocalStorageByID } from "@/utils/general/helpers";
+import { amrapAsNumber, getExerciseFromLocalStorageByID, getHevyExerciseFromLocalStorageByID } from "@/utils/general/helpers";
 
 // Used to add week order and Id to program days for the drag and drop
 export const appendWeekOrderAndIdToProgramDays = (program: TProgramCreatorDay[][]) => {
@@ -235,9 +235,8 @@ export const hevyAddExerciseToHevySetsConverter = (addExercise: THevyAddExercise
     return sets;
 };
 
-
 // Converts THevyExercise into THevyAddExercise
-export const convertHevyExerciseIntoHevyAddExercise = (exercise: THevyExercise): THevyAddExercise => {
+export const convertHevyExerciseIntoHevyAddExercise = async (exercise: THevyExercise, customExercises?: THevyExerciseTemplate[]): Promise<THevyAddExercise> => {
 
     // Determine the repTypeValue based on the first non-zero value in a rep-type field
     const firstSet = exercise.sets[0];
@@ -276,8 +275,24 @@ export const convertHevyExerciseIntoHevyAddExercise = (exercise: THevyExercise):
     );
     const intensityData: number[] | null = filteredIntensityData.length > 0 ? filteredIntensityData : null;
 
+    // Get the exercise template data
+    let exerciseTemplate: THevyExerciseTemplate | undefined;
+
+    // First try to get from regular exercises
+    exerciseTemplate = await getHevyExerciseFromLocalStorageByID(exercise.exercise_template_id);
+
+    // If not found and custom exercises are provided, search there
+    if (!exerciseTemplate && customExercises) {
+        exerciseTemplate = customExercises.find(ex => ex.id === exercise.exercise_template_id);
+    }
+
+    // If still not found, throw an error
+    if (!exerciseTemplate) {
+        throw new Error(`Exercise template with ID ${exercise.exercise_template_id} not found`);
+    }
+
     return {
-        id: exercise.exercise_template_id,
+        selectedExercise: exerciseTemplate,
         repTypeValue,
         intensityValue,
         reps,

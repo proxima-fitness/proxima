@@ -4,7 +4,6 @@ import { useHevyCustomExercises, useHevyExercises, useHevySecret } from "@/api/h
 import { Button } from "@/components/ui/button";
 import { useEffect, useReducer, useState, useMemo } from "react";
 import { hevy_intensities, hevy_rep_types } from "@/assets/constants";
-import { getHevyExerciseFromLocalStorageByID } from "@/utils/general/helpers";
 import { toast } from "sonner";
 import { ExpandIcon, PlusIcon, TimerIcon, Trash2Icon, XIcon } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -53,8 +52,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 
     const isLoading = loadingHevyExercises || loadingCustomExercises;
 
-    const [ exerciseID, setExerciseID ] = useState<string>();
-    const [ selectedName, setSelectedName ] = useState<string>("");
+    const [ selectedExercise, setSelectedExercise ] = useState<THevyExerciseTemplate>();
     const [ isEditing, setIsEditing ] = useState(true);
     const [ editSetType, toggleEditSetType ] = useReducer(prev => !prev, false);
 
@@ -62,11 +60,8 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
         setIsEditing(isEditing);
     };
 
-    const handleSelected = async (item: THevyExerciseTemplate) => {
-
-        // const fetchedExerciseItem = await getHevyExerciseFromLocalStorageByName(item.title);
-        setExerciseID(item.id);
-        setSelectedName(item.title);
+    const handleSelectedExercise = async (item: THevyExerciseTemplate) => {
+        setSelectedExercise(item);
         setIsEditing(false);
     };
 
@@ -122,13 +117,12 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 
 
     const handleSave = async () => {
-        if (selectedName === "") {
+        if (!selectedExercise || selectedExercise.title === "") {
             toast.error("Please select an exercise");
             return;
         }
 
-        const id = exerciseID;
-        const exerciseData = { id, repTypeValue, intensityValue, reps, intensityData, setTypes, restSeconds };
+        const exerciseData = { selectedExercise, repTypeValue, intensityValue, reps, intensityData, setTypes, restSeconds };
         const newExercise = (exerciseData as THevyAddExercise);
 
         if (isEditExercise) {
@@ -174,22 +168,21 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 
     useEffect(() => {
         const getExercise = async () => {
-            const exercise = await getHevyExerciseFromLocalStorageByID(addExerciseDialog?.editExercise?.id);
-            setExerciseID(addExerciseDialog?.editExercise?.id);
+            const exercise = addExerciseDialog?.editExercise?.selectedExercise;
             setRepTypeValue(addExerciseDialog?.editExercise?.repTypeValue ?? hevy_rep_types[0].value);
             setIntensityData(addExerciseDialog?.editExercise?.intensityData ?? [9,9,9,9]);
             setReps(addExerciseDialog?.editExercise?.reps ?? [8,8,8,8]);
             setIntensityValue(addExerciseDialog?.editExercise?.intensityValue ?? hevy_intensities[0].value);
 
             if (exercise) {
-                setSelectedName(exercise[`title`]);
+                setSelectedExercise(exercise);
             }
         };
         if (isEditExercise) {
             setIsEditing(false);
             getExercise();
         }
-    }, [isEditExercise, addExerciseDialog.editExercise?.id, addExerciseDialog.editExercise?.intensityData, addExerciseDialog.editExercise?.intensityValue, addExerciseDialog.editExercise?.repTypeValue, addExerciseDialog.editExercise?.reps]);
+    }, [isEditExercise, addExerciseDialog?.editExercise?.intensityData, addExerciseDialog?.editExercise?.intensityValue, addExerciseDialog?.editExercise?.repTypeValue, addExerciseDialog?.editExercise?.reps, addExerciseDialog?.editExercise?.selectedExercise?.id, addExerciseDialog?.editExercise?.selectedExercise]);
 
     return (
         <Drawer
@@ -214,8 +207,8 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                         <HevyExerciseSearchBar
                             title={ "Exercise" }
                             items={ combinedExercises }
-                            handleSelected= { handleSelected }
-                            selectedName={ selectedName }
+                            handleSelectedExercise= { handleSelectedExercise }
+                            selectedExercise={ selectedExercise }
                             isEditing={ isEditing }
                             handleIsEditing={ handleIsEditing }
                         />

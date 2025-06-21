@@ -6,7 +6,6 @@ import { HevyColumn } from "./HevyColumn";
 import { HevyAddExerciseDialog } from "./HevyAddExerciseDialog";
 import { HevyGenerateDayDialog } from "./HevyGenerateDayDialog";
 import { IOption } from "@/components/ui/multi-select";
-import { getHevyExerciseFromLocalStorageByID } from "@/utils/general/helpers";
 import { toast } from "sonner";
 import { aiRequest, appendOrderToHevyRoutines, deFlattenHevyRoutine, getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy, sortHevyByOrder } from "../utils";
 import { buildHevyProgram } from "../utils/build-hevy-program";
@@ -231,7 +230,6 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     const handleAddExercise = async (folder_id: number, dayOrder: number, exercise: THevyAddExercise) => {
 
         const sets = hevyAddExerciseToHevySetsConverter(exercise);
-        const exerciseTemplate = await getHevyExerciseFromLocalStorageByID(exercise.id);
 
         setHevyProgram((prev) => {
             return prev.map((day) => {
@@ -241,9 +239,9 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                         exercises: [...day.exercises,
                             {
                                 index: day.exercises.length + 1,
-                                title: exerciseTemplate?.title ?? "",
+                                title: exercise?.selectedExercise?.title ?? "",
                                 notes: "",
-                                exercise_template_id: exercise.id,
+                                exercise_template_id: exercise?.selectedExercise?.id ?? "",
                                 supersets_id: null,
                                 sets: sets,
                                 rest_seconds: exercise?.restSeconds ?? null,
@@ -354,7 +352,6 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
 
         if (editExercise.editExercise) {
             const sets = hevyAddExerciseToHevySetsConverter(editExercise.editExercise);
-            const exerciseTemplate = await getHevyExerciseFromLocalStorageByID(editExercise.editExercise.id);
 
             setHevyProgram((prev) => {
                 return prev.map((day) => {
@@ -363,9 +360,9 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                             ...day,
                             exercises: day.exercises.map((exercise, index) => index === editExercise.exerciseIndex ? {
                                 index: day.exercises.length + 1,
-                                title: exerciseTemplate?.title ?? "",
+                                title: editExercise?.editExercise?.selectedExercise?.title ?? "",
                                 notes: exercise?.notes ?? "",
-                                exercise_template_id: exerciseTemplate?.id ?? "",
+                                exercise_template_id: editExercise?.editExercise?.selectedExercise?.id ?? "",
                                 supersets_id: null,
                                 sets: sets,
                                 rest_seconds: editExercise?.editExercise?.restSeconds ?? null,

@@ -19,9 +19,9 @@ const options = {
 
 interface IProps {
     items: THevyExerciseTemplate[];
-    selectedName: string;
+    selectedExercise: THevyExerciseTemplate | undefined;
     isEditing: boolean;
-    handleSelected: (item: THevyExerciseTemplate) => Promise<void>;
+    handleSelectedExercise: (item: THevyExerciseTemplate) => Promise<void>;
     handleIsEditing: (isEditing: boolean) => void;
     title?: string;
     onSelectionCancel?: () => void;
@@ -43,10 +43,10 @@ export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
 
     const {
         items,
-        selectedName,
+        selectedExercise,
         isEditing,
         handleIsEditing,
-        handleSelected,
+        handleSelectedExercise,
     } = props;
 
     const [ filteredItems, setFilteredItems ] = useState<THevyExerciseTemplate[]>(items);
@@ -78,7 +78,7 @@ export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
     }, [appliedSearchBarFilter, items]);
 
     const selectItem = (item: THevyExerciseTemplate) => {
-        handleSelected(item);
+        handleSelectedExercise(item);
     };
 
     const ExerciseSearchBarRow: React.FC<IRowProps> = (props) => {
@@ -170,9 +170,9 @@ export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
             ) :
             (
                 <div onClick={ () => handleIsEditing(true) }>
-                    <center><h2 className="flex flex-row gap-2 items-center justify-center cursor-pointer">{ selectedName }<EditIcon className="w-4 h-4" /></h2></center>
+                        <center><h2 className="flex flex-row gap-2 items-center justify-center cursor-pointer">{ selectedExercise?.title }<EditIcon className="w-4 h-4" /></h2></center>
                     <HevyExerciseGif
-                        name={ selectedName }
+                        name={ selectedExercise?.title ?? "" }
                         thumbnailOrImage={ "img" }
                         resolution={ "360" }
                         file_type={ "gif" }

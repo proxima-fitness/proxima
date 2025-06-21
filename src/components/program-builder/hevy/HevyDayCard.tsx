@@ -19,6 +19,9 @@ import { HevyExerciseVisualizer } from "./HevyExerciseVisualizer";
 import { HevyDuplicateDay } from "./HevyDuplicateDay";
 import { IOption } from "@/components/ui/multi-select";
 import { convertHevyExerciseIntoHevyAddExercise } from "../utils";
+import { useHevyCustomExercises, useHevySecret } from "@/api/hooks";
+import { useUserContext } from "@/contexts/UserContext";
+
 interface IProps {
     day: THevyRoutine;
     title: string;
@@ -69,10 +72,14 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [selectedExercises, setSelectedExercises] = useState<number[]>([]);
+    const { user } = useUserContext();
+    const { data: hevyApiKey } = useHevySecret(user);
+    const { data: customExercises } = useHevyCustomExercises(user, hevyApiKey);
 
-    const handleEdit = (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: THevyExercise ) => {
+    const handleEdit = async (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: THevyExercise ) => {
             handleIsEditExercise(true);
-            handleOpenAddExerciseDialog({folder_id: currentWeek, dayOrder: currentDay, isOpen: true, exerciseIndex: exerciseIndex, editExercise: convertHevyExerciseIntoHevyAddExercise(editExercise) });
+            const convertedExercise = await convertHevyExerciseIntoHevyAddExercise(editExercise, customExercises);
+            handleOpenAddExerciseDialog({folder_id: currentWeek, dayOrder: currentDay, isOpen: true, exerciseIndex: exerciseIndex, editExercise: convertedExercise });
     };
 
     const handleFocus = () => {
