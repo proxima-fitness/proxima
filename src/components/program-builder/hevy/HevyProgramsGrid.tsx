@@ -2,7 +2,7 @@
 
 import { useHevyPrograms, useHevySecret } from "@/api/hooks";
 import { useUserContext } from "@/contexts/UserContext";
-import { NotepadTextIcon, EditIcon } from "lucide-react";
+import { NotepadTextIcon, EditIcon, EyeIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { quotes } from "public";
 
@@ -13,14 +13,14 @@ export const HevyProgramsGrid: React.FC = () => {
     const { data: hevyPrograms } = useHevyPrograms(user, hevyApiKey);
     const router = useRouter();
 
-    const handleEditProgram = (program: { program_title: string, program: THevyRoutine[] }) => {
+    const handleEditProgram = (program: { program_title: string, program: THevyRoutine[] }, edit: boolean) => {
         // Store the Hevy program data in localStorage
         for (const routine of program.program) {
             routine.folder_id = 0;
         }
         localStorage.setItem('hevy-program-in-progress', JSON.stringify(program.program));
         // Set the Hevy context to true        // Navigate to the program builder
-        router.push('/program-builder/build-program?edit=true&resume=true');
+        router.push(`/program-builder/build-program?edit=${String(edit)}&resume=true`);
     };
 
     // useEffect(() => {
@@ -75,9 +75,15 @@ export const HevyProgramsGrid: React.FC = () => {
                     <div className="absolute inset-0 rounded-lg bg-black bg-opacity-40 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
                         <button
                             className="my-2 py-2 w-[50%] bg-white text-black hover:bg-black hover:text-white rounded-lg shadow flex flex-row items-center justify-center gap-2"
-                            onClick={() => handleEditProgram(program)}
+                            onClick={() => handleEditProgram(program, true)}
                         >
                             <EditIcon />Edit
+                        </button>
+                        <button
+                            className="my-2 py-2 w-[50%] bg-lightSecondary text-white hover:bg-black hover:text-white rounded-lg shadow flex flex-row items-center justify-center gap-2"
+                            onClick={() => handleEditProgram(program, false)}
+                        >
+                            <EyeIcon />View
                         </button>
                     </div>
                 </div>
