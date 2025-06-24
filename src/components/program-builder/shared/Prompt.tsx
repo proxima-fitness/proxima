@@ -324,7 +324,6 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                     <DialogTitle>
                         <span className="flex flex-row max-sm:flex-col max-sm:items-end gap-2">
                             <Input
-                                autoFocus
                                 value={ search }
                                 onChange={ (event) => setSearch(event.target.value) }
                                 startIcon={ SearchIcon }
@@ -368,7 +367,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                         <span className="flex flex-row justify-between gap-5 max-sm:gap-2">
                             <span className="grid grid-cols-2 max-sm:grid-cols-1 max-sm:basis-1/2 max-sm:gap-2 max-sm:pr-2 gap-5 sm:flex-grow-[2] basis-2/3 pr-4 border-r-2">
                                 <Select value={ sex } onValueChange={ (value) => setSex(value) }>
-                                    <SelectTrigger autoFocus className="h-10">
+                                    <SelectTrigger className="h-10">
                                         <SelectValue placeholder="Sex" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -379,7 +378,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                                     </SelectContent>
                                 </Select>
                                 <Select value={ age } onValueChange={ (value) => setAge(value) }>
-                                    <SelectTrigger autoFocus className="h-10">
+                                    <SelectTrigger className="h-10">
                                         <SelectValue placeholder="Age" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -389,7 +388,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                                     </SelectContent>
                                 </Select>
                                 <Select value={ programLength } onValueChange={ (value) => setProgramLength(value) }>
-                                    <SelectTrigger autoFocus className="h-10">
+                                    <SelectTrigger className="h-10">
                                         <SelectValue placeholder="Program length" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -399,7 +398,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                                     </SelectContent>
                                 </Select>
                                 <Select value={ daysPerWeek } onValueChange={ (value) => setDaysPerWeek(value) }>
-                                    <SelectTrigger autoFocus className="h-10">
+                                    <SelectTrigger className="h-10">
                                         <SelectValue placeholder="How many days per week?" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -421,7 +420,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                                 ) }
                                 />
                                 <Select value={ workoutDuration } onValueChange={ (value) => setWorkoutDuration(value) }>
-                                    <SelectTrigger autoFocus className="h-10">
+                                    <SelectTrigger className="h-10">
                                         <SelectValue placeholder="Workout duration" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -431,7 +430,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                                     </SelectContent>
                                 </Select>
                                 <Select value={ activityLevel } onValueChange={ (value) => setActivityLevel(value) }>
-                                    <SelectTrigger autoFocus className="h-10">
+                                    <SelectTrigger className="h-10">
                                         <SelectValue placeholder="Activity level" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -572,7 +571,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                             </span>
                         </span>
                         <Select onValueChange={(value) => setWorkoutSchema(value)} value={workoutSchema}>
-                            <SelectTrigger autoFocus className="h-10 w-[180px]">
+                            <SelectTrigger className="h-10 w-[180px]">
                             <SelectValue placeholder="Workout Schema" />
                             </SelectTrigger>
                             <SelectContent>
