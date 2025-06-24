@@ -43,12 +43,12 @@ export const HevyProgramsGrid: React.FC = () => {
     }
 
     return (
-        <div className="flex flex-col gap-2 bg-gray-600 text-white sm:mx-12">
-            <span className="text-2xl px-8 pt-8 flex flex-row items-center justify-center gap-2">
+        <div className="flex flex-col gap-2 bg-lightGray sm:mx-12 sm:pb-24">
+            <span className="text-2xl font-bold px-8 pt-8 flex flex-row items-center justify-start gap-2">
                 <NotepadTextIcon />
                 My Hevy Programs
             </span>
-            <span className="text-xs text-center pt-4">These are your programs from Hevy. Click on a program to fork your program with AI.</span>
+            <span className="text-xs text-start px-8 pt-4">These are your programs from Hevy. Click on a program to fork your program with AI.</span>
             <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 py-8 px-8">
                 { hevyPrograms && hevyPrograms.map((program, index) => (
                     <div key={ index } className="relative group bg-white text-black h-[200px] rounded-lg shadow-lg">

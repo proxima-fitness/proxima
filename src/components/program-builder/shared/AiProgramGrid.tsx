@@ -13,11 +13,11 @@ export const AiProgramGrid: React.FC = () => {
         <>
         { programs &&
             <div className="flex flex-col gap-2 bg-lightGray sm:mx-12">
-                <span className="text-2xl px-8 pt-8 flex flex-row items-center justify-center gap-2">
+                <span className="text-2xl font-bold px-8 pt-8 flex flex-row items-center justify-start gap-2">
                     <UsersIcon />
                     From the Community
                     </span>
-                <span className="text-xs text-center pt-4">All programs shown in the community are voluntarily shared by users. The platform does not display any content without user consent.</span>
+                <span className="text-xs text-start px-8 pt-4">All programs shown in the community are voluntarily shared by users. The platform does not display any content without user consent.</span>
                 <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 py-8 px-8">
                     { programs?.map((program) => (
                             <div key={ program.id } className="relative group bg-white h-[200px] rounded-lg shadow-lg">
