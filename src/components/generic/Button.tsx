@@ -21,7 +21,7 @@ export const Button: React.FC<IProps> = (props) => {
             onHoverStart={ e => {} }
             onHoverEnd={ e => {} }
             type="button"
-            className={ `py-4 px-6 font-main font-medium text-[18px] text-primary bg-[#00F6FF] rounded-[10px] outline-none ${ styles } ` }
+            className={`px-4 font-main  text-[18px] text-black bg-lightSecondary rounded-lg ${ styles } ` }
         >
             { text }
         </motion.button>

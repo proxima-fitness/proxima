@@ -1,11 +1,7 @@
 "use client";
 
 import { ArrowUpIcon, BicepsFlexedIcon, BookOpenIcon, Calculator, ChevronDownIcon, ChevronUpIcon, FootprintsIcon, InfoIcon, MicIcon, PlayIcon, SearchIcon, SparklesIcon, SquarePowerIcon } from "lucide-react";
-// import { Dropzone, DropzoneContent, DropzoneEmptyState } from "../dropzone";
-import { Card } from "@/components/ui/card";
 import { useEffect, useReducer, useRef, useState } from "react";
-// import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import MultiSelect, { IOption } from "@/components/ui/multi-select";
@@ -17,11 +13,73 @@ import { useIsHevy } from "@/contexts/HevyContext";
 import { inferDaysPerWeek } from "../utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useUserContext } from "@/contexts/UserContext";
 import { User } from "@supabase/supabase-js";
+import { PromptInput, PromptInputTextarea } from "@/components/ui/prompt-input";
+import { PromptInputActions } from "@/components/ui/prompt-input";
+import { PromptSuggestion } from "@/components/ui/prompt-suggestion";
+import { jack, people02, people03, people04, people05 } from "public";
+import { AvatarStack } from "@/components/avatar-stack";
+
+
+const suggestionGroups = [
+    {
+        label: "Empty Template",
+        highlight: "Empty Template",
+        items: [
+            "Empty Template",
+        ],
+        icon: <BookOpenIcon />,
+    },
+    {
+      label: "Bodybuilding",
+      highlight: "Bodybuilding",
+      items: [
+        "Make a program like GZCL (GZCLP)",
+        "Make a program like nSuns",
+        "Make a program like PHUL (Power Hypertrophy Upper/Lower)",
+        "Make a program like Reddit's r/Fitness Basic Beginner Routine",
+      ],
+      icon: <BicepsFlexedIcon />,
+    },
+    {
+      label: "Powerlifting",
+      highlight: "Powerlifting",
+      items: [
+        "Make a program like Candito 6‑Week Program",
+        "Make a program like Calgary Barbell",
+        "Make a program like Bryce Lewis Greatest Hits",
+        "Make a program like Conjugate / Westside Barbell Method",
+      ],
+      icon: <SquarePowerIcon />,
+    },
+    {
+        label: "Weight Loss",
+        highlight: "Weight Loss",
+        items: [
+            "Make a program like Couch to 5K (C25K)",
+            "Make a program like r/Fitness Basic Beginner Routine (FBR)",
+            "Make a HIIT training program",
+
+        ],
+        icon: <Calculator />,
+      },
+    {
+      label: "Athletic Training",
+      highlight: "Athletic Training",
+      items: [
+        "Make a program like Westside for Athletes / Conjugate Training",
+        "Make a program like JuggernautAI Sport Performance / Juggernaut Field Athlete",
+        "Make a program like The Vertical Jump Bible",
+        "Make a program like DeFranco's Westside for Skinny Bastards (WS4SB)",
+
+      ],
+      icon: <FootprintsIcon />,
+    },
+
+];
 
 interface IProps {
     userData: User | null;
@@ -39,15 +97,44 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
 
     const { setIsHevy } = useIsHevy();
     const [search, setSearch] = useState<string>("");
-    // const [dropzoneOpen, toggleDropzone] = useReducer(prev => !prev, false);
 
-    // const props = useSupabaseUpload({
-    //     bucketName: 'test',
-    //     path: 'test',
-    //     allowedMimeTypes: ['image/*'],
-    //     maxFiles: 2,
-    //     maxFileSize: 1000 * 1000 * 10, // 10MB,
-    // });
+    const [activeCategory, setActiveCategory] = useState("")
+
+    const handleSend = () => {
+        if (search.trim()) {
+            setActiveCategory("")
+        }
+
+        const inferred = inferDaysPerWeek(search);
+            if (inferred) {
+                setDaysPerWeek(inferred);
+            }
+        setDialogOpen(true)
+    }
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault()
+        handleSend()
+      }
+    }
+
+    const handlePromptInputValueChange = (value: string) => {
+      setSearch(value)
+      // Clear active category when typing something different
+      if (value.trim() === "") {
+        setActiveCategory("")
+      }
+    }
+
+    // Get suggestions based on active category
+    const activeCategoryData = suggestionGroups.find(
+      (group) => group.label === activeCategory
+    )
+
+    // Determine which suggestions to show
+    const showCategorySuggestions = activeCategory !== ""
+
 
     const [sex, setSex] = useState<string>("");
     const [age, setAge] = useState<string>("");
@@ -119,94 +206,120 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                 <span className="flex items-center justify-center">
                     <Button onClick={ () => setDialogOpen(true) } className="my-12 sm:hidden h-[60px] text-white rounded-xl w-[200px] bg-lightSecondary hover:bg-lightSecondary font-main uppercase flex items-center justify-center gap-4"><PlayIcon />Start</Button>
                 </span>
-                <Card
-                    className="max-sm:hidden flex flex-col justify-between border-[4px] border-gray-100 bg-lightGray my-2 sm:w-[65%] max-sm:w-[90%] h-full"
-                >
-                    <Textarea
-                        autoFocus
-                        className="flex-grow bg-lightGray border-none border-b-0 focus-visible:ring-0 resize-none focus-visible:ring-offset-0 focus:outline-none shadow-none"
-                        value={ search }
-                        onChange={ (event) => setSearch(event.target.value) }
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter" && search.trim().length > 0) {
-                              e.preventDefault(); // prevent newline
-                              const inferred = inferDaysPerWeek(search);
-                              if (inferred) {
-                                setDaysPerWeek(inferred);
-                              }
-                              setDialogOpen(true); // open the dialog programmatically
-                            }
-                          }}
-                        placeholder="Ask Proxima to build..."
-                    />
-                    <div className="flex flex-none flex-row justify-end items-end">
-                        <div className="flex items-end gap-4">
-                            <TooltipProvider delayDuration={ 0 }>
-                                <Tooltip>
-                                    <TooltipTrigger className="">
-                                        <div className="p-2">
-                                            <MicIcon size="16" />
-                                        </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent className="bg-gray-600 text-white rounded-lg">
-                                        <p>Dictate</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                            <Button
-                                asChild
-                                onClick={() => {
-                                    const inferred = inferDaysPerWeek(search);
-                                    if (inferred) {
-                                        setDaysPerWeek(inferred);
-                                    }
-                                    setDialogOpen(true);
-                                }}
-                                disabled={ search.length === 0 }
-                                className={ `${ search.length === 0 ? "opacity-50" : "" } p-2 bg-lightSecondary text-white rounded-sm w-full cursor-pointer` }
-                                >
-                                <ArrowUpIcon size="16" />
-                            </Button>
+                <div className="max-sm:hidden mx-auto flex w-full max-w-3xl flex-col items-center justify-center gap-4 px-3 pb-3 md:px-5 md:pb-5">
+                    <PromptInput
+                        className="border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-xs"
+                        value={search}
+                        onValueChange={handlePromptInputValueChange}
+                        onSubmit={handleSend}
+                    >
+                        <PromptInputTextarea
+                            placeholder="Ask Proxima to build..."
+                            className="min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
+                            onKeyDown={handleKeyDown}
+                        />
+                        <PromptInputActions className="mt-5 flex w-full items-end justify-end gap-2 px-3 pb-3">
+                        <TooltipProvider delayDuration={ 0 }>
+                            <Tooltip>
+                                <TooltipTrigger className="">
+                                    <div className="p-2">
+                                        <MicIcon size="16" />
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-gray-600 text-white rounded-lg">
+                                    <p>Dictate</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                        <Button
+                            size="sm"
+                            className="h-9 w-9 bg-lightSecondary text-white rounded-full"
+                            onClick={handleSend}
+                            disabled={!search.trim()}
+                        >
+                            <ArrowUpIcon className="h-4 w-4" />
+                        </Button>
+                        </PromptInputActions>
+                    </PromptInput>
+
+                    <div className="flex w-full flex-col items-center justify-center space-y-2">
+                        <div className="h-[70px] w-full">
+                        {showCategorySuggestions ? (
+                            <div className="flex w-full flex-col space-y-1">
+                                {activeCategoryData?.items.map((suggestion) => (
+                                    <PromptSuggestion
+                                        key={suggestion}
+                                        highlight={activeCategoryData.highlight}
+                                        onClick={() => {
+                                            setSearch(suggestion)
+                                            // Optional: auto-send
+                                            // handleSend()
+                                        }}
+                                    >
+                                    {suggestion}
+                                    </PromptSuggestion>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex w-full flex-wrap items-stretch justify-start gap-2">
+                            {suggestionGroups.map((suggestion) => {
+                                if (suggestion.label === "Empty Template") {
+                                    return (
+                                        <Link
+                                            key={suggestion.label}
+                                            target="_self"
+                                            rel="noopener noreferrer"
+                                            href={ `/program-builder/build-program?empty=true&edit=true` }
+                                        >
+                                            <PromptSuggestion className="capitalize">
+                                                {suggestion.icon}
+                                                {suggestion.label}
+                                            </PromptSuggestion>
+                                        </Link>
+                                    );
+                                }
+
+                                return (
+                                    <PromptSuggestion
+                                        key={suggestion.label}
+                                        onClick={() => {
+                                            setActiveCategory(suggestion.label)
+                                            setSearch("") // Clear input when selecting a category
+                                        }}
+                                        className="capitalize"
+                                    >
+                                        {suggestion.icon}
+                                        {suggestion.label}
+                                    </PromptSuggestion>
+                                );
+                            })}
+                            </div>
+                        )}
+                        </div>
                         </div>
                     </div>
-                    {/* { dropzoneOpen &&
-                        <Dropzone {...props}>
-                            <DropzoneEmptyState />
-                            <DropzoneContent />
-                        </Dropzone>
-                    } */}
-                </Card>
-                <div className="flex flex-wrap justify-center gap-2 md:gap-3">
-                    <Link
-                        target="_self"
-                        rel="noopener noreferrer"
-                        href={ `/program-builder/build-program?empty=true&edit=true` }
-                    >
-                        <Button variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
-                            <BookOpenIcon  />
-                            Empty Template
-                        </Button>
-                    </Link>
-                    <Button onClick={ () => { setSearch("Create a Push Pull Legs Program that is 6 days per week"); toast.info("PPL selected"); } } variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
-                        <BicepsFlexedIcon />
-                        PPL Program
-                    </Button>
-
-                    <Button onClick={ () => { setSearch("Create a Smolov Jr. workout program following the Smolov Jr. pattern. Smolov Jr is a short, high-frequency, high-volume squat program designed to rapidly increase 1-rep max strength over about 3 weeks. It is based on squatting 4 times per week, typically Monday, Wednesday, Friday, and Saturday, with the lifter performing 6 sets of 6 reps at 70% of their 1RM on Day 1, 7 sets of 5 reps at 75% on Day 2, 8 sets of 4 reps at 80% on Day 3, and 10 sets of 3 reps at 85% on Day 4. Each week, the lifter is supposed to increase all working weights by 5–10 pounds (2.5–5 kg). The program requires good recovery practices, is best suited for experienced lifters, and can be used for squat, bench press, or other major lifts."); toast.info("Smolov Jr. selected"); } } variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
-                        <SquarePowerIcon />
-                        Smolov Jr.
-                    </Button>
-
-                    <Button onClick={  () => { setSearch("Create 3 day a week functional training program tailored for football or soccer athletes"); toast.info("Athletic Training selected"); } } variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
-                        <FootprintsIcon />
-                        Athletic Training
-                    </Button>
-
-                    <Button onClick={ () => { setSearch("Create a weight loss workout program that emphasizes cardio (4x per week)"); toast.info("Weight Loss Program selected"); } } variant="outline" className="rounded-full flex items-center gap-2 h-auto text-xs">
-                        <Calculator />
-                        Weight loss Program
-                    </Button>
-                </div>
+                    <div className="pt-12 flex flex-col justify-center items-center">
+                        <AvatarStack
+                            avatars={[
+                                {name: "jack.hanlon", image:  jack.src},
+                                {name: "scottlhanlon", image: people03.src},
+                                {name: "jordan.vandesande", image: people04.src},
+                                {name: "marcola", image: people05.src},
+                                {name: "sina", image: people02.src},
+                                {name: "john.gardiner", image: people02.src},
+                                {name: "josh.rubis", image: people02.src},
+                                {name: "calvin.sytsma", image: people02.src},
+                                {name: "mark.shaio", image: people02.src},
+                                {name: "sigilai", image: people02.src},
+                                {name: "thomas.genet", image: people02.src},
+                                {name: "lukcamp", image: people02.src},
+                                {name: "alexabcj", image: people02.src},
+                                {name: "kalamataspartan", image: people02.src},
+                                {name: "alexalydiarose", image: people02.src},
+                            ] }
+                        />
+                        6,000+ lifters are building with Proxima
+                    </div>
                 <DialogContent hideClose className="max-w-5xl overflow-y-auto overflow-x-hidden w-full max-sm:max-h-[90%]">
                     <DialogTitle>
                         <span className="flex flex-row max-sm:flex-col max-sm:items-end gap-2">
@@ -471,6 +584,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
 
                 </DialogContent>
             </Dialog>
+
         </div>
     );
 };

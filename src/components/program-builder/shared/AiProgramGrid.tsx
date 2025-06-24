@@ -5,7 +5,6 @@ import Link from "next/link";
 import { quotes } from "public";
 
 
-
 export const AiProgramGrid: React.FC = () => {
 
     const { data: programs } = useCommunityAiPrograms();
@@ -13,7 +12,7 @@ export const AiProgramGrid: React.FC = () => {
     return (
         <>
         { programs &&
-            <div className="flex flex-col gap-2 bg-lightGray">
+            <div className="flex flex-col gap-2 bg-lightGray sm:mx-12">
                 <span className="text-2xl px-8 pt-8 flex flex-row items-center justify-center gap-2">
                     <UsersIcon />
                     From the Community
