@@ -36,7 +36,7 @@ const items = [
   },
   {
     title: "Log in",
-    url: "https://app.proximafitness.com",
+    url: "/auth/login",
     icon: LogIn,
   },
   {
