@@ -370,13 +370,14 @@ export const postHevyApikey = async (user: User, secret: string) => {
 
             if (apiKeyError) {
                 console.error("Error saving Hevy API Key", apiKeyError);
-                return { success: false, data: [] };
+                return { success: false, data: apiKeyError };
             } else {
                 return { success: true, data: apiKeySaved};
             }
         }
     } catch (error: unknown) {
         console.error("Error saving Hevy API Key", error);
+        return { success: false, data: error };
     }
 };
 

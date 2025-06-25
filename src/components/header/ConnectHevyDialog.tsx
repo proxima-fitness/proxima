@@ -47,7 +47,7 @@ export const ConnectHevyDialog: React.FC<IProps> = (props) => {
                         queryClient.invalidateQueries({ queryKey: [ "hevy_api_key" ] });
                         handleOpenConnectHevyDialog(false);
                     } else {
-                        toast.error("Error saving Hevy API Key");
+                        toast.error(`Error saving Hevy API Key: ${ newApiKey && newApiKey?.data ? newApiKey.data : "Unknown error" }`);
                     }
                 }
             }
