@@ -190,6 +190,7 @@ function useInfiniteQuery<
     if (!state.hasInitialFetch && typeof window !== 'undefined') {
       storeRef.current.initialize()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.tableName, props.columns, props.pageSize, state.hasInitialFetch])
 
   return {
