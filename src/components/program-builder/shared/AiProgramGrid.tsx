@@ -21,6 +21,7 @@ export const AiProgramGrid: React.FC = () => {
                 <span className="text-xs text-start px-8 pt-4">All programs shown in the community are voluntarily shared by users. The platform does not display any content without user consent.</span>
                 <div className="py-8 px-8">
                     <InfiniteList
+                        pageSize={ 20 }
                         tableName="programs"
                         columns="prompt, id"
                         containerClassName="grid grid-cols-3 gap-4 max-sm:grid-cols-1"

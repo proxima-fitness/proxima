@@ -113,15 +113,10 @@ function createStore<TData extends SupabaseTableData<T>, T extends SupabaseTable
       console.error('An unexpected error occurred:', error)
       setState({ error })
     } else {
-      const deduplicatedData = ((newData || []) as TData[]).filter(
-        (item) => !state.data.find((old) => {
-          const oldItem = old as { id?: string }
-          const newItem = item as { id?: string }
-          return oldItem.id === newItem.id
-        })
-      )
-
-      setState({
+        const deduplicatedData = ((newData || []) as TData[]).filter(
+            (item) => !state.data.find((old) => (old as Record<string, unknown>).id === (item as Record<string, unknown>).id)
+        )
+          setState({
         data: [...state.data, ...deduplicatedData],
         count: count || 0,
         isSuccess: true,

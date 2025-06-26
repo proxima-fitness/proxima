@@ -41,7 +41,7 @@ const defaultSkeleton = (count: number) => (
 export function InfiniteList<TableName extends SupabaseTableName>({
   tableName,
   columns = '*',
-  pageSize = 5,
+  pageSize = 20,
   trailingQuery,
   renderItem,
   className,
