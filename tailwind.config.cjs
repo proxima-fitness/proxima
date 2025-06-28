@@ -15,6 +15,7 @@ module.exports = {
 			primary: "#00040f",
 			secondary: "#00f6ff",
 			lightSecondary: "#33bbcf",
+			extraLightGray: "#fafafa",
 			lightGray: "#f5f5f5",
 			// primary: {
 			// 	DEFAULT: 'hsl(var(--primary))',
