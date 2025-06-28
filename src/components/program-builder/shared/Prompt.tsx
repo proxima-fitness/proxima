@@ -347,7 +347,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                                             rel="noopener noreferrer"
                                             href={ `/program-builder/build-program?empty=true&edit=true` }
                                         >
-                                            <PromptSuggestion className="capitalize">
+                                            <PromptSuggestion className="capitalize h-8 p-4 text-xs">
                                                 {suggestion.icon}
                                                 {suggestion.label}
                                             </PromptSuggestion>
@@ -362,7 +362,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                                             setActiveCategory(suggestion.label)
                                             setSearch("") // Clear input when selecting a category
                                         }}
-                                        className="capitalize"
+                                        className="capitalize h-8 p-4 text-xs"
                                     >
                                         {suggestion.icon}
                                         {suggestion.label}
