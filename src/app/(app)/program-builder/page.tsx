@@ -8,7 +8,7 @@ import { ConditionalHevyGrid } from "@/components/program-builder/hevy/Condition
 
 export const metadata = {
     title: "AI Program Builder | Proxima Fitness",
-    description: "Generate a custom program with AI. Build your ideal program fast.",
+    description: "Create a workout program by chatting with AI",
 };
 
 export default async function AiProgramBuilder() {
