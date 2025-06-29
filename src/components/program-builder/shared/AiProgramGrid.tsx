@@ -1,15 +1,41 @@
 "use client";
 
-import { EditIcon, EyeIcon, SplitIcon, UserIcon, UsersIcon } from "lucide-react";
+import { EditIcon, EyeIcon, SplitIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 import { quotes } from "public";
 import { InfiniteList } from "@/components/ui/infinite-list-demo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useProfilePictureByID } from "@/api/hooks";
+import { useProfilePictureByID, useUserFullName } from "@/api/hooks";
+import { memo, useMemo } from "react";
+import { lightColours } from "@/assets/constants";
 
-const ProgramItem: React.FC<{ item: TProgram }> = ({ item }) => {
+const ProgramItem: React.FC<{ item: TProgram }> = memo(({ item }) => {
+
+    const randomColour = useMemo(() => {
+        return lightColours[Math.floor(Math.random() * lightColours.length)];
+    }, []);
+
 
     const { data: profilePic } = useProfilePictureByID(item.user_id);
+    const { data: fullName } = useUserFullName(item.user_id, "user");
+
+    // Get the first letter of the user's name for the avatar fallback
+    const getInitial = () => {
+        if (!fullName || fullName === "Anonymous") return "AN";
+        const nameParts = fullName.split(' ');
+        if (nameParts.length >= 2) {
+            return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
+        }
+        return fullName.charAt(0).toUpperCase();
+    };
+
+    // Get the profile picture URL
+    const getProfilePicUrl = () => {
+        if (profilePic instanceof Blob) {
+            return URL.createObjectURL(profilePic);
+        }
+        return "";
+    };
 
     return (
         <div className="flex flex-col gap-4">
@@ -48,10 +74,10 @@ const ProgramItem: React.FC<{ item: TProgram }> = ({ item }) => {
 
             </div>
             <div className="flex flex-row items-center justify-start gap-2">
-            <Avatar className="w-10 h-10">
-                <AvatarImage src={profilePic instanceof Blob ? URL.createObjectURL(profilePic) : ""} />
-                <AvatarFallback className="bg-white">
-                    <UserIcon className="w-6 h-6" />
+            <Avatar className="w-10 h-10" >
+                <AvatarImage src={getProfilePicUrl()} />
+                <AvatarFallback className="bg-white" style={{ backgroundColor: randomColour }}>
+                    {getInitial()}
                 </AvatarFallback>
             </Avatar>
             <SplitIcon className="w-4 h-4" />
@@ -59,8 +85,10 @@ const ProgramItem: React.FC<{ item: TProgram }> = ({ item }) => {
             </div>
         </div>
     );
-};
+});
 
+// Add display name for debugging
+ProgramItem.displayName = "ProgramItem";
 
 export const AiProgramGrid: React.FC = () => {
 
