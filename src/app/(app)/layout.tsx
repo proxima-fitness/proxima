@@ -1,7 +1,6 @@
 import "@/styles/global.css";
 
 import { Russo_One, Exo, Inter } from "next/font/google";
-import { Footer } from '@/components/footer/Footer';
 import { Navbar } from '@/components/header/Navbar';
 import QueryProvider from '@/utils/QueryProvider';
 import styles from '@/style';
@@ -15,6 +14,7 @@ import NextTopLoader from 'nextjs-toploader';
 import { PostHogClientProvider } from "@/utils/PostHogClientProvider";
 import { PreviewProvider } from "@/contexts/PreviewContext";
 import { UserProvider } from "@/contexts/UserContext";
+import { ConditionalFooter } from "@/components/footer/ConditionalFooter";
 
 export const metadata: Metadata = {
     title: 'Proxima Fitness | AI Workout Builder & Program Directory',
@@ -82,11 +82,7 @@ export default function RootLayout({
                                                     <Toaster richColors />
                                                 </PostHogClientProvider>
                                         </main>
-                                        <div className={ `bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
-                                            <div className={ `${styles.boxWidth}` }>
-                                                <Footer />
-                                            </div>
-                                        </div>
+                                        <ConditionalFooter />
                                     </div>
                                 </SidebarProvider>
                             </PreviewProvider>
