@@ -129,6 +129,7 @@ export const useProfilePictureByID = (id: string) => {
     return useQuery({
         queryKey: ["profile-picture", id],
         queryFn: () => getProfilePicByID(id),
+        enabled: !!id,
     });
 };
 
