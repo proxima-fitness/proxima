@@ -14,11 +14,18 @@ export const FullName: React.FC<IProps> = (props) => {
         id_type,
     } = props;
 
-    const { data: fullName, isLoading: loadingFullName } = useUserFullName(id, id_type);
+    const { data: fullName, isLoading: loadingFullName, isError: errorFullName } = useUserFullName(id, id_type);
 
+    console.log(fullName);
     if (loadingFullName) {
         return (
             <>Loading...</>
+        );
+    }
+
+    if (errorFullName || !fullName) {
+        return (
+            <>Anonymous</>
         );
     }
 

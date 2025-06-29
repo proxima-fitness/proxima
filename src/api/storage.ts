@@ -103,9 +103,10 @@ export const getProfilePicByID = async (id: string) => {
                     return data || null;
                 }
             }
+            return null;
     } catch (error: unknown) {
         console.error('Error fetching profile picture:', error);
-        return [];
+        return null;
     }
 };
 
