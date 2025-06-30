@@ -106,3 +106,9 @@ type TTextToJsonRequest = {
     programTitle: string; // goes into AI Prompt
     explore: string; // goes into AI Prompt
 }
+
+type TMessage = {
+    id: number;
+    role: "user" | "assistant";
+    content: string;
+}

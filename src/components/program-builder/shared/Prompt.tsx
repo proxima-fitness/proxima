@@ -105,12 +105,43 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
 
     const { setIsHevy } = useIsHevy();
     const [search, setSearch] = useState<string>("");
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [isThinkingAndFilters, setIsThinkingAndFilters] = useState<boolean>(true);
+    const [isLoading, setIsLoading] = useState(false)
+    const messages: TMessage[] = [];
+    const [isThinkingAndFilters, setIsThinkingAndFilters] = useState<boolean>(false);
+    const [chatMessages, setChatMessages] = useState(messages)
 
     const [activeCategory, setActiveCategory] = useState("")
 
     const [files, setFiles] = useState<File[]>([])
+
+    const handleSubmit = (prompt: string, setPrompt: (prompt: string) => void, chatMessages: TMessage[], setChatMessages: (messages: TMessage[]) => void, setIsLoading: (isLoading: boolean) => void) => {
+        if (!prompt.trim()) return
+
+        setPrompt("")
+        setIsLoading(true)
+
+        // Add user message immediately
+        const newUserMessage: TMessage = {
+          id: chatMessages.length + 1,
+          role: "user",
+          content: prompt.trim(),
+        }
+
+        setChatMessages([...chatMessages, newUserMessage])
+
+        // Simulate API response
+        setTimeout(() => {
+          const assistantResponse: TMessage = {
+            id: chatMessages.length + 2,
+            role: "assistant",
+            content: `This is a response to: "${prompt.trim()}"`,
+          }
+
+          const updatedMessages = [...chatMessages, newUserMessage, assistantResponse]
+          setChatMessages(updatedMessages)
+          setIsLoading(false)
+        }, 1500)
+      }
 
     const handleFilesAdded = (newFiles: File[]) => {
       setFiles((prev) => [...prev, ...newFiles])
@@ -129,7 +160,9 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
             if (inferred) {
                 setDaysPerWeek(inferred);
             }
-        setDialogOpen(true)
+        // setDialogOpen(true);
+        setIsThinkingAndFilters(true);
+        handleSubmit(search, setSearch, chatMessages, setChatMessages, setIsLoading)
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -224,7 +257,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
         <>
         {
             isThinkingAndFilters ?
-                <ConversationPromptInput />
+                <ConversationPromptInput search={ search } chatMessages={ chatMessages } isLoading={ isLoading } />
             :
 
             <div>
