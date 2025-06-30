@@ -269,12 +269,24 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                             <TooltipProvider delayDuration={ 0 }>
                                 <Tooltip>
                                     <TooltipTrigger className="">
+                                        <div className="">
+                                            <SparklesIcon className="size-5" />
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="bg-gray-600 text-white rounded-lg">
+                                        <p>Enhance Prompt (coming soon...)</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                            <TooltipProvider delayDuration={ 0 }>
+                                <Tooltip>
+                                    <TooltipTrigger className="">
                                         <div className="p-2">
                                             <MicIcon className="size-5" />
                                         </div>
                                     </TooltipTrigger>
                                     <TooltipContent className="bg-gray-600 text-white rounded-lg">
-                                        <p>Dictate</p>
+                                        <p>Dictate (coming soon...)</p>
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
