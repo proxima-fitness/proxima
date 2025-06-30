@@ -140,7 +140,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
           const updatedMessages = [...chatMessages, newUserMessage, assistantResponse]
           setChatMessages(updatedMessages)
           setIsLoading(false)
-        }, 1500)
+        }, 500)
       }
 
     const handleFilesAdded = (newFiles: File[]) => {
