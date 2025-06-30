@@ -80,6 +80,36 @@ export const getCommunityAiPrograms = async () => {
     }
 }
 
+// GET THE COMMUNITY AI PROGRAMS WITH PAGINATION
+export const getCommunityAiProgramsPaginated = async (limit: number = 20, offset: number = 0) => {
+    try {
+        const { data, error } = await
+            supabase.from('programs')
+            .select('prompt, id, user_id, saves')
+            .eq('title', 'My AI Program')
+            .not('prompt', 'is', null)
+            .neq('prompt', '""')
+            .eq("explore", true)
+            .order("saves", { ascending: false })
+            .range(offset, offset + limit - 1);
+        if (error) {
+            console.error('Error fetching community ai programs:', error);
+        } else if (data && data.length > 0 ) {
+            const seen = new Set<string>();
+            const uniqueData = data.filter(program => {
+                if (seen.has(program.prompt)) return false;
+                seen.add(program.prompt);
+                return true;
+            });
+
+            return uniqueData as unknown as TProgram[];
+        }
+        return [];
+    } catch (error: unknown) {
+        console.error('Error fetching community ai programs:', error);
+        return [];
+    }
+}
 
 // GET THE SCHEDULE FOR A SPECIFIC PROGRAM
 export const getExplorePageProgramDetails = async (program_id: string) => {
