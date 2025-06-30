@@ -1,13 +1,13 @@
 "use client";
 
-import { EditIcon, EyeIcon, SplitIcon, UsersIcon } from "lucide-react";
+import { ArrowDownIcon, EditIcon, EyeIcon, SplitIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 import { quotes } from "public";
-import { InfiniteList } from "@/components/ui/infinite-list-demo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useProfilePictureByID, useUserFullName } from "@/api/hooks";
-import { memo, useMemo } from "react";
+import { useProfilePictureByID, useUserFullName, useCommunityAiProgramsPaginated } from "@/api/hooks";
+import { memo, useMemo, useState } from "react";
 import { lightColours } from "@/assets/constants";
+import { Button } from "@/components/ui/button";
 
 const ProgramItem: React.FC<{ item: TProgram }> = memo(({ item }) => {
 
@@ -91,10 +91,32 @@ const ProgramItem: React.FC<{ item: TProgram }> = memo(({ item }) => {
 ProgramItem.displayName = "ProgramItem";
 
 export const AiProgramGrid: React.FC = () => {
+    const [offset, setOffset] = useState(0);
+    const [allPrograms, setAllPrograms] = useState<TProgram[]>([]);
+    const pageSize = 20;
+
+    const { data: programs, isLoading } = useCommunityAiProgramsPaginated(pageSize, offset);
+
+    // Update all programs when new data is fetched
+    useMemo(() => {
+        if (programs && programs.length > 0) {
+            if (offset === 0) {
+                // First page, replace all programs
+                setAllPrograms(programs);
+            } else {
+                // Subsequent pages, append to existing programs
+                setAllPrograms(prev => [...prev, ...programs]);
+            }
+        }
+    }, [programs, offset]);
+
+    const handleSeeMore = () => {
+        setOffset(prev => prev + pageSize);
+    };
+
 
     return (
         <>
-
             <div className="flex flex-col gap-2 bg-lightGray sm:mx-12">
                 <span className="text-2xl font-bold px-8 pt-8 flex flex-row items-center justify-start gap-2">
                     <UsersIcon />
@@ -102,24 +124,23 @@ export const AiProgramGrid: React.FC = () => {
                     </span>
                 <span className="text-xs text-start px-8 pt-4">All programs shown in the community are voluntarily shared by users. The platform does not display any content without user consent.</span>
                 <div className="py-8 px-8">
-                    <InfiniteList
-                        pageSize={ 20 }
-                        tableName="programs"
-                        columns="prompt, id, user_id, saves"
-                        containerClassName="grid grid-cols-3 gap-4 max-sm:grid-cols-1"
-                        trailingQuery={(query) =>
-                            query
-                                .not('prompt', 'is', null)
-                                .neq('prompt', '""')
-                                .eq("explore", true)
-                                .order("saves", { ascending: false })
-                        }
-                        renderItem={ (item: TProgram) => {
-                            return (
-                                <ProgramItem key={item.id} item={item} />
-                            )
-                        } }
-                    />
+                    <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1">
+                        {allPrograms.map((item: TProgram) => (
+                            <ProgramItem key={item.id} item={item} />
+                        ))}
+                    </div>
+
+                    <div className="flex justify-center mt-8">
+                        <Button
+                            onClick={handleSeeMore}
+                            disabled={isLoading}
+                            className="bg-lightSecondary text-white hover:bg-black hover:text-white"
+                        >
+                            <ArrowDownIcon />
+                            {isLoading ? "Loading..." : "See More"}
+                        </Button>
+                    </div>
+
                 </div>
         </div>
         </>

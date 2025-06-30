@@ -1,7 +1,7 @@
 // USE OF REACT QUERY IS STRICTLY CLIENT-SIDE, USE SUPABASE SSR FOR SERVER SIDE
 import { useQuery } from "@tanstack/react-query";
 import { getBlogById, getBlogs } from "./blog";
-import { getCommunityAiPrograms, getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID, getSharedProgram } from "./programs";
+import { getCommunityAiPrograms, getCommunityAiProgramsPaginated, getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID, getSharedProgram } from "./programs";
 import { getOpUserId, getUserFullName, getUserMetaData } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getExercises } from "./exercises";
@@ -96,6 +96,13 @@ export const useCommunityAiPrograms = () => {
     return useQuery({
         queryKey: ['community-ai-programs'],
         queryFn: () => getCommunityAiPrograms(),
+    });
+};
+
+export const useCommunityAiProgramsPaginated = (limit: number = 20, offset: number = 0) => {
+    return useQuery({
+        queryKey: ['community-ai-programs-paginated', limit, offset],
+        queryFn: () => getCommunityAiProgramsPaginated(limit, offset),
     });
 };
 
