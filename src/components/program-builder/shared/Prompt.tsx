@@ -1,20 +1,14 @@
 "use client";
 
-import { ArrowUpIcon, BicepsFlexedIcon, BookOpenIcon, Calculator, ChevronDownIcon, ChevronUpIcon, FootprintsIcon, InfoIcon, MessageSquareWarningIcon, MicIcon, Paperclip, PlayIcon, SearchIcon, SparklesIcon, SquarePowerIcon, X } from "lucide-react";
+import { ArrowUpIcon, BicepsFlexedIcon, BookOpenIcon, Calculator, FootprintsIcon, MessageSquareWarningIcon, MicIcon, Paperclip, PlayIcon, SquarePowerIcon, X } from "lucide-react";
 import { useEffect, useReducer, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import MultiSelect, { IOption } from "@/components/ui/multi-select";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { activityLevelOptions, ageOptions, dayPerWeekOptions, difficultyOptions, equipmentOptions, focusAreasOptions, goalsOptions, healthIssuesOptions, programLengthOptions, sexOptions, specializationOptions, specificDaysOptions, workoutDurationOptions } from "@/assets/constants";
+import { IOption } from "@/components/ui/multi-select";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { inferDaysPerWeek } from "../utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { useUserContext } from "@/contexts/UserContext";
 import { User } from "@supabase/supabase-js";
 import { PromptInput, PromptInputTextarea } from "@/components/ui/prompt-input";
@@ -112,7 +106,35 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
 
     const [activeCategory, setActiveCategory] = useState("")
 
-    const [files, setFiles] = useState<File[]>([])
+    const [files, setFiles] = useState<File[]>([]);
+
+    const [reasoningText, setReasoningText] = useState("")
+    const [isStreaming, setIsStreaming] = useState(false)
+
+
+    // Simulated streaming function
+    const simulateReasoningStream = async (
+        setText: (text: string) => void,
+        setIsStreaming: (streaming: boolean) => void
+    ) => {
+        const reasoning = `Thank you for your message. Based on previous interactions, opening the ‘Advanced Settings Filters’ panel is the correct next step. I will now open it so the user can improve their workout program.`;
+
+        setIsStreaming(true)
+        setText("")
+
+        // Simulate character-by-character streaming
+        for (let i = 0; i <= reasoning.length; i++) {
+        setText(reasoning.slice(0, i))
+        await new Promise((resolve) => setTimeout(resolve, 20))
+        }
+
+        setIsStreaming(false)
+    };
+
+
+    const handleGenerateReasoning = () => {
+      simulateReasoningStream(setReasoningText, setIsStreaming)
+    };
 
     const handleSubmit = (prompt: string, setPrompt: (prompt: string) => void, chatMessages: TMessage[], setChatMessages: (messages: TMessage[]) => void, setIsLoading: (isLoading: boolean) => void) => {
         if (!prompt.trim()) return
@@ -131,16 +153,21 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
 
         // Simulate API response
         setTimeout(() => {
-          const assistantResponse: TMessage = {
-            id: chatMessages.length + 2,
-            role: "assistant",
-            content: `This is a response to: "${prompt.trim()}"`,
-          }
+          handleGenerateReasoning();
+          setIsLoading(false);
+        }, 0);
 
-          const updatedMessages = [...chatMessages, newUserMessage, assistantResponse]
-          setChatMessages(updatedMessages)
-          setIsLoading(false)
-        }, 500)
+        // setTimeout(() => {
+        //     const assistantResponse: TMessage = {
+        //         id: chatMessages.length + 2,
+        //         role: "assistant",
+        //         content: `Please use the Advanced Settings filters to refine your program.`,
+        //     }
+
+        //     const updatedMessages = [...chatMessages, newUserMessage, assistantResponse]
+        //     setChatMessages(updatedMessages)
+        // }, 3000);
+
       }
 
     const handleFilesAdded = (newFiles: File[]) => {
@@ -217,7 +244,6 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
 
     const [workoutSchema, setWorkoutSchema] = useState("hevy");
     const [advancedSettingsOpen, toggleAdvancedSettingsOpen] = useReducer(prev => !prev, true);
-    const [dialogOpen, setDialogOpen] = useState(false);
     const [explore, toggleExplore] = useReducer(prev => !prev, true);
     const [programTitle, setProgramTitle] = useState("My AI Program");
 
@@ -257,20 +283,90 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
         <>
         {
             isThinkingAndFilters ?
-                <ConversationPromptInput search={ search } chatMessages={ chatMessages } isLoading={ isLoading } />
+                <>
+                <ConversationPromptInput
+                    sex={sex}
+                    setSex={setSex}
+
+                    age={age}
+                    setAge={setAge}
+
+                    daysPerWeek={daysPerWeek}
+                    setDaysPerWeek={setDaysPerWeek}
+
+                    specificDays={specificDays}
+                    setSpecificDays={setSpecificDays}
+
+                    programLength={programLength}
+                    setProgramLength={setProgramLength}
+
+                    workoutDuration={workoutDuration}
+                    setWorkoutDuration={setWorkoutDuration}
+
+                    activityLevel={activityLevel}
+                    setActivityLevel={setActivityLevel}
+
+                    goals={goals}
+                    setGoals={setGoals}
+
+                    specialization={specialization}
+                    setSpecialization={setSpecialization}
+
+                    equipment={equipment}
+                    setEquipment={setEquipment}
+
+                    focusAreas={focusAreas}
+                    setFocusAreas={setFocusAreas}
+
+                    difficultyLevel={difficultyLevel}
+                    setDifficultyLevel={setDifficultyLevel}
+
+                    excludeAreas={excludeAreas}
+                    setExcludeAreas={setExcludeAreas}
+
+                    excludeEquipment={excludeEquipment}
+                    setExcludeEquipment={setExcludeEquipment}
+
+                    excludeSpecializations={excludeSpecializations}
+                    setExcludeSpecializations={setExcludeSpecializations}
+
+                    healthIssues={healthIssues}
+                    setHealthIssues={setHealthIssues}
+
+                    workoutSchema={workoutSchema}
+                    setWorkoutSchema={setWorkoutSchema}
+
+                    submitRef={ submitRef }
+                    search={search}
+                    setSearch={setSearch}
+                    chatMessages={chatMessages}
+                    isLoading={isLoading}
+                    isStreaming={isStreaming}
+                    reasoningText={reasoningText}
+
+                    toggleAdvancedSettingsOpen={toggleAdvancedSettingsOpen}
+                    advancedSettingsOpen={advancedSettingsOpen}
+
+                    explore={explore}
+                    toggleExplore={toggleExplore}
+                    programTitle={programTitle}
+                    setProgramTitle={setProgramTitle}
+                    handleDefineQueryParams={handleDefineQueryParams}
+                />
+                </>
             :
 
-            <div>
+            <>
             <div className="sm:mt-[120px] sm:mb-[100px] max-sm:h-full max-sm:mt-[50px] max-sm:mb-[150px] flex flex-col max-sm:gap-0 items-center justify-center gap-6">
                 <div className="text-center">
                     <div className="font-main text-4xl font-bold uppercase">What do you want to train?</div>
-                    <div className="text-lg font-normal">Create a workout program by chatting with AI</div>
+                    <div className="text-lg font-normal px-12">Create a workout program by chatting with AI</div>
                 </div>
                 <div className="flex flex-col max-sm:flex-col max-sm:pt-8 justify-center items-center w-full">
                     <div className="flex flex-col gap-2 w-full items-center">
-                        <Dialog open={ dialogOpen } onOpenChange={ () => setDialogOpen(false) }>
+                        <div className="w-full">
                             <span className="flex items-center justify-center">
-                                <Button onClick={ () => setDialogOpen(true) } className="my-12 sm:hidden h-[60px] text-white rounded-xl w-[200px] bg-lightSecondary hover:bg-lightSecondary font-main uppercase flex items-center justify-center gap-4"><PlayIcon />Start</Button>
+                                <Button className="my-12 sm:hidden h-[60px] text-white rounded-xl w-[200px] bg-lightSecondary hover:bg-lightSecondary font-main uppercase flex items-center justify-center gap-4"><PlayIcon />Start</Button>
                             </span>
                             <div className="max-sm:hidden mx-auto flex w-full max-w-3xl flex-col items-center justify-center gap-4 px-3 pb-3 md:px-5 md:pb-5">
                             <FileUpload
@@ -449,269 +545,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                                     />
                                     6,000+ lifters are building with Proxima
                                 </div>
-                            <DialogContent hideClose className="max-w-5xl overflow-y-auto overflow-x-hidden w-full max-sm:max-h-[90%]">
-                                <DialogTitle>
-                                    <span className="flex flex-row max-sm:flex-col max-sm:items-end gap-2">
-                                        <Input
-                                            value={ search }
-                                            onChange={ (event) => setSearch(event.target.value) }
-                                            startIcon={ SearchIcon }
-                                            placeholder="Tell me about your ideal program..."
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' && submitRef.current !== null) {
-                                                    submitRef.current.click();
-                                                }
-                                            }}
-                                        />
-                                        <Link
-                                            ref={ submitRef }
-                                            target="_self"
-                                            rel="noopener noreferrer"
-                                            className="max-sm:w-full h-10"
-                                            href={ `/program-builder/build-program?${handleDefineQueryParams()}&edit=true` }
-                                        >
-                                            <Button className="w-[auto] max-sm:w-full h-10 font-bold bg-[#33bbcf] text-white">
-                                                <SparklesIcon /> Build
-                                            </Button>
-                                        </Link>
-                                    </span>
-                                    <span className="text-lightSecondary text-sm flex flex-row gap-2 items-center justify-start pt-2">
-                                        <InfoIcon />
-                                        Recommended: Use advanced settings for best experience
-                                    </span>
-                                </DialogTitle>
-                                <DialogDescription className="flex flex-row justify-between items-center">
-                                    <span className="w-[66%]">
-                                        <Button onClick={ () => toggleAdvancedSettingsOpen() } variant="ghost" className="w-[auto] h-[auto]">
-                                            Advanced settings { advancedSettingsOpen ? <ChevronUpIcon /> : <ChevronDownIcon /> }
-                                        </Button>
-                                    </span>
-                                    { advancedSettingsOpen &&
-                                        <span className="font-bold w-[33%] flex justify-center">
-                                            Exclude
-                                        </span>
-                                    }
-                                </DialogDescription>
-                                { advancedSettingsOpen &&
-                                    <span className="flex flex-row justify-between gap-5 max-sm:gap-2">
-                                        <span className="grid grid-cols-2 max-sm:grid-cols-1 max-sm:basis-1/2 max-sm:gap-2 max-sm:pr-2 gap-5 sm:flex-grow-[2] basis-2/3 pr-4 border-r-2">
-                                            <Select value={ sex } onValueChange={ (value) => setSex(value) }>
-                                                <SelectTrigger className="h-10">
-                                                    <SelectValue placeholder="Sex" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    { sexOptions.map((sx) => (
-                                                        <SelectItem key={ sx.value } value={ sx.value }>{ sx.label }</SelectItem>
-
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <Select value={ age } onValueChange={ (value) => setAge(value) }>
-                                                <SelectTrigger className="h-10">
-                                                    <SelectValue placeholder="Age" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    { ageOptions.map((age) => (
-                                                        <SelectItem key={ age.value } value={ age.value }>{ age.label }</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <Select value={ programLength } onValueChange={ (value) => setProgramLength(value) }>
-                                                <SelectTrigger className="h-10">
-                                                    <SelectValue placeholder="Program length" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    { programLengthOptions.map((length) => (
-                                                        <SelectItem key={ length.value } value={ length.value }>{ length.label }</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <Select value={ daysPerWeek } onValueChange={ (value) => setDaysPerWeek(value) }>
-                                                <SelectTrigger className="h-10">
-                                                    <SelectValue placeholder="How many days per week?" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    { dayPerWeekOptions.map((days) => (
-                                                        <SelectItem key={ days.value } value={ days.value }>{ days.label }</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <MultiSelect
-                                                value={ specificDays }
-                                                onChange={ (value) => setSpecificDays(value) }
-                                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                                defaultOptions={ specificDaysOptions }
-                                                placeholder="Select specific days"
-                                                emptyIndicator={ (
-                                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                                        no results found.
-                                                    </p>
-                                            ) }
-                                            />
-                                            <Select value={ workoutDuration } onValueChange={ (value) => setWorkoutDuration(value) }>
-                                                <SelectTrigger className="h-10">
-                                                    <SelectValue placeholder="Workout duration" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    { workoutDurationOptions.map((duration) => (
-                                                        <SelectItem key={ duration.value } value={ duration.value }>{ duration.label }</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <Select value={ activityLevel } onValueChange={ (value) => setActivityLevel(value) }>
-                                                <SelectTrigger className="h-10">
-                                                    <SelectValue placeholder="Activity level" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    { activityLevelOptions.map((act) => (
-                                                        <SelectItem key={ act.value } value={ act.value }>{ act.label }</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <MultiSelect
-                                                value={ goals }
-                                                onChange={ (value) => setGoals(value) }
-                                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                                defaultOptions={ goalsOptions }
-                                                placeholder="Goals"
-                                                emptyIndicator={ (
-                                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                                        no results found.
-                                                    </p>
-                                            ) }
-                                            />
-                                            <MultiSelect
-                                                value={ specialization }
-                                                onChange={ (value) => setSpecialization(value) }
-                                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                                defaultOptions={ specializationOptions }
-                                                placeholder="Specialization"
-                                                emptyIndicator={ (
-                                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                                        no results found.
-                                                    </p>
-                                            ) }
-                                            />
-                                            <MultiSelect
-                                                value = { equipment }
-                                                onChange={ (value) => setEquipment(value) }
-                                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                                defaultOptions={ equipmentOptions }
-                                                placeholder="Equipment"
-                                                emptyIndicator={ (
-                                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                                        no results found.
-                                                    </p>
-                                            ) }
-                                            />
-                                            <MultiSelect
-                                                value = { focusAreas }
-                                                onChange={ (value) => setFocusAreas(value) }
-                                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                                defaultOptions={ focusAreasOptions }
-                                                placeholder="Focus areas"
-                                                emptyIndicator={ (
-                                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                                        no results found.
-                                                    </p>
-                                            ) }
-                                            />
-                                            <MultiSelect
-                                                value = { difficultyLevel }
-                                                onChange={ (value) => setDifficultyLevel(value) }
-                                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                                defaultOptions={ difficultyOptions }
-                                                placeholder="Difficulty"
-                                                emptyIndicator={ (
-                                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                                        no results found.
-                                                    </p>
-                                            ) }
-                                            />
-                                        </span>
-                                        <span className="grid grid-cols-1 flex-grow basis-1/3 ">
-                                            <MultiSelect
-                                                value = { excludeAreas }
-                                                onChange={ (value) => setExcludeAreas(value) }
-                                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                                defaultOptions={ focusAreasOptions }
-                                                placeholder="Exclude focus areas"
-                                                emptyIndicator={ (
-                                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                                        no results found.
-                                                    </p>
-                                            ) }
-                                            />
-                                            <MultiSelect
-                                                value = { excludeEquipment }
-                                                onChange={ (value) => setExcludeEquipment(value) }
-                                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                                defaultOptions={ equipmentOptions }
-                                                placeholder="Exclude equipment"
-                                                emptyIndicator={ (
-                                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                                        no results found.
-                                                    </p>
-                                            ) }
-                                            />
-                                            <MultiSelect
-                                                value = { excludeSpecializations }
-                                                onChange={ (value) => setExcludeSpecializations(value) }
-                                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                                defaultOptions={ specializationOptions }
-                                                placeholder="Exclude specializations"
-                                                emptyIndicator={ (
-                                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                                        no results found.
-                                                    </p>
-                                            ) }
-                                            />
-                                            <MultiSelect
-                                                value = { healthIssues }
-                                                onChange={ (value) => setHealthIssues(value) }
-                                                badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                                                defaultOptions={ healthIssuesOptions }
-                                                placeholder="Health issues"
-                                                emptyIndicator={ (
-                                                    <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                                                        no results found.
-                                                    </p>
-                                            ) }
-                                            />
-                                        </span>
-                                    </span>
-                                }
-                                <span className="flex flex-row justify-between items-center">
-                                    <span className="flex flex-col gap-2 grow basis-0 w-0">
-                                        <span className="grid w-full max-w-sm items-center gap-1.5">
-                                        <Label htmlFor="title">Program Title</Label>
-                                        <Input
-                                            type="text"
-                                            id="title"
-                                            placeholder="Program Title"
-                                            className="w-full"
-                                            value={ programTitle }
-                                            onChange={ (event) => setProgramTitle(event.target.value) }
-                                        />
-                                        </span>
-                                        <span className="w-full flex flex-row items-end justify-start gap-2">
-                                        <Checkbox checked={ explore } onCheckedChange={ toggleExplore } className="w-4 h-4 data-[state=checked]:bg-[#33bbcf] data-[state=checked]:text-white" id="explore" />
-                                        <Label htmlFor="explore" className="text-xs text-gray-600">Share program with community</Label>
-                                        </span>
-                                    </span>
-                                    <Select onValueChange={(value) => setWorkoutSchema(value)} value={workoutSchema}>
-                                        <SelectTrigger className="h-10 w-[180px]">
-                                        <SelectValue placeholder="Workout Schema" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                        <SelectItem value="hevy">Hevy Routines</SelectItem>
-                                        <SelectItem value="proxima">Proxima Program</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </span>
-
-                            </DialogContent>
-                        </Dialog>
+                        </div>
 
                     </div>
                 </div>
@@ -723,7 +557,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                 <RecentProgramsGrid />
                 <ConditionalHevyGrid />
                 <AiProgramGrid />
-            </div>
+            </>
         }
         </>
     );
