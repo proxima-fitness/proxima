@@ -47,7 +47,6 @@ function ProgramFiltersContent() {
 
     const messages: TMessage[] = [];
     const [chatMessages, setChatMessages] = useState(messages)
-    const [isLoading, setIsLoading] = useState(true)
     const [reasoningText, setReasoningText] = useState("")
     const [isStreaming, setIsStreaming] = useState(false)
 
@@ -115,7 +114,6 @@ function ProgramFiltersContent() {
             };
 
             const handleSubmit = () => {
-                setIsLoading(true)
                 // Add user message immediately
                 const newUserMessage: TMessage = {
                     id: chatMessages.length + 1,
@@ -127,8 +125,6 @@ function ProgramFiltersContent() {
 
                 handleGenerateReasoning();
 
-                // Simulate API response
-                setIsLoading(false);
             }
 
             if (search && searchRef.current === null) {
@@ -196,7 +192,6 @@ function ProgramFiltersContent() {
                     submitRef={ submitRef }
                     search={search}
                     chatMessages={chatMessages}
-                    isLoading={isLoading}
                     isStreaming={isStreaming}
                     reasoningText={reasoningText}
 

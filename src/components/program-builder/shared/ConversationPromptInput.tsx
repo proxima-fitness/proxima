@@ -18,7 +18,6 @@ import {
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import {
-  ArrowUp,
   ChevronDownIcon,
   ChevronUpIcon,
   Copy,
@@ -79,7 +78,6 @@ interface IProps {
     submitRef: React.RefObject<HTMLAnchorElement>;
     search: string;
     chatMessages: TMessage[];
-    isLoading: boolean;
     isStreaming: boolean;
     reasoningText: string;
     toggleAdvancedSettingsOpen: () => void;
@@ -96,7 +94,6 @@ function ConversationPromptInput( props: IProps) {
     const {
         search,
         chatMessages,
-        isLoading,
         isStreaming,
         reasoningText,
         sex,
@@ -141,7 +138,7 @@ function ConversationPromptInput( props: IProps) {
         setProgramTitle,
         handleDefineQueryParams,
         submitRef } = props;
-  const [prompt, setPrompt] = useState(search)
+    const [prompt, setPrompt] = useState(search)
 
 
   return (
@@ -527,7 +524,7 @@ function ConversationPromptInput( props: IProps) {
       </ChatContainerRoot>
       <div className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl shrink-0 px-3 pb-3 md:px-5 md:pb-5">
         <PromptInput
-          isLoading={isLoading}
+          isLoading={true}
           value={prompt}
           onValueChange={setPrompt}
         //   onSubmit={handleSubmit}
@@ -542,15 +539,11 @@ function ConversationPromptInput( props: IProps) {
             <PromptInputActions className="mt-5 flex w-full items-center justify-end gap-2 px-3 pb-3">
                 <Button
                   size="icon"
-                  disabled={!prompt.trim() || isLoading}
+                  disabled={true}
                 //   onClick={handleSubmit}
                   className="size-9 rounded-full bg-lightSecondary text-white"
                 >
-                  {!isLoading ? (
-                    <ArrowUp size={18} />
-                  ) : (
                     <span className="size-3 rounded-xs bg-white" />
-                  )}
                 </Button>
             </PromptInputActions>
           </div>
