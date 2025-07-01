@@ -1,12 +1,9 @@
 "use client";
 
-import { ArrowUpIcon, BicepsFlexedIcon, BookOpenIcon, Calculator, FootprintsIcon, MessageSquareWarningIcon, MicIcon, Paperclip, PlayIcon, SquarePowerIcon, X } from "lucide-react";
-import { useEffect, useReducer, useRef, useState } from "react";
+import { ArrowUpIcon, MessageSquareWarningIcon, MicIcon, Paperclip, PlayIcon, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { IOption } from "@/components/ui/multi-select";
-import { useIsHevy } from "@/contexts/HevyContext";
-import { inferDaysPerWeek } from "../utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useUserContext } from "@/contexts/UserContext";
@@ -21,67 +18,11 @@ import {
     FileUploadContent,
     FileUploadTrigger,
   } from "@/components/ui/file-upload"
-import { ConversationPromptInput } from "./ConversationPromptInput";
 import { AiProgramGrid } from "./AiProgramGrid";
 import { ConditionalHevyGrid } from "../hevy/ConditionalHevyGrid";
 import { RecentProgramsGrid } from "./RecentProgramsGrid";
-
-const suggestionGroups = [
-    {
-        label: "Empty Template",
-        highlight: "Empty Template",
-        items: [
-            "Empty Template",
-        ],
-        icon: <BookOpenIcon />,
-    },
-    {
-      label: "Bodybuilding",
-      highlight: "Bodybuilding",
-      items: [
-        "Make a program like GZCL (GZCLP)",
-        "Make a program like nSuns",
-        "Make a program like PHUL (Power Hypertrophy Upper/Lower)",
-        "Make a program like Reddit's r/Fitness Basic Beginner Routine",
-      ],
-      icon: <BicepsFlexedIcon />,
-    },
-    {
-      label: "Powerlifting",
-      highlight: "Powerlifting",
-      items: [
-        "Make a program like Candito 6‑Week Program",
-        "Make a program like Calgary Barbell",
-        "Make a program like Bryce Lewis Greatest Hits",
-        "Make a program like Conjugate / Westside Barbell Method",
-      ],
-      icon: <SquarePowerIcon />,
-    },
-    {
-        label: "Weight Loss",
-        highlight: "Weight Loss",
-        items: [
-            "Make a program like Couch to 5K (C25K)",
-            "Make a program like r/Fitness Basic Beginner Routine (FBR)",
-            "Make a HIIT training program",
-
-        ],
-        icon: <Calculator />,
-      },
-    {
-      label: "Athletic Training",
-      highlight: "Athletic Training",
-      items: [
-        "Make a program like Westside for Athletes / Conjugate Training",
-        "Make a program like JuggernautAI Sport Performance / Juggernaut Field Athlete",
-        "Make a program like The Vertical Jump Bible",
-        "Make a program like DeFranco's Westside for Skinny Bastards (WS4SB)",
-
-      ],
-      icon: <FootprintsIcon />,
-    },
-
-];
+import { useRouter } from 'next/navigation'
+import { suggestionGroups } from "@/assets/constants";
 
 interface IProps {
     userData: User | null;
@@ -90,6 +31,11 @@ interface IProps {
 export const Prompt: React.FC<IProps> = ({ userData }) => {
 
     const { setUser } = useUserContext();
+    const router = useRouter();
+
+    const goToFilters = (search: string) => {
+        router.push(`/program-builder/program-filters?search=${encodeURIComponent(search)}`);
+    };
 
     useEffect(() => {
         if (userData) {
@@ -97,78 +43,12 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
         }
     }, [userData, setUser]);
 
-    const { setIsHevy } = useIsHevy();
     const [search, setSearch] = useState<string>("");
-    const [isLoading, setIsLoading] = useState(false)
-    const messages: TMessage[] = [];
-    const [isThinkingAndFilters, setIsThinkingAndFilters] = useState<boolean>(false);
-    const [chatMessages, setChatMessages] = useState(messages)
 
     const [activeCategory, setActiveCategory] = useState("")
 
     const [files, setFiles] = useState<File[]>([]);
 
-    const [reasoningText, setReasoningText] = useState("")
-    const [isStreaming, setIsStreaming] = useState(false)
-
-
-    // Simulated streaming function
-    const simulateReasoningStream = async (
-        setText: (text: string) => void,
-        setIsStreaming: (streaming: boolean) => void
-    ) => {
-        const reasoning = `Thank you for your message. Based on previous interactions, opening the ‘Advanced Settings Filters’ panel is the correct next step. I will now open it so the user can improve their workout program.`;
-
-        setIsStreaming(true)
-        setText("")
-
-        // Simulate character-by-character streaming
-        for (let i = 0; i <= reasoning.length; i++) {
-        setText(reasoning.slice(0, i))
-        await new Promise((resolve) => setTimeout(resolve, 20))
-        }
-
-        setIsStreaming(false)
-    };
-
-
-    const handleGenerateReasoning = () => {
-      simulateReasoningStream(setReasoningText, setIsStreaming)
-    };
-
-    const handleSubmit = (prompt: string, setPrompt: (prompt: string) => void, chatMessages: TMessage[], setChatMessages: (messages: TMessage[]) => void, setIsLoading: (isLoading: boolean) => void) => {
-        if (!prompt.trim()) return
-
-        setPrompt("")
-        setIsLoading(true)
-
-        // Add user message immediately
-        const newUserMessage: TMessage = {
-          id: chatMessages.length + 1,
-          role: "user",
-          content: prompt.trim(),
-        }
-
-        setChatMessages([...chatMessages, newUserMessage])
-
-        // Simulate API response
-        setTimeout(() => {
-          handleGenerateReasoning();
-          setIsLoading(false);
-        }, 0);
-
-        // setTimeout(() => {
-        //     const assistantResponse: TMessage = {
-        //         id: chatMessages.length + 2,
-        //         role: "assistant",
-        //         content: `Please use the Advanced Settings filters to refine your program.`,
-        //     }
-
-        //     const updatedMessages = [...chatMessages, newUserMessage, assistantResponse]
-        //     setChatMessages(updatedMessages)
-        // }, 3000);
-
-      }
 
     const handleFilesAdded = (newFiles: File[]) => {
       setFiles((prev) => [...prev, ...newFiles])
@@ -182,14 +62,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
         if (search.trim()) {
             setActiveCategory("")
         }
-
-        const inferred = inferDaysPerWeek(search);
-            if (inferred) {
-                setDaysPerWeek(inferred);
-            }
-        // setDialogOpen(true);
-        setIsThinkingAndFilters(true);
-        handleSubmit(search, setSearch, chatMessages, setChatMessages, setIsLoading)
+        goToFilters(search)
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -215,148 +88,8 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
     // Determine which suggestions to show
     const showCategorySuggestions = activeCategory !== "";
 
-    const [sex, setSex] = useState<string>("");
-    const [age, setAge] = useState<string>("");
-    const [daysPerWeek, setDaysPerWeek] = useState<string>("");
-    const [specificDays, setSpecificDays] = useState<IOption[]>([]);
-    const [programLength, setProgramLength] = useState<string>("");
-    const [workoutDuration, setWorkoutDuration] = useState<string>("");
-    const [activityLevel, setActivityLevel] = useState<string>("");
-    const [goals, setGoals] = useState<IOption[]>([]);
-    const [specialization, setSpecialization] = useState<IOption[]>([]);
-    const [equipment, setEquipment] = useState<IOption[]>([]);
-    const [focusAreas, setFocusAreas] = useState<IOption[]>([]);
-    const [difficultyLevel, setDifficultyLevel] = useState<IOption[]>([]);
-    const [excludeAreas, setExcludeAreas] = useState<IOption[]>([]);
-    const [excludeEquipment, setExcludeEquipment] = useState<IOption[]>(
-        [
-            { label: "Bodyweight", value: "bodyweight" },
-            { label: "Band", value: "band" },
-            { label: "Suspension", value: "suspension" },
-            { label: "Resistance band", value: "resistance_band" },
-            { label: "Plate", value: "plate" },
-            { label: "Other", value: "other" },
-            { label: "None", value: "none" },
-        ]
-    );
-    const [excludeSpecializations, setExcludeSpecializations] = useState<IOption[]>([]);
-    const [healthIssues, setHealthIssues] = useState<IOption[]>([]);
-
-    const [workoutSchema, setWorkoutSchema] = useState("hevy");
-    const [advancedSettingsOpen, toggleAdvancedSettingsOpen] = useReducer(prev => !prev, true);
-    const [explore, toggleExplore] = useReducer(prev => !prev, true);
-    const [programTitle, setProgramTitle] = useState("My AI Program");
-
-    useEffect(() => {
-        setIsHevy(workoutSchema === "hevy" ? true : false);
-    }, [workoutSchema, setIsHevy]);
-
-    const handleDefineQueryParams = () => {
-            const params = new URLSearchParams();
-            if (search) params.append("search", search);
-            if (sex) params.append("sex", sex);
-            if (age) params.append("age", age);
-            if (daysPerWeek) params.append("daysPerWeek", daysPerWeek);
-            if (specificDays.length > 0) params.append("specificDays", (specificDays.map(option => option.value).join(', ')));
-            if (programLength) params.append("programLength", programLength);
-            if (workoutDuration) params.append("workoutDuration", workoutDuration);
-            if (activityLevel) params.append("activityLevel", activityLevel);
-            if (goals.length > 0) params.append("goals", JSON.stringify(goals));
-            if (specialization.length > 0) params.append("specialization", (specialization.map(option => option.value).join(', ')));
-            if (equipment.length > 0) params.append("equipment", (equipment.map(option => option.value).join(', ')));
-            if (focusAreas.length > 0) params.append("focusAreas", (focusAreas.map(option => option.value).join(', ')));
-            if (difficultyLevel.length > 0) params.append("difficultyLevel", (difficultyLevel.map(option => option.value).join(', ')));
-            if (excludeAreas.length > 0) params.append("excludeAreas", (excludeAreas.map(option => option.value).join(', ')));
-            if (excludeEquipment.length > 0) params.append("excludeEquipment", (excludeEquipment.map(option => option.value).join(', ')));
-            if (excludeSpecializations.length > 0) params.append("excludeSpecializations", (excludeSpecializations.map(option => option.value).join(', ')));
-            if (healthIssues.length > 0) params.append("healthIssues", (healthIssues.map(option => option.value).join(', ')));
-            if (programTitle) params.append("programTitle", programTitle);
-            if (explore) params.append("explore", "true");
-
-            return params.toString();
-    };
-
-    const submitRef = useRef<HTMLAnchorElement>(null);
-
-    // ************* <Chat /> TODO: INCORPORATE CHAT INTO CONVERSATION PROMPT INPUT ************* //
     return (
         <>
-        {
-            isThinkingAndFilters ?
-                <>
-                <ConversationPromptInput
-                    sex={sex}
-                    setSex={setSex}
-
-                    age={age}
-                    setAge={setAge}
-
-                    daysPerWeek={daysPerWeek}
-                    setDaysPerWeek={setDaysPerWeek}
-
-                    specificDays={specificDays}
-                    setSpecificDays={setSpecificDays}
-
-                    programLength={programLength}
-                    setProgramLength={setProgramLength}
-
-                    workoutDuration={workoutDuration}
-                    setWorkoutDuration={setWorkoutDuration}
-
-                    activityLevel={activityLevel}
-                    setActivityLevel={setActivityLevel}
-
-                    goals={goals}
-                    setGoals={setGoals}
-
-                    specialization={specialization}
-                    setSpecialization={setSpecialization}
-
-                    equipment={equipment}
-                    setEquipment={setEquipment}
-
-                    focusAreas={focusAreas}
-                    setFocusAreas={setFocusAreas}
-
-                    difficultyLevel={difficultyLevel}
-                    setDifficultyLevel={setDifficultyLevel}
-
-                    excludeAreas={excludeAreas}
-                    setExcludeAreas={setExcludeAreas}
-
-                    excludeEquipment={excludeEquipment}
-                    setExcludeEquipment={setExcludeEquipment}
-
-                    excludeSpecializations={excludeSpecializations}
-                    setExcludeSpecializations={setExcludeSpecializations}
-
-                    healthIssues={healthIssues}
-                    setHealthIssues={setHealthIssues}
-
-                    workoutSchema={workoutSchema}
-                    setWorkoutSchema={setWorkoutSchema}
-
-                    submitRef={ submitRef }
-                    search={search}
-                    setSearch={setSearch}
-                    chatMessages={chatMessages}
-                    isLoading={isLoading}
-                    isStreaming={isStreaming}
-                    reasoningText={reasoningText}
-
-                    toggleAdvancedSettingsOpen={toggleAdvancedSettingsOpen}
-                    advancedSettingsOpen={advancedSettingsOpen}
-
-                    explore={explore}
-                    toggleExplore={toggleExplore}
-                    programTitle={programTitle}
-                    setProgramTitle={setProgramTitle}
-                    handleDefineQueryParams={handleDefineQueryParams}
-                />
-                </>
-            :
-
-            <>
             <div className="sm:mt-[120px] sm:mb-[100px] max-sm:h-full max-sm:mt-[50px] max-sm:mb-[150px] flex flex-col max-sm:gap-0 items-center justify-center gap-6">
                 <div className="text-center">
                     <div className="font-main text-4xl font-bold uppercase">What do you want to train?</div>
@@ -558,7 +291,6 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                 <ConditionalHevyGrid />
                 <AiProgramGrid />
             </>
-        }
-        </>
+
     );
 };

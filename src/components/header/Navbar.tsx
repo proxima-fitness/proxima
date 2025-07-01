@@ -1,7 +1,6 @@
 "use client";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { authenticatedNavLinks, navLinks } from "../../assets/constants/index";
 import { Button } from "../generic/Button";
 import { NavDrawer } from "./NavDrawer";
 import { proxima_logo } from "public";
@@ -17,6 +16,7 @@ import { useHevySecret, useUserFullName } from "@/api/hooks";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { toast } from "sonner";
 import { LockIcon } from "lucide-react";
+import { authenticatedNavLinks, navLinks } from "@/assets/constants";
 
 // Client-side function to call the server-side sign out API
 const signOutServer = async () => {
