@@ -7,14 +7,10 @@ import { ProgramCard } from "../programs/ProgramCard";
 import { useExplorePagePrograms } from "@/api/hooks";
 import { ProgramCardLoading } from "../generic/ProgramCardLoading";
 import AnimatedRotatingText from "../generic/AnimatedRotatingText";
-import { useUserContext } from "@/contexts/UserContext";
-
 
 export const ProgramsSection: React.FC = () => {
 
     const { data: programs, isLoading: loadingPrograms } = useExplorePagePrograms(undefined,6, undefined);
-    const { user } = useUserContext();
-    console.log("user", user);
 
     return (
         <section
