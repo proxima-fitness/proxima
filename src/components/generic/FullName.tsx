@@ -16,7 +16,6 @@ export const FullName: React.FC<IProps> = (props) => {
 
     const { data: fullName, isLoading: loadingFullName, isError: errorFullName } = useUserFullName(id, id_type);
 
-    console.log(fullName);
     if (loadingFullName) {
         return (
             <>Loading...</>
