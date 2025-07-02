@@ -406,7 +406,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                                 {name: "alexalydiarose", image: people02.src},
                             ] }
                         />
-                        6,000+ lifters are building with Proxima
+                        6,500+ athletes are building smarter with Proxima
                     </div>
                 <DialogContent hideClose className="max-w-5xl overflow-y-auto overflow-x-hidden w-full max-sm:max-h-[90%]">
                     <DialogTitle>
