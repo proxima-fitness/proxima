@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { createClient as createClientLocal } from "@/utils/supabase/client";
 
 if (!process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_URL) {
     console.error('Supabase url is missing. Check your environment variables.');
@@ -33,7 +34,7 @@ export const supabaseBlogKey = process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_BLOG_K
 
 // export const hevyApiKey = process.env.NEXT_PUBLIC_REACT_APP_HEVY_API_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = createClientLocal();
 export const supablog = createClient(supabaseBlogUrl, supabaseBlogKey);
 
 export const sitekey = process.env.NEXT_PUBLIC_REACT_APP_CAPTCHA_SITE_KEY ?? "";
