@@ -67,19 +67,19 @@ export default function RootLayout({
                                     </div>
                                     <div className="w-full bg-primary">
                                         <div className={ `${styles.paddingXNav} ${styles.flexCenter}` }>
-                                            <div className={ `${styles.boxWidth}` }>
+                                            <div className="w-full">
                                                     <Navbar />
                                             </div>
                                         </div>
                                         <main id="root">
                                             <PostHogClientProvider>
-                                                            <Analytics />
-                                                            <NextTopLoader
-                                                                showSpinner={ false }
-                                                                color="#00f6ff"
-                                                            />
-                                                            {children}
-                                                    <Toaster richColors />
+                                                <Analytics />
+                                                <NextTopLoader
+                                                    showSpinner={ false }
+                                                    color="#00f6ff"
+                                                />
+                                                {children}
+                                                <Toaster richColors />
                                                 </PostHogClientProvider>
                                         </main>
                                         <ConditionalFooter />

@@ -22,6 +22,7 @@ export const PromptTemplate: React.FC = () => {
     const [search, setSearch] = useState<string>("");
     const [activeCategory, setActiveCategory] = useState("");
     const [files, setFiles] = useState<File[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleFilesAdded = (newFiles: File[]) => {
         setFiles((prev) => [...prev, ...newFiles])
@@ -38,9 +39,10 @@ export const PromptTemplate: React.FC = () => {
 
       const handleSend = () => {
         if (search.trim()) {
-            setActiveCategory("")
+            setActiveCategory("");
         }
-        goToFilters(search)
+        goToFilters(search);
+        setIsLoading(true);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -128,7 +130,11 @@ export const PromptTemplate: React.FC = () => {
                         onClick={handleSend}
                         disabled={!search.trim()}
                     >
-                        <ArrowUpIcon className="h-4 w-4" />
+                        {!isLoading ? (
+                    <ArrowUpIcon className="text-white h-4 w-4" />
+                        ) : (
+                            <span className="size-3 rounded-xs bg-white" />
+                        )}
                     </Button>
                 </div>
                 </PromptInputActions>

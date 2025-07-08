@@ -21,17 +21,16 @@ export default async function BuildProgram() {
             <Suspense fallback={ <BuildProgramSkeletonSSR /> }>
                 <ResizablePanelGroup
                     direction="horizontal"
+                    className="max-h-screen"
                 >
-                <ResizablePanel className="min-w-74" defaultSize={30}>
+                <ResizablePanel defaultSize={30} minSize={30} maxSize={70}>
                     <div className="min-h-12 p-2 border-b flex flex-row gap-2">
                         <Button variant="default" className="bg-lightGray text-black hover:bg-lightGray">Chat</Button>
                         <Button variant="ghost" className="text-black hover:bg-lightGray">Filters</Button>
                     </div>
-                    <div className="flex flex-col justify-end items-end">
-                        <RePrompt />
-                    </div>
+                    <RePrompt />
                 </ResizablePanel>
-                <ResizableHandle />
+                <ResizableHandle withHandle />
                 <ResizablePanel defaultSize={70}>
                     <BuildProgramPage />
                 </ResizablePanel>

@@ -436,7 +436,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                             <SetTypesLegend />
                         </div>
                     }
-                    <div className={`flex flex-row gap-4 h-full w-full ${!user ? "border-t-4 border-lightGray" : ""}`}>
+                    <div className={`flex flex-row gap-4 max-h-screen overflow-auto w-full ${!user ? "border-t-4 border-lightGray" : ""}`}>
                         { numberOfWeeksArr.map((_, index) => (
                             <HevyColumn
                                 key={ `Week ${index + 1}` }

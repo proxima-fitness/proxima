@@ -135,7 +135,9 @@ export const BuildProgramPage: React.FC = () => {
             }
             if (resumeHevyProgram) {
                 return (
-                    <HevyRoutine request={ request } program={ resumeHevyProgram as THevyRoutine[] } />
+                    <div className="sm:pl-8">
+                        <HevyRoutine request={ request } program={ resumeHevyProgram as THevyRoutine[] } />
+                    </div>
                 );
             }
         } else if (!isHevy) {
@@ -146,7 +148,9 @@ export const BuildProgramPage: React.FC = () => {
             }
             if (resumeProximaProgram) {
                 return (
-                    <ProximaProgram request={ request } program={ resumeProximaProgram as TProgramCreatorDay[][] } />
+                    <div className="sm:pl-8">
+                        <ProximaProgram request={ request } program={ resumeProximaProgram as TProgramCreatorDay[][] } />
+                    </div>
                 );
             }
         }
