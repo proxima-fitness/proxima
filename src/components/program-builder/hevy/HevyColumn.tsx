@@ -197,7 +197,8 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                             <Tooltip>
                                 <TooltipTrigger className="">
                                     <div
-                                        onClick={ () => handleDuplicateWeekOpen(true) }>
+                                        onClick={ () => handleDuplicateWeekOpen(true) }
+                                    >
                                         <CopyIcon />
                                     </div>
                                 </TooltipTrigger>

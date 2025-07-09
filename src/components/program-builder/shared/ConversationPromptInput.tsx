@@ -256,7 +256,7 @@ function ConversationPromptInput( props: IProps) {
           )}
 
           { !isStreaming && reasoningText &&
-             <div className="mx-auto border-2 border-lightGray bg-white rounded-xl p-4 max-w-3xl overflow-x-hidden w-full max-sm:max-h-[90%]">
+            <div className="mx-auto border-2 border-lightGray bg-white rounded-xl p-4 max-w-3xl overflow-x-hidden w-full max-sm:max-h-[90%]">
 
              <div className="flex flex-row justify-between items-start">
                 <div>
@@ -517,7 +517,7 @@ function ConversationPromptInput( props: IProps) {
                  </Select>
              </span>
 
-         </div>
+            </div>
 
           }
         </ChatContainerContent>
