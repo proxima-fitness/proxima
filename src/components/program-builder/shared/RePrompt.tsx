@@ -28,6 +28,7 @@ import {
   Trash,
 } from "lucide-react"
 import { useState } from "react"
+import { ScrollButton } from "@/components/ui/scroll-button"
 
 const messages = [
   {
@@ -76,7 +77,7 @@ function RePrompt() {
             <Button variant="default" className="bg-lightGray text-black hover:bg-lightGray">Chat</Button>
             <Button variant="ghost" className="text-black hover:bg-lightGray">Filters</Button>
         </div>
-      <ChatContainerRoot className="flex-1 overflow-y-auto">
+      <ChatContainerRoot className="flex-1 overflow-y-auto relative">
         <ChatContainerContent className="h-full">
           {chatMessages.map((message, index) => {
             const isAssistant = message.role === "assistant"
@@ -176,6 +177,9 @@ function RePrompt() {
               </Message>
             )
           })}
+          <div className="absolute bottom-4 right-5 z-50">
+            <ScrollButton className="shadow-sm" />
+          </div>
         </ChatContainerContent>
       </ChatContainerRoot>
       <div className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl flex-shrink-0 px-3 pb-3 md:px-5 md:pb-5">
