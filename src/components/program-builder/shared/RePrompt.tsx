@@ -35,33 +35,6 @@ const messages = [
     role: "user",
     content: "Hello! Can you help me with a coding question?",
   },
-  {
-    id: 2,
-    role: "assistant",
-    content:
-      "Of course! I'd be happy to help with your coding question. What would you like to know?",
-  },
-  {
-    id: 3,
-    role: "user",
-    content: "How do I create a responsive layout with CSS Grid?",
-  },
-  {
-    id: 4,
-    role: "assistant",
-    content:
-      "Creating a responsive layout with CSS Grid is straightforward. Here's a basic example:\n\n```css\n.container {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));\n  gap: 1rem;\n}\n```\n\nThis creates a grid where:\n- Columns automatically fit as many as possible\n- Each column is at least 250px wide\n- Columns expand to fill available space\n- There's a 1rem gap between items\n\nWould you like me to explain more about how this works?",
-  },
-  {
-    id: 5,
-    role: "user",
-    content: "What is the capital of France?",
-  },
-  {
-    id: 6,
-    role: "assistant",
-    content: "The capital of France is Paris.",
-  },
 ]
 
 function RePrompt() {
@@ -98,9 +71,13 @@ function RePrompt() {
   }
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
-      <ChatContainerRoot className="">
-        <ChatContainerContent className="">
+    <div className="flex flex-col h-[90vh]">
+        <div className="min-h-12 m-2 border-b flex flex-row gap-2 flex-shrink-0">
+            <Button variant="default" className="bg-lightGray text-black hover:bg-lightGray">Chat</Button>
+            <Button variant="ghost" className="text-black hover:bg-lightGray">Filters</Button>
+        </div>
+      <ChatContainerRoot className="flex-1 overflow-y-auto">
+        <ChatContainerContent className="h-full">
           {chatMessages.map((message, index) => {
             const isAssistant = message.role === "assistant"
             const isLastMessage = index === chatMessages.length - 1
@@ -201,7 +178,7 @@ function RePrompt() {
           })}
         </ChatContainerContent>
       </ChatContainerRoot>
-      <div className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl shrink-0 px-3 pb-3 md:px-5 md:pb-5">
+      <div className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl flex-shrink-0 px-3 pb-3 md:px-5 md:pb-5">
         <PromptInput
           isLoading={isLoading}
           value={prompt}
