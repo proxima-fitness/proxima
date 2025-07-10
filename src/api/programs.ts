@@ -166,6 +166,7 @@ export const getPrograms = async (limit?: number) => {
         let query = supabase
             .from('programs')
             .select('id,title,details,program_length,workout_duration,equipment,specialization,difficulty,user_id, saves').eq('explore', true)
+            .not('user_id', 'is', null)
             .order('saves', { ascending: false });
 
         if (limit !== undefined) {
