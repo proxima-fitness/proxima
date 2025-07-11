@@ -31,7 +31,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
             <div className="sm:mt-[120px] sm:mb-[100px] max-sm:h-full max-sm:mt-[100px] max-sm:mb-[150px] flex flex-col max-sm:gap-0 items-center justify-center gap-6">
                 <div className="text-center">
                     <div className="font-main text-4xl max-sm:text-2xl max-sm:px-2 font-bold uppercase">What do you want to train?</div>
-                    <div className="text-lg font-normal px-12 max-sm:text-sm max-sm:px-2">Create a workout program by chatting with AI</div>
+                    <div className="text-lg font-normal px-12 max-sm:text-sm max-sm:px-2 dark:text-offWhite">Create a workout program by chatting with AI</div>
                 </div>
                 <div className="flex flex-col max-sm:flex-col max-sm:pt-8 justify-center items-center w-full">
                     <div className="flex flex-col gap-2 w-full items-center">
