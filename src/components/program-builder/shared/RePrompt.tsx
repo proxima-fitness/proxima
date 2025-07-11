@@ -34,11 +34,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { activityLevelOptions, ageOptions, dayPerWeekOptions, difficultyOptions, equipmentOptions, focusAreasOptions, goalsOptions, healthIssuesOptions, programLengthOptions, sexOptions, specializationOptions, specificDaysOptions, workoutDurationOptions } from "@/assets/constants"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
+import { useIsHevy } from "@/contexts/HevyContext"
 
 function RePrompt() {
 
     // const submitRef = useRef<HTMLAnchorElement>(null);
     const searchParams = useSearchParams();
+    const {isHevy} = useIsHevy();
 
     const search = searchParams.get('search') ?? '';
     const [sex, setSex] = useState<string>(searchParams.get('sex') ?? "");
@@ -58,7 +60,7 @@ function RePrompt() {
     const [excludeSpecializations, setExcludeSpecializations] = useState<IOption[]>(searchParams.get('excludeSpecializations') ? searchParams.get('excludeSpecializations')!.split(', ').map(spec => ({ value: spec, label: spec })) : []);
     const [healthIssues, setHealthIssues] = useState<IOption[]>(searchParams.get('healthIssues') ? searchParams.get('healthIssues')!.split(', ').map(issue => ({ value: issue, label: issue })) : []);
     const [programTitle, setProgramTitle] = useState<string>(searchParams.get('programTitle') ?? "");
-    const [workoutSchema, setWorkoutSchema] = useState<string>(searchParams.get('workoutSchema') ?? "");
+    const [workoutSchema, setWorkoutSchema] = useState<string>(isHevy ? "hevy" : "proxima");
     const [explore, toggleExplore] = useReducer(prev => !prev, searchParams.get('explore') === 'true');
 
     const [prompt, setPrompt] = useState("")
