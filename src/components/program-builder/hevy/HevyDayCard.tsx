@@ -67,7 +67,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         handleRemoveFromSuperset,
     } = props;
 
-    const { theme } = useTheme();
+    const { resolvedTheme } = useTheme();
     const [duplicateDayOpen, setDuplicateDayOpen] = useState(false);
     const [editTitleOpen, setEditTitleOpen] = useState(false);
     const [currentTitle, setCurrentTitle] = useState(day.title ?? "");
@@ -183,7 +183,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                 <Card
                     tabIndex={ 0 }
                     onClick={ handleFocus }
-                    className={`border-[4px] border-gray-100 dark:border-extraDarkGray focus:dark:border-lightSecondary focus:border-gray-300 w-[100%] group py-4 px-4 sm:min-w-[440px] sm:max-w-[440px] ${theme === "dark" ? "bg-extraDarkGray" : "bg-lightGray"} my-2`}>
+                    className={`border-[4px] border-gray-100 ${resolvedTheme === "dark" ? "border-extraDarkGray" : "border-gray-100 bg-lightGray"} dark:border-extraDarkGray focus:dark:border-lightSecondary focus:border-gray-300 w-[100%] group py-4 px-4 sm:min-w-[440px] sm:max-w-[440px] my-2`}>
                     <div className="flex flex-row justify-between items-center">
                         <div className="font-main text-xl flex flex-row">
                             Day {day.order}
