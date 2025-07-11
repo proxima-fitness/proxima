@@ -139,7 +139,7 @@ const NavItems = (pathname: string) => {
                                         toast.info("Proxima Format selected");
                                         setIsHevy(false);
                                     }}
-                                    className={`cursor-pointer focus:text-current ${!isHevy ? 'bg-lightSecondary text-white hover:text-white hover:bg-lightSecondary focus:text-white focus:bg-lightSecondary' : 'bg-white hover:bg-white'}`}
+                                    className={`cursor-pointer focus:text-current ${!isHevy ? 'bg-lightSecondary text-white focus:text-white focus:bg-lightSecondary' : 'bg-white dark:bg-darkGray'}`}
                                 >
                                     <div className="flex flex-col">
                                         <span className="font-medium">Proxima Format</span>
@@ -152,7 +152,7 @@ const NavItems = (pathname: string) => {
                                         toast.info("Hevy-Compatible Format selected");
                                         setIsHevy(true);
                                     }}
-                                    className={`cursor-pointer focus:text-current ${isHevy ? 'bg-lightSecondary text-white hover:text-white hover:bg-lightSecondary focus:text-white focus:bg-lightSecondary' : 'bg-white hover:bg-white'}`}
+                                    className={`cursor-pointer focus:text-current ${isHevy ? 'bg-lightSecondary text-white focus:text-white focus:bg-lightSecondary' : 'bg-white dark:bg-darkGray'}`}
                                 >
                                     <div className="flex flex-col">
                                         <span className="font-medium">Hevy Format</span>
@@ -168,7 +168,7 @@ const NavItems = (pathname: string) => {
                                         toast.info("Light Theme selected");
                                         setTheme("light");
                                     }}
-                                    className={`cursor-pointer focus:text-current ${theme === "light" ? 'bg-lightGray text-black hover:text-black hover:bg-extraLightGray focus:bg-lightGray' : 'bg-white text-black hover:bg-white'}`}
+                                    className={`cursor-pointer  ${theme === "light" ? 'bg-lightGray text-black focus:bg-lightGray hover:text-black' : 'bg-white dark:bg-darkGray dark:text-white text-black'}`}
                                 >
                                     <div className="flex flex-col">
                                         <span className="font-medium">Light</span>
@@ -180,7 +180,7 @@ const NavItems = (pathname: string) => {
                                         toast.info("Dark Theme selected");
                                         setTheme("dark");
                                     }}
-                                    className={`cursor-pointer focus:text-current ${theme === "dark" ? 'bg-lightGray text-black hover:text-black hover:bg-extraLightGray focus:bg-lightGray' : 'bg-white text-black hover:bg-white'}`}
+                                    className={`cursor-pointer ${theme === "dark" ? 'bg-lightGray text-black focus:bg-lightGray hover:text-black' : 'bg-white dark:bg-darkGray dark:text-white text-black'}`}
                                 >
                                     <div className="flex flex-col">
                                         <span className="font-medium">Dark</span>
@@ -192,7 +192,7 @@ const NavItems = (pathname: string) => {
                                         toast.info("System Theme selected");
                                         setTheme("system");
                                     }}
-                                    className={`cursor-pointer focus:text-current ${theme === "system" ? 'bg-lightGray text-black hover:text-black hover:bg-extraLightGray focus:bg-lightGray' : 'bg-white text-black hover:bg-white'}`}
+                                    className={`cursor-pointer ${theme === "system" ? 'bg-lightGray text-black focus:bg-lightGray hover:text-black' : 'bg-white dark:bg-darkGray dark:text-white text-black'}`}
                                 >
                                     <div className="flex flex-col">
                                         <span className="font-medium">System</span>

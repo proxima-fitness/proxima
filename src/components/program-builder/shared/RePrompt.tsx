@@ -137,8 +137,8 @@ function RePrompt() {
     return (
         <div className="flex flex-col h-[85vh]">
             <div className="min-h-12  px-2 flex flex-row justify-start items-center gap-2 flex-shrink-0 border-b">
-                <Button variant="ghost" className={`w-24 text-white hover:bg-gray-800 hover:text-white ${!isFilters ? "bg-black" : "bg-white text-black"}`} onClick={() => setIsFilters(false)}>Chat</Button>
-                <Button variant="ghost" className={`w-24 text-white hover:bg-gray-800 hover:text-white ${isFilters ? "bg-black" : "bg-white text-black"}`} onClick={() => setIsFilters(true)}>Filters</Button>
+                <Button variant="ghost" className={`w-24 text-white hover:bg-gray-800 hover:text-white ${!isFilters ? "bg-black dark:bg-white dark:text-black" : "bg-white dark:bg-black dark:text-white text-black"}`} onClick={() => setIsFilters(false)}>Chat</Button>
+                <Button variant="ghost" className={`w-24 text-white hover:bg-gray-800 hover:text-white ${isFilters ? "bg-black dark:bg-white dark:text-black" : "bg-white dark:bg-black dark:text-white text-black"}`} onClick={() => setIsFilters(true)}>Filters</Button>
             </div>
         <ChatContainerRoot className={`flex-1 relative ${isFilters ? "overflow-hidden" : "overflow-y-auto"}`}>
             <ChatContainerContent className="h-full">
@@ -157,8 +157,8 @@ function RePrompt() {
                     {isAssistant ? (
                     <div className="group flex w-full flex-col gap-0">
                         <MessageContent
-                        className="text-foreground prose w-full flex-1 rounded-lg bg-transparent p-0"
-                        markdown
+                            className="text-foreground prose w-full flex-1 rounded-lg bg-transparent p-0"
+                            markdown
                         >
                         {message.content}
                         </MessageContent>
@@ -170,28 +170,28 @@ function RePrompt() {
                         >
                         <MessageAction tooltip="Edit" delayDuration={100}>
                             <Button
-                            variant="ghost"
-                            size="icon"
-                            className="rounded-full"
-                            >
+                                variant="ghost"
+                                size="icon"
+                                className="rounded-full"
+                                >
                             <Copy />
                             </Button>
                         </MessageAction>
                         <MessageAction tooltip="Upvote" delayDuration={100}>
                             <Button
-                            variant="ghost"
-                            size="icon"
-                            className="rounded-full"
-                            >
+                                variant="ghost"
+                                size="icon"
+                                className="rounded-full"
+                                >
                             <ThumbsUp />
                             </Button>
                         </MessageAction>
                         <MessageAction tooltip="Downvote" delayDuration={100}>
                             <Button
-                            variant="ghost"
-                            size="icon"
-                            className="rounded-full"
-                            >
+                                variant="ghost"
+                                size="icon"
+                                className="rounded-full"
+                                >
                             <ThumbsDown />
                             </Button>
                         </MessageAction>
@@ -199,7 +199,7 @@ function RePrompt() {
                     </div>
                     ) : (
                     <div className="group flex flex-col items-end gap-1">
-                        <MessageContent className="bg-muted text-primary max-w-[85%] rounded-3xl px-5 py-2.5 sm:max-w-[75%]">
+                        <MessageContent className="bg-muted text-black dark:text-white max-w-[85%] rounded-3xl px-5 py-2.5 sm:max-w-[75%]">
                         {message.content}
                         </MessageContent>
                         <MessageActions
@@ -241,7 +241,7 @@ function RePrompt() {
                 )
             })}
             {isFilters &&
-                <div className="mx-auto bg-white rounded-xl p-4 max-w-3xl overflow-y-auto overflow-x-hidden h-full w-full ">
+                <div className="mx-auto bg-white dark:bg-extraDarkGray rounded-xl p-4 max-w-3xl overflow-y-auto overflow-x-hidden h-full w-full ">
 
                 <div className="flex flex-row justify-between py-4 items-start">
 
@@ -275,7 +275,7 @@ function RePrompt() {
                 <span className="flex flex-col justify-between gap-5 max-sm:gap-2">
                     <span className="grid grid-cols-2 max-sm:grid-cols-1 max-sm:basis-1/2 max-sm:gap-2 max-sm:pr-2 gap-5 sm:flex-grow-[2] basis-2/3 pr-4">
                         <Select value={ sex } onValueChange={ (value) => setSex(value) }>
-                            <SelectTrigger className="h-10 bg-white">
+                            <SelectTrigger className="h-10 bg-white dark:bg-darkGray">
                                 <SelectValue placeholder="Sex" />
                             </SelectTrigger>
                             <SelectContent>
@@ -286,7 +286,7 @@ function RePrompt() {
                             </SelectContent>
                         </Select>
                         <Select value={ age } onValueChange={ (value) => setAge(value) }>
-                            <SelectTrigger className="h-10 bg-white">
+                            <SelectTrigger className="h-10 bg-white dark:bg-darkGray">
                                 <SelectValue placeholder="Age" />
                             </SelectTrigger>
                             <SelectContent>
@@ -296,7 +296,7 @@ function RePrompt() {
                             </SelectContent>
                         </Select>
                         <Select value={ programLength } onValueChange={ (value) => setProgramLength(value) }>
-                            <SelectTrigger className="h-10 bg-white">
+                            <SelectTrigger className="h-10 bg-white dark:bg-darkGray">
                                 <SelectValue placeholder="Program length" />
                             </SelectTrigger>
                             <SelectContent>
@@ -306,7 +306,7 @@ function RePrompt() {
                             </SelectContent>
                         </Select>
                         <Select value={ daysPerWeek } onValueChange={ (value) => setDaysPerWeek(value) }>
-                            <SelectTrigger className="h-10 bg-white">
+                            <SelectTrigger className="h-10 bg-white dark:bg-darkGray">
                                 <SelectValue placeholder="How many days per week?" />
                             </SelectTrigger>
                             <SelectContent>
@@ -319,7 +319,7 @@ function RePrompt() {
                             value={ specificDays }
                             onChange={ (value) => setSpecificDays(value) }
                             badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                            className="bg-white"
+                            className="bg-white dark:bg-darkGray"
                             defaultOptions={ specificDaysOptions }
                             placeholder="Specific days"
                             emptyIndicator={ (
@@ -329,7 +329,7 @@ function RePrompt() {
                         ) }
                         />
                         <Select value={ workoutDuration } onValueChange={ (value) => setWorkoutDuration(value) }>
-                            <SelectTrigger className="h-10 bg-white">
+                            <SelectTrigger className="h-10 bg-white dark:bg-darkGray">
                                 <SelectValue placeholder="Workout duration" />
                             </SelectTrigger>
                             <SelectContent>
@@ -339,7 +339,7 @@ function RePrompt() {
                             </SelectContent>
                         </Select>
                         <Select value={ activityLevel } onValueChange={ (value) => setActivityLevel(value) }>
-                            <SelectTrigger className="h-10 bg-white">
+                            <SelectTrigger className="h-10 bg-white dark:bg-darkGray">
                                 <SelectValue placeholder="Activity level" />
                             </SelectTrigger>
                             <SelectContent>
@@ -352,7 +352,7 @@ function RePrompt() {
                             value={ goals }
                             onChange={ (value) => setGoals(value) }
                             badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                            className="bg-white"
+                            className="bg-white dark:bg-darkGray"
                             defaultOptions={ goalsOptions }
                             placeholder="Goals"
                             emptyIndicator={ (
@@ -365,7 +365,7 @@ function RePrompt() {
                             value={ specialization }
                             onChange={ (value) => setSpecialization(value) }
                             badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                            className="bg-white"
+                            className="bg-white dark:bg-darkGray"
                             defaultOptions={ specializationOptions }
                             placeholder="Specialization"
                             emptyIndicator={ (
@@ -378,7 +378,7 @@ function RePrompt() {
                             value = { equipment }
                             onChange={ (value) => setEquipment(value) }
                             badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                            className="bg-white"
+                            className="bg-white dark:bg-darkGray"
                             defaultOptions={ equipmentOptions }
                             placeholder="Equipment"
                             emptyIndicator={ (
@@ -391,7 +391,7 @@ function RePrompt() {
                             value = { focusAreas }
                             onChange={ (value) => setFocusAreas(value) }
                             badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                            className="bg-white"
+                            className="bg-white dark:bg-darkGray"
                             defaultOptions={ focusAreasOptions }
                             placeholder="Focus areas"
                             emptyIndicator={ (
@@ -404,7 +404,7 @@ function RePrompt() {
                             value = { difficultyLevel }
                             onChange={ (value) => setDifficultyLevel(value) }
                             badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                            className="bg-white"
+                            className="bg-white dark:bg-darkGray"
                             defaultOptions={ difficultyOptions }
                             placeholder="Difficulty"
                             emptyIndicator={ (
@@ -422,7 +422,7 @@ function RePrompt() {
                             value = { excludeAreas }
                             onChange={ (value) => setExcludeAreas(value) }
                             badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                            className="bg-white"
+                            className="bg-white dark:bg-darkGray"
                             defaultOptions={ focusAreasOptions }
                             placeholder="Exclude focus areas"
                             emptyIndicator={ (
@@ -435,7 +435,7 @@ function RePrompt() {
                             value = { excludeEquipment }
                             onChange={ (value) => setExcludeEquipment(value) }
                             badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                            className="bg-white"
+                            className="bg-white dark:bg-darkGray"
                             defaultOptions={ equipmentOptions }
                             placeholder="Exclude equipment"
                             emptyIndicator={ (
@@ -448,7 +448,7 @@ function RePrompt() {
                             value = { excludeSpecializations }
                             onChange={ (value) => setExcludeSpecializations(value) }
                             badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                            className="bg-white"
+                            className="bg-white dark:bg-darkGray"
                             defaultOptions={ specializationOptions }
                             placeholder="Exclude specializations"
                             emptyIndicator={ (
@@ -461,7 +461,7 @@ function RePrompt() {
                             value = { healthIssues }
                             onChange={ (value) => setHealthIssues(value) }
                             badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                            className="bg-white"
+                            className="bg-white dark:bg-darkGray"
                             defaultOptions={ healthIssuesOptions }
                             placeholder="Health issues"
                             emptyIndicator={ (
@@ -480,7 +480,7 @@ function RePrompt() {
                         </span>
                     </span>
                     <Select onValueChange={(value) => setWorkoutSchema(value)} value={workoutSchema}>
-                        <SelectTrigger className="h-10 w-[180px] bg-white">
+                        <SelectTrigger className="h-10 w-[180px] bg-white dark:bg-darkGray">
                         <SelectValue placeholder="Workout Schema" />
                         </SelectTrigger>
                         <SelectContent>
