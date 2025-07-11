@@ -136,9 +136,9 @@ function RePrompt() {
 
     return (
         <div className="flex flex-col h-[85vh]">
-            <div className="min-h-12 border-b px-2 flex flex-row justify-start items-center gap-2 flex-shrink-0">
-                <Button variant="ghost" className={`w-24 text-black hover:bg-lightGray ${!isFilters ? "bg-lightGray" : "bg-white"}`} onClick={() => setIsFilters(false)}>Chat</Button>
-                <Button variant="ghost" className={`w-24 text-black hover:bg-lightGray ${isFilters ? "bg-lightGray" : "bg-white"}`} onClick={() => setIsFilters(true)}>Filters</Button>
+            <div className="min-h-12  px-2 flex flex-row justify-start items-center gap-2 flex-shrink-0 border-b">
+                <Button variant="ghost" className={`w-24 text-white hover:bg-gray-800 hover:text-white ${!isFilters ? "bg-black" : "bg-white text-black"}`} onClick={() => setIsFilters(false)}>Chat</Button>
+                <Button variant="ghost" className={`w-24 text-white hover:bg-gray-800 hover:text-white ${isFilters ? "bg-black" : "bg-white text-black"}`} onClick={() => setIsFilters(true)}>Filters</Button>
             </div>
         <ChatContainerRoot className={`flex-1 relative ${isFilters ? "overflow-hidden" : "overflow-y-auto"}`}>
             <ChatContainerContent className="h-full">
@@ -150,7 +150,7 @@ function RePrompt() {
                 <Message
                     key={message.id}
                     className={cn(
-                    "mx-auto flex w-full max-w-3xl flex-col gap-2 px-0 md:px-6",
+                    "mx-auto flex w-full max-w-3xl flex-col gap-2 px-0 md:px-6 pt-2",
                     isAssistant ? "items-start" : "items-end"
                     )}
                 >
@@ -497,17 +497,17 @@ function RePrompt() {
             </div>
             </ChatContainerContent>
         </ChatContainerRoot>
-        <div className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl flex-shrink-0 px-3 pb-3 md:px-5 md:pb-5">
+        <div className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl flex-shrink-0 px-3 pb-3 md:px-5 md:pb-5 border-t pt-4">
             <PromptInput
-            isLoading={isLoading}
-            value={prompt}
-            onValueChange={setPrompt}
-            onSubmit={handleSubmit}
-            className="border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-xs"
+                isLoading={isLoading}
+                value={prompt}
+                onValueChange={setPrompt}
+                onSubmit={handleSubmit}
+                className="border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-xs"
             >
             <div className="flex flex-col">
                 <PromptInputTextarea
-                placeholder="Ask anything"
+                placeholder="Edit your program..."
                 className="min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
                 />
 

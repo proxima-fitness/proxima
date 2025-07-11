@@ -21,10 +21,10 @@ export default async function BuildProgram() {
                 <ResizablePanelGroup
                     direction="horizontal"
                 >
-                <ResizablePanel defaultSize={20} minSize={20} maxSize={70}>
+                <ResizablePanel defaultSize={20} minSize={20} maxSize={70} className="border-extraLightGray bg-extraLightGray">
                     <RePrompt />
                 </ResizablePanel>
-                <ResizableHandle withHandle />
+                <ResizableHandle withHandle className="" />
                 <ResizablePanel defaultSize={70}>
                     <BuildProgramPage />
                 </ResizablePanel>
