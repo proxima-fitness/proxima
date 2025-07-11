@@ -202,7 +202,7 @@ function ConversationPromptInput( props: IProps) {
                   </div>
                 ) : (
                   <div className="group flex flex-col items-end gap-1">
-                    <MessageContent className="bg-muted text-primary max-w-[85%] rounded-3xl px-5 py-2.5 sm:max-w-[75%]">
+                    <MessageContent className="bg-muted dark:text-white max-w-[85%] rounded-3xl px-5 py-2.5 sm:max-w-[75%]">
                       {message.content}
                     </MessageContent>
                     <MessageActions
@@ -247,8 +247,8 @@ function ConversationPromptInput( props: IProps) {
           {(isStreaming || reasoningText) && (
             <div className="mx-auto flex w-full max-w-3xl flex-col gap-2 px-0 md:px-6">
               <Reasoning isStreaming={isStreaming}>
-                <ReasoningTrigger>Proxima is thinking...</ReasoningTrigger>
-                <ReasoningContent className="ml-2 border-l-2 border-l-slate-200 px-2 pb-1 dark:border-l-slate-700">
+                <ReasoningTrigger className="text-black dark:text-white">Proxima is thinking...</ReasoningTrigger>
+                <ReasoningContent className="ml-2 dark:text-white border-l-2 border-l-slate-200 px-2 pb-1 dark:border-l-slate-700">
                   {reasoningText}
                 </ReasoningContent>
               </Reasoning>
@@ -256,7 +256,7 @@ function ConversationPromptInput( props: IProps) {
           )}
 
           { !isStreaming && reasoningText &&
-            <div className="mx-auto border-2 border-lightGray bg-white rounded-xl p-4 max-w-3xl overflow-x-hidden w-full max-sm:max-h-[90%]">
+            <div className="mx-auto border-2 border-lightGray dark:border-darkGray bg-white dark:bg-extraDarkGray rounded-xl p-4 max-w-3xl overflow-x-hidden w-full max-sm:max-h-[90%]">
 
              <div className="flex flex-row justify-between items-start gap-2">
                 <div>
@@ -281,7 +281,7 @@ function ConversationPromptInput( props: IProps) {
                          className="max-sm:w-full w-full h-10"
                          href={ `/program-builder/build-program?${handleDefineQueryParams()}&edit=true` }
                      >
-                         <Button className="w-32 bg-black hover:bg-black/80 max-sm:w-full h-10 font-bold text-white shadow-[0_0_20px_rgba(51,187,207,0.5)] hover:shadow-[0_0_25px_rgba(51,187,207,0.7)] transition-all duration-300">
+                         <Button className="w-32 bg-black dark:bg-white dark:text-black hover:bg-black/80 max-sm:w-full h-10 font-bold text-white shadow-[0_0_20px_rgba(51,187,207,0.5)] hover:shadow-[0_0_25px_rgba(51,187,207,0.7)] transition-all duration-300">
                             <SparklesIcon className="size-4" />
                             Build
                          </Button>
@@ -304,7 +304,7 @@ function ConversationPromptInput( props: IProps) {
                  <span className="flex flex-row justify-between gap-5 max-sm:gap-2">
                      <span className="grid grid-cols-2 max-sm:grid-cols-1 max-sm:basis-1/2 max-sm:gap-2 max-sm:pr-2 gap-5 sm:flex-grow-[2] basis-2/3 pr-4 border-r-2">
                          <Select value={ sex } onValueChange={ (value) => setSex(value) }>
-                             <SelectTrigger className="h-10 bg-white">
+                             <SelectTrigger className="h-10 bg-white dark:bg-darkGray">
                                  <SelectValue placeholder="Sex" />
                              </SelectTrigger>
                              <SelectContent>
@@ -315,7 +315,7 @@ function ConversationPromptInput( props: IProps) {
                              </SelectContent>
                          </Select>
                          <Select value={ age } onValueChange={ (value) => setAge(value) }>
-                             <SelectTrigger className="h-10 bg-white">
+                             <SelectTrigger className="h-10 bg-white dark:bg-darkGray">
                                  <SelectValue placeholder="Age" />
                              </SelectTrigger>
                              <SelectContent>
@@ -325,7 +325,7 @@ function ConversationPromptInput( props: IProps) {
                              </SelectContent>
                          </Select>
                          <Select value={ programLength } onValueChange={ (value) => setProgramLength(value) }>
-                             <SelectTrigger className="h-10 bg-white">
+                             <SelectTrigger className="h-10 bg-white dark:bg-darkGray">
                                  <SelectValue placeholder="Program length" />
                              </SelectTrigger>
                              <SelectContent>
@@ -335,7 +335,7 @@ function ConversationPromptInput( props: IProps) {
                              </SelectContent>
                          </Select>
                          <Select value={ daysPerWeek } onValueChange={ (value) => setDaysPerWeek(value) }>
-                             <SelectTrigger className="h-10 bg-white">
+                             <SelectTrigger className="h-10 bg-white dark:bg-darkGray">
                                  <SelectValue placeholder="How many days per week?" />
                              </SelectTrigger>
                              <SelectContent>
@@ -348,7 +348,7 @@ function ConversationPromptInput( props: IProps) {
                              value={ specificDays }
                              onChange={ (value) => setSpecificDays(value) }
                              badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                             className="bg-white"
+                             className="bg-white dark:bg-darkGray"
                              defaultOptions={ specificDaysOptions }
                              placeholder="Specific days"
                              emptyIndicator={ (
@@ -358,7 +358,7 @@ function ConversationPromptInput( props: IProps) {
                          ) }
                          />
                          <Select value={ workoutDuration } onValueChange={ (value) => setWorkoutDuration(value) }>
-                             <SelectTrigger className="h-10 bg-white">
+                             <SelectTrigger className="h-10 bg-white dark:bg-darkGray">
                                  <SelectValue placeholder="Workout duration" />
                              </SelectTrigger>
                              <SelectContent>
@@ -368,7 +368,7 @@ function ConversationPromptInput( props: IProps) {
                              </SelectContent>
                          </Select>
                          <Select value={ activityLevel } onValueChange={ (value) => setActivityLevel(value) }>
-                             <SelectTrigger className="h-10 bg-white">
+                             <SelectTrigger className="h-10 bg-white dark:bg-darkGray">
                                  <SelectValue placeholder="Activity level" />
                              </SelectTrigger>
                              <SelectContent>
@@ -381,7 +381,7 @@ function ConversationPromptInput( props: IProps) {
                              value={ goals }
                              onChange={ (value) => setGoals(value) }
                              badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                             className="bg-white"
+                             className="bg-white dark:bg-darkGray"
                              defaultOptions={ goalsOptions }
                              placeholder="Goals"
                              emptyIndicator={ (
@@ -394,7 +394,7 @@ function ConversationPromptInput( props: IProps) {
                              value={ specialization }
                              onChange={ (value) => setSpecialization(value) }
                              badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                             className="bg-white"
+                             className="bg-white dark:bg-darkGray"
                              defaultOptions={ specializationOptions }
                              placeholder="Specialization"
                              emptyIndicator={ (
@@ -407,7 +407,7 @@ function ConversationPromptInput( props: IProps) {
                              value = { equipment }
                              onChange={ (value) => setEquipment(value) }
                              badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                             className="bg-white"
+                             className="bg-white dark:bg-darkGray"
                              defaultOptions={ equipmentOptions }
                              placeholder="Equipment"
                              emptyIndicator={ (
@@ -420,7 +420,7 @@ function ConversationPromptInput( props: IProps) {
                              value = { focusAreas }
                              onChange={ (value) => setFocusAreas(value) }
                              badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                             className="bg-white"
+                             className="bg-white dark:bg-darkGray"
                              defaultOptions={ focusAreasOptions }
                              placeholder="Focus areas"
                              emptyIndicator={ (
@@ -433,7 +433,7 @@ function ConversationPromptInput( props: IProps) {
                              value = { difficultyLevel }
                              onChange={ (value) => setDifficultyLevel(value) }
                              badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                             className="bg-white"
+                             className="bg-white dark:bg-darkGray"
                              defaultOptions={ difficultyOptions }
                              placeholder="Difficulty"
                              emptyIndicator={ (
@@ -448,7 +448,7 @@ function ConversationPromptInput( props: IProps) {
                              value = { excludeAreas }
                              onChange={ (value) => setExcludeAreas(value) }
                              badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                             className="bg-white truncate"
+                             className="bg-white dark:bg-darkGray truncate"
                              defaultOptions={ focusAreasOptions }
                              placeholder="Exclude focus areas"
                              emptyIndicator={ (
@@ -461,7 +461,7 @@ function ConversationPromptInput( props: IProps) {
                              value = { excludeEquipment }
                              onChange={ (value) => setExcludeEquipment(value) }
                              badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                             className="bg-white truncate"
+                             className="bg-white dark:bg-darkGray truncate"
                              defaultOptions={ equipmentOptions }
                              placeholder="Exclude equipment"
                              emptyIndicator={ (
@@ -474,7 +474,7 @@ function ConversationPromptInput( props: IProps) {
                              value = { excludeSpecializations }
                              onChange={ (value) => setExcludeSpecializations(value) }
                              badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                             className="bg-white truncate"
+                             className="bg-white dark:bg-darkGray truncate"
                              defaultOptions={ specializationOptions }
                              placeholder="Exclude specializations"
                              emptyIndicator={ (
@@ -487,7 +487,7 @@ function ConversationPromptInput( props: IProps) {
                              value = { healthIssues }
                              onChange={ (value) => setHealthIssues(value) }
                              badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                             className="bg-white"
+                             className="bg-white dark:bg-darkGray"
                              defaultOptions={ healthIssuesOptions }
                              placeholder="Health issues"
                              emptyIndicator={ (
@@ -507,7 +507,7 @@ function ConversationPromptInput( props: IProps) {
                      </span>
                  </span>
                  <Select onValueChange={(value) => setWorkoutSchema(value)} value={workoutSchema}>
-                     <SelectTrigger className="h-10 w-[180px] bg-white">
+                     <SelectTrigger className="h-10 w-[180px] bg-white dark:bg-darkGray">
                      <SelectValue placeholder="Workout Schema" />
                      </SelectTrigger>
                      <SelectContent>
@@ -533,7 +533,7 @@ function ConversationPromptInput( props: IProps) {
           <div className="flex flex-col">
             <PromptInputTextarea
               placeholder="Ask a follow-up..."
-              className="min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
+              className="dark:text-white min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
             />
 
             <PromptInputActions className="mt-5 flex w-full items-center justify-end gap-2 px-3 pb-3">

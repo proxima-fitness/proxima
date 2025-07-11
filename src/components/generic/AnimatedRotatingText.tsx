@@ -89,7 +89,7 @@ export default function AnimatedRotatingText() {
       }}
     >
       <h2 ref={headingRef} className="heading2Programs fixedHeading max-sm:flex-col max-sm:flex max-sm:w-full max-sm:items-center max-sm:justify-center">
-        <span className="staticText">Train Popular</span>
+        <span className="staticText dark:text-white">Train Popular</span>
         <span
           ref={phrasesRef}
           className="animationWrapper"
@@ -113,7 +113,7 @@ export default function AnimatedRotatingText() {
             </>
           )}
         </span>
-        <span className="staticText">Programs</span>
+        <span className="staticText dark:text-white">Programs</span>
       </h2>
     </div>
   )

@@ -4,7 +4,7 @@ import { ai_program_builder, completed_sets } from 'public'
 
 export default function Page() {
   return (
-    <div className="bg-white flex flex-row sm:min-h-svh w-full items-center justify-around gap-24 md:p-10">
+    <div className="bg-white dark:bg-darkGray flex flex-row sm:min-h-svh w-full items-center justify-around gap-24 md:p-10">
       <div className="w-[100%] pr-12 max-sm:pr-0 max-w-md">
         <SignUpForm />
       </div>

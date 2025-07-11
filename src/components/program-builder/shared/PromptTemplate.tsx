@@ -102,7 +102,7 @@ export const PromptTemplate: React.FC = () => {
                 )}
                 <PromptInputTextarea
                     placeholder="Ask Proxima to build..."
-                    className="min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
+                    className="dark:text-white min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
                     onKeyDown={handleKeyDown}
                 />
                 <PromptInputActions className="mt-5 flex w-full items-end justify-between gap-2 px-3 pb-3">
@@ -151,10 +151,10 @@ export const PromptTemplate: React.FC = () => {
                         stroke="currentColor"
                     >
                         <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
                         />
                     </svg>
                     </div>
@@ -174,7 +174,7 @@ export const PromptTemplate: React.FC = () => {
                     <div className="flex w-full flex-col space-y-1">
                         {activeCategoryData?.items.map((suggestion) => (
                             <PromptSuggestion
-                                className="text-left bg-extraLightGray"
+                                className="text-left bg-extraLightGray dark:bg-extraDarkGray"
                                 key={suggestion}
                                 highlight={activeCategoryData.highlight}
                                 onClick={() => {

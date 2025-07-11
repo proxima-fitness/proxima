@@ -129,7 +129,7 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
     return (
         <>
             <div className="pt-10">
-                <Card className="p-4 bg-gray-100">
+                <Card className="p-4 bg-gray-100 dark:bg-extraDarkGray">
                     <h1 className="text-center text-3xl pb-4 font-main">Workout Programs</h1>
                     <div className="max-sm:w-full flex flex-col items-center justify-center">
                         <div className="w-full flex flex-row max-sm:flex-col items-center justify-center">

@@ -10,10 +10,10 @@ export const metadata = {
   export default function DownloadPage() {
     return (
         <>
-            <div className={ `bg-white flex items-center justify-center flex-col p-24` }>
+            <div className={ `bg-white dark:bg-darkGray dark:text-offWhite flex items-center justify-center flex-col p-24` }>
                 <div className="flex-1 flex flex-col text-center items-center justify-center">
-                    <h2 className="text-black font-bold text-6xl">Download the App now</h2>
-                    <p className={ `text-black text-center max-w-[470px] mt-5 text-3xl` }>
+                    <h2 className="text-black dark:text-offWhite font-bold text-6xl">Download the App now</h2>
+                    <p className={ `text-black dark:text-offWhite text-center max-w-[470px] mt-5 text-3xl` }>
                         It takes less than a minute
                     </p>
                 </div>
@@ -50,7 +50,7 @@ export const metadata = {
                                 </a>
                             </div>
                         </div>
-                        <span className="flex flex-row py-4 text-black">
+                        <span className="flex flex-row py-4 text-black dark:text-offWhite">
                             <span>
                                 <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                             </span>

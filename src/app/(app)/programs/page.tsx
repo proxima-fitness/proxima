@@ -11,7 +11,7 @@ export const metadata = {
 export default function ProgramsPage() {
 
     return (
-        <div className={ `bg-white ${styles.paddingX} ${styles.flexCenter} flex-col` }>
+        <div className={ `bg-white dark:bg-darkGray ${styles.paddingX} ${styles.flexCenter} flex-col` }>
             <div className={ `${styles.boxWidth}` }>
                 <Suspense fallback={ <ProgramsFallback /> }>
                     <ProgramsLayout />

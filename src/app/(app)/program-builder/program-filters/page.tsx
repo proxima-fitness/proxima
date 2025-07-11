@@ -135,7 +135,7 @@ function ProgramFiltersContent() {
     }, [search, chatMessages.length]);
 
     return (
-        <div className="bg-white max-h-screen">
+        <div className="bg-white dark:bg-darkGray max-h-screen">
             <Suspense fallback={ null }>
                 <ConversationPromptInput
                     sex={sex}
