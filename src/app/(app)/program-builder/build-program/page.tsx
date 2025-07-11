@@ -16,12 +16,12 @@ export const metadata = {
 export default async function BuildProgram() {
 
     return (
-        <div className={ `bg-white max-h-screen` }>
+        <div className={ `bg-white dark:bg-darkGray max-h-screen` }>
             <Suspense fallback={ <BuildProgramSkeletonSSR /> }>
                 <ResizablePanelGroup
                     direction="horizontal"
                 >
-                <ResizablePanel defaultSize={20} minSize={20} maxSize={70} className="border-extraLightGray bg-extraLightGray">
+                <ResizablePanel defaultSize={20} minSize={20} maxSize={70} className="border-extraLightGray bg-extraLightGray dark:bg-extraDarkGray dark:text-white">
                     <RePrompt />
                 </ResizablePanel>
                 <ResizableHandle withHandle className="" />

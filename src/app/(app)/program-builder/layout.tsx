@@ -12,7 +12,7 @@ export default async function ProgramBuilderLayout({
 
     return (
         <div>
-            <div className="sticky top-0 z-50 p-2 bg-extraLightGray border-b flex flex-row items-center justify-between text-xl text-black">
+            <div className="sticky top-0 z-50 p-2 bg-extraLightGray dark:bg-extraDarkGray dark:text-white border-b flex flex-row items-center justify-between text-xl text-black">
                 <Breadcrumbs />
                 {/* <ProgramBuilderTabs /> */}
                 <div className="flex flex-row items-center justify-between gap-4">

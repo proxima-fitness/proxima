@@ -55,7 +55,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                                 className="text-black w-full pt-2 hover:text-red-500"
                                                 title="Remove from superset"
                                             >
-                                                <span className="flex flex-row justify-between items-center w-full">
+                                                <span className="flex flex-row justify-between items-center w-full dark:text-white">
                                                     <XIcon className="w-4 h-4" />
                                                     <span className="text-sm flex flex-row items-center gap-2"> <LinkIcon className="w-4 h-4" /> Superset {exercise.supersets_id + 1}</span>
                                                 </span>
@@ -68,7 +68,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                         ) }
                                 <div className={`flex flex-row justify-between items-center text-sm border-b-2 ${exercise.supersets_id && !editMode ? 'pb-2' : 'py-2'}  relative`}>
                                     <div className="flex flex-row gap-2 items-center justify-start max-w-[50%]">
-                                        <div className="text-lightSecondary pr-1">
+                                        <div className="text-lightSecondary dark:text-white pr-1">
                                             {editMode ? (
                                                 <div className="" onClick={(e) => e.stopPropagation()}>
                                                     <input
@@ -91,7 +91,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                         </div>
                                         <HevyExerciseGif thumbnailOrImage={"thmb"} name={exercise.title} resolution={"180"} file_type={'jpg'} />
                                         <div className="flex flex-row items-center justify-between">
-                                            <div className="">
+                                            <div className="dark:text-offWhite">
                                                 {exercise.title}
                                             </div>
                                             {exercise.notes && (
@@ -99,14 +99,14 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                                     <TooltipTrigger asChild>
                                                         <NotebookTextIcon className="h-4" />
                                                     </TooltipTrigger>
-                                                    <TooltipContent className="bg-lightSecondary text-white">
+                                                    <TooltipContent className="bg-lightSecondary text-white dark:text-offWhite">
                                                         {exercise.notes}
                                                     </TooltipContent>
                                                 </Tooltip>
                                             )}
                                         </div>
                                     </div>
-                                    <div className="text-center flex flex-row items-center justify-end max-w-[50%] w-[50%]">
+                                    <div className="text-center flex flex-row items-center justify-end max-w-[50%] w-[50%] dark:text-offWhite">
                                         <div className="min-w-[33%] flex flex-col justify-center items-center">
                                             {exercise.sets.length}
                                         </div>

@@ -508,7 +508,7 @@ function RePrompt() {
             <div className="flex flex-col">
                 <PromptInputTextarea
                 placeholder="Edit your program..."
-                className="min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
+                className="dark:text-white min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
                 />
 
                 <PromptInputActions className="mt-5 flex w-full items-center justify-between gap-2 px-3 pb-3">

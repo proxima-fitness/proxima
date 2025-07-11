@@ -14,9 +14,12 @@ module.exports = {
   		colors: {
 			primary: "#00040f",
 			secondary: "#00f6ff",
+			offWhite: "oklch(70.8% 0 0)",
 			lightSecondary: "#33bbcf",
 			extraLightGray: "#fafafa",
 			lightGray: "#f5f5f5",
+			darkGray: "#323232",
+			extraDarkGray: "#181818",
 			// primary: {
 			// 	DEFAULT: 'hsl(var(--primary))',
 			// 	foreground: 'hsl(var(--primary-foreground))'

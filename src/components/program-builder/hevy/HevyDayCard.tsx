@@ -21,6 +21,7 @@ import { IOption } from "@/components/ui/multi-select";
 import { convertHevyExerciseIntoHevyAddExercise } from "../utils";
 import { useHevyCustomExercises, useHevySecret } from "@/api/hooks";
 import { useUserContext } from "@/contexts/UserContext";
+import { useTheme } from "next-themes";
 
 interface IProps {
     day: THevyRoutine;
@@ -66,6 +67,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         handleRemoveFromSuperset,
     } = props;
 
+    const { theme } = useTheme();
     const [duplicateDayOpen, setDuplicateDayOpen] = useState(false);
     const [editTitleOpen, setEditTitleOpen] = useState(false);
     const [currentTitle, setCurrentTitle] = useState(day.title ?? "");
@@ -181,7 +183,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                 <Card
                     tabIndex={ 0 }
                     onClick={ handleFocus }
-                    className="border-[4px] border-gray-100 focus:border-gray-300 w-[100%] group py-4 px-4 sm:min-w-[440px] sm:max-w-[440px] bg-lightGray my-2">
+                    className={`border-[4px] border-gray-100 dark:border-extraDarkGray focus:dark:border-lightSecondary focus:border-gray-300 w-[100%] group py-4 px-4 sm:min-w-[440px] sm:max-w-[440px] ${theme === "dark" ? "bg-extraDarkGray" : "bg-lightGray"} my-2`}>
                     <div className="flex flex-row justify-between items-center">
                         <div className="font-main text-xl flex flex-row">
                             Day {day.order}
@@ -277,7 +279,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                         </div>
                     </div>
 
-                    <div className="text-sm flex flex-row justify-between mt-4 gap-4 border-t-2 border-b-2 py-2 border-gray-200">
+                    <div className="text-sm flex flex-row justify-between mt-4 gap-4 border-t-2 border-b-2 py-2 border-gray-200 dark:text-offWhite dark:border-darkGray">
                         <div className="flex flex-row gap-4 max-w-[50%]">
                             <div>
                                 #
@@ -316,11 +318,11 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                         onClick={ () => {
                             handleOpenAddExerciseDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true});
                          } }>
-                        <Button variant="ghost" className="mt-1 w-full font-bold uppercase h-12 hover:bg-gray-200 text-black"><PlusIcon />Add Exercise</Button>
+                        <Button variant="ghost" className="mt-1 w-full font-bold uppercase h-12 hover:bg-gray-200 dark:hover:bg-darkGray text-black dark:text-white"><PlusIcon />Add Exercise</Button>
                     </div>
                     <div className="flex flex-row justify-between items-center">
                         {editMode ? (
-                            <div className="w-full p-4 bg-[#e6f7f9] border-t border-[#33bbcf]">
+                            <div className="w-full p-4 bg-[#e6f7f9] dark:bg-darkGray border-t border-[#33bbcf]">
                                 <div className="flex justify-between items-center mb-2">
                                     <div className="font-medium flex items-center">
                                         <LinkIcon className="w-4 h-4 mr-1" />
@@ -355,7 +357,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                         ) : (
                             <Button
                                 variant="ghost"
-                                className="mt-1 w-full font-bold bg-lightGray text-lightSecondary uppercase hover:text-lightSecondary hover:bg-gray-200 h-12 border-2 border-lightSecondary"
+                                className="mt-1 w-full font-bold bg-lightGray dark:bg-darkGray text-lightSecondary uppercase hover:text-lightSecondary hover:bg-gray-200 h-12 border-2 border-lightSecondary dark:border-darkGray"
                                 onClick={() => setEditMode(true)}
                             >
                                 <LinkIcon className="mr-2" />Create Superset

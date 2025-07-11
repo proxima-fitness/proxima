@@ -17,6 +17,7 @@ import { useIsHevy } from "@/contexts/HevyContext";
 import { toast } from "sonner";
 import { LockIcon } from "lucide-react";
 import { authenticatedNavLinks, navLinks } from "@/assets/constants";
+import { useTheme } from "next-themes"
 
 // Client-side function to call the server-side sign out API
 const signOutServer = async () => {
@@ -39,6 +40,7 @@ const signOutServer = async () => {
 const NavItems = (pathname: string) => {
     // this should get the user if they logged in server side (via social logins)
     const { user, isLoading } = useUserContext();
+    const { theme, setTheme } = useTheme()
     const { data: userFullName } = useUserFullName(user?.id, "user");
     const { data: hevyApiKey } = useHevySecret(user);
 
@@ -63,7 +65,7 @@ const NavItems = (pathname: string) => {
                 <div key={ index }>
                     { nav.id === "cta" ?
                         <Link href="/download">
-                            <Button text={ "Download App" } styles={ `py-2` } />
+                            <Button text={ "Download App" } styles={ `py-2 dark:bg-darkGray dark:text-white` } />
                         </Link>
                     : nav.id === "log-in" ?
                         <li
@@ -91,7 +93,7 @@ const NavItems = (pathname: string) => {
                 <div key={ index }>
                     { nav.id === "cta" ?
                         <Link href="/download">
-                            <Button text={ "Download App" } styles={ `py-2` } />
+                            <Button text={ "Download App" } styles={ `py-2 dark:bg-offWhite dark:text-black` } />
                         </Link>
                     : nav.id === "log-in" ?
                         <li
@@ -155,6 +157,45 @@ const NavItems = (pathname: string) => {
                                     <div className="flex flex-col">
                                         <span className="font-medium">Hevy Format</span>
                                         <span className="text-xs text-gray-500 text-wrap max-w-[200px]">400+ exercises, custom exercises,routines ...</span>
+                                    </div>
+                                </DropdownMenuItem>
+                                <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
+                                    Theme
+                                </DropdownMenuLabel>
+                                <DropdownMenuItem
+                                    onSelect={(e) => {
+                                        e.preventDefault();
+                                        toast.info("Light Theme selected");
+                                        setTheme("light");
+                                    }}
+                                    className={`cursor-pointer focus:text-current ${theme === "light" ? 'bg-lightGray text-black hover:text-black hover:bg-extraLightGray focus:bg-lightGray' : 'bg-white text-black hover:bg-white'}`}
+                                >
+                                    <div className="flex flex-col">
+                                        <span className="font-medium">Light</span>
+                                    </div>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onSelect={(e) => {
+                                        e.preventDefault();
+                                        toast.info("Dark Theme selected");
+                                        setTheme("dark");
+                                    }}
+                                    className={`cursor-pointer focus:text-current ${theme === "dark" ? 'bg-lightGray text-black hover:text-black hover:bg-extraLightGray focus:bg-lightGray' : 'bg-white text-black hover:bg-white'}`}
+                                >
+                                    <div className="flex flex-col">
+                                        <span className="font-medium">Dark</span>
+                                    </div>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onSelect={(e) => {
+                                        e.preventDefault();
+                                        toast.info("System Theme selected");
+                                        setTheme("system");
+                                    }}
+                                    className={`cursor-pointer focus:text-current ${theme === "system" ? 'bg-lightGray text-black hover:text-black hover:bg-extraLightGray focus:bg-lightGray' : 'bg-white text-black hover:bg-white'}`}
+                                >
+                                    <div className="flex flex-col">
+                                        <span className="font-medium">System</span>
                                     </div>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />

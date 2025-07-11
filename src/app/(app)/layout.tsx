@@ -15,6 +15,7 @@ import { PostHogClientProvider } from "@/utils/PostHogClientProvider";
 import { PreviewProvider } from "@/contexts/PreviewContext";
 import { UserProvider } from "@/contexts/UserContext";
 import { ConditionalFooter } from "@/components/footer/ConditionalFooter";
+import { ThemeProvider } from "@/components/theme-provider"
 
 export const metadata: Metadata = {
     title: 'Proxima Fitness | AI Workout Builder & Program Directory',
@@ -51,12 +52,18 @@ export default function RootLayout({
     } ) {
 
     return (
-        <html lang="en" className={ `${exo.className} ${russo_one.className} ${inter.className}` }>
+        <html lang="en" className={ `${exo.className} ${russo_one.className} ${inter.className}` } suppressHydrationWarning>
             <head>
                 <link rel="icon" href="/favicon.ico" type="image/x-icon" />
                 <meta name="theme-color" content="#000000" />
             </head>
             <body>
+                <ThemeProvider
+                    attribute="class"
+                    defaultTheme="system"
+                    enableSystem
+                    disableTransitionOnChange
+                >
                 <UserProvider>
                     <QueryProvider>
                         <IsHevyProvider>
@@ -89,6 +96,7 @@ export default function RootLayout({
                         </IsHevyProvider>
                     </QueryProvider>
                 </UserProvider>
+                </ThemeProvider>
             </body>
         </html>
     );
