@@ -1,8 +1,7 @@
 "use client";
 
-import { MessageSquareWarningIcon, PlayIcon } from "lucide-react";
+import { MessageSquareWarningIcon } from "lucide-react";
 import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { useUserContext } from "@/contexts/UserContext";
 import { User } from "@supabase/supabase-js";
 import { jack, people02, people03, people04, people05 } from "public";
@@ -29,19 +28,16 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
 
     return (
         <>
-            <div className="sm:mt-[120px] sm:mb-[100px] max-sm:h-full max-sm:mt-[50px] max-sm:mb-[150px] flex flex-col max-sm:gap-0 items-center justify-center gap-6">
+            <div className="sm:mt-[120px] sm:mb-[100px] max-sm:h-full max-sm:mt-[100px] max-sm:mb-[150px] flex flex-col max-sm:gap-0 items-center justify-center gap-6">
                 <div className="text-center">
-                    <div className="font-main text-4xl font-bold uppercase">What do you want to train?</div>
-                    <div className="text-lg font-normal px-12">Create a workout program by chatting with AI</div>
+                    <div className="font-main text-4xl max-sm:text-2xl max-sm:px-2 font-bold uppercase">What do you want to train?</div>
+                    <div className="text-lg font-normal px-12 max-sm:text-sm max-sm:px-2">Create a workout program by chatting with AI</div>
                 </div>
                 <div className="flex flex-col max-sm:flex-col max-sm:pt-8 justify-center items-center w-full">
                     <div className="flex flex-col gap-2 w-full items-center">
-                        <div className="w-full">
-                            <span className="flex items-center justify-center">
-                                <Button className="my-12 sm:hidden h-[60px] text-white rounded-xl w-[200px] bg-lightSecondary hover:bg-lightSecondary font-main uppercase flex items-center justify-center gap-4"><PlayIcon />Start</Button>
-                            </span>
+                        <div className="w-full max-sm:px-2">
                                 <PromptTemplate />
-                                <div className="pt-12 flex flex-col justify-center items-center">
+                                <div className="pt-12 flex flex-col justify-center items-center max-sm:pt-24 max-sm:text-sm">
                                     <AvatarStack
                                         avatars={[
                                             {name: "jack.hanlon", image:  jack.src},

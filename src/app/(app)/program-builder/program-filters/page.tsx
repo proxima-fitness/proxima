@@ -135,7 +135,7 @@ function ProgramFiltersContent() {
     }, [search, chatMessages.length]);
 
     return (
-        <div className="bg-white min-h-[1000px]">
+        <div className="bg-white max-h-screen">
             <Suspense fallback={ null }>
                 <ConversationPromptInput
                     sex={sex}
@@ -211,7 +211,7 @@ function ProgramFiltersContent() {
 
 export default function ProgramFilters() {
     return (
-        <Suspense fallback={<div className="bg-white min-h-[1000px] flex items-center justify-center">Loading...</div>}>
+        <Suspense fallback={<div className="bg-white max-h-screen flex items-center justify-center">Loading...</div>}>
             <ProgramFiltersContent />
         </Suspense>
     )

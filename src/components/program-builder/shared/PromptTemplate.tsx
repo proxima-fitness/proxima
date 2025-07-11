@@ -65,14 +65,14 @@ export const PromptTemplate: React.FC = () => {
     const showCategorySuggestions = activeCategory !== "";
 
     return (
-        <div className="max-sm:hidden mx-auto flex w-full max-w-3xl flex-col items-center justify-center gap-4 px-3 pb-3 md:px-5 md:pb-5">
+        <div className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center gap-4 px-3 pb-3 md:px-5 md:pb-5">
         <FileUpload
             onFilesAdded={ handleFilesAdded }
             accept=".jpg,.jpeg,.png,.pdf,.docx"
         >
 
             <PromptInput
-                className="border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-xs"
+                className="border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-xs focus-within:border-1 focus-within:border-gray-300 transition-all duration-200"
                 value={search}
                 onValueChange={handlePromptInputValueChange}
                 onSubmit={handleSend}
@@ -174,6 +174,7 @@ export const PromptTemplate: React.FC = () => {
                     <div className="flex w-full flex-col space-y-1">
                         {activeCategoryData?.items.map((suggestion) => (
                             <PromptSuggestion
+                                className="text-left bg-extraLightGray"
                                 key={suggestion}
                                 highlight={activeCategoryData.highlight}
                                 onClick={() => {
@@ -187,7 +188,7 @@ export const PromptTemplate: React.FC = () => {
                         ))}
                     </div>
                 ) : (
-                    <div className="flex w-full flex-wrap items-stretch justify-start gap-2">
+                    <div className="flex w-full flex-wrap items-stretch justify-start max-sm:justify-center gap-2">
                     {suggestionGroups.map((suggestion) => {
                         if (suggestion.label === "Empty Template") {
                             return (

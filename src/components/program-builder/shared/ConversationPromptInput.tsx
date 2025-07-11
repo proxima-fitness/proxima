@@ -144,7 +144,7 @@ function ConversationPromptInput( props: IProps) {
   return (
     <div className="flex h-screen flex-col overflow-hidden">
       <ChatContainerRoot className="relative flex-1 space-y-0 overflow-y-auto pt-8">
-        <ChatContainerContent className="space-y-12 max-sm:px-4">
+        <ChatContainerContent className="space-y-12 max-sm:space-y-1 max-sm:px-4">
           {chatMessages.map((message, index) => {
             const isAssistant = message.role === "assistant"
             const isLastMessage = index === chatMessages.length - 1
@@ -258,7 +258,7 @@ function ConversationPromptInput( props: IProps) {
           { !isStreaming && reasoningText &&
             <div className="mx-auto border-2 border-lightGray bg-white rounded-xl p-4 max-w-3xl overflow-x-hidden w-full max-sm:max-h-[90%]">
 
-             <div className="flex flex-row justify-between items-start">
+             <div className="flex flex-row justify-between items-start gap-2">
                 <div>
                     <Input
                         type="text"
@@ -281,7 +281,7 @@ function ConversationPromptInput( props: IProps) {
                          className="max-sm:w-full w-full h-10"
                          href={ `/program-builder/build-program?${handleDefineQueryParams()}&edit=true` }
                      >
-                         <Button className="w-32 bg-black hover:bg-black/80 max-sm:w-full h-10 font-bold text-white">
+                         <Button className="w-32 bg-black hover:bg-black/80 max-sm:w-full h-10 font-bold text-white shadow-[0_0_20px_rgba(51,187,207,0.5)] hover:shadow-[0_0_25px_rgba(51,187,207,0.7)] transition-all duration-300">
                             <SparklesIcon className="size-4" />
                             Build
                          </Button>
@@ -350,7 +350,7 @@ function ConversationPromptInput( props: IProps) {
                              badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                              className="bg-white"
                              defaultOptions={ specificDaysOptions }
-                             placeholder="Select specific days"
+                             placeholder="Specific days"
                              emptyIndicator={ (
                                  <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
                                      no results found.
@@ -448,7 +448,7 @@ function ConversationPromptInput( props: IProps) {
                              value = { excludeAreas }
                              onChange={ (value) => setExcludeAreas(value) }
                              badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                             className="bg-white"
+                             className="bg-white truncate"
                              defaultOptions={ focusAreasOptions }
                              placeholder="Exclude focus areas"
                              emptyIndicator={ (
@@ -461,7 +461,7 @@ function ConversationPromptInput( props: IProps) {
                              value = { excludeEquipment }
                              onChange={ (value) => setExcludeEquipment(value) }
                              badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                             className="bg-white"
+                             className="bg-white truncate"
                              defaultOptions={ equipmentOptions }
                              placeholder="Exclude equipment"
                              emptyIndicator={ (
@@ -474,7 +474,7 @@ function ConversationPromptInput( props: IProps) {
                              value = { excludeSpecializations }
                              onChange={ (value) => setExcludeSpecializations(value) }
                              badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
-                             className="bg-white"
+                             className="bg-white truncate"
                              defaultOptions={ specializationOptions }
                              placeholder="Exclude specializations"
                              emptyIndicator={ (

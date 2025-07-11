@@ -77,6 +77,8 @@ function RePrompt() {
         }
     }, [search]);
 
+    // TODO: add this back in with a reeprompt request to the AI
+
     // const handleDefineQueryParams = () => {
     //     const params = new URLSearchParams();
     //     if (search) params.append("search", search);
