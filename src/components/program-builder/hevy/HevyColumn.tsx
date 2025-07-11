@@ -215,7 +215,7 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                 onDragOver={ handleDragOver }
                 onDragLeave={ handleDragLeave }
                 className={ `h-full w-full gap-4 transition-colors ${
-                    active ?  "bg-gray-200" : "bg-white dark:bg-darkGray"
+                    active ?  "bg-gray-200 dark:bg-darkGray" : "bg-white dark:bg-darkGray"
                 }` }
             >
                 { filteredWeek.map((dy) => {
