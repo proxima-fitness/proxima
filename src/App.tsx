@@ -72,7 +72,7 @@ const App = () => {
                     </div>
                 </div>
             </div>
-            <div className={ `bg-white dark:bg-extraDarkGray ${styles.paddingX} ${styles.flexCenter} flex-col` }>
+            <div className={ `bg-white dark:bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
                 <div className={ `${styles.boxWidth}` }>
                     <ProgramsSection />
                 </div>
@@ -83,7 +83,7 @@ const App = () => {
                     <CustomPrograms />
                 </div>
             </div>
-            <div className={ `bg-white dark:bg-extraDarkGray ${styles.paddingX} ${styles.flexCenter} flex-col` }>
+            <div className={ `bg-white dark:bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
                 <div className={ `${styles.boxWidth}` }>
                     <PersonalRecords />
                 </div>

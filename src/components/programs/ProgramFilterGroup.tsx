@@ -89,7 +89,7 @@ export const ProgramFilterGroup: React.FC<IProps> = (props) => {
                 <div className="flex flex-row gap-2 flex-wrap pt-2">
                     { filter.values.map((filter) => {
                     return (
-                        <Badge onClick={ () => handleSelectedFilters(filter) } key={ filter } className={ `p-2 cursor-pointer ${ badgeSelected(filter) ? "bg-[#37BCCF] hover:bg-[#37BCCF] text-white hover:text-white" : "bg-white dark:bg-darkGray hover:bg-white"}  ` }>{filter}</Badge>
+                        <Badge onClick={ () => handleSelectedFilters(filter) } key={ filter } className={ `p-2 cursor-pointer ${ badgeSelected(filter) ? "bg-[#37BCCF] hover:bg-[#37BCCF] text-white hover:text-white" : "bg-white dark:bg-extraDarkGray hover:bg-white"}  ` }>{filter}</Badge>
                     );
                 } ) }
                 </div>

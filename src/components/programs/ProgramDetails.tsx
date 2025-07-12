@@ -32,7 +32,7 @@ export const ProgramDetails: React.FC<IProps> = (props) => {
             <div>
                 <ProgramThumbnail id={ id } />
             </div>
-            <Card className="py-4 pl-4 bg-gray-100">
+            <Card className="py-4 pl-4 bg-gray-100 dark:bg-darkGray">
                 <div className="text-xl uppercase pb-2">
                     PROGRAM BY {" "}
                     <HoverCard>
