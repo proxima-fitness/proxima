@@ -35,6 +35,7 @@ import { activityLevelOptions, ageOptions, dayPerWeekOptions, difficultyOptions,
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { useIsHevy } from "@/contexts/HevyContext"
+import { useChat } from "@ai-sdk/react"
 
 function RePrompt() {
 
@@ -42,6 +43,8 @@ function RePrompt() {
     const searchParams = useSearchParams();
     const {isHevy} = useIsHevy();
 
+    const [input, setInput] = useState("");
+    const { messages, sendMessage } = useChat();
     const search = searchParams.get('search') ?? '';
     const [sex, setSex] = useState<string>(searchParams.get('sex') ?? "");
     const [age, setAge] = useState<string>(searchParams.get('age') ?? "");
@@ -63,7 +66,6 @@ function RePrompt() {
     const [workoutSchema, setWorkoutSchema] = useState<string>(isHevy ? "hevy" : "proxima");
     const [explore, toggleExplore] = useReducer(prev => !prev, searchParams.get('explore') === 'true');
 
-    const [prompt, setPrompt] = useState("")
     const [isLoading, setIsLoading] = useState(false)
     const [chatMessages, setChatMessages] = useState<Array<{id: number; role: string; content: string}>>([])
     const [isFilters, setIsFilters] = useState(false)
@@ -107,31 +109,34 @@ function RePrompt() {
     // };
 
     const handleSubmit = () => {
-        if (!prompt.trim()) return
+        if (!input.trim()) return
 
-        setPrompt("")
+        // e.preventDefault();
+        sendMessage({ text: input });
+        setInput('');
+
         setIsLoading(true)
 
         // Add user message immediately
         const newUserMessage = {
-        id: chatMessages.length + 1,
-        role: "user",
-        content: prompt.trim(),
+            id: chatMessages.length + 1,
+            role: "user",
+            content: input.trim(),
         }
 
         setChatMessages([...chatMessages, newUserMessage])
 
         // Simulate API response
-        setTimeout(() => {
-        const assistantResponse = {
-            id: chatMessages.length + 2,
-            role: "assistant",
-            content: `This is a response to: "${prompt.trim()}"`,
-        }
+        // setTimeout(() => {
+        // const assistantResponse = {
+        //     id: chatMessages.length + 2,
+        //     role: "assistant",
+        //     content: `This is a response to: "${input.trim()}"`,
+        // }
 
-        setChatMessages((prev) => [...prev, assistantResponse])
-        setIsLoading(false)
-        }, 1500)
+        // setChatMessages((prev) => [...prev, assistantResponse])
+        // setIsLoading(false)
+        // }, 1500)
     }
 
     return (
@@ -142,104 +147,111 @@ function RePrompt() {
             </div>
         <ChatContainerRoot className={`flex-1 relative ${isFilters ? "overflow-hidden" : "overflow-y-auto"}`}>
             <ChatContainerContent className="h-full">
-            {!isFilters && chatMessages.map((message, index) => {
-                const isAssistant = message.role === "assistant"
-                const isLastMessage = index === chatMessages.length - 1
+                {!isFilters && messages.map(message => (
+                            <div key={message.id} className="whitespace-pre-wrap">
+                            {/* {message.role === 'user' ? 'User: ' : 'AI: '} */}
+                            {message.parts.map((part, index) => {
+                                const isAssistant = message.role === "assistant"
+                                const isLastMessage = index === chatMessages.length - 1
+                                switch (part.type) {
+                                case 'text':
+                                    return (
+                                        <Message
+                                            key={`${message.id}-${index}`}
+                                            className={cn(
+                                                "mx-auto flex w-full max-w-3xl flex-col gap-2 px-0 md:px-6 pt-2",
+                                                isAssistant ? "items-start" : "items-end")}
+                                            >
+                                                {isAssistant ? (
+                                            <div className="group flex w-full flex-col gap-0">
 
-                return (
-                <Message
-                    key={message.id}
-                    className={cn(
-                    "mx-auto flex w-full max-w-3xl flex-col gap-2 px-0 md:px-6 pt-2",
-                    isAssistant ? "items-start" : "items-end"
-                    )}
-                >
-                    {isAssistant ? (
-                    <div className="group flex w-full flex-col gap-0">
-                        <MessageContent
-                            className="text-foreground prose w-full flex-1 rounded-lg bg-transparent p-0"
-                            markdown
-                        >
-                        {message.content}
-                        </MessageContent>
-                        <MessageActions
-                        className={cn(
-                            "-ml-2.5 flex gap-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100",
-                            isLastMessage && "opacity-100"
-                        )}
-                        >
-                        <MessageAction tooltip="Edit" delayDuration={100}>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="rounded-full"
-                                >
-                            <Copy />
-                            </Button>
-                        </MessageAction>
-                        <MessageAction tooltip="Upvote" delayDuration={100}>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="rounded-full"
-                                >
-                            <ThumbsUp />
-                            </Button>
-                        </MessageAction>
-                        <MessageAction tooltip="Downvote" delayDuration={100}>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="rounded-full"
-                                >
-                            <ThumbsDown />
-                            </Button>
-                        </MessageAction>
-                        </MessageActions>
-                    </div>
-                    ) : (
-                    <div className="group flex flex-col items-end gap-1">
-                        <MessageContent className="bg-muted text-black dark:text-white max-w-[85%] rounded-3xl px-5 py-2.5 sm:max-w-[75%]">
-                        {message.content}
-                        </MessageContent>
-                        <MessageActions
-                        className={cn(
-                            "flex gap-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
-                        )}
-                        >
-                        <MessageAction tooltip="Edit" delayDuration={100}>
-                            <Button
-                            variant="ghost"
-                            size="icon"
-                            className="rounded-full"
-                            >
-                            <Pencil />
-                            </Button>
-                        </MessageAction>
-                        <MessageAction tooltip="Delete" delayDuration={100}>
-                            <Button
-                            variant="ghost"
-                            size="icon"
-                            className="rounded-full"
-                            >
-                            <Trash />
-                            </Button>
-                        </MessageAction>
-                        <MessageAction tooltip="Copy" delayDuration={100}>
-                            <Button
-                            variant="ghost"
-                            size="icon"
-                            className="rounded-full"
-                            >
-                            <Copy />
-                            </Button>
-                        </MessageAction>
-                        </MessageActions>
-                    </div>
-                    )}
-                </Message>
-                )
-            })}
+                                                <MessageContent
+                                                    className="text-foreground prose w-full flex-1 rounded-lg bg-transparent p-0"
+                                                    markdown
+                                                >
+                                                {part.text}
+                                                </MessageContent>
+                                                <MessageActions
+                                                className={cn(
+                                                    "-ml-2.5 flex gap-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100",
+                                                    isLastMessage && "opacity-100"
+                                                )}
+                                                >
+                                                <MessageAction tooltip="Edit" delayDuration={100}>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="rounded-full"
+                                                        >
+                                                    <Copy />
+                                                    </Button>
+                                                </MessageAction>
+                                                <MessageAction tooltip="Upvote" delayDuration={100}>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="rounded-full"
+                                                        >
+                                                    <ThumbsUp />
+                                                    </Button>
+                                                </MessageAction>
+                                                <MessageAction tooltip="Downvote" delayDuration={100}>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="rounded-full"
+                                                        >
+                                                    <ThumbsDown />
+                                                    </Button>
+                                                </MessageAction>
+                                                </MessageActions>
+                                            </div>
+                                            ) : (
+                                            <div className="group flex flex-col items-end gap-1">
+                                                <MessageContent className="bg-muted text-black dark:text-white max-w-[85%] rounded-3xl px-5 py-2.5 sm:max-w-[75%]">
+                                                {part.text}
+                                                </MessageContent>
+                                                <MessageActions
+                                                className={cn(
+                                                    "flex gap-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+                                                )}
+                                                >
+                                                <MessageAction tooltip="Edit" delayDuration={100}>
+                                                    <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="rounded-full"
+                                                    >
+                                                    <Pencil />
+                                                    </Button>
+                                                </MessageAction>
+                                                <MessageAction tooltip="Delete" delayDuration={100}>
+                                                    <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="rounded-full"
+                                                    >
+                                                    <Trash />
+                                                    </Button>
+                                                </MessageAction>
+                                                <MessageAction tooltip="Copy" delayDuration={100}>
+                                                    <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="rounded-full"
+                                                    >
+                                                    <Copy />
+                                                    </Button>
+                                                </MessageAction>
+                                                </MessageActions>
+                                            </div>
+                                            )}
+                                        </Message>
+                                    );
+                                }
+                            })}
+                            </div>
+                        ))}
             {isFilters &&
                 <div className="mx-auto bg-white dark:bg-extraDarkGray rounded-xl p-4 max-w-3xl overflow-y-auto overflow-x-hidden h-full w-full ">
 
@@ -500,8 +512,8 @@ function RePrompt() {
         <div className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl flex-shrink-0 px-3 pb-3 md:px-5 md:pb-5 border-t pt-4">
             <PromptInput
                 isLoading={isLoading}
-                value={prompt}
-                onValueChange={setPrompt}
+                value={input}
+                onValueChange={value => setInput(value)}
                 onSubmit={handleSubmit}
                 className="border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-xs"
             >
@@ -537,7 +549,7 @@ function RePrompt() {
 
                     <Button
                     size="icon"
-                    disabled={!prompt.trim() || isLoading}
+                    disabled={!input.trim() || isLoading}
                     onClick={handleSubmit}
                     className="size-9 rounded-full bg-lightSecondary"
                     >
