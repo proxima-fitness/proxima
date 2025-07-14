@@ -111,7 +111,6 @@ function RePrompt() {
     const handleSubmit = () => {
         if (!input.trim()) return
 
-        // e.preventDefault();
         sendMessage({ text: input });
         setInput('');
 
@@ -126,17 +125,6 @@ function RePrompt() {
 
         setChatMessages([...chatMessages, newUserMessage])
 
-        // Simulate API response
-        // setTimeout(() => {
-        // const assistantResponse = {
-        //     id: chatMessages.length + 2,
-        //     role: "assistant",
-        //     content: `This is a response to: "${input.trim()}"`,
-        // }
-
-        // setChatMessages((prev) => [...prev, assistantResponse])
-        // setIsLoading(false)
-        // }, 1500)
     }
 
     return (
@@ -149,7 +137,6 @@ function RePrompt() {
             <ChatContainerContent className="h-full">
                 {!isFilters && messages.map(message => (
                             <div key={message.id} className="whitespace-pre-wrap">
-                            {/* {message.role === 'user' ? 'User: ' : 'AI: '} */}
                             {message.parts.map((part, index) => {
                                 const isAssistant = message.role === "assistant"
                                 const isLastMessage = index === chatMessages.length - 1
@@ -519,13 +506,12 @@ function RePrompt() {
             >
             <div className="flex flex-col">
                 <PromptInputTextarea
-                placeholder="Edit your program..."
-                className="dark:text-white min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
-                />
+                    placeholder="Edit your program..."
+                    className="dark:text-white min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
+                    />
 
                 <PromptInputActions className="mt-5 flex w-full items-center justify-between gap-2 px-3 pb-3">
                 <div className="flex items-center gap-2">
-
                     <PromptInputAction tooltip="More actions">
                     <Button
                         variant="outline"

@@ -244,11 +244,11 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                         <div className="min-w-[33%] flex flex-col justify-center items-center h-full">
                                             {exercise.sets[0] && exercise.sets[0].weight_kg !== null && exercise.sets[0].weight_kg > 0 && (
                                                 exercise.sets.every((intensity, i, arr) => intensity.weight_kg === arr[0].weight_kg) ? (
-                                                    <div>{exercise.sets[0].weight_kg} kg</div>
+                                                    <div>{ exercise.sets[0].weight_kg ? exercise.sets[0].weight_kg.toFixed(2) : ''} kg</div>
                                                 ) : (
                                                     exercise.sets.map((set, index) => (
                                                         <div key={index} className={`${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
-                                                            {set.weight_kg} kg
+                                                            { set.weight_kg ? set.weight_kg.toFixed(2) : ''} kg
                                                         </div>
                                                     ))
                                                 )

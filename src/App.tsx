@@ -14,6 +14,7 @@ import { CallToAction } from "./components/call-to-action/CallToAction";
 import { Faq } from "./components/faqs/Faq";
 import { ProgramsSection } from "./components/features/ProgramsSection";
 import { useUserContext } from "@/contexts/UserContext";
+import { Integrations } from "./components/header/Integrations";
 
 const App = () => {
     const { user } = useUserContext();
@@ -69,6 +70,11 @@ const App = () => {
                 <div className={ `bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
                     <div className={ `${styles.boxWidth}` }>
                         <Stats />
+                    </div>
+                </div>
+                <div className={ `bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
+                    <div className={ `${styles.boxWidth}` }>
+                        <Integrations />
                     </div>
                 </div>
             </div>

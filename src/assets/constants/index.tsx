@@ -5935,7 +5935,7 @@ export const stats = [
   {
     id: "stats-1",
     title: "Proxima Members",
-    value: 700,
+    value: 1000,
   },
   {
     id: "stats-2",

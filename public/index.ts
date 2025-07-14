@@ -44,6 +44,12 @@ import ai_program_builder from "./ai-program-builder.png";
 import profile_mobile_device_classic from "./profile-mobile-device-classic.png";
 import thumbnail from "./thumbnail.svg";
 import completed_sets from "./completed-sets.png";
+import hevy_logo from "./hevy-logo.svg";
+import strava_logo from "./strava.svg";
+import oura_logo from "./oura.svg";
+import polar_logo from "./polar.svg";
+import garmin_logo from "./garmin.svg";
+import whoop_logo from "./whoop.svg";
 
 export {
     qr_code,
@@ -92,4 +98,10 @@ export {
     reddit,
     proxima_logo_small,
     thumbnail,
+    hevy_logo,
+    strava_logo,
+    oura_logo,
+    polar_logo,
+    garmin_logo,
+    whoop_logo,
 }
