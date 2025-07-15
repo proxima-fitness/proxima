@@ -1,4 +1,4 @@
- 
+
 "use client";
 
 import styles from "../../style";
@@ -25,7 +25,7 @@ export const Hero: React.FC = () => {
                     </h1>
                 </div>
                 <p className={ `text-sm text-offWhite font-secondary max-w-[600px] mt-5 pb-4 text-center ss:text-left` }>
-                    Seamlessly integrate this AI Coach into your favourite fitness app and let it coach you with a personalised plan. Plans evolve based on your workout history, or follow a plan made by an expert.
+                    Seamlessly integrate this <span className="text-lightSecondary">AI Coach</span> into your favourite fitness app and let it coach you with a <span className="text-lightSecondary">personalised plan</span>. Plans evolve based on your workout history, or follow a plan made by an expert.
                 </p>
                 <GetStarted />
             </div>
@@ -38,7 +38,6 @@ export const Hero: React.FC = () => {
                 muted={true}
                 width="100%"
                 style={{ borderRadius: '1rem' }}
-                // poster="/path-to-thumbnail.jpg"
             >
                 <source src="/hero.mov" type="video/mp4" />
                 Your browser does not support the video tag.

@@ -6,21 +6,21 @@ export const Integrations: React.FC = () => {
     return (
         <section className={ `${styles.flexCenter} flex-row flex-wrap ${styles.paddingY}` }>
            <div className={ `flex flex-col items-center justify-center` }>
-                <h3 className={ `text-4xl text-white font-main pb-12` }>Integrated with your <span className="text-lightSecondary">Fitness App</span></h3>
-                <div className={ `flex flex-row items-center justify-center gap-12` }>
-                    <div className={ `flex flex-col items-start justify-start gap-2` }>
+                <h3 className={ `text-4xl text-white font-main pb-12 max-sm:text-center` }>Integrated with your <span className="text-lightSecondary">Fitness App</span></h3>
+                <div className={ `flex flex-row max-sm:flex-col items-center justify-center gap-12` }>
+                    <div className={ `flex flex-col items-start justify-start max-sm:items-center` }>
                     <span className="text-offWhite text-sm">Available now</span>
-                    <div className={ `flex flex-row items-center justify-center` }>
+                    <div className={ `flex flex-row max-sm:flex-col items-center justify-center` }>
                         <img src={ proxima_logo.src } alt="Hevy Logo"  className={ ` h-6` } />
                         <img src={ hevy_logo.src } alt="Hevy Logo"  className={ ` h-6` } />
                     </div>
 
                     </div>
 
-                    <Separator orientation="vertical" className={ `h-10 bg-white ` } />
-                    <div className={ `flex flex-col items-start justify-start gap-2` }>
+                    <Separator orientation="vertical" className={ `h-10 bg-white max-sm:hidden` } />
+                    <div className={ `flex flex-col items-start justify-start max-sm:items-center gap-2 max-sm:pb-12` }>
                         <span className="text-offWhite text-sm">Coming soon</span>
-                        <div className={ `flex flex-row items-center justify-center gap-8` }>
+                        <div className={ `flex flex-row max-sm:flex-col items-center justify-center gap-8` }>
                         <img src={ strava_logo.src } alt="Strava Logo"  className={ ` h-6` } />
                         <img src={ oura_logo.src } alt="Oura Logo"  className={ ` h-6` } />
                         <img src={ polar_logo.src } alt="Polar Logo"  className={ ` h-6` } />
