@@ -1,6 +1,7 @@
 import { openai } from '@ai-sdk/openai';
 import { convertToModelMessages, streamText, UIMessage } from 'ai';
 import { ExampleMetadata } from "./example-metadata-schema";
+import { tools } from '@/ai/tools';
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
@@ -19,6 +20,7 @@ export async function POST(req: Request) {
                     - DO NOT invent new formatting.
                     - FOLLOW THE FORMAT EXACTLY.`,
     prompt: convertToModelMessages(messages),
+    tools,
   });
 
   return result.toUIMessageStreamResponse({

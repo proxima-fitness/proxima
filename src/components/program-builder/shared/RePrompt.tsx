@@ -35,7 +35,8 @@ import { activityLevelOptions, ageOptions, dayPerWeekOptions, difficultyOptions,
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { useIsHevy } from "@/contexts/HevyContext"
-import { useChat } from "@ai-sdk/react"
+import { useChat } from "@ai-sdk/react";
+import { Weather } from "@/components/weather";
 
 function RePrompt() {
 
@@ -235,6 +236,12 @@ function RePrompt() {
                                             )}
                                         </Message>
                                     );
+                                case "tool-displayWeather":
+                                    return (
+                                        <div key={"weather-test"}>
+                                            <Weather {...part.output as {temperature: number, weather: string, location: string}} />
+                                        </div>
+                                    )
                                 }
                             })}
                             </div>
@@ -474,7 +481,7 @@ function RePrompt() {
                 <span className="flex flex-row justify-between items-center py-4">
                     <span className="flex flex-col gap-2 grow basis-0 w-0">
                         <span className="w-full flex flex-row items-end justify-start gap-2">
-                        <Checkbox checked={ explore } onCheckedChange={ toggleExplore } className="w-4 h-4 data-[state=checked]:bg-[#33bbcf] data-[state=checked]:text-white" id="explore" />
+                        <Checkbox checked={ explore } onCheckedChange={ toggleExplore } className="w-4 h-4 data-[state=checked]:bg-[#33bbcf] bg-offWhite data-[state=checked]:text-white" id="explore" />
                         <Label className="text-xs text-gray-600">Share program with community</Label>
                         </span>
                     </span>
