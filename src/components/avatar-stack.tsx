@@ -65,7 +65,7 @@ const AvatarStack = ({
       {hiddenAvatars.length ? (
         <Tooltip key="hidden-avatars">
           <TooltipTrigger asChild>
-            <Avatar className="max-sm:size-8">
+            <Avatar className="max-sm:size-8 z-10">
               <AvatarFallback>+{avatars.length - shownAvatars.length}</AvatarFallback>
             </Avatar>
           </TooltipTrigger>
