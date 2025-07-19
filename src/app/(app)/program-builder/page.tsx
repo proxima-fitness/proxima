@@ -12,7 +12,7 @@ export default async function AiChat() {
     const { data: { user } } = await supabase.auth.getUser();
 
     return (
-        <div className={ `bg-white dark:bg-darkGray ${styles.flexCenter} flex-col` }>
+        <div className={ `bg-white dark:bg-black ${styles.flexCenter} flex-col` }>
             <div className={ `${styles.boxWidth}` }>
                 <Prompt userData={ user } />
             </div>

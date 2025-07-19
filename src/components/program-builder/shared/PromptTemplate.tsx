@@ -65,14 +65,14 @@ export const PromptTemplate: React.FC = () => {
     const showCategorySuggestions = activeCategory !== "";
 
     return (
-        <div className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center gap-4 px-3 pb-3 md:px-5 md:pb-5">
+        <div className="z-10 mx-auto flex w-full max-w-3xl flex-col items-center justify-center gap-4 px-3 pb-3 md:px-5 md:pb-5">
         <FileUpload
             onFilesAdded={ handleFilesAdded }
             accept=".jpg,.jpeg,.png,.pdf,.docx"
         >
 
             <PromptInput
-                className="border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-xs focus-within:border-1 focus-within:border-gray-300 transition-all duration-200"
+                className="dark:bg-darkGray border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-xs focus-within:border-1 focus-within:border-gray-300 transition-all duration-200"
                 value={search}
                 onValueChange={handlePromptInputValueChange}
                 onSubmit={handleSend}
@@ -101,8 +101,8 @@ export const PromptTemplate: React.FC = () => {
                     </div>
                 )}
                 <PromptInputTextarea
-                    placeholder="Ask Proxima to build..."
-                    className="dark:text-white min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
+                    placeholder="Ask Andy to build..."
+                    className="z-10 dark:text-white min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
                     onKeyDown={handleKeyDown}
                 />
                 <PromptInputActions className="mt-5 flex w-full items-end justify-between gap-2 px-3 pb-3">
@@ -174,7 +174,7 @@ export const PromptTemplate: React.FC = () => {
                     <div className="flex w-full flex-col space-y-1">
                         {activeCategoryData?.items.map((suggestion) => (
                             <PromptSuggestion
-                                className="text-left bg-extraLightGray dark:bg-extraDarkGray"
+                                className="text-left bg-extraLightGray dark:bg-darkGray z-10"
                                 key={suggestion}
                                 highlight={activeCategoryData.highlight}
                                 onClick={() => {
@@ -195,10 +195,11 @@ export const PromptTemplate: React.FC = () => {
                                 <Link
                                     key={suggestion.label}
                                     target="_self"
+                                    className="z-10"
                                     rel="noopener noreferrer"
                                     href={ `/program-builder/build-program?empty=true&edit=true` }
                                 >
-                                    <PromptSuggestion className="capitalize h-8 p-4 text-xs">
+                                    <PromptSuggestion className="capitalize h-8 p-4 text-xs dark:bg-darkGray">
                                         {suggestion.icon}
                                         {suggestion.label}
                                     </PromptSuggestion>
@@ -213,7 +214,7 @@ export const PromptTemplate: React.FC = () => {
                                     setActiveCategory(suggestion.label)
                                     setSearch("") // Clear input when selecting a category
                                 }}
-                                className="capitalize h-8 p-4 text-xs"
+                                className="capitalize h-8 p-4 text-xs dark:bg-darkGray z-10"
                             >
                                 {suggestion.icon}
                                 {suggestion.label}
