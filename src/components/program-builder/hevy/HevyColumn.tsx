@@ -186,10 +186,10 @@ export const HevyColumn: React.FC<IProps> = (props) => {
     const filteredWeek = hevyProgram.filter((dy) => dy.folder_id === folder_id);
 
     return (
-        <div className="w-full flex flex-col sm:min-w-[440px] sm:max-w-[440px] items-center">
+        <div className="w-full flex flex-col sm:min-w-[400px] sm:max-w-[400px] items-center">
             <div className="pt-2 px-4 flex flex-row flex-nowrap gap-2">
-                <div className="w-screen min-w-screen max-w-screen px-4 sm:px-2 sm:min-w-[440px] sm:max-w-[440px] h-[40px] flex flex-row justify-between items-center">
-                    <div className="text-lg dark:text-offWhite">
+                <div className="w-screen min-w-screen max-w-screen px-4 sm:px-2 sm:min-w-[400px] sm:max-w-[400px] h-[40px] flex flex-row justify-between items-center">
+                    <div className="text-md dark:text-offWhite">
                         { title }
                     </div>
                     <div className="flex flex-row gap-4">

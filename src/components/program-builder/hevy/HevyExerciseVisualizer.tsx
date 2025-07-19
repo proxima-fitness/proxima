@@ -57,16 +57,16 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             >
                                                 <span className="flex flex-row justify-between items-center w-full dark:text-white">
                                                     <XIcon className="w-4 h-4" />
-                                                    <span className="text-sm flex flex-row items-center gap-2"> <LinkIcon className="w-4 h-4" /> Superset {exercise.supersets_id + 1}</span>
+                                                    <span className="text-xs flex flex-row items-center gap-2"> <LinkIcon className="w-4 h-4" /> Superset {exercise.supersets_id + 1}</span>
                                                 </span>
                                             </button>
                                         )}
                                         { exercise.supersets_id !== null && exercise.supersets_id !== undefined && editMode && (
                                                 <span className="flex flex-row justify-end items-center w-full pt-2">
-                                                <span className="text-sm flex flex-row items-center gap-2"> <LinkIcon className="w-4 h-4" /> Superset {exercise.supersets_id + 1}</span>
+                                                <span className="text-xs flex flex-row items-center gap-2"> <LinkIcon className="w-4 h-4" /> Superset {exercise.supersets_id + 1}</span>
                                             </span>
                                         ) }
-                                <div className={`flex flex-row justify-between items-center text-sm border-b-2 ${exercise.supersets_id && !editMode ? 'pb-2' : 'py-2'}  relative`}>
+                                <div className={`flex flex-row justify-between items-center text-xs border-b-2 ${exercise.supersets_id && !editMode ? 'pb-2' : 'py-2'}  relative`}>
                                     <div className="flex flex-row gap-2 items-center justify-start max-w-[50%]">
                                         <div className="text-lightSecondary dark:text-white pr-1">
                                             {editMode ? (

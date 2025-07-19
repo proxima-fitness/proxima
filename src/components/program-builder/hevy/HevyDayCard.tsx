@@ -183,12 +183,12 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                 <Card
                     tabIndex={ 0 }
                     onClick={ handleFocus }
-                    className={`border-[4px] border-gray-100 ${resolvedTheme === "dark" ? "border-extraDarkGray" : "border-gray-100 bg-lightGray"} dark:border-extraDarkGray focus:dark:border-lightSecondary focus:border-gray-300 w-[100%] group py-4 px-4 sm:min-w-[440px] sm:max-w-[440px] my-2`}>
+                    className={`border-[4px] border-gray-100 ${resolvedTheme === "dark" ? "border-extraDarkGray" : "border-gray-100 bg-lightGray"} dark:border-extraDarkGray focus:dark:border-lightSecondary focus:border-gray-300 w-[100%] group py-4 px-4 sm:min-w-[400px] sm:max-w-[400px] my-2`}>
                     <div className="flex flex-row justify-between items-center">
-                        <div className="font-main text-xl flex flex-row">
+                        <div className="font-main text-lg flex flex-row">
                             Day {day.order}
                         </div>
-                        <div className="font-secondary text-xl">
+                        <div className="font-secondary text-lg">
                             { editTitleOpen ?
                                 <Input
                                     value={ currentTitle }
@@ -279,7 +279,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                         </div>
                     </div>
 
-                    <div className="text-sm flex flex-row justify-between mt-4 gap-4 border-t-2 border-b-2 py-2 border-gray-200 dark:text-offWhite dark:border-darkGray">
+                    <div className="text-xs flex flex-row justify-between mt-4 gap-4 border-t-2 border-b-2 py-2 border-gray-200 dark:text-offWhite dark:border-darkGray">
                         <div className="flex flex-row gap-4 max-w-[50%]">
                             <div>
                                 #
@@ -329,7 +329,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                         Create Superset
                                     </div>
                                 </div>
-                                <div className="text-sm text-gray-600 mb-3">
+                                <div className="text-xs text-gray-600 mb-3">
                                     {selectedExercises.length === 0
                                         ? 'Select exercises to group into a superset'
                                         : `${selectedExercises.length} exercise${selectedExercises.length !== 1 ? 's' : ''} selected`}
