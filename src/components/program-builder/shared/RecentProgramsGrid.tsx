@@ -37,7 +37,7 @@ export const RecentProgramsGrid: React.FC = () => {
     }
 
     return (
-        <div className="flex flex-col gap-2 bg-lightGray dark:bg-extraDarkGray sm:mx-12 rounded-t-3xl sm:pb-24">
+        <div className="flex flex-col gap-2 bg-lightGray dark:bg-extraDarkGray sm:mx-12 sm:rounded-t-3xl sm:pb-24">
             <span className="text-2xl font-bold px-8 pt-8 flex flex-row items-center justify-start gap-2">
                 <StepForwardIcon />
                 Resume Building Program
