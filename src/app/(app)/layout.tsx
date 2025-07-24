@@ -18,8 +18,8 @@ import { ConditionalFooter } from "@/components/footer/ConditionalFooter";
 import { ThemeProvider } from "@/components/theme-provider"
 
 export const metadata: Metadata = {
-    title: 'Proxima Fitness | AI Workout Builder & Program Directory',
-    description: 'Proxima Fitness is an AI Workout Builder and Programs Directory. This is the Proxima Landing page, where you can sign in to the Proxima Web builder and get started building programs right away, or download the Proxima Fitness App on the App Store or Play Store',
+    title: 'Proxima Fitness | AI Personal Trainer for Hevy',
+    description: 'Proxima Fitness is an AI Personal Trainer. This is the Proxima Landing page, where you can sign in to the Proxima Web builder and get started building programs right away, or download the Proxima Fitness App on the App Store or Play Store',
     icons: {
         icon: "/favicon.svg", // Use SVG favicon
         shortcut: "/favicon.svg",
