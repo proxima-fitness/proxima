@@ -1,19 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { useSidebar } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { menu } from "public";
+import { MenuIcon } from "lucide-react";
 
 export function CustomTrigger() {
 
     const { toggleSidebar } = useSidebar();
 
     return (
-        <Button onClick={ toggleSidebar }>
-            <img
-                src={ (menu as any).src }
-                alt="menu"
-                className="w-[28px] h-[28px] object-contain"
-            />
+        <Button className="bg-white dark:bg-black focus:bg-white hover:bg-white dark:focus:bg-black" onClick={ toggleSidebar }>
+            <MenuIcon className="w-[28px] h-[28px] object-contain" />
         </Button>
     );
 };
