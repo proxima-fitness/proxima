@@ -79,7 +79,7 @@ import { CallToAction } from "@/components/call-to-action/CallToAction";
                     </div>
                 </div>
                 <div className={ `bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
-                    <div className={ `${styles.boxWidth}` }>
+                    <div className={ `flex flex-row items-center justify-center` }>
                         <Integrations />
                     </div>
                 </div>
