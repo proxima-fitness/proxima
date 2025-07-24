@@ -73,7 +73,7 @@ export default function RootLayout({
                                         <AppSidebar />
                                     </div>
                                     <div className="w-full bg-primary">
-                                        <div className={ `${styles.paddingXNav} ${styles.flexCenter}` }>
+                                        <div className={ `${styles.flexCenter}` }>
                                             <div className="w-full">
                                                     <Navbar />
                                             </div>
@@ -85,8 +85,9 @@ export default function RootLayout({
                                                     showSpinner={ false }
                                                     color="#00f6ff"
                                                 />
-                                                {children}
-                                                <Toaster richColors />
+
+                                                    {children}
+                                                    <Toaster richColors />
                                                 </PostHogClientProvider>
                                         </main>
                                         <ConditionalFooter />

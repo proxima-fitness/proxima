@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import styles from "../../style";
-import { footerLinks, socialMedia } from "../../assets/constants";
 import { proxima_logo } from "public";
 import Link from "next/link";
+import { footerLinks, socialMedia } from "@/assets/constants";
 
 export const Footer: React.FC = () => {
 

@@ -1,23 +1,29 @@
 "use client";
 
-import styles from "./style";
-import { useExitIntent } from 'use-exit-intent';
-import { DownloadPopup } from "./components/call-to-action/DownloadPopup";
-import { useState } from "react";
-import { Hero } from "./components/header/Hero";
-import { Stats } from "./components/header/Stats";
-import { Testimonials } from "./components/testimonials/Testimonials";
-import { CustomPrograms } from "./components/features/CustomPrograms";
-import { PersonalRecords } from "./components/features/PersonalRecords";
-import { Themes } from "./components/features/Themes";
-import { CallToAction } from "./components/call-to-action/CallToAction";
-import { Faq } from "./components/faqs/Faq";
-import { ProgramsSection } from "./components/features/ProgramsSection";
 import { useUserContext } from "@/contexts/UserContext";
-import { Integrations } from "./components/header/Integrations";
+import { Integrations } from"@/components/header/Integrations";
+import { useExitIntent } from 'use-exit-intent';
+import { useState } from "react";
+import styles from "@/style";
+import { DownloadPopup } from "@/components/call-to-action/DownloadPopup";
+import { Hero } from "@/components/header/Hero";
+import { Stats } from "@/components/header/Stats";
+import { ProgramsSection } from "@/components/features/ProgramsSection";
+import { Testimonials } from "@/components/testimonials/Testimonials";
+import { CustomPrograms } from "@/components/features/CustomPrograms";
+import { PersonalRecords } from "@/components/features/PersonalRecords";
+import { Themes } from "@/components/features/Themes";
+import { Faq } from "@/components/faqs/Faq";
+import { CallToAction } from "@/components/call-to-action/CallToAction";
 
-const App = () => {
-    const { user } = useUserContext();
+// export const metadata = {
+//     title: "Proxima Fitness App",
+//     description: "Start logging your progress with our App",
+//   };
+
+  export default function AppPage() {
+
+        const { user } = useUserContext();
     const { registerHandler } = useExitIntent({
         desktop: {
           delayInSecondsToTrigger: 4,
@@ -58,7 +64,7 @@ const App = () => {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <div className={`overflow-hidden`}>
+                <div className={`overflow-hidden`}>
             {!user && <DownloadPopup isOpen={ isOpen } setIsOpen={ setIsOpen } isMobile={ isMobile } />}
             <div className={ `sm:pt-16 pt-6`}>
                 <div className={ `bg-primary ${styles.flexStart}` }>
@@ -103,7 +109,4 @@ const App = () => {
             </div>
         </div>
     );
-};
-
-export default App;
-
+}

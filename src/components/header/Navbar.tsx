@@ -13,7 +13,6 @@ import { ConnectHevyDialog } from "./ConnectHevyDialog";
 import { useEffect, useState } from "react";
 import { signOutUser } from "@/api/authentication";
 import { useHevySecret, useUserFullName } from "@/api/hooks";
-import { useIsHevy } from "@/contexts/HevyContext";
 import { toast } from "sonner";
 import { LockIcon } from "lucide-react";
 import { authenticatedNavLinks, navLinks } from "@/assets/constants";
@@ -46,7 +45,7 @@ const NavItems = (pathname: string) => {
 
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [openConnectHevyDialog, setOpenConnectHevyDialog] = useState(false);
-    const { isHevy, setIsHevy } = useIsHevy();
+    // const { isHevy, setIsHevy } = useIsHevy();
 
     useEffect(() => {
         if (openConnectHevyDialog) {
@@ -130,7 +129,7 @@ const NavItems = (pathname: string) => {
                                     }
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
+                                {/* <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
                                     Workout Format
                                 </DropdownMenuLabel>
                                 <DropdownMenuItem
@@ -158,14 +157,13 @@ const NavItems = (pathname: string) => {
                                         <span className="font-medium">Hevy Format</span>
                                         <span className="text-xs text-gray-500 text-wrap max-w-[200px]">400+ exercises, custom exercises,routines ...</span>
                                     </div>
-                                </DropdownMenuItem>
+                                </DropdownMenuItem> */}
                                 <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
                                     Theme
                                 </DropdownMenuLabel>
                                 <DropdownMenuItem
                                     onSelect={(e) => {
                                         e.preventDefault();
-                                        toast.info("Light Theme selected");
                                         setTheme("light");
                                     }}
                                     className={`cursor-pointer  ${theme === "light" ? 'bg-lightGray text-black focus:bg-lightGray hover:text-black' : 'bg-white dark:bg-darkGray dark:text-white text-black'}`}
@@ -177,7 +175,6 @@ const NavItems = (pathname: string) => {
                                 <DropdownMenuItem
                                     onSelect={(e) => {
                                         e.preventDefault();
-                                        toast.info("Dark Theme selected");
                                         setTheme("dark");
                                     }}
                                     className={`cursor-pointer ${theme === "dark" ? 'bg-lightGray text-black focus:bg-lightGray hover:text-black' : 'bg-white dark:bg-darkGray dark:text-white text-black'}`}
@@ -261,7 +258,7 @@ export const Navbar: React.FC = () => {
     const pathname = usePathname();
 
     return (
-        <nav className="w-full flex py-2 justify-between items-center navbar">
+        <nav className="w-full flex py-2 justify-between items-center dark:bg-darkGray">
             <Link href={ "/" } >
                 <img src={ (proxima_logo as any).src } alt="Proxima Logo" className="max-sm:hidden h-[40px] w-[auto]" />
             </Link>

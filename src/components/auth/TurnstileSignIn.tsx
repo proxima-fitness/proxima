@@ -40,7 +40,7 @@ export const TurnstileSignIn: React.FC<IProps> = (props) => {
                         turnstile.reset();
 
                     } else {
-                        router.push('/program-builder')
+                        router.push('/')
                     }
                 } }
             />

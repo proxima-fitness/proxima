@@ -49,7 +49,7 @@ export const Breadcrumbs: React.FC = () => {
   const { setIsPreview } = usePreview();
 
   const breadcrumbs = [
-    { href: "/program-builder", label: "Program Builder" },
+    { href: "/", label: "Program Builder" },
     ...(segments.includes("build-program")
       ? [
           {

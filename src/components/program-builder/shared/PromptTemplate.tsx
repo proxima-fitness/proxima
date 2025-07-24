@@ -17,7 +17,7 @@ export const PromptTemplate: React.FC = () => {
     const router = useRouter();
 
     const goToFilters = (search: string) => {
-        router.push(`/program-builder/program-filters?search=${encodeURIComponent(search)}`);
+        router.push(`/program-filters?search=${encodeURIComponent(search)}`);
     };
     const [search, setSearch] = useState<string>("");
     const [activeCategory, setActiveCategory] = useState("");
@@ -197,7 +197,7 @@ export const PromptTemplate: React.FC = () => {
                                     target="_self"
                                     className="z-10"
                                     rel="noopener noreferrer"
-                                    href={ `/program-builder/build-program?empty=true&edit=true` }
+                                    href={ `/build-program?empty=true&edit=true` }
                                 >
                                     <PromptSuggestion className="capitalize h-8 p-4 text-xs dark:bg-darkGray">
                                         {suggestion.icon}

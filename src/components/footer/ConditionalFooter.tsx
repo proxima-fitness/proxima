@@ -8,7 +8,7 @@ export function ConditionalFooter() {
     const pathname = usePathname();
 
     // Don't render footer on program-builder pages
-    if (pathname?.includes("program-builder") || pathname?.includes("chat")) {
+    if (pathname?.includes("build-program") || pathname?.includes("program-filters")) {
         return null;
     }
 

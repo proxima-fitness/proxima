@@ -279,7 +279,7 @@ function ConversationPromptInput( props: IProps) {
                          target="_self"
                          rel="noopener noreferrer"
                          className="max-sm:w-full w-full h-10"
-                         href={ `/program-builder/build-program?${handleDefineQueryParams()}&edit=true` }
+                         href={ `/build-program?${handleDefineQueryParams()}&edit=true` }
                      >
                          <Button className="w-32 bg-black dark:bg-white dark:text-black hover:bg-black/80 max-sm:w-full h-10 font-bold text-white shadow-[0_0_20px_rgba(51,187,207,0.5)] hover:shadow-[0_0_25px_rgba(51,187,207,0.7)] transition-all duration-300">
                             <SparklesIcon className="size-4" />

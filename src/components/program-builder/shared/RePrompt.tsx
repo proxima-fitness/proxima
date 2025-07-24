@@ -513,7 +513,8 @@ function RePrompt() {
             >
             <div className="flex flex-col">
                 <PromptInputTextarea
-                    placeholder="Edit your program..."
+                    disabled={ true }
+                    placeholder="Andy chat coming soon..."
                     className="dark:text-white min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
                     />
 

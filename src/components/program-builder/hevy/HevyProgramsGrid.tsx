@@ -20,7 +20,7 @@ export const HevyProgramsGrid: React.FC = () => {
         }
         localStorage.setItem('hevy-program-in-progress', JSON.stringify(program.program));
         // Set the Hevy context to true        // Navigate to the program builder
-        router.push(`/program-builder/build-program?edit=${String(edit)}&resume=true`);
+        router.push(`/build-program?edit=${String(edit)}&resume=true`);
     };
 
     // useEffect(() => {

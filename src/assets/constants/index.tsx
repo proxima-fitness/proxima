@@ -5816,18 +5816,18 @@ export const authenticatedNavLinks = [
         id: "programs",
         title: "Programs"
     },
-    {
-        id: "program-builder",
-        title: "AI Program Builder",
-    },
+    // {
+    //     id: "program-builder",
+    //     title: "AI Program Builder",
+    // },
     {
         id: "log-in",
         title: "Log in",
     },
-    {
-        id: "cta",
-        title: "Download App",
-    },
+    // {
+    //     id: "cta",
+    //     title: "Download App",
+    // },
 ];
 
 export const navLinks = [
@@ -5843,18 +5843,18 @@ export const navLinks = [
     //     id: "pricing",
     //     title: "Pricing",
     //   },
-    {
-        id: "program-builder",
-        title: "AI Program Builder",
-    },
+    // {
+    //     id: "program-builder",
+    //     title: "AI Program Builder",
+    // },
     {
         id: "log-in",
         title: "Log in",
     },
-    {
-        id: "cta",
-        title: "Download App",
-    },
+    // {
+    //     id: "cta",
+    //     title: "Download App",
+    // },
 ];
 
 export const features = [
