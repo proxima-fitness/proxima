@@ -1,6 +1,7 @@
 import add from "./add.svg";
 import apple from "./apple.svg";
 import proxima_logo from "./proxima_logo_blue-04.svg";
+import proxima_logo_white from "./proxima-logo-white.svg";
 import proxima_logo_small from "./proxima_logo_blue_small.svg";
 import arnold from "./arnold.jpg";
 import google from "./google.svg";
@@ -60,6 +61,7 @@ export {
     add,
     apple,
     proxima_logo,
+    proxima_logo_white,
     proxima_logo_black,
     arnold,
     programs_mobile_white_device,

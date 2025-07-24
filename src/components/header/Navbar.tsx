@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from "../generic/Button";
 import { NavDrawer } from "./NavDrawer";
-import { proxima_logo } from "public";
+import { proxima_logo, proxima_logo_white } from "public";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useUserContext } from "@/contexts/UserContext";
@@ -13,7 +13,6 @@ import { ConnectHevyDialog } from "./ConnectHevyDialog";
 import { useEffect, useState } from "react";
 import { signOutUser } from "@/api/authentication";
 import { useHevySecret, useUserFullName } from "@/api/hooks";
-import { toast } from "sonner";
 import { LockIcon } from "lucide-react";
 import { authenticatedNavLinks, navLinks } from "@/assets/constants";
 import { useTheme } from "next-themes"
@@ -69,14 +68,14 @@ const NavItems = (pathname: string) => {
                     : nav.id === "log-in" ?
                         <li
                         key={ nav.id }
-                        className={ `font-main font-normal cursor-pointer text-[16px] text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
+                        className={ `font-main font-normal cursor-pointer text-[16px] text-black ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
                     >
                             <div className="w-8 h-8 bg-gray-300 rounded-full animate-pulse"></div>
                         </li>
                     :
                         <li
                             key={ nav.id }
-                            className={ `font-main font-normal cursor-pointer text-[16px] text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
+                            className={ `font-main font-normal cursor-pointer text-[16px] text-black ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
                         >
                             <Link href={ `/${nav.id}` }>{nav.title}</Link>
                         </li>
@@ -97,7 +96,7 @@ const NavItems = (pathname: string) => {
                     : nav.id === "log-in" ?
                         <li
                         key={ nav.id }
-                        className={ `font-main font-normal cursor-pointer text-[16px] text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
+                        className={ `font-main font-normal cursor-pointer text-[16px] text-black ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
                     >
                         <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
                             <DropdownMenuTrigger asChild>
@@ -186,7 +185,6 @@ const NavItems = (pathname: string) => {
                                 <DropdownMenuItem
                                     onSelect={(e) => {
                                         e.preventDefault();
-                                        toast.info("System Theme selected");
                                         setTheme("system");
                                     }}
                                     className={`cursor-pointer ${theme === "system" ? 'bg-lightGray text-black focus:bg-lightGray hover:text-black' : 'bg-white dark:bg-darkGray dark:text-white text-black'}`}
@@ -217,7 +215,7 @@ const NavItems = (pathname: string) => {
                     :
                         <li
                             key={ nav.id }
-                            className={ `font-main font-normal cursor-pointer text-[16px] text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
+                            className={ `font-main font-normal cursor-pointer text-[16px] text-black dark:text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
                         >
                             <Link href={ `/${nav.id}` }>{nav.title}</Link>
                         </li>
@@ -258,9 +256,10 @@ export const Navbar: React.FC = () => {
     const pathname = usePathname();
 
     return (
-        <nav className="w-full flex py-2 justify-between items-center dark:bg-darkGray">
+        <nav className="w-full flex py-2 justify-between items-center bg-white dark:bg-darkGray">
             <Link href={ "/" } >
-                <img src={ (proxima_logo as any).src } alt="Proxima Logo" className="max-sm:hidden h-[40px] w-[auto]" />
+                <img src={ (proxima_logo as any).src } alt="Proxima Logo" className="dark:block hidden max-sm:hidden h-[40px] w-[auto]" />
+                <img src={ (proxima_logo_white as any).src } alt="Proxima Logo" className="dark:hidden block max-sm:hidden h-[40px] w-[auto]" />
             </Link>
             <ul className="list-none sm:flex hidden justify-end items-center flex-1 z-6">
                 {NavItems(pathname)}
