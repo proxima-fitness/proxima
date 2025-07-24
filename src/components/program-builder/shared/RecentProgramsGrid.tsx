@@ -64,7 +64,7 @@ export const RecentProgramsGrid: React.FC = () => {
 
                     <div className="absolute inset-0 rounded-lg bg-black bg-opacity-40 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
                         <Link
-                            href={ `/program-builder/build-program?resume=true&edit=true` }
+                            href={ `/build-program?resume=true&edit=true` }
                             target="_self"
                             rel="noopener noreferrer"
                             className="w-[50%]"
@@ -94,7 +94,7 @@ export const RecentProgramsGrid: React.FC = () => {
 
                         <div className="absolute inset-0 rounded-lg bg-black bg-opacity-40 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
                             <Link
-                                href={ `/program-builder/build-program?resume=true` }
+                                href={ `/build-program?resume=true` }
                                 target="_self"
                                 rel="noopener noreferrer"
                                 className="w-[50%]"

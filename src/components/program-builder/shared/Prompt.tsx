@@ -357,7 +357,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                                             key={suggestion.label}
                                             target="_self"
                                             rel="noopener noreferrer"
-                                            href={ `/program-builder/build-program?empty=true&edit=true` }
+                                            href={ `/build-program?empty=true&edit=true` }
                                         >
                                             <PromptSuggestion className="capitalize h-8 p-4 text-xs">
                                                 {suggestion.icon}
@@ -427,7 +427,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                                 target="_self"
                                 rel="noopener noreferrer"
                                 className="max-sm:w-full h-10"
-                                href={ `/program-builder/build-program?${handleDefineQueryParams()}&edit=true` }
+                                href={ `/build-program?${handleDefineQueryParams()}&edit=true` }
                             >
                                 <Button className="w-[auto] max-sm:w-full h-10 font-bold bg-[#33bbcf] text-white">
                                     <SparklesIcon /> Build

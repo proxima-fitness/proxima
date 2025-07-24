@@ -140,7 +140,7 @@ export const ToolsTabs: React.FC = () => {
                     </div>
                 </SheetContent>
             </Sheet>
-            <Link href={ `/program-builder` }>
+            <Link href={ `/` }>
                 <div className="max-sm:hidden cursor-pointer text-sm flex flex-row justify-center items-center gap-2">
                     New
                     <SquarePenIcon size="16" />

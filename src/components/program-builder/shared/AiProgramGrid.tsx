@@ -6,8 +6,8 @@ import { quotes } from "public";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProfilePictureByID, useUserFullName, useCommunityAiProgramsPaginated } from "@/api/hooks";
 import { memo, useMemo, useState } from "react";
-import { lightColours } from "@/assets/constants";
 import { Button } from "@/components/ui/button";
+import { lightColours } from "@/assets/constants";
 
 const ProgramItem: React.FC<{ item: TProgram }> = memo(({ item }) => {
 
@@ -55,7 +55,7 @@ const ProgramItem: React.FC<{ item: TProgram }> = memo(({ item }) => {
 
                 <div className="absolute inset-0 rounded-lg bg-black bg-opacity-40 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
                     <Link
-                        href={ `/program-builder/build-program?shareId=${item.id}&edit=true` }
+                        href={ `/build-program?shareId=${item.id}&edit=true` }
                         rel="noopener noreferrer"
                         className="w-[50%]"
                         target="_self"
@@ -63,7 +63,7 @@ const ProgramItem: React.FC<{ item: TProgram }> = memo(({ item }) => {
                         <button className="my-2 py-2 w-full hover:bg-black hover:text-white bg-white text-black rounded-lg shadow flex flex-row items-center justify-center gap-2"><EditIcon />Edit</button>
                     </Link>
                     <Link
-                        href={ `/program-builder/build-program?shareId=${item.id}` }
+                        href={ `/build-program?shareId=${item.id}` }
                         rel="noopener noreferrer"
                         className="w-[50%]"
                         target="_self"

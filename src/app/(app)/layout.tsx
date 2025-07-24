@@ -15,6 +15,10 @@ import NextTopLoader from 'nextjs-toploader';
 import { PostHogClientProvider } from "@/utils/PostHogClientProvider";
 import { PreviewProvider } from "@/contexts/PreviewContext";
 import { UserProvider } from "@/contexts/UserContext";
+import { Breadcrumbs } from "@/components/program-builder/shared/Breadcrumbs";
+import { ToolsTabs } from "@/components/program-builder/shared/ToolsTabs";
+import { Suspense } from "react";
+import { StepButton } from "@/components/program-builder/shared/StepButton";
 
 export const metadata: Metadata = {
     title: 'Proxima Fitness | AI Workout Builder & Program Directory',
@@ -78,7 +82,20 @@ export default function RootLayout({
                                                                 showSpinner={ false }
                                                                 color="#00f6ff"
                                                             />
-                                                            {children}
+                                                                <div>
+                                                                    <div className="sticky top-0 z-50 p-2 bg-extraLightGray border-b-2 border-white flex flex-row items-center justify-between text-xl text-black">
+                                                                        <Breadcrumbs />
+                                                                        {/* <ProgramBuilderTabs /> */}
+                                                                        <div className="flex flex-row items-center justify-between gap-4">
+                                                                            <ToolsTabs />
+                                                                            <Suspense fallback={null}>
+                                                                                <StepButton />
+                                                                            </Suspense>
+                                                                        </div>
+
+                                                                    </div>
+                                                                    {children}
+                                                                </div>
                                                     <Toaster richColors />
                                                 </PostHogClientProvider>
                                         </main>

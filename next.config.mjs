@@ -24,6 +24,15 @@ const nextConfig = {
     NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
     NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     NEXT_PUBLIC_REACT_APP_CAPTCHA_SITE_KEY: process.env.NEXT_PUBLIC_REACT_APP_CAPTCHA_SITE_KEY,
+  },
+  async redirects() {
+    return [
+      {
+        source: '/program-builder',
+        destination: '/',
+        permanent: true, // use false for temporary (307), true for permanent (308)
+      },
+    ]
   }
 }
 
