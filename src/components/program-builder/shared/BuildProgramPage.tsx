@@ -119,7 +119,6 @@ export const BuildProgramPage: React.FC = () => {
     const { data: program, isLoading: loadingProgram } =  useBuildAiProgram(request, isHevy, shareId, resume);
     const { data: sharedProgram, isLoading: loadingSharedProgram } = useSharedProgram(shareId, resume);
 
-
     if ((loadingProgram || program === undefined) && (loadingSharedProgram || sharedProgram === undefined) && resume === "") {
         return (
             <BuildProgramSkeleton />
@@ -135,7 +134,9 @@ export const BuildProgramPage: React.FC = () => {
             }
             if (resumeHevyProgram) {
                 return (
-                    <HevyRoutine request={ request } program={ resumeHevyProgram as THevyRoutine[] } />
+                    <div className="sm:pl-8">
+                        <HevyRoutine request={ request } program={ resumeHevyProgram as THevyRoutine[] } />
+                    </div>
                 );
             }
         } else if (!isHevy) {
@@ -146,7 +147,9 @@ export const BuildProgramPage: React.FC = () => {
             }
             if (resumeProximaProgram) {
                 return (
-                    <ProximaProgram request={ request } program={ resumeProximaProgram as TProgramCreatorDay[][] } />
+                    <div className="sm:pl-8">
+                        <ProximaProgram request={ request } program={ resumeProximaProgram as TProgramCreatorDay[][] } />
+                    </div>
                 );
             }
         }

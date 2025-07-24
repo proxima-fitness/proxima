@@ -1,6 +1,7 @@
 "use client";
 
 import { useUserContext } from "@/contexts/UserContext";
+import { Integrations } from"@/components/header/Integrations";
 import { useExitIntent } from 'use-exit-intent';
 import { useState } from "react";
 import styles from "@/style";
@@ -77,8 +78,13 @@ import { CallToAction } from "@/components/call-to-action/CallToAction";
                         <Stats />
                     </div>
                 </div>
+                <div className={ `bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
+                    <div className={ `${styles.boxWidth}` }>
+                        <Integrations />
+                    </div>
+                </div>
             </div>
-            <div className={ `bg-white ${styles.paddingX} ${styles.flexCenter} flex-col` }>
+            <div className={ `bg-white dark:bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
                 <div className={ `${styles.boxWidth}` }>
                     <ProgramsSection />
                 </div>
@@ -89,7 +95,7 @@ import { CallToAction } from "@/components/call-to-action/CallToAction";
                     <CustomPrograms />
                 </div>
             </div>
-            <div className={ `bg-white ${styles.paddingX} ${styles.flexCenter} flex-col` }>
+            <div className={ `bg-white dark:bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
                 <div className={ `${styles.boxWidth}` }>
                     <PersonalRecords />
                 </div>

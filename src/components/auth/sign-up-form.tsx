@@ -90,7 +90,7 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
-      <Card className='bg-lightGray'>
+      <Card className='bg-lightGray dark:bg-extraDarkGray dark:text-white'>
         <CardHeader>
           <CardTitle className="text-2xl">Sign up</CardTitle>
           <CardDescription>Create a new account</CardDescription>

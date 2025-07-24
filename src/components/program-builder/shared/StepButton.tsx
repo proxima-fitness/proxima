@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRightIcon, ShareIcon } from "lucide-react";
 import { useState } from "react";
 import { usePreview } from "@/contexts/PreviewContext";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { ShareDialog } from "./ShareDialog";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { v4 as uuidv4 } from "uuid";
@@ -14,11 +14,9 @@ export const StepButton: React.FC = () => {
 
     const { isPreview, setIsPreview } = usePreview();
     const { isHevy } = useIsHevy();
-    const path = usePathname();
     const searchParams = useSearchParams();
     const shareId = searchParams.get('shareId') ?? '';
 
-    const segments = path.split("/").filter(Boolean);
     const [openShareDialog, setOpenShareDialog] = useState(false);
 
     const [savingRoutine, setSavingRoutine] = useState(false);
@@ -60,13 +58,6 @@ export const StepButton: React.FC = () => {
                 }
             }
         }
-    }
-
-
-    if (segments.length === 1) {
-        return (
-            <></>
-        )
     }
 
     if (!isPreview) {

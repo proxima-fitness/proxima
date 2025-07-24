@@ -12,19 +12,19 @@ export const HevyRoutinePreview: React.FC<IProps> = (props) => {
     } = props;
 
     return (
-        <div className="flex flex-row max-sm:flex-col max-sm:w-screen overflow-auto sm:p-2 gap-4 border-t-4 border-lightGray pt-2">
+        <div className="flex flex-row max-sm:flex-col max-sm:w-screen max-h-screen overflow-auto sm:p-2 gap-4 border-t-4 border-lightGray dark:border-darkGray  pt-2">
             { deflatHevyRoutine.map((week, index) => (
                 <div className="w-screen sm:w-full" key={ `Week ${index}` }>
-                    <span className="bg-white p-2 font-main">Week {index + 1}</span>
+                    <span className="bg-white p-2 font-main dark:bg-darkGray">Week {index + 1}</span>
                     { week.map((day) => (
-                        <Card className="px-4 py-4 my-4 w-screen sm:min-w-[400px] sm:max-w-[400px] sm:w-[400px] bg-gray-100" key={ "week " + String(day.folder_id + 1) + "day " + day.order + " " }>
+                        <Card className="px-4 py-4 my-4 w-screen sm:min-w-[400px] sm:max-w-[400px] sm:w-[400px] bg-gray-100 dark:bg-extraDarkGray" key={ "week " + String(day.folder_id + 1) + "day " + day.order + " " }>
                             <div className="border-b-2 border-gray-200">
                                 <div>
                                     <h3 className="font-main text-lg">{ "Day" } { day.order } { day?.title ? <> &middot; { day.title }</> : "" }</h3>
                                     <p className="font-extralight">{ day.exercises.length } {day.exercises.length === 1 ? "Exercise" : `Exercises`}</p>
                                 </div>
                             </div>
-                            <div className="flex flex-row justify-between gap-4 border-b-2 py-2 border-gray-200 text-sm">
+                            <div className="flex flex-row justify-between gap-4 border-b-2 py-2 border-gray-200 text-sm dark:text-offWhite">
                                 <div className="flex flex-row gap-4 max-w-[50%]">
                                     <div>
                                         #
@@ -50,9 +50,9 @@ export const HevyRoutinePreview: React.FC<IProps> = (props) => {
                             >
                                 { day?.exercises?.map((exercise: THevyExercise, exerciseIndex: number) => (
                                     <div key={ exerciseIndex }>
-                                        <div className="border-b-2 text-sm border-gray-200 flex flex-row justify-between font-extralight items-center py-2">
+                                        <div className="border-b-2 text-sm border-gray-200 flex flex-row justify-between font-extralight items-center py-2 dark:border-offWhite dark:text-offWhite">
                                             <div className="flex flex-row gap-4 max-w-[50%]">
-                                                <div className="text-[#33bbcf]">{exerciseIndex + 1}</div>
+                                                <div className="text-[#33bbcf] dark:white">{exerciseIndex + 1}</div>
                                                 <div>
                                                     <div className="font-normal text-sm">{ exercise?.title }</div>
                                                 </div>

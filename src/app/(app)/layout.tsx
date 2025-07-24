@@ -1,7 +1,6 @@
 import "@/styles/global.css";
 
 import { Russo_One, Exo, Inter } from "next/font/google";
-import { Footer } from '@/components/footer/Footer';
 import { Navbar } from '@/components/header/Navbar';
 import QueryProvider from '@/utils/QueryProvider';
 import styles from '@/style';
@@ -15,14 +14,12 @@ import NextTopLoader from 'nextjs-toploader';
 import { PostHogClientProvider } from "@/utils/PostHogClientProvider";
 import { PreviewProvider } from "@/contexts/PreviewContext";
 import { UserProvider } from "@/contexts/UserContext";
-import { Breadcrumbs } from "@/components/program-builder/shared/Breadcrumbs";
-import { ToolsTabs } from "@/components/program-builder/shared/ToolsTabs";
-import { Suspense } from "react";
-import { StepButton } from "@/components/program-builder/shared/StepButton";
+import { ConditionalFooter } from "@/components/footer/ConditionalFooter";
+import { ThemeProvider } from "@/components/theme-provider"
 
 export const metadata: Metadata = {
-    title: 'Proxima Fitness | AI Workout Builder & Program Directory',
-    description: 'Proxima Fitness is an AI Workout Builder and Programs Directory. This is the Proxima Landing page, where you can sign in to the Proxima Web builder and get started building programs right away, or download the Proxima Fitness App on the App Store or Play Store',
+    title: 'Proxima Fitness | AI Personal Trainer for Hevy',
+    description: 'Proxima Fitness is an AI Personal Trainer. This is the Proxima Landing page, where you can sign in to the Proxima Web builder and get started building programs right away, or download the Proxima Fitness App on the App Store or Play Store',
     icons: {
         icon: "/favicon.svg", // Use SVG favicon
         shortcut: "/favicon.svg",
@@ -55,12 +52,18 @@ export default function RootLayout({
     } ) {
 
     return (
-        <html lang="en" className={ `${exo.className} ${russo_one.className} ${inter.className}` }>
+        <html lang="en" className={ `${exo.className} ${russo_one.className} ${inter.className}` } suppressHydrationWarning>
             <head>
                 <link rel="icon" href="/favicon.ico" type="image/x-icon" />
                 <meta name="theme-color" content="#000000" />
             </head>
             <body>
+                <ThemeProvider
+                    attribute="class"
+                    defaultTheme="system"
+                    enableSystem
+                    disableTransitionOnChange
+                >
                 <UserProvider>
                     <QueryProvider>
                         <IsHevyProvider>
@@ -70,46 +73,31 @@ export default function RootLayout({
                                         <AppSidebar />
                                     </div>
                                     <div className="w-full bg-primary">
-                                        <div className={ `${styles.paddingXNav} ${styles.flexCenter}` }>
-                                            <div className={ `${styles.boxWidth}` }>
+                                        <div className={ `${styles.flexCenter}` }>
+                                            <div className="w-full">
                                                     <Navbar />
                                             </div>
                                         </div>
                                         <main id="root">
                                             <PostHogClientProvider>
-                                                            <Analytics />
-                                                            <NextTopLoader
-                                                                showSpinner={ false }
-                                                                color="#00f6ff"
-                                                            />
-                                                                <div>
-                                                                    <div className="sticky top-0 z-50 p-2 bg-extraLightGray border-b-2 border-white flex flex-row items-center justify-between text-xl text-black">
-                                                                        <Breadcrumbs />
-                                                                        {/* <ProgramBuilderTabs /> */}
-                                                                        <div className="flex flex-row items-center justify-between gap-4">
-                                                                            <ToolsTabs />
-                                                                            <Suspense fallback={null}>
-                                                                                <StepButton />
-                                                                            </Suspense>
-                                                                        </div>
+                                                <Analytics />
+                                                <NextTopLoader
+                                                    showSpinner={ false }
+                                                    color="#00f6ff"
+                                                />
 
-                                                                    </div>
-                                                                    {children}
-                                                                </div>
+                                                    {children}
                                                     <Toaster richColors />
                                                 </PostHogClientProvider>
                                         </main>
-                                        <div className={ `bg-primary ${styles.paddingX} ${styles.flexCenter} flex-col` }>
-                                            <div className={ `${styles.boxWidth}` }>
-                                                <Footer />
-                                            </div>
-                                        </div>
+                                        <ConditionalFooter />
                                     </div>
                                 </SidebarProvider>
                             </PreviewProvider>
                         </IsHevyProvider>
                     </QueryProvider>
                 </UserProvider>
+                </ThemeProvider>
             </body>
         </html>
     );

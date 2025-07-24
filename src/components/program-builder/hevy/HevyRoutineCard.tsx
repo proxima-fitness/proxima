@@ -12,7 +12,7 @@ export const HevyRoutineCard: React.FC<IProps> = (props) => {
     const { routine, handleAddRoutine } = props;
 
     return (
-        <Card className={`w-full bg-lightGray cursor-pointer`} onClick={ () => { handleAddRoutine(routine); toast.success(` ${routine.title} added to day`); } }>
+        <Card className={`w-full bg-lightGray dark:bg-extraDarkGray cursor-pointer`} onClick={ () => { handleAddRoutine(routine); toast.success(` ${routine.title} added to day`); } }>
             <CardHeader>
                 <CardTitle>{ routine.title }</CardTitle>
                 <CardDescription>{ routine.exercises.map((exercise) => exercise.title ).join(", ") }</CardDescription>

@@ -39,7 +39,7 @@ const ProgramItem: React.FC<{ item: TProgram }> = memo(({ item }) => {
 
     return (
         <div className="flex flex-col gap-4">
-            <div  className="relative group bg-white h-[200px] rounded-lg shadow-lg">
+            <div  className="relative group bg-white dark:bg-darkGray h-[200px] rounded-lg shadow-lg">
                 <div className="absolute inset-0 transition duration-300 group-hover:blur-sm z-0">
                     <img
                         src={quotes.src}
@@ -117,7 +117,7 @@ export const AiProgramGrid: React.FC = () => {
 
     return (
         <>
-            <div className="flex flex-col gap-2 bg-lightGray sm:mx-12">
+            <div className="flex flex-col gap-2 bg-lightGray dark:bg-extraDarkGray sm:mx-12">
                 <span className="text-2xl font-bold px-8 pt-8 flex flex-row items-center justify-start gap-2">
                     <UsersIcon />
                     From the Community

@@ -186,10 +186,10 @@ export const HevyColumn: React.FC<IProps> = (props) => {
     const filteredWeek = hevyProgram.filter((dy) => dy.folder_id === folder_id);
 
     return (
-        <div className="w-full flex flex-col sm:min-w-[440px] sm:max-w-[440px] items-center">
+        <div className="w-full flex flex-col sm:min-w-[400px] sm:max-w-[400px] items-center">
             <div className="pt-2 px-4 flex flex-row flex-nowrap gap-2">
-                <div className="w-screen min-w-screen max-w-screen px-4 sm:px-2 sm:min-w-[440px] sm:max-w-[440px] h-[40px] flex flex-row justify-between items-center">
-                    <div className="text-lg">
+                <div className="w-screen min-w-screen max-w-screen px-4 sm:px-2 sm:min-w-[400px] sm:max-w-[400px] h-[40px] flex flex-row justify-between items-center">
+                    <div className="text-md dark:text-offWhite">
                         { title }
                     </div>
                     <div className="flex flex-row gap-4">
@@ -197,11 +197,12 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                             <Tooltip>
                                 <TooltipTrigger className="">
                                     <div
-                                        onClick={ () => handleDuplicateWeekOpen(true) }>
+                                        onClick={ () => handleDuplicateWeekOpen(true) }
+                                    >
                                         <CopyIcon />
                                     </div>
                                 </TooltipTrigger>
-                                <TooltipContent className="bg-gray-600 text-white rounded-lg">
+                                <TooltipContent className="bg-gray-600 text-white dark:text-offWhite rounded-lg">
                                     <p>Duplicate Week</p>
                                 </TooltipContent>
                             </Tooltip>
@@ -214,7 +215,7 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                 onDragOver={ handleDragOver }
                 onDragLeave={ handleDragLeave }
                 className={ `h-full w-full gap-4 transition-colors ${
-                    active ?  "bg-gray-200" : "bg-white"
+                    active ?  "bg-gray-200 dark:bg-darkGray" : "bg-white dark:bg-darkGray"
                 }` }
             >
                 { filteredWeek.map((dy) => {

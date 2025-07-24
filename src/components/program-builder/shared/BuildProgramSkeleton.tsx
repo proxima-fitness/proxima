@@ -15,7 +15,7 @@ RandomQuote.displayName = "RandomQuote";
 export const BuildProgramSkeleton: FC = () => {
 
     return (
-        <>
+        <div className="overflow-auto sm:pl-8">
             <div className="py-4 rounded-lg flex flex-row flex-nowrap gap-2">
                 <div className="min-w-[440px] max-w-[440px] h-[40px]">
                     <Skeleton className="rounded-xl h-full w-full" />
@@ -121,6 +121,6 @@ export const BuildProgramSkeleton: FC = () => {
                     </Skeleton>
                 </div>
             </div>
-        </>
+        </div>
     );
 };

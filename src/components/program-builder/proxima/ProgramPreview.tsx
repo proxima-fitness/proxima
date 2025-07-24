@@ -12,20 +12,20 @@ export const ProgramPreview: React.FC<IProps> = (props) => {
     } = props;
 
     return (
-        <div className="w-full">
+        <div className="w-full dark:bg-darkGray">
             <div className="flex flex-row max-sm:flex-col w-full overflow-scroll max-sm:p-0 p-2 gap-4">
                 { sortedWorkoutsByWeek.map((week, index) => (
                     <div className="w-full" key={ `Week ${index}` }>
-                        <span className="bg-white p-2 font-main">Week {index + 1}</span>
+                        <span className="bg-white dark:bg-darkGray p-2 font-main">Week {index + 1}</span>
                         { week.map((day) => (
-                            <Card className="px-4 py-4 my-4 min-w-[400px] max-w-[400px] w-[400px] max-sm:min-w-[99%] max-sm:max-w-[99%] max-sm:w-[99%] bg-gray-100" key={ "week " + day.nthWeek + "day " + day.nthDay + " " }>
+                            <Card className="px-4 py-4 my-4 min-w-[400px] max-w-[400px] w-[400px] max-sm:min-w-[99%] max-sm:max-w-[99%] max-sm:w-[99%] bg-gray-100 dark:bg-extraDarkGray" key={ "week " + day.nthWeek + "day " + day.nthDay + " " }>
                                 <div className="border-b-2 border-gray-200">
                                     <div>
                                         <h3 className="font-main text-lg">{ "Day" } { day.nthDay } { day?.day_title ? <> &middot; { day.day_title }</> : "" }</h3>
-                                        <p className="font-extralight">{ day.program_workout_exercises.length } {day.program_workout_exercises.length === 1 ? "Exercise" : `Exercises`}</p>
+                                        <p className="font-extralight dark:text-offWhite">{ day.program_workout_exercises.length } {day.program_workout_exercises.length === 1 ? "Exercise" : `Exercises`}</p>
                                     </div>
                                 </div>
-                                <div className="flex flex-row justify-between gap-4 border-b-2 py-2 border-gray-200 text-sm">
+                                <div className="flex flex-row justify-between gap-4 border-b-2 py-2 border-gray-200 text-sm dark:text-offWhite">
                                     <div className="flex flex-row gap-4 max-w-[50%]">
                                         <div>
                                             #
@@ -48,15 +48,15 @@ export const ProgramPreview: React.FC<IProps> = (props) => {
 
                                 </div>
                                 <div
-                                    className="my-4 rounded-xl"
+                                    className="my-4 rounded-xl dark:text-offWhite"
                                 >
                                     { day?.program_workout_exercises?.map((exercise: TSavedWorkoutExercise, exerciseIndex: number) => (
                                         <div key={ exerciseIndex }>
-                                            <div className="border-b-2 text-sm border-gray-200 flex flex-row justify-between font-light items-center py-2">
+                                            <div className="border-b-2 dark:border-offWhite text-sm border-gray-200 flex flex-row justify-between font-light items-center py-2">
                                                 <div className="flex flex-row gap-4 max-w-[50%]">
-                                                    <div className="text-[#33bbcf]">{exerciseIndex + 1}</div>
+                                                    <div className="text-lightSecondary font-bold">{exerciseIndex + 1}</div>
                                                     <div>
-                                                        <div className="font-third font-normal text-sm">{ exercise?.exercises?.[`name_english`] }</div>
+                                                        <div className="font-third font-normal text-sm dark:text-extraLightGray">{ exercise?.exercises?.[`name_english`] }</div>
                                                     </div>
                                                     <div></div>
                                                 </div>
