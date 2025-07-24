@@ -6,8 +6,8 @@ export const Integrations: React.FC = () => {
     return (
         <section className={ `${styles.flexCenter} flex-row flex-wrap ${styles.paddingY}` }>
            <div className={ `flex flex-col items-center justify-center` }>
-                <h3 className={ `text-4xl text-white font-main pb-12 max-sm:text-center` }>Integrated with your <span className="text-lightSecondary">Fitness App</span></h3>
-                <div className={ `flex flex-row max-sm:flex-col items-center justify-center gap-12` }>
+                <h3 className={ `text-4xl text-black dark:text-white font-main pb-12 max-sm:text-center` }>Integrated with your <span className="text-lightSecondary">Fitness App</span></h3>
+                <div className={ `flex flex-row max-sm:flex-col items-center justify-center gap-12 bg-darkGray p-6 rounded-3xl` }>
                     <div className={ `flex flex-col items-start justify-start max-sm:items-center` }>
                     <span className="text-offWhite text-sm">Available now</span>
                     <div className={ `flex flex-row max-sm:flex-col items-center justify-center` }>

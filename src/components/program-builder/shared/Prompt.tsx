@@ -10,6 +10,8 @@ import { AiProgramGrid } from "./AiProgramGrid";
 import { ConditionalHevyGrid } from "../hevy/ConditionalHevyGrid";
 import { RecentProgramsGrid } from "./RecentProgramsGrid";
 import { PromptTemplate } from "./PromptTemplate";
+import { Integrations } from "@/components/header/Integrations";
+import styles from "@/style";
 
 interface IProps {
     userData: User | null;
@@ -67,6 +69,10 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                 <div className="absolute z-0 w-[60%] h-[80%] rounded-full white__gradient bottom-40 hidden dark:block" />
                 <div className="absolute z-0 top-40 w-[60%] h-[50%] blue__gradient hidden dark:block" />
             </div>
+            <div className={ `${styles.boxWidth}` }>
+                <Integrations />
+            </div>
+
             <div className="bg-red-400 py-4 text-white hidden max-sm:flex max-sm:flex-col max-sm:justify-center max-sm:items-center text-center">
                 <MessageSquareWarningIcon />
                 Please use on a desktop computer for best experience
