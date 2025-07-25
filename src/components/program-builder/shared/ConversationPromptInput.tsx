@@ -142,8 +142,8 @@ function ConversationPromptInput( props: IProps) {
 
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
-      <ChatContainerRoot className="relative flex-1 space-y-0 overflow-y-auto pt-8">
+    <div className="flex h-screen flex-col">
+      <ChatContainerRoot className="relative flex-1 space-y-0 overflow-hidden pt-8">
         <ChatContainerContent className="space-y-12 max-sm:space-y-1 max-sm:px-4">
           {chatMessages.map((message, index) => {
             const isAssistant = message.role === "assistant"
