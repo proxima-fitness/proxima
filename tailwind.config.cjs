@@ -18,8 +18,8 @@ module.exports = {
 			lightSecondary: "#33bbcf",
 			extraLightGray: "#fafafa",
 			lightGray: "#f5f5f5",
-			darkGray: "#323232",
-			extraDarkGray: "#181818",
+			darkGray: "#1f2937",//"#323232",
+			extraDarkGray: "#111827",//"#181818",
 			// primary: {
 			// 	DEFAULT: 'hsl(var(--primary))',
 			// 	foreground: 'hsl(var(--primary-foreground))'
