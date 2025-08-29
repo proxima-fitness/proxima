@@ -5945,7 +5945,7 @@ export const stats = [
   {
     id: "stats-3",
     title: "Programs Created",
-    value: 7000,
+    value: 8000,
   },
 ];
 
