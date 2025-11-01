@@ -108,7 +108,7 @@ export function AndyWaitlistForm() {
       <Button
         type="submit"
         disabled={isLoading || !email.trim()}
-        className="w-full h-12 text-base font-semibold"
+        className="w-full h-12 text-base bg-lightSecondary font-semibold"
         size="lg"
       >
         {isLoading ? (

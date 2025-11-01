@@ -40,7 +40,7 @@ export default function WaitlistPage() {
                 </div>
               </div>
             </div>
-            <h1 className="text-5xl sm:text-6xl font-bold text-gray-900 dark:text-white mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-5xl sm:text-6xl font-bold bg-[#33bbcf] dark:text-white mb-4 bg-clip-text text-transparent">
               Meet Andy
             </h1>
             <p className="text-xl sm:text-2xl text-gray-700 dark:text-gray-300 mb-2 font-semibold">
