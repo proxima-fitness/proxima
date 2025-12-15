@@ -251,7 +251,6 @@ export const postHevyRoutineProgram = async (id: string, hevyRoutines: THevyRout
     try {
         const programUploadObject = {
             id,
-            hevy_routines: hevyRoutines,
             title: request?.programTitle ?? "My AI Program",
             details: request?.search ?? "",
             program_length: weeks,
