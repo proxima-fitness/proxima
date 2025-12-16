@@ -58,7 +58,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                                             {name: "alexalydiarose", image: people02.src},
                                         ] }
                                     />
-                                    10,000+ athletes are training smarter with Proxima
+                                    11,000+ athletes are training smarter with Proxima
                                 </div>
                         </div>
 
