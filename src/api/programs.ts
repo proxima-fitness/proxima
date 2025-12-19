@@ -134,14 +134,17 @@ export const getExplorePageProgramDetails = async (program_id: string) => {
                         time_range,
                         amrap,
                         percent_rm,
-                        exercises (
+                        hevy_exercise_templates (
                             id,
+                            title,
+                            type,
+                            primary_muscle_group,
+                            secondary_muscle_groups,
+                            is_custom,
+                            equipment,
+                            normalized_title,
                             gif_id,
-                            instructions,
-                            name_english,
-                            name_espanol,
-                            name_portugues,
-                            name_francais
+                            instructions
                         )
                     )
                 )`,

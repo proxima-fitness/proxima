@@ -7,7 +7,6 @@ type TGenericDialog = TDialog | THevyDialog;
 type TGenericAddExercise = TAddExercise | THevyAddExercise;
 type TGenericRepsTypes = TRepsTypes | THevyRepsTypes;
 type TGenericIntensityTypes = TIntensityTypes | THevyIntensityTypes;
-type TGenericExercise = TExercise | THevyExerciseTemplate;
 type TGenericDay = TProgramCreatorDay | THevyRoutine;
 
 // Universal Types

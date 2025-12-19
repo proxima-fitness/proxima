@@ -1,16 +1,15 @@
 "use client";
 
-import { useExercises } from "@/api/hooks";
 import { Button } from "@/components/ui/button";
-import { useEffect, useReducer, useState } from "react";
+import { useReducer, useState } from "react";
 import { intensities, rep_types } from "@/assets/constants";
-import { getExerciseFromLocalStorageByID, getExerciseFromLocalStorageByName } from "@/utils/general/helpers";
+// import { getExerciseFromLocalStorageByID, getExerciseFromLocalStorageByName } from "@/utils/general/helpers";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+// import { toast } from "sonner";
 import { ExpandIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
-import { addExerciseToProgramCreatorExerciseConverter, convertProgramCreatorExerciseToAddExercise } from "../utils";
-import { ExerciseSearchBar } from "@/components/program-builder/proxima/ExerciseSearchBar";
+// import { addExerciseToProgramCreatorExerciseConverter, convertProgramCreatorExerciseToAddExercise } from "../utils";
+// import { ExerciseSearchBar } from "@/components/program-builder/proxima/ExerciseSearchBar";
 import { SetTypesToggle } from "../shared/SetTypesToggle";
 import { TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -30,17 +29,15 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
     const {
         addExerciseDialog,
         isEditExercise,
-        handleAddExercise,
-        handleEditExercise,
+        // handleAddExercise,
+        // handleEditExercise,
         handleOpenAddExerciseDialog,
     } = props;
 
-    const { data: exercises }  = useExercises();
-
-    const [ exerciseID, setExerciseID ] = useState<string>();
-    const [ selectedName, setSelectedName ] = useState<string>("");
-    const [ selectedGifID, setSelectedGifID ] = useState<string>();
-    const [ isEditing, setIsEditing ] = useState(true);
+    // const [ exerciseID, setExerciseID ] = useState<string>();
+    // const [ selectedName, setSelectedName ] = useState<string>("");
+    // const [ selectedGifID, setSelectedGifID ] = useState<string>();
+    // const [ isEditing, setIsEditing ] = useState(true);
     const [ editSetType, toggleEditSetType ] = useReducer(prev => !prev, false);
     const [ setTypes, setSetTypes ] = useState<("normal" | "warmup" | "dropset" | "failure")[]>(isEditExercise ? addExerciseDialog.editExercise?.setTypes ?? ["normal","normal","normal","normal"] : ["normal","normal","normal","normal"]);
 
@@ -50,21 +47,15 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
         setSetTypes(updatedSetTypes);
     };
 
-    const handleIsEditing = (isEditing: boolean) => {
-        setIsEditing(isEditing);
-    };
+        // const handleIsEditing = (isEditing: boolean) => {
+        //     setIsEditing(isEditing);
+        // };
 
-    const handleSelected = async (item: TExercise) => {
-        const fetchedExerciseItem = await getExerciseFromLocalStorageByName(item.name_english);
-        if (fetchedExerciseItem) {
-            setExerciseID(fetchedExerciseItem.id);
-            setSelectedName(fetchedExerciseItem["name_english"]);
-            if (fetchedExerciseItem.gif_id) {
-                setSelectedGifID(fetchedExerciseItem.gif_id);
-            }
-        }
-        setIsEditing(false);
-    };
+    // const handleSelected = async (item: THevyExerciseTemplate) => {
+    //     setExerciseID(item.id);
+    //     setSelectedName(item.title);
+    //     setIsEditing(false);
+    // };
 
     const [ editingSetWeight, setEditingSetWeight ] = useState([false,false,false,false]);
 
@@ -134,24 +125,24 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
         setIntensityDataWithRPERange(updatedIntensities);
     };
 
-    const handleSave = async () => {
-        if (selectedName === "") {
-            toast.error("Please select an exercise");
-            return;
-        }
+    // const handleSave = async () => {
+    //     if (selectedName === "") {
+    //         toast.error("Please select an exercise");
+    //         return;
+    //     }
 
-        const id = exerciseID;
-        const exerciseData = { id, repTypeValue, intensityValue, reps, intensityData, repsWithTimeAndRepRange, intensityDataWithRPERange, setTypes };
-        const newExercise: TProgramCreatorExercise = await addExerciseToProgramCreatorExerciseConverter(exerciseData as TAddExercise);
+    //     const id = exerciseID;
+    //     const exerciseData = { id, repTypeValue, intensityValue, reps, intensityData, repsWithTimeAndRepRange, intensityDataWithRPERange, setTypes };
+    //     const newExercise: TProgramCreatorExercise = await addExerciseToProgramCreatorExerciseConverter(exerciseData as TAddExercise);
 
-        if (isEditExercise) {
-            handleEditExercise({isOpen: false, weekOrder: addExerciseDialog.weekOrder, dayOrder: addExerciseDialog.dayOrder, exerciseIndex: addExerciseDialog.exerciseIndex ,editExercise: convertProgramCreatorExerciseToAddExercise(newExercise)});
-        } else {
-            handleAddExercise(addExerciseDialog.weekOrder, addExerciseDialog.dayOrder, newExercise);
-        }
+    //     if (isEditExercise) {
+    //         handleEditExercise({isOpen: false, weekOrder: addExerciseDialog.weekOrder, dayOrder: addExerciseDialog.dayOrder, exerciseIndex: addExerciseDialog.exerciseIndex ,editExercise: convertProgramCreatorExerciseToAddExercise(newExercise)});
+    //     } else {
+    //         handleAddExercise(addExerciseDialog.weekOrder, addExerciseDialog.dayOrder, newExercise);
+    //     }
 
-        handleOpenAddExerciseDialog({ weekOrder: 0, dayOrder: 0, isOpen: false});
-    };
+    //     handleOpenAddExerciseDialog({ weekOrder: 0, dayOrder: 0, isOpen: false});
+    // };
 
     const deleteSet = (index: number) => {
         if (reps) {
@@ -215,26 +206,26 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
         }
     };
 
-    useEffect(() => {
-        const getExercise = async () => {
-            const exercise = await getExerciseFromLocalStorageByID(addExerciseDialog?.editExercise?.id);
-            setExerciseID(addExerciseDialog?.editExercise?.id);
-            setRepsWithTimeAndRepRange(addExerciseDialog?.editExercise?.repsWithTimeAndRepRange ?? [[8,12],[8,12],[8,12],[8,12]]);
-            setIntensityDataWithRPERange(addExerciseDialog?.editExercise?.intensityDataWithRPERange ?? [[9,10],[9,10],[9,10],[9,10]]);
-            setRepTypeValue(addExerciseDialog?.editExercise?.repTypeValue ?? rep_types[0].value);
-            setIntensityData(addExerciseDialog?.editExercise?.intensityData ?? [9,9,9,9]);
-            setReps(addExerciseDialog?.editExercise?.reps ?? [8,8,8,8]);
-            setIntensityValue(addExerciseDialog?.editExercise?.intensityValue ?? intensities[0].value);
-            if (exercise) {
-                setSelectedName(exercise[`name_english`]);
-                setSelectedGifID(exercise?.gif_id);
-            }
-        };
-        if (isEditExercise) {
-            setIsEditing(false);
-            getExercise();
-        }
-    }, [isEditExercise, addExerciseDialog.editExercise?.id, addExerciseDialog.editExercise?.intensityData, addExerciseDialog.editExercise?.intensityDataWithRPERange, addExerciseDialog.editExercise?.intensityValue, addExerciseDialog.editExercise?.repTypeValue, addExerciseDialog.editExercise?.reps, addExerciseDialog.editExercise?.repsWithTimeAndRepRange]);
+    // useEffect(() => {
+    //     const getExercise = async () => {
+    //         const exercise = await getExerciseFromLocalStorageByID(addExerciseDialog?.editExercise?.id);
+    //         setExerciseID(addExerciseDialog?.editExercise?.id);
+    //         setRepsWithTimeAndRepRange(addExerciseDialog?.editExercise?.repsWithTimeAndRepRange ?? [[8,12],[8,12],[8,12],[8,12]]);
+    //         setIntensityDataWithRPERange(addExerciseDialog?.editExercise?.intensityDataWithRPERange ?? [[9,10],[9,10],[9,10],[9,10]]);
+    //         setRepTypeValue(addExerciseDialog?.editExercise?.repTypeValue ?? rep_types[0].value);
+    //         setIntensityData(addExerciseDialog?.editExercise?.intensityData ?? [9,9,9,9]);
+    //         setReps(addExerciseDialog?.editExercise?.reps ?? [8,8,8,8]);
+    //         setIntensityValue(addExerciseDialog?.editExercise?.intensityValue ?? intensities[0].value);
+    //         if (exercise) {
+    //             setSelectedName(exercise[`name_english`]);
+    //             setSelectedGifID(exercise?.gif_id);
+    //         }
+    //     };
+    //     if (isEditExercise) {
+    //         setIsEditing(false);
+    //         getExercise();
+    //     }
+    // }, [isEditExercise, addExerciseDialog.editExercise?.id, addExerciseDialog.editExercise?.intensityData, addExerciseDialog.editExercise?.intensityDataWithRPERange, addExerciseDialog.editExercise?.intensityValue, addExerciseDialog.editExercise?.repTypeValue, addExerciseDialog.editExercise?.reps, addExerciseDialog.editExercise?.repsWithTimeAndRepRange]);
 
     return (
         <Drawer open={ addExerciseDialog.isOpen } onOpenChange={ () => handleOpenAddExerciseDialog({ weekOrder: 0, dayOrder: 0, isOpen: false} ) }>
@@ -246,7 +237,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                     Add Exercise to Week {addExerciseDialog.weekOrder + 1} Day {addExerciseDialog.dayOrder}
                 </DrawerTitle>
                 <div className={ "modal-content__centered" }>
-                    { exercises &&
+                    {/* { exercises &&
                         <ExerciseSearchBar
                             title={ "Exercise" }
                             items={ exercises }
@@ -256,7 +247,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                             isEditing={ isEditing }
                             handleIsEditing={ handleIsEditing }
                         />
-                    }
+                    } */}
                     <div className="mt-4">
 
                         <div className="flex flex-row justify-center gap-2 items-center w-full pb-4">
@@ -503,13 +494,13 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
                         </Button>
                     </span>
                     <span className="w-full flex items-center justify-center">
-                        <Button
+                        {/* <Button
                             onClick={ () => handleSave() }
                             variant="ghost"
                             className="bg-lightSecondary text-white hover:bg-lightSecondary w-full h-12"
                         >
                             {isEditExercise ? "Edit" : "Add"}
-                        </Button>
+                        </Button> */}
                     </span>
                 </DrawerFooter>
             </DrawerContent>

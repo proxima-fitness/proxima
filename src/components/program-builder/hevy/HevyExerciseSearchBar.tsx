@@ -101,6 +101,7 @@ export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
                 <HevyExerciseGif
                     thumbnailOrImage="thmb"
                     name={ item.title }
+                    gif_id={ item?.gif_id }
                     resolution="180"
                     file_type="jpg"
                 />
@@ -173,6 +174,7 @@ export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
                         <center><h2 className="flex flex-row gap-2 items-center justify-center cursor-pointer">{ selectedExercise?.title }<EditIcon className="w-4 h-4" /></h2></center>
                     <HevyExerciseGif
                         name={ selectedExercise?.title ?? "" }
+                        gif_id={ selectedExercise?.gif_id }
                         thumbnailOrImage={ "img" }
                         resolution={ "360" }
                         file_type={ "gif" }

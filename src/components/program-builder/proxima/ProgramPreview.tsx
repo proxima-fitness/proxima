@@ -56,7 +56,7 @@ export const ProgramPreview: React.FC<IProps> = (props) => {
                                                 <div className="flex flex-row gap-4 max-w-[50%]">
                                                     <div className="text-lightSecondary font-bold">{exerciseIndex + 1}</div>
                                                     <div>
-                                                        <div className="font-third font-normal text-sm dark:text-extraLightGray">{ exercise?.exercises?.[`name_english`] }</div>
+                                                        <div className="font-third font-normal text-sm dark:text-extraLightGray">{ exercise?.hevy_exercise_templates?.title }</div>
                                                     </div>
                                                     <div></div>
                                                 </div>

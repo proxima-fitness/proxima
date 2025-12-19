@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { lightColours } from "@/assets/constants";
 import { getInitials } from "@/utils/general/helpers";
-import { useExerciseGif, useExerciseGifId } from "@/api/hooks";
+import { useExerciseGif } from "@/api/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface IProps {
   thumbnailOrImage: "img" | "thmb";
   name: string;
+  gif_id: string | undefined;
   resolution: "180" | "360";
   file_type: "jpg" | "gif";
   index?: number;
@@ -14,10 +15,9 @@ interface IProps {
 
 export const HevyExerciseGif: React.FC<IProps> = (props) => {
 
-    const { thumbnailOrImage, name, resolution, file_type } = props;
+    const { thumbnailOrImage, name, gif_id, resolution, file_type } = props;
 
-    const { data: gifId } = useExerciseGifId(name);
-    const { data: exerciseGif } = useExerciseGif(gifId, resolution, file_type, name ?? "");
+    const { data: exerciseGif } = useExerciseGif(gif_id, resolution, file_type, name ?? "");
 
     const [loaded, setLoaded] = useState(false);
 

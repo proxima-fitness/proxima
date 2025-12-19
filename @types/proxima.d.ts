@@ -13,7 +13,7 @@ type TProgramCreatorDay = {
 
 type TProgramCreatorExercise = {
     notes?: string;
-    exercise?: TExercise;
+    hevy_exercise_templates?: THevyExerciseTemplate;
     sets?: number;
     sets_type?: ("normal" | "warmup" | "dropset" | "failure")[];
     reps_type?: TRepsTypes;
@@ -36,16 +36,6 @@ type TRepsTypes = {
     time_range?: number[][];
 }
 
-type TExercise = {
-    id: string;
-    gif_id?: string;
-    instructions?: string[];
-    name_english: string;
-    name_espanol: string;
-    name_portugues: string;
-    name_francais: string;
-    normalized_name_english: string;
-}
 
 type TProgramPage = {
     program: TProgram[];
@@ -112,7 +102,7 @@ type TSavedWorkoutExercise = {
     rpe_range?: number[][];
     percent_rm?: number[];
     weights?: number[];
-    exercises?: TExercise;
+    hevy_exercise_templates?: THevyExerciseTemplate;
 }
 
 type TAPIProgramWorkoutExercises = {
@@ -126,7 +116,7 @@ type TAPIProgramWorkoutExercises = {
     time_range?: number[][];
     amrap?: string[];
     percent_rm?: number[];
-    exercises: TExercise;
+    hevy_exercise_templates?: THevyExerciseTemplate;
 };
 
 type TCard = {

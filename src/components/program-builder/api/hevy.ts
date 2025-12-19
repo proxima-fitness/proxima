@@ -1,7 +1,6 @@
 // File for endpoints to the Hevy App Public API
 import { v4 as uuidv4 } from "uuid";
-import { getExerciseIdForHevyExercise, getMaxFolderId } from "@/components/program-builder/utils";
-import { getExercises } from "../../../api/exercises";
+import { getMaxFolderId } from "@/components/program-builder/utils";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/api";
 
@@ -200,8 +199,11 @@ export const getHevyRoutines = async (user: User | undefined | null, apiKey: str
 // GET Hevy EXERCISES STORED BY PROXIMA FITNESS (CACHES IN LOCALSTORAGE)
 export const getHevyExercises = async () => {
     const cacheKey = 'hevy-exercises';
+    const isServer = typeof window === 'undefined';
+
 
     try {
+        if (!isServer) {
             const cachedData = localStorage.getItem(cacheKey);
 
             if (cachedData && cachedData.length > 0) {
@@ -213,9 +215,10 @@ export const getHevyExercises = async () => {
                 }
             }
 
+        }
             const { data: hevyExercises, error: hevyExercisesError } = await supabase
                 .from('hevy_exercise_templates')
-                .select('id, title, type, primary_muscle_group, secondary_muscle_groups, is_custom, equipment, normalized_title')
+                .select('id, title, type, primary_muscle_group, secondary_muscle_groups, is_custom, equipment, normalized_title,gif_id,instructions')
                 .order("title", { ascending: true});
 
             if (hevyExercisesError) {
@@ -223,20 +226,12 @@ export const getHevyExercises = async () => {
                 return [];
             }
 
-            // TODO: USE THIS CODE IN THE PROXIMA APP TO FETCH CUSTOM EXERCISES FOR USERS
-            // const requests = Array.from({ length: 5}, (_, i) => {
-            //     const page = i + 1;
-            //     return defaultFetch<THevyExerciseTemplates>(`https://api.hevyapp.com/v1/exercise_templates?page=${page}&pageSize=100`, hevyApiKey);
-            // });
-
-            // const results = await Promise.all(requests);
-            // const exercises = results.flatMap((res) => res.exercise_templates);
-
-            localStorage.setItem(
-                cacheKey,
-                JSON.stringify({ exercises: hevyExercises, timestamp: new Date().getTime() }),
-            );
-
+            if (!isServer) {
+                localStorage.setItem(
+                    cacheKey,
+                    JSON.stringify({ exercises: hevyExercises, timestamp: new Date().getTime() }),
+                );
+            }
             return hevyExercises as THevyExerciseTemplate[];
     } catch (error) {
         console.error('Error fetching hevy exercises:', error);
@@ -289,8 +284,6 @@ export const postHevyRoutineProgram = async (id: string, hevyRoutines: THevyRout
             }
         }
 
-        const proximaExercises = await getExercises();
-
         // STEP 3: Process exercises in batches
         const allWorkoutUploads: { [key: string]: unknown }[] = [];
 
@@ -303,7 +296,7 @@ export const postHevyRoutineProgram = async (id: string, hevyRoutines: THevyRout
                 if (!schedule) continue;
 
                 const exercisePromises = (routine.exercises ?? []).map(async (exercise) => {
-                    const exerciseId = await getExerciseIdForHevyExercise(exercise.title, proximaExercises);
+                    const exerciseId = exercise.exercise_template_id;
                     if (!exerciseId) return null;
 
                     const reps = exercise.sets?.map((set) => set.reps) ?? null;

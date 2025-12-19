@@ -16,19 +16,19 @@ const options = {
 };
 
 interface IProps {
-  items: TExercise[];
+  items: THevyExerciseTemplate[];
   selectedName: string;
   selectedGifID: string | undefined;
   isEditing: boolean;
-  handleSelected: (item: TExercise) => Promise<void>;
+  handleSelected: (item: THevyExerciseTemplate) => Promise<void>;
   handleIsEditing: (isEditing: boolean) => void;
   title?: string;
   onSelectionCancel?: () => void;
 }
 
 interface IRowData {
-  filteredItems: TExercise[];
-  selectItem: (item: TExercise) => void;
+  filteredItems: THevyExerciseTemplate[];
+  selectItem: (item: THevyExerciseTemplate) => void;
 //   language: "english" | "espanol" | "portugues" | "francais";
 }
 
@@ -50,7 +50,7 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
         handleSelected,
     } = props;
 
-    const [filteredItems, setFilteredItems] = useState<TExercise[]>(items);
+    const [filteredItems, setFilteredItems] = useState<THevyExerciseTemplate[]>(items);
 
     // const [ selectedMuscleGroup, setSelectedMuscleGroup ] = useState<string>("All Muscle Groups");
     // const [ selectedEquipment, setSelectedEquipment ] = useState<string>("All Equipment");
@@ -62,11 +62,11 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
         let filteredItems = items;
         // if (appliedMuscleGroupFilter && appliedMuscleGroupFilter !== "All Muscle Groups") {
         //     const MuscleGroupsKey = MuscleGroups.find(pair => pair.value === appliedMuscleGroupFilter);
-        //     if (MuscleGroupsKey) filteredItems = filteredItems.filter((item: TExercise) => item.muscleGroups.includes(MuscleGroupsKey.label));
+        //     if (MuscleGroupsKey) filteredItems = filteredItems.filter((item: THevyExerciseTemplate) => item.primary_muscle_group.includes(MuscleGroupsKey.label));
         // }
         // if (appliedEquipmentFilter && appliedEquipmentFilter !== "All Equipment")  {
         //     const EquipmentKey = Equipment.find(pair => pair.value === appliedEquipmentFilter);
-        //     if (EquipmentKey) filteredItems = filteredItems.filter((item: TExercise) => item.equipment.includes(EquipmentKey?.label));
+        //     if (EquipmentKey) filteredItems = filteredItems.filter((item: THevyExerciseTemplate) => item.equipment.includes(EquipmentKey?.label));
         // }
         if (appliedSearchBarFilter && appliedSearchBarFilter.trim() !== "") {
             const normalizedQuery = appliedSearchBarFilter.toLowerCase();
@@ -80,7 +80,7 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
         items,
     ]);
 
-    const selectItem = (item: TExercise) => {
+    const selectItem = (item: THevyExerciseTemplate) => {
         handleSelected(item);
     };
 
@@ -97,13 +97,13 @@ export const ExerciseSearchBar: React.FC<IProps> = (props) => {
                 >
                     <ExerciseGif
                         thumbnailOrImage="thmb"
-                        name={ item.name_english }
+                        name={ item.title }
                         gif_id={ item?.gif_id }
                         resolution="180"
                         file_type="jpg"
                     />
                     <div className="w-full flex flex-col justify-center items-start h-14">
-                        {item.name_english}
+                        {item.title}
                         {/* <span style={ { fontSize: '10px' } }>
                                 { item.muscleGroups.map((muscleGroup, index) => (
                                     <span key={ index }>

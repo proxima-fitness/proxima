@@ -34,3 +34,5 @@ dist
 
 .env.local
 .env.production
+# Sentry Config File
+.env.sentry-build-plugin

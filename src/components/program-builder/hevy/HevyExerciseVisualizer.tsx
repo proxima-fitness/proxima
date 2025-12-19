@@ -1,6 +1,7 @@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { LinkIcon, NotebookTextIcon, TimerIcon, Trash2Icon, XIcon } from "lucide-react";
 import { HevyExerciseGif } from "./HevyExerciseGif";
+import { useHevyExercises } from "@/api/hooks";
 
 interface IProps {
     day: THevyRoutine;
@@ -26,6 +27,8 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
         toggleExerciseSelection,
         removeFromSuperset,
     } = props;
+
+    const { data: hevyExercises } = useHevyExercises();
 
     const editHandler = (e: React.MouseEvent<HTMLButtonElement>, folder_id: number, dayOrder: number, i: number, exercise: THevyExercise) => {
         if (editMode) {
@@ -89,7 +92,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                                 }}
                                             />
                                         </div>
-                                        <HevyExerciseGif thumbnailOrImage={"thmb"} name={exercise.title} resolution={"180"} file_type={'jpg'} />
+                                        <HevyExerciseGif thumbnailOrImage={"thmb"} name={exercise.title} gif_id={hevyExercises?.find((hevyExercise: THevyExerciseTemplate) => hevyExercise.id === exercise.exercise_template_id)?.gif_id ?? ""} resolution={"180"} file_type={'jpg'} />
                                         <div className="flex flex-row items-center justify-between">
                                             <div className="dark:text-offWhite">
                                                 {exercise.title}

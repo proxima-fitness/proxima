@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 import { AddExerciseDialog } from "./AddExerciseDialog";
 import { IOption } from "@/components/ui/multi-select";
 import { GenerateDayDialog } from "./GenerateDayDialog";
-import { useExercises } from "@/api/hooks";
 import { Column } from "./Column";
-import { addExerciseToProgramCreatorExerciseConverter, aiRequest, appendWeekOrderAndIdToProgramDays, buildProgram, deFlattenProgram, flattenProgram, programCreatorDayToScheduleWorkouts, reorder } from "../utils";
+import { addExerciseToProgramCreatorExerciseConverter, aiRequest, appendWeekOrderAndIdToProgramDays, deFlattenProgram, flattenProgram, programCreatorDayToScheduleWorkouts, reorder } from "../utils";
 import { toast } from "sonner";
 import { AddNoteDialog } from "./AddNoteDialog";
 import { ExerciseNotesDialog } from "./ExerciseNotesDialog";
@@ -25,8 +24,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
         request,
     } = props;
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { data: exercises }  = useExercises();
+     
     const { isPreview } = usePreview();
 
     const [addExerciseDialog, setAddExerciseDialog] = useState<TDialog>({weekOrder: 0, dayOrder: 0, isOpen: false});
@@ -140,21 +138,21 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
             return;
         }
 
-        const parsedResponse = JSON.parse(response);
-        const newDayRoutine = await buildProgram(parsedResponse, 1, 1);
+        // const parsedResponse = JSON.parse(response);
+        // const newDayRoutine = await buildProgram(parsedResponse, 1, 1);
 
-        if (!newDayRoutine || !Array.isArray(newDayRoutine) || newDayRoutine.length === 0) {
-            toast.error("Generated routine is invalid");
-            return;
-        }
+        // if (!newDayRoutine || !Array.isArray(newDayRoutine) || newDayRoutine.length === 0) {
+        //     toast.error("Generated routine is invalid");
+        //     return;
+        // }
 
-        setFlattenedProgramDays((prevDays) =>
-            prevDays.map((day) =>
-                day.weekOrder === String(weekOrder) && day.order === String(dayOrder)
-                    ? { day_title: newDayRoutine[0][0].day_title ?? day.day_title, exercises: newDayRoutine[0][0].exercises ?? day.exercises, order: String(dayOrder), weekOrder: String(weekOrder), notes: "", id: day.id }
-                    : day
-            )
-        );
+        // setFlattenedProgramDays((prevDays) =>
+        //     prevDays.map((day) =>
+        //         day.weekOrder === String(weekOrder) && day.order === String(dayOrder)
+        //             ? { day_title: newDayRoutine[0][0].day_title ?? day.day_title, exercises: newDayRoutine[0][0].exercises ?? day.exercises, order: String(dayOrder), weekOrder: String(weekOrder), notes: "", id: day.id }
+        //             : day
+        //     )
+        // );
     };
 
 

@@ -167,7 +167,7 @@ export const PdfRenderer: React.FC<IProps> = (props) => {
                                                         <Text style={ { color: "#33BBCF" } }>{exerciseIndex + 1}</Text>
                                                     </View>
                                                     <View style={ { paddingRight: "2px" } }>
-                                                        <Text>{ exercise?.exercises?.[`name_english`] }</Text>
+                                                        <Text>{ exercise?.hevy_exercise_templates?.title }</Text>
                                                     </View>
                                                     <View>
                                                     </View>

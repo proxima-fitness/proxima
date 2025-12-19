@@ -71,6 +71,8 @@ type THevyExerciseTemplate = {
     is_custom: boolean; // indicating whether the exercise is a custom exercise
     equipment: string; // The exercise equipment
     normalized_title: string; // The normalized title of the exercise
+    gif_id: string; // The GIF ID of the exercise
+    instructions: string[]; // The instructions of the exercise
 }
 
 type THevyDialog = {

@@ -1,6 +1,6 @@
 import { supabaseKey, supabaseUrl } from ".";
-import { emptyHevyRoutineProgram, emptyProximaProgram } from "@/assets/constants";
-import { aiRequest, buildFallbackProgram, buildProgram, buildPrompt } from "@/components/program-builder/utils";
+import { emptyHevyRoutineProgram } from "@/assets/constants";
+import { aiRequest, buildPrompt } from "@/components/program-builder/utils";
 import { buildHevyFallbackProgram, buildHevyProgram } from "@/components/program-builder/utils/build-hevy-program";
 import { toast } from "sonner";
 
@@ -185,16 +185,12 @@ export const postNsfwImageDetection = async (imageUrl: string) => {
 };
 
 
-export const buildAiProgram = async (request: TTextToJsonRequest, isHevy: boolean) => {
+export const buildAiProgram = async (request: TTextToJsonRequest) => {
 
     try {
 
         if (request.empty === "true") {
-            if (isHevy) {
-                return emptyHevyRoutineProgram;
-            } else {
-                return emptyProximaProgram;
-            }
+            return emptyHevyRoutineProgram;
         }
 
         const promptBase = buildPrompt(
@@ -219,37 +215,23 @@ export const buildAiProgram = async (request: TTextToJsonRequest, isHevy: boolea
 
         if (response !== undefined) {
             const parsedResponse = JSON.parse(response);
-            let program;
             toast.success("Proxima AI Routines Generated. Building Program Structure...");
 
-            if (isHevy) {
-                program = await buildHevyProgram(parsedResponse, Number(request.programLength), Number(request.daysPerWeek), request.excludeAreas, request.excludeEquipment, request.healthIssues);
-            } else {
-                program = await buildProgram(parsedResponse, Number(request.programLength), Number(request.daysPerWeek));
-            }
-
+            const program = await buildHevyProgram(parsedResponse, Number(request.programLength), Number(request.daysPerWeek), request.excludeAreas, request.excludeEquipment, request.healthIssues);
             return program;
         }
 
         if (response === undefined) {
             toast.warning("Some AI requests failed. Fallback workouts have been added in their place.");
             console.error("Error, response was undefined when generating routines");
-            if (isHevy) {
-                return await buildHevyFallbackProgram(Number(request.programLength), numberOfDaysPerWeek);
+            return await buildHevyFallbackProgram(Number(request.programLength), numberOfDaysPerWeek);
 
-            } else {
-                return await buildFallbackProgram(Number(request.programLength), numberOfDaysPerWeek);
-            }
+
         }
 
     } catch (error: unknown) {
         toast.warning("Some AI requests failed. Fallback workouts have been added in their place.");
         console.error("Error generating routines", error);
-        if (isHevy) {
-            return await buildHevyFallbackProgram(Number(request.programLength), Number(request.daysPerWeek));
-
-        } else {
-            return await buildFallbackProgram(Number(request.programLength), Number(request.daysPerWeek));
-        }
+        return await buildHevyFallbackProgram(Number(request.programLength), Number(request.daysPerWeek));
     }
 };

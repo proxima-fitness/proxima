@@ -1,8 +1,5 @@
 import { postTextToJson } from "@/api/edge-functions";
-import { getExercises } from "@/api/exercises";
 import { toast } from "sonner";
-import { replaceTextToJsonExercises } from "./scoring-system";
-import { fallbackCBLSA, fallbackOneDay, fallbackPPL, fallbackSevenDay, fallbackUpperLower } from "@/assets/constants";
 
 export const buildPrompt = (
     search: string, // goes into AI Prompt
@@ -115,345 +112,345 @@ export const aiRequest = async (numberOfDaysPerWeek: number, promptBase: string)
 
 };
 
-export const buildProgram = async (parsedResponse: TTextToJsonResponse, programLength: number, numberOfDaysPerWeek: number ) => {
+// export const buildProgram = async (parsedResponse: TTextToJsonResponse, programLength: number, numberOfDaysPerWeek: number ) => {
 
-    if (programLength === 0) {
-        programLength = 12;
-    }
+//     if (programLength === 0) {
+//         programLength = 12;
+//     }
 
-    if (numberOfDaysPerWeek === 0) {
-        numberOfDaysPerWeek = 6;
-    }
+//     if (numberOfDaysPerWeek === 0) {
+//         numberOfDaysPerWeek = 6;
+//     }
 
-    if (numberOfDaysPerWeek === 1) {
-        // 1 Day per week program
-        const one_day = await buildOneDayRoutine(parsedResponse, programLength);
-        return one_day;
-    } else if (numberOfDaysPerWeek === 2 || numberOfDaysPerWeek === 4) {
-        // An Upper / Lower Program
-        const ul = await buildUpperLowerRoutine(parsedResponse, programLength, numberOfDaysPerWeek);
-        return ul;
+//     if (numberOfDaysPerWeek === 1) {
+//         // 1 Day per week program
+//         const one_day = await buildOneDayRoutine(parsedResponse, programLength);
+//         return one_day;
+//     } else if (numberOfDaysPerWeek === 2 || numberOfDaysPerWeek === 4) {
+//         // An Upper / Lower Program
+//         const ul = await buildUpperLowerRoutine(parsedResponse, programLength, numberOfDaysPerWeek);
+//         return ul;
 
-    } else if (numberOfDaysPerWeek === 3 || numberOfDaysPerWeek === 6) {
-        // A Push / Pull / Leg Program
-        const ppl = await buildPushPullLegsRoutine(parsedResponse, programLength, numberOfDaysPerWeek);
-        return ppl;
-    } else if (numberOfDaysPerWeek === 5) {
-        // Chest / Back / Legs / Shoulders / Arms
-        const five_day = await buildFiveDayRoutine(parsedResponse, programLength);
-        return five_day;
+//     } else if (numberOfDaysPerWeek === 3 || numberOfDaysPerWeek === 6) {
+//         // A Push / Pull / Leg Program
+//         const ppl = await buildPushPullLegsRoutine(parsedResponse, programLength, numberOfDaysPerWeek);
+//         return ppl;
+//     } else if (numberOfDaysPerWeek === 5) {
+//         // Chest / Back / Legs / Shoulders / Arms
+//         const five_day = await buildFiveDayRoutine(parsedResponse, programLength);
+//         return five_day;
 
-    } else if (numberOfDaysPerWeek === 7) {
-        // Push / Pull / Legs / Cardio
-        const seven_day = await buildHevySevenDayRoutine(parsedResponse, programLength);
-        return seven_day;
-    }
-};
+//     } else if (numberOfDaysPerWeek === 7) {
+//         // Push / Pull / Legs / Cardio
+//         const seven_day = await buildHevySevenDayRoutine(parsedResponse, programLength);
+//         return seven_day;
+//     }
+// };
 
 // Returns a default program if the AI failed
-export const buildFallbackProgram = async (programLength: number, numberOfDaysPerWeek: number) => {
+// export const buildFallbackProgram = async (programLength: number, numberOfDaysPerWeek: number) => {
 
-    if (programLength === 0) {
-        programLength = 12;
-    }
+//     if (programLength === 0) {
+//         programLength = 12;
+//     }
 
-    if (numberOfDaysPerWeek === 0) {
-        numberOfDaysPerWeek = 6;
-    }
+//     if (numberOfDaysPerWeek === 0) {
+//         numberOfDaysPerWeek = 6;
+//     }
 
-    if (numberOfDaysPerWeek === 1) {
-        // 1 Day per week program
-        const one_day = await buildOneDayRoutine(fallbackOneDay, programLength);
-        return one_day;
-    } else if (numberOfDaysPerWeek === 2 || numberOfDaysPerWeek === 4) {
-        // An Upper / Lower Program
-        const ul = await buildUpperLowerRoutine(fallbackUpperLower, programLength, numberOfDaysPerWeek);
-        return ul;
+//     if (numberOfDaysPerWeek === 1) {
+//         // 1 Day per week program
+//         const one_day = await buildOneDayRoutine(fallbackOneDay, programLength);
+//         return one_day;
+//     } else if (numberOfDaysPerWeek === 2 || numberOfDaysPerWeek === 4) {
+//         // An Upper / Lower Program
+//         const ul = await buildUpperLowerRoutine(fallbackUpperLower, programLength, numberOfDaysPerWeek);
+//         return ul;
 
-    } else if (numberOfDaysPerWeek === 3 || numberOfDaysPerWeek === 6) {
-        // A Push / Pull / Leg Program
-        const ppl = await buildPushPullLegsRoutine(fallbackPPL, programLength, numberOfDaysPerWeek);
-        return ppl;
+//     } else if (numberOfDaysPerWeek === 3 || numberOfDaysPerWeek === 6) {
+//         // A Push / Pull / Leg Program
+//         const ppl = await buildPushPullLegsRoutine(fallbackPPL, programLength, numberOfDaysPerWeek);
+//         return ppl;
 
-    } else if (numberOfDaysPerWeek === 5) {
-        // Chest / Back / Legs / Shoulders / Arms
-        const five_day = await buildFiveDayRoutine(fallbackCBLSA, programLength);
-        return five_day;
+//     } else if (numberOfDaysPerWeek === 5) {
+//         // Chest / Back / Legs / Shoulders / Arms
+//         const five_day = await buildFiveDayRoutine(fallbackCBLSA, programLength);
+//         return five_day;
 
-    } else if (numberOfDaysPerWeek === 7) {
-        // Push / Pull / Legs / Cardio
-        const seven_day = await buildHevySevenDayRoutine(fallbackSevenDay, programLength);
-        return seven_day;
-    }
+//     } else if (numberOfDaysPerWeek === 7) {
+//         // Push / Pull / Legs / Cardio
+//         const seven_day = await buildHevySevenDayRoutine(fallbackSevenDay, programLength);
+//         return seven_day;
+//     }
 
-};
+// };
 
 // Turns one workout returned from AI into a program
-export const buildOneDayRoutine = async (split: TTextToJsonResponse, programLength: number): Promise<TProgramCreatorDay[][]> => {
+// export const buildOneDayRoutine = async (split: TTextToJsonResponse, programLength: number): Promise<TProgramCreatorDay[][]> => {
 
-    const program: TProgramCreatorDay[][] = [];
-    const exercises = await getExercises();
+//     const program: TProgramCreatorDay[][] = [];
+//     const exercises = await getExercises();
 
-    for (let week = 0; week < programLength; week++) {
-        const weeks = [
-            {
-                day_title: split?.workout_days[0]?.day_title ?? fallbackOneDay.workout_days[0].day_title,
-                order: "1",
-                exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackOneDay.workout_days[0].exercises, exercises),
-                notes: "",
-            },
+//     for (let week = 0; week < programLength; week++) {
+//         const weeks = [
+//             {
+//                 day_title: split?.workout_days[0]?.day_title ?? fallbackOneDay.workout_days[0].day_title,
+//                 order: "1",
+//                 exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackOneDay.workout_days[0].exercises, exercises),
+//                 notes: "",
+//             },
 
-        ];
+//         ];
 
-        program.push([...weeks]);
-    }
+//         program.push([...weeks]);
+//     }
 
-    return program;
-};
+//     return program;
+// };
 
-export const buildPushPullLegsRoutine = async (split: TTextToJsonResponse, programLength: number, numberOfDaysPerWeek: number): Promise<TProgramCreatorDay[][]> => {
+// export const buildPushPullLegsRoutine = async (split: TTextToJsonResponse, programLength: number, numberOfDaysPerWeek: number): Promise<TProgramCreatorDay[][]> => {
 
-    const program: TProgramCreatorDay[][] = [];
-    const exercises = await getExercises();
+//     const program: TProgramCreatorDay[][] = [];
+//     const exercises = await getExercises();
 
-    if (numberOfDaysPerWeek === 3) {
-        for (let week = 0; week < programLength; week++) {
-            const weeks = [
-                {
-                    day_title: split?.workout_days[0]?.day_title ?? fallbackPPL.workout_days[0].day_title,
-                    order: "1",
-                    notes: "",
-                    exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackPPL.workout_days[0].exercises, exercises),
-                },
-                {
-                    day_title: split?.workout_days[1]?.day_title ?? fallbackPPL.workout_days[1].day_title,
-                    order: "2",
-                    notes: "",
-                    exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackPPL.workout_days[1].exercises, exercises),
-                },
-                {
-                    day_title: split?.workout_days[2]?.day_title ?? fallbackPPL.workout_days[2].day_title,
-                    order: "3",
-                    notes: "",
-                    exercises: replaceTextToJsonExercises(split?.workout_days[2]?.exercises ?? fallbackPPL.workout_days[2].exercises, exercises),
-                },
-            ];
+//     if (numberOfDaysPerWeek === 3) {
+//         for (let week = 0; week < programLength; week++) {
+//             const weeks = [
+//                 {
+//                     day_title: split?.workout_days[0]?.day_title ?? fallbackPPL.workout_days[0].day_title,
+//                     order: "1",
+//                     notes: "",
+//                     exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackPPL.workout_days[0].exercises, exercises),
+//                 },
+//                 {
+//                     day_title: split?.workout_days[1]?.day_title ?? fallbackPPL.workout_days[1].day_title,
+//                     order: "2",
+//                     notes: "",
+//                     exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackPPL.workout_days[1].exercises, exercises),
+//                 },
+//                 {
+//                     day_title: split?.workout_days[2]?.day_title ?? fallbackPPL.workout_days[2].day_title,
+//                     order: "3",
+//                     notes: "",
+//                     exercises: replaceTextToJsonExercises(split?.workout_days[2]?.exercises ?? fallbackPPL.workout_days[2].exercises, exercises),
+//                 },
+//             ];
 
-          program.push([...weeks]);
-        }
-    } else if (numberOfDaysPerWeek === 6) {
-        for (let week = 0; week < programLength; week++) {
-            const weeks = [
-                {
-                    day_title: split?.workout_days[0]?.day_title ?? fallbackPPL.workout_days[0].day_title,
-                    order: "1",
-                    notes: "",
-                    exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackPPL.workout_days[0].exercises, exercises),
-                },
-                {
-                    day_title: split?.workout_days[1]?.day_title ?? fallbackPPL.workout_days[1].day_title,
-                    order: "2",
-                    notes: "",
-                    exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackPPL.workout_days[1].exercises, exercises),
-                },
-                {
-                    day_title: split?.workout_days[2]?.day_title ?? fallbackPPL.workout_days[2].day_title,
-                    order: "3",
-                    notes: "",
-                    exercises: replaceTextToJsonExercises(split?.workout_days[3]?.exercises ?? fallbackPPL.workout_days[2].exercises, exercises),
-                },
-                {
-                    day_title: split?.workout_days[0]?.day_title ?? fallbackPPL.workout_days[0].day_title,
-                    order: "4",
-                    notes: "",
-                    exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackPPL.workout_days[0].exercises, exercises),
-                },
-                {
-                    day_title: split?.workout_days[1]?.day_title ?? fallbackPPL.workout_days[1].day_title,
-                    order: "5",
-                    notes: "",
-                    exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackPPL.workout_days[1].exercises, exercises),
-                },
-                {
-                    day_title: split?.workout_days[2]?.day_title ?? fallbackPPL.workout_days[2].day_title,
-                    order: "6",
-                    notes: "",
-                    exercises: replaceTextToJsonExercises(split?.workout_days[2]?.exercises ?? fallbackPPL.workout_days[2].exercises, exercises),
-                },
-            ];
+//           program.push([...weeks]);
+//         }
+//     } else if (numberOfDaysPerWeek === 6) {
+//         for (let week = 0; week < programLength; week++) {
+//             const weeks = [
+//                 {
+//                     day_title: split?.workout_days[0]?.day_title ?? fallbackPPL.workout_days[0].day_title,
+//                     order: "1",
+//                     notes: "",
+//                     exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackPPL.workout_days[0].exercises, exercises),
+//                 },
+//                 {
+//                     day_title: split?.workout_days[1]?.day_title ?? fallbackPPL.workout_days[1].day_title,
+//                     order: "2",
+//                     notes: "",
+//                     exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackPPL.workout_days[1].exercises, exercises),
+//                 },
+//                 {
+//                     day_title: split?.workout_days[2]?.day_title ?? fallbackPPL.workout_days[2].day_title,
+//                     order: "3",
+//                     notes: "",
+//                     exercises: replaceTextToJsonExercises(split?.workout_days[3]?.exercises ?? fallbackPPL.workout_days[2].exercises, exercises),
+//                 },
+//                 {
+//                     day_title: split?.workout_days[0]?.day_title ?? fallbackPPL.workout_days[0].day_title,
+//                     order: "4",
+//                     notes: "",
+//                     exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackPPL.workout_days[0].exercises, exercises),
+//                 },
+//                 {
+//                     day_title: split?.workout_days[1]?.day_title ?? fallbackPPL.workout_days[1].day_title,
+//                     order: "5",
+//                     notes: "",
+//                     exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackPPL.workout_days[1].exercises, exercises),
+//                 },
+//                 {
+//                     day_title: split?.workout_days[2]?.day_title ?? fallbackPPL.workout_days[2].day_title,
+//                     order: "6",
+//                     notes: "",
+//                     exercises: replaceTextToJsonExercises(split?.workout_days[2]?.exercises ?? fallbackPPL.workout_days[2].exercises, exercises),
+//                 },
+//             ];
 
-          program.push([...weeks]);
-        }
+//           program.push([...weeks]);
+//         }
 
-    }
+//     }
 
-    return program;
-};
+//     return program;
+// };
 
-export const buildUpperLowerRoutine = async (split: TTextToJsonResponse, programLength: number, numberOfDaysPerWeek: number): Promise<TProgramCreatorDay[][]> => {
+// export const buildUpperLowerRoutine = async (split: TTextToJsonResponse, programLength: number, numberOfDaysPerWeek: number): Promise<TProgramCreatorDay[][]> => {
 
-    const program: TProgramCreatorDay[][] = [];
-    const exercises = await getExercises();
-
-
-    if (numberOfDaysPerWeek === 2) {
-        for (let week = 0; week < programLength; week++) {
-            const weeks = [
-                {
-                    day_title: split?.workout_days[0]?.day_title ?? fallbackUpperLower.workout_days[0].day_title,
-                    order: "1",
-                    notes: "",
-                    exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackUpperLower.workout_days[0].exercises, exercises),
-                },
-                {
-                    day_title: split?.workout_days[1]?.day_title ?? fallbackUpperLower.workout_days[1].day_title,
-                    order: "2",
-                    notes: "",
-                    exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackUpperLower.workout_days[1].exercises, exercises),
-                },
-
-            ];
-
-          program.push([...weeks]);
-        }
-    } else if (numberOfDaysPerWeek === 4) {
-        for (let week = 0; week < programLength; week++) {
-            const weeks = [
-                {
-                    day_title: split?.workout_days[0]?.day_title ?? fallbackUpperLower.workout_days[0].day_title,
-                    order: "1",
-                    notes: "",
-                    exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackUpperLower.workout_days[0].exercises, exercises),
-                },
-                {
-                    day_title: split?.workout_days[1]?.day_title ?? fallbackUpperLower.workout_days[1].day_title,
-                    order: "2",
-                    notes: "",
-                    exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackUpperLower.workout_days[1].exercises, exercises),
-                },
-                {
-                    day_title: split?.workout_days[0]?.day_title ?? fallbackUpperLower.workout_days[0].day_title,
-                    order: "3",
-                    notes: "",
-                    exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackUpperLower.workout_days[0].exercises, exercises),
-                },
-                {
-                    day_title: split?.workout_days[1]?.day_title ?? fallbackUpperLower.workout_days[1].day_title,
-                    order: "4",
-                    notes: "",
-                    exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackUpperLower.workout_days[1].exercises, exercises),
-                },
-
-            ];
-
-          program.push([...weeks]);
-        }
-    }
-
-    return program;
-};
-
-export const buildFiveDayRoutine = async (split: TTextToJsonResponse, programLength: number): Promise<TProgramCreatorDay[][]> => {
-
-    const program: TProgramCreatorDay[][] = [];
-    const exercises = await getExercises();
+//     const program: TProgramCreatorDay[][] = [];
+//     const exercises = await getExercises();
 
 
-    for (let week = 0; week < programLength; week++) {
-        const weeks = [
-            {
-                day_title: split?.workout_days[0]?.day_title ?? fallbackCBLSA.workout_days[0].day_title,
-                order: "1",
-                notes: "",
-                exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackCBLSA.workout_days[0].exercises, exercises),
-            },
-            {
-                day_title: split?.workout_days[1]?.day_title ?? fallbackCBLSA.workout_days[1].day_title,
-                order: "2",
-                notes: "",
-                exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackCBLSA.workout_days[1].exercises, exercises),
-            },
-            {
-                day_title: split?.workout_days[2]?.day_title ?? fallbackCBLSA.workout_days[2].day_title,
-                order: "3",
-                notes: "",
-                exercises: replaceTextToJsonExercises(split?.workout_days[2]?.exercises ?? fallbackCBLSA.workout_days[2].exercises, exercises),
-            },
-            {
-                day_title: split?.workout_days[3]?.day_title ?? fallbackCBLSA.workout_days[3].day_title,
-                order: "4",
-                notes: "",
-                exercises: replaceTextToJsonExercises(split?.workout_days[3]?.exercises ?? fallbackCBLSA.workout_days[3].exercises, exercises),
-            },
-            {
-                day_title: split?.workout_days[4]?.day_title ?? fallbackCBLSA.workout_days[4].day_title,
-                order: "5",
-                notes: "",
-                exercises: replaceTextToJsonExercises(split?.workout_days[4]?.exercises ?? fallbackCBLSA.workout_days[4].exercises, exercises),
-            },
-        ];
+//     if (numberOfDaysPerWeek === 2) {
+//         for (let week = 0; week < programLength; week++) {
+//             const weeks = [
+//                 {
+//                     day_title: split?.workout_days[0]?.day_title ?? fallbackUpperLower.workout_days[0].day_title,
+//                     order: "1",
+//                     notes: "",
+//                     exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackUpperLower.workout_days[0].exercises, exercises),
+//                 },
+//                 {
+//                     day_title: split?.workout_days[1]?.day_title ?? fallbackUpperLower.workout_days[1].day_title,
+//                     order: "2",
+//                     notes: "",
+//                     exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackUpperLower.workout_days[1].exercises, exercises),
+//                 },
 
-        program.push([...weeks]);
-    }
+//             ];
 
-    return program;
-};
+//           program.push([...weeks]);
+//         }
+//     } else if (numberOfDaysPerWeek === 4) {
+//         for (let week = 0; week < programLength; week++) {
+//             const weeks = [
+//                 {
+//                     day_title: split?.workout_days[0]?.day_title ?? fallbackUpperLower.workout_days[0].day_title,
+//                     order: "1",
+//                     notes: "",
+//                     exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackUpperLower.workout_days[0].exercises, exercises),
+//                 },
+//                 {
+//                     day_title: split?.workout_days[1]?.day_title ?? fallbackUpperLower.workout_days[1].day_title,
+//                     order: "2",
+//                     notes: "",
+//                     exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackUpperLower.workout_days[1].exercises, exercises),
+//                 },
+//                 {
+//                     day_title: split?.workout_days[0]?.day_title ?? fallbackUpperLower.workout_days[0].day_title,
+//                     order: "3",
+//                     notes: "",
+//                     exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackUpperLower.workout_days[0].exercises, exercises),
+//                 },
+//                 {
+//                     day_title: split?.workout_days[1]?.day_title ?? fallbackUpperLower.workout_days[1].day_title,
+//                     order: "4",
+//                     notes: "",
+//                     exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackUpperLower.workout_days[1].exercises, exercises),
+//                 },
 
-export const buildHevySevenDayRoutine = async (split: TTextToJsonResponse, programLength: number): Promise<TProgramCreatorDay[][]> => {
+//             ];
 
-    const program: TProgramCreatorDay[][] = [];
-    const exercises = await getExercises();
+//           program.push([...weeks]);
+//         }
+//     }
+
+//     return program;
+// };
+
+// export const buildFiveDayRoutine = async (split: TTextToJsonResponse, programLength: number): Promise<TProgramCreatorDay[][]> => {
+
+//     const program: TProgramCreatorDay[][] = [];
+//     const exercises = await getExercises();
 
 
-    for (let week = 0; week < programLength; week++) {
-        const weeks = [
-            {
-                day_title: split?.workout_days[0]?.day_title ?? fallbackSevenDay.workout_days[0].day_title,
-                order: "1",
-                notes: "",
-                exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackSevenDay.workout_days[0].exercises, exercises),
-            },
-            {
-                day_title: split?.workout_days[1]?.day_title ?? fallbackSevenDay.workout_days[1].day_title,
-                order: "2",
-                notes: "",
-                exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackSevenDay.workout_days[1].exercises, exercises),
-            },
-            {
-                day_title: split?.workout_days[2]?.day_title ?? fallbackSevenDay.workout_days[2].day_title,
-                order: "3",
-                notes: "",
-                exercises: replaceTextToJsonExercises(split?.workout_days[2]?.exercises ?? fallbackSevenDay.workout_days[2].exercises, exercises),
-            },
-            {
-                day_title: split?.workout_days[0]?.day_title ?? fallbackSevenDay.workout_days[0].day_title,
-                order: "4",
-                notes: "",
-                exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackSevenDay.workout_days[0].exercises, exercises),
-            },
-            {
-                day_title: split?.workout_days[1]?.day_title ?? fallbackSevenDay.workout_days[1].day_title,
-                order: "5",
-                notes: "",
-                exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackSevenDay.workout_days[1].exercises, exercises),
-            },
-            {
-                day_title: split?.workout_days[2]?.day_title ?? fallbackSevenDay.workout_days[2].day_title,
-                order: "6",
-                notes: "",
-                exercises: replaceTextToJsonExercises(split?.workout_days[2]?.exercises ?? fallbackSevenDay.workout_days[2].exercises, exercises),
-            },
-            {
-                day_title: split?.workout_days[3]?.day_title ?? fallbackSevenDay.workout_days[3].day_title,
-                order: "7",
-                notes: "",
-                exercises: replaceTextToJsonExercises(split?.workout_days[3]?.exercises ?? fallbackSevenDay.workout_days[3].exercises, exercises),
-            },
-        ];
+//     for (let week = 0; week < programLength; week++) {
+//         const weeks = [
+//             {
+//                 day_title: split?.workout_days[0]?.day_title ?? fallbackCBLSA.workout_days[0].day_title,
+//                 order: "1",
+//                 notes: "",
+//                 exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackCBLSA.workout_days[0].exercises, exercises),
+//             },
+//             {
+//                 day_title: split?.workout_days[1]?.day_title ?? fallbackCBLSA.workout_days[1].day_title,
+//                 order: "2",
+//                 notes: "",
+//                 exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackCBLSA.workout_days[1].exercises, exercises),
+//             },
+//             {
+//                 day_title: split?.workout_days[2]?.day_title ?? fallbackCBLSA.workout_days[2].day_title,
+//                 order: "3",
+//                 notes: "",
+//                 exercises: replaceTextToJsonExercises(split?.workout_days[2]?.exercises ?? fallbackCBLSA.workout_days[2].exercises, exercises),
+//             },
+//             {
+//                 day_title: split?.workout_days[3]?.day_title ?? fallbackCBLSA.workout_days[3].day_title,
+//                 order: "4",
+//                 notes: "",
+//                 exercises: replaceTextToJsonExercises(split?.workout_days[3]?.exercises ?? fallbackCBLSA.workout_days[3].exercises, exercises),
+//             },
+//             {
+//                 day_title: split?.workout_days[4]?.day_title ?? fallbackCBLSA.workout_days[4].day_title,
+//                 order: "5",
+//                 notes: "",
+//                 exercises: replaceTextToJsonExercises(split?.workout_days[4]?.exercises ?? fallbackCBLSA.workout_days[4].exercises, exercises),
+//             },
+//         ];
 
-        program.push([...weeks]);
-    }
+//         program.push([...weeks]);
+//     }
 
-    return program;
-};
+//     return program;
+// };
+
+// export const buildHevySevenDayRoutine = async (split: TTextToJsonResponse, programLength: number): Promise<TProgramCreatorDay[][]> => {
+
+//     const program: TProgramCreatorDay[][] = [];
+//     const exercises = await getExercises();
+
+
+//     for (let week = 0; week < programLength; week++) {
+//         const weeks = [
+//             {
+//                 day_title: split?.workout_days[0]?.day_title ?? fallbackSevenDay.workout_days[0].day_title,
+//                 order: "1",
+//                 notes: "",
+//                 exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackSevenDay.workout_days[0].exercises, exercises),
+//             },
+//             {
+//                 day_title: split?.workout_days[1]?.day_title ?? fallbackSevenDay.workout_days[1].day_title,
+//                 order: "2",
+//                 notes: "",
+//                 exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackSevenDay.workout_days[1].exercises, exercises),
+//             },
+//             {
+//                 day_title: split?.workout_days[2]?.day_title ?? fallbackSevenDay.workout_days[2].day_title,
+//                 order: "3",
+//                 notes: "",
+//                 exercises: replaceTextToJsonExercises(split?.workout_days[2]?.exercises ?? fallbackSevenDay.workout_days[2].exercises, exercises),
+//             },
+//             {
+//                 day_title: split?.workout_days[0]?.day_title ?? fallbackSevenDay.workout_days[0].day_title,
+//                 order: "4",
+//                 notes: "",
+//                 exercises: replaceTextToJsonExercises(split?.workout_days[0]?.exercises ?? fallbackSevenDay.workout_days[0].exercises, exercises),
+//             },
+//             {
+//                 day_title: split?.workout_days[1]?.day_title ?? fallbackSevenDay.workout_days[1].day_title,
+//                 order: "5",
+//                 notes: "",
+//                 exercises: replaceTextToJsonExercises(split?.workout_days[1]?.exercises ?? fallbackSevenDay.workout_days[1].exercises, exercises),
+//             },
+//             {
+//                 day_title: split?.workout_days[2]?.day_title ?? fallbackSevenDay.workout_days[2].day_title,
+//                 order: "6",
+//                 notes: "",
+//                 exercises: replaceTextToJsonExercises(split?.workout_days[2]?.exercises ?? fallbackSevenDay.workout_days[2].exercises, exercises),
+//             },
+//             {
+//                 day_title: split?.workout_days[3]?.day_title ?? fallbackSevenDay.workout_days[3].day_title,
+//                 order: "7",
+//                 notes: "",
+//                 exercises: replaceTextToJsonExercises(split?.workout_days[3]?.exercises ?? fallbackSevenDay.workout_days[3].exercises, exercises),
+//             },
+//         ];
+
+//         program.push([...weeks]);
+//     }
+
+//     return program;
+// };
 

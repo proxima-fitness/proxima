@@ -1,4 +1,4 @@
-import { amrapAsNumber, getExerciseFromLocalStorageByID, getHevyExerciseFromLocalStorageByID } from "@/utils/general/helpers";
+import { amrapAsNumber, getHevyExerciseFromLocalStorageByID } from "@/utils/general/helpers";
 
 // Used to add week order and Id to program days for the drag and drop
 export const appendWeekOrderAndIdToProgramDays = (program: TProgramCreatorDay[][]) => {
@@ -169,7 +169,7 @@ export const programCreatorDayToScheduleWorkouts = (program: TProgramCreatorDay[
                 rpe_range: exercise.intensity?.rpe_range,
                 percent_rm: exercise.intensity?.percent_rm,
                 weights: exercise.intensity?.weights,
-                exercises: exercise.exercise,
+                exercises: exercise.hevy_exercise_templates,
             })),
         })),
     );
@@ -208,7 +208,7 @@ export const addExerciseToProgramCreatorExerciseConverter = async (addExercise: 
     }
 
     return {
-        exercise: await getExerciseFromLocalStorageByID(addExercise.id),
+        exercise: await getHevyExerciseFromLocalStorageByID(addExercise.id),
         sets: sets,
         sets_type: addExercise.setTypes,
         reps_type: { [ addExercise.repTypeValue ] : addReps },
@@ -306,11 +306,11 @@ export const convertHevyExerciseIntoHevyAddExercise = async (exercise: THevyExer
 // Converts TProgramCreatorExercise into TAddExercise type
 export const convertProgramCreatorExerciseToAddExercise = (programCreatorExercise: TProgramCreatorExercise): TAddExercise => {
 
-    if (!programCreatorExercise.exercise) {
+    if (!programCreatorExercise.hevy_exercise_templates) {
       throw new Error("Missing exercise data.");
     }
 
-    const { exercise, reps_type, intensity, sets_type } = programCreatorExercise;
+    const { hevy_exercise_templates, reps_type, intensity, sets_type } = programCreatorExercise;
 
     // Determine repTypeValue
     const repTypeValue =
@@ -347,7 +347,7 @@ export const convertProgramCreatorExerciseToAddExercise = (programCreatorExercis
 
     // Return the mapped TAddExercise object
     return {
-      id: exercise.id,
+      id: hevy_exercise_templates.id,
       repTypeValue,
       intensityValue,
       setTypes: sets_type ?? ["normal","normal","normal","normal"],

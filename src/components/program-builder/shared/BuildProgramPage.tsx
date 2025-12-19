@@ -5,7 +5,6 @@ import { BuildProgramSkeleton } from "./BuildProgramSkeleton";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { useBuildAiProgram, useSharedProgram } from "@/api/hooks";
 import { useEffect, useMemo, useState } from "react";
-import { ProximaProgram } from "../proxima/ProximaProgram";
 import { usePreview } from "@/contexts/PreviewContext";
 import { HevyRoutine } from "../hevy/HevyRoutine";
 
@@ -20,7 +19,7 @@ export const BuildProgramPage: React.FC = () => {
     const edit = searchParams.get('edit') ?? '';
     const resume = searchParams.get('resume') ?? '';
     const [resumeHevyProgram, setResumeHevyProgram] = useState<THevyRoutine[]>();
-    const [resumeProximaProgram, setResumeProximaProgram] = useState<TProgramCreatorDay[][]>();
+    // const [resumeProximaProgram, setResumeProximaProgram] = useState<TProgramCreatorDay[][]>();
 
     useEffect(() => {
         if (edit === 'true') {
@@ -30,17 +29,16 @@ export const BuildProgramPage: React.FC = () => {
         }
 
         if (resume === 'true') {
-            if (isHevy) {
-                const program = localStorage.getItem('hevy-program-in-progress');
-                if (program) {
-                    setResumeHevyProgram(JSON.parse(program));
-                }
-            } else {
-                const program = localStorage.getItem('program-in-progress');
-                if (program) {
-                    setResumeProximaProgram(JSON.parse(program));
-                }
+            const program = localStorage.getItem('hevy-program-in-progress');
+            if (program) {
+                setResumeHevyProgram(JSON.parse(program));
             }
+            // } else {
+            //     const program = localStorage.getItem('program-in-progress');
+            //     if (program) {
+            //         setResumeProximaProgram(JSON.parse(program));
+            //     }
+            // }
         }
     }, [edit, setIsPreview, resume, isHevy]);
 
@@ -116,7 +114,7 @@ export const BuildProgramPage: React.FC = () => {
         }
     }, [search]);
 
-    const { data: program, isLoading: loadingProgram } =  useBuildAiProgram(request, isHevy, shareId, resume);
+    const { data: program, isLoading: loadingProgram } =  useBuildAiProgram(request, shareId, resume);
     const { data: sharedProgram, isLoading: loadingSharedProgram } = useSharedProgram(shareId, resume);
 
     if ((loadingProgram || program === undefined) && (loadingSharedProgram || sharedProgram === undefined) && resume === "") {
@@ -126,46 +124,44 @@ export const BuildProgramPage: React.FC = () => {
     }
 
     if (resume === "true") {
-        if (isHevy) {
-            if (!resumeHevyProgram) {
-                return (
-                    <BuildProgramSkeleton />
-                );
-            }
-            if (resumeHevyProgram) {
-                return (
-                    <div className="sm:pl-8">
-                        <HevyRoutine request={ request } program={ resumeHevyProgram as THevyRoutine[] } />
-                    </div>
-                );
-            }
-        } else if (!isHevy) {
-            if (!resumeProximaProgram) {
-                return (
-                    <BuildProgramSkeleton />
-                );
-            }
-            if (resumeProximaProgram) {
-                return (
-                    <div className="sm:pl-8">
-                        <ProximaProgram request={ request } program={ resumeProximaProgram as TProgramCreatorDay[][] } />
-                    </div>
-                );
-            }
+        if (!resumeHevyProgram) {
+            return (
+                <BuildProgramSkeleton />
+            );
         }
+        if (resumeHevyProgram) {
+            return (
+                <div className="sm:pl-8">
+                    <HevyRoutine request={ request } program={ resumeHevyProgram as THevyRoutine[] } />
+                </div>
+            );
+        }
+        // } else if (!isHevy) {
+        //     if (!resumeProximaProgram) {
+        //         return (
+        //             <BuildProgramSkeleton />
+        //         );
+        //     }
+        //     if (resumeProximaProgram) {
+        //         return (
+        //             <div className="sm:pl-8">
+        //                 <ProximaProgram request={ request } program={ resumeProximaProgram as TProgramCreatorDay[][] } />
+        //             </div>
+        //         );
+        //     }
+        // }
     }
 
-    if (isHevy) {
-        return (
-            <div className="sm:pl-8">
-                <HevyRoutine request={ request } program={ shareId && shareId.length > 0 ? sharedProgram?.[0]?.hevy_routines as THevyRoutine[] : program as THevyRoutine[] } />
-            </div>
-        );
-    } else if (!isHevy) {
-        return (
-            <div className="sm:pl-8">
-                <ProximaProgram request={ request } program={ program as TProgramCreatorDay[][] } />
-            </div>
-        );
-    }
+    return (
+        <div className="sm:pl-8">
+            <HevyRoutine request={ request } program={ shareId && shareId.length > 0 ? sharedProgram?.[0]?.hevy_routines as THevyRoutine[] : program as THevyRoutine[] } />
+        </div>
+    );
+    // } else if (!isHevy) {
+    //     return (
+    //         <div className="sm:pl-8">
+    //             <ProximaProgram request={ request } program={ program as TProgramCreatorDay[][] } />
+    //         </div>
+    //     );
+    // }
 };

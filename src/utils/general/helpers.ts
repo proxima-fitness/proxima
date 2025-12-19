@@ -29,35 +29,6 @@ export const sortWorkouts = (scheduleWorkouts: TScheduleWorkouts[]) => {
     return sortedWorkoutsByWeek;
 };
 
-
-export const getExerciseFromLocalStorageByID = async (id?: string) => {
-    const cachedExercises = localStorage.getItem("existing-exercises");
-
-    if (!cachedExercises) {
-        return undefined;
-    }
-
-    if (cachedExercises && cachedExercises.length > 0) {
-        const { exercises } = JSON.parse(cachedExercises);
-        const exercise: TExercise | undefined = exercises?.find((exercise: TExercise) => exercise.id === id);
-        return exercise;
-    }
-};
-
-export const getExerciseFromLocalStorageByName = async (name_english: string) => {
-    const cachedExercises = localStorage.getItem("existing-exercises");
-
-    if (!cachedExercises) {
-        return undefined;
-    }
-
-    if (cachedExercises && cachedExercises.length > 0) {
-        const { exercises } = JSON.parse(cachedExercises);
-        const exercise: TExercise | undefined = exercises?.find((exercise: TExercise) => exercise.name_english === name_english);
-        return exercise;
-    }
-};
-
 export const getHevyExerciseFromLocalStorageByName = async (title: string) => {
     const cachedExercises = localStorage.getItem("hevy-exercises");
 
