@@ -154,7 +154,7 @@ export const BuildProgramPage: React.FC = () => {
 
     return (
         <div className="sm:pl-8">
-            <HevyRoutine request={ request } program={ shareId && shareId.length > 0 ? sharedProgram?.[0]?.hevy_routines as THevyRoutine[] : program as THevyRoutine[] } />
+            <HevyRoutine request={ request } program={ shareId && shareId.length > 0 ? (sharedProgram as THevyRoutine[]) : program as THevyRoutine[] } />
         </div>
     );
     // } else if (!isHevy) {

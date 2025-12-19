@@ -1,6 +1,7 @@
 import { User } from "@supabase/supabase-js";
 import { supabase } from ".";
 import { v4 as uuidv4 } from 'uuid';
+import { convertToHevyRoutine } from "@/components/program-builder/utils";
 
 // GET THE PROGRAMS DISPLAYED ON THE EXPLORE PAGE
 export const getExplorePagePrograms = async (filters?: TProgramFilters, limit?: number, offset?: number): Promise<TProgram[]> => {
@@ -211,17 +212,87 @@ export const getProgramByID = async (program_id: string) => {
     }
 };
 
-// GET A SHARED PROGRAM BY SHARE ID
-export const getSharedProgram = async (shareId: string) => {
-    try {
-        const { data, error } = await supabase.from('programs').select('hevy_routines').eq('id', shareId);
-        if (error) {
-            console.error('Error fetching shared program:', error);
-        } else if (data && data.length > 0 ) {
-            return data as unknown as TProgram[];
+
+export const sortWorkouts = (scheduleWorkouts: TScheduleWorkouts[]) => {
+    const workoutsByWeek = scheduleWorkouts.reduce<Record<number, TScheduleWorkouts[]>>((acc, workout) => {
+        const { nthWeek } = workout;
+        if (!acc[nthWeek]) {
+            acc[nthWeek] = [];
         }
+        acc[nthWeek].push(workout);
+        return acc;
+    }, {});
+
+    const sortedWorkoutsByWeek: TScheduleWorkouts[][] = Object.keys(workoutsByWeek)
+        .sort((a, b) => Number(a) - Number(b))
+        .map(week =>
+            workoutsByWeek[Number(week)].sort((a, b) => a.nthDay - b.nthDay),
+    );
+
+    return sortedWorkoutsByWeek;
+};
+
+
+// GET A SHARED PROGRAM BY SHARE ID
+export const getSharedProgram = async (shareId: string): Promise<THevyRoutine[] | undefined> => {
+    try {
+        const { data, error } = await supabase
+            .from('programs')
+            .select(`
+                id,
+                title,
+                schedule_workouts(
+                    nthDay,
+                    nthWeek,
+                    day_title,
+                    program_workout_exercises(
+                        reps,
+                        weights,
+                        reps_max,
+                        reps_range,
+                        rpe,
+                        rpe_range,
+                        time_taken,
+                        time_range,
+                        amrap,
+                        percent_rm,
+                        hevy_exercise_templates (
+                            id,
+                            title,
+                            type,
+                            primary_muscle_group,
+                            secondary_muscle_groups,
+                            is_custom,
+                            equipment,
+                            normalized_title,
+                            gif_id,
+                            instructions
+                        )
+                    )
+                )`,
+            )
+            .eq('id', shareId)
+            .order('nthWeek', { referencedTable: 'schedule_workouts', ascending: true })
+            .order('nthDay', { referencedTable: 'schedule_workouts', ascending: true });
+
+            if (error) {
+                console.error('Error fetching program details:', error);
+            } else if (data && data.length > 0 ) {
+                const programDetails = data as unknown as TProgramDetails[];
+                if (programDetails && programDetails[0]?.schedule_workouts) {
+                    // Sort schedule workouts by week and day
+                    const sortedWorkoutsByWeek = sortWorkouts(programDetails[0].schedule_workouts);
+
+                    // Convert schedule to Hevy routines
+                    const convertedRoutines = await convertToHevyRoutine(sortedWorkoutsByWeek);
+
+
+                    return convertedRoutines as unknown as THevyRoutine[];
+                }
+            }
     } catch (error: unknown) {
         console.error(`Error fetching shared program: ${error}`);
+        return [];
     }
 }
 

@@ -53,7 +53,6 @@ type TProgram = {
     difficulty: string[];
     user_id: string;
     thumbnail?: Blob;
-    hevy_routines?: THevyRoutine[];
     prompt?: string;
     saves: number;
 }

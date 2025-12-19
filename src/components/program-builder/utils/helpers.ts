@@ -75,3 +75,95 @@ export const inferDaysPerWeek = (text: string) => {
     return "";
 };
 
+/**
+ * Converts Proxima schedule workouts into Hevy routine format.
+ *
+ * Takes a 2D array of schedule workouts (organized by week and day) and converts
+ * them into Hevy routines. Each workout day becomes a separate routine, with
+ * exercises mapped to Hevy exercise templates. Routines are organized by week
+ * using folder IDs.
+ *
+ * @param scheduleWorkouts - A 2D array where each inner array represents a week,
+ *                           and each element in the week represents a workout day
+ * @returns A promise that resolves to an array of Hevy routines, where each routine
+ *          represents a workout day with its exercises, sets, and metadata
+ */
+export const convertToHevyRoutine = async (scheduleWorkouts: TScheduleWorkouts[][]): Promise<THevyRoutine[]> => {
+
+    const routines = await Promise.all(
+        scheduleWorkouts.flatMap((week, weekIndex) =>
+            week.map(async (day, dayIndex) => {
+
+                const exercises = await Promise.all(
+                    day.program_workout_exercises.map(async (exercise, exIndex) => ({
+                        index: exIndex,
+                        title: exercise.hevy_exercise_templates?.title || "Unknown Exercise",
+                        notes: "",
+                        rest_seconds: null,
+                        exercise_template_id: exercise.hevy_exercise_templates?.id || "",
+                        supersets_id: null,
+                        sets: generateHevySets(exercise),
+                    })),
+                );
+
+                return {
+                    id: "",
+                    title: day.day_title ? `${dayIndex + 1} - ${day.day_title}` : `Day ${dayIndex + 1}`,
+                    folder_id: weekIndex, // Assign week number as folder ID
+                    updated_at: new Date().toISOString(),
+                    created_at: new Date().toISOString(),
+                    notes: "",
+                    exercises,
+                    order: String(dayIndex + 1), // 1-indexed day order
+                };
+            }),
+        ),
+    );
+
+    for(let i = 0; i < routines.length; i++) {
+        routines[i].id = String(i + 1);
+    }
+
+    return routines;
+};
+
+/**
+ * Generates Hevy sets from a Proxima saved workout exercise.
+ *
+ * Converts Proxima exercise data (reps, weights, time, RPE, etc.) into Hevy set format.
+ * Handles various Proxima data formats including single values, ranges, and arrays.
+ * The number of sets is determined by the maximum length of any exercise property array.
+ *
+ * @param exercise - The Proxima saved workout exercise containing sets data
+ * @returns An array of Hevy sets with weight, reps, duration, RPE, and other metrics
+ */
+export const generateHevySets = (exercise: TSavedWorkoutExercise): THevySets[] => {
+    const sets: THevySets[] = [];
+    const maxSets = Math.max(
+        exercise?.reps?.length || 0,
+        exercise?.weights?.length || 0,
+        exercise?.time_taken?.length || 0,
+        exercise?.reps_range?.length || 0,
+        exercise?.reps_max?.length || 0,
+        exercise?.amrap?.length || 0,
+        exercise?.percent_rm?.length || 0,
+        exercise?.rpe?.length || 0,
+        exercise?.rpe_range?.length || 0,
+        exercise?.time_range?.length || 0,
+    );
+
+    for (let i = 0; i < maxSets; i++) {
+        sets.push({
+            index: i,
+            type: "normal", // Assuming all sets are normal
+            weight_kg: exercise.weights?.[i] || 0,
+            reps: exercise?.reps ? exercise.reps?.[i] || 0 : exercise?.reps_range && exercise?.reps_range?.[i]?.[1] || 0,
+            distance_meters: 0, // No distance tracking by default
+            duration_seconds: exercise?.time_taken ? exercise.time_taken?.[i] || 0 : exercise?.time_range && exercise.time_range?.[i]?.[1] || 0,
+            rpe: exercise?.rpe ? exercise.rpe?.[i] || 0 : exercise?.rpe_range && exercise.rpe_range?.[i]?.[1] || 0,
+            custom_metric: 0, // Placeholder for custom metric
+        });
+    }
+
+    return sets;
+};
