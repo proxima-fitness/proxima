@@ -28,7 +28,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
         removeFromSuperset,
     } = props;
 
-    const { data: hevyExercises } = useHevyExercises();
+    const { data: hevyExercises, isLoading } = useHevyExercises();
 
     const editHandler = (e: React.MouseEvent<HTMLButtonElement>, folder_id: number, dayOrder: number, i: number, exercise: THevyExercise) => {
         if (editMode) {
@@ -37,6 +37,11 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
         } else {
             handleEdit(folder_id, Number(day.order), i, exercise);
         }
+    }
+
+    // Wait for hevyExercises to load before rendering to ensure images display
+    if (isLoading || !hevyExercises) {
+        return <div></div>;
     }
 
     return (
@@ -92,7 +97,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                                 }}
                                             />
                                         </div>
-                                        <HevyExerciseGif thumbnailOrImage={"thmb"} name={exercise.title} gif_id={hevyExercises?.find((hevyExercise: THevyExerciseTemplate) => hevyExercise.id === exercise.exercise_template_id)?.gif_id ?? ""} resolution={"180"} file_type={'jpg'} />
+                                        <HevyExerciseGif thumbnailOrImage={"thmb"} name={exercise.title} gif_id={hevyExercises?.find((hevyExercise: THevyExerciseTemplate) => hevyExercise.id === exercise.exercise_template_id)?.gif_id} resolution={"180"} file_type={'jpg'} />
                                         <div className="flex flex-row items-center justify-between">
                                             <div className="dark:text-offWhite">
                                                 {exercise.title}
