@@ -244,9 +244,13 @@ export const postHevyRoutineProgram = async (id: string, hevyRoutines: THevyRout
     const BATCH_SIZE = 50; // Process exercises in batches of 50
 
     try {
+        // Ensure title defaults to "My AI Program" if missing, null, undefined, or empty string
+        const programTitle = request?.programTitle?.trim();
+        const title = programTitle && programTitle.length > 0 ? programTitle : "My AI Program";
+
         const programUploadObject = {
             id,
-            title: request?.programTitle ?? "My AI Program",
+            title,
             details: request?.search ?? "",
             program_length: weeks,
             workout_duration: request?.workoutDuration ? Number(request.workoutDuration) : null,
