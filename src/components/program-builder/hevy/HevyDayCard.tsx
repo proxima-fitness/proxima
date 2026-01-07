@@ -178,12 +178,12 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                 layoutId={ day.id }
                 draggable="true"
                 onDragStart={ (e: DragEvent) => handleDragStart(e, cardVal) }
-                className="cursor-grab rounded active:cursor-grabbing gap-4"
+                className="cursor-grab rounded active:cursor-grabbing gap-4 w-full max-w-full"
             >
                 <Card
                     tabIndex={ 0 }
                     onClick={ handleFocus }
-                    className={`border-[4px] border-gray-100 ${resolvedTheme === "dark" ? "border-extraDarkGray" : "border-gray-100 bg-lightGray"} dark:border-extraDarkGray focus:dark:border-lightSecondary focus:border-gray-300 w-[100%] group py-4 px-4 sm:min-w-[400px] sm:max-w-[400px] my-2`}>
+                    className={`border-[4px] border-gray-100 ${resolvedTheme === "dark" ? "border-extraDarkGray" : "border-gray-100 bg-lightGray"} dark:border-extraDarkGray focus:dark:border-lightSecondary focus:border-gray-300 w-full max-w-full group py-4 px-2 sm:px-4 sm:min-w-[400px] sm:max-w-[400px] my-2 box-border`}>
                     <div className="flex flex-row justify-between items-center">
                         <div className="font-main text-lg flex flex-row">
                             Day {day.order}
@@ -279,23 +279,23 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                         </div>
                     </div>
 
-                    <div className="text-xs flex flex-row justify-between mt-4 gap-4 border-t-2 border-b-2 py-2 border-gray-200 dark:text-offWhite dark:border-darkGray">
-                        <div className="flex flex-row gap-4 max-w-[50%]">
-                            <div>
+                    <div className="text-xs flex flex-row justify-between mt-4 gap-2 sm:gap-4 border-t-2 border-b-2 py-2 border-gray-200 dark:text-offWhite dark:border-darkGray overflow-hidden">
+                        <div className="flex flex-row gap-2 sm:gap-4 flex-shrink min-w-0">
+                            <div className="flex-shrink-0">
                                 #
                             </div>
-                            <div>
+                            <div className="min-w-0 truncate">
                                 Exercise
                             </div>
                         </div>
-                        <div className="flex flex-row justify-center items-center gap-4 max-w-[50%] w-[50%]">
-                            <div className="flex flex-row justify-end items-center min-w-[33%]">
+                        <div className="flex flex-row justify-center items-center gap-1 sm:gap-4 flex-shrink-0">
+                            <div className="flex flex-row justify-end items-center text-center min-w-[60px] sm:min-w-[33%]">
                                 Sets
                             </div>
-                            <div className="flex flex-row justify-center items-center min-w-[33%]">
+                            <div className="flex flex-row justify-center items-center text-center min-w-[60px] sm:min-w-[33%]">
                                 Reps
                             </div>
-                            <div className=" flex flex-row justify-start items-center min-w-[33%]">
+                            <div className="flex flex-row justify-start items-center text-center min-w-[60px] sm:min-w-[33%]">
                                 Intensity
                             </div>
                         </div>

@@ -131,7 +131,7 @@ export const BuildProgramPage: React.FC = () => {
         }
         if (resumeHevyProgram) {
             return (
-                <div className="sm:pl-8">
+                <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
                     <HevyRoutine request={ request } program={ resumeHevyProgram as THevyRoutine[] } />
                 </div>
             );
@@ -153,7 +153,7 @@ export const BuildProgramPage: React.FC = () => {
     }
 
     return (
-        <div className="sm:pl-8">
+        <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
             <HevyRoutine request={ request } program={ shareId && shareId.length > 0 ? (sharedProgram as THevyRoutine[]) : program as THevyRoutine[] } />
         </div>
     );

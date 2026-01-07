@@ -186,9 +186,9 @@ export const HevyColumn: React.FC<IProps> = (props) => {
     const filteredWeek = hevyProgram.filter((dy) => dy.folder_id === folder_id);
 
     return (
-        <div className="w-full flex flex-col sm:min-w-[400px] sm:max-w-[400px] items-center">
-            <div className="pt-2 px-4 flex flex-row flex-nowrap gap-2">
-                <div className="w-screen min-w-screen max-w-screen px-4 sm:px-2 sm:min-w-[400px] sm:max-w-[400px] h-[40px] flex flex-row justify-between items-center">
+        <div className="flex flex-col w-full sm:min-w-[400px] sm:max-w-[400px] items-center max-w-full max-sm:overflow-x-hidden">
+            <div className="pt-2 w-full sm:min-w-[400px] sm:max-w-[400px] max-w-full">
+                <div className="h-[40px] flex flex-row justify-between items-center px-2 sm:px-4">
                     <div className="text-md dark:text-offWhite">
                         { title }
                     </div>
@@ -214,7 +214,7 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                 onDrop={ handleDragEnd }
                 onDragOver={ handleDragOver }
                 onDragLeave={ handleDragLeave }
-                className={ `h-full w-full gap-4 transition-colors ${
+                className={ `h-full w-full max-w-full gap-4 transition-colors max-sm:overflow-x-hidden ${
                     active ?  "bg-gray-200 dark:bg-darkGray" : "bg-white dark:bg-darkGray"
                 }` }
             >

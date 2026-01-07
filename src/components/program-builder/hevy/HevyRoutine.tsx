@@ -17,6 +17,9 @@ import { Stepper } from "@/components/ui/stepper";
 import { programBuilderSteps } from "@/assets/constants";
 import { SetTypesLegend } from "../shared/SetTypesLegend";
 import { useUserContext } from "@/contexts/UserContext";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface IProps {
     program: THevyRoutine[];
@@ -406,6 +409,8 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
 
     const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>(appendOrderToHevyRoutines(program));
     const [focusedCardId, setFocusedCardId] = useState<string>("");
+    const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
+    const isMobile = useIsMobile();
     const numberOfWeeks = getNumberRoutineFolders(hevyProgram);
     const numberOfWeeksArr = Array.from({ length: numberOfWeeks }, (_, i) => i);
 
@@ -415,6 +420,18 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
             localStorage.setItem("hevy-request", JSON.stringify(request));
         }
     }, [hevyProgram, request]);
+
+    const handlePreviousWeek = () => {
+        if (currentWeekIndex > 0) {
+            setCurrentWeekIndex(currentWeekIndex - 1);
+        }
+    };
+
+    const handleNextWeek = () => {
+        if (currentWeekIndex < numberOfWeeks - 1) {
+            setCurrentWeekIndex(currentWeekIndex + 1);
+        }
+    };
 
     return (
         <>
@@ -436,34 +453,90 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                             <SetTypesLegend />
                         </div>
                     }
-                    <div className={`flex flex-row gap-4 h-[85vh] overflow-scroll w-full ${!user ? "border-t-4 border-lightGray" : ""}`}>
-                        { numberOfWeeksArr.map((_, index) => (
-                            <HevyColumn
-                                key={ `Week ${index + 1}` }
-                                title={ `Week ${index + 1}` }
-                                programLength={ numberOfWeeks }
-                                hevyProgram={ hevyProgram }
-                                folder_id={ index }
-                                setHevyProgram={ setHevyProgram }
-                                handleAddDay={ handleAddDay }
-                                handleDeleteDay={ handleDeleteDay }
-                                handleEditTitle={ handleEditTitle }
-                                handleIsEditExercise={ handleIsEditExercise }
-                                handleDuplicateWeek={ handleDuplicateWeek }
-                                handleDuplicateDay={ handleDuplicateDay }
-                                handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
-                                handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
-                                handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
-                                handleOpenAddExerciseNoteDialog={ handleOpenAddExerciseNoteDialog }
-                                handleDeleteExercise={ handleDeleteExercise }
-                                focusedCardId={ focusedCardId }
-                                setFocusedCardId={ setFocusedCardId }
-                                handleCreateSuperset={ handleCreateSuperset }
-                                handleRemoveFromSuperset={ handleRemoveFromSuperset }
-                                handleAddRoutineAsDay={ handleAddRoutineAsDay }
-                            />
-                        ) ) }
-                    </div>
+                    { isMobile ? (
+                        <div className="flex flex-col max-h-[85vh] w-full max-w-full overflow-hidden">
+                            <div className="flex flex-row items-center justify-between px-4 py-2 border-b flex-shrink-0 w-full max-w-full">
+                                <Button
+                                    onClick={ handlePreviousWeek }
+                                    disabled={ currentWeekIndex === 0 }
+                                    variant="ghost"
+                                    size="icon"
+                                    className={ `flex-shrink-0 ${currentWeekIndex === 0 ? "opacity-50 cursor-not-allowed" : ""}` }
+                                >
+                                    <ChevronLeft className="h-6 w-6" />
+                                </Button>
+                                <div className="text-lg font-semibold flex-shrink-0">
+                                    Week { currentWeekIndex + 1 }
+                                </div>
+                                <Button
+                                    onClick={ handleNextWeek }
+                                    disabled={ currentWeekIndex >= numberOfWeeks - 1 }
+                                    variant="ghost"
+                                    size="icon"
+                                    className={ `flex-shrink-0 ${currentWeekIndex >= numberOfWeeks - 1 ? "opacity-50 cursor-not-allowed" : ""}` }
+                                >
+                                    <ChevronRight className="h-6 w-6" />
+                                </Button>
+                            </div>
+                            <div className="overflow-y-auto overflow-x-hidden flex-1 w-full max-w-full">
+                                { numberOfWeeksArr[currentWeekIndex] !== undefined && (
+                                    <HevyColumn
+                                        key={ `Week ${currentWeekIndex + 1}` }
+                                        title={ `Week ${currentWeekIndex + 1}` }
+                                        programLength={ numberOfWeeks }
+                                        hevyProgram={ hevyProgram }
+                                        folder_id={ currentWeekIndex }
+                                        setHevyProgram={ setHevyProgram }
+                                        handleAddDay={ handleAddDay }
+                                        handleDeleteDay={ handleDeleteDay }
+                                        handleEditTitle={ handleEditTitle }
+                                        handleIsEditExercise={ handleIsEditExercise }
+                                        handleDuplicateWeek={ handleDuplicateWeek }
+                                        handleDuplicateDay={ handleDuplicateDay }
+                                        handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
+                                        handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
+                                        handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
+                                        handleOpenAddExerciseNoteDialog={ handleOpenAddExerciseNoteDialog }
+                                        handleDeleteExercise={ handleDeleteExercise }
+                                        focusedCardId={ focusedCardId }
+                                        setFocusedCardId={ setFocusedCardId }
+                                        handleCreateSuperset={ handleCreateSuperset }
+                                        handleRemoveFromSuperset={ handleRemoveFromSuperset }
+                                        handleAddRoutineAsDay={ handleAddRoutineAsDay }
+                                    />
+                                ) }
+                            </div>
+                        </div>
+                    ) : (
+                        <div className={`flex flex-row gap-4 h-[85vh] overflow-scroll w-full ${!user ? "border-t-4 border-lightGray" : ""}`}>
+                            { numberOfWeeksArr.map((_, index) => (
+                                <HevyColumn
+                                    key={ `Week ${index + 1}` }
+                                    title={ `Week ${index + 1}` }
+                                    programLength={ numberOfWeeks }
+                                    hevyProgram={ hevyProgram }
+                                    folder_id={ index }
+                                    setHevyProgram={ setHevyProgram }
+                                    handleAddDay={ handleAddDay }
+                                    handleDeleteDay={ handleDeleteDay }
+                                    handleEditTitle={ handleEditTitle }
+                                    handleIsEditExercise={ handleIsEditExercise }
+                                    handleDuplicateWeek={ handleDuplicateWeek }
+                                    handleDuplicateDay={ handleDuplicateDay }
+                                    handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
+                                    handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
+                                    handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
+                                    handleOpenAddExerciseNoteDialog={ handleOpenAddExerciseNoteDialog }
+                                    handleDeleteExercise={ handleDeleteExercise }
+                                    focusedCardId={ focusedCardId }
+                                    setFocusedCardId={ setFocusedCardId }
+                                    handleCreateSuperset={ handleCreateSuperset }
+                                    handleRemoveFromSuperset={ handleRemoveFromSuperset }
+                                    handleAddRoutineAsDay={ handleAddRoutineAsDay }
+                                />
+                            ) ) }
+                        </div>
+                    ) }
                     { addExerciseDialog.isOpen &&
                         <HevyAddExerciseDialog
                             addExerciseDialog={ addExerciseDialog }

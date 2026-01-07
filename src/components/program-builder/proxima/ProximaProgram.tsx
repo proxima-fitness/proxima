@@ -24,7 +24,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
         request,
     } = props;
 
-     
+
     const { isPreview } = usePreview();
 
     const [addExerciseDialog, setAddExerciseDialog] = useState<TDialog>({weekOrder: 0, dayOrder: 0, isOpen: false});
