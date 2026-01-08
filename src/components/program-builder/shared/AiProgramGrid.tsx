@@ -4,20 +4,24 @@ import { ArrowDownIcon, EditIcon, EyeIcon, SplitIcon, UsersIcon } from "lucide-r
 import Link from "next/link";
 import { quotes } from "public";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useProfilePictureByID, useUserFullName, useCommunityAiProgramsPaginated } from "@/api/hooks";
-import { memo, useMemo, useState } from "react";
+import { useCommunityAiProgramsPaginated, useUsersBatch } from "@/api/hooks";
+import { memo, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { lightColours } from "@/assets/constants";
 
-const ProgramItem: React.FC<{ item: TProgram }> = memo(({ item }) => {
+interface IProgramItemProps {
+    item: TProgram;
+    userData?: { fullName: string; profilePic: Blob | null };
+}
+
+const ProgramItem: React.FC<IProgramItemProps> = memo(({ item, userData }) => {
 
     const randomColour = useMemo(() => {
         return lightColours[Math.floor(Math.random() * lightColours.length)];
     }, []);
 
-
-    const { data: profilePic } = useProfilePictureByID(item.user_id);
-    const { data: fullName } = useUserFullName(item.user_id, "user");
+    const fullName = userData?.fullName || "Anonymous";
+    const profilePic = userData?.profilePic || null;
 
     // Get the first letter of the user's name for the avatar fallback
     const getInitial = () => {
@@ -93,12 +97,18 @@ ProgramItem.displayName = "ProgramItem";
 export const AiProgramGrid: React.FC = () => {
     const [offset, setOffset] = useState(0);
     const [allPrograms, setAllPrograms] = useState<TProgram[]>([]);
-    const pageSize = 20;
+    const pageSize = 9; // Reduced from 20 to 9 for faster initial load
 
     const { data: programs, isLoading } = useCommunityAiProgramsPaginated(pageSize, offset);
 
+    // Extract unique user IDs from all loaded programs
+    const userIds = Array.from(new Set(allPrograms.map(p => p.user_id).filter(Boolean)));
+
+    // Batch fetch user data for all programs (non-blocking)
+    const { data: usersBatchData } = useUsersBatch(userIds);
+
     // Update all programs when new data is fetched
-    useMemo(() => {
+    useEffect(() => {
         if (programs && programs.length > 0) {
             if (offset === 0) {
                 // First page, replace all programs
@@ -124,11 +134,32 @@ export const AiProgramGrid: React.FC = () => {
                     </span>
                 <span className="text-xs text-start px-8 pt-4">All programs shown in the community are voluntarily shared by users. The platform does not display any content without user consent.</span>
                 <div className="py-8 px-8">
-                    <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1">
-                        {allPrograms.map((item: TProgram) => (
-                            <ProgramItem key={item.id} item={item} />
-                        ))}
-                    </div>
+                    {isLoading && allPrograms.length === 0 ? (
+                        <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1">
+                            {Array.from({ length: pageSize }).map((_, index) => (
+                                <div key={index} className="flex flex-col gap-4">
+                                    <div className="bg-white dark:bg-darkGray h-[200px] rounded-lg shadow-lg animate-pulse" />
+                                    <div className="flex flex-row items-center gap-2">
+                                        <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
+                                        <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 animate-pulse rounded" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1">
+                            {allPrograms.map((item: TProgram) => {
+                                const userData = usersBatchData?.[item.user_id];
+                                return (
+                                    <ProgramItem
+                                        key={item.id}
+                                        item={item}
+                                        userData={userData}
+                                    />
+                                );
+                            })}
+                        </div>
+                    )}
 
                     <div className="flex justify-center mt-8">
                         <Button

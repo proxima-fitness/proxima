@@ -2,7 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getBlogById, getBlogs } from "./blog";
 import { getCommunityAiPrograms, getCommunityAiProgramsPaginated, getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID, getSharedProgram } from "./programs";
-import { getOpUserId, getUserFullName, getUserMetaData } from "./users";
+import { getOpUserId, getUserFullName, getUserMetaData, getUsersBatch } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getHevyApiKey, getHevyCustomExercises, getHevyExercises, getHevyPrograms, getHevyRoutines } from "../components/program-builder/api/hevy";
 import { buildAiProgram } from "./edge-functions";
@@ -135,6 +135,21 @@ export const useProfilePictureByID = (id: string) => {
         queryKey: ["profile-picture", id],
         queryFn: () => getProfilePicByID(id),
         enabled: !!id,
+    });
+};
+
+// FETCHES USER DATA FOR MULTIPLE USERS IN BATCH
+export const useUsersBatch = (userIds: string[]) => {
+    // Remove duplicates and filter out invalid IDs
+    const uniqueUserIds = Array.from(new Set(userIds.filter(id => id && id.length > 0)));
+    const sortedIds = uniqueUserIds.sort().join(',');
+
+    return useQuery({
+        queryKey: ["users-batch", sortedIds],
+        queryFn: () => getUsersBatch(uniqueUserIds),
+        enabled: uniqueUserIds.length > 0,
+        staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+        gcTime: 10 * 60 * 1000, // Garbage collect cache after 10 minutes
     });
 };
 
