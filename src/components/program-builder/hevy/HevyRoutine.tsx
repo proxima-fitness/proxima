@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {  useHevyExercises } from "@/api/hooks";
 import { HevyColumn } from "./HevyColumn";
 import { HevyAddExerciseDialog } from "./HevyAddExerciseDialog";
@@ -413,6 +413,9 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     const isMobile = useIsMobile();
     const numberOfWeeks = getNumberRoutineFolders(hevyProgram);
     const numberOfWeeksArr = Array.from({ length: numberOfWeeks }, (_, i) => i);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(true);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -420,6 +423,27 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
             localStorage.setItem("hevy-request", JSON.stringify(request));
         }
     }, [hevyProgram, request]);
+
+    // Update scroll button visibility based on scroll position
+    useEffect(() => {
+        const container = scrollContainerRef.current;
+        if (!container || isMobile) return;
+
+        const updateScrollButtons = () => {
+            const { scrollLeft, scrollWidth, clientWidth } = container;
+            setCanScrollLeft(scrollLeft > 0);
+            setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+        };
+
+        updateScrollButtons();
+        container.addEventListener('scroll', updateScrollButtons);
+        window.addEventListener('resize', updateScrollButtons);
+
+        return () => {
+            container.removeEventListener('scroll', updateScrollButtons);
+            window.removeEventListener('resize', updateScrollButtons);
+        };
+    }, [isMobile, numberOfWeeks]);
 
     const handlePreviousWeek = () => {
         if (currentWeekIndex > 0) {
@@ -430,6 +454,28 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     const handleNextWeek = () => {
         if (currentWeekIndex < numberOfWeeks - 1) {
             setCurrentWeekIndex(currentWeekIndex + 1);
+        }
+    };
+
+    const handleScrollLeft = () => {
+        if (scrollContainerRef.current) {
+            // Each week card is 400px wide + 16px gap (gap-4)
+            const scrollAmount = 416;
+            scrollContainerRef.current.scrollBy({
+                left: -scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    const handleScrollRight = () => {
+        if (scrollContainerRef.current) {
+            // Each week card is 400px wide + 16px gap (gap-4)
+            const scrollAmount = 416;
+            scrollContainerRef.current.scrollBy({
+                left: scrollAmount,
+                behavior: 'smooth'
+            });
         }
     };
 
@@ -508,33 +554,62 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                             </div>
                         </div>
                     ) : (
-                        <div className={`flex flex-row gap-4 h-[85vh] overflow-scroll w-full ${!user ? "border-t-4 border-lightGray" : ""}`}>
-                            { numberOfWeeksArr.map((_, index) => (
-                                <HevyColumn
-                                    key={ `Week ${index + 1}` }
-                                    title={ `Week ${index + 1}` }
-                                    programLength={ numberOfWeeks }
-                                    hevyProgram={ hevyProgram }
-                                    folder_id={ index }
-                                    setHevyProgram={ setHevyProgram }
-                                    handleAddDay={ handleAddDay }
-                                    handleDeleteDay={ handleDeleteDay }
-                                    handleEditTitle={ handleEditTitle }
-                                    handleIsEditExercise={ handleIsEditExercise }
-                                    handleDuplicateWeek={ handleDuplicateWeek }
-                                    handleDuplicateDay={ handleDuplicateDay }
-                                    handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
-                                    handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
-                                    handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
-                                    handleOpenAddExerciseNoteDialog={ handleOpenAddExerciseNoteDialog }
-                                    handleDeleteExercise={ handleDeleteExercise }
-                                    focusedCardId={ focusedCardId }
-                                    setFocusedCardId={ setFocusedCardId }
-                                    handleCreateSuperset={ handleCreateSuperset }
-                                    handleRemoveFromSuperset={ handleRemoveFromSuperset }
-                                    handleAddRoutineAsDay={ handleAddRoutineAsDay }
-                                />
-                            ) ) }
+                        <div className="relative w-full">
+                            <div
+                                ref={scrollContainerRef}
+                                className={`flex flex-row gap-4 h-[85vh] overflow-scroll w-full ${!user ? "border-t-4 border-lightGray" : ""}`}
+                            >
+                                { numberOfWeeksArr.map((_, index) => (
+                                    <HevyColumn
+                                        key={ `Week ${index + 1}` }
+                                        title={ `Week ${index + 1}` }
+                                        programLength={ numberOfWeeks }
+                                        hevyProgram={ hevyProgram }
+                                        folder_id={ index }
+                                        setHevyProgram={ setHevyProgram }
+                                        handleAddDay={ handleAddDay }
+                                        handleDeleteDay={ handleDeleteDay }
+                                        handleEditTitle={ handleEditTitle }
+                                        handleIsEditExercise={ handleIsEditExercise }
+                                        handleDuplicateWeek={ handleDuplicateWeek }
+                                        handleDuplicateDay={ handleDuplicateDay }
+                                        handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
+                                        handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
+                                        handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
+                                        handleOpenAddExerciseNoteDialog={ handleOpenAddExerciseNoteDialog }
+                                        handleDeleteExercise={ handleDeleteExercise }
+                                        focusedCardId={ focusedCardId }
+                                        setFocusedCardId={ setFocusedCardId }
+                                        handleCreateSuperset={ handleCreateSuperset }
+                                        handleRemoveFromSuperset={ handleRemoveFromSuperset }
+                                        handleAddRoutineAsDay={ handleAddRoutineAsDay }
+                                    />
+                                ) ) }
+                            </div>
+                            {/* Left Arrow Button */}
+                            {canScrollLeft && (
+                                <Button
+                                    onClick={handleScrollLeft}
+                                    variant="outline"
+                                    size="icon"
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white dark:bg-lightSecondary dark:hover:bg-lightSecondary shadow-lg border-2 h-12 w-12 rounded-full transition-opacity flex items-center justify-center p-0"
+                                    aria-label="Scroll left"
+                                >
+                                    <ChevronLeft className="h-6 w-6" />
+                                </Button>
+                            )}
+                            {/* Right Arrow Button */}
+                            {canScrollRight && (
+                                <Button
+                                    onClick={handleScrollRight}
+                                    variant="outline"
+                                    size="icon"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white dark:bg-lightSecondary dark:hover:bg-lightSecondary shadow-lg border-2 h-12 w-12 rounded-full transition-opacity flex items-center justify-center p-0"
+                                    aria-label="Scroll right"
+                                >
+                                    <ChevronRight className="h-6 w-6" />
+                                </Button>
+                            )}
                         </div>
                     ) }
                     { addExerciseDialog.isOpen &&
