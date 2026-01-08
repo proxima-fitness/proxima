@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, LogIn, PersonStanding, Search } from "lucide-react";
+import { Home, LogIn, PersonStanding, Search, HardDriveDownload } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -39,11 +39,11 @@ const items = [
     url: "/auth/login",
     icon: LogIn,
   },
-//   {
-//     title: "Download App",
-//     url: "/download",
-//     icon: HardDriveDownload,
-//   },
+  {
+    title: "Download App",
+    url: "/download",
+    icon: HardDriveDownload,
+  },
 ];
 
 export function AppSidebar() {

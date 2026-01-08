@@ -5824,10 +5824,10 @@ export const authenticatedNavLinks = [
         id: "log-in",
         title: "Log in",
     },
-    // {
-    //     id: "cta",
-    //     title: "Download App",
-    // },
+    {
+        id: "cta",
+        title: "Download App",
+    },
 ];
 
 export const navLinks = [
@@ -5851,10 +5851,10 @@ export const navLinks = [
         id: "log-in",
         title: "Log in",
     },
-    // {
-    //     id: "cta",
-    //     title: "Download App",
-    // },
+    {
+        id: "cta",
+        title: "Download App",
+    },
 ];
 
 export const features = [
