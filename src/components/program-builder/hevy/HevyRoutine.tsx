@@ -466,7 +466,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                                     <ChevronLeft className="h-6 w-6" />
                                 </Button>
                                 <div className="text-lg font-semibold flex-shrink-0">
-                                    Week { currentWeekIndex + 1 }
+                                    Week { currentWeekIndex + 1 } / { numberOfWeeks }
                                 </div>
                                 <Button
                                     onClick={ handleNextWeek }
