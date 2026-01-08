@@ -33,7 +33,23 @@ export async function updateSession(request: NextRequest) {
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
 
-  await supabase.auth.getUser()
+  // Add error handling to prevent middleware timeouts
+  try {
+    // Add a timeout wrapper to prevent hanging on slow Supabase responses
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Supabase auth timeout')), 4000)
+    );
+
+    await Promise.race([
+      supabase.auth.getUser(),
+      timeoutPromise
+    ]);
+  } catch (error) {
+    // If Supabase is slow or fails, log but don't block the request
+    // The user session will be handled on the client side if needed
+    console.error('Middleware: Error getting user session:', error);
+    // Continue with the response - don't block the request
+  }
 
 //   if (
 //     !user &&
