@@ -20,6 +20,8 @@ import {
   Copy,
   Mic,
   MoreHorizontal,
+  PanelLeft,
+  PanelRight,
   Pencil,
   ThumbsDown,
   ThumbsUp,
@@ -37,8 +39,19 @@ import { Label } from "@/components/ui/label"
 import { useIsHevy } from "@/contexts/HevyContext"
 import { useChat } from "@ai-sdk/react";
 import { Weather } from "@/components/weather";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-function RePrompt() {
+interface IRePromptProps {
+    sidebarPosition: "left" | "right";
+    onTogglePosition: () => void;
+}
+
+function RePrompt({ sidebarPosition, onTogglePosition }: IRePromptProps) {
 
     // const submitRef = useRef<HTMLAnchorElement>(null);
     const searchParams = useSearchParams();
@@ -130,9 +143,32 @@ function RePrompt() {
 
     return (
         <div className="flex flex-col h-[85vh]">
-            <div className="min-h-12  px-2 flex flex-row justify-start items-center gap-2 flex-shrink-0 border-b">
-                <Button variant="ghost" className={`w-24 text-white hover:bg-gray-800 hover:text-white ${!isFilters ? "bg-black dark:bg-white dark:text-black" : "bg-white dark:bg-black dark:text-white text-black"}`} onClick={() => setIsFilters(false)}>Chat</Button>
-                <Button variant="ghost" className={`w-24 text-white hover:bg-gray-800 hover:text-white ${isFilters ? "bg-black dark:bg-white dark:text-black" : "bg-white dark:bg-black dark:text-white text-black"}`} onClick={() => setIsFilters(true)}>Filters</Button>
+            <div className="min-h-12  px-2 flex flex-row justify-between items-center gap-2 flex-shrink-0 border-b">
+                <div className="flex flex-row gap-2">
+                    <Button variant="ghost" className={`w-24 text-white hover:bg-gray-800 hover:text-white ${!isFilters ? "bg-black dark:bg-white dark:text-black" : "bg-white dark:bg-black dark:text-white text-black"}`} onClick={() => setIsFilters(false)}>Chat</Button>
+                    <Button variant="ghost" className={`w-24 text-white hover:bg-gray-800 hover:text-white ${isFilters ? "bg-black dark:bg-white dark:text-black" : "bg-white dark:bg-black dark:text-white text-black"}`} onClick={() => setIsFilters(true)}>Filters</Button>
+                </div>
+                <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-black dark:text-white bg-white dark:bg-black hover:bg-gray-200 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600"
+                                onClick={onTogglePosition}
+                            >
+                                {sidebarPosition === "left" ? (
+                                    <PanelRight className="h-5 w-5" />
+                                ) : (
+                                    <PanelLeft className="h-5 w-5" />
+                                )}
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900">
+                            {sidebarPosition === "left" ? "Move sidebar to right" : "Move sidebar to left"}
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
             </div>
         <ChatContainerRoot className={`flex-1 relative ${isFilters ? "overflow-hidden" : "overflow-y-auto"}`}>
             <ChatContainerContent className="h-full">
