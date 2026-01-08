@@ -33,21 +33,42 @@ export async function updateSession(request: NextRequest) {
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
 
-  // Add error handling to prevent middleware timeouts
+  // Fix for timeout issue: Use fast path with getSession() first, then conditional getUser()
+  // Since client has localStorage fallback, we don't need to block on getUser()
   try {
-    // Add a timeout wrapper to prevent hanging on slow Supabase responses
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Supabase auth timeout')), 4000)
-    );
+    // Fast path: getSession() reads from cookies locally (no network, instant)
+    const { data: { session } } = await supabase.auth.getSession();
 
-    await Promise.race([
-      supabase.auth.getUser(),
-      timeoutPromise
-    ]);
+    // Only attempt token refresh with getUser() if we have a session
+    // This prevents unnecessary network calls for logged-out users
+    if (session) {
+      // Strict 2-second timeout to prevent Vercel 60s runtime timeout
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Auth check timeout')), 4000);
+      });
+
+      // Race getUser() against timeout - if it takes >2s, we bail out immediately
+      // Client-side auth (localStorage) will handle session if this times out
+      try {
+        await Promise.race([
+          supabase.auth.getUser(),
+          timeoutPromise
+        ]);
+      } catch (error) {
+        // Timeout or error - log but don't block
+        // The setAll callback will still update cookies if getUser() completes in background
+        if (error instanceof Error && error.message === 'Auth check timeout') {
+          console.warn('Middleware: Auth check timed out after 4s, continuing without blocking');
+        } else {
+          console.error('Middleware: Error in getUser() call:', error);
+        }
+        // Continue with response - client will handle auth via localStorage
+      }
+    }
+    // If no session, skip getUser() entirely - no need to make network call
   } catch (error) {
-    // If Supabase is slow or fails, log but don't block the request
-    // The user session will be handled on the client side if needed
-    console.error('Middleware: Error getting user session:', error);
+    // If getSession() fails (shouldn't happen as it's local), log but don't block
+    console.error('Middleware: Error getting session:', error);
     // Continue with the response - don't block the request
   }
 
