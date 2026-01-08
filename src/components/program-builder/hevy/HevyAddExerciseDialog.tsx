@@ -386,7 +386,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                 () => handleOpenAddExerciseDialog({ folder_id: 0, dayOrder: 0, isOpen: false} )
             }
         >
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col" onOpenAutoFocus={(e) => e.preventDefault()}>
                 <DialogHeader>
                     <DialogTitle className="font-bold text-center">
                         {dialogTitle}

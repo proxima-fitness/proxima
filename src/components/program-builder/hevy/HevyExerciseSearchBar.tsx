@@ -129,7 +129,6 @@ export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
                     <Input
                         className="my-2"
                         startIcon={ SearchIcon }
-                        autoFocus
                         placeholder={ "Search Exercises" }
                         onChange={ (event) => setAppliedSearchBarFilter(String(event.target.value)) }>
                     </Input>
