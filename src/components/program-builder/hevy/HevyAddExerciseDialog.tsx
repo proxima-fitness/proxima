@@ -2,17 +2,14 @@
 
 import { useHevyCustomExercises, useHevyExercises, useHevySecret } from "@/api/hooks";
 import { Button } from "@/components/ui/button";
-import { useEffect, useReducer, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { hevy_intensities, hevy_rep_types } from "@/assets/constants";
 import { toast } from "sonner";
-import { ExpandIcon, PlusIcon, TimerIcon, Trash2Icon, XIcon } from "lucide-react";
+import { ActivityIcon, PlusIcon, SkullIcon, TrendingDownIcon, Trash2Icon } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { HevyExerciseSearchBar } from "./HevyExerciseSearchBar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SetTypesLegend } from "../shared/SetTypesLegend";
-import { SetTypesToggle } from "../shared/SetTypesToggle";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Drawer, DrawerContent, DrawerFooter, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useUserContext } from "@/contexts/UserContext";
@@ -57,7 +54,6 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 
     const [ selectedExercise, setSelectedExercise ] = useState<THevyExerciseTemplate>();
     const [ isEditing, setIsEditing ] = useState(true);
-    const [ editSetType, toggleEditSetType ] = useReducer(prev => !prev, false);
 
     const handleIsEditing = (isEditing: boolean) => {
         setIsEditing(isEditing);
@@ -69,7 +65,6 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
     };
 
     const [ editingSetWeight, setEditingSetWeight ] = useState([false,false,false,false]);
-    const [ restTimeOpen, setRestTimeOpen ] = useState(false);
     const [ restSeconds, setRestSeconds ] = useState(isEditExercise ? addExerciseDialog.editExercise?.restSeconds ?? "0" : "0");
 
     // 3 SECTIONS: SETS, REPS, INTENSITY. reps and intensity are inputs.
@@ -206,14 +201,12 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                         handleIsEditing={ handleIsEditing }
                     />
                 }
-                <SetTypesLegend />
-
                 <div className="mt-4">
                     <div className="flex flex-row justify-center gap-2 items-center w-full pb-4">
-                        <div className="flex items-start justify-start w-[10%]">
+                        <div className="flex items-start justify-start w-[8%]">
                             Set
                         </div>
-                        <div className="w-[33%]">
+                        <div className="w-[28%]">
                             <Select value={ repTypeValue } aria-label="rep type" onValueChange={ (value) => handleSwapRepTypeValue(value) }>
                                 <SelectTrigger  className="h-10">
                                     <SelectValue placeholder="Reps" />
@@ -226,7 +219,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 
                             </Select>
                         </div>
-                        <div className="w-[33%]">
+                        <div className="w-[28%]">
                             <Select value={ intensityValue } aria-label="intensity" onValueChange={ (value) => setIntensityValue(value) }>
                                 <SelectTrigger  className="h-10">
                                     <SelectValue placeholder="Intensity" />
@@ -238,21 +231,10 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div>
-                            { editSetType ?
-                                <XIcon className="cursor-pointer" onClick={ toggleEditSetType } />
-                                :
-                                <TooltipProvider delayDuration={ 0 }>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <ExpandIcon className="cursor-pointer" onClick={ toggleEditSetType } />
-                                        </TooltipTrigger>
-                                        <TooltipContent className="bg-gray-600 text-white rounded-lg">
-                                            Edit Set Types
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                            }
+                        <div className="w-[28%]">
+                            <div className="text-sm text-muted-foreground text-center">Set Type</div>
+                        </div>
+                        <div className="w-[8%]">
                         </div>
                     </div>
 
@@ -260,10 +242,10 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                         <div
                             key={ "Set" + index }
                             className={ `flex flex-row justify-center gap-2 items-center w-full py-1 ${ setTypes[index] === "warmup" ? "bg-gray-300" : setTypes[index] === "dropset" ? "bg-[#33bbcf]" : setTypes[index] === "failure" ? "bg-[#01579B]" : "" }` }>
-                            <div className="flex items-center justify-start w-[10%]">
+                            <div className="flex items-center justify-start w-[8%]">
                                 { index + 1 }
                             </div>
-                            <div className="w-[33%]">
+                            <div className="w-[28%]">
                                 <Input
                                     type="number"
                                     placeholder={ (repTypeValue === "duration_seconds") ? "Secs" : repTypeValue === "distance_meters" ? "Meters" : "Reps" }
@@ -281,7 +263,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                                     } }
                                 />
                             </div>
-                            <div className="w-[33%]">
+                            <div className="w-[28%]">
                                 <Input
                                     type="number"
                                     inputMode="decimal"
@@ -299,26 +281,52 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 
                                 />
                             </div>
-                            { editSetType && <SetTypesToggle setIndex={ index } setType={ setTypes[index] } handleSetType={ handleSetType } /> }
-                            <Trash2Icon className="cursor-pointer" onClick={ () => deleteSet(index) } />
+                            <div className="w-[28%]">
+                                <Select
+                                    value={ setTypes[index] }
+                                    onValueChange={ (value: "normal" | "warmup" | "dropset" | "failure") => handleSetType(value, index) }
+                                >
+                                    <SelectTrigger className="h-10">
+                                        <SelectValue>
+                                            { setTypes[index] === "normal" ? "Normal" :
+                                              setTypes[index] === "warmup" ? "Warmup" :
+                                              setTypes[index] === "dropset" ? "Drop Set" :
+                                              "Failure" }
+                                        </SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="normal">Normal</SelectItem>
+                                        <SelectItem value="warmup">
+                                            <div className="flex items-center gap-2">
+                                                <ActivityIcon className="w-4 h-4" />
+                                                <span>Warmup</span>
+                                            </div>
+                                        </SelectItem>
+                                        <SelectItem value="dropset">
+                                            <div className="flex items-center gap-2">
+                                                <TrendingDownIcon className="w-4 h-4" />
+                                                <span>Drop Set</span>
+                                            </div>
+                                        </SelectItem>
+                                        <SelectItem value="failure">
+                                            <div className="flex items-center gap-2">
+                                                <SkullIcon className="w-4 h-4" />
+                                                <span>Failure</span>
+                                            </div>
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="w-[8%] flex justify-center">
+                                <Trash2Icon className="cursor-pointer" onClick={ () => deleteSet(index) } />
+                            </div>
                         </div>
                     ) )
 
                 }
-                <div className="pt-4 px-4 sm:px-20 flex justify-center items-center gap-2">
-                    <Button
-                        onClick={ () => addSet() }
-                        variant="ghost"
-                        className="w-full h-10 uppercase"
-                    >
-                        <PlusIcon /> Add Set
-                    </Button>
-                    { !restTimeOpen &&
-                        <Button onClick={ () => setRestTimeOpen(true) } variant="ghost" className="w-full h-10 uppercase">
-                            <TimerIcon /> Rest Time
-                        </Button>
-                    }
-                    { restTimeOpen && (
+                <div className="pt-4 px-4 sm:px-20 flex flex-col gap-4">
+                    <div className="flex items-center gap-2 justify-center">
+                        <span className="text-sm text-muted-foreground whitespace-nowrap">Rest Time (s)</span>
                         <Input
                             type="number"
                             placeholder="Rest Time (secs)"
@@ -326,10 +334,17 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                             onChange={ (e) => setRestSeconds(e.target.value) }
                             inputMode="numeric"
                             autoComplete="off"
-                            className="text-base sm:text-sm"
+                            className="text-base sm:text-sm w-32"
                             style={{ fontSize: isMobile ? '16px' : undefined }}
                         />
-                    ) }
+                    </div>
+                    <Button
+                        onClick={ () => addSet() }
+                        variant="ghost"
+                        className="w-full h-10 uppercase"
+                    >
+                        <PlusIcon /> Add Set
+                    </Button>
                 </div>
                 </div>
             </div>

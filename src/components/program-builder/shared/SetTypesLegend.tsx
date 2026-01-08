@@ -11,7 +11,7 @@ export const SetTypesLegend = () => {
 
   return (
     <div
-      className="relative inline-block pt-4"
+      className="relative inline-block"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
