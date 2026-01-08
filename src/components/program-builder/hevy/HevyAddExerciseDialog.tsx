@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState, useMemo } from "react";
 import { hevy_intensities, hevy_rep_types } from "@/assets/constants";
 import { toast } from "sonner";
-import { ActivityIcon, PlusIcon, SkullIcon, TrendingDownIcon, Trash2Icon } from "lucide-react";
+import { PlusIcon, Trash2Icon } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { HevyExerciseSearchBar } from "./HevyExerciseSearchBar";
@@ -296,24 +296,9 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="normal">Normal</SelectItem>
-                                        <SelectItem value="warmup">
-                                            <div className="flex items-center gap-2">
-                                                <ActivityIcon className="w-4 h-4" />
-                                                <span>Warmup</span>
-                                            </div>
-                                        </SelectItem>
-                                        <SelectItem value="dropset">
-                                            <div className="flex items-center gap-2">
-                                                <TrendingDownIcon className="w-4 h-4" />
-                                                <span>Drop Set</span>
-                                            </div>
-                                        </SelectItem>
-                                        <SelectItem value="failure">
-                                            <div className="flex items-center gap-2">
-                                                <SkullIcon className="w-4 h-4" />
-                                                <span>Failure</span>
-                                            </div>
-                                        </SelectItem>
+                                        <SelectItem value="warmup">Warmup</SelectItem>
+                                        <SelectItem value="dropset">Drop Set</SelectItem>
+                                        <SelectItem value="failure">Failure</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -325,19 +310,23 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 
                 }
                 <div className="pt-4 px-4 sm:px-20 flex flex-col gap-4">
-                    <div className="flex items-center gap-2 justify-center">
-                        <span className="text-sm text-muted-foreground whitespace-nowrap">Rest Time (s)</span>
-                        <Input
-                            type="number"
-                            placeholder="Rest Time (secs)"
-                            value={ restSeconds }
-                            onChange={ (e) => setRestSeconds(e.target.value) }
-                            inputMode="numeric"
-                            autoComplete="off"
-                            className="text-base sm:text-sm w-32"
-                            style={{ fontSize: isMobile ? '16px' : undefined }}
-                        />
+                    <div className="flex flex-row justify-center gap-2 items-center w-full">
+                        <div className="w-[8%]"></div>
+                        <div className="flex-1 flex items-center gap-2">
+                            <Input
+                                type="number"
+                                placeholder="Rest Time (secs)"
+                                value={ restSeconds }
+                                onChange={ (e) => setRestSeconds(e.target.value) }
+                                inputMode="numeric"
+                                autoComplete="off"
+                                className="text-base sm:text-sm"
+                                style={{ fontSize: isMobile ? '16px' : undefined }}
+                            />
+                            <span className="text-sm text-muted-foreground whitespace-nowrap">Rest Time (s)</span>
+                        </div>
                     </div>
+
                     <Button
                         onClick={ () => addSet() }
                         variant="ghost"
