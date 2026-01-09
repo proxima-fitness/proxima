@@ -417,6 +417,12 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(true);
 
+    // Update hevyProgram when program prop changes (e.g., when a new program is generated)
+    useEffect(() => {
+        setHevyProgram(appendOrderToHevyRoutines(program));
+        setCurrentWeekIndex(0); // Reset to first week when program changes
+    }, [program]);
+
     useEffect(() => {
         if (typeof window !== "undefined") {
             localStorage.setItem("hevy-program-in-progress", JSON.stringify(hevyProgram));
