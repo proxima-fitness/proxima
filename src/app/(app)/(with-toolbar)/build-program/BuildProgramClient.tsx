@@ -15,6 +15,7 @@ const SIDEBAR_SIZE_KEY = "andy-sidebar-size";
 export function BuildProgramClient() {
     const [sidebarPosition, setSidebarPosition] = useState<"left" | "right">("left");
     const [sidebarSize, setSidebarSize] = useState(20);
+    const [generatedProgram, setGeneratedProgram] = useState<THevyRoutine[] | undefined>();
 
     // Load sidebar position and size from localStorage on mount
     useEffect(() => {
@@ -59,7 +60,11 @@ export function BuildProgramClient() {
                             maxSize={70}
                             className="border-extraLightGray bg-extraLightGray dark:bg-extraDarkGray dark:text-white"
                         >
-                            <RePrompt sidebarPosition={sidebarPosition} onTogglePosition={toggleSidebarPosition} />
+                            <RePrompt
+                                sidebarPosition={sidebarPosition}
+                                onTogglePosition={toggleSidebarPosition}
+                                onProgramGenerated={setGeneratedProgram}
+                            />
                         </ResizablePanel>
                         <ResizableHandle withHandle className="" />
                         <ResizablePanel
@@ -67,7 +72,7 @@ export function BuildProgramClient() {
                             order={2}
                             minSize={30}
                         >
-                            <BuildProgramPage />
+                            <BuildProgramPage generatedProgram={generatedProgram} />
                         </ResizablePanel>
                     </>
                 ) : (
@@ -77,7 +82,7 @@ export function BuildProgramClient() {
                             order={1}
                             minSize={30}
                         >
-                            <BuildProgramPage />
+                            <BuildProgramPage generatedProgram={generatedProgram} />
                         </ResizablePanel>
                         <ResizableHandle withHandle className="" />
                         <ResizablePanel
@@ -92,14 +97,18 @@ export function BuildProgramClient() {
                             maxSize={70}
                             className="border-extraLightGray bg-extraLightGray dark:bg-extraDarkGray dark:text-white"
                         >
-                            <RePrompt sidebarPosition={sidebarPosition} onTogglePosition={toggleSidebarPosition} />
+                            <RePrompt
+                                sidebarPosition={sidebarPosition}
+                                onTogglePosition={toggleSidebarPosition}
+                                onProgramGenerated={setGeneratedProgram}
+                            />
                         </ResizablePanel>
                     </>
                 )}
                 </ResizablePanelGroup>
             </div>
             <div className="max-sm:block sm:hidden">
-                    <BuildProgramPage />
+                    <BuildProgramPage generatedProgram={generatedProgram} />
             </div>
         </>
     );

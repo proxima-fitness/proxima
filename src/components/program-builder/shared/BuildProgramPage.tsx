@@ -3,12 +3,16 @@
 import { useSearchParams } from "next/navigation";
 import { BuildProgramSkeleton } from "./BuildProgramSkeleton";
 import { useIsHevy } from "@/contexts/HevyContext";
-import { useBuildAiProgram, useSharedProgram } from "@/api/hooks";
+import { useSharedProgram } from "@/api/hooks";
 import { useEffect, useMemo, useState } from "react";
 import { usePreview } from "@/contexts/PreviewContext";
 import { HevyRoutine } from "../hevy/HevyRoutine";
 
-export const BuildProgramPage: React.FC = () => {
+interface IBuildProgramPageProps {
+    generatedProgram?: THevyRoutine[];
+}
+
+export const BuildProgramPage: React.FC<IBuildProgramPageProps> = ({ generatedProgram }) => {
 
     const { isHevy } = useIsHevy();
     const { setIsPreview } = usePreview();
@@ -114,10 +118,12 @@ export const BuildProgramPage: React.FC = () => {
         }
     }, [search]);
 
-    const { data: program, isLoading: loadingProgram } =  useBuildAiProgram(request, shareId, resume);
     const { data: sharedProgram, isLoading: loadingSharedProgram } = useSharedProgram(shareId, resume);
 
-    if ((loadingProgram || program === undefined) && (loadingSharedProgram || sharedProgram === undefined) && resume === "") {
+    // Determine which program to use: generatedProgram > sharedProgram > resumeHevyProgram
+    const programToUse = generatedProgram || (shareId && shareId.length > 0 ? sharedProgram : undefined);
+
+    if (!programToUse && (loadingSharedProgram || sharedProgram === undefined) && resume === "" && !generatedProgram) {
         return (
             <BuildProgramSkeleton />
         );
@@ -152,9 +158,18 @@ export const BuildProgramPage: React.FC = () => {
         // }
     }
 
+    // Use generatedProgram if available, otherwise fall back to sharedProgram or resumeHevyProgram
+    const finalProgram = programToUse || resumeHevyProgram;
+
+    if (!finalProgram) {
+        return (
+            <BuildProgramSkeleton />
+        );
+    }
+
     return (
         <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
-            <HevyRoutine request={ request } program={ shareId && shareId.length > 0 ? (sharedProgram as THevyRoutine[]) : program as THevyRoutine[] } />
+            <HevyRoutine request={ request } program={ finalProgram as THevyRoutine[] } />
         </div>
     );
     // } else if (!isHevy) {

@@ -27,7 +27,7 @@ import {
   ThumbsUp,
   Trash,
 } from "lucide-react"
-import { useState, useEffect, useReducer } from "react"
+import { useState, useEffect, useReducer, useRef } from "react"
 import { ScrollButton } from "@/components/ui/scroll-button"
 import { useSearchParams } from "next/navigation"
 import MultiSelect, { IOption } from "@/components/ui/multi-select"
@@ -50,9 +50,10 @@ import {
 interface IRePromptProps {
     sidebarPosition: "left" | "right";
     onTogglePosition: () => void;
+    onProgramGenerated?: (program: THevyRoutine[]) => void;
 }
 
-function RePrompt({ sidebarPosition, onTogglePosition }: IRePromptProps) {
+function RePrompt({ sidebarPosition, onTogglePosition, onProgramGenerated }: IRePromptProps) {
 
     // const submitRef = useRef<HTMLAnchorElement>(null);
     const searchParams = useSearchParams();
@@ -88,14 +89,92 @@ function RePrompt({ sidebarPosition, onTogglePosition }: IRePromptProps) {
     const [explore, toggleExplore] = useReducer(prev => !prev, searchParams.get('explore') === 'true');
 
     const [isFilters, setIsFilters] = useState(false)
+    const lastSentSearch = useRef<string | null>(null);
+    const processedMessageIds = useRef<Set<string>>(new Set());
 
     // Initialize with search parameter if present
     useEffect(() => {
-        if (search) {
+        if (search && search !== lastSentSearch.current) {
+            lastSentSearch.current = search;
             sendMessage({ text: search });
             console.log("'[REPROMPT] sendMessage(search) called in useEffect");
         }
     }, [search, sendMessage]);
+
+    // Parse program from AI responses and convert to THevyRoutine[]
+    useEffect(() => {
+        if (!onProgramGenerated) return;
+
+        // Helper function to convert TTextToJsonResponse to THevyRoutine[]
+        const convertTextToJsonToHevyRoutine = async (textToJsonResponse: TTextToJsonResponse) => {
+            try {
+                const daysPerWeek = Number(searchParams.get('daysPerWeek') || '3');
+                const programLength = Number(searchParams.get('programLength') || '12');
+                const excludeAreas = searchParams.get('excludeAreas') || '';
+                const excludeEquipment = searchParams.get('excludeEquipment') || '';
+                const healthIssues = searchParams.get('healthIssues') || '';
+
+                // Import buildHevyProgram dynamically to avoid circular dependencies
+                const { buildHevyProgram } = await import('@/components/program-builder/utils/build-hevy-program');
+                const hevyRoutines = await buildHevyProgram(
+                    textToJsonResponse,
+                    programLength,
+                    daysPerWeek,
+                    excludeAreas,
+                    excludeEquipment,
+                    healthIssues
+                );
+
+                if (hevyRoutines && Array.isArray(hevyRoutines)) {
+                    onProgramGenerated(hevyRoutines);
+                }
+            } catch (error) {
+                console.error('Error converting program to HevyRoutine:', error);
+            }
+        };
+
+        // Look through all assistant messages for program JSON
+        messages.forEach((message) => {
+            if (message.role === 'assistant' && !processedMessageIds.current.has(message.id)) {
+                message.parts.forEach((part) => {
+                    if (part.type === 'text' && part.text) {
+                        // Try to extract JSON from the text
+                        const text = part.text;
+
+                        // Look for JSON object with "program" key (TTextToJsonResponse format)
+                        const jsonMatch = text.match(/\{[\s\S]*"program"[\s\S]*\}/);
+                        if (jsonMatch) {
+                            try {
+                                const parsed = JSON.parse(jsonMatch[0]);
+                                if (parsed.program && parsed.program.workout_days) {
+                                    // Mark message as processed
+                                    processedMessageIds.current.add(message.id);
+                                    // Convert TTextToJsonResponse to THevyRoutine[]
+                                    convertTextToJsonToHevyRoutine(parsed.program as TTextToJsonResponse);
+                                }
+                            } catch {
+                                // Try to find JSON code blocks
+                                const codeBlockMatch = text.match(/```(?:json)?\s*(\{[\s\S]*"program"[\s\S]*\})\s*```/);
+                                if (codeBlockMatch) {
+                                    try {
+                                        const parsed = JSON.parse(codeBlockMatch[1]);
+                                        if (parsed.program && parsed.program.workout_days) {
+                                            // Mark message as processed
+                                            processedMessageIds.current.add(message.id);
+                                            // Convert TTextToJsonResponse to THevyRoutine[]
+                                            convertTextToJsonToHevyRoutine(parsed.program as TTextToJsonResponse);
+                                        }
+                                    } catch (e2) {
+                                        console.error('Failed to parse program JSON:', e2);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    }, [messages, onProgramGenerated, searchParams]);
 
     // TODO: add this back in with a reeprompt request to the AI
 
@@ -130,6 +209,121 @@ function RePrompt({ sidebarPosition, onTogglePosition }: IRePromptProps) {
         sendMessage({ text: input });
         setInput('');
     }
+
+    // Helper function to detect if text contains program JSON
+    const containsProgramJson = (text: string): boolean => {
+        return /"program"\s*:\s*\{[\s\S]*"workout_days"/.test(text) ||
+               /"workout_days"\s*:\s*\[/.test(text);
+    };
+
+    // Helper function to extract non-JSON text (conversational parts)
+    const extractConversationalText = (text: string): string => {
+        // Try to find text before JSON code blocks
+        const beforeJson = text.split(/```(?:json)?/)[0].trim();
+        if (beforeJson && beforeJson.length > 0 && !containsProgramJson(beforeJson)) {
+            return beforeJson;
+        }
+        // Try to find text before JSON object
+        const jsonMatch = text.match(/(.*?)(?:\{[\s\S]*"program"|"workout_days")/);
+        if (jsonMatch && jsonMatch[1] && jsonMatch[1].trim().length > 0) {
+            return jsonMatch[1].trim();
+        }
+        return '';
+    };
+
+    // Helper function to get program generation status message
+    const getProgramGenerationStatus = (text: string): { message: string; isComplete: boolean } => {
+        if (!containsProgramJson(text)) {
+            return { message: '', isComplete: false };
+        }
+
+        // Check if JSON is complete
+        try {
+            const jsonMatch = text.match(/\{[\s\S]*"program"[\s\S]*\}/);
+            if (jsonMatch) {
+                const parsed = JSON.parse(jsonMatch[0]) as { program?: { workout_days?: Array<{ exercises?: unknown[] }> } };
+                if (parsed.program && parsed.program.workout_days && Array.isArray(parsed.program.workout_days)) {
+                    // Check if all workout days are complete
+                    const allDaysComplete = parsed.program.workout_days.every((day) =>
+                        day.exercises && Array.isArray(day.exercises) && day.exercises.length > 0
+                    );
+                    if (allDaysComplete && parsed.program.workout_days.length > 0) {
+                        return { message: 'Workout program generated', isComplete: true };
+                    }
+                }
+            }
+        } catch {
+            // JSON not complete yet, continue checking progress
+        }
+
+        // Analyze streaming progress
+        const hasProgramKey = /"program"\s*:/.test(text);
+        const hasWorkoutDays = /"workout_days"\s*:/.test(text);
+        const hasWorkoutDaysArray = /"workout_days"\s*:\s*\[/.test(text);
+
+        // Count workout days by finding day_title occurrences
+        const workoutDaysMatches = text.match(/"day_title"/g);
+        const workoutDaysCount = workoutDaysMatches ? workoutDaysMatches.length : 0;
+
+        // Try to count exercises per day by analyzing structure
+        const daySections = text.split(/"day_title"/);
+        const exercisesPerDay: number[] = [];
+        daySections.slice(1).forEach((section) => {
+            const exercisesInSection = (section.match(/"title"\s*:\s*"[^"]*"/g) || []).length;
+            exercisesPerDay.push(exercisesInSection);
+        });
+
+        // Determine progress stage
+        if (!hasProgramKey && !hasWorkoutDays) {
+            return { message: 'Analyzing your fitness goals and preferences...', isComplete: false };
+        }
+
+        if (hasProgramKey && !hasWorkoutDays) {
+            return { message: 'Creating program structure...', isComplete: false };
+        }
+
+        if (hasWorkoutDaysArray && workoutDaysCount === 0) {
+            return { message: 'Building workout days...', isComplete: false };
+        }
+
+        if (workoutDaysCount === 1) {
+            const exercisesInDay1 = exercisesPerDay[0] || 0;
+            if (exercisesInDay1 === 0) {
+                return { message: 'Building Day 1...', isComplete: false };
+            } else if (exercisesInDay1 < 4) {
+                return { message: `Adding exercises to Day 1... (${exercisesInDay1} exercises)`, isComplete: false };
+            } else {
+                return { message: 'Day 1 complete, building Day 2...', isComplete: false };
+            }
+        }
+
+        if (workoutDaysCount === 2) {
+            const exercisesInDay2 = exercisesPerDay[1] || 0;
+            if (exercisesInDay2 === 0) {
+                return { message: 'Building Day 2...', isComplete: false };
+            } else if (exercisesInDay2 < 4) {
+                return { message: `Adding exercises to Day 2... (${exercisesInDay2} exercises)`, isComplete: false };
+            } else {
+                return { message: 'Day 2 complete, building Day 3...', isComplete: false };
+            }
+        }
+
+        if (workoutDaysCount >= 3) {
+            const currentDay = workoutDaysCount;
+            const exercisesInCurrentDay = exercisesPerDay[currentDay - 1] || 0;
+            const estimatedWeek = Math.ceil(currentDay / 3); // Assuming ~3 days per week
+
+            if (exercisesInCurrentDay === 0) {
+                return { message: `Building Week ${estimatedWeek}, Day ${currentDay}...`, isComplete: false };
+            } else if (exercisesInCurrentDay < 4) {
+                return { message: `Adding exercises to Week ${estimatedWeek}, Day ${currentDay}... (${exercisesInCurrentDay} exercises)`, isComplete: false };
+            } else {
+                return { message: `Week ${estimatedWeek}, Day ${currentDay} complete, continuing...`, isComplete: false };
+            }
+        }
+
+        return { message: 'Generating workout program...', isComplete: false };
+    };
 
     return (
         <div className="flex flex-col h-[85vh]">
@@ -168,7 +362,86 @@ function RePrompt({ sidebarPosition, onTogglePosition }: IRePromptProps) {
                                 const isAssistant = message.role === "assistant"
                                 const isLastMessage = index === message.parts.length - 1
                                 switch (part.type) {
-                                case 'text':
+                                case 'text': {
+                                    const text = part.text;
+                                    const hasProgramJson = containsProgramJson(text);
+                                    const conversationalText = extractConversationalText(text);
+                                    const status = getProgramGenerationStatus(text);
+
+                                    // If message contains program JSON, show compact view
+                                    if (hasProgramJson && isAssistant) {
+                                        return (
+                                            <Message
+                                                key={`${message.id}-${index}`}
+                                                className={cn(
+                                                    "mx-auto flex w-full max-w-3xl flex-col gap-2 px-0 md:px-6 pt-2",
+                                                    "items-start"
+                                                )}
+                                            >
+                                                <div className="group flex w-full flex-col gap-0">
+                                                    {conversationalText && (
+                                                        <MessageContent
+                                                            className="text-foreground prose w-full flex-1 rounded-lg bg-transparent p-0 mb-2"
+                                                            markdown
+                                                        >
+                                                            {conversationalText}
+                                                        </MessageContent>
+                                                    )}
+                                                    <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg border border-border/50">
+                                                        <div className="flex items-center gap-2 flex-1">
+                                                            {status.isComplete ? (
+                                                                <>
+                                                                    <div className="h-2 w-2 rounded-full bg-green-500" />
+                                                                    <span className="text-sm text-muted-foreground">{status.message}</span>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                                                                    <span className="text-sm text-muted-foreground">{status.message}</span>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <MessageActions
+                                                        className={cn(
+                                                            "-ml-2.5 flex gap-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100",
+                                                            isLastMessage && "opacity-100"
+                                                        )}
+                                                    >
+                                                        <MessageAction tooltip="Edit" delayDuration={100}>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="rounded-full"
+                                                            >
+                                                                <Copy />
+                                                            </Button>
+                                                        </MessageAction>
+                                                        <MessageAction tooltip="Upvote" delayDuration={100}>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="rounded-full"
+                                                            >
+                                                                <ThumbsUp />
+                                                            </Button>
+                                                        </MessageAction>
+                                                        <MessageAction tooltip="Downvote" delayDuration={100}>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="rounded-full"
+                                                            >
+                                                                <ThumbsDown />
+                                                            </Button>
+                                                        </MessageAction>
+                                                    </MessageActions>
+                                                </div>
+                                            </Message>
+                                        );
+                                    }
+
+                                    // Normal message rendering for non-program JSON
                                     return (
                                         <Message
                                             key={`${message.id}-${index}`}
@@ -183,7 +456,7 @@ function RePrompt({ sidebarPosition, onTogglePosition }: IRePromptProps) {
                                                     className="text-foreground prose w-full flex-1 rounded-lg bg-transparent p-0"
                                                     markdown
                                                 >
-                                                {part.text}
+                                                {text}
                                                 </MessageContent>
                                                 <MessageActions
                                                 className={cn(
@@ -262,12 +535,31 @@ function RePrompt({ sidebarPosition, onTogglePosition }: IRePromptProps) {
                                             )}
                                         </Message>
                                     );
+                                }
                                 case "tool-displayWeather":
                                     return (
                                         <div key={"weather-test"}>
                                             <Weather {...part.output as {temperature: number, weather: string, location: string}} />
                                         </div>
                                     )
+                                case "tool-displayBuildWorkoutProgram": {
+                                    // Handle tool result - extract program if present
+                                    const toolOutput = part.output as { program?: THevyRoutine[] };
+                                    if (toolOutput?.program && Array.isArray(toolOutput.program)) {
+                                        onProgramGenerated?.(toolOutput.program);
+                                    }
+                                    return null;
+                                }
+                                default: {
+                                    // Check if part is a tool result with program data
+                                    if (part.type === 'tool-result' && 'output' in part) {
+                                        const output = (part as { output?: { program?: THevyRoutine[] } }).output;
+                                        if (output?.program && Array.isArray(output.program)) {
+                                            onProgramGenerated?.(output.program);
+                                        }
+                                    }
+                                    return null;
+                                }
                                 }
                             })}
                             </div>

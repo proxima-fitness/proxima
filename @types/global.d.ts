@@ -67,6 +67,7 @@ type TTextToJsonResponse = {
                 rpe: number;
             }[];
             title: string;
+            exercise_template_id?: string; // Optional for backward compatibility, but should be provided by AI
             supersets_id: number | null;
         }[];
     }[];
