@@ -31,7 +31,6 @@ export function BuildProgramClient() {
         }
     }, []);
 
-    // Toggle sidebar position and persist to localStorage
     const toggleSidebarPosition = () => {
         setSidebarPosition((prev) => {
             const newPosition = prev === "left" ? "right" : "left";

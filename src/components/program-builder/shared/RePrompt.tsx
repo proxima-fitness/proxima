@@ -38,6 +38,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { useIsHevy } from "@/contexts/HevyContext"
 import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { Weather } from "@/components/weather";
 import {
   Tooltip,
@@ -58,7 +59,13 @@ function RePrompt({ sidebarPosition, onTogglePosition }: IRePromptProps) {
     const {isHevy} = useIsHevy();
 
     const [input, setInput] = useState("");
-    const { messages, sendMessage } = useChat();
+    const { messages, sendMessage, status } = useChat({
+      transport: new DefaultChatTransport({
+        api: '/api/chat',
+      }),
+    });
+    console.log("messages", messages);
+    const isLoading = status === 'submitted' || status === 'streaming';
     const search = searchParams.get('search') ?? '';
     const [sex, setSex] = useState<string>(searchParams.get('sex') ?? "");
     const [age, setAge] = useState<string>(searchParams.get('age') ?? "");
@@ -80,20 +87,15 @@ function RePrompt({ sidebarPosition, onTogglePosition }: IRePromptProps) {
     const [workoutSchema, setWorkoutSchema] = useState<string>(isHevy ? "hevy" : "proxima");
     const [explore, toggleExplore] = useReducer(prev => !prev, searchParams.get('explore') === 'true');
 
-    const [isLoading, setIsLoading] = useState(false)
-    const [chatMessages, setChatMessages] = useState<Array<{id: number; role: string; content: string}>>([])
     const [isFilters, setIsFilters] = useState(false)
 
     // Initialize with search parameter if present
     useEffect(() => {
         if (search) {
-            setChatMessages([{
-                id: 1,
-                role: "user",
-                content: search,
-            }]);
+            sendMessage({ text: search });
+            console.log("'[REPROMPT] sendMessage(search) called in useEffect");
         }
-    }, [search]);
+    }, [search, sendMessage]);
 
     // TODO: add this back in with a reeprompt request to the AI
 
@@ -127,18 +129,6 @@ function RePrompt({ sidebarPosition, onTogglePosition }: IRePromptProps) {
 
         sendMessage({ text: input });
         setInput('');
-
-        setIsLoading(true)
-
-        // Add user message immediately
-        const newUserMessage = {
-            id: chatMessages.length + 1,
-            role: "user",
-            content: input.trim(),
-        }
-
-        setChatMessages([...chatMessages, newUserMessage])
-
     }
 
     return (
@@ -176,7 +166,7 @@ function RePrompt({ sidebarPosition, onTogglePosition }: IRePromptProps) {
                             <div key={message.id} className="whitespace-pre-wrap">
                             {message.parts.map((part, index) => {
                                 const isAssistant = message.role === "assistant"
-                                const isLastMessage = index === chatMessages.length - 1
+                                const isLastMessage = index === message.parts.length - 1
                                 switch (part.type) {
                                 case 'text':
                                     return (
@@ -549,8 +539,7 @@ function RePrompt({ sidebarPosition, onTogglePosition }: IRePromptProps) {
             >
             <div className="flex flex-col">
                 <PromptInputTextarea
-                    disabled={ true }
-                    placeholder="Andy chat coming soon..."
+                    placeholder="Ask Andy anything..."
                     className="dark:text-white min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
                     />
 
