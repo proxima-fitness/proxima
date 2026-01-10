@@ -872,7 +872,7 @@ function RePrompt({ sidebarPosition, onTogglePosition, onProgramGenerated }: IRe
                         <Button
                         size="icon"
                         onClick={stop}
-                        className="size-9 rounded-full bg-red-500 hover:bg-red-600"
+                        className="size-9 rounded-full bg-lightSecondary"
                         >
                             <Square className="text-white" size={18} />
                         </Button>
