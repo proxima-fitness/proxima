@@ -23,6 +23,7 @@ import {
   PanelLeft,
   PanelRight,
   Pencil,
+  Square,
   ThumbsDown,
   ThumbsUp,
   Trash,
@@ -60,7 +61,7 @@ function RePrompt({ sidebarPosition, onTogglePosition, onProgramGenerated }: IRe
     const {isHevy} = useIsHevy();
 
     const [input, setInput] = useState("");
-    const { messages, sendMessage, status } = useChat({
+    const { messages, sendMessage, status, stop } = useChat({
       transport: new DefaultChatTransport({
         api: '/api/chat',
       }),
@@ -858,18 +859,24 @@ function RePrompt({ sidebarPosition, onTogglePosition, onProgramGenerated }: IRe
                     </Button>
                     </PromptInputAction>
 
-                    <Button
-                    size="icon"
-                    disabled={!input.trim() || isLoading}
-                    onClick={handleSubmit}
-                    className="size-9 rounded-full bg-lightSecondary"
-                    >
                     {!isLoading ? (
-                        <ArrowUp className="text-white" size={18} />
+                        <Button
+                        size="icon"
+                        disabled={!input.trim()}
+                        onClick={handleSubmit}
+                        className="size-9 rounded-full bg-lightSecondary"
+                        >
+                            <ArrowUp className="text-white" size={18} />
+                        </Button>
                     ) : (
-                        <span className="size-3 rounded-xs bg-white" />
+                        <Button
+                        size="icon"
+                        onClick={stop}
+                        className="size-9 rounded-full bg-red-500 hover:bg-red-600"
+                        >
+                            <Square className="text-white" size={18} />
+                        </Button>
                     )}
-                    </Button>
                 </div>
                 </PromptInputActions>
             </div>
