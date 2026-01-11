@@ -40,7 +40,6 @@ import { Label } from "@/components/ui/label"
 import { useIsHevy } from "@/contexts/HevyContext"
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { Weather } from "@/components/weather";
 import {
   Tooltip,
   TooltipContent,
@@ -48,6 +47,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ProgramAccordion } from "./ProgramAccordion";
+import { Loader2 } from "lucide-react";
 
 interface IRePromptProps {
     sidebarPosition: "left" | "right";
@@ -93,6 +93,11 @@ function RePrompt({ sidebarPosition, onTogglePosition, onProgramGenerated }: IRe
     const [isFilters, setIsFilters] = useState(false)
     const lastSentSearch = useRef<string | null>(null);
     const processedMessageIds = useRef<Set<string>>(new Set());
+
+    // Thinking state for gaps in token streaming
+    const [isThinking, setIsThinking] = useState(false);
+    const lastMessageTextRef = useRef<string>("");
+    const thinkingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Initialize with search parameter if present
     useEffect(() => {
@@ -178,6 +183,61 @@ function RePrompt({ sidebarPosition, onTogglePosition, onProgramGenerated }: IRe
             }
         });
     }, [messages, onProgramGenerated, searchParams]);
+
+    // Monitor message changes to detect gaps in token streaming
+    useEffect(() => {
+        // Clear any existing timeout
+        if (thinkingTimeoutRef.current) {
+            clearTimeout(thinkingTimeoutRef.current);
+            thinkingTimeoutRef.current = null;
+        }
+
+        // If not loading, reset thinking state
+        if (!isLoading) {
+            setIsThinking(false);
+            lastMessageTextRef.current = "";
+            return;
+        }
+
+        // Find the last assistant message
+        const lastAssistantMessage = [...messages].reverse().find(
+            (msg) => msg.role === 'assistant'
+        );
+
+        if (!lastAssistantMessage) {
+            lastMessageTextRef.current = "";
+            return;
+        }
+
+        // Get the text content from the last assistant message
+        const textParts = lastAssistantMessage.parts
+            .filter((part): part is { type: 'text'; text: string } => part.type === 'text' && typeof part.text === 'string')
+            .map((part) => part.text);
+        const currentText = textParts.join('');
+
+        // Compare with previous text
+        if (currentText !== lastMessageTextRef.current) {
+            // New tokens arrived - hide thinking and update ref
+            setIsThinking(false);
+            lastMessageTextRef.current = currentText;
+        } else {
+            // No change in text - set timeout to show thinking after delay
+            // Only show thinking if we have some text already (not at the very start)
+            if (currentText.length > 0) {
+                thinkingTimeoutRef.current = setTimeout(() => {
+                    setIsThinking(true);
+                }, 600); // 600ms delay before showing "Thinking"
+            }
+        }
+
+        // Cleanup function
+        return () => {
+            if (thinkingTimeoutRef.current) {
+                clearTimeout(thinkingTimeoutRef.current);
+                thinkingTimeoutRef.current = null;
+            }
+        };
+    }, [messages, isLoading]);
 
     // TODO: add this back in with a reeprompt request to the AI
 
@@ -551,12 +611,6 @@ function RePrompt({ sidebarPosition, onTogglePosition, onProgramGenerated }: IRe
                                         </Message>
                                     );
                                 }
-                                case "tool-displayWeather":
-                                    return (
-                                        <div key={"weather-test"}>
-                                            <Weather {...part.output as {temperature: number, weather: string, location: string}} />
-                                        </div>
-                                    )
                                 case "tool-displayBuildWorkoutProgram": {
                                     // Handle tool result - extract program if present
                                     const toolOutput = part.output as { program?: THevyRoutine[] };
@@ -579,6 +633,23 @@ function RePrompt({ sidebarPosition, onTogglePosition, onProgramGenerated }: IRe
                             })}
                             </div>
                         ))}
+                {!isFilters && isThinking && isLoading && (
+                    <Message
+                        className={cn(
+                            "mx-auto flex w-full max-w-3xl flex-col gap-2 px-0 md:px-6 pt-2",
+                            "items-start"
+                        )}
+                    >
+                        <div className="group flex w-full flex-col gap-0">
+                            <div className="text-foreground prose w-full flex-1 rounded-lg bg-transparent p-0">
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <span className="text-sm">Thinking...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </Message>
+                )}
             {isFilters &&
                 <div className="mx-auto bg-white dark:bg-extraDarkGray rounded-xl p-4 max-w-3xl overflow-y-auto overflow-x-hidden h-full w-full ">
 

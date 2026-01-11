@@ -279,7 +279,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                         </div>
                     </div>
 
-                    <div className="text-xs flex flex-row justify-between mt-4 gap-2 sm:gap-4 border-t-2 border-b-2 py-2 border-gray-200 dark:text-offWhite dark:border-darkGray overflow-hidden">
+                    <div className="text-xs flex flex-row justify-between mt-4 gap-2 sm:gap-4 border-t-2 border-b-2 py-2 border-gray-200 dark:text-offWhite dark:border-darkGray overflow-x-hidden">
                         <div className="flex flex-row gap-2 sm:gap-4 flex-shrink min-w-0">
                             <div className="flex-shrink-0">
                                 #
@@ -295,7 +295,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                             <div className="flex flex-row justify-center items-center text-center min-w-[60px] sm:min-w-[33%]">
                                 Reps
                             </div>
-                            <div className="flex flex-row justify-start items-center text-center min-w-[60px] sm:min-w-[33%]">
+                            <div className="flex flex-row justify-start items-center text-center min-w-[60px] sm:min-w-[90px] whitespace-nowrap">
                                 Intensity
                             </div>
                         </div>
