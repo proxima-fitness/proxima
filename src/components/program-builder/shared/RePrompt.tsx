@@ -47,6 +47,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { ProgramAccordion } from "./ProgramAccordion";
 
 interface IRePromptProps {
     sidebarPosition: "left" | "right";
@@ -101,6 +102,7 @@ function RePrompt({ sidebarPosition, onTogglePosition, onProgramGenerated }: IRe
             console.log("'[REPROMPT] sendMessage(search) called in useEffect");
         }
     }, [search, sendMessage]);
+
 
     // Parse program from AI responses and convert to THevyRoutine[]
     useEffect(() => {
@@ -233,7 +235,7 @@ function RePrompt({ sidebarPosition, onTogglePosition, onProgramGenerated }: IRe
     };
 
     // Helper function to get program generation status message
-    const getProgramGenerationStatus = (text: string): { message: string; isComplete: boolean } => {
+    const getProgramGenerationStatus = (text: string): { message: string; isComplete: boolean; stepId?: string; completedStepMessage?: string } => {
         if (!containsProgramJson(text)) {
             return { message: '', isComplete: false };
         }
@@ -249,7 +251,7 @@ function RePrompt({ sidebarPosition, onTogglePosition, onProgramGenerated }: IRe
                         day.exercises && Array.isArray(day.exercises) && day.exercises.length > 0
                     );
                     if (allDaysComplete && parsed.program.workout_days.length > 0) {
-                        return { message: 'Workout program generated', isComplete: true };
+                        return { message: 'Workout program generated', isComplete: true, stepId: 'final' };
                     }
                 }
             }
@@ -276,55 +278,74 @@ function RePrompt({ sidebarPosition, onTogglePosition, onProgramGenerated }: IRe
 
         // Determine progress stage
         if (!hasProgramKey && !hasWorkoutDays) {
-            return { message: 'Analyzing your fitness goals and preferences...', isComplete: false };
+            return { message: 'Analyzing your fitness goals and preferences...', isComplete: false, stepId: 'analyzing' };
         }
 
         if (hasProgramKey && !hasWorkoutDays) {
-            return { message: 'Creating program structure...', isComplete: false };
+            return { message: 'Creating program structure...', isComplete: false, stepId: 'structure' };
         }
 
         if (hasWorkoutDaysArray && workoutDaysCount === 0) {
-            return { message: 'Building workout days...', isComplete: false };
+            return { message: 'Building workout days...', isComplete: false, stepId: 'building-days' };
         }
+
+        const daysPerWeek = Number(searchParams.get('daysPerWeek') || '3');
 
         if (workoutDaysCount === 1) {
             const exercisesInDay1 = exercisesPerDay[0] || 0;
+            const currentDay = 1;
+            const actualWeek = Math.ceil(currentDay / daysPerWeek);
+            const dayInWeek = ((currentDay - 1) % daysPerWeek) + 1;
             if (exercisesInDay1 === 0) {
-                return { message: 'Building Day 1...', isComplete: false };
+                return { message: `Building Week ${actualWeek}, Day ${dayInWeek}...`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
             } else if (exercisesInDay1 < 4) {
-                return { message: `Adding exercises to Day 1... (${exercisesInDay1} exercises)`, isComplete: false };
+                return { message: `Adding exercises to Week ${actualWeek}, Day ${dayInWeek}... (${exercisesInDay1} exercises)`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
             } else {
-                return { message: 'Day 1 complete, building Day 2...', isComplete: false };
+                const nextDay = 2;
+                const nextWeek = Math.ceil(nextDay / daysPerWeek);
+                const nextDayInWeek = ((nextDay - 1) % daysPerWeek) + 1;
+                return { message: `Building Week ${nextWeek}, Day ${nextDayInWeek}...`, isComplete: false, stepId: `week-${nextWeek}-day-${nextDayInWeek}`, completedStepMessage: `Week ${actualWeek}, Day ${dayInWeek} complete` };
             }
         }
 
         if (workoutDaysCount === 2) {
             const exercisesInDay2 = exercisesPerDay[1] || 0;
+            const currentDay = 2;
+            const actualWeek = Math.ceil(currentDay / daysPerWeek);
+            const dayInWeek = ((currentDay - 1) % daysPerWeek) + 1;
             if (exercisesInDay2 === 0) {
-                return { message: 'Building Day 2...', isComplete: false };
+                return { message: `Building Week ${actualWeek}, Day ${dayInWeek}...`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
             } else if (exercisesInDay2 < 4) {
-                return { message: `Adding exercises to Day 2... (${exercisesInDay2} exercises)`, isComplete: false };
+                return { message: `Adding exercises to Week ${actualWeek}, Day ${dayInWeek}... (${exercisesInDay2} exercises)`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
             } else {
-                return { message: 'Day 2 complete, building Day 3...', isComplete: false };
+                const nextDay = 3;
+                const nextWeek = Math.ceil(nextDay / daysPerWeek);
+                const nextDayInWeek = ((nextDay - 1) % daysPerWeek) + 1;
+                return { message: `Building Week ${nextWeek}, Day ${nextDayInWeek}...`, isComplete: false, stepId: `week-${nextWeek}-day-${nextDayInWeek}`, completedStepMessage: `Week ${actualWeek}, Day ${dayInWeek} complete` };
             }
         }
 
         if (workoutDaysCount >= 3) {
             const currentDay = workoutDaysCount;
             const exercisesInCurrentDay = exercisesPerDay[currentDay - 1] || 0;
-            const estimatedWeek = Math.ceil(currentDay / 3); // Assuming ~3 days per week
+            const actualWeek = Math.ceil(currentDay / daysPerWeek);
+            const dayInWeek = ((currentDay - 1) % daysPerWeek) + 1;
 
             if (exercisesInCurrentDay === 0) {
-                return { message: `Building Week ${estimatedWeek}, Day ${currentDay}...`, isComplete: false };
+                return { message: `Building Week ${actualWeek}, Day ${dayInWeek}...`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
             } else if (exercisesInCurrentDay < 4) {
-                return { message: `Adding exercises to Week ${estimatedWeek}, Day ${currentDay}... (${exercisesInCurrentDay} exercises)`, isComplete: false };
+                return { message: `Adding exercises to Week ${actualWeek}, Day ${dayInWeek}... (${exercisesInCurrentDay} exercises)`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
             } else {
-                return { message: `Week ${estimatedWeek}, Day ${currentDay} complete, continuing...`, isComplete: false };
+                const nextDay = currentDay + 1;
+                const nextWeek = Math.ceil(nextDay / daysPerWeek);
+                const nextDayInWeek = ((nextDay - 1) % daysPerWeek) + 1;
+                return { message: `Building Week ${nextWeek}, Day ${nextDayInWeek}...`, isComplete: false, stepId: `week-${nextWeek}-day-${nextDayInWeek}`, completedStepMessage: `Week ${actualWeek}, Day ${dayInWeek} complete` };
             }
         }
 
-        return { message: 'Generating workout program...', isComplete: false };
+        return { message: 'Generating workout program...', isComplete: false, stepId: 'generating' };
     };
+
 
     return (
         <div className="flex flex-col h-[85vh]">
@@ -388,21 +409,14 @@ function RePrompt({ sidebarPosition, onTogglePosition, onProgramGenerated }: IRe
                                                             {conversationalText}
                                                         </MessageContent>
                                                     )}
-                                                    <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg border border-border/50">
-                                                        <div className="flex items-center gap-2 flex-1">
-                                                            {status.isComplete ? (
-                                                                <>
-                                                                    <div className="h-2 w-2 rounded-full bg-green-500" />
-                                                                    <span className="text-sm text-muted-foreground">{status.message}</span>
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                                                                    <span className="text-sm text-muted-foreground">{status.message}</span>
-                                                                </>
-                                                            )}
-                                                        </div>
-                                                    </div>
+                                                    <ProgramAccordion
+                                                        messages={messages}
+                                                        isLoading={isLoading}
+                                                        currentStatus={status}
+                                                        daysPerWeek={Number(searchParams.get('daysPerWeek') || '3')}
+                                                        getProgramGenerationStatus={getProgramGenerationStatus}
+                                                        containsProgramJson={containsProgramJson}
+                                                    />
                                                     <MessageActions
                                                         className={cn(
                                                             "-ml-2.5 flex gap-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100",
