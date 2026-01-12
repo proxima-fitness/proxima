@@ -16,7 +16,7 @@ import { useIsHevy } from "@/contexts/HevyContext";
 import { BuildProgramSkeleton } from "@/components/program-builder/shared/BuildProgramSkeleton";
 import { appendOrderToHevyRoutines } from "@/components/program-builder/utils/format-responses";
 import { HevyRoutine } from "@/components/program-builder/hevy/HevyRoutine";
-import { useSharedProgram } from "@/api/hooks";
+import { getSharedProgram } from "@/api/programs";
 
 export function BuildProgramClient() {
 
@@ -27,9 +27,18 @@ export function BuildProgramClient() {
     const shareId = searchParams.get('shareId') ?? '';
     const edit = searchParams.get('edit') ?? '';
     const resume = searchParams.get('resume') ?? '';
-    const [resumeHevyProgram, setResumeHevyProgram] = useState<THevyRoutine[]>();
+    const shared = searchParams.get('shared') ?? '';
 
     useEffect(() => {
+
+        const fetchSharedProgram = async () => {
+            const sharedProgram = await getSharedProgram(shareId);
+            if (sharedProgram) {
+                setHevyProgram(sharedProgram);
+            }
+        }
+
+
         if (edit === 'true') {
             setIsPreview(false);
         } else {
@@ -39,16 +48,16 @@ export function BuildProgramClient() {
         if (resume === 'true') {
             const program = localStorage.getItem('hevy-program-in-progress');
             if (program) {
-                setResumeHevyProgram(JSON.parse(program));
+                setHevyProgram(JSON.parse(program));
             }
-            // } else {
-            //     const program = localStorage.getItem('program-in-progress');
-            //     if (program) {
-            //         setResumeProximaProgram(JSON.parse(program));
-            //     }
-            // }
         }
-    }, [edit, setIsPreview, resume, isHevy]);
+
+        if (shared === 'true') {
+            fetchSharedProgram();
+        }
+
+
+    }, [edit, setIsPreview, resume, isHevy, shared, shareId]);
 
     // Load sidebar position and size from localStorage on mount
     useEffect(() => {
@@ -89,6 +98,8 @@ export function BuildProgramClient() {
 
     const [sidebarPosition, setSidebarPosition] = useState<"left" | "right">("left");
     const [sidebarSize, setSidebarSize] = useState(20);
+
+    // Single Source of Truth for the Program Displayed in the AI Program Builder
     const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>([]);
 
     const request = useMemo(() => ({
@@ -142,36 +153,6 @@ export function BuildProgramClient() {
         }
     }, [search]);
 
-    const { data: sharedProgram, isLoading: loadingSharedProgram } = useSharedProgram(shareId, resume);
-
-        // Determine which program to use: generatedProgram > sharedProgram > resumeHevyProgram
-        const programToUse = hevyProgram || (shareId && shareId.length > 0 ? sharedProgram : undefined);
-
-        if (!programToUse && (loadingSharedProgram || sharedProgram === undefined) && resume === "" && !hevyProgram) {
-            return (
-                <BuildProgramSkeleton />
-            );
-        }
-
-        if (resume === "true") {
-            if (!resumeHevyProgram) {
-                return (
-                    <BuildProgramSkeleton />
-                );
-            }
-            if (resumeHevyProgram) {
-                return (
-                    <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
-                        <HevyRoutine request={ request } hevyProgram={ appendOrderToHevyRoutines(resumeHevyProgram) as THevyRoutine[] } setHevyProgram={ setHevyProgram } />
-                    </div>
-                );
-            }
-
-        }
-
-    const finalProgram = programToUse || resumeHevyProgram;
-
-
     const toggleSidebarPosition = () => {
         setSidebarPosition((prev) => {
             const newPosition = prev === "left" ? "right" : "left";
@@ -180,7 +161,7 @@ export function BuildProgramClient() {
         });
     };
 
-    if (!finalProgram) {
+    if (!hevyProgram || hevyProgram.length === 0) {
         return (
             <BuildProgramSkeleton />
         );
@@ -220,7 +201,7 @@ export function BuildProgramClient() {
                             minSize={30}
                         >
                             <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
-                                <HevyRoutine request={ request } hevyProgram={ appendOrderToHevyRoutines(finalProgram) as THevyRoutine[] } setHevyProgram={ setHevyProgram } />
+                                <HevyRoutine request={ request } hevyProgram={ appendOrderToHevyRoutines(hevyProgram) as THevyRoutine[] } setHevyProgram={ setHevyProgram } />
                             </div>
                         </ResizablePanel>
                     </>
@@ -232,7 +213,7 @@ export function BuildProgramClient() {
                             minSize={30}
                         >
                             <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
-                                <HevyRoutine request={ request } hevyProgram={ appendOrderToHevyRoutines(finalProgram) as THevyRoutine[] } setHevyProgram={ setHevyProgram } />
+                                <HevyRoutine request={ request } hevyProgram={ appendOrderToHevyRoutines(hevyProgram) as THevyRoutine[] } setHevyProgram={ setHevyProgram } />
                             </div>
                         </ResizablePanel>
                         <ResizableHandle withHandle className="" />
@@ -260,7 +241,7 @@ export function BuildProgramClient() {
             </div>
             <div className="max-sm:block sm:hidden">
                 <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
-                    <HevyRoutine request={ request } hevyProgram={ appendOrderToHevyRoutines(finalProgram) as THevyRoutine[] } setHevyProgram={ setHevyProgram } />
+                    <HevyRoutine request={ request } hevyProgram={ appendOrderToHevyRoutines(hevyProgram) as THevyRoutine[] } setHevyProgram={ setHevyProgram } />
                 </div>
             </div>
         </>
