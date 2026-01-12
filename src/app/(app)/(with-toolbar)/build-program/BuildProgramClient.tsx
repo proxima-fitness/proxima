@@ -1,7 +1,6 @@
 "use client";
 
-import { BuildProgramPage } from "@/components/program-builder/shared/BuildProgramPage";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
     ResizableHandle,
     ResizablePanel,
@@ -11,11 +10,45 @@ import {
 import { AgentChat } from "@/components/program-builder/shared/AgentChat";
 const SIDEBAR_POSITION_KEY = "andy-sidebar-position";
 const SIDEBAR_SIZE_KEY = "andy-sidebar-size";
+import { useSearchParams } from "next/navigation";
+import { usePreview } from "@/contexts/PreviewContext";
+import { useIsHevy } from "@/contexts/HevyContext";
+import { BuildProgramSkeleton } from "@/components/program-builder/shared/BuildProgramSkeleton";
+import { appendOrderToHevyRoutines } from "@/components/program-builder/utils/format-responses";
+import { HevyRoutine } from "@/components/program-builder/hevy/HevyRoutine";
+import { useSharedProgram } from "@/api/hooks";
 
 export function BuildProgramClient() {
-    const [sidebarPosition, setSidebarPosition] = useState<"left" | "right">("left");
-    const [sidebarSize, setSidebarSize] = useState(20);
-    const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>([]);
+
+    const { isHevy } = useIsHevy();
+    const { setIsPreview } = usePreview();
+    const searchParams = useSearchParams();
+
+    const shareId = searchParams.get('shareId') ?? '';
+    const edit = searchParams.get('edit') ?? '';
+    const resume = searchParams.get('resume') ?? '';
+    const [resumeHevyProgram, setResumeHevyProgram] = useState<THevyRoutine[]>();
+
+    useEffect(() => {
+        if (edit === 'true') {
+            setIsPreview(false);
+        } else {
+            setIsPreview(true);
+        }
+
+        if (resume === 'true') {
+            const program = localStorage.getItem('hevy-program-in-progress');
+            if (program) {
+                setResumeHevyProgram(JSON.parse(program));
+            }
+            // } else {
+            //     const program = localStorage.getItem('program-in-progress');
+            //     if (program) {
+            //         setResumeProximaProgram(JSON.parse(program));
+            //     }
+            // }
+        }
+    }, [edit, setIsPreview, resume, isHevy]);
 
     // Load sidebar position and size from localStorage on mount
     useEffect(() => {
@@ -32,6 +65,113 @@ export function BuildProgramClient() {
         }
     }, []);
 
+    const empty = searchParams.get('empty') ?? '';
+    const search = searchParams.get('search') ?? '';
+    const sex = searchParams.get('sex') ?? '';
+    const age = searchParams.get('age') ?? '';
+    const daysPerWeek = searchParams.get('daysPerWeek') ?? '';
+    const specificDays = searchParams.get('specificDays') ?? '';
+    const programLength = searchParams.get('programLength') ?? '';
+    const workoutDuration = searchParams.get('workoutDuration') ?? '';
+    const activityLevel = searchParams.get('activityLevel') ?? '';
+    const goals = searchParams.get('goals') ?? '';
+    const specialization = searchParams.get('specialization') ?? '';
+    const equipment = searchParams.get('equipment') ?? '';
+    const focusAreas = searchParams.get('focusAreas') ?? '';
+    const difficultyLevel = searchParams.get('difficultyLevel') ?? '';
+    const excludeAreas = searchParams.get('excludeAreas') ?? '';
+    const excludeEquipment = searchParams.get('excludeEquipment') ?? '';
+    const excludeSpecializations = searchParams.get('excludeSpecializations') ?? '';
+    const healthIssues = searchParams.get('healthIssues') ?? '';
+    const programTitle = searchParams.get('programTitle') ?? '';
+    const explore = searchParams.get('explore') ?? '';
+
+
+    const [sidebarPosition, setSidebarPosition] = useState<"left" | "right">("left");
+    const [sidebarSize, setSidebarSize] = useState(20);
+    const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>([]);
+
+    const request = useMemo(() => ({
+        empty,
+        search,
+        sex,
+        age,
+        daysPerWeek,
+        specificDays,
+        programLength,
+        workoutDuration,
+        activityLevel,
+        goals,
+        specialization,
+        equipment,
+        focusAreas,
+        difficultyLevel,
+        excludeAreas,
+        excludeEquipment,
+        excludeSpecializations,
+        healthIssues,
+        programTitle,
+        explore,
+      } as TTextToJsonRequest), [
+        empty,
+        search,
+        sex,
+        age,
+        daysPerWeek,
+        specificDays,
+        programLength,
+        workoutDuration,
+        activityLevel,
+        goals,
+        specialization,
+        equipment,
+        focusAreas,
+        difficultyLevel,
+        excludeAreas,
+        excludeEquipment,
+        excludeSpecializations,
+        healthIssues,
+        programTitle,
+        explore,
+    ]);
+
+    // Save the prompt to local storage so that it can be saved to the database
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            localStorage.setItem("prompt", JSON.stringify(search));
+        }
+    }, [search]);
+
+    const { data: sharedProgram, isLoading: loadingSharedProgram } = useSharedProgram(shareId, resume);
+
+        // Determine which program to use: generatedProgram > sharedProgram > resumeHevyProgram
+        const programToUse = hevyProgram || (shareId && shareId.length > 0 ? sharedProgram : undefined);
+
+        if (!programToUse && (loadingSharedProgram || sharedProgram === undefined) && resume === "" && !hevyProgram) {
+            return (
+                <BuildProgramSkeleton />
+            );
+        }
+
+        if (resume === "true") {
+            if (!resumeHevyProgram) {
+                return (
+                    <BuildProgramSkeleton />
+                );
+            }
+            if (resumeHevyProgram) {
+                return (
+                    <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
+                        <HevyRoutine request={ request } hevyProgram={ appendOrderToHevyRoutines(resumeHevyProgram) as THevyRoutine[] } setHevyProgram={ setHevyProgram } />
+                    </div>
+                );
+            }
+
+        }
+
+    const finalProgram = programToUse || resumeHevyProgram;
+
+
     const toggleSidebarPosition = () => {
         setSidebarPosition((prev) => {
             const newPosition = prev === "left" ? "right" : "left";
@@ -39,6 +179,13 @@ export function BuildProgramClient() {
             return newPosition;
         });
     };
+
+    if (!finalProgram) {
+        return (
+            <BuildProgramSkeleton />
+        );
+    }
+
 
     return (
         <>
@@ -72,7 +219,9 @@ export function BuildProgramClient() {
                             order={2}
                             minSize={30}
                         >
-                            <BuildProgramPage hevyProgram={hevyProgram} setHevyProgram={setHevyProgram} />
+                            <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
+                                <HevyRoutine request={ request } hevyProgram={ appendOrderToHevyRoutines(finalProgram) as THevyRoutine[] } setHevyProgram={ setHevyProgram } />
+                            </div>
                         </ResizablePanel>
                     </>
                 ) : (
@@ -82,7 +231,9 @@ export function BuildProgramClient() {
                             order={1}
                             minSize={30}
                         >
-                            <BuildProgramPage hevyProgram={hevyProgram} setHevyProgram={setHevyProgram} />
+                            <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
+                                <HevyRoutine request={ request } hevyProgram={ appendOrderToHevyRoutines(finalProgram) as THevyRoutine[] } setHevyProgram={ setHevyProgram } />
+                            </div>
                         </ResizablePanel>
                         <ResizableHandle withHandle className="" />
                         <ResizablePanel
@@ -108,7 +259,9 @@ export function BuildProgramClient() {
                 </ResizablePanelGroup>
             </div>
             <div className="max-sm:block sm:hidden">
-                    <BuildProgramPage hevyProgram={hevyProgram} setHevyProgram={setHevyProgram} />
+                <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
+                    <HevyRoutine request={ request } hevyProgram={ appendOrderToHevyRoutines(finalProgram) as THevyRoutine[] } setHevyProgram={ setHevyProgram } />
+                </div>
             </div>
         </>
     );
