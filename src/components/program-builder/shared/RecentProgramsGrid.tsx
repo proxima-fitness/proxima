@@ -45,7 +45,7 @@ export const RecentProgramsGrid: React.FC = () => {
             <span className="text-xs text-start px-8 pt-4">Without signing in you can have one active program for each schema at a time. Click on a program to resume building it.</span>
             <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 py-8 px-8">
                 { hevyRoutine &&
-                    <div key={ hevyRoutine[0].id } className="relative group bg-white dark:bg-darkGray dark:text-white text-black h-[200px] rounded-lg shadow-lg">
+                    <div key={ hevyRoutine[0]?.id } className="relative group bg-white dark:bg-darkGray dark:text-white text-black h-[200px] rounded-lg shadow-lg">
                     <div className="absolute inset-0 transition duration-300 group-hover:blur-sm z-0">
                         <div className="flex flex-row items-center justify-start gap-2 font-main text-sm">
                             <img

@@ -161,12 +161,6 @@ export function BuildProgramClient() {
         });
     };
 
-    if (!hevyProgram || hevyProgram.length === 0) {
-        return (
-            <BuildProgramSkeleton />
-        );
-    }
-
 
     return (
         <>
@@ -191,7 +185,7 @@ export function BuildProgramClient() {
                             <AgentChat
                                 sidebarPosition={sidebarPosition}
                                 onTogglePosition={toggleSidebarPosition}
-                                onProgramGenerated={setHevyProgram}
+                                setHevyProgram={setHevyProgram}
                             />
                         </ResizablePanel>
                         <ResizableHandle withHandle className="" />
@@ -200,9 +194,13 @@ export function BuildProgramClient() {
                             order={2}
                             minSize={30}
                         >
+                            { hevyProgram.length > 0 ? (
                             <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
-                                <HevyRoutine request={ request } hevyProgram={ appendOrderToHevyRoutines(hevyProgram) as THevyRoutine[] } setHevyProgram={ setHevyProgram } />
+                                <HevyRoutine request={ request } hevyProgram={  appendOrderToHevyRoutines(hevyProgram) as THevyRoutine[] } setHevyProgram={ setHevyProgram } />
                             </div>
+                            ) : (
+                                <BuildProgramSkeleton />
+                            )}
                         </ResizablePanel>
                     </>
                 ) : (
@@ -212,9 +210,13 @@ export function BuildProgramClient() {
                             order={1}
                             minSize={30}
                         >
+                            { hevyProgram.length > 0 ? (
                             <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
                                 <HevyRoutine request={ request } hevyProgram={ appendOrderToHevyRoutines(hevyProgram) as THevyRoutine[] } setHevyProgram={ setHevyProgram } />
                             </div>
+                            ) : (
+                                <BuildProgramSkeleton />
+                            )}
                         </ResizablePanel>
                         <ResizableHandle withHandle className="" />
                         <ResizablePanel
@@ -232,7 +234,7 @@ export function BuildProgramClient() {
                             <AgentChat
                                 sidebarPosition={sidebarPosition}
                                 onTogglePosition={toggleSidebarPosition}
-                                onProgramGenerated={setHevyProgram}
+                                setHevyProgram={setHevyProgram}
                             />
                         </ResizablePanel>
                     </>
@@ -240,9 +242,13 @@ export function BuildProgramClient() {
                 </ResizablePanelGroup>
             </div>
             <div className="max-sm:block sm:hidden">
+                { hevyProgram.length > 0 ? (
                 <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
                     <HevyRoutine request={ request } hevyProgram={ appendOrderToHevyRoutines(hevyProgram) as THevyRoutine[] } setHevyProgram={ setHevyProgram } />
                 </div>
+                ) : (
+                    <BuildProgramSkeleton />
+                )}
             </div>
         </>
     );

@@ -28,7 +28,7 @@ import {
   ThumbsUp,
   Trash,
 } from "lucide-react"
-import { useState, useEffect, useReducer, useRef } from "react"
+import React, { useState, useEffect, useReducer, useRef } from "react"
 import { ScrollButton } from "@/components/ui/scroll-button"
 import { useSearchParams } from "next/navigation"
 import MultiSelect, { IOption } from "@/components/ui/multi-select"
@@ -52,10 +52,10 @@ import { Loader2 } from "lucide-react";
 interface IRePromptProps {
     sidebarPosition: "left" | "right";
     onTogglePosition: () => void;
-    onProgramGenerated?: (program: THevyRoutine[]) => void;
+    setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
 }
 
-function AgentChat({ sidebarPosition, onTogglePosition, onProgramGenerated }: IRePromptProps) {
+function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram }: IRePromptProps) {
 
     // const submitRef = useRef<HTMLAnchorElement>(null);
     const searchParams = useSearchParams();
@@ -111,7 +111,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, onProgramGenerated }: IR
 
     // Parse program from AI responses and convert to THevyRoutine[]
     useEffect(() => {
-        if (!onProgramGenerated) return;
+        if (!setHevyProgram) return;
 
         // Helper function to convert TTextToJsonResponse to THevyRoutine[]
         const convertTextToJsonToHevyRoutine = async (textToJsonResponse: TTextToJsonResponse) => {
@@ -134,7 +134,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, onProgramGenerated }: IR
                 );
 
                 if (hevyRoutines && Array.isArray(hevyRoutines)) {
-                    onProgramGenerated(hevyRoutines);
+                    setHevyProgram(hevyRoutines);
                 }
             } catch (error) {
                 console.error('Error converting program to HevyRoutine:', error);
@@ -182,7 +182,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, onProgramGenerated }: IR
                 });
             }
         });
-    }, [messages, onProgramGenerated, searchParams]);
+    }, [messages, setHevyProgram, searchParams]);
 
     // Monitor message changes to detect gaps in token streaming
     useEffect(() => {
@@ -226,7 +226,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, onProgramGenerated }: IR
             if (currentText.length > 0) {
                 thinkingTimeoutRef.current = setTimeout(() => {
                     setIsThinking(true);
-                }, 600); // 600ms delay before showing "Thinking"
+                }, 10);
             }
         }
 
@@ -615,7 +615,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, onProgramGenerated }: IR
                                     // Handle tool result - extract program if present
                                     const toolOutput = part.output as { program?: THevyRoutine[] };
                                     if (toolOutput?.program && Array.isArray(toolOutput.program)) {
-                                        onProgramGenerated?.(toolOutput.program);
+                                        setHevyProgram(toolOutput.program);
                                     }
                                     return null;
                                 }
@@ -624,7 +624,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, onProgramGenerated }: IR
                                     if (part.type === 'tool-result' && 'output' in part) {
                                         const output = (part as { output?: { program?: THevyRoutine[] } }).output;
                                         if (output?.program && Array.isArray(output.program)) {
-                                            onProgramGenerated?.(output.program);
+                                            setHevyProgram(output.program);
                                         }
                                     }
                                     return null;
