@@ -416,33 +416,35 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
 
 
     return (
-        <div className="flex flex-col h-[85vh]">
+        <div className="flex flex-col h-[85vh] max-sm:h-full">
             <div className="min-h-12  px-2 flex flex-row justify-between items-center gap-2 flex-shrink-0 border-b">
-                <div className="flex flex-row gap-2">
+                <div className="flex flex-row gap-2 max-sm:hidden">
                     <Button variant="ghost" className={`w-24 text-white hover:bg-gray-800 hover:text-white ${!isFilters ? "bg-black dark:bg-white dark:text-black" : "bg-white dark:bg-black dark:text-white text-black"}`} onClick={() => setIsFilters(false)}>Chat</Button>
                     <Button variant="ghost" className={`w-24 text-white hover:bg-gray-800 hover:text-white ${isFilters ? "bg-black dark:bg-white dark:text-black" : "bg-white dark:bg-black dark:text-white text-black"}`} onClick={() => setIsFilters(true)}>Filters</Button>
                 </div>
-                <TooltipProvider delayDuration={0}>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-black dark:text-white bg-white dark:bg-black hover:bg-gray-200 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600"
-                                onClick={onTogglePosition}
-                            >
-                                {sidebarPosition === "left" ? (
-                                    <PanelRight className="h-5 w-5" />
-                                ) : (
-                                    <PanelLeft className="h-5 w-5" />
-                                )}
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900">
-                            {sidebarPosition === "left" ? "Move sidebar to right" : "Move sidebar to left"}
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
+                <div className="max-sm:hidden">
+                    <TooltipProvider delayDuration={0}>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-black dark:text-white bg-white dark:bg-black hover:bg-gray-200 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600"
+                                    onClick={onTogglePosition}
+                                >
+                                    {sidebarPosition === "left" ? (
+                                        <PanelRight className="h-5 w-5" />
+                                    ) : (
+                                        <PanelLeft className="h-5 w-5" />
+                                    )}
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900">
+                                {sidebarPosition === "left" ? "Move sidebar to right" : "Move sidebar to left"}
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                </div>
             </div>
         <ChatContainerRoot className={`flex-1 relative ${isFilters ? "overflow-hidden" : "overflow-y-auto"}`}>
             <ChatContainerContent className="h-full">
@@ -464,7 +466,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                                             <Message
                                                 key={`${message.id}-${index}`}
                                                 className={cn(
-                                                    "mx-auto flex w-full max-w-3xl flex-col gap-2 px-0 md:px-6 pt-2",
+                                                    "mx-auto flex w-full max-w-3xl flex-col gap-2 px-4 md:px-6 pt-2",
                                                     "items-start"
                                                 )}
                                             >

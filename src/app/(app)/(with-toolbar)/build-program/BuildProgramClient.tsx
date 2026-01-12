@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
     ResizableHandle,
     ResizablePanel,
@@ -8,6 +8,8 @@ import {
   } from "@/components/ui/resizable";
 
 import { AgentChat } from "@/components/program-builder/shared/AgentChat";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 const SIDEBAR_POSITION_KEY = "andy-sidebar-position";
 const SIDEBAR_SIZE_KEY = "andy-sidebar-size";
 import { useSearchParams } from "next/navigation";
@@ -28,6 +30,12 @@ export function BuildProgramClient() {
     const edit = searchParams.get('edit') ?? '';
     const resume = searchParams.get('resume') ?? '';
     const shared = searchParams.get('shared') ?? '';
+
+    // State declarations
+    const [sidebarPosition, setSidebarPosition] = useState<"left" | "right">("left");
+    const [sidebarSize, setSidebarSize] = useState(20);
+    const [mobileTab, setMobileTab] = useState<string>("chat");
+    const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>([]);
 
     useEffect(() => {
 
@@ -95,12 +103,22 @@ export function BuildProgramClient() {
     const programTitle = searchParams.get('programTitle') ?? '';
     const explore = searchParams.get('explore') ?? '';
 
+    // Switch back to chat tab if program is cleared while on program tab
+    useEffect(() => {
+        if (hevyProgram.length === 0 && mobileTab === "program") {
+            setMobileTab("chat");
+        }
+    }, [hevyProgram.length, mobileTab]);
 
-    const [sidebarPosition, setSidebarPosition] = useState<"left" | "right">("left");
-    const [sidebarSize, setSidebarSize] = useState(20);
-
-    // Single Source of Truth for the Program Displayed in the AI Program Builder
-    const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>([]);
+    // Auto-switch to program tab when program finishes generating
+    const prevProgramLengthRef = useRef(hevyProgram.length);
+    useEffect(() => {
+        // If program was just generated (went from 0 to > 0), switch to program tab
+        if (prevProgramLengthRef.current === 0 && hevyProgram.length > 0) {
+            setMobileTab("program");
+        }
+        prevProgramLengthRef.current = hevyProgram.length;
+    }, [hevyProgram.length]);
 
     const request = useMemo(() => ({
         empty,
@@ -160,6 +178,9 @@ export function BuildProgramClient() {
             return newPosition;
         });
     };
+
+    // No-op function for mobile since sidebar position toggle isn't relevant
+    const mobileToggleSidebarPosition = () => {};
 
 
     return (
@@ -243,14 +264,53 @@ export function BuildProgramClient() {
                 )}
                 </ResizablePanelGroup>
             </div>
-            <div className="max-sm:block sm:hidden">
-                { hevyProgram.length > 0 ? (
-                <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
-                    <HevyRoutine request={ request } hevyProgram={ appendOrderToHevyRoutines(hevyProgram) as THevyRoutine[] } setHevyProgram={ setHevyProgram } />
-                </div>
-                ) : (
-                    <BuildProgramSkeleton />
-                )}
+            <div className="max-sm:block sm:hidden h-[calc(100vh-4rem)] flex flex-col">
+                <Tabs value={mobileTab} onValueChange={(value) => {
+                    // Prevent switching to Program tab if no program exists
+                    if (value === "program" && hevyProgram.length === 0) {
+                        return;
+                    }
+                    setMobileTab(value);
+                }} className="flex flex-col h-full">
+                    <TabsList className="w-full justify-start rounded-none border-b bg-background px-4">
+                        <TabsTrigger
+                            value="chat"
+                            className={cn(
+                                "data-[state=active]:bg-lightSecondary data-[state=active]:text-white"
+                            )}
+                        >
+                            Chat
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="program"
+                            disabled={hevyProgram.length === 0}
+                            className={cn(
+                                hevyProgram.length > 0
+                                    ? "data-[state=active]:bg-lightSecondary data-[state=active]:text-white"
+                                    : "opacity-50 cursor-not-allowed"
+                            )}
+                        >
+                            My Program
+                        </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="chat" className="flex-1 overflow-hidden m-0 mt-0 px-4">
+                        <AgentChat
+                            sidebarPosition="left"
+                            onTogglePosition={mobileToggleSidebarPosition}
+                            setHevyProgram={setHevyProgram}
+                            hevyProgram={hevyProgram}
+                        />
+                    </TabsContent>
+                    <TabsContent value="program" className="flex-1 overflow-y-auto m-0 mt-0 px-4">
+                        { hevyProgram.length > 0 ? (
+                            <div className="w-full max-w-full overflow-x-hidden">
+                                <HevyRoutine request={ request } hevyProgram={ appendOrderToHevyRoutines(hevyProgram) as THevyRoutine[] } setHevyProgram={ setHevyProgram } />
+                            </div>
+                        ) : (
+                            <BuildProgramSkeleton />
+                        )}
+                    </TabsContent>
+                </Tabs>
             </div>
         </>
     );
