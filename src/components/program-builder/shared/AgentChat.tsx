@@ -76,7 +76,6 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
         },
       }),
     });
-    console.log("messages", messages);
     const isLoading = status === 'submitted' || status === 'streaming';
     const search = searchParams.get('search') ?? '';
     const [sex, setSex] = useState<string>(searchParams.get('sex') ?? "");
@@ -100,7 +99,9 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
     const [explore, toggleExplore] = useReducer(prev => !prev, searchParams.get('explore') === 'true');
 
     const [isFilters, setIsFilters] = useState(false)
-    const lastSentSearch = useRef<string | null>(null);
+    const lastSentSearch = useRef<string | null>(
+        typeof window !== 'undefined' ? sessionStorage.getItem('lastSentSearch') : null
+    );
     const processedMessageIds = useRef<Set<string>>(new Set());
 
     // Thinking state for gaps in token streaming
@@ -112,6 +113,9 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
     useEffect(() => {
         if (search && search !== lastSentSearch.current) {
             lastSentSearch.current = search;
+            if (typeof window !== 'undefined') {
+                sessionStorage.setItem('lastSentSearch', search);
+            }
             sendMessage({ text: search });
         }
     }, [search, sendMessage]);
