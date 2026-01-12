@@ -15,7 +15,7 @@ const SIDEBAR_SIZE_KEY = "andy-sidebar-size";
 export function BuildProgramClient() {
     const [sidebarPosition, setSidebarPosition] = useState<"left" | "right">("left");
     const [sidebarSize, setSidebarSize] = useState(20);
-    const [generatedProgram, setGeneratedProgram] = useState<THevyRoutine[] | undefined>();
+    const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>([]);
 
     // Load sidebar position and size from localStorage on mount
     useEffect(() => {
@@ -63,7 +63,7 @@ export function BuildProgramClient() {
                             <AgentChat
                                 sidebarPosition={sidebarPosition}
                                 onTogglePosition={toggleSidebarPosition}
-                                onProgramGenerated={setGeneratedProgram}
+                                onProgramGenerated={setHevyProgram}
                             />
                         </ResizablePanel>
                         <ResizableHandle withHandle className="" />
@@ -72,7 +72,7 @@ export function BuildProgramClient() {
                             order={2}
                             minSize={30}
                         >
-                            <BuildProgramPage generatedProgram={generatedProgram} />
+                            <BuildProgramPage hevyProgram={hevyProgram} setHevyProgram={setHevyProgram} />
                         </ResizablePanel>
                     </>
                 ) : (
@@ -82,7 +82,7 @@ export function BuildProgramClient() {
                             order={1}
                             minSize={30}
                         >
-                            <BuildProgramPage generatedProgram={generatedProgram} />
+                            <BuildProgramPage hevyProgram={hevyProgram} setHevyProgram={setHevyProgram} />
                         </ResizablePanel>
                         <ResizableHandle withHandle className="" />
                         <ResizablePanel
@@ -100,7 +100,7 @@ export function BuildProgramClient() {
                             <AgentChat
                                 sidebarPosition={sidebarPosition}
                                 onTogglePosition={toggleSidebarPosition}
-                                onProgramGenerated={setGeneratedProgram}
+                                onProgramGenerated={setHevyProgram}
                             />
                         </ResizablePanel>
                     </>
@@ -108,7 +108,7 @@ export function BuildProgramClient() {
                 </ResizablePanelGroup>
             </div>
             <div className="max-sm:block sm:hidden">
-                    <BuildProgramPage generatedProgram={generatedProgram} />
+                    <BuildProgramPage hevyProgram={hevyProgram} setHevyProgram={setHevyProgram} />
             </div>
         </>
     );

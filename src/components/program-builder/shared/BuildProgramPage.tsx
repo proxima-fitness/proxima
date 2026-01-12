@@ -7,12 +7,14 @@ import { useSharedProgram } from "@/api/hooks";
 import { useEffect, useMemo, useState } from "react";
 import { usePreview } from "@/contexts/PreviewContext";
 import { HevyRoutine } from "../hevy/HevyRoutine";
+import { appendOrderToHevyRoutines } from "../utils/format-responses";
 
-interface IBuildProgramPageProps {
-    generatedProgram?: THevyRoutine[];
+interface IProps {
+    hevyProgram: THevyRoutine[];
+    setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
 }
 
-export const BuildProgramPage: React.FC<IBuildProgramPageProps> = ({ generatedProgram }) => {
+export const BuildProgramPage: React.FC<IProps> = ({ hevyProgram, setHevyProgram }) => {
 
     const { isHevy } = useIsHevy();
     const { setIsPreview } = usePreview();
@@ -121,9 +123,9 @@ export const BuildProgramPage: React.FC<IBuildProgramPageProps> = ({ generatedPr
     const { data: sharedProgram, isLoading: loadingSharedProgram } = useSharedProgram(shareId, resume);
 
     // Determine which program to use: generatedProgram > sharedProgram > resumeHevyProgram
-    const programToUse = generatedProgram || (shareId && shareId.length > 0 ? sharedProgram : undefined);
+    const programToUse = hevyProgram || (shareId && shareId.length > 0 ? sharedProgram : undefined);
 
-    if (!programToUse && (loadingSharedProgram || sharedProgram === undefined) && resume === "" && !generatedProgram) {
+    if (!programToUse && (loadingSharedProgram || sharedProgram === undefined) && resume === "" && !hevyProgram) {
         return (
             <BuildProgramSkeleton />
         );
@@ -138,24 +140,11 @@ export const BuildProgramPage: React.FC<IBuildProgramPageProps> = ({ generatedPr
         if (resumeHevyProgram) {
             return (
                 <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
-                    <HevyRoutine request={ request } program={ resumeHevyProgram as THevyRoutine[] } />
+                    <HevyRoutine request={ request } hevyProgram={ appendOrderToHevyRoutines(resumeHevyProgram) as THevyRoutine[] } setHevyProgram={ setHevyProgram } />
                 </div>
             );
         }
-        // } else if (!isHevy) {
-        //     if (!resumeProximaProgram) {
-        //         return (
-        //             <BuildProgramSkeleton />
-        //         );
-        //     }
-        //     if (resumeProximaProgram) {
-        //         return (
-        //             <div className="sm:pl-8">
-        //                 <ProximaProgram request={ request } program={ resumeProximaProgram as TProgramCreatorDay[][] } />
-        //             </div>
-        //         );
-        //     }
-        // }
+
     }
 
     // Use generatedProgram if available, otherwise fall back to sharedProgram or resumeHevyProgram
@@ -169,14 +158,7 @@ export const BuildProgramPage: React.FC<IBuildProgramPageProps> = ({ generatedPr
 
     return (
         <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
-            <HevyRoutine request={ request } program={ finalProgram as THevyRoutine[] } />
+            <HevyRoutine request={ request } hevyProgram={ appendOrderToHevyRoutines(finalProgram) as THevyRoutine[] } setHevyProgram={ setHevyProgram } />
         </div>
     );
-    // } else if (!isHevy) {
-    //     return (
-    //         <div className="sm:pl-8">
-    //             <ProximaProgram request={ request } program={ program as TProgramCreatorDay[][] } />
-    //         </div>
-    //     );
-    // }
 };

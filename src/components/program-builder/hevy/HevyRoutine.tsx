@@ -7,7 +7,7 @@ import { HevyAddExerciseDialog } from "./HevyAddExerciseDialog";
 import { HevyGenerateDayDialog } from "./HevyGenerateDayDialog";
 import { IOption } from "@/components/ui/multi-select";
 import { toast } from "sonner";
-import { aiRequest, appendOrderToHevyRoutines, deFlattenHevyRoutine, getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy, sortHevyByOrder } from "../utils";
+import { aiRequest, deFlattenHevyRoutine, getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy, sortHevyByOrder } from "../utils";
 import { buildHevyProgram } from "../utils/build-hevy-program";
 import { HevyAddNoteDialog } from "./HevyAddNoteDialog";
 import { HevyExerciseNotesDialog } from "./HevyExerciseNotesDialog";
@@ -22,15 +22,17 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface IProps {
-    program: THevyRoutine[];
     request: TTextToJsonRequest;
+    hevyProgram: THevyRoutine[];
+    setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
 }
 
 export const HevyRoutine: React.FC<IProps> = (props) => {
 
     const {
-        program,
+        hevyProgram,
         request,
+        setHevyProgram,
     } = props;
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -407,7 +409,6 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
         setIsEditExercise(false);
     };
 
-    const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>(appendOrderToHevyRoutines(program));
     const [focusedCardId, setFocusedCardId] = useState<string>("");
     const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
     const isMobile = useIsMobile();
