@@ -2,15 +2,6 @@ import { ToolLoopAgent, createAgentUIStreamResponse, gateway, tool } from 'ai';
 import { z } from 'zod';
 import { getHevyExercises } from '@/components/program-builder/api/hevy';
 
-// Define the helloWorldTool
-const helloWorldTool = tool({
-  description: 'Returns a greeting message',
-  inputSchema: z.object({}),
-  execute: async () => {
-    return 'Hello World';
-  },
-});
-
 // Define the buildWorkoutProgram tool
 const buildWorkoutProgramTool = tool({
   description: 'Provides access to all available Hevy exercises for building workout programs. Use this tool when users request workout programs. The tool returns the exercise list - you should then return a minimal workout structure (TTextToJsonResponse format) with just exercise titles, sets, reps, and RPE.',
@@ -77,26 +68,49 @@ const buildWorkoutProgramTool = tool({
   },
 });
 
-// Export tools object
-export const tools = {
-  helloWorld: helloWorldTool,
+// Export base tools object
+export const baseTools = {
   buildWorkoutProgram: buildWorkoutProgramTool,
 };
 
-// Create the agent instance with Claude via Vercel AI Gateway
-const agent = new ToolLoopAgent({
-  model: gateway('anthropic/claude-sonnet-4.5'),
-  instructions: `You are Andy an AI Personal Trainer. You help users create workout programs and answer questions about fitness, exercise, and training.
+// Function to create agent with current program context
+function createAgentWithProgram(hevyProgram: THevyRoutine[] | undefined) {
+  // Create getCurrentProgram tool if program exists
+  const getCurrentProgramTool = tool({
+    description: 'Returns the current workout program state. Use this tool to check what program currently exists before creating a new one or modifying an existing one.',
+    inputSchema: z.object({}),
+    execute: async () => {
+      return {
+        currentProgram: hevyProgram || null,
+        hasProgram: hevyProgram && hevyProgram.length > 0,
+        message: hevyProgram && hevyProgram.length > 0
+          ? 'A program currently exists. You can modify it or create a new one based on user requests.'
+          : 'No program currently exists. Create a new program based on user requests.',
+      };
+    },
+  });
+
+  const tools = hevyProgram && hevyProgram.length > 0
+    ? { ...baseTools, getCurrentProgram: getCurrentProgramTool }
+    : baseTools;
+
+  const instructions = `You are Andy an AI Personal Trainer. You help users create workout programs and answer questions about fitness, exercise, and training.
 
 You have access to tools that can help you:
 - helloWorld: Returns a greeting message
 - buildWorkoutProgram: Provides access to all available Hevy exercises and program parameters. Use this when users want to create workout programs.
+${hevyProgram && hevyProgram.length > 0 ? '- getCurrentProgram: Returns the current workout program state. ALWAYS call this first to check if a program already exists before creating a new one.' : ''}
 
-When users ask about creating workouts or programs:
-1. Call the buildWorkoutProgram tool with their requirements
-2. Use the availableExercises list from the tool result to select appropriate exercises
-3. Return the program as a JSON object with the structure: { program: TTextToJsonResponse }
-4. TTextToJsonResponse format:
+IMPORTANT: ${hevyProgram && hevyProgram.length > 0
+  ? 'A workout program already exists. When users request changes, modifications, or ask about the program, use getCurrentProgram to see the current state, then modify it accordingly. Return the UPDATED program in the same format.'
+  : 'No program currently exists. Create a new program when users request one.'}
+
+When users ask about creating or modifying workouts or programs:
+1. ${hevyProgram && hevyProgram.length > 0 ? 'First, call getCurrentProgram to see the current program state.' : ''}
+2. Call the buildWorkoutProgram tool with their requirements
+3. Use the availableExercises list from the tool result to select appropriate exercises
+4. Return the program as a JSON object with the structure: { program: TTextToJsonResponse }
+5. TTextToJsonResponse format:
    {
      "program": {
        "workout_days": [
@@ -120,19 +134,27 @@ When users ask about creating workouts or programs:
        ]
      }
    }
-5. CRITICAL: The exercise_template_id MUST be an exact match to an id from the availableExercises array returned by the tool. Do NOT invent exercises or use IDs that don't exist in that list.
-6. IMPORTANT: Return ONLY the minimal data structure above. Do NOT include full exercise objects or other metadata.
-7. Generate workout_days based on the daysPerWeek parameter (1 day = 1 workout_day, 3 days = 3 workout_days, etc.)
-8. The UI will use the exercise_template_id values directly to build the full program structure
+6. CRITICAL: The exercise_template_id MUST be an exact match to an id from the availableExercises array returned by the tool. Do NOT invent exercises or use IDs that don't exist in that list.
+7. IMPORTANT: Return ONLY the minimal data structure above. Do NOT include full exercise objects or other metadata.
+8. Generate workout_days based on the daysPerWeek parameter (1 day = 1 workout_day, 3 days = 3 workout_days, etc.)
+9. The UI will use the exercise_template_id values directly to build the full program structure
+${hevyProgram && hevyProgram.length > 0 ? '10. When modifying an existing program, preserve the structure and only change what the user requests. Return the complete updated program.' : ''}
 
-Be conversational, helpful, and provide clear explanations about the workouts you create.`,
-  tools: tools,
-});
+Be conversational, helpful, and provide clear explanations about the workouts you create.`;
+
+  return new ToolLoopAgent({
+    model: gateway('anthropic/claude-sonnet-4.5'),
+    instructions,
+    tools: tools,
+  });
+}
 
 export async function POST(req: Request) {
   try {
-    const { messages } = await req.json();
-    console.log("messages in POST", messages);
+    const { messages, hevyProgram } = await req.json();
+
+    // Create agent with current program context
+    const agent = createAgentWithProgram(hevyProgram);
 
     return createAgentUIStreamResponse({
       agent,

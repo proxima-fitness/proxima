@@ -28,7 +28,7 @@ import {
   ThumbsUp,
   Trash,
 } from "lucide-react"
-import React, { useState, useEffect, useReducer, useRef } from "react"
+import { useState, useEffect, useReducer, useRef } from "react"
 import { ScrollButton } from "@/components/ui/scroll-button"
 import { useSearchParams } from "next/navigation"
 import MultiSelect, { IOption } from "@/components/ui/multi-select"
@@ -53,9 +53,10 @@ interface IRePromptProps {
     sidebarPosition: "left" | "right";
     onTogglePosition: () => void;
     setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
+    hevyProgram: THevyRoutine[];
 }
 
-function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram }: IRePromptProps) {
+function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProgram }: IRePromptProps) {
 
     // const submitRef = useRef<HTMLAnchorElement>(null);
     const searchParams = useSearchParams();
@@ -65,6 +66,14 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram }: IRePro
     const { messages, sendMessage, status, stop } = useChat({
       transport: new DefaultChatTransport({
         api: '/api/chat',
+        fetch: async (url, options) => {
+          const body = options?.body ? JSON.parse(options.body as string) : {};
+          body.hevyProgram = hevyProgram;
+          return fetch(url, {
+            ...options,
+            body: JSON.stringify(body),
+          });
+        },
       }),
     });
     console.log("messages", messages);
@@ -104,7 +113,6 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram }: IRePro
         if (search && search !== lastSentSearch.current) {
             lastSentSearch.current = search;
             sendMessage({ text: search });
-            console.log("'[REPROMPT] sendMessage(search) called in useEffect");
         }
     }, [search, sendMessage]);
 

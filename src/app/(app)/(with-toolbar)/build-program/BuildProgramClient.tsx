@@ -186,6 +186,7 @@ export function BuildProgramClient() {
                                 sidebarPosition={sidebarPosition}
                                 onTogglePosition={toggleSidebarPosition}
                                 setHevyProgram={setHevyProgram}
+                                hevyProgram={hevyProgram}
                             />
                         </ResizablePanel>
                         <ResizableHandle withHandle className="" />
@@ -235,6 +236,7 @@ export function BuildProgramClient() {
                                 sidebarPosition={sidebarPosition}
                                 onTogglePosition={toggleSidebarPosition}
                                 setHevyProgram={setHevyProgram}
+                                hevyProgram={hevyProgram}
                             />
                         </ResizablePanel>
                     </>
