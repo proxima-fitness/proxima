@@ -19,6 +19,7 @@ import { BuildProgramSkeleton } from "@/components/program-builder/shared/BuildP
 import { appendOrderToHevyRoutines } from "@/components/program-builder/utils/format-responses";
 import { HevyRoutine } from "@/components/program-builder/hevy/HevyRoutine";
 import { getSharedProgram } from "@/api/programs";
+import { emptyHevyRoutineProgram } from "@/assets/constants";
 
 export function BuildProgramClient() {
 
@@ -38,6 +39,7 @@ export function BuildProgramClient() {
     const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>([]);
 
     useEffect(() => {
+        const emptyParam = searchParams.get('empty') ?? '';
 
         const fetchSharedProgram = async () => {
             const sharedProgram = await getSharedProgram(shareId);
@@ -64,8 +66,12 @@ export function BuildProgramClient() {
             fetchSharedProgram();
         }
 
+        if (emptyParam === 'true') {
+            setHevyProgram(emptyHevyRoutineProgram);
+        }
 
-    }, [edit, setIsPreview, resume, isHevy, shared, shareId]);
+
+    }, [edit, setIsPreview, resume, isHevy, shared, shareId, searchParams]);
 
     // Load sidebar position and size from localStorage on mount
     useEffect(() => {
