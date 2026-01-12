@@ -23,11 +23,12 @@ import {
   PanelLeft,
   PanelRight,
   Pencil,
+  Square,
   ThumbsDown,
   ThumbsUp,
   Trash,
 } from "lucide-react"
-import { useState, useEffect, useReducer } from "react"
+import { useState, useEffect, useReducer, useRef } from "react"
 import { ScrollButton } from "@/components/ui/scroll-button"
 import { useSearchParams } from "next/navigation"
 import MultiSelect, { IOption } from "@/components/ui/multi-select"
@@ -38,27 +39,45 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { useIsHevy } from "@/contexts/HevyContext"
 import { useChat } from "@ai-sdk/react";
-import { Weather } from "@/components/weather";
+import { DefaultChatTransport } from "ai";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { ProgramAccordion } from "./ProgramAccordion";
+import { Loader2 } from "lucide-react";
 
 interface IRePromptProps {
     sidebarPosition: "left" | "right";
     onTogglePosition: () => void;
+    setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
+    hevyProgram: THevyRoutine[];
 }
 
-function RePrompt({ sidebarPosition, onTogglePosition }: IRePromptProps) {
+function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProgram }: IRePromptProps) {
 
     // const submitRef = useRef<HTMLAnchorElement>(null);
     const searchParams = useSearchParams();
     const {isHevy} = useIsHevy();
 
     const [input, setInput] = useState("");
-    const { messages, sendMessage } = useChat();
+    const { messages, sendMessage, status, stop } = useChat({
+      transport: new DefaultChatTransport({
+        api: '/api/chat',
+        fetch: async (url, options) => {
+          const body = options?.body ? JSON.parse(options.body as string) : {};
+          body.hevyProgram = hevyProgram;
+          return fetch(url, {
+            ...options,
+            body: JSON.stringify(body),
+          });
+        },
+      }),
+    });
+    console.log("messages", messages);
+    const isLoading = status === 'submitted' || status === 'streaming';
     const search = searchParams.get('search') ?? '';
     const [sex, setSex] = useState<string>(searchParams.get('sex') ?? "");
     const [age, setAge] = useState<string>(searchParams.get('age') ?? "");
@@ -80,20 +99,153 @@ function RePrompt({ sidebarPosition, onTogglePosition }: IRePromptProps) {
     const [workoutSchema, setWorkoutSchema] = useState<string>(isHevy ? "hevy" : "proxima");
     const [explore, toggleExplore] = useReducer(prev => !prev, searchParams.get('explore') === 'true');
 
-    const [isLoading, setIsLoading] = useState(false)
-    const [chatMessages, setChatMessages] = useState<Array<{id: number; role: string; content: string}>>([])
     const [isFilters, setIsFilters] = useState(false)
+    const lastSentSearch = useRef<string | null>(null);
+    const processedMessageIds = useRef<Set<string>>(new Set());
+
+    // Thinking state for gaps in token streaming
+    const [isThinking, setIsThinking] = useState(false);
+    const lastMessageTextRef = useRef<string>("");
+    const thinkingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Initialize with search parameter if present
     useEffect(() => {
-        if (search) {
-            setChatMessages([{
-                id: 1,
-                role: "user",
-                content: search,
-            }]);
+        if (search && search !== lastSentSearch.current) {
+            lastSentSearch.current = search;
+            sendMessage({ text: search });
         }
-    }, [search]);
+    }, [search, sendMessage]);
+
+
+    // Parse program from AI responses and convert to THevyRoutine[]
+    useEffect(() => {
+        if (!setHevyProgram) return;
+
+        // Helper function to convert TTextToJsonResponse to THevyRoutine[]
+        const convertTextToJsonToHevyRoutine = async (textToJsonResponse: TTextToJsonResponse) => {
+            try {
+                const daysPerWeek = Number(searchParams.get('daysPerWeek') || '3');
+                const programLength = Number(searchParams.get('programLength') || '12');
+                const excludeAreas = searchParams.get('excludeAreas') || '';
+                const excludeEquipment = searchParams.get('excludeEquipment') || '';
+                const healthIssues = searchParams.get('healthIssues') || '';
+
+                // Import buildHevyProgram dynamically to avoid circular dependencies
+                const { buildHevyProgram } = await import('@/components/program-builder/utils/build-hevy-program');
+                const hevyRoutines = await buildHevyProgram(
+                    textToJsonResponse,
+                    programLength,
+                    daysPerWeek,
+                    excludeAreas,
+                    excludeEquipment,
+                    healthIssues
+                );
+
+                if (hevyRoutines && Array.isArray(hevyRoutines)) {
+                    setHevyProgram(hevyRoutines);
+                }
+            } catch (error) {
+                console.error('Error converting program to HevyRoutine:', error);
+            }
+        };
+
+        // Look through all assistant messages for program JSON
+        messages.forEach((message) => {
+            if (message.role === 'assistant' && !processedMessageIds.current.has(message.id)) {
+                message.parts.forEach((part) => {
+                    if (part.type === 'text' && part.text) {
+                        // Try to extract JSON from the text
+                        const text = part.text;
+
+                        // Look for JSON object with "program" key (TTextToJsonResponse format)
+                        const jsonMatch = text.match(/\{[\s\S]*"program"[\s\S]*\}/);
+                        if (jsonMatch) {
+                            try {
+                                const parsed = JSON.parse(jsonMatch[0]);
+                                if (parsed.program && parsed.program.workout_days) {
+                                    // Mark message as processed
+                                    processedMessageIds.current.add(message.id);
+                                    // Convert TTextToJsonResponse to THevyRoutine[]
+                                    convertTextToJsonToHevyRoutine(parsed.program as TTextToJsonResponse);
+                                }
+                            } catch {
+                                // Try to find JSON code blocks
+                                const codeBlockMatch = text.match(/```(?:json)?\s*(\{[\s\S]*"program"[\s\S]*\})\s*```/);
+                                if (codeBlockMatch) {
+                                    try {
+                                        const parsed = JSON.parse(codeBlockMatch[1]);
+                                        if (parsed.program && parsed.program.workout_days) {
+                                            // Mark message as processed
+                                            processedMessageIds.current.add(message.id);
+                                            // Convert TTextToJsonResponse to THevyRoutine[]
+                                            convertTextToJsonToHevyRoutine(parsed.program as TTextToJsonResponse);
+                                        }
+                                    } catch (e2) {
+                                        console.error('Failed to parse program JSON:', e2);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    }, [messages, setHevyProgram, searchParams]);
+
+    // Monitor message changes to detect gaps in token streaming
+    useEffect(() => {
+        // Clear any existing timeout
+        if (thinkingTimeoutRef.current) {
+            clearTimeout(thinkingTimeoutRef.current);
+            thinkingTimeoutRef.current = null;
+        }
+
+        // If not loading, reset thinking state
+        if (!isLoading) {
+            setIsThinking(false);
+            lastMessageTextRef.current = "";
+            return;
+        }
+
+        // Find the last assistant message
+        const lastAssistantMessage = [...messages].reverse().find(
+            (msg) => msg.role === 'assistant'
+        );
+
+        if (!lastAssistantMessage) {
+            lastMessageTextRef.current = "";
+            return;
+        }
+
+        // Get the text content from the last assistant message
+        const textParts = lastAssistantMessage.parts
+            .filter((part): part is { type: 'text'; text: string } => part.type === 'text' && typeof part.text === 'string')
+            .map((part) => part.text);
+        const currentText = textParts.join('');
+
+        // Compare with previous text
+        if (currentText !== lastMessageTextRef.current) {
+            // New tokens arrived - hide thinking and update ref
+            setIsThinking(false);
+            lastMessageTextRef.current = currentText;
+        } else {
+            // No change in text - set timeout to show thinking after delay
+            // Only show thinking if we have some text already (not at the very start)
+            if (currentText.length > 0) {
+                thinkingTimeoutRef.current = setTimeout(() => {
+                    setIsThinking(true);
+                }, 10);
+            }
+        }
+
+        // Cleanup function
+        return () => {
+            if (thinkingTimeoutRef.current) {
+                clearTimeout(thinkingTimeoutRef.current);
+                thinkingTimeoutRef.current = null;
+            }
+        };
+    }, [messages, isLoading]);
 
     // TODO: add this back in with a reeprompt request to the AI
 
@@ -127,48 +279,172 @@ function RePrompt({ sidebarPosition, onTogglePosition }: IRePromptProps) {
 
         sendMessage({ text: input });
         setInput('');
-
-        setIsLoading(true)
-
-        // Add user message immediately
-        const newUserMessage = {
-            id: chatMessages.length + 1,
-            role: "user",
-            content: input.trim(),
-        }
-
-        setChatMessages([...chatMessages, newUserMessage])
-
     }
 
+    // Helper function to detect if text contains program JSON
+    const containsProgramJson = (text: string): boolean => {
+        return /"program"\s*:\s*\{[\s\S]*"workout_days"/.test(text) ||
+               /"workout_days"\s*:\s*\[/.test(text);
+    };
+
+    // Helper function to extract non-JSON text (conversational parts)
+    const extractConversationalText = (text: string): string => {
+        // Try to find text before JSON code blocks
+        const beforeJson = text.split(/```(?:json)?/)[0].trim();
+        if (beforeJson && beforeJson.length > 0 && !containsProgramJson(beforeJson)) {
+            return beforeJson;
+        }
+        // Try to find text before JSON object
+        const jsonMatch = text.match(/(.*?)(?:\{[\s\S]*"program"|"workout_days")/);
+        if (jsonMatch && jsonMatch[1] && jsonMatch[1].trim().length > 0) {
+            return jsonMatch[1].trim();
+        }
+        return '';
+    };
+
+    // Helper function to get program generation status message
+    const getProgramGenerationStatus = (text: string): { message: string; isComplete: boolean; stepId?: string; completedStepMessage?: string } => {
+        if (!containsProgramJson(text)) {
+            return { message: '', isComplete: false };
+        }
+
+        // Check if JSON is complete
+        try {
+            const jsonMatch = text.match(/\{[\s\S]*"program"[\s\S]*\}/);
+            if (jsonMatch) {
+                const parsed = JSON.parse(jsonMatch[0]) as { program?: { workout_days?: Array<{ exercises?: unknown[] }> } };
+                if (parsed.program && parsed.program.workout_days && Array.isArray(parsed.program.workout_days)) {
+                    // Check if all workout days are complete
+                    const allDaysComplete = parsed.program.workout_days.every((day) =>
+                        day.exercises && Array.isArray(day.exercises) && day.exercises.length > 0
+                    );
+                    if (allDaysComplete && parsed.program.workout_days.length > 0) {
+                        return { message: 'Workout program generated', isComplete: true, stepId: 'final' };
+                    }
+                }
+            }
+        } catch {
+            // JSON not complete yet, continue checking progress
+        }
+
+        // Analyze streaming progress
+        const hasProgramKey = /"program"\s*:/.test(text);
+        const hasWorkoutDays = /"workout_days"\s*:/.test(text);
+        const hasWorkoutDaysArray = /"workout_days"\s*:\s*\[/.test(text);
+
+        // Count workout days by finding day_title occurrences
+        const workoutDaysMatches = text.match(/"day_title"/g);
+        const workoutDaysCount = workoutDaysMatches ? workoutDaysMatches.length : 0;
+
+        // Try to count exercises per day by analyzing structure
+        const daySections = text.split(/"day_title"/);
+        const exercisesPerDay: number[] = [];
+        daySections.slice(1).forEach((section) => {
+            const exercisesInSection = (section.match(/"title"\s*:\s*"[^"]*"/g) || []).length;
+            exercisesPerDay.push(exercisesInSection);
+        });
+
+        // Determine progress stage
+        if (!hasProgramKey && !hasWorkoutDays) {
+            return { message: 'Analyzing your fitness goals and preferences...', isComplete: false, stepId: 'analyzing' };
+        }
+
+        if (hasProgramKey && !hasWorkoutDays) {
+            return { message: 'Creating program structure...', isComplete: false, stepId: 'structure' };
+        }
+
+        if (hasWorkoutDaysArray && workoutDaysCount === 0) {
+            return { message: 'Building workout days...', isComplete: false, stepId: 'building-days' };
+        }
+
+        const daysPerWeek = Number(searchParams.get('daysPerWeek') || '3');
+
+        if (workoutDaysCount === 1) {
+            const exercisesInDay1 = exercisesPerDay[0] || 0;
+            const currentDay = 1;
+            const actualWeek = Math.ceil(currentDay / daysPerWeek);
+            const dayInWeek = ((currentDay - 1) % daysPerWeek) + 1;
+            if (exercisesInDay1 === 0) {
+                return { message: `Building Week ${actualWeek}, Day ${dayInWeek}...`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
+            } else if (exercisesInDay1 < 4) {
+                return { message: `Adding exercises to Week ${actualWeek}, Day ${dayInWeek}... (${exercisesInDay1} exercises)`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
+            } else {
+                const nextDay = 2;
+                const nextWeek = Math.ceil(nextDay / daysPerWeek);
+                const nextDayInWeek = ((nextDay - 1) % daysPerWeek) + 1;
+                return { message: `Building Week ${nextWeek}, Day ${nextDayInWeek}...`, isComplete: false, stepId: `week-${nextWeek}-day-${nextDayInWeek}`, completedStepMessage: `Week ${actualWeek}, Day ${dayInWeek} complete` };
+            }
+        }
+
+        if (workoutDaysCount === 2) {
+            const exercisesInDay2 = exercisesPerDay[1] || 0;
+            const currentDay = 2;
+            const actualWeek = Math.ceil(currentDay / daysPerWeek);
+            const dayInWeek = ((currentDay - 1) % daysPerWeek) + 1;
+            if (exercisesInDay2 === 0) {
+                return { message: `Building Week ${actualWeek}, Day ${dayInWeek}...`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
+            } else if (exercisesInDay2 < 4) {
+                return { message: `Adding exercises to Week ${actualWeek}, Day ${dayInWeek}... (${exercisesInDay2} exercises)`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
+            } else {
+                const nextDay = 3;
+                const nextWeek = Math.ceil(nextDay / daysPerWeek);
+                const nextDayInWeek = ((nextDay - 1) % daysPerWeek) + 1;
+                return { message: `Building Week ${nextWeek}, Day ${nextDayInWeek}...`, isComplete: false, stepId: `week-${nextWeek}-day-${nextDayInWeek}`, completedStepMessage: `Week ${actualWeek}, Day ${dayInWeek} complete` };
+            }
+        }
+
+        if (workoutDaysCount >= 3) {
+            const currentDay = workoutDaysCount;
+            const exercisesInCurrentDay = exercisesPerDay[currentDay - 1] || 0;
+            const actualWeek = Math.ceil(currentDay / daysPerWeek);
+            const dayInWeek = ((currentDay - 1) % daysPerWeek) + 1;
+
+            if (exercisesInCurrentDay === 0) {
+                return { message: `Building Week ${actualWeek}, Day ${dayInWeek}...`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
+            } else if (exercisesInCurrentDay < 4) {
+                return { message: `Adding exercises to Week ${actualWeek}, Day ${dayInWeek}... (${exercisesInCurrentDay} exercises)`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
+            } else {
+                const nextDay = currentDay + 1;
+                const nextWeek = Math.ceil(nextDay / daysPerWeek);
+                const nextDayInWeek = ((nextDay - 1) % daysPerWeek) + 1;
+                return { message: `Building Week ${nextWeek}, Day ${nextDayInWeek}...`, isComplete: false, stepId: `week-${nextWeek}-day-${nextDayInWeek}`, completedStepMessage: `Week ${actualWeek}, Day ${dayInWeek} complete` };
+            }
+        }
+
+        return { message: 'Generating workout program...', isComplete: false, stepId: 'generating' };
+    };
+
+
     return (
-        <div className="flex flex-col h-[85vh]">
+        <div className="flex flex-col h-[85vh] max-sm:h-full">
             <div className="min-h-12  px-2 flex flex-row justify-between items-center gap-2 flex-shrink-0 border-b">
-                <div className="flex flex-row gap-2">
+                <div className="flex flex-row gap-2 max-sm:hidden">
                     <Button variant="ghost" className={`w-24 text-white hover:bg-gray-800 hover:text-white ${!isFilters ? "bg-black dark:bg-white dark:text-black" : "bg-white dark:bg-black dark:text-white text-black"}`} onClick={() => setIsFilters(false)}>Chat</Button>
                     <Button variant="ghost" className={`w-24 text-white hover:bg-gray-800 hover:text-white ${isFilters ? "bg-black dark:bg-white dark:text-black" : "bg-white dark:bg-black dark:text-white text-black"}`} onClick={() => setIsFilters(true)}>Filters</Button>
                 </div>
-                <TooltipProvider delayDuration={0}>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-black dark:text-white bg-white dark:bg-black hover:bg-gray-200 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600"
-                                onClick={onTogglePosition}
-                            >
-                                {sidebarPosition === "left" ? (
-                                    <PanelRight className="h-5 w-5" />
-                                ) : (
-                                    <PanelLeft className="h-5 w-5" />
-                                )}
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900">
-                            {sidebarPosition === "left" ? "Move sidebar to right" : "Move sidebar to left"}
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
+                <div className="max-sm:hidden">
+                    <TooltipProvider delayDuration={0}>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-black dark:text-white bg-white dark:bg-black hover:bg-gray-200 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600"
+                                    onClick={onTogglePosition}
+                                >
+                                    {sidebarPosition === "left" ? (
+                                        <PanelRight className="h-5 w-5" />
+                                    ) : (
+                                        <PanelLeft className="h-5 w-5" />
+                                    )}
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900">
+                                {sidebarPosition === "left" ? "Move sidebar to right" : "Move sidebar to left"}
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                </div>
             </div>
         <ChatContainerRoot className={`flex-1 relative ${isFilters ? "overflow-hidden" : "overflow-y-auto"}`}>
             <ChatContainerContent className="h-full">
@@ -176,9 +452,81 @@ function RePrompt({ sidebarPosition, onTogglePosition }: IRePromptProps) {
                             <div key={message.id} className="whitespace-pre-wrap">
                             {message.parts.map((part, index) => {
                                 const isAssistant = message.role === "assistant"
-                                const isLastMessage = index === chatMessages.length - 1
+                                const isLastMessage = index === message.parts.length - 1
                                 switch (part.type) {
-                                case 'text':
+                                case 'text': {
+                                    const text = part.text;
+                                    const hasProgramJson = containsProgramJson(text);
+                                    const conversationalText = extractConversationalText(text);
+                                    const status = getProgramGenerationStatus(text);
+
+                                    // If message contains program JSON, show compact view
+                                    if (hasProgramJson && isAssistant) {
+                                        return (
+                                            <Message
+                                                key={`${message.id}-${index}`}
+                                                className={cn(
+                                                    "mx-auto flex w-full max-w-3xl flex-col gap-2 px-4 md:px-6 pt-2",
+                                                    "items-start"
+                                                )}
+                                            >
+                                                <div className="group flex w-full flex-col gap-0">
+                                                    {conversationalText && (
+                                                        <MessageContent
+                                                            className="text-foreground prose w-full flex-1 rounded-lg bg-transparent p-0 mb-2"
+                                                            markdown
+                                                        >
+                                                            {conversationalText}
+                                                        </MessageContent>
+                                                    )}
+                                                    <ProgramAccordion
+                                                        messages={messages}
+                                                        isLoading={isLoading}
+                                                        currentStatus={status}
+                                                        daysPerWeek={Number(searchParams.get('daysPerWeek') || '3')}
+                                                        getProgramGenerationStatus={getProgramGenerationStatus}
+                                                        containsProgramJson={containsProgramJson}
+                                                    />
+                                                    <MessageActions
+                                                        className={cn(
+                                                            "-ml-2.5 flex gap-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100",
+                                                            isLastMessage && "opacity-100"
+                                                        )}
+                                                    >
+                                                        <MessageAction tooltip="Edit" delayDuration={100}>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="rounded-full"
+                                                            >
+                                                                <Copy />
+                                                            </Button>
+                                                        </MessageAction>
+                                                        <MessageAction tooltip="Upvote" delayDuration={100}>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="rounded-full"
+                                                            >
+                                                                <ThumbsUp />
+                                                            </Button>
+                                                        </MessageAction>
+                                                        <MessageAction tooltip="Downvote" delayDuration={100}>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="rounded-full"
+                                                            >
+                                                                <ThumbsDown />
+                                                            </Button>
+                                                        </MessageAction>
+                                                    </MessageActions>
+                                                </div>
+                                            </Message>
+                                        );
+                                    }
+
+                                    // Normal message rendering for non-program JSON
                                     return (
                                         <Message
                                             key={`${message.id}-${index}`}
@@ -193,7 +541,7 @@ function RePrompt({ sidebarPosition, onTogglePosition }: IRePromptProps) {
                                                     className="text-foreground prose w-full flex-1 rounded-lg bg-transparent p-0"
                                                     markdown
                                                 >
-                                                {part.text}
+                                                {text}
                                                 </MessageContent>
                                                 <MessageActions
                                                 className={cn(
@@ -272,16 +620,46 @@ function RePrompt({ sidebarPosition, onTogglePosition }: IRePromptProps) {
                                             )}
                                         </Message>
                                     );
-                                case "tool-displayWeather":
-                                    return (
-                                        <div key={"weather-test"}>
-                                            <Weather {...part.output as {temperature: number, weather: string, location: string}} />
-                                        </div>
-                                    )
+                                }
+                                case "tool-displayBuildWorkoutProgram": {
+                                    // Handle tool result - extract program if present
+                                    const toolOutput = part.output as { program?: THevyRoutine[] };
+                                    if (toolOutput?.program && Array.isArray(toolOutput.program)) {
+                                        setHevyProgram(toolOutput.program);
+                                    }
+                                    return null;
+                                }
+                                default: {
+                                    // Check if part is a tool result with program data
+                                    if (part.type === 'tool-result' && 'output' in part) {
+                                        const output = (part as { output?: { program?: THevyRoutine[] } }).output;
+                                        if (output?.program && Array.isArray(output.program)) {
+                                            setHevyProgram(output.program);
+                                        }
+                                    }
+                                    return null;
+                                }
                                 }
                             })}
                             </div>
                         ))}
+                {!isFilters && isThinking && isLoading && (
+                    <Message
+                        className={cn(
+                            "mx-auto flex w-full max-w-3xl flex-col gap-2 px-0 md:px-6 pt-2",
+                            "items-start"
+                        )}
+                    >
+                        <div className="group flex w-full flex-col gap-0">
+                            <div className="text-foreground prose w-full flex-1 rounded-lg bg-transparent p-0">
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <span className="text-sm">Thinking...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </Message>
+                )}
             {isFilters &&
                 <div className="mx-auto bg-white dark:bg-extraDarkGray rounded-xl p-4 max-w-3xl overflow-y-auto overflow-x-hidden h-full w-full ">
 
@@ -549,8 +927,7 @@ function RePrompt({ sidebarPosition, onTogglePosition }: IRePromptProps) {
             >
             <div className="flex flex-col">
                 <PromptInputTextarea
-                    disabled={ true }
-                    placeholder="Andy chat coming soon..."
+                    placeholder="Ask Andy anything..."
                     className="dark:text-white min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
                     />
 
@@ -577,18 +954,24 @@ function RePrompt({ sidebarPosition, onTogglePosition }: IRePromptProps) {
                     </Button>
                     </PromptInputAction>
 
-                    <Button
-                    size="icon"
-                    disabled={!input.trim() || isLoading}
-                    onClick={handleSubmit}
-                    className="size-9 rounded-full bg-lightSecondary"
-                    >
                     {!isLoading ? (
-                        <ArrowUp className="text-white" size={18} />
+                        <Button
+                        size="icon"
+                        disabled={!input.trim()}
+                        onClick={handleSubmit}
+                        className="size-9 rounded-full bg-lightSecondary"
+                        >
+                            <ArrowUp className="text-white" size={18} />
+                        </Button>
                     ) : (
-                        <span className="size-3 rounded-xs bg-white" />
+                        <Button
+                        size="icon"
+                        onClick={stop}
+                        className="size-9 rounded-full bg-lightSecondary"
+                        >
+                            <Square className="text-white" size={18} />
+                        </Button>
                     )}
-                    </Button>
                 </div>
                 </PromptInputActions>
             </div>
@@ -598,4 +981,4 @@ function RePrompt({ sidebarPosition, onTogglePosition }: IRePromptProps) {
     )
 }
 
-export { RePrompt }
+export { AgentChat }

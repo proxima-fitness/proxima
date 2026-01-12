@@ -59,7 +59,7 @@ const ProgramItem: React.FC<IProgramItemProps> = memo(({ item, userData }) => {
 
                 <div className="absolute inset-0 rounded-lg bg-black bg-opacity-40 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
                     <Link
-                        href={ `/build-program?shareId=${item.id}&edit=true` }
+                        href={ `/build-program?shareId=${item.id}&edit=true&shared=true` }
                         rel="noopener noreferrer"
                         className="w-[50%]"
                         target="_self"
@@ -67,7 +67,7 @@ const ProgramItem: React.FC<IProgramItemProps> = memo(({ item, userData }) => {
                         <button className="my-2 py-2 w-full hover:bg-black hover:text-white bg-white text-black rounded-lg shadow flex flex-row items-center justify-center gap-2"><EditIcon />Edit</button>
                     </Link>
                     <Link
-                        href={ `/build-program?shareId=${item.id}` }
+                        href={ `/build-program?shareId=${item.id}&shared=true` }
                         rel="noopener noreferrer"
                         className="w-[50%]"
                         target="_self"

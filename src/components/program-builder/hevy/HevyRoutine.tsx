@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import {  useHevyExercises } from "@/api/hooks";
 import { HevyColumn } from "./HevyColumn";
 import { HevyAddExerciseDialog } from "./HevyAddExerciseDialog";
 import { HevyGenerateDayDialog } from "./HevyGenerateDayDialog";
 import { IOption } from "@/components/ui/multi-select";
 import { toast } from "sonner";
-import { aiRequest, appendOrderToHevyRoutines, deFlattenHevyRoutine, getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy, sortHevyByOrder } from "../utils";
+import { aiRequest, deFlattenHevyRoutine, getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy, sortHevyByOrder } from "../utils";
 import { buildHevyProgram } from "../utils/build-hevy-program";
 import { HevyAddNoteDialog } from "./HevyAddNoteDialog";
 import { HevyExerciseNotesDialog } from "./HevyExerciseNotesDialog";
@@ -22,15 +22,17 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface IProps {
-    program: THevyRoutine[];
     request: TTextToJsonRequest;
+    hevyProgram: THevyRoutine[];
+    setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
 }
 
 export const HevyRoutine: React.FC<IProps> = (props) => {
 
     const {
-        program,
+        hevyProgram,
         request,
+        setHevyProgram,
     } = props;
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -407,21 +409,14 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
         setIsEditExercise(false);
     };
 
-    const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>(appendOrderToHevyRoutines(program));
     const [focusedCardId, setFocusedCardId] = useState<string>("");
     const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
     const isMobile = useIsMobile();
-    const numberOfWeeks = getNumberRoutineFolders(hevyProgram);
-    const numberOfWeeksArr = Array.from({ length: numberOfWeeks }, (_, i) => i);
+    const numberOfWeeks = useMemo(() => getNumberRoutineFolders(hevyProgram), [hevyProgram]);
+    const numberOfWeeksArr = useMemo(() => Array.from({ length: numberOfWeeks }, (_, i) => i), [numberOfWeeks]);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(true);
-
-    // Update hevyProgram when program prop changes (e.g., when a new program is generated)
-    useEffect(() => {
-        setHevyProgram(appendOrderToHevyRoutines(program));
-        setCurrentWeekIndex(0); // Reset to first week when program changes
-    }, [program]);
 
     useEffect(() => {
         if (typeof window !== "undefined") {

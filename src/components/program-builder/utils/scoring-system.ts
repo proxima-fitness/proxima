@@ -138,6 +138,7 @@ export const replaceTextToJsonExercisesHevy = (exercises: {
         rpe: number;
     }[];
     title: string;
+    exercise_template_id?: string;
     supersets_id: number | null;
     }[],
     hevyExercises: THevyExerciseTemplate[],
@@ -199,6 +200,32 @@ export const replaceTextToJsonExercisesHevy = (exercises: {
 
     if (exercises && exercises.length > 0) {
         updatedExercises = exercises.flatMap((exercise, index) => {
+            // If exercise_template_id is provided, use it directly (no fuzzy matching needed)
+            if (exercise.exercise_template_id) {
+                const matchedExercise = filteredHevyExercises.find(ex => ex.id === exercise.exercise_template_id);
+                if (matchedExercise) {
+                    return [{
+                        index: index,
+                        title: matchedExercise.title,
+                        notes: "",
+                        exercise_template_id: matchedExercise.id,
+                        rest_seconds: null,
+                        supersets_id: exercise?.supersets_id ?? null,
+                        sets: Array.from({length: exercise.sets.length}, (_, setIndex) => ({
+                            index: setIndex,
+                            type: exercise?.sets[setIndex]?.type ?? "normal",
+                            weight_kg: null,
+                            reps: exercise?.sets[setIndex]?.reps ?? 8,
+                            distance_meters: null,
+                            duration_seconds: null,
+                            rpe: exercise?.sets[setIndex]?.rpe ?? 9,
+                            custom_metric: null,
+                        })),
+                    }];
+                }
+            }
+
+            // Fallback to fuzzy matching if no ID provided (backward compatibility)
             const fuseResults = fuse && fuse?.search(normalizeExerciseTitle(exercise?.title ?? ""), { limit : 10});
             const match = fuseResults?.[0]?.item;
             const selectedMatch = bestMatch(fuseResults, exercise?.title ?? "");

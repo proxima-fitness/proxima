@@ -15,7 +15,7 @@ interface IProps {
     folder_id: number;
     programLength: number;
     hevyProgram: THevyRoutine[];
-    setHevyProgram: (hevyProgram: THevyRoutine[]) => void;
+    setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
     handleAddDay: (folder_id: number) => void;
     handleOpenGenerateDayDialog: (generateDayDialog: THevyDialog) => void;
     handleOpenAddNoteDialog: (addNoteDialog: THevyDialog) => void;

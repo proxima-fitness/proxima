@@ -100,7 +100,7 @@ function ProgramFiltersContent() {
         // Simulate character-by-character streaming
         for (let i = 0; i <= reasoning.length; i++) {
         setText(reasoning.slice(0, i))
-        await new Promise((resolve) => setTimeout(resolve, 20))
+        await new Promise((resolve) => setTimeout(resolve, 10))
         }
 
         setIsStreaming(false)

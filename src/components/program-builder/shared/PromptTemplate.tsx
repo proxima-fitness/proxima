@@ -16,9 +16,13 @@ export const PromptTemplate: React.FC = () => {
 
     const router = useRouter();
 
-    const goToFilters = (search: string) => {
-        router.push(`/program-filters?search=${encodeURIComponent(search)}`);
+    // const goToFilters = (search: string) => {
+    //     router.push(`/program-filters?search=${encodeURIComponent(search)}`);
+    // };
+    const goToProgramBuilder = (search: string) => {
+        router.push(`/build-program?search=${encodeURIComponent(search)}&edit=true`);
     };
+
     const [search, setSearch] = useState<string>("");
     const [activeCategory, setActiveCategory] = useState("");
     const [files, setFiles] = useState<File[]>([]);
@@ -41,7 +45,7 @@ export const PromptTemplate: React.FC = () => {
         if (search.trim()) {
             setActiveCategory("");
         }
-        goToFilters(search);
+        goToProgramBuilder(search);
         setIsLoading(true);
     };
 

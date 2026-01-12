@@ -1,7 +1,7 @@
 // USE OF REACT QUERY IS STRICTLY CLIENT-SIDE, USE SUPABASE SSR FOR SERVER SIDE
 import { useQuery } from "@tanstack/react-query";
 import { getBlogById, getBlogs } from "./blog";
-import { getCommunityAiPrograms, getCommunityAiProgramsPaginated, getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID, getSharedProgram } from "./programs";
+import { getCommunityAiPrograms, getCommunityAiProgramsPaginated, getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID } from "./programs";
 import { getOpUserId, getUserFullName, getUserMetaData, getUsersBatch } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getHevyApiKey, getHevyCustomExercises, getHevyExercises, getHevyPrograms, getHevyRoutines } from "../components/program-builder/api/hevy";
@@ -82,13 +82,13 @@ export const useBuildAiProgram = (request: TTextToJsonRequest, shareId: string, 
 };
 
 // FETCHES A SHARED PROGRAM BY SHARE ID
-export const useSharedProgram = (shareId: string, resume: string) => {
-    return useQuery({
-        queryKey: ['shared-program', shareId],
-        queryFn: () => getSharedProgram(shareId),
-        enabled: shareId.length > 0 && resume === "",
-    });
-};
+// export const useSharedProgram = (shareId: string, resume: string) => {
+//     return useQuery({
+//         queryKey: ['shared-program', shareId],
+//         queryFn: () => getSharedProgram(shareId),
+//         enabled: shareId.length > 0 && resume === "",
+//     });
+// };
 
 export const useCommunityAiPrograms = () => {
     return useQuery({
