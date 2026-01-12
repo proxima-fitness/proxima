@@ -7,8 +7,8 @@ import {
     ResizablePanel,
     ResizablePanelGroup,
   } from "@/components/ui/resizable";
-import { RePrompt } from "@/components/program-builder/shared/RePrompt";
 
+import { AgentChat } from "@/components/program-builder/shared/AgentChat";
 const SIDEBAR_POSITION_KEY = "andy-sidebar-position";
 const SIDEBAR_SIZE_KEY = "andy-sidebar-size";
 
@@ -60,7 +60,7 @@ export function BuildProgramClient() {
                             maxSize={70}
                             className="border-extraLightGray bg-extraLightGray dark:bg-extraDarkGray dark:text-white"
                         >
-                            <RePrompt
+                            <AgentChat
                                 sidebarPosition={sidebarPosition}
                                 onTogglePosition={toggleSidebarPosition}
                                 onProgramGenerated={setGeneratedProgram}
@@ -97,7 +97,7 @@ export function BuildProgramClient() {
                             maxSize={70}
                             className="border-extraLightGray bg-extraLightGray dark:bg-extraDarkGray dark:text-white"
                         >
-                            <RePrompt
+                            <AgentChat
                                 sidebarPosition={sidebarPosition}
                                 onTogglePosition={toggleSidebarPosition}
                                 onProgramGenerated={setGeneratedProgram}

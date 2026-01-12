@@ -55,7 +55,7 @@ interface IRePromptProps {
     onProgramGenerated?: (program: THevyRoutine[]) => void;
 }
 
-function RePrompt({ sidebarPosition, onTogglePosition, onProgramGenerated }: IRePromptProps) {
+function AgentChat({ sidebarPosition, onTogglePosition, onProgramGenerated }: IRePromptProps) {
 
     // const submitRef = useRef<HTMLAnchorElement>(null);
     const searchParams = useSearchParams();
@@ -971,4 +971,4 @@ function RePrompt({ sidebarPosition, onTogglePosition, onProgramGenerated }: IRe
     )
 }
 
-export { RePrompt }
+export { AgentChat }

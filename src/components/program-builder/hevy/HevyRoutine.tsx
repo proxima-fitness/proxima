@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import {  useHevyExercises } from "@/api/hooks";
 import { HevyColumn } from "./HevyColumn";
 import { HevyAddExerciseDialog } from "./HevyAddExerciseDialog";
@@ -411,17 +411,11 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     const [focusedCardId, setFocusedCardId] = useState<string>("");
     const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
     const isMobile = useIsMobile();
-    const numberOfWeeks = getNumberRoutineFolders(hevyProgram);
-    const numberOfWeeksArr = Array.from({ length: numberOfWeeks }, (_, i) => i);
+    const numberOfWeeks = useMemo(() => getNumberRoutineFolders(hevyProgram), [hevyProgram]);
+    const numberOfWeeksArr = useMemo(() => Array.from({ length: numberOfWeeks }, (_, i) => i), [numberOfWeeks]);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(true);
-
-    // Update hevyProgram when program prop changes (e.g., when a new program is generated)
-    useEffect(() => {
-        setHevyProgram(appendOrderToHevyRoutines(program));
-        setCurrentWeekIndex(0); // Reset to first week when program changes
-    }, [program]);
 
     useEffect(() => {
         if (typeof window !== "undefined") {

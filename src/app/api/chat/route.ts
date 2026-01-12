@@ -59,7 +59,7 @@ const buildWorkoutProgramTool = tool({
         totalExercises: filteredExercises.length,
         parameters: {
           userRequest,
-          daysPerWeek: daysPerWeek || 3,
+          daysPerWeek: daysPerWeek || 6,
           programLength: programLength || 12,
           excludeAreas,
           excludeEquipment,
