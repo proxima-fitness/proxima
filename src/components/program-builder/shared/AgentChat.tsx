@@ -13,7 +13,7 @@ import {
   PromptInputTextarea,
 } from "@/components/ui/prompt-input"
 import { Button } from "@/components/ui/button"
-import { ChatContainerRoot, ChatContainerContent } from "@/components/ui/chat-container"
+import { ChatContainerRoot, ChatContainerContent, ChatContainerScrollAnchor } from "@/components/ui/chat-container"
 import { cn } from "@/lib/utils"
 import {
   ArrowUp,
@@ -664,6 +664,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                         </div>
                     </Message>
                 )}
+                <ChatContainerScrollAnchor />
             {isFilters &&
                 <div className="mx-auto bg-white dark:bg-extraDarkGray rounded-xl p-4 max-w-3xl overflow-y-auto overflow-x-hidden h-full w-full ">
 
