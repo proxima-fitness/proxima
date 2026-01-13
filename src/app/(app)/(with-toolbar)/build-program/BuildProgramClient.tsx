@@ -44,7 +44,7 @@ export function BuildProgramClient() {
         const fetchSharedProgram = async () => {
             const sharedProgram = await getSharedProgram(shareId);
             if (sharedProgram) {
-                setHevyProgram(sharedProgram);
+                setHevyProgram(appendOrderToHevyRoutines(sharedProgram));
             }
         }
 
@@ -58,7 +58,7 @@ export function BuildProgramClient() {
         if (resume === 'true') {
             const program = localStorage.getItem('hevy-program-in-progress');
             if (program) {
-                setHevyProgram(JSON.parse(program));
+                setHevyProgram(appendOrderToHevyRoutines(JSON.parse(program)));
             }
         }
 
@@ -67,7 +67,7 @@ export function BuildProgramClient() {
         }
 
         if (emptyParam === 'true') {
-            setHevyProgram(emptyHevyRoutineProgram);
+            setHevyProgram(appendOrderToHevyRoutines(emptyHevyRoutineProgram));
         }
 
 
