@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, LogIn, PersonStanding, Search, HardDriveDownload } from "lucide-react";
+import { Home, LogIn, PersonStanding, Search, HardDriveDownload, Archive } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -25,7 +25,12 @@ const items = [
     icon: PersonStanding,
   },
   {
-    title: "Search Programs",
+    title: "My Programs",
+    url: "/my-programs",
+    icon: Archive,
+  },
+  {
+    title: "Explore",
     url: "/programs",
     icon: Search,
   },

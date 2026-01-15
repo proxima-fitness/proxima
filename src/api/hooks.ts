@@ -1,7 +1,7 @@
 // USE OF REACT QUERY IS STRICTLY CLIENT-SIDE, USE SUPABASE SSR FOR SERVER SIDE
 import { useQuery } from "@tanstack/react-query";
 import { getBlogById, getBlogs } from "./blog";
-import { getCommunityAiPrograms, getCommunityAiProgramsPaginated, getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID } from "./programs";
+import { getCommunityAiPrograms, getCommunityAiProgramsPaginated, getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID, getSubscribedPrograms } from "./programs";
 import { getOpUserId, getUserFullName, getUserMetaData, getUsersBatch } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getHevyApiKey, getHevyCustomExercises, getHevyExercises, getHevyPrograms, getHevyRoutines } from "../components/program-builder/api/hevy";
@@ -67,6 +67,15 @@ export const usePrograms = (limit?: number) => {
     return useQuery({
         queryKey: ['programs'],
         queryFn: () => getPrograms(limit),
+    });
+};
+
+// FETCHES USER'S SUBSCRIBED/SAVED PROGRAMS
+export const useSubscribedPrograms = (user: User | undefined | null) => {
+    return useQuery({
+        queryKey: ['subscribed-programs', user?.id],
+        queryFn: () => getSubscribedPrograms(user!),
+        enabled: !!user,
     });
 };
 

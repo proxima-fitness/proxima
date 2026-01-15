@@ -5813,8 +5813,12 @@ export const authenticatedNavLinks = [
     //     title: "Exercises",
     // },
     {
+        id: "my-programs",
+        title: "My Programs"
+    },
+    {
         id: "programs",
-        title: "Programs"
+        title: "Explore"
     },
     // {
     //     id: "program-builder",

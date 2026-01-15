@@ -26,7 +26,7 @@ export const metadata = {
                 <div>Looking to get in shape ? Try our free workout programs</div>
                 <Link href={ `/programs` }>
                     <Button className="w-[auto] h-[auto] bg-black">
-                        View Programs
+                        Explore Programs
                     </Button>
                 </Link>
             </div>

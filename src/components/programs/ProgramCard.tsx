@@ -3,10 +3,7 @@
 import { thumbnail } from "public";
 import { FullName } from "../generic/FullName";
 import { Badge } from "@/components/ui/badge";
-import { Users2Icon, EditIcon, SaveIcon } from "lucide-react";
-import { useUserContext } from "@/contexts/UserContext";
-import { postNewProgramSubscriber } from "@/api/programs";
-import { toast } from "sonner";
+import { Users2Icon } from "lucide-react";
 
 interface IProps {
     program: TProgram;
@@ -18,32 +15,32 @@ export const ProgramCard: React.FC<IProps> = (props) => {
         program,
     } = props;
 
-    const { user } = useUserContext();
+    // const { user } = useUserContext();
 
-    const handleSave = (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (user) {
-            postNewProgramSubscriber(user, program.id);
-            toast.success("Program saved to your account. View it in the Proxima app.");
-        }
-        else {
-            toast.error("Error saving program");
-        }
-    }
+    // const handleSave = (e: React.MouseEvent<HTMLButtonElement>) => {
+    //     e.preventDefault();
+    //     e.stopPropagation();
+    //     if (user) {
+    //         postNewProgramSubscriber(user, program.id);
+    //         toast.success("Program saved to your account. View it in the Proxima app.");
+    //     }
+    //     else {
+    //         toast.error("Error saving program");
+    //     }
+    // }
 
     return (
         <>
             <div className="w-full max-w-md mx-auto">
-                <div className="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl dark:bg-darkGray">
-                    <div className="relative group">
+                <div className="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-[1.01] hover:-translate-y-0.5 dark:bg-darkGray cursor-pointer">
+                    <div className="relative overflow-hidden">
                         <img
                             src={ program.thumbnail instanceof Blob ? URL.createObjectURL(program.thumbnail) : thumbnail.src }
                             alt="Program Thumbnail"
-                            className={`w-full h-[200px] object-cover transition duration-300 ${user ? 'group-hover:blur-sm' : ''}`}
+                            className="w-full h-[200px] object-cover transition-transform duration-300 hover:scale-105"
                             style={ { objectFit: "cover" } }
                         />
-                        {user && (
+                        {/* {user && (
                             <div className="absolute inset-0 rounded-t-lg bg-black bg-opacity-40 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
                                     <button
                                         onClick={(e) => {
@@ -58,7 +55,7 @@ export const ProgramCard: React.FC<IProps> = (props) => {
                                     <SaveIcon />Save
                                 </button>
                             </div>
-                        )}
+                        )} */}
                     </div>
                     <div className="p-4 space-y-2">
                         <div className={ "flex flex-row justify-start items-center font-bold text-xs text-blue-400" }>
@@ -70,9 +67,9 @@ export const ProgramCard: React.FC<IProps> = (props) => {
                         </div>
                         <h3 className="text-xl font-main overflow-hidden text-ellipsis line-clamp-1">{ program.title }</h3>
                         <div className="flex items-center justify-start gap-2">
-                            <Badge className="text-[10px] text-white dark:text-black hover:bg-[#37BCCF] p-1 bg-[#37BCCF] dark:bg-offWhite overflow-hidden text-ellipsis line-clamp-1">{ program?.difficulty?.map((level: string ) => level).join(' - ') || "Not specified"  }</Badge>
-                            <Badge className="text-[10px] text-white dark:text-black hover:bg-[#37BCCF] p-1 bg-[#37BCCF] dark:bg-offWhite overflow-hidden text-ellipsis line-clamp-1 ">{ program?.equipment || "Not specified" }</Badge>
-                            <Badge className="text-[10px] text-white dark:text-black hover:bg-[#37BCCF] p-1 bg-[#37BCCF] dark:bg-offWhite overflow-hidden text-ellipsis line-clamp-1 ">{ program?.workout_duration || "Not specified" } Mins</Badge>
+                            <Badge className="text-[10px] text-white p-1 bg-lightSecondary dark:bg-gray-300 dark:text-black overflow-hidden text-ellipsis line-clamp-1">{ program?.difficulty?.map((level: string ) => level).join(' - ') || "Not specified"  }</Badge>
+                            <Badge className="text-[10px] text-white p-1 bg-lightSecondary dark:bg-gray-300 dark:text-black overflow-hidden text-ellipsis line-clamp-1 ">{ program?.equipment || "Not specified" }</Badge>
+                            <Badge className="text-[10px] text-white p-1 bg-lightSecondary dark:bg-gray-300 dark:text-black overflow-hidden text-ellipsis line-clamp-1 ">{ program?.workout_duration || "Not specified" } Mins</Badge>
                         </div>
                     </div>
                 </div>

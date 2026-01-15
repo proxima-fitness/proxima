@@ -371,6 +371,67 @@ export const getProgramThumbnailByIDViaPublicUrl = async (id: string) => {
     }
 };
 
+// GET USER'S SUBSCRIBED/SAVED PROGRAMS
+export const getSubscribedPrograms = async (user: User): Promise<TProgram[]> => {
+    try {
+        if (!user) {
+            return [];
+        }
+
+        // First, get all program_ids that the user has subscribed to
+        const { data: subscriptions, error: subscriptionsError } = await supabase
+            .from('program_subscribers')
+            .select('program_id')
+            .eq('user_id', user.id);
+
+        if (subscriptionsError) {
+            console.error('Error fetching subscribed programs:', subscriptionsError);
+            return [];
+        }
+
+        if (!subscriptions || subscriptions.length === 0) {
+            return [];
+        }
+
+        // Extract program IDs
+        const programIds = subscriptions
+            .map(sub => sub.program_id)
+            .filter((id): id is string => id !== null);
+
+        if (programIds.length === 0) {
+            return [];
+        }
+
+        // Fetch the actual programs
+        const { data: programs, error: programsError } = await supabase
+            .from('programs')
+            .select('id, title, details, program_length, workout_duration, equipment, specialization, difficulty, user_id, saves')
+            .in('id', programIds);
+
+        if (programsError) {
+            console.error('Error fetching programs:', programsError);
+            return [];
+        }
+
+        if (!programs || programs.length === 0) {
+            return [];
+        }
+
+        // Add thumbnails to each program
+        const programsWithThumbnails = await Promise.all(
+            programs.map(async (program) => {
+                const thumbnail = await getProgramThumbnailByID(program.id);
+                return { ...program, thumbnail };
+            }),
+        );
+
+        return programsWithThumbnails as unknown as TProgram[];
+    } catch (error: unknown) {
+        console.error('Unexpected error fetching subscribed programs:', error);
+        return [];
+    }
+};
+
 // POST A NEW SUBSCRIBER TO PROGRAM WITH PROGRAM ID
 export const postNewProgramSubscriber = async (user: User, program_id: string) => {
 

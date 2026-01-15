@@ -49,7 +49,7 @@ export const ProgramsSection: React.FC = () => {
                 )
             }
             <div className="flex items-center justify-center">
-                <Link href="/programs"><Button text={ "Search Programs" } styles={ `mt-10 py-2 bg-lightSecondary text-white` } /></Link>
+                <Link href="/programs"><Button text={ "Explore Programs" } styles={ `mt-10 py-2 bg-lightSecondary text-white` } /></Link>
             </div>
         </section>
     );
