@@ -3,11 +3,9 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
-import { qr_code, starGold, proxima_logo_small } from "public";
+import { proxima_logo_small } from "public";
 
 interface IProps {
     isOpen: boolean;
@@ -54,7 +52,8 @@ export const DownloadPopup: React.FC<IProps> = (props) => {
                         </Button>
             }
 
-                    <DialogTitle className="text-3xl pb-4">DOWNLOAD THE APP FOR <span className="text-lightSecondary">FREE</span></DialogTitle>
+                    {/* Temporarily deprecated - mobile app download */}
+                    {/* <DialogTitle className="text-3xl pb-4">DOWNLOAD THE APP FOR <span className="text-lightSecondary">FREE</span></DialogTitle>
                     <DialogDescription className={ `flex ${ isMobile ? "flex-col" : "flex-row" } justify-between items-start` }>
                         <span className="w-[100%] flex flex-col items-center">
                             { !isMobile &&
@@ -90,7 +89,7 @@ export const DownloadPopup: React.FC<IProps> = (props) => {
                             <span className="block font-normal text-lg pb-2 text-start"><span className="font-black pr-2">&middot;</span> Track your progress</span>
                             <span className="block font-normal text-lg pb-2 text-start"><span className="font-black pr-2">&middot;</span> <span className="font-bold">Share</span> Personal Records with your friends</span>
                         </span>
-                    </DialogDescription>
+                    </DialogDescription> */}
                 </DialogHeader>
             </DialogContent>
         </Dialog>

@@ -20,7 +20,7 @@ export default function ProgramsSlugPage({
     const slug = params.slug;
 
     return (
-        <div className="bg-white dark:bg-extraDarkGray flex items-center justify-center flex-col px-12 max-sm:px-2 py-6">
+        <div className="bg-white dark:bg-extraDarkGray flex items-start justify-start flex-col px-12 max-sm:px-2 py-6">
             <Suspense fallback={ <ProgramFallback /> }>
                 <ProgramsSlugLayout id={slug[0]} />
             </Suspense>

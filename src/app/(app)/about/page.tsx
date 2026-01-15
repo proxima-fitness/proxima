@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CallToAction } from "@/components/call-to-action/CallToAction";
+// import { CallToAction } from "@/components/call-to-action/CallToAction";
 import { jack, jack_jacked } from "public";
 
 export const metadata = {
@@ -69,7 +69,8 @@ export const metadata = {
                 <p className="text-lg text-gray-700 dark:text-offWhite leading-8 mt-4">
                     <span className="font-bold italic">Let’s crush our goals together.</span> 💪
                 </p>
-                <CallToAction />
+                {/* Temporarily deprecated - mobile app download */}
+                {/* <CallToAction /> */}
             </section>
 
 

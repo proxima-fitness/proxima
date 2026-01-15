@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { qr_code, starGold } from "public";
+ 
+// import { qr_code, starGold } from "public";
 
 
 export const metadata = {
@@ -10,7 +10,8 @@ export const metadata = {
   export default function DownloadPage() {
     return (
         <>
-            <div className={ `bg-white dark:bg-darkGray dark:text-offWhite flex items-center justify-center flex-col p-24` }>
+            {/* Temporarily deprecated - mobile app download */}
+            {/* <div className={ `bg-white dark:bg-darkGray dark:text-offWhite flex items-center justify-center flex-col p-24` }>
                 <div className="flex-1 flex flex-col text-center items-center justify-center">
                     <h2 className="text-black dark:text-offWhite font-bold text-6xl">Download the App now</h2>
                     <p className={ `text-black dark:text-offWhite text-center max-w-[470px] mt-5 text-3xl` }>
@@ -25,8 +26,7 @@ export const metadata = {
                             </div>
                             <div style={ { display: "flex", flexDirection: "column", justifyContent: "flex-start", gap: "10px", zIndex: "5" } }>
 
-                                {/* Temporarily deprecated - mobile app download */}
-                                {/* <a href="https://testflight.apple.com/join/dG4SXTTm"
+                                <a href="https://testflight.apple.com/join/dG4SXTTm"
                                     >
                                     <img src={ (apple as any).src } alt="apple"
                                         style={ {
@@ -48,7 +48,7 @@ export const metadata = {
                                                 cursor: "pointer",
                                             } }
                                         />
-                                </a> */}
+                                </a>
                             </div>
                         </div>
                         <span className="flex flex-row py-4 text-black dark:text-offWhite">
@@ -71,7 +71,7 @@ export const metadata = {
                         </span>
                     </div>
                 </div>
-            </div>
+            </div> */}
         </>
     );
 }

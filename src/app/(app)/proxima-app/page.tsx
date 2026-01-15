@@ -12,7 +12,7 @@ import { CustomPrograms } from "@/components/features/CustomPrograms";
 import { PersonalRecords } from "@/components/features/PersonalRecords";
 import { Themes } from "@/components/features/Themes";
 import { Faq } from "@/components/faqs/Faq";
-import { CallToAction } from "@/components/call-to-action/CallToAction";
+// import { CallToAction } from "@/components/call-to-action/CallToAction";
 
 // export const metadata = {
 //     title: "Proxima Fitness App",
@@ -104,7 +104,8 @@ import { CallToAction } from "@/components/call-to-action/CallToAction";
                 <div className={ `${styles.boxWidth}` }>
                     <Themes />
                     <Faq />
-                    <CallToAction />
+                    {/* Temporarily deprecated - mobile app download */}
+                    {/* <CallToAction /> */}
                 </div>
             </div>
         </div>
