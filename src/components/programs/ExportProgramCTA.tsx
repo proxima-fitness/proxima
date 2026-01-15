@@ -11,10 +11,10 @@ export const ExportProgramCTA: React.FC = () => {
             id: "hevy",
             name: "Hevy",
             icon: (
-                <img 
-                    src={(hevy_logo as any).src} 
-                    alt="Hevy" 
-                    className="w-6 h-6 object-contain" 
+                <img
+                    src={(hevy_logo as any).src}
+                    alt="Hevy"
+                    className="w-6 h-6 object-contain"
                 />
             ),
         },
@@ -55,7 +55,7 @@ export const ExportProgramCTA: React.FC = () => {
     };
 
     return (
-        <div className="rounded-xl bg-gray-900 h-[500px] border-l border-gray-300 flex flex-col text-center justify-center items-center px-8">
+        <div className="rounded-xl bg-gray-900 border-l border-gray-300 flex flex-col text-center justify-start items-center px-8 w-full h-full">
             <div className="flex flex-col w-full">
                 <h2 className={styles.heading2}>Export Program</h2>
                 <div className="pt-6 flex flex-col gap-3 w-full">

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { qr_code,apple,google, starGold } from "public";
+import { qr_code, starGold } from "public";
 
 
 export const metadata = {
@@ -25,7 +25,8 @@ export const metadata = {
                             </div>
                             <div style={ { display: "flex", flexDirection: "column", justifyContent: "flex-start", gap: "10px", zIndex: "5" } }>
 
-                                <a href="https://testflight.apple.com/join/dG4SXTTm"
+                                {/* Temporarily deprecated - mobile app download */}
+                                {/* <a href="https://testflight.apple.com/join/dG4SXTTm"
                                     >
                                     <img src={ (apple as any).src } alt="apple"
                                         style={ {
@@ -47,7 +48,7 @@ export const metadata = {
                                                 cursor: "pointer",
                                             } }
                                         />
-                                </a>
+                                </a> */}
                             </div>
                         </div>
                         <span className="flex flex-row py-4 text-black dark:text-offWhite">

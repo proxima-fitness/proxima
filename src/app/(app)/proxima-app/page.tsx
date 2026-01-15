@@ -3,9 +3,7 @@
 import { useUserContext } from "@/contexts/UserContext";
 import { Integrations } from"@/components/header/Integrations";
 import { useExitIntent } from 'use-exit-intent';
-import { useState } from "react";
 import styles from "@/style";
-import { DownloadPopup } from "@/components/call-to-action/DownloadPopup";
 import { Hero } from "@/components/header/Hero";
 import { Stats } from "@/components/header/Stats";
 import { ProgramsSection } from "@/components/features/ProgramsSection";
@@ -42,7 +40,7 @@ import { CallToAction } from "@/components/call-to-action/CallToAction";
       id: 'desktop',
       handler: () => {
         if (!user) {
-          setIsOpen(true);
+        //   setIsOpen(true);
         }
       },
       context: ['onDesktop'],
@@ -53,19 +51,21 @@ import { CallToAction } from "@/components/call-to-action/CallToAction";
       id: 'mobile',
       handler: () => {
         if (!user) {
-          setIsMobile(true);
-          setIsOpen(true);
+        //   setIsMobile(true);
+        //   setIsOpen(true);
+        //do nothing
         }
       },
       context: ['onMobile'],
     });
 
-    const [isMobile, setIsMobile] = useState(false);
-    const [isOpen, setIsOpen] = useState(false);
+    // const [isMobile, setIsMobile] = useState(false);
+    // const [isOpen, setIsOpen] = useState(false);
 
     return (
                 <div className={`overflow-hidden`}>
-            {!user && <DownloadPopup isOpen={ isOpen } setIsOpen={ setIsOpen } isMobile={ isMobile } />}
+            {/* Temporarily deprecated - mobile app download */}
+            {/* {!user && <DownloadPopup isOpen={ isOpen } setIsOpen={ setIsOpen } isMobile={ isMobile } />} */}
             <div className={ `sm:pt-16 pt-6`}>
                 <div className={ `bg-primary ${styles.flexStart}` }>
                     <div className={ `${styles.boxWidth}` }>

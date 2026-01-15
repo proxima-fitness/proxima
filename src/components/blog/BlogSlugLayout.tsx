@@ -1,5 +1,4 @@
-import styles from "@/style";
-import { GetStarted } from "../header/GetStarted";
+
 import { useBlogByIdSSR } from "@/api/hooks";
 import { convertSupabaseDateToReadable } from "@/utils/general/helpers";
 import { FC } from "react";
@@ -34,7 +33,8 @@ export const BlogSlugLayout: FC<IProps> = async (props) => {
                         <RichText data={ blog.content as SerializedEditorState  } />
                     </div>
                 </div>
-                <div className="rounded-xl bg-gray-900 h-[500px] border-l border-gray-300 flex flex-col text-center justify-center items-center px-8">
+                {/* Temporarily deprecated - mobile app download */}
+                {/* <div className="rounded-xl bg-gray-900 h-[500px] border-l border-gray-300 flex flex-col text-center justify-center items-center px-8">
                     <div className="flex flex-col">
                         <h2 className={ styles.heading2 }>Download the App For Free</h2>
                         <p className={ `${styles.paragraph}` }>
@@ -44,7 +44,7 @@ export const BlogSlugLayout: FC<IProps> = async (props) => {
                     <div className="pt-4">
                         <GetStarted noBorder={ true } blog={ true } />
                     </div>
-                </div>
+                </div> */}
             </div>
         </>
     );

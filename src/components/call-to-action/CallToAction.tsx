@@ -1,6 +1,5 @@
 
 import styles from "../../style";
-import { GetStarted } from "../header/GetStarted";
 
 
 export const CallToAction: React.FC = () => {
@@ -14,9 +13,10 @@ export const CallToAction: React.FC = () => {
                     It takes less than a minute
                 </p>
             </div>
-            <div className="pt-4">
+            {/* Temporarily deprecated - mobile app download */}
+            {/* <div className="pt-4">
                 <GetStarted noBorder={ true } />
-            </div>
+            </div> */}
         </section>
     );
 };

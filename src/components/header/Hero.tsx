@@ -2,7 +2,6 @@
 "use client";
 
 import styles from "../../style";
-import { GetStarted } from "./GetStarted";
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { useEffect } from "react";
@@ -27,7 +26,8 @@ export const Hero: React.FC = () => {
                 <p className={ `text-sm text-offWhite font-secondary max-w-[600px] mt-5 pb-4 text-center ss:text-left` }>
                     Seamlessly integrate this <span className="text-lightSecondary">AI Coach</span> into your favourite fitness app and let it coach you with a <span className="text-lightSecondary">personalised plan</span>. Plans evolve based on your workout history, or follow a plan made by an expert.
                 </p>
-                <GetStarted />
+                {/* Temporarily deprecated - mobile app download */}
+                {/* <GetStarted /> */}
             </div>
 
             <div className={ `flex-1 flex ${styles.flexCenter} md:my-0 mt-24 mb-10 relative px-8` } >

@@ -1,7 +1,6 @@
 "use client";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Button } from "../generic/Button";
 import { NavDrawer } from "./NavDrawer";
 import { proxima_logo, proxima_logo_white } from "public";
 import Link from 'next/link';
@@ -62,9 +61,11 @@ const NavItems = (pathname: string) => {
             return (
                 <div key={ index }>
                     { nav.id === "cta" ?
-                        <Link href="/download">
-                            <Button text={ "Download App" } styles={ `py-2 dark:bg-darkGray dark:text-white` } />
-                        </Link>
+                        // Temporarily deprecated - mobile app download
+                        // <Link href="/download">
+                        //     <Button text={ "Download App" } styles={ `py-2 dark:bg-darkGray dark:text-white` } />
+                        // </Link>
+                        null
                     : nav.id === "log-in" ?
                         <li
                         key={ nav.id }
@@ -90,9 +91,11 @@ const NavItems = (pathname: string) => {
             return (
                 <div key={ index }>
                     { nav.id === "cta" ?
-                        <Link href="/download">
-                            <Button text={ "Download App" } styles={ `py-2 dark:bg-offWhite dark:text-black` } />
-                        </Link>
+                        // Temporarily deprecated - mobile app download
+                        // <Link href="/download">
+                        //     <Button text={ "Download App" } styles={ `py-2 dark:bg-offWhite dark:text-black` } />
+                        // </Link>
+                        null
                     : nav.id === "log-in" ?
                         <li
                         key={ nav.id }
@@ -228,9 +231,11 @@ const NavItems = (pathname: string) => {
             return (
                 <div key={ index }>
                     { nav.id === "cta" ?
-                        <Link href="/download">
-                            <Button text={ "Download App" } styles={ `py-2` } />
-                        </Link>
+                        // Temporarily deprecated - mobile app download
+                        // <Link href="/download">
+                        //     <Button text={ "Download App" } styles={ `py-2` } />
+                        // </Link>
+                        null
                     : nav.id === "log-in" ?
                         <li
                             key={ nav.id }

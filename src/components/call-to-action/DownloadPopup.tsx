@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { qr_code, starGold,apple, google, proxima_logo_small } from "public";
+import { qr_code, starGold, proxima_logo_small } from "public";
 
 interface IProps {
     isOpen: boolean;
@@ -24,28 +24,30 @@ export const DownloadPopup: React.FC<IProps> = (props) => {
             <DialogContent className="sm:max-w-3xl">
                 <DialogHeader className="flex justify-center items-center">
                     { isMobile ?
-                        <span className="flex flex-row pt-6 gap-2">
-                            <a href="https://testflight.apple.com/join/dG4SXTTm">
-                                <img src={ (apple as any).src } alt="apple"
-                    style={ {
-                        width: "150px",
-                        height: "100%",
-                        display: "inline-block",
-                        cursor: "pointer",
-                    } }
-                    />
-                            </a>
-                            <a href="https://play.google.com/store/apps/details?id=com.proximafitness.app&hl=en_CA">
-                                <img src={ (google as any).src } alt="google"
-                        style={ {
-                            width: "150px",
-                            height: "100%",
-                            display: "inline-block",
-                            cursor: "pointer",
-                        } }
-                    />
-                            </a>
-                        </span>
+                        // Temporarily deprecated - mobile app download
+                        // <span className="flex flex-row pt-6 gap-2">
+                        //     <a href="https://testflight.apple.com/join/dG4SXTTm">
+                        //         <img src={ (apple as any).src } alt="apple"
+                        // style={ {
+                        //     width: "150px",
+                        //     height: "100%",
+                        //     display: "inline-block",
+                        //     cursor: "pointer",
+                        // } }
+                        // />
+                        //     </a>
+                        //     <a href="https://play.google.com/store/apps/details?id=com.proximafitness.app&hl=en_CA">
+                        //         <img src={ (google as any).src } alt="google"
+                        // style={ {
+                        //     width: "150px",
+                        //     height: "100%",
+                        //     display: "inline-block",
+                        //     cursor: "pointer",
+                        // } }
+                        // />
+                        //     </a>
+                        // </span>
+                        null
                 :
                         <Button className="cursor-default sm:w-[90%] bg-lightSecondary h-[90px] my-6 hover:bg-lightSecondary">
                             <img src={ (proxima_logo_small as any).src } alt="Proxima Logo" />
