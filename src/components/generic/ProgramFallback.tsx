@@ -5,23 +5,26 @@ export const ProgramFallback: React.FC = () => {
 
     return (
         <>
-        <div className="grid grid-cols-3 max-sm:grid-cols-1 gap-12 max-sm:gap-0 pb-8 w-full">
-                <div className="col-span-2 flex flex-col gap-8">
-            <div>
+        <div className="grid grid-cols-3 max-sm:grid-cols-1 grid-rows-[350px_auto_auto] max-sm:grid-rows-none gap-x-12 max-sm:gap-x-0 gap-y-6 md:gap-y-8 pb-8 w-full">
+                <div className="col-span-2 row-start-1 max-sm:col-span-1">
             <Skeleton className="rounded-lg object-cover h-[350px] w-full">
             </Skeleton>
-            </div>
-                <div className="text-3xl font-main">
+        </div>
+                <div className="col-span-2 row-start-2 max-sm:col-span-1">
                     <Skeleton className="w-full h-[100px]"></Skeleton>
                 </div>
-            <div className="max-sm:mb-8">
-            <div className="text-3xl font-main">
+            <div className="col-span-2 row-start-3 max-sm:col-span-1">
                 <Skeleton className="w-full h-[450px]"></Skeleton>
             </div>
-        </div>
-        </div>
-                <div className="rounded-xl h-[500px] flex flex-col text-center justify-center items-center">
+                <div className="row-span-2 row-start-1 max-sm:row-span-1 max-sm:row-start-auto flex items-start h-full">
+                    <div className="rounded-xl w-full h-[500px] flex flex-col text-center justify-center items-center">
                         <Skeleton className="w-full h-[500px] rounded-xl"></Skeleton>
+                    </div>
+                </div>
+                <div className="row-start-3 max-sm:row-start-auto h-full">
+                    <div className="rounded-xl w-full h-full flex flex-col text-center justify-center items-center">
+                        <Skeleton className="w-full h-full rounded-xl"></Skeleton>
+                    </div>
                 </div>
             </div>
             <div className="w-full">

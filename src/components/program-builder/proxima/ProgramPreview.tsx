@@ -1,5 +1,10 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
 import { shortEnglishHumanizer } from "@/assets/constants";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface IProps {
     sortedWorkoutsByWeek: TScheduleWorkouts[][];
@@ -11,9 +16,59 @@ export const ProgramPreview: React.FC<IProps> = (props) => {
         sortedWorkoutsByWeek,
     } = props;
 
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(true);
+
+    // Update scroll button visibility based on scroll position
+    useEffect(() => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+
+        const updateScrollButtons = () => {
+            const { scrollLeft, scrollWidth, clientWidth } = container;
+            setCanScrollLeft(scrollLeft > 0);
+            setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+        };
+
+        updateScrollButtons();
+        container.addEventListener('scroll', updateScrollButtons);
+        window.addEventListener('resize', updateScrollButtons);
+
+        return () => {
+            container.removeEventListener('scroll', updateScrollButtons);
+            window.removeEventListener('resize', updateScrollButtons);
+        };
+    }, [sortedWorkoutsByWeek.length]);
+
+    const handleScrollLeft = () => {
+        if (scrollContainerRef.current) {
+            // Each week card is approximately 400px wide + 16px gap (gap-4)
+            const scrollAmount = 416;
+            scrollContainerRef.current.scrollBy({
+                left: -scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    const handleScrollRight = () => {
+        if (scrollContainerRef.current) {
+            // Each week card is approximately 400px wide + 16px gap (gap-4)
+            const scrollAmount = 416;
+            scrollContainerRef.current.scrollBy({
+                left: scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    };
+
     return (
-        <div className="w-full dark:bg-darkGray">
-            <div className="flex flex-row max-sm:flex-col w-full overflow-scroll max-sm:p-0 p-2 gap-4">
+        <div className="w-full dark:bg-darkGray relative">
+            <div
+                ref={scrollContainerRef}
+                className="flex flex-row max-sm:flex-col w-full overflow-scroll max-sm:p-0 p-2 gap-4"
+            >
                 { sortedWorkoutsByWeek.map((week, index) => (
                     <div className="w-full" key={ `Week ${index}` }>
                         <span className="bg-white dark:bg-darkGray p-2 font-main">Week {index + 1}</span>
@@ -213,6 +268,30 @@ export const ProgramPreview: React.FC<IProps> = (props) => {
                     </div>
                 ) ) }
             </div>
+            {/* Left Arrow Button */}
+            {canScrollLeft && (
+                <Button
+                    onClick={handleScrollLeft}
+                    variant="outline"
+                    size="icon"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white dark:bg-lightSecondary dark:hover:bg-lightSecondary shadow-lg border-2 h-12 w-12 rounded-full transition-opacity flex items-center justify-center p-0 max-sm:hidden"
+                    aria-label="Scroll left"
+                >
+                    <ChevronLeft className="h-6 w-6" />
+                </Button>
+            )}
+            {/* Right Arrow Button */}
+            {canScrollRight && (
+                <Button
+                    onClick={handleScrollRight}
+                    variant="outline"
+                    size="icon"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white dark:bg-lightSecondary dark:hover:bg-lightSecondary shadow-lg border-2 h-12 w-12 rounded-full transition-opacity flex items-center justify-center p-0 max-sm:hidden"
+                    aria-label="Scroll right"
+                >
+                    <ChevronRight className="h-6 w-6" />
+                </Button>
+            )}
         </div>
     );
 };
