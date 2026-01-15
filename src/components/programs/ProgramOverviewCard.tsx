@@ -11,7 +11,7 @@ export const ProgramOverviewCard: React.FC<IProps> = (props) => {
     } = props;
 
     return (
-        <Card className="max-sm:mb-8 py-4 pl-4 bg-gray-100 dark:bg-darkGray">
+        <Card className="py-4 pl-4 bg-gray-100 dark:bg-darkGray">
             <div className="text-xl uppercase pb-2">
                 Program overview
             </div>

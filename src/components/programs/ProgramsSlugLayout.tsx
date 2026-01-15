@@ -37,7 +37,7 @@ export const ProgramsSlugLayout: FC<IProps> =  async (props) => {
 
     return (
         <>
-            <div className="grid grid-cols-3 max-sm:grid-cols-1 grid-rows-[350px_auto_auto] max-sm:grid-rows-none gap-x-12 max-sm:gap-x-0 gap-y-8 max-sm:gap-y-0 pb-8">
+            <div className="grid grid-cols-3 max-sm:grid-cols-1 grid-rows-[350px_auto_auto] max-sm:grid-rows-none gap-x-12 max-sm:gap-x-0 gap-y-6 md:gap-y-8 pb-8">
                 { program && fullName && programCreatorMetadata &&
                     <>
                         <div className="col-span-2 row-start-1 max-sm:col-span-1">

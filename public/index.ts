@@ -51,6 +51,8 @@ import oura_logo from "./oura.svg";
 import polar_logo from "./polar.svg";
 import garmin_logo from "./garmin.svg";
 import whoop_logo from "./whoop.svg";
+import strong_logo from "./strong_logo.png";
+import macrofactor_logo from "./macrofactor_logo.png";
 
 export {
     qr_code,
@@ -106,4 +108,6 @@ export {
     polar_logo,
     garmin_logo,
     whoop_logo,
+    strong_logo,
+    macrofactor_logo,
 }
