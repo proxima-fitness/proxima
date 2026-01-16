@@ -175,10 +175,11 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
             <DropIndicator beforeId={ day.id } weekOrder={ String(folder_id) } />
             <motion.div
                 layout
-                layoutId={ day.id }
+                layoutId={ `${day.id}-${folder_id}` }
                 draggable="true"
                 onDragStart={ (e: DragEvent) => handleDragStart(e, cardVal) }
                 className="cursor-grab rounded active:cursor-grabbing gap-4 w-full max-w-full"
+                style={{ opacity: 1, visibility: 'visible' }}
             >
                 <Card
                     tabIndex={ 0 }
