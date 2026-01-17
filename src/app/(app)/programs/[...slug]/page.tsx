@@ -2,8 +2,9 @@ import { ProgramFallback } from "@/components/generic/ProgramFallback";
 import { ProgramsSlugLayout } from "@/components/programs/ProgramsSlugLayout";
 import { Suspense } from "react";
 
-export async function generateMetadata({ params }: { params: { slug: string[] } }) {
-    const rawTitle = params.slug[1]?.replace(/-/g, ' ') ?? "Program";
+export async function generateMetadata({ params }: { params: Promise<{ slug: string[] }> }) {
+    const { slug } = await params;
+    const rawTitle = slug[1]?.replace(/-/g, ' ') ?? "Program";
     const formattedTitle = rawTitle.charAt(0).toUpperCase() + rawTitle.slice(1);
 
     return {
@@ -12,12 +13,12 @@ export async function generateMetadata({ params }: { params: { slug: string[] } 
     };
 }
 
-export default function ProgramsSlugPage({
+export default async function ProgramsSlugPage({
     params,
 }: {
-    params: { slug: string[] };
+    params: Promise<{ slug: string[] }>;
 }) {
-    const slug = params.slug;
+    const { slug } = await params;
 
     return (
         <div className="bg-white dark:bg-extraDarkGray flex items-start justify-start flex-col px-12 max-sm:px-2 py-6">
