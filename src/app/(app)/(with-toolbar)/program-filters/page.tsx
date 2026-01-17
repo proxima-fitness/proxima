@@ -1,7 +1,7 @@
 'use client'
 
 import { ConversationPromptInput } from "@/components/program-builder/shared/ConversationPromptInput"
-import { inferDaysPerWeek } from "@/components/program-builder/utils";
+// import { inferDaysPerWeek } from "@/components/program-builder/utils";
 import { IOption } from "@/components/ui/multi-select";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { useSearchParams } from "next/navigation";
@@ -50,7 +50,7 @@ function ProgramFiltersContent() {
     const [reasoningText, setReasoningText] = useState("")
     const [isStreaming, setIsStreaming] = useState(false)
 
-    const submitRef = useRef<HTMLAnchorElement>(null);
+    // const submitRef = useRef<HTMLAnchorElement>(null);
     const searchRef = useRef<string | null>(null);
 
     useEffect(() => {
@@ -58,12 +58,12 @@ function ProgramFiltersContent() {
     }, [workoutSchema, setIsHevy]);
 
     // Handle inferring days per week from search
-    useEffect(() => {
-        const inferred = inferDaysPerWeek(search);
-        if (inferred && !daysPerWeek) {
-            setDaysPerWeek(inferred);
-        }
-    }, [search, daysPerWeek]);
+    // useEffect(() => {
+    //     const inferred = inferDaysPerWeek(search);
+    //     if (inferred && !daysPerWeek) {
+    //         setDaysPerWeek(inferred);
+    //     }
+    // }, [search, daysPerWeek]);
 
     const handleDefineQueryParams = () => {
         const params = new URLSearchParams();
@@ -189,7 +189,7 @@ function ProgramFiltersContent() {
                     workoutSchema={workoutSchema}
                     setWorkoutSchema={setWorkoutSchema}
 
-                    submitRef={ submitRef }
+                    // submitRef={ submitRef }
                     search={search}
                     chatMessages={chatMessages}
                     isStreaming={isStreaming}

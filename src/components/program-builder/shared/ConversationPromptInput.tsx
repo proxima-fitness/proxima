@@ -75,7 +75,7 @@ interface IProps {
     setHealthIssues: (healthIssues: IOption[]) => void;
     workoutSchema: string;
     setWorkoutSchema: (workoutSchema: string) => void;
-    submitRef: React.RefObject<HTMLAnchorElement>;
+    // submitRef: React.RefObject<HTMLAnchorElement>;
     search: string;
     chatMessages: TMessage[];
     isStreaming: boolean;
@@ -136,8 +136,7 @@ function ConversationPromptInput( props: IProps) {
         toggleExplore,
         programTitle,
         setProgramTitle,
-        handleDefineQueryParams,
-        submitRef } = props;
+        handleDefineQueryParams } = props;
     const [prompt, setPrompt] = useState(search)
 
 
@@ -275,7 +274,7 @@ function ConversationPromptInput( props: IProps) {
                 </div>
                  <span className="flex flex-row max-sm:flex-col max-sm:items-end gap-2">
                      <Link
-                         ref={ submitRef }
+                        //  ref={ submitRef }
                          target="_self"
                          rel="noopener noreferrer"
                          className="max-sm:w-full w-full h-10"
