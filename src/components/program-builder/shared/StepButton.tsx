@@ -67,7 +67,8 @@ export const StepButton: React.FC = () => {
                 className="text-white bg-lightSecondary hover:bg-black"
                 onClick={ saveProgram }
             >
-                Finish and Review
+                <span className="hidden sm:inline">Finish and Review</span>
+                <span className="sm:hidden">Finish</span>
                 <ArrowRightIcon />
             </Button>
         );
