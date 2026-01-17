@@ -163,12 +163,7 @@ export const MyProgramsVault: React.FC = () => {
                         rel="noopener noreferrer"
                         href={`programs/${program.id}/${program.title.trim().replace(/[\s,]+/g, '-').toLowerCase()}`}
                     >
-                        <div className="relative group">
-                            <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg blur opacity-20 group-hover:opacity-35 transition-all duration-300"></div>
-                            <div className="relative">
-                                <ProgramCard program={program} />
-                            </div>
-                        </div>
+                        <ProgramCard program={program} />
                     </Link>
                 ))}
             </div>
