@@ -470,8 +470,8 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                     </TooltipProvider>
                 </div>
             </div>
-        <ChatContainerRoot className={`flex-1 relative ${isFilters ? "overflow-hidden" : "overflow-y-auto"}`}>
-            <ChatContainerContent className="h-full max-sm:pb-[180px]">
+        <ChatContainerRoot className={`flex-1 relative max-sm:h-full ${isFilters ? "overflow-hidden" : "overflow-y-auto"}`}>
+            <ChatContainerContent className="h-full max-sm:pb-[220px]">
                 {!isFilters && messages.map(message => (
                             <div key={message.id} className="whitespace-pre-wrap">
                             {message.parts.map((part, index) => {
@@ -684,7 +684,6 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                         </div>
                     </Message>
                 )}
-                <ChatContainerScrollAnchor />
             {isFilters &&
                 <div className="mx-auto bg-white dark:bg-extraDarkGray rounded-xl p-4 max-w-3xl overflow-y-auto overflow-x-hidden h-full w-full ">
 
@@ -940,6 +939,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
             <div className="absolute bottom-4 right-5 z-50">
                 <ScrollButton className="shadow-sm" />
             </div>
+            <ChatContainerScrollAnchor />
             </ChatContainerContent>
         </ChatContainerRoot>
         <div className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl flex-shrink-0 px-3 pb-3 md:px-5 md:pb-5 max-sm:fixed max-sm:bottom-[70px] max-sm:left-0 max-sm:right-0 max-sm:px-4 max-sm:bg-background border-t pt-4">

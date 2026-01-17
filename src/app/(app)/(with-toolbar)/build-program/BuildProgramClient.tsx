@@ -280,7 +280,7 @@ export function BuildProgramClient() {
                     }
                     setMobileTab(value);
                 }} className="flex flex-col h-full">
-                    <TabsContent value="chat" className="flex-1 overflow-y-auto m-0 mt-0 px-4 pb-20">
+                    <TabsContent value="chat" className="flex-1 m-0 mt-0 px-4 pb-20">
                         <AgentChat
                             sidebarPosition="left"
                             onTogglePosition={mobileToggleSidebarPosition}
