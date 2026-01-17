@@ -485,9 +485,8 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
             { isPreview ?
                 <div className="sm:pl-8">
                     { !user &&
-                        <div className="flex flex-row justify-start items-center max-sm:px-24 pb-4 gap-16">
-                            <Stepper steps={programBuilderSteps} currentStep={3} />
-                            <SetTypesLegend />
+                        <div className="flex flex-row justify-start items-center max-sm:px-4 sm:px-0 pb-4 max-sm:pb-0 gap-16 max-sm:gap-4 max-sm:flex-wrap">
+                            <Stepper steps={programBuilderSteps} currentStep={3} legend={<SetTypesLegend />} />
                         </div>
                     }
                     <HevyRoutinePreview deflatHevyRoutine={ deFlattenHevyRoutine(hevyProgram) } />
@@ -495,9 +494,8 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
             :
                 <>
                     { !user &&
-                        <div className="flex flex-row justify-start items-center max-sm:px-24 pb-4 gap-16">
-                            <Stepper steps={programBuilderSteps} currentStep={2} />
-                            <SetTypesLegend />
+                        <div className="flex flex-row justify-start items-center max-sm:px-4 sm:px-0 pb-4 max-sm:pb-0 gap-16 max-sm:gap-4 max-sm:flex-wrap">
+                            <Stepper steps={programBuilderSteps} currentStep={2} legend={<SetTypesLegend />} />
                         </div>
                     }
                     { isMobile ? (
