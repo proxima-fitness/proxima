@@ -21,7 +21,7 @@ interface IProgramAccordionProps {
     messages: Array<{ role: string; id: string; parts: Array<{ type: string; text?: string }> }>;
     isLoading: boolean;
     currentStatus: IProgramStatus;
-    daysPerWeek: number;
+    daysPerWeek?: number;
     getProgramGenerationStatus: (text: string) => IProgramStatus;
     containsProgramJson: (text: string) => boolean;
 }
@@ -66,7 +66,8 @@ export function ProgramAccordion({
     }, []);
 
     // Check if all days in a week are complete
-    const isWeekComplete = useCallback((week: number, daysPerWeek: number): boolean => {
+    const isWeekComplete = useCallback((week: number, daysPerWeek?: number): boolean => {
+        if (!daysPerWeek) return false;
         const weekSteps = completedSteps.filter((step) => step.week === week);
         return weekSteps.length >= daysPerWeek;
     }, [completedSteps]);
@@ -75,6 +76,7 @@ export function ProgramAccordion({
     useEffect(() => {
         if (!isLoading) {
             // Reset completed steps when not loading
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setCompletedSteps([]);
             lastStatusRef.current = '';
             lastStepIdRef.current = '';
@@ -142,6 +144,7 @@ export function ProgramAccordion({
     useEffect(() => {
         const { weeks } = groupStepsByWeek(completedSteps);
 
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setExpandedWeeks((prev) => {
             const newSet = new Set(prev);
             Object.keys(weeks).forEach((weekKey) => {

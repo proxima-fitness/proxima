@@ -69,6 +69,12 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
         fetch: async (url, options) => {
           const body = options?.body ? JSON.parse(options.body as string) : {};
           body.hevyProgram = hevyProgram;
+          // Pass daysPerWeek and other relevant params to the API
+          body.daysPerWeek = daysPerWeek ? Number(daysPerWeek) : undefined;
+          body.programLength = programLength ? Number(programLength) : undefined;
+          body.excludeAreas = excludeAreas.length > 0 ? excludeAreas.map(area => area.value).join(', ') : undefined;
+          body.excludeEquipment = excludeEquipment.length > 0 ? excludeEquipment.map(eq => eq.value).join(', ') : undefined;
+          body.healthIssues = healthIssues.length > 0 ? healthIssues.map(issue => issue.value).join(', ') : undefined;
           return fetch(url, {
             ...options,
             body: JSON.stringify(body),
@@ -128,25 +134,34 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
         // Helper function to convert TTextToJsonResponse to THevyRoutine[]
         const convertTextToJsonToHevyRoutine = async (textToJsonResponse: TTextToJsonResponse) => {
             try {
-                const daysPerWeek = Number(searchParams.get('daysPerWeek') || '3');
-                const programLength = Number(searchParams.get('programLength') || '12');
-                const excludeAreas = searchParams.get('excludeAreas') || '';
-                const excludeEquipment = searchParams.get('excludeEquipment') || '';
-                const healthIssues = searchParams.get('healthIssues') || '';
+                const daysPerWeekValue = daysPerWeek ? Number(daysPerWeek) : (searchParams.get('daysPerWeek') ? Number(searchParams.get('daysPerWeek')) : undefined);
+                const programLengthValue = programLength ? Number(programLength) : (searchParams.get('programLength') ? Number(searchParams.get('programLength')) : undefined);
+                const excludeAreasValue = excludeAreas.length > 0 ? excludeAreas.map(area => area.value).join(', ') : (searchParams.get('excludeAreas') || '');
+                const excludeEquipmentValue = excludeEquipment.length > 0 ? excludeEquipment.map(eq => eq.value).join(', ') : (searchParams.get('excludeEquipment') || '');
+                const healthIssuesValue = healthIssues.length > 0 ? healthIssues.map(issue => issue.value).join(', ') : (searchParams.get('healthIssues') || '');
 
                 // Import buildHevyProgram dynamically to avoid circular dependencies
                 const { buildHevyProgram } = await import('@/components/program-builder/utils/build-hevy-program');
-                const hevyRoutines = await buildHevyProgram(
-                    textToJsonResponse,
-                    programLength,
-                    daysPerWeek,
-                    excludeAreas,
-                    excludeEquipment,
-                    healthIssues
-                );
 
-                if (hevyRoutines && Array.isArray(hevyRoutines)) {
-                    setHevyProgram(hevyRoutines);
+                // Extract daysPerWeek from the program response if not provided
+                // The AI should have included the correct number of workout_days
+                const inferredDaysPerWeek = daysPerWeekValue || textToJsonResponse?.workout_days?.length || undefined;
+                const inferredProgramLength = programLengthValue || undefined;
+
+                // Only build if we have daysPerWeek (either provided or inferred from workout_days)
+                if (inferredDaysPerWeek) {
+                    const hevyRoutines = await buildHevyProgram(
+                        textToJsonResponse,
+                        inferredProgramLength ?? 0, // buildHevyProgram will handle 0 with its own logic
+                        inferredDaysPerWeek,
+                        excludeAreasValue,
+                        excludeEquipmentValue,
+                        healthIssuesValue
+                    );
+
+                    if (hevyRoutines && Array.isArray(hevyRoutines)) {
+                        setHevyProgram(hevyRoutines);
+                    }
                 }
             } catch (error) {
                 console.error('Error converting program to HevyRoutine:', error);
@@ -194,7 +209,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                 });
             }
         });
-    }, [messages, setHevyProgram, searchParams]);
+    }, [messages, setHevyProgram, searchParams, daysPerWeek, programLength, excludeAreas, excludeEquipment, healthIssues]);
 
     // Monitor message changes to detect gaps in token streaming
     useEffect(() => {
@@ -361,21 +376,26 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
             return { message: 'Building workout days...', isComplete: false, stepId: 'building-days' };
         }
 
-        const daysPerWeek = Number(searchParams.get('daysPerWeek') || '3');
+        const daysPerWeekValue = daysPerWeek ? Number(daysPerWeek) : (searchParams.get('daysPerWeek') ? Number(searchParams.get('daysPerWeek')) : undefined);
+
+        // If daysPerWeek is not provided, we can't calculate week/day status accurately
+        if (daysPerWeekValue === undefined) {
+            return { message: 'Generating workout program...', isComplete: false, stepId: 'generating' };
+        }
 
         if (workoutDaysCount === 1) {
             const exercisesInDay1 = exercisesPerDay[0] || 0;
             const currentDay = 1;
-            const actualWeek = Math.ceil(currentDay / daysPerWeek);
-            const dayInWeek = ((currentDay - 1) % daysPerWeek) + 1;
+            const actualWeek = Math.ceil(currentDay / daysPerWeekValue);
+            const dayInWeek = ((currentDay - 1) % daysPerWeekValue) + 1;
             if (exercisesInDay1 === 0) {
                 return { message: `Building Week ${actualWeek}, Day ${dayInWeek}...`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
             } else if (exercisesInDay1 < 4) {
                 return { message: `Adding exercises to Week ${actualWeek}, Day ${dayInWeek}... (${exercisesInDay1} exercises)`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
             } else {
                 const nextDay = 2;
-                const nextWeek = Math.ceil(nextDay / daysPerWeek);
-                const nextDayInWeek = ((nextDay - 1) % daysPerWeek) + 1;
+                const nextWeek = Math.ceil(nextDay / daysPerWeekValue);
+                const nextDayInWeek = ((nextDay - 1) % daysPerWeekValue) + 1;
                 return { message: `Building Week ${nextWeek}, Day ${nextDayInWeek}...`, isComplete: false, stepId: `week-${nextWeek}-day-${nextDayInWeek}`, completedStepMessage: `Week ${actualWeek}, Day ${dayInWeek} complete` };
             }
         }
@@ -383,16 +403,16 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
         if (workoutDaysCount === 2) {
             const exercisesInDay2 = exercisesPerDay[1] || 0;
             const currentDay = 2;
-            const actualWeek = Math.ceil(currentDay / daysPerWeek);
-            const dayInWeek = ((currentDay - 1) % daysPerWeek) + 1;
+            const actualWeek = Math.ceil(currentDay / daysPerWeekValue);
+            const dayInWeek = ((currentDay - 1) % daysPerWeekValue) + 1;
             if (exercisesInDay2 === 0) {
                 return { message: `Building Week ${actualWeek}, Day ${dayInWeek}...`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
             } else if (exercisesInDay2 < 4) {
                 return { message: `Adding exercises to Week ${actualWeek}, Day ${dayInWeek}... (${exercisesInDay2} exercises)`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
             } else {
                 const nextDay = 3;
-                const nextWeek = Math.ceil(nextDay / daysPerWeek);
-                const nextDayInWeek = ((nextDay - 1) % daysPerWeek) + 1;
+                const nextWeek = Math.ceil(nextDay / daysPerWeekValue);
+                const nextDayInWeek = ((nextDay - 1) % daysPerWeekValue) + 1;
                 return { message: `Building Week ${nextWeek}, Day ${nextDayInWeek}...`, isComplete: false, stepId: `week-${nextWeek}-day-${nextDayInWeek}`, completedStepMessage: `Week ${actualWeek}, Day ${dayInWeek} complete` };
             }
         }
@@ -400,8 +420,8 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
         if (workoutDaysCount >= 3) {
             const currentDay = workoutDaysCount;
             const exercisesInCurrentDay = exercisesPerDay[currentDay - 1] || 0;
-            const actualWeek = Math.ceil(currentDay / daysPerWeek);
-            const dayInWeek = ((currentDay - 1) % daysPerWeek) + 1;
+            const actualWeek = Math.ceil(currentDay / daysPerWeekValue);
+            const dayInWeek = ((currentDay - 1) % daysPerWeekValue) + 1;
 
             if (exercisesInCurrentDay === 0) {
                 return { message: `Building Week ${actualWeek}, Day ${dayInWeek}...`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
@@ -409,8 +429,8 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                 return { message: `Adding exercises to Week ${actualWeek}, Day ${dayInWeek}... (${exercisesInCurrentDay} exercises)`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
             } else {
                 const nextDay = currentDay + 1;
-                const nextWeek = Math.ceil(nextDay / daysPerWeek);
-                const nextDayInWeek = ((nextDay - 1) % daysPerWeek) + 1;
+                const nextWeek = Math.ceil(nextDay / daysPerWeekValue);
+                const nextDayInWeek = ((nextDay - 1) % daysPerWeekValue) + 1;
                 return { message: `Building Week ${nextWeek}, Day ${nextDayInWeek}...`, isComplete: false, stepId: `week-${nextWeek}-day-${nextDayInWeek}`, completedStepMessage: `Week ${actualWeek}, Day ${dayInWeek} complete` };
             }
         }
@@ -487,7 +507,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                                                         messages={messages}
                                                         isLoading={isLoading}
                                                         currentStatus={status}
-                                                        daysPerWeek={Number(searchParams.get('daysPerWeek') || '3')}
+                                                        daysPerWeek={daysPerWeek ? Number(daysPerWeek) : (searchParams.get('daysPerWeek') ? Number(searchParams.get('daysPerWeek')) : undefined)}
                                                         getProgramGenerationStatus={getProgramGenerationStatus}
                                                         containsProgramJson={containsProgramJson}
                                                     />

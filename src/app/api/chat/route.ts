@@ -50,8 +50,8 @@ const buildWorkoutProgramTool = tool({
         totalExercises: filteredExercises.length,
         parameters: {
           userRequest,
-          daysPerWeek: daysPerWeek || 6,
-          programLength: programLength || 12,
+          daysPerWeek: daysPerWeek,
+          programLength: programLength,
           excludeAreas,
           excludeEquipment,
           healthIssues,
@@ -74,7 +74,14 @@ export const baseTools = {
 };
 
 // Function to create agent with current program context
-function createAgentWithProgram(hevyProgram: THevyRoutine[] | undefined) {
+function createAgentWithProgram(
+  hevyProgram: THevyRoutine[] | undefined,
+  daysPerWeek?: number,
+  programLength?: number,
+  excludeAreas?: string,
+  excludeEquipment?: string,
+  healthIssues?: string
+) {
   // Create getCurrentProgram tool if program exists
   const getCurrentProgramTool = tool({
     description: 'Returns the current workout program state. Use this tool to check what program currently exists before creating a new one or modifying an existing one.',
@@ -94,6 +101,28 @@ function createAgentWithProgram(hevyProgram: THevyRoutine[] | undefined) {
     ? { ...baseTools, getCurrentProgram: getCurrentProgramTool }
     : baseTools;
 
+  // Build context about provided parameters
+  const providedParams: string[] = [];
+  if (daysPerWeek !== undefined && daysPerWeek !== null) {
+    providedParams.push(`daysPerWeek: ${daysPerWeek}`);
+  }
+  if (programLength !== undefined && programLength !== null) {
+    providedParams.push(`programLength: ${programLength} weeks`);
+  }
+  if (excludeAreas) {
+    providedParams.push(`excludeAreas: ${excludeAreas}`);
+  }
+  if (excludeEquipment) {
+    providedParams.push(`excludeEquipment: ${excludeEquipment}`);
+  }
+  if (healthIssues) {
+    providedParams.push(`healthIssues: ${healthIssues}`);
+  }
+
+  const paramsContext = providedParams.length > 0
+    ? `\n\nPROVIDED PROGRAM PARAMETERS:\n${providedParams.map(p => `- ${p}`).join('\n')}\n\nCRITICAL: When calling buildWorkoutProgram, you MUST use these provided parameter values. Do NOT infer or guess these values from the user's message - use the provided values above.`
+    : '\n\nNOTE: No program parameters were provided. You MUST extract daysPerWeek and other parameters from the user\'s message. Look for phrases like "3 days per week", "5x/week", "train 4 times", etc. If the user doesn\'t specify, infer a reasonable value based on their goals and experience level.';
+
   const instructions = `You are Andy an AI Personal Trainer. You help users create workout programs and answer questions about fitness, exercise, and training.
 
 You have access to tools that can help you:
@@ -104,10 +133,11 @@ ${hevyProgram && hevyProgram.length > 0 ? '- getCurrentProgram: Returns the curr
 IMPORTANT: ${hevyProgram && hevyProgram.length > 0
   ? 'A workout program already exists. When users request changes, modifications, or ask about the program, use getCurrentProgram to see the current state, then modify it accordingly. Return the UPDATED program in the same format.'
   : 'No program currently exists. Create a new program when users request one.'}
+${paramsContext}
 
 When users ask about creating or modifying workouts or programs:
 1. ${hevyProgram && hevyProgram.length > 0 ? 'First, call getCurrentProgram to see the current program state.' : ''}
-2. Call the buildWorkoutProgram tool with their requirements
+2. Call the buildWorkoutProgram tool with their requirements${daysPerWeek !== undefined && daysPerWeek !== null ? `, making sure to pass daysPerWeek: ${daysPerWeek}` : ''}
 3. Use the availableExercises list from the tool result to select appropriate exercises
 4. Return the program as a JSON object with the structure: { program: TTextToJsonResponse }
 5. TTextToJsonResponse format:
@@ -136,7 +166,7 @@ When users ask about creating or modifying workouts or programs:
    }
 6. CRITICAL: The exercise_template_id MUST be an exact match to an id from the availableExercises array returned by the tool. Do NOT invent exercises or use IDs that don't exist in that list.
 7. IMPORTANT: Return ONLY the minimal data structure above. Do NOT include full exercise objects or other metadata.
-8. Generate workout_days based on the daysPerWeek parameter (1 day = 1 workout_day, 3 days = 3 workout_days, etc.)
+8. Generate workout_days based on the daysPerWeek parameter${daysPerWeek !== undefined && daysPerWeek !== null ? ` (${daysPerWeek} days = ${daysPerWeek} workout_days)` : ' (1 day = 1 workout_day, 3 days = 3 workout_days, etc.)'}. ${daysPerWeek !== undefined && daysPerWeek !== null ? `You MUST create exactly ${daysPerWeek} workout_days.` : 'Extract the number of days from the user\'s message if not provided.'}
 9. The UI will use the exercise_template_id values directly to build the full program structure
 ${hevyProgram && hevyProgram.length > 0 ? '10. When modifying an existing program, preserve the structure and only change what the user requests. Return the complete updated program.' : ''}
 
@@ -151,10 +181,10 @@ Be conversational, helpful, and provide clear explanations about the workouts yo
 
 export async function POST(req: Request) {
   try {
-    const { messages, hevyProgram } = await req.json();
+    const { messages, hevyProgram, daysPerWeek, programLength, excludeAreas, excludeEquipment, healthIssues } = await req.json();
 
-    // Create agent with current program context
-    const agent = createAgentWithProgram(hevyProgram);
+    // Create agent with current program context and parameters
+    const agent = createAgentWithProgram(hevyProgram, daysPerWeek, programLength, excludeAreas, excludeEquipment, healthIssues);
 
     return createAgentUIStreamResponse({
       agent,
