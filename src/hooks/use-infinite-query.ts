@@ -37,8 +37,13 @@ type SupabaseTableName = keyof DatabaseSchema['Tables']
 // Extracts the table definition from the database type
 type SupabaseTableData<T extends SupabaseTableName> = DatabaseSchema['Tables'][T]['Row']
 
+// PostgrestQueryBuilder signature: PostgrestQueryBuilder<ClientOptions, Schema, Relation, RelationName>
+// Where Relation extends GenericTable | GenericView
+// We use Record<string, never> for ClientOptions (empty object type, all properties in ClientServerOptions are optional)
+// DatabaseSchema['Tables'][T] is the Relation (table definition)
+// T is the RelationName (table name string)
 type SupabaseSelectBuilder<T extends SupabaseTableName> = ReturnType<
-  PostgrestQueryBuilder<DatabaseSchema, DatabaseSchema['Tables'][T], T>['select']
+  PostgrestQueryBuilder<Record<string, never>, DatabaseSchema, DatabaseSchema['Tables'][T], T>['select']
 >
 
 // A function that modifies the query. Can be used to sort, filter, etc. If .range is used, it will be overwritten.
