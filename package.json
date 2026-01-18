@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "prepare": "husky",
-    "start": "next start"
+    "start": "next start",
+    "test": "vitest"
   },
   "lint-staged": {
     "*.{ts,tsx,js}": [
@@ -110,6 +111,8 @@
     "@eslint/js": "^9.23.0",
     "@next/eslint-plugin-next": "16.1.3",
     "@tanstack/react-query-devtools": "^5.76.1",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.1",
     "@types/aos": "^3.0.7",
     "@types/humanize-duration": "^3.27.4",
     "@types/node": "^22.10.5",
@@ -119,6 +122,7 @@
     "@types/react-window": "^1.8.8",
     "@typescript-eslint/eslint-plugin": "^8.24.1",
     "@typescript-eslint/parser": "^8.27.0",
+    "@vitejs/plugin-react": "^5.1.2",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.23.0",
     "eslint-config-next": "16.1.3",
@@ -126,10 +130,13 @@
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.3.4",
+    "jsdom": "^27.0.1",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.27.0"
+    "typescript-eslint": "^8.27.0",
+    "vite-tsconfig-paths": "^6.0.4",
+    "vitest": "^3.2.4"
   },
   "engines": {
     "node": ">=20.9.0"
