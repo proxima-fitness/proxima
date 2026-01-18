@@ -1,14 +1,14 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useReducer } from "react";
 import {
     ResizableHandle,
     ResizablePanel,
     ResizablePanelGroup,
   } from "@/components/ui/resizable";
 
-import { AgentChat } from "@/components/program-builder/shared/AgentChat";
+import { AgentChat } from "@/components/program-builder/shared/agent/AgentChat";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { MessageSquare, Calendar } from "lucide-react";
@@ -22,6 +22,7 @@ import { appendOrderToHevyRoutines } from "@/components/program-builder/utils/fo
 import { HevyRoutine } from "@/components/program-builder/hevy/HevyRoutine";
 import { getSharedProgram } from "@/api/programs";
 import { emptyHevyRoutineProgram } from "@/assets/constants";
+import { IOption } from "@/components/ui/multi-select";
 
 export function BuildProgramClient() {
 
@@ -34,11 +35,47 @@ export function BuildProgramClient() {
     const resume = searchParams.get('resume') ?? '';
     const shared = searchParams.get('shared') ?? '';
 
-    // State declarations
     const [sidebarPosition, setSidebarPosition] = useState<"left" | "right">("left");
     const [sidebarSize, setSidebarSize] = useState(20);
     const [mobileTab, setMobileTab] = useState<string>("chat");
     const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>([]);
+
+    const empty = searchParams.get('empty') ?? '';
+    const search = searchParams.get('search') ?? '';
+
+    // TODO: These will be short term memory for now but eventually we will want some long term memory for the user
+    const [sex, setSex] = useState<string>("");
+    const [age, setAge] = useState<string>("");
+    const [daysPerWeek, setDaysPerWeek] = useState<string>("");
+    const [specificDays, setSpecificDays] = useState<IOption[]>([]);
+    const [programLength, setProgramLength] = useState<string>("");
+    const [workoutDuration, setWorkoutDuration] = useState<string>("");
+    const [activityLevel, setActivityLevel] = useState<string>("");
+    const [goals, setGoals] = useState<IOption[]>([]);
+    const [specialization, setSpecialization] = useState<IOption[]>([]);
+    const [equipment, setEquipment] = useState<IOption[]>([]);
+    const [focusAreas, setFocusAreas] = useState<IOption[]>([]);
+    const [difficultyLevel, setDifficultyLevel] = useState<IOption[]>([]);
+    const [excludeAreas, setExcludeAreas] = useState<IOption[]>([]);
+    const [excludeEquipment, setExcludeEquipment] = useState<IOption[]>(
+        [
+            { label: "Bodyweight", value: "bodyweight" },
+            { label: "Band", value: "band" },
+            { label: "Suspension", value: "suspension" },
+            { label: "Resistance band", value: "resistance_band" },
+            { label: "Plate", value: "plate" },
+            { label: "Other", value: "other" },
+            { label: "None", value: "none" },
+        ]
+    );
+
+
+    const [excludeSpecializations, setExcludeSpecializations] = useState<IOption[]>([]);
+    const [healthIssues, setHealthIssues] = useState<IOption[]>([]);
+
+    const [explore, toggleExplore] = useReducer(prev => !prev, true);
+    const [programTitle, setProgramTitle] = useState("My Proxima Program");
+
 
     useEffect(() => {
         const emptyParam = searchParams.get('empty') ?? '';
@@ -75,7 +112,6 @@ export function BuildProgramClient() {
 
     }, [edit, setIsPreview, resume, isHevy, shared, shareId, searchParams]);
 
-    // Load sidebar position and size from localStorage on mount
     useEffect(() => {
         const savedPosition = localStorage.getItem(SIDEBAR_POSITION_KEY) as "left" | "right" | null;
         if (savedPosition === "left" || savedPosition === "right") {
@@ -90,43 +126,17 @@ export function BuildProgramClient() {
         }
     }, []);
 
-    const empty = searchParams.get('empty') ?? '';
-    const search = searchParams.get('search') ?? '';
-    const sex = searchParams.get('sex') ?? '';
-    const age = searchParams.get('age') ?? '';
-    const daysPerWeek = searchParams.get('daysPerWeek') ?? '';
-    const specificDays = searchParams.get('specificDays') ?? '';
-    const programLength = searchParams.get('programLength') ?? '';
-    const workoutDuration = searchParams.get('workoutDuration') ?? '';
-    const activityLevel = searchParams.get('activityLevel') ?? '';
-    const goals = searchParams.get('goals') ?? '';
-    const specialization = searchParams.get('specialization') ?? '';
-    const equipment = searchParams.get('equipment') ?? '';
-    const focusAreas = searchParams.get('focusAreas') ?? '';
-    const difficultyLevel = searchParams.get('difficultyLevel') ?? '';
-    const excludeAreas = searchParams.get('excludeAreas') ?? '';
-    const excludeEquipment = searchParams.get('excludeEquipment') ?? '';
-    const excludeSpecializations = searchParams.get('excludeSpecializations') ?? '';
-    const healthIssues = searchParams.get('healthIssues') ?? '';
-    const programTitle = searchParams.get('programTitle') ?? '';
-    const explore = searchParams.get('explore') ?? '';
 
-    // Switch back to chat tab if program is cleared while on program tab
-    useEffect(() => {
-        if (hevyProgram.length === 0 && mobileTab === "program") {
-            setMobileTab("chat");
-        }
-    }, [hevyProgram.length, mobileTab]);
 
     // Auto-switch to program tab when program finishes generating
     const prevProgramLengthRef = useRef(hevyProgram.length);
     useEffect(() => {
-        // If program was just generated (went from 0 to > 0), switch to program tab
         if (prevProgramLengthRef.current === 0 && hevyProgram.length > 0) {
             setMobileTab("program");
         }
         prevProgramLengthRef.current = hevyProgram.length;
     }, [hevyProgram.length]);
+
 
     const request = useMemo(() => ({
         empty,
@@ -134,21 +144,21 @@ export function BuildProgramClient() {
         sex,
         age,
         daysPerWeek,
-        specificDays,
+        specificDays: specificDays.map(opt => opt.value).join(', '),
         programLength,
         workoutDuration,
         activityLevel,
-        goals,
-        specialization,
-        equipment,
-        focusAreas,
-        difficultyLevel,
-        excludeAreas,
-        excludeEquipment,
-        excludeSpecializations,
-        healthIssues,
+        goals: goals.map(opt => opt.value).join(', '),
+        specialization: specialization.map(opt => opt.value).join(', '),
+        equipment: equipment.map(opt => opt.value).join(', '),
+        focusAreas: focusAreas.map(opt => opt.value).join(', '),
+        difficultyLevel: difficultyLevel.map(opt => opt.value).join(', '),
+        excludeAreas: excludeAreas.map(opt => opt.value).join(', '),
+        excludeEquipment: excludeEquipment.map(opt => opt.value).join(', '),
+        excludeSpecializations: excludeSpecializations.map(opt => opt.value).join(', '),
+        healthIssues: healthIssues.map(opt => opt.value).join(', '),
         programTitle,
-        explore,
+        explore: explore ? "true" : "false",
       } as TTextToJsonRequest), [
         empty,
         search,
@@ -187,9 +197,25 @@ export function BuildProgramClient() {
         });
     };
 
-    // No-op function for mobile since sidebar position toggle isn't relevant
-    const mobileToggleSidebarPosition = () => {};
-
+    // Handler functions to avoid tight coupling
+    const handleSex = (value: string) => { setSex(value); };
+    const handleAge = (value: string) => { setAge(value); };
+    const handleDaysPerWeek = (value: string) => { setDaysPerWeek(value); };
+    const handleSpecificDays = (value: IOption[]) => { setSpecificDays(value); };
+    const handleProgramLength = (value: string) => { setProgramLength(value); };
+    const handleWorkoutDuration = (value: string) => { setWorkoutDuration(value); };
+    const handleActivityLevel = (value: string) => { setActivityLevel(value); };
+    const handleGoals = (value: IOption[]) => { setGoals(value); };
+    const handleSpecialization = (value: IOption[]) => { setSpecialization(value); };
+    const handleEquipment = (value: IOption[]) => { setEquipment(value); };
+    const handleFocusAreas = (value: IOption[]) => { setFocusAreas(value); };
+    const handleDifficultyLevel = (value: IOption[]) => { setDifficultyLevel(value); };
+    const handleExcludeAreas = (value: IOption[]) => { setExcludeAreas(value); };
+    const handleExcludeEquipment = (value: IOption[]) => { setExcludeEquipment(value); };
+    const handleExcludeSpecializations = (value: IOption[]) => { setExcludeSpecializations(value); };
+    const handleHealthIssues = (value: IOption[]) => { setHealthIssues(value); };
+    const handleProgramTitle = (value: string) => { setProgramTitle(value); };
+    const handleExplore = () => { toggleExplore(); };
 
     return (
         <>
@@ -216,6 +242,42 @@ export function BuildProgramClient() {
                                 onTogglePosition={toggleSidebarPosition}
                                 setHevyProgram={setHevyProgram}
                                 hevyProgram={hevyProgram}
+                                sex={sex}
+                                age={age}
+                                daysPerWeek={daysPerWeek}
+                                specificDays={specificDays}
+                                programLength={programLength}
+                                workoutDuration={workoutDuration}
+                                activityLevel={activityLevel}
+                                goals={goals}
+                                specialization={specialization}
+                                equipment={equipment}
+                                focusAreas={focusAreas}
+                                difficultyLevel={difficultyLevel}
+                                excludeAreas={excludeAreas}
+                                excludeEquipment={excludeEquipment}
+                                excludeSpecializations={excludeSpecializations}
+                                healthIssues={healthIssues}
+                                programTitle={programTitle}
+                                explore={explore}
+                                handleSex={handleSex}
+                                handleAge={handleAge}
+                                handleDaysPerWeek={handleDaysPerWeek}
+                                handleSpecificDays={handleSpecificDays}
+                                handleProgramLength={handleProgramLength}
+                                handleWorkoutDuration={handleWorkoutDuration}
+                                handleActivityLevel={handleActivityLevel}
+                                handleGoals={handleGoals}
+                                handleSpecialization={handleSpecialization}
+                                handleEquipment={handleEquipment}
+                                handleFocusAreas={handleFocusAreas}
+                                handleDifficultyLevel={handleDifficultyLevel}
+                                handleExcludeAreas={handleExcludeAreas}
+                                handleExcludeEquipment={handleExcludeEquipment}
+                                handleExcludeSpecializations={handleExcludeSpecializations}
+                                handleHealthIssues={handleHealthIssues}
+                                handleProgramTitle={handleProgramTitle}
+                                handleExplore={handleExplore}
                             />
                         </ResizablePanel>
                         <ResizableHandle withHandle className="" />
@@ -266,6 +328,42 @@ export function BuildProgramClient() {
                                 onTogglePosition={toggleSidebarPosition}
                                 setHevyProgram={setHevyProgram}
                                 hevyProgram={hevyProgram}
+                                sex={sex}
+                                age={age}
+                                daysPerWeek={daysPerWeek}
+                                specificDays={specificDays}
+                                programLength={programLength}
+                                workoutDuration={workoutDuration}
+                                activityLevel={activityLevel}
+                                goals={goals}
+                                specialization={specialization}
+                                equipment={equipment}
+                                focusAreas={focusAreas}
+                                difficultyLevel={difficultyLevel}
+                                excludeAreas={excludeAreas}
+                                excludeEquipment={excludeEquipment}
+                                excludeSpecializations={excludeSpecializations}
+                                healthIssues={healthIssues}
+                                programTitle={programTitle}
+                                explore={explore}
+                                handleSex={handleSex}
+                                handleAge={handleAge}
+                                handleDaysPerWeek={handleDaysPerWeek}
+                                handleSpecificDays={handleSpecificDays}
+                                handleProgramLength={handleProgramLength}
+                                handleWorkoutDuration={handleWorkoutDuration}
+                                handleActivityLevel={handleActivityLevel}
+                                handleGoals={handleGoals}
+                                handleSpecialization={handleSpecialization}
+                                handleEquipment={handleEquipment}
+                                handleFocusAreas={handleFocusAreas}
+                                handleDifficultyLevel={handleDifficultyLevel}
+                                handleExcludeAreas={handleExcludeAreas}
+                                handleExcludeEquipment={handleExcludeEquipment}
+                                handleExcludeSpecializations={handleExcludeSpecializations}
+                                handleHealthIssues={handleHealthIssues}
+                                handleProgramTitle={handleProgramTitle}
+                                handleExplore={handleExplore}
                             />
                         </ResizablePanel>
                     </>
@@ -283,9 +381,45 @@ export function BuildProgramClient() {
                     <TabsContent value="chat" className="flex-1 m-0 mt-0 px-4 pb-20">
                         <AgentChat
                             sidebarPosition="left"
-                            onTogglePosition={mobileToggleSidebarPosition}
+                            onTogglePosition={ () => {}}
                             setHevyProgram={setHevyProgram}
                             hevyProgram={hevyProgram}
+                            sex={sex}
+                            age={age}
+                            daysPerWeek={daysPerWeek}
+                            specificDays={specificDays}
+                            programLength={programLength}
+                            workoutDuration={workoutDuration}
+                            activityLevel={activityLevel}
+                            goals={goals}
+                            specialization={specialization}
+                            equipment={equipment}
+                            focusAreas={focusAreas}
+                            difficultyLevel={difficultyLevel}
+                            excludeAreas={excludeAreas}
+                            excludeEquipment={excludeEquipment}
+                            excludeSpecializations={excludeSpecializations}
+                            healthIssues={healthIssues}
+                            programTitle={programTitle}
+                            explore={explore}
+                            handleSex={handleSex}
+                            handleAge={handleAge}
+                            handleDaysPerWeek={handleDaysPerWeek}
+                            handleSpecificDays={handleSpecificDays}
+                            handleProgramLength={handleProgramLength}
+                            handleWorkoutDuration={handleWorkoutDuration}
+                            handleActivityLevel={handleActivityLevel}
+                            handleGoals={handleGoals}
+                            handleSpecialization={handleSpecialization}
+                            handleEquipment={handleEquipment}
+                            handleFocusAreas={handleFocusAreas}
+                            handleDifficultyLevel={handleDifficultyLevel}
+                            handleExcludeAreas={handleExcludeAreas}
+                            handleExcludeEquipment={handleExcludeEquipment}
+                            handleExcludeSpecializations={handleExcludeSpecializations}
+                            handleHealthIssues={handleHealthIssues}
+                            handleProgramTitle={handleProgramTitle}
+                            handleExplore={handleExplore}
                         />
                     </TabsContent>
                     <TabsContent value="program" className="flex-1 overflow-y-auto m-0 mt-0 px-4 pb-20">

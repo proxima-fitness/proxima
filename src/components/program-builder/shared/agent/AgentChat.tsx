@@ -28,7 +28,7 @@ import {
   ThumbsUp,
   Trash,
 } from "lucide-react"
-import { useState, useEffect, useReducer, useRef } from "react"
+import { useState, useEffect, useRef } from "react"
 import { ScrollButton } from "@/components/ui/scroll-button"
 import { useSearchParams } from "next/navigation"
 import MultiSelect, { IOption } from "@/components/ui/multi-select"
@@ -37,7 +37,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { activityLevelOptions, ageOptions, dayPerWeekOptions, difficultyOptions, equipmentOptions, focusAreasOptions, goalsOptions, healthIssuesOptions, programLengthOptions, sexOptions, specializationOptions, specificDaysOptions, workoutDurationOptions } from "@/assets/constants"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { useIsHevy } from "@/contexts/HevyContext"
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import {
@@ -46,7 +45,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ProgramAccordion } from "./ProgramAccordion";
+import { ProgramAccordion } from "../ProgramAccordion";
 import { Loader2 } from "lucide-react";
 
 interface IRePromptProps {
@@ -54,13 +53,88 @@ interface IRePromptProps {
     onTogglePosition: () => void;
     setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
     hevyProgram: THevyRoutine[];
+    sex: string;
+    age: string;
+    daysPerWeek: string;
+    specificDays: IOption[];
+    programLength: string;
+    workoutDuration: string;
+    activityLevel: string;
+    goals: IOption[];
+    specialization: IOption[];
+    equipment: IOption[];
+    focusAreas: IOption[];
+    difficultyLevel: IOption[];
+    excludeAreas: IOption[];
+    excludeEquipment: IOption[];
+    excludeSpecializations: IOption[];
+    healthIssues: IOption[];
+    programTitle: string;
+    explore: boolean;
+    handleSex: (value: string) => void;
+    handleAge: (value: string) => void;
+    handleDaysPerWeek: (value: string) => void;
+    handleSpecificDays: (value: IOption[]) => void;
+    handleProgramLength: (value: string) => void;
+    handleWorkoutDuration: (value: string) => void;
+    handleActivityLevel: (value: string) => void;
+    handleGoals: (value: IOption[]) => void;
+    handleSpecialization: (value: IOption[]) => void;
+    handleEquipment: (value: IOption[]) => void;
+    handleFocusAreas: (value: IOption[]) => void;
+    handleDifficultyLevel: (value: IOption[]) => void;
+    handleExcludeAreas: (value: IOption[]) => void;
+    handleExcludeEquipment: (value: IOption[]) => void;
+    handleExcludeSpecializations: (value: IOption[]) => void;
+    handleHealthIssues: (value: IOption[]) => void;
+    handleProgramTitle: (value: string) => void;
+    handleExplore: () => void;
 }
 
-function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProgram }: IRePromptProps) {
+function AgentChat({
+    sidebarPosition,
+    onTogglePosition,
+    setHevyProgram,
+    hevyProgram,
+    sex,
+    age,
+    daysPerWeek,
+    specificDays,
+    programLength,
+    workoutDuration,
+    activityLevel,
+    goals,
+    specialization,
+    equipment,
+    focusAreas,
+    difficultyLevel,
+    excludeAreas,
+    excludeEquipment,
+    excludeSpecializations,
+    healthIssues,
+    programTitle,
+    explore,
+    handleSex,
+    handleAge,
+    handleDaysPerWeek,
+    handleSpecificDays,
+    handleProgramLength,
+    handleWorkoutDuration,
+    handleActivityLevel,
+    handleGoals,
+    handleSpecialization,
+    handleEquipment,
+    handleFocusAreas,
+    handleDifficultyLevel,
+    handleExcludeAreas,
+    handleExcludeEquipment,
+    handleExcludeSpecializations,
+    handleHealthIssues,
+    handleProgramTitle,
+    handleExplore,
+}: IRePromptProps) {
 
-    // const submitRef = useRef<HTMLAnchorElement>(null);
     const searchParams = useSearchParams();
-    const {isHevy} = useIsHevy();
 
     const [input, setInput] = useState("");
     const { messages, sendMessage, status, stop } = useChat({
@@ -84,25 +158,6 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
     });
     const isLoading = status === 'submitted' || status === 'streaming';
     const search = searchParams.get('search') ?? '';
-    const [sex, setSex] = useState<string>(searchParams.get('sex') ?? "");
-    const [age, setAge] = useState<string>(searchParams.get('age') ?? "");
-    const [daysPerWeek, setDaysPerWeek] = useState<string>(searchParams.get('daysPerWeek') ?? "");
-    const [specificDays, setSpecificDays] = useState<IOption[]>(searchParams.get('specificDays') ? searchParams.get('specificDays')!.split(', ').map(day => ({ value: day, label: day })) : []);
-    const [programLength, setProgramLength] = useState<string>(searchParams.get('programLength') ?? "");
-    const [workoutDuration, setWorkoutDuration] = useState<string>(searchParams.get('workoutDuration') ?? "");
-    const [activityLevel, setActivityLevel] = useState<string>(searchParams.get('activityLevel') ?? "");
-    const [goals, setGoals] = useState<IOption[]>(searchParams.get('goals') ? JSON.parse(searchParams.get('goals')!) : []);
-    const [specialization, setSpecialization] = useState<IOption[]>(searchParams.get('specialization') ? searchParams.get('specialization')!.split(', ').map(spec => ({ value: spec, label: spec })) : []);
-    const [equipment, setEquipment] = useState<IOption[]>(searchParams.get('equipment') ? searchParams.get('equipment')!.split(', ').map(eq => ({ value: eq, label: eq })) : []);
-    const [focusAreas, setFocusAreas] = useState<IOption[]>(searchParams.get('focusAreas') ? searchParams.get('focusAreas')!.split(', ').map(area => ({ value: area, label: area })) : []);
-    const [difficultyLevel, setDifficultyLevel] = useState<IOption[]>(searchParams.get('difficultyLevel') ? searchParams.get('difficultyLevel')!.split(', ').map(level => ({ value: level, label: level })) : []);
-    const [excludeAreas, setExcludeAreas] = useState<IOption[]>(searchParams.get('excludeAreas') ? searchParams.get('excludeAreas')!.split(', ').map(area => ({ value: area, label: area })) : []);
-    const [excludeEquipment, setExcludeEquipment] = useState<IOption[]>(searchParams.get('excludeEquipment') ? searchParams.get('excludeEquipment')!.split(', ').map(eq => ({ value: eq, label: eq })) : []);
-    const [excludeSpecializations, setExcludeSpecializations] = useState<IOption[]>(searchParams.get('excludeSpecializations') ? searchParams.get('excludeSpecializations')!.split(', ').map(spec => ({ value: spec, label: spec })) : []);
-    const [healthIssues, setHealthIssues] = useState<IOption[]>(searchParams.get('healthIssues') ? searchParams.get('healthIssues')!.split(', ').map(issue => ({ value: issue, label: issue })) : []);
-    const [programTitle, setProgramTitle] = useState<string>(searchParams.get('programTitle') ?? "");
-    const [workoutSchema, setWorkoutSchema] = useState<string>(isHevy ? "hevy" : "proxima");
-    const [explore, toggleExplore] = useReducer(prev => !prev, searchParams.get('explore') === 'true');
 
     const [isFilters, setIsFilters] = useState(false)
     const lastSentSearch = useRef<string | null>(
@@ -695,7 +750,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                         placeholder="Program Title"
                         className="w-full h-10"
                         value={ programTitle }
-                        onChange={ (event) => setProgramTitle(event.target.value) }
+                        onChange={ (event) => handleProgramTitle(event.target.value) }
                     />
 
                     {/* <span className="flex flex-row max-sm:flex-col max-sm:items-end gap-2">
@@ -718,7 +773,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                 </span>
                 <span className="flex flex-col justify-between gap-5 max-sm:gap-2">
                     <span className="grid grid-cols-2 max-sm:grid-cols-1 max-sm:basis-1/2 max-sm:gap-2 max-sm:pr-2 gap-5 sm:flex-grow-[2] basis-2/3 pr-4">
-                        <Select value={ sex } onValueChange={ (value) => setSex(value) }>
+                        <Select value={ sex } onValueChange={ (value) => handleSex(value) }>
                             <SelectTrigger className="h-10 bg-white dark:bg-darkGray">
                                 <SelectValue placeholder="Sex" />
                             </SelectTrigger>
@@ -729,7 +784,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                                 ))}
                             </SelectContent>
                         </Select>
-                        <Select value={ age } onValueChange={ (value) => setAge(value) }>
+                        <Select value={ age } onValueChange={ (value) => handleAge(value) }>
                             <SelectTrigger className="h-10 bg-white dark:bg-darkGray">
                                 <SelectValue placeholder="Age" />
                             </SelectTrigger>
@@ -739,7 +794,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                                 ))}
                             </SelectContent>
                         </Select>
-                        <Select value={ programLength } onValueChange={ (value) => setProgramLength(value) }>
+                        <Select value={ programLength } onValueChange={ (value) => handleProgramLength(value) }>
                             <SelectTrigger className="h-10 bg-white dark:bg-darkGray">
                                 <SelectValue placeholder="Program length" />
                             </SelectTrigger>
@@ -749,7 +804,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                                 ))}
                             </SelectContent>
                         </Select>
-                        <Select value={ daysPerWeek } onValueChange={ (value) => setDaysPerWeek(value) }>
+                        <Select value={ daysPerWeek } onValueChange={ (value) => handleDaysPerWeek(value) }>
                             <SelectTrigger className="h-10 bg-white dark:bg-darkGray">
                                 <SelectValue placeholder="How many days per week?" />
                             </SelectTrigger>
@@ -761,7 +816,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                         </Select>
                         <MultiSelect
                             value={ specificDays }
-                            onChange={ (value) => setSpecificDays(value) }
+                            onChange={ (value) => handleSpecificDays(value) }
                             badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                             className="bg-white dark:bg-darkGray"
                             defaultOptions={ specificDaysOptions }
@@ -772,7 +827,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                                 </p>
                         ) }
                         />
-                        <Select value={ workoutDuration } onValueChange={ (value) => setWorkoutDuration(value) }>
+                        <Select value={ workoutDuration } onValueChange={ (value) => handleWorkoutDuration(value) }>
                             <SelectTrigger className="h-10 bg-white dark:bg-darkGray">
                                 <SelectValue placeholder="Workout duration" />
                             </SelectTrigger>
@@ -782,7 +837,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                                 ))}
                             </SelectContent>
                         </Select>
-                        <Select value={ activityLevel } onValueChange={ (value) => setActivityLevel(value) }>
+                        <Select value={ activityLevel } onValueChange={ (value) => handleActivityLevel(value) }>
                             <SelectTrigger className="h-10 bg-white dark:bg-darkGray">
                                 <SelectValue placeholder="Activity level" />
                             </SelectTrigger>
@@ -794,7 +849,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                         </Select>
                         <MultiSelect
                             value={ goals }
-                            onChange={ (value) => setGoals(value) }
+                            onChange={ (value) => handleGoals(value) }
                             badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                             className="bg-white dark:bg-darkGray"
                             defaultOptions={ goalsOptions }
@@ -807,7 +862,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                         />
                         <MultiSelect
                             value={ specialization }
-                            onChange={ (value) => setSpecialization(value) }
+                            onChange={ (value) => handleSpecialization(value) }
                             badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                             className="bg-white dark:bg-darkGray"
                             defaultOptions={ specializationOptions }
@@ -820,7 +875,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                         />
                         <MultiSelect
                             value = { equipment }
-                            onChange={ (value) => setEquipment(value) }
+                            onChange={ (value) => handleEquipment(value) }
                             badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                             className="bg-white dark:bg-darkGray"
                             defaultOptions={ equipmentOptions }
@@ -833,7 +888,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                         />
                         <MultiSelect
                             value = { focusAreas }
-                            onChange={ (value) => setFocusAreas(value) }
+                            onChange={ (value) => handleFocusAreas(value) }
                             badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                             className="bg-white dark:bg-darkGray"
                             defaultOptions={ focusAreasOptions }
@@ -846,7 +901,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                         />
                         <MultiSelect
                             value = { difficultyLevel }
-                            onChange={ (value) => setDifficultyLevel(value) }
+                            onChange={ (value) => handleDifficultyLevel(value) }
                             badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                             className="bg-white dark:bg-darkGray"
                             defaultOptions={ difficultyOptions }
@@ -864,7 +919,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                     <span className="grid grid-cols-1 flex-grow basis-1/3 gap-4">
                         <MultiSelect
                             value = { excludeAreas }
-                            onChange={ (value) => setExcludeAreas(value) }
+                            onChange={ (value) => handleExcludeAreas(value) }
                             badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                             className="bg-white dark:bg-darkGray"
                             defaultOptions={ focusAreasOptions }
@@ -877,7 +932,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                         />
                         <MultiSelect
                             value = { excludeEquipment }
-                            onChange={ (value) => setExcludeEquipment(value) }
+                            onChange={ (value) => handleExcludeEquipment(value) }
                             badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                             className="bg-white dark:bg-darkGray"
                             defaultOptions={ equipmentOptions }
@@ -890,7 +945,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                         />
                         <MultiSelect
                             value = { excludeSpecializations }
-                            onChange={ (value) => setExcludeSpecializations(value) }
+                            onChange={ (value) => handleExcludeSpecializations(value) }
                             badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                             className="bg-white dark:bg-darkGray"
                             defaultOptions={ specializationOptions }
@@ -903,7 +958,7 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                         />
                         <MultiSelect
                             value = { healthIssues }
-                            onChange={ (value) => setHealthIssues(value) }
+                            onChange={ (value) => handleHealthIssues(value) }
                             badgeClassName="bg-[#33bbcf] hover:bg-[#33bbcf]"
                             className="bg-white dark:bg-darkGray"
                             defaultOptions={ healthIssuesOptions }
@@ -919,19 +974,10 @@ function AgentChat({ sidebarPosition, onTogglePosition, setHevyProgram, hevyProg
                 <span className="flex flex-row justify-between items-center py-4">
                     <span className="flex flex-col gap-2 grow basis-0 w-0">
                         <span className="w-full flex flex-row items-end justify-start gap-2">
-                        <Checkbox checked={ explore } onCheckedChange={ toggleExplore } className="w-4 h-4 data-[state=checked]:bg-[#33bbcf] bg-offWhite data-[state=checked]:text-white" id="explore" />
+                        <Checkbox checked={ explore } onCheckedChange={ handleExplore } className="w-4 h-4 data-[state=checked]:bg-[#33bbcf] bg-offWhite data-[state=checked]:text-white" id="explore" />
                         <Label className="text-xs text-gray-600">Share program with community</Label>
                         </span>
                     </span>
-                    <Select onValueChange={(value) => setWorkoutSchema(value)} value={workoutSchema}>
-                        <SelectTrigger className="h-10 w-[180px] bg-white dark:bg-darkGray">
-                        <SelectValue placeholder="Workout Schema" />
-                        </SelectTrigger>
-                        <SelectContent>
-                        <SelectItem value="hevy">Hevy Routines</SelectItem>
-                        <SelectItem value="proxima">Proxima Program</SelectItem>
-                        </SelectContent>
-                    </Select>
                 </span>
 
                </div>
