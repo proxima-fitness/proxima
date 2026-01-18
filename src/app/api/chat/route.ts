@@ -8,7 +8,7 @@ const buildWorkoutProgramTool = tool({
   inputSchema: z.object({
     userRequest: z.string().describe('The user\'s workout request or description'),
     daysPerWeek: z.number().optional().describe('Number of workout days per week (1-7)'),
-    programLength: z.number().optional().describe('Program length in weeks (defaults to 12)'),
+    programLength: z.number().optional().describe('Program length in weeks (defaults to 12 unless specified otherwise)'),
     excludeAreas: z.string().optional().describe('Comma-separated list of muscle groups to exclude'),
     excludeEquipment: z.string().optional().describe('Comma-separated list of equipment to exclude'),
     healthIssues: z.string().optional().describe('Comma-separated list of health issues to consider'),
@@ -160,38 +160,70 @@ When users ask about creating or modifying workouts or programs:
 1. ${hevyProgram && hevyProgram.length > 0 ? 'First, call getCurrentProgram to see the current program state.' : ''}
 2. Call the buildWorkoutProgram tool with their requirements${daysPerWeek !== undefined && daysPerWeek !== null ? `, making sure to pass daysPerWeek: ${daysPerWeek}` : ''}
 3. The tool will return a reference list of available exercises in the format "id: title". Use the exercise IDs from this list to select appropriate exercises for the workout program.
-4. Return the program as a JSON object with the structure: { program: TTextToJsonResponse }
-5. TTextToJsonResponse format:
-   {
-     "program": {
-       "workout_days": [
-         {
-           "day_title": "string",
-           "exercises": [
-             {
-               "exercise_template_id": "string (MUST be an id from availableExercises array)",
-               "title": "string (exercise name for reference, should match the title from availableExercises)",
-               "supersets_id": number | null,
-               "sets": [
-                 {
-                   "type": "normal" | "warmup" | "dropset" | "failure",
-                   "reps": number,
-                   "rpe": number (1-10)
-                 }
-               ]
-             }
-           ]
-         }
-       ]
-     }
-   }
-6. CRITICAL: The exercise_template_id MUST be an exact match to an id from the exercise reference list returned by the tool (format: "id: title"). Do NOT invent exercises or use IDs that don't exist in that list.
-7. IMPORTANT: Return ONLY the minimal data structure above. Do NOT include full exercise objects or other metadata. The exercise reference list you receive contains only IDs and titles - use those IDs directly as exercise_template_id values.
-8. Generate workout_days based on the daysPerWeek parameter${daysPerWeek !== undefined && daysPerWeek !== null ? ` (${daysPerWeek} days = ${daysPerWeek} workout_days)` : ' (1 day = 1 workout_day, 3 days = 3 workout_days, etc.)'}. ${daysPerWeek !== undefined && daysPerWeek !== null ? `You MUST create exactly ${daysPerWeek} workout_days.` : 'Extract the number of days from the user\'s message if not provided.'}
-9. The UI will use the exercise_template_id values directly to build the full program structure
-${hevyProgram && hevyProgram.length > 0 ? '10. When modifying an existing program, preserve the structure and only change what the user requests. Return the complete updated program.' : ''}
+4. Return the program as a JSON object with a "program" key containing an array of THevyRoutine objects.
+5. Format - Return a JSON object with this structure:
 
-Be conversational, helpful, and provide clear explanations about the workouts you create.`;
+{
+  "program": [
+    {
+      "title": string, // The routine/day title (e.g., "Push Day", "Pull Day")
+      "folder_id": number, // Week number (0-indexed: week 1 = 0, week 2 = 1, etc.)
+      "order": string, // Day of week (1-indexed: "1" for first day, "2" for second day, etc.)
+      "notes": string, // Routine notes (can be empty string)
+      "exercises": [
+        {
+          "index": number, // Order of exercise in routine (0-indexed)
+          "title": string, // Exercise title
+          "notes": string, // Exercise notes (can be empty string)
+          "rest_seconds": string | null, // Rest time in seconds (as string or null)
+          "exercise_template_id": string, // MUST match an ID from the exercise reference list
+          "supersets_id": number | null, // Superset ID or null
+          "sets": [
+            {
+              "index": number, // Order of set (0-indexed)
+              "type": "normal" | "warmup" | "dropset" | "failure",
+              "weight_kg": number | null,
+              "reps": number | null,
+              "distance_meters": number | null,
+              "duration_seconds": number | null,
+              "rpe": number | null,
+              "custom_metric": number | null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+6. CRITICAL FIELD REQUIREMENTS:
+   - folder_id: Must be the week number (0-indexed). Week 1 = 0, Week 2 = 1, etc.
+   - order: Must be the day of week (1-indexed as string). First day = "1", second day = "2", etc.
+   - DO NOT include "id", "created_at", or "updated_at" fields - these will be generated client-side
+   - exercise_template_id: MUST be an exact match to an id from the exercise reference list returned by the tool. Do NOT invent exercises or use IDs that don't exist in that list.
+
+7. IMPORTANT: Return ONLY the data structure above. Do NOT include full exercise objects or other metadata. The exercise reference list you receive contains only IDs and titles - use those IDs directly as exercise_template_id values.
+
+8. Generate routines based on the daysPerWeek and programLength parameters:
+   - Create workout routines for each day of each week
+   - ${daysPerWeek !== undefined && daysPerWeek !== null ? `You MUST create exactly ${daysPerWeek} routines per week.` : 'Extract the number of days from the user\'s message if not provided.'}
+   - ${programLength !== undefined && programLength !== null ? `You MUST create routines for ALL ${programLength} weeks total. This means you need to generate ${programLength * (daysPerWeek || 1)} total routines (${programLength} weeks × ${daysPerWeek || 1} days per week). DO NOT stop after generating only 1-2 weeks. Generate the COMPLETE program with all ${programLength} weeks.` : 'Extract the program length from the user\'s message if not provided.'}
+   - For each week, set folder_id to (week_number - 1) to make it 0-indexed
+   - For each day within a week, set order to the day number as a string (1-indexed: "1", "2", "3", etc.)
+   - CRITICAL: You must generate ALL weeks requested. If programLength is ${programLength !== undefined && programLength !== null ? programLength : 'X'}, you must create routines for weeks 0 through ${programLength !== undefined && programLength !== null ? programLength - 1 : 'X-1'} (${programLength !== undefined && programLength !== null ? programLength : 'X'} total weeks). Do not stop early or generate a partial program.
+
+9. The UI will use the exercise_template_id values directly to build the full program structure
+${hevyProgram && hevyProgram.length > 0 ? '10. When modifying an existing program, preserve the structure and only change what the user requests. Return the complete updated program in the same format: { program: THevyRoutine[] }.' : ''}
+
+11. COMPLETENESS REQUIREMENT: Before finishing your response, verify that you have generated the complete program:
+    - Count the total number of routines in your program array
+    - ${programLength !== undefined && programLength !== null && daysPerWeek !== undefined && daysPerWeek !== null ? `Expected total: ${programLength * daysPerWeek} routines (${programLength} weeks × ${daysPerWeek} days)` : 'Match the expected total based on programLength × daysPerWeek'}
+    - Verify that folder_id values cover all weeks from 0 to (programLength - 1)
+    - If the program is incomplete, continue generating until it is complete
+    - DO NOT say "the remaining weeks follow the same structure" - actually generate all weeks
+
+12. Once you have completed generating the program, and are ending your stream. Summarize the actions you took in bullet points with explanations. Limit this to 10 Max bullet points.
+Be conversational, helpful, and provide clear explanations about the workouts you create. DO NOT answer questions unrelated to fitness.`;
 
   return new ToolLoopAgent({
     model: gateway('anthropic/claude-sonnet-4.5'),

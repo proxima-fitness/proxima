@@ -31,7 +31,6 @@ interface IProps {
     handleDragStart: (e: DragEvent, card: THevyCard) => void;
     handleEditTitle: (id: string, title: string) => void;
     handleDeleteDay: (id: string) => void;
-    handleOpenGenerateDayDialog: (generateDayDialog: THevyDialog) => void;
     handleOpenAddNoteDialog: (addNoteDialog: THevyDialog) => void;
     handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
     handleOpenAddExerciseNoteDialog: (addExerciseNoteDialog: THevyDialog) => void;
@@ -58,7 +57,6 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         handleOpenAddExerciseNoteDialog,
         handleOpenAddNoteDialog,
         handleDuplicateDay,
-        handleOpenGenerateDayDialog,
         handleDeleteExercise,
         handleIsEditExercise,
         focusedCardId,
@@ -114,14 +112,14 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         return () => {
             document.removeEventListener("keydown", handleKeyDown);
         };
-    }, [day.id, day.order, focusedCardId, folder_id, handleDeleteDay, handleOpenGenerateDayDialog, handleOpenAddNoteDialog]);
+    }, [day.id, day.order, focusedCardId, folder_id, handleDeleteDay, handleOpenAddNoteDialog]);
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (focusedCardId === day.id) {
                 if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "g") {
                     event.preventDefault();
-                    handleOpenGenerateDayDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true });
+                    // handleOpenGenerateDayDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true });
                 }
             }
         };
@@ -130,7 +128,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         return () => {
             document.removeEventListener("keydown", handleKeyDown);
         };
-    }, [day.id, day.order, focusedCardId, folder_id, handleDeleteDay, handleOpenGenerateDayDialog]);
+    }, [day.id, day.order, focusedCardId, folder_id, handleDeleteDay]);
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -146,7 +144,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         return () => {
             document.removeEventListener("keydown", handleKeyDown);
         };
-    }, [day.id, day.order, focusedCardId, folder_id, handleDeleteDay, handleOpenGenerateDayDialog, handleOpenAddNoteDialog]);
+    }, [day.id, day.order, focusedCardId, folder_id, handleDeleteDay, handleOpenAddNoteDialog]);
 
     const toggleExerciseSelection = (exerciseIndex: number) => {
         if (selectedExercises.includes(exerciseIndex)) {
@@ -253,7 +251,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                         <DropdownMenuShortcut>⌘V</DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={ () => {
-                                        handleOpenGenerateDayDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true });
+                                        // handleOpenGenerateDayDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true });
                                         setDropdownOpen(false);
                                     } }
                                         className="cursor-pointer"

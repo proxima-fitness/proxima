@@ -57,22 +57,6 @@ type TProgramFilters = {
     title?: string;
 };
 
-type TTextToJsonResponse = {
-    workout_days: {
-        day_title: string;
-        exercises: {
-            sets: {
-                type: string;
-                reps: number;
-                rpe: number;
-            }[];
-            title: string;
-            exercise_template_id?: string; // Optional for backward compatibility, but should be provided by AI
-            supersets_id: number | null;
-        }[];
-    }[];
-}
-
 type TTextToJsonSchema =
     "workout_history_schema" |
     "program_creator_day_schema" |

@@ -182,77 +182,61 @@ function AgentChat({
     }, [search, sendMessage]);
 
 
-    // Parse program from AI responses and convert to THevyRoutine[]
+    // Parse program from AI responses - expect { program: THevyRoutine[] } format
     useEffect(() => {
         if (!setHevyProgram) return;
 
-        // Helper function to convert TTextToJsonResponse to THevyRoutine[]
-        const convertTextToJsonToHevyRoutine = async (textToJsonResponse: TTextToJsonResponse) => {
-            try {
-                const daysPerWeekValue = daysPerWeek ? Number(daysPerWeek) : (searchParams.get('daysPerWeek') ? Number(searchParams.get('daysPerWeek')) : undefined);
-                const programLengthValue = programLength ? Number(programLength) : (searchParams.get('programLength') ? Number(searchParams.get('programLength')) : undefined);
-                const excludeAreasValue = excludeAreas.length > 0 ? excludeAreas.map(area => area.value).join(', ') : (searchParams.get('excludeAreas') || '');
-                const excludeEquipmentValue = excludeEquipment.length > 0 ? excludeEquipment.map(eq => eq.value).join(', ') : (searchParams.get('excludeEquipment') || '');
-                const healthIssuesValue = healthIssues.length > 0 ? healthIssues.map(issue => issue.value).join(', ') : (searchParams.get('healthIssues') || '');
+        // Helper function to process THevyRoutine[] from LLM and add client-side fields
+        const processHevyRoutines = (routines: Partial<THevyRoutine>[]): THevyRoutine[] => {
+            const now = new Date().toISOString();
+            return routines.map((routine, index) => {
+                // Generate unique ID if not provided
+                const id = routine.id || `routine-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`;
 
-                // Import buildHevyProgram dynamically to avoid circular dependencies
-                const { buildHevyProgram } = await import('@/components/program-builder/utils/build-hevy-program');
-
-                // Extract daysPerWeek from the program response if not provided
-                // The AI should have included the correct number of workout_days
-                const inferredDaysPerWeek = daysPerWeekValue || textToJsonResponse?.workout_days?.length || undefined;
-                const inferredProgramLength = programLengthValue || undefined;
-
-                // Only build if we have daysPerWeek (either provided or inferred from workout_days)
-                if (inferredDaysPerWeek) {
-                    const hevyRoutines = await buildHevyProgram(
-                        textToJsonResponse,
-                        inferredProgramLength ?? 0, // buildHevyProgram will handle 0 with its own logic
-                        inferredDaysPerWeek,
-                        excludeAreasValue,
-                        excludeEquipmentValue,
-                        healthIssuesValue
-                    );
-
-                    if (hevyRoutines && Array.isArray(hevyRoutines)) {
-                        setHevyProgram(hevyRoutines);
-                    }
-                }
-            } catch (error) {
-                console.error('Error converting program to HevyRoutine:', error);
-            }
+                return {
+                    id,
+                    title: routine.title || `Day ${index + 1}`,
+                    folder_id: typeof routine.folder_id === 'number' ? routine.folder_id : 0,
+                    order: routine.order || String((index % (daysPerWeek ? Number(daysPerWeek) : 7)) + 1),
+                    notes: routine.notes || '',
+                    exercises: routine.exercises || [],
+                    created_at: routine.created_at || now,
+                    updated_at: routine.updated_at || now,
+                };
+            });
         };
 
-        // Look through all assistant messages for program JSON
+        // Look through all assistant messages for { program: THevyRoutine[] } JSON object
         messages.forEach((message) => {
             if (message.role === 'assistant' && !processedMessageIds.current.has(message.id)) {
                 message.parts.forEach((part) => {
                     if (part.type === 'text' && part.text) {
-                        // Try to extract JSON from the text
                         const text = part.text;
 
-                        // Look for JSON object with "program" key (TTextToJsonResponse format)
-                        const jsonMatch = text.match(/\{[\s\S]*"program"[\s\S]*\}/);
-                        if (jsonMatch) {
+                        // Look for JSON object with "program" key containing array with "folder_id" or "exercises"
+                        const objectMatch = text.match(/\{\s*"program"\s*:\s*\[[\s\S]*?"(?:folder_id|exercises|title)"[\s\S]*?\]\s*\}/);
+                        if (objectMatch) {
                             try {
-                                const parsed = JSON.parse(jsonMatch[0]);
-                                if (parsed.program && parsed.program.workout_days) {
+                                const parsed = JSON.parse(objectMatch[0]) as { program?: Partial<THevyRoutine>[] };
+                                if (parsed.program && Array.isArray(parsed.program) && parsed.program.length > 0 && parsed.program[0].folder_id !== undefined) {
                                     // Mark message as processed
                                     processedMessageIds.current.add(message.id);
-                                    // Convert TTextToJsonResponse to THevyRoutine[]
-                                    convertTextToJsonToHevyRoutine(parsed.program as TTextToJsonResponse);
+                                    // Extract program array and process routines
+                                    const processedRoutines = processHevyRoutines(parsed.program);
+                                    setHevyProgram(processedRoutines);
                                 }
                             } catch {
                                 // Try to find JSON code blocks
-                                const codeBlockMatch = text.match(/```(?:json)?\s*(\{[\s\S]*"program"[\s\S]*\})\s*```/);
+                                const codeBlockMatch = text.match(/```(?:json)?\s*(\{\s*"program"\s*:\s*\[[\s\S]*?"(?:folder_id|exercises|title)"[\s\S]*?\]\s*\})\s*```/);
                                 if (codeBlockMatch) {
                                     try {
-                                        const parsed = JSON.parse(codeBlockMatch[1]);
-                                        if (parsed.program && parsed.program.workout_days) {
+                                        const parsed = JSON.parse(codeBlockMatch[1]) as { program?: Partial<THevyRoutine>[] };
+                                        if (parsed.program && Array.isArray(parsed.program) && parsed.program.length > 0 && parsed.program[0].folder_id !== undefined) {
                                             // Mark message as processed
                                             processedMessageIds.current.add(message.id);
-                                            // Convert TTextToJsonResponse to THevyRoutine[]
-                                            convertTextToJsonToHevyRoutine(parsed.program as TTextToJsonResponse);
+                                            // Extract program array and process routines
+                                            const processedRoutines = processHevyRoutines(parsed.program);
+                                            setHevyProgram(processedRoutines);
                                         }
                                     } catch (e2) {
                                         console.error('Failed to parse program JSON:', e2);
@@ -264,7 +248,7 @@ function AgentChat({
                 });
             }
         });
-    }, [messages, setHevyProgram, searchParams, daysPerWeek, programLength, excludeAreas, excludeEquipment, healthIssues]);
+    }, [messages, setHevyProgram, daysPerWeek]);
 
     // Monitor message changes to detect gaps in token streaming
     useEffect(() => {
@@ -276,7 +260,7 @@ function AgentChat({
 
         // If not loading, reset thinking state
         if (!isLoading) {
-            setIsThinking(false);
+            // setIsThinking(false);
             lastMessageTextRef.current = "";
             return;
         }
@@ -300,7 +284,7 @@ function AgentChat({
         // Compare with previous text
         if (currentText !== lastMessageTextRef.current) {
             // New tokens arrived - hide thinking and update ref
-            setIsThinking(false);
+            // setIsThinking(false);
             lastMessageTextRef.current = currentText;
         } else {
             // No change in text - set timeout to show thinking after delay
@@ -355,10 +339,12 @@ function AgentChat({
         setInput('');
     }
 
-    // Helper function to detect if text contains program JSON
+    // Helper function to detect if text contains program JSON ({ program: THevyRoutine[] } format)
     const containsProgramJson = (text: string): boolean => {
-        return /"program"\s*:\s*\{[\s\S]*"workout_days"/.test(text) ||
-               /"workout_days"\s*:\s*\[/.test(text);
+        return /\{\s*"program"\s*:\s*\[/.test(text) ||
+               /"program"\s*:\s*\[[\s\S]*?"(?:folder_id|exercises|title)"/.test(text) ||
+               /"folder_id"\s*:/.test(text) ||
+               /"exercises"\s*:\s*\[/.test(text);
     };
 
     // Helper function to extract non-JSON text (conversational parts)
@@ -368,8 +354,8 @@ function AgentChat({
         if (beforeJson && beforeJson.length > 0 && !containsProgramJson(beforeJson)) {
             return beforeJson;
         }
-        // Try to find text before JSON object
-        const jsonMatch = text.match(/(.*?)(?:\{[\s\S]*"program"|"workout_days")/);
+        // Try to find text before JSON object ({ program: [...] } format)
+        const jsonMatch = text.match(/(.*?)(?:\{\s*"program"\s*:\s*\[[\s\S]*?"(?:folder_id|exercises|title)")/);
         if (jsonMatch && jsonMatch[1] && jsonMatch[1].trim().length > 0) {
             return jsonMatch[1].trim();
         }
@@ -382,17 +368,17 @@ function AgentChat({
             return { message: '', isComplete: false };
         }
 
-        // Check if JSON is complete
+        // Check if JSON object with program array is complete
         try {
-            const jsonMatch = text.match(/\{[\s\S]*"program"[\s\S]*\}/);
-            if (jsonMatch) {
-                const parsed = JSON.parse(jsonMatch[0]) as { program?: { workout_days?: Array<{ exercises?: unknown[] }> } };
-                if (parsed.program && parsed.program.workout_days && Array.isArray(parsed.program.workout_days)) {
-                    // Check if all workout days are complete
-                    const allDaysComplete = parsed.program.workout_days.every((day) =>
-                        day.exercises && Array.isArray(day.exercises) && day.exercises.length > 0
+            const objectMatch = text.match(/\{\s*"program"\s*:\s*\[[\s\S]*?"(?:folder_id|exercises|title)"[\s\S]*?\]\s*\}/);
+            if (objectMatch) {
+                const parsed = JSON.parse(objectMatch[0]) as { program?: THevyRoutine[] };
+                if (parsed.program && Array.isArray(parsed.program) && parsed.program.length > 0) {
+                    // Check if all routines have exercises
+                    const allRoutinesComplete = parsed.program.every((routine) =>
+                        routine.exercises && Array.isArray(routine.exercises) && routine.exercises.length > 0
                     );
-                    if (allDaysComplete && parsed.program.workout_days.length > 0) {
+                    if (allRoutinesComplete) {
                         return { message: 'Workout program generated', isComplete: true, stepId: 'final' };
                     }
                 }
@@ -402,33 +388,33 @@ function AgentChat({
         }
 
         // Analyze streaming progress
-        const hasProgramKey = /"program"\s*:/.test(text);
-        const hasWorkoutDays = /"workout_days"\s*:/.test(text);
-        const hasWorkoutDaysArray = /"workout_days"\s*:\s*\[/.test(text);
+        const hasProgramKey = /"program"\s*:\s*\[/.test(text);
+        const hasArrayStart = /\[\s*\{/.test(text);
+        const hasFolderId = /"folder_id"\s*:/.test(text);
 
-        // Count workout days by finding day_title occurrences
-        const workoutDaysMatches = text.match(/"day_title"/g);
-        const workoutDaysCount = workoutDaysMatches ? workoutDaysMatches.length : 0;
+        // Count routines by finding "folder_id" occurrences (each routine should have one)
+        const folderIdMatches = text.match(/"folder_id"/g);
+        const routinesCount = folderIdMatches ? folderIdMatches.length : 0;
 
-        // Try to count exercises per day by analyzing structure
-        const daySections = text.split(/"day_title"/);
-        const exercisesPerDay: number[] = [];
-        daySections.slice(1).forEach((section) => {
-            const exercisesInSection = (section.match(/"title"\s*:\s*"[^"]*"/g) || []).length;
-            exercisesPerDay.push(exercisesInSection);
+        // Try to count exercises per routine by analyzing structure
+        const routineSections = text.split(/"folder_id"/);
+        const exercisesPerRoutine: number[] = [];
+        routineSections.slice(1).forEach((section) => {
+            const exercisesInSection = (section.match(/"exercise_template_id"/g) || []).length;
+            exercisesPerRoutine.push(exercisesInSection);
         });
 
         // Determine progress stage
-        if (!hasProgramKey && !hasWorkoutDays) {
+        if (!hasProgramKey && !hasArrayStart && !hasFolderId) {
             return { message: 'Analyzing your fitness goals and preferences...', isComplete: false, stepId: 'analyzing' };
         }
 
-        if (hasProgramKey && !hasWorkoutDays) {
+        if ((hasProgramKey || hasArrayStart) && !hasFolderId) {
             return { message: 'Creating program structure...', isComplete: false, stepId: 'structure' };
         }
 
-        if (hasWorkoutDaysArray && workoutDaysCount === 0) {
-            return { message: 'Building workout days...', isComplete: false, stepId: 'building-days' };
+        if (hasFolderId && routinesCount === 0) {
+            return { message: 'Building workout routines...', isComplete: false, stepId: 'building-routines' };
         }
 
         const daysPerWeekValue = daysPerWeek ? Number(daysPerWeek) : (searchParams.get('daysPerWeek') ? Number(searchParams.get('daysPerWeek')) : undefined);
@@ -438,54 +424,51 @@ function AgentChat({
             return { message: 'Generating workout program...', isComplete: false, stepId: 'generating' };
         }
 
-        if (workoutDaysCount === 1) {
-            const exercisesInDay1 = exercisesPerDay[0] || 0;
-            const currentDay = 1;
-            const actualWeek = Math.ceil(currentDay / daysPerWeekValue);
-            const dayInWeek = ((currentDay - 1) % daysPerWeekValue) + 1;
-            if (exercisesInDay1 === 0) {
+        if (routinesCount === 1) {
+            const exercisesInRoutine1 = exercisesPerRoutine[0] || 0;
+            // Try to extract folder_id and order from the text to determine week/day
+            const folderIdMatch = text.match(/"folder_id"\s*:\s*(\d+)/);
+            const orderMatch = text.match(/"order"\s*:\s*"(\d+)"/);
+            const folderId = folderIdMatch ? Number(folderIdMatch[1]) : 0;
+            const order = orderMatch ? Number(orderMatch[1]) : 1;
+            const actualWeek = folderId + 1; // folder_id is 0-indexed
+            const dayInWeek = order;
+
+            if (exercisesInRoutine1 === 0) {
                 return { message: `Building Week ${actualWeek}, Day ${dayInWeek}...`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
-            } else if (exercisesInDay1 < 4) {
-                return { message: `Adding exercises to Week ${actualWeek}, Day ${dayInWeek}... (${exercisesInDay1} exercises)`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
+            } else if (exercisesInRoutine1 < 4) {
+                return { message: `Adding exercises to Week ${actualWeek}, Day ${dayInWeek}... (${exercisesInRoutine1} exercises)`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
             } else {
-                const nextDay = 2;
-                const nextWeek = Math.ceil(nextDay / daysPerWeekValue);
-                const nextDayInWeek = ((nextDay - 1) % daysPerWeekValue) + 1;
+                const nextRoutine = 2;
+                const nextWeek = Math.ceil(nextRoutine / daysPerWeekValue);
+                const nextDayInWeek = ((nextRoutine - 1) % daysPerWeekValue) + 1;
                 return { message: `Building Week ${nextWeek}, Day ${nextDayInWeek}...`, isComplete: false, stepId: `week-${nextWeek}-day-${nextDayInWeek}`, completedStepMessage: `Week ${actualWeek}, Day ${dayInWeek} complete` };
             }
         }
 
-        if (workoutDaysCount === 2) {
-            const exercisesInDay2 = exercisesPerDay[1] || 0;
-            const currentDay = 2;
-            const actualWeek = Math.ceil(currentDay / daysPerWeekValue);
-            const dayInWeek = ((currentDay - 1) % daysPerWeekValue) + 1;
-            if (exercisesInDay2 === 0) {
-                return { message: `Building Week ${actualWeek}, Day ${dayInWeek}...`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
-            } else if (exercisesInDay2 < 4) {
-                return { message: `Adding exercises to Week ${actualWeek}, Day ${dayInWeek}... (${exercisesInDay2} exercises)`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
-            } else {
-                const nextDay = 3;
-                const nextWeek = Math.ceil(nextDay / daysPerWeekValue);
-                const nextDayInWeek = ((nextDay - 1) % daysPerWeekValue) + 1;
-                return { message: `Building Week ${nextWeek}, Day ${nextDayInWeek}...`, isComplete: false, stepId: `week-${nextWeek}-day-${nextDayInWeek}`, completedStepMessage: `Week ${actualWeek}, Day ${dayInWeek} complete` };
-            }
-        }
+        if (routinesCount >= 2) {
+            const currentRoutine = routinesCount;
+            const exercisesInCurrentRoutine = exercisesPerRoutine[currentRoutine - 1] || 0;
+            // Try to extract folder_id and order from the last routine in the text
+            const folderIdMatches = text.match(/"folder_id"\s*:\s*(\d+)/g);
+            const orderMatches = text.match(/"order"\s*:\s*"(\d+)"/g);
+            const lastFolderId = folderIdMatches && folderIdMatches.length > 0
+                ? Number(folderIdMatches[folderIdMatches.length - 1].match(/\d+/)?.[0])
+                : Math.floor((currentRoutine - 1) / daysPerWeekValue);
+            const lastOrder = orderMatches && orderMatches.length > 0
+                ? Number(orderMatches[orderMatches.length - 1].match(/\d+/)?.[0])
+                : ((currentRoutine - 1) % daysPerWeekValue) + 1;
+            const actualWeek = lastFolderId + 1; // folder_id is 0-indexed
+            const dayInWeek = lastOrder;
 
-        if (workoutDaysCount >= 3) {
-            const currentDay = workoutDaysCount;
-            const exercisesInCurrentDay = exercisesPerDay[currentDay - 1] || 0;
-            const actualWeek = Math.ceil(currentDay / daysPerWeekValue);
-            const dayInWeek = ((currentDay - 1) % daysPerWeekValue) + 1;
-
-            if (exercisesInCurrentDay === 0) {
+            if (exercisesInCurrentRoutine === 0) {
                 return { message: `Building Week ${actualWeek}, Day ${dayInWeek}...`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
-            } else if (exercisesInCurrentDay < 4) {
-                return { message: `Adding exercises to Week ${actualWeek}, Day ${dayInWeek}... (${exercisesInCurrentDay} exercises)`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
+            } else if (exercisesInCurrentRoutine < 4) {
+                return { message: `Adding exercises to Week ${actualWeek}, Day ${dayInWeek}... (${exercisesInCurrentRoutine} exercises)`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
             } else {
-                const nextDay = currentDay + 1;
-                const nextWeek = Math.ceil(nextDay / daysPerWeekValue);
-                const nextDayInWeek = ((nextDay - 1) % daysPerWeekValue) + 1;
+                const nextRoutine = currentRoutine + 1;
+                const nextWeek = Math.ceil(nextRoutine / daysPerWeekValue);
+                const nextDayInWeek = ((nextRoutine - 1) % daysPerWeekValue) + 1;
                 return { message: `Building Week ${nextWeek}, Day ${nextDayInWeek}...`, isComplete: false, stepId: `week-${nextWeek}-day-${nextDayInWeek}`, completedStepMessage: `Week ${actualWeek}, Day ${dayInWeek} complete` };
             }
         }

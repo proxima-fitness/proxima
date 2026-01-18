@@ -5,7 +5,6 @@ import { getCommunityAiPrograms, getCommunityAiProgramsPaginated, getExplorePage
 import { getOpUserId, getUserFullName, getUserMetaData, getUsersBatch } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getHevyApiKey, getHevyCustomExercises, getHevyExercises, getHevyPrograms, getHevyRoutines } from "../components/program-builder/api/hevy";
-import { buildAiProgram } from "./edge-functions";
 import { User } from "@supabase/supabase-js";
 
 /*********************************/
@@ -80,15 +79,15 @@ export const useSubscribedPrograms = (user: User | undefined | null) => {
 };
 
 // BUILD AN AI PROGRAM
-export const useBuildAiProgram = (request: TTextToJsonRequest, shareId: string, resume: string) => {
-    return useQuery({
-        queryKey: ['ai-program', JSON.stringify(request)],
-        queryFn: () => buildAiProgram(request),
-        enabled: !!request && shareId === "" && resume === "",
-        refetchOnWindowFocus: false,
-        retry: false,
-    });
-};
+// export const useBuildAiProgram = (request: TTextToJsonRequest, shareId: string, resume: string) => {
+//     return useQuery({
+//         queryKey: ['ai-program', JSON.stringify(request)],
+//         queryFn: () => buildAiProgram(request),
+//         enabled: !!request && shareId === "" && resume === "",
+//         refetchOnWindowFocus: false,
+//         retry: false,
+//     });
+// };
 
 // FETCHES A SHARED PROGRAM BY SHARE ID
 // export const useSharedProgram = (shareId: string, resume: string) => {

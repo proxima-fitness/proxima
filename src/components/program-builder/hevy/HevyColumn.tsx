@@ -17,7 +17,6 @@ interface IProps {
     hevyProgram: THevyRoutine[];
     setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
     handleAddDay: (folder_id: number) => void;
-    handleOpenGenerateDayDialog: (generateDayDialog: THevyDialog) => void;
     handleOpenAddNoteDialog: (addNoteDialog: THevyDialog) => void;
     handleOpenAddExerciseNoteDialog: (addExerciseNoteDialog: THevyDialog) => void;
     handleDeleteDay: (id: string) => void;
@@ -43,7 +42,6 @@ export const HevyColumn: React.FC<IProps> = (props) => {
         programLength,
         setHevyProgram,
         handleAddDay,
-        handleOpenGenerateDayDialog,
         handleOpenAddNoteDialog,
         handleOpenAddExerciseNoteDialog,
         handleDeleteDay,
@@ -230,7 +228,6 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                             handleDeleteDay={ handleDeleteDay }
                             handleEditTitle={ handleEditTitle }
                             handleDuplicateDay={ handleDuplicateDay }
-                            handleOpenGenerateDayDialog={ handleOpenGenerateDayDialog }
                             handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
                             handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
                             handleOpenAddExerciseNoteDialog={ handleOpenAddExerciseNoteDialog }
