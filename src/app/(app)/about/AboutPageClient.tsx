@@ -29,7 +29,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
             <div className="absolute z-0 w-[50%] h-[50%] right-20 bottom-20 blue__gradient opacity-0 dark:opacity-100" />
 
             <div className={`${styles.paddingX} ${styles.paddingY} relative z-[1]`}>
-                <div className={styles.boxWidth}>
+                <div className={`${styles.boxWidth} mx-auto`}>
                     {/* Hero Section */}
                     <section className={`${styles.flexCenter} flex-col mb-16`} data-aos="fade-up">
                         <h1 className={`${styles.heading2Centered} text-center mb-4`}>
