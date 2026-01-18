@@ -4,7 +4,7 @@ import { getHevyExercises } from '@/components/program-builder/api/hevy';
 
 // Define the buildWorkoutProgram tool
 const buildWorkoutProgramTool = tool({
-  description: 'Provides access to all available Hevy exercises for building workout programs. Use this tool when users request workout programs. The tool returns the exercise list - you should then return a minimal workout structure (TTextToJsonResponse format) with just exercise titles, sets, reps, and RPE.',
+  description: 'Provides access to all available Hevy exercises for building workout programs. Use this tool when users request workout programs. The tool returns a reference list of exercises (ID and title only) - you should then return a minimal workout structure (TTextToJsonResponse format) with just exercise IDs, titles, sets, reps, and RPE.',
   inputSchema: z.object({
     userRequest: z.string().describe('The user\'s workout request or description'),
     daysPerWeek: z.number().optional().describe('Number of workout days per week (1-7)'),
@@ -15,6 +15,7 @@ const buildWorkoutProgramTool = tool({
   }),
   execute: async ({ userRequest, daysPerWeek, programLength, excludeAreas, excludeEquipment, healthIssues }) => {
     try {
+      console.log("entered buildWorkoutProgramTool execute");
       // Fetch all available Hevy exercises
       const exercises = await getHevyExercises();
 
@@ -37,8 +38,8 @@ const buildWorkoutProgramTool = tool({
         });
       }
 
-      // Return exercise list for AI context - AI must use exercise IDs from this list
-      // The AI should return exercise_template_id values that match IDs from this list
+      // Return full exercise list for application logic
+      // The AI will receive a minimal version via toModelOutput
       return {
         availableExercises: filteredExercises.map(ex => ({
           id: ex.id,
@@ -66,9 +67,30 @@ const buildWorkoutProgramTool = tool({
       };
     }
   },
+  toModelOutput: async ({ output }) => {
+    console.log("entered toModelOutput");
+    // Return minimal data for AI context to reduce token usage
+    // Only send IDs and titles instead of full exercise metadata
+    if (output.error) {
+      return {
+        type: 'text' as const,
+        value: `Error: ${output.message || 'Failed to fetch exercises'}`,
+      };
+    }
+
+    const exerciseList = output?.availableExercises
+      ?.map(ex => `${ex.id}: ${ex.title}`)
+      .join('\n') || '';
+
+    console.log('exerciseList', exerciseList);
+
+    return {
+      type: 'text' as const,
+      value: `Available exercises (${output.totalExercises} total):\n${exerciseList}\n\nCRITICAL: You must ONLY use exercise_template_id values that exist in the list above. Do not invent exercises or use IDs that are not in this list.`,
+    };
+  },
 });
 
-// Export base tools object
 export const baseTools = {
   buildWorkoutProgram: buildWorkoutProgramTool,
 };
@@ -126,8 +148,7 @@ function createAgentWithProgram(
   const instructions = `You are Andy an AI Personal Trainer. You help users create workout programs and answer questions about fitness, exercise, and training.
 
 You have access to tools that can help you:
-- helloWorld: Returns a greeting message
-- buildWorkoutProgram: Provides access to all available Hevy exercises and program parameters. Use this when users want to create workout programs.
+- buildWorkoutProgram: Provides access to all available Hevy exercises (as a reference list with IDs and titles) and program parameters. Use this when users want to create workout programs.
 ${hevyProgram && hevyProgram.length > 0 ? '- getCurrentProgram: Returns the current workout program state. ALWAYS call this first to check if a program already exists before creating a new one.' : ''}
 
 IMPORTANT: ${hevyProgram && hevyProgram.length > 0
@@ -138,7 +159,7 @@ ${paramsContext}
 When users ask about creating or modifying workouts or programs:
 1. ${hevyProgram && hevyProgram.length > 0 ? 'First, call getCurrentProgram to see the current program state.' : ''}
 2. Call the buildWorkoutProgram tool with their requirements${daysPerWeek !== undefined && daysPerWeek !== null ? `, making sure to pass daysPerWeek: ${daysPerWeek}` : ''}
-3. Use the availableExercises list from the tool result to select appropriate exercises
+3. The tool will return a reference list of available exercises in the format "id: title". Use the exercise IDs from this list to select appropriate exercises for the workout program.
 4. Return the program as a JSON object with the structure: { program: TTextToJsonResponse }
 5. TTextToJsonResponse format:
    {
@@ -164,8 +185,8 @@ When users ask about creating or modifying workouts or programs:
        ]
      }
    }
-6. CRITICAL: The exercise_template_id MUST be an exact match to an id from the availableExercises array returned by the tool. Do NOT invent exercises or use IDs that don't exist in that list.
-7. IMPORTANT: Return ONLY the minimal data structure above. Do NOT include full exercise objects or other metadata.
+6. CRITICAL: The exercise_template_id MUST be an exact match to an id from the exercise reference list returned by the tool (format: "id: title"). Do NOT invent exercises or use IDs that don't exist in that list.
+7. IMPORTANT: Return ONLY the minimal data structure above. Do NOT include full exercise objects or other metadata. The exercise reference list you receive contains only IDs and titles - use those IDs directly as exercise_template_id values.
 8. Generate workout_days based on the daysPerWeek parameter${daysPerWeek !== undefined && daysPerWeek !== null ? ` (${daysPerWeek} days = ${daysPerWeek} workout_days)` : ' (1 day = 1 workout_day, 3 days = 3 workout_days, etc.)'}. ${daysPerWeek !== undefined && daysPerWeek !== null ? `You MUST create exactly ${daysPerWeek} workout_days.` : 'Extract the number of days from the user\'s message if not provided.'}
 9. The UI will use the exercise_template_id values directly to build the full program structure
 ${hevyProgram && hevyProgram.length > 0 ? '10. When modifying an existing program, preserve the structure and only change what the user requests. Return the complete updated program.' : ''}
