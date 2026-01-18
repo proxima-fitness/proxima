@@ -187,41 +187,41 @@ function AgentChat({
         if (!setHevyProgram) return;
 
         // Helper function to convert TTextToJsonResponse to THevyRoutine[]
-        const convertTextToJsonToHevyRoutine = async (textToJsonResponse: TTextToJsonResponse) => {
-            try {
-                const daysPerWeekValue = daysPerWeek ? Number(daysPerWeek) : (searchParams.get('daysPerWeek') ? Number(searchParams.get('daysPerWeek')) : undefined);
-                const programLengthValue = programLength ? Number(programLength) : (searchParams.get('programLength') ? Number(searchParams.get('programLength')) : undefined);
-                const excludeAreasValue = excludeAreas.length > 0 ? excludeAreas.map(area => area.value).join(', ') : (searchParams.get('excludeAreas') || '');
-                const excludeEquipmentValue = excludeEquipment.length > 0 ? excludeEquipment.map(eq => eq.value).join(', ') : (searchParams.get('excludeEquipment') || '');
-                const healthIssuesValue = healthIssues.length > 0 ? healthIssues.map(issue => issue.value).join(', ') : (searchParams.get('healthIssues') || '');
+        // const convertTextToJsonToHevyRoutine = async () => {
+        //     try {
+        //         const daysPerWeekValue = daysPerWeek ? Number(daysPerWeek) : (searchParams.get('daysPerWeek') ? Number(searchParams.get('daysPerWeek')) : undefined);
+        //         const programLengthValue = programLength ? Number(programLength) : (searchParams.get('programLength') ? Number(searchParams.get('programLength')) : undefined);
+        //         const excludeAreasValue = excludeAreas.length > 0 ? excludeAreas.map(area => area.value).join(', ') : (searchParams.get('excludeAreas') || '');
+        //         const excludeEquipmentValue = excludeEquipment.length > 0 ? excludeEquipment.map(eq => eq.value).join(', ') : (searchParams.get('excludeEquipment') || '');
+        //         const healthIssuesValue = healthIssues.length > 0 ? healthIssues.map(issue => issue.value).join(', ') : (searchParams.get('healthIssues') || '');
 
-                // Import buildHevyProgram dynamically to avoid circular dependencies
-                const { buildHevyProgram } = await import('@/components/program-builder/utils/build-hevy-program');
+        //         // Import buildHevyProgram dynamically to avoid circular dependencies
+        //         const { buildHevyProgram } = await import('@/components/program-builder/utils/build-hevy-program');
 
-                // Extract daysPerWeek from the program response if not provided
-                // The AI should have included the correct number of workout_days
-                const inferredDaysPerWeek = daysPerWeekValue || textToJsonResponse?.workout_days?.length || undefined;
-                const inferredProgramLength = programLengthValue || undefined;
+        //         // Extract daysPerWeek from the program response if not provided
+        //         // The AI should have included the correct number of workout_days
+        //         const inferredDaysPerWeek = daysPerWeekValue || undefined;
+        //         const inferredProgramLength = programLengthValue || undefined;
 
-                // Only build if we have daysPerWeek (either provided or inferred from workout_days)
-                if (inferredDaysPerWeek) {
-                    const hevyRoutines = await buildHevyProgram(
-                        textToJsonResponse,
-                        inferredProgramLength ?? 0, // buildHevyProgram will handle 0 with its own logic
-                        inferredDaysPerWeek,
-                        excludeAreasValue,
-                        excludeEquipmentValue,
-                        healthIssuesValue
-                    );
+        //         // Only build if we have daysPerWeek (either provided or inferred from workout_days)
+        //         if (inferredDaysPerWeek) {
+        //             const hevyRoutines = await buildHevyProgram(
+        //                 // textToJsonResponse,
+        //                 inferredProgramLength ?? 0, // buildHevyProgram will handle 0 with its own logic
+        //                 inferredDaysPerWeek,
+        //                 excludeAreasValue,
+        //                 excludeEquipmentValue,
+        //                 healthIssuesValue
+        //             );
 
-                    if (hevyRoutines && Array.isArray(hevyRoutines)) {
-                        setHevyProgram(hevyRoutines);
-                    }
-                }
-            } catch (error) {
-                console.error('Error converting program to HevyRoutine:', error);
-            }
-        };
+        //             if (hevyRoutines && Array.isArray(hevyRoutines)) {
+        //                 setHevyProgram(hevyRoutines);
+        //             }
+        //         }
+        //     } catch (error) {
+        //         console.error('Error converting program to HevyRoutine:', error);
+        //     }
+        // };
 
         // Look through all assistant messages for program JSON
         messages.forEach((message) => {
@@ -240,7 +240,7 @@ function AgentChat({
                                     // Mark message as processed
                                     processedMessageIds.current.add(message.id);
                                     // Convert TTextToJsonResponse to THevyRoutine[]
-                                    convertTextToJsonToHevyRoutine(parsed.program as TTextToJsonResponse);
+                                    // convertTextToJsonToHevyRoutine(parsed.program as TTextToJsonResponse);
                                 }
                             } catch {
                                 // Try to find JSON code blocks
@@ -252,7 +252,7 @@ function AgentChat({
                                             // Mark message as processed
                                             processedMessageIds.current.add(message.id);
                                             // Convert TTextToJsonResponse to THevyRoutine[]
-                                            convertTextToJsonToHevyRoutine(parsed.program as TTextToJsonResponse);
+                                            // parsed.program as TTextToJsonResponse;
                                         }
                                     } catch (e2) {
                                         console.error('Failed to parse program JSON:', e2);
@@ -276,7 +276,7 @@ function AgentChat({
 
         // If not loading, reset thinking state
         if (!isLoading) {
-            setIsThinking(false);
+            // setIsThinking(false);
             lastMessageTextRef.current = "";
             return;
         }
@@ -300,7 +300,7 @@ function AgentChat({
         // Compare with previous text
         if (currentText !== lastMessageTextRef.current) {
             // New tokens arrived - hide thinking and update ref
-            setIsThinking(false);
+            // setIsThinking(false);
             lastMessageTextRef.current = currentText;
         } else {
             // No change in text - set timeout to show thinking after delay

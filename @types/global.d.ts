@@ -57,21 +57,57 @@ type TProgramFilters = {
     title?: string;
 };
 
-type TTextToJsonResponse = {
-    workout_days: {
-        day_title: string;
-        exercises: {
-            sets: {
-                type: string;
-                reps: number;
-                rpe: number;
-            }[];
-            title: string;
-            exercise_template_id?: string; // Optional for backward compatibility, but should be provided by AI
-            supersets_id: number | null;
-        }[];
-    }[];
-}
+// type TTextToJsonResponse = {
+//     workout_days: {
+//         day_title: string;
+//         exercises: {
+//             sets: {
+//                 type: string;
+//                 reps: number;
+//                 rpe: number;
+//             }[];
+//             title: string;
+//             exercise_template_id?: string; // Optional for backward compatibility, but should be provided by AI
+//             supersets_id: number | null;
+//         }[];
+//     }[];
+// }
+
+type TProgramResponse = {
+    program: {
+      program_length_weeks: number;
+      weeks: TWeekResponse[];
+    };
+  };
+
+  type TWeekResponse = {
+    week_number: number;
+    week_title?: string;
+    notes?: string;
+    workout_days: TWorkoutDayResponse[];
+  };
+
+  type TWorkoutDayResponse = {
+    day_number: number; // 1-7 for day of week
+    day_title: string;
+    notes?: string;
+    exercises: TExerciseResponse[];
+  };
+
+  type TExerciseResponse = {
+    exercise_template_id: string;
+    supersets_id: number | null;
+    notes?: string;
+    sets: TSetResponse[];
+  };
+
+  type TSetResponse = {
+    type: "normal" | "warmup" | "dropset" | "failure";
+    weight_kg
+    reps: number;
+    rpe: number;
+    rest_seconds?: number;
+  };
 
 type TTextToJsonSchema =
     "workout_history_schema" |

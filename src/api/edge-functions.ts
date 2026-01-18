@@ -1,8 +1,7 @@
 import { supabaseKey, supabaseUrl } from ".";
-import { emptyHevyRoutineProgram } from "@/assets/constants";
-import { aiRequest, buildPrompt } from "@/components/program-builder/utils";
-import { buildHevyFallbackProgram, buildHevyProgram } from "@/components/program-builder/utils/build-hevy-program";
-import { toast } from "sonner";
+// import { emptyHevyRoutineProgram } from "@/assets/constants";
+// import { aiRequest, buildPrompt } from "@/components/program-builder/utils";
+// import { toast } from "sonner";
 
 interface ITextToJsonRequestPayload {
     query: string;
@@ -185,53 +184,53 @@ export const postNsfwImageDetection = async (imageUrl: string) => {
 };
 
 
-export const buildAiProgram = async (request: TTextToJsonRequest) => {
+// export const buildAiProgram = async (request: TTextToJsonRequest) => {
 
-    try {
+//     try {
 
-        if (request.empty === "true") {
-            return emptyHevyRoutineProgram;
-        }
+//         if (request.empty === "true") {
+//             return emptyHevyRoutineProgram;
+//         }
 
-        const promptBase = buildPrompt(
-            request.search,
-            request.sex,
-            request.age,
-            request.activityLevel,
-            request.goals,
-            request.specialization,
-            request.equipment,
-            request.focusAreas,
-            request.difficultyLevel,
-            request.excludeAreas,
-            request.workoutDuration,
-            // request.excludeEquipment,
-            request.excludeSpecializations,
-            request.healthIssues,
-        );
+//         const promptBase = buildPrompt(
+//             request.search,
+//             request.sex,
+//             request.age,
+//             request.activityLevel,
+//             request.goals,
+//             request.specialization,
+//             request.equipment,
+//             request.focusAreas,
+//             request.difficultyLevel,
+//             request.excludeAreas,
+//             request.workoutDuration,
+//             // request.excludeEquipment,
+//             request.excludeSpecializations,
+//             request.healthIssues,
+//         );
 
-        const numberOfDaysPerWeek = Number(request.daysPerWeek);
-        const response = await aiRequest(numberOfDaysPerWeek, promptBase);
+//         const numberOfDaysPerWeek = Number(request.daysPerWeek);
+//         const response = await aiRequest(numberOfDaysPerWeek, promptBase);
 
-        if (response !== undefined) {
-            const parsedResponse = JSON.parse(response);
-            toast.success("Proxima AI Routines Generated. Building Program Structure...");
+//         if (response !== undefined) {
+//             const parsedResponse = JSON.parse(response);
+//             toast.success("Proxima AI Routines Generated. Building Program Structure...");
 
-            const program = await buildHevyProgram(parsedResponse, Number(request.programLength), Number(request.daysPerWeek), request.excludeAreas, request.excludeEquipment, request.healthIssues);
-            return program;
-        }
+//             const program = await buildHevyProgram(parsedResponse, Number(request.programLength), Number(request.daysPerWeek), request.excludeAreas, request.excludeEquipment, request.healthIssues);
+//             return program;
+//         }
 
-        if (response === undefined) {
-            toast.warning("Some AI requests failed. Fallback workouts have been added in their place.");
-            console.error("Error, response was undefined when generating routines");
-            return await buildHevyFallbackProgram(Number(request.programLength), numberOfDaysPerWeek);
+//         if (response === undefined) {
+//             toast.warning("Some AI requests failed. Fallback workouts have been added in their place.");
+//             console.error("Error, response was undefined when generating routines");
+//             return await buildHevyFallbackProgram(Number(request.programLength), numberOfDaysPerWeek);
 
 
-        }
+//         }
 
-    } catch (error: unknown) {
-        toast.warning("Some AI requests failed. Fallback workouts have been added in their place.");
-        console.error("Error generating routines", error);
-        return await buildHevyFallbackProgram(Number(request.programLength), Number(request.daysPerWeek));
-    }
-};
+//     } catch (error: unknown) {
+//         toast.warning("Some AI requests failed. Fallback workouts have been added in their place.");
+//         console.error("Error generating routines", error);
+//         return await buildHevyFallbackProgram(Number(request.programLength), Number(request.daysPerWeek));
+//     }
+// };

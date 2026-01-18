@@ -8,7 +8,7 @@ const buildWorkoutProgramTool = tool({
   inputSchema: z.object({
     userRequest: z.string().describe('The user\'s workout request or description'),
     daysPerWeek: z.number().optional().describe('Number of workout days per week (1-7)'),
-    programLength: z.number().optional().describe('Program length in weeks (defaults to 12)'),
+    programLength: z.number().optional().describe('Program length in weeks (defaults to 12 unless specified otherwise)'),
     excludeAreas: z.string().optional().describe('Comma-separated list of muscle groups to exclude'),
     excludeEquipment: z.string().optional().describe('Comma-separated list of equipment to exclude'),
     healthIssues: z.string().optional().describe('Comma-separated list of health issues to consider'),
@@ -161,30 +161,39 @@ When users ask about creating or modifying workouts or programs:
 2. Call the buildWorkoutProgram tool with their requirements${daysPerWeek !== undefined && daysPerWeek !== null ? `, making sure to pass daysPerWeek: ${daysPerWeek}` : ''}
 3. The tool will return a reference list of available exercises in the format "id: title". Use the exercise IDs from this list to select appropriate exercises for the workout program.
 4. Return the program as a JSON object with the structure: { program: TTextToJsonResponse }
-5. TTextToJsonResponse format:
-   {
-     "program": {
-       "workout_days": [
-         {
-           "day_title": "string",
-           "exercises": [
-             {
-               "exercise_template_id": "string (MUST be an id from availableExercises array)",
-               "title": "string (exercise name for reference, should match the title from availableExercises)",
-               "supersets_id": number | null,
-               "sets": [
-                 {
-                   "type": "normal" | "warmup" | "dropset" | "failure",
-                   "reps": number,
-                   "rpe": number (1-10)
-                 }
-               ]
-             }
-           ]
-         }
-       ]
-     }
-   }
+5. TProgramResponse format:
+
+{
+program: {
+        program_length_weeks: number;
+        weeks: {
+            week_number: number;
+            week_title?: string;
+            notes?: string;
+            workout_days: {
+                day_number: number; // 1-7 for day of week
+                day_title: string;
+                notes?: string;
+                exercises: {
+                    exercise_template_id: string;
+                    title: string;
+                    supersets_id: number | null;
+                    notes?: string;
+                    sets: {
+                        type: "normal" | "warmup" | "dropset" | "failure";
+                        reps: number;
+                        rpe: number;
+                        weight_percentage?: number; // % of 1RM for periodization
+                        rest_seconds?: number;
+                        tempo?: string; // e.g., "3-1-1-0"
+                    }[];
+
+                }[]
+            }[]
+        }[]
+    }
+}
+
 6. CRITICAL: The exercise_template_id MUST be an exact match to an id from the exercise reference list returned by the tool (format: "id: title"). Do NOT invent exercises or use IDs that don't exist in that list.
 7. IMPORTANT: Return ONLY the minimal data structure above. Do NOT include full exercise objects or other metadata. The exercise reference list you receive contains only IDs and titles - use those IDs directly as exercise_template_id values.
 8. Generate workout_days based on the daysPerWeek parameter${daysPerWeek !== undefined && daysPerWeek !== null ? ` (${daysPerWeek} days = ${daysPerWeek} workout_days)` : ' (1 day = 1 workout_day, 3 days = 3 workout_days, etc.)'}. ${daysPerWeek !== undefined && daysPerWeek !== null ? `You MUST create exactly ${daysPerWeek} workout_days.` : 'Extract the number of days from the user\'s message if not provided.'}
