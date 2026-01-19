@@ -2,6 +2,16 @@ import { ToolLoopAgent, createAgentUIStreamResponse, gateway, tool } from 'ai';
 import { z } from 'zod';
 import { getHevyExercises } from '@/components/program-builder/api/hevy';
 
+
+import { NodeSDK } from "@opentelemetry/sdk-node";
+import { LangfuseSpanProcessor } from "@langfuse/otel";
+
+const sdk = new NodeSDK({
+  spanProcessors: [new LangfuseSpanProcessor()],
+});
+
+sdk.start();
+
 // Define the buildWorkoutProgram tool
 const buildWorkoutProgramTool = tool({
   description: 'Provides access to all available Hevy exercises for building workout programs. Use this tool when users request workout programs. The tool returns a reference list of exercises (ID and title only) - you should then return a minimal workout structure (TTextToJsonResponse format) with just exercise IDs, titles, sets, reps, and RPE.',
@@ -229,6 +239,7 @@ Be conversational, helpful, and provide clear explanations about the workouts yo
     model: gateway('anthropic/claude-sonnet-4.5'),
     instructions,
     tools: tools,
+    experimental_telemetry: { isEnabled: true },
   });
 }
 
