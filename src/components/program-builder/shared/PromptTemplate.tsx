@@ -173,9 +173,18 @@ export const PromptTemplate: React.FC = () => {
             </FileUploadContent>
         </FileUpload>
             <div className="flex w-full flex-col items-center justify-center space-y-2">
-                <div className="h-[70px] w-full">
+                <div className={`w-full ${showCategorySuggestions ? 'mb-6' : 'h-[70px]'}`}>
                 {showCategorySuggestions ? (
                     <div className="flex w-full flex-col space-y-1">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setActiveCategory("")}
+                            className="mb-1 w-fit h-8 px-3 text-xs text-muted-foreground hover:text-foreground dark:text-gray-400 dark:hover:text-white"
+                        >
+                            <X className="size-4 mr-1" />
+                            Cancel
+                        </Button>
                         {activeCategoryData?.items.map((suggestion) => (
                             <PromptSuggestion
                                 className="text-left bg-extraLightGray dark:bg-darkGray z-10"
