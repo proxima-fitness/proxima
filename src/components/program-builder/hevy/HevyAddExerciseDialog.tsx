@@ -177,6 +177,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
             }
         };
         if (isEditExercise) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsEditing(false);
             getExercise();
         }
@@ -202,7 +203,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                     />
                 }
                 <div className="mt-4">
-                    <div className="flex flex-row justify-center gap-2 items-center w-full pb-4">
+                    <div className="flex flex-row justify-center gap-2 items-center w-full pl-3 pb-4">
                         <div className="flex items-start justify-start w-[8%]">
                             Set
                         </div>
@@ -241,7 +242,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                     { (reps && reps.length > 0) && reps?.map((rep: string | number, index: number) => (
                         <div
                             key={ "Set" + index }
-                            className={ `flex flex-row justify-center gap-2 items-center w-full py-1 ${ setTypes[index] === "warmup" ? "bg-gray-300" : setTypes[index] === "dropset" ? "bg-[#33bbcf]" : setTypes[index] === "failure" ? "bg-[#01579B]" : "" }` }>
+                            className={ `flex flex-row justify-center gap-2 items-center w-full py-1 pl-3 ${ setTypes[index] === "warmup" ? "bg-gray-300" : setTypes[index] === "dropset" ? "bg-[#33bbcf]" : setTypes[index] === "failure" ? "bg-[#01579B]" : "" }` }>
                             <div className="flex items-center justify-start w-[8%]">
                                 { index + 1 }
                             </div>

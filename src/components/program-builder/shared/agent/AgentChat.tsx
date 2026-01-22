@@ -45,8 +45,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ProgramAccordion } from "../ProgramAccordion";
 import { Loader2 } from "lucide-react";
+import { decode } from '@toon-format/toon';
 
 interface IRePromptProps {
     sidebarPosition: "left" | "right";
@@ -165,10 +165,6 @@ function AgentChat({
     );
     const processedMessageIds = useRef<Set<string>>(new Set());
 
-    // Thinking state for gaps in token streaming
-    const [isThinking, setIsThinking] = useState(false);
-    const lastMessageTextRef = useRef<string>("");
-    const thinkingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Initialize with search parameter if present
     useEffect(() => {
@@ -182,9 +178,12 @@ function AgentChat({
     }, [search, sendMessage]);
 
 
-    // Parse program from AI responses - expect { program: THevyRoutine[] } format
+    // Parse program from AI responses - expect TOON format
     useEffect(() => {
         if (!setHevyProgram) return;
+
+        // Don't parse during streaming to avoid incomplete TOON content errors
+        if (isLoading) return;
 
         // Helper function to process THevyRoutine[] from LLM and add client-side fields
         const processHevyRoutines = (routines: Partial<THevyRoutine>[]): THevyRoutine[] => {
@@ -206,40 +205,96 @@ function AgentChat({
             });
         };
 
-        // Look through all assistant messages for { program: THevyRoutine[] } JSON object
-        messages.forEach((message) => {
+        // Look through all assistant messages for TOON format blocks
+        messages.forEach((message, messageIndex) => {
             if (message.role === 'assistant' && !processedMessageIds.current.has(message.id)) {
+                // Skip parsing if this is the last message and we're still loading
+                // This prevents parsing incomplete TOON content during streaming
+                const isLastMessage = messageIndex === messages.length - 1;
+                if (isLastMessage && isLoading) {
+                    return;
+                }
+
                 message.parts.forEach((part) => {
                     if (part.type === 'text' && part.text) {
                         const text = part.text;
 
-                        // Look for JSON object with "program" key containing array with "folder_id" or "exercises"
-                        const objectMatch = text.match(/\{\s*"program"\s*:\s*\[[\s\S]*?"(?:folder_id|exercises|title)"[\s\S]*?\]\s*\}/);
-                        if (objectMatch) {
-                            try {
-                                const parsed = JSON.parse(objectMatch[0]) as { program?: Partial<THevyRoutine>[] };
-                                if (parsed.program && Array.isArray(parsed.program) && parsed.program.length > 0 && parsed.program[0].folder_id !== undefined) {
-                                    // Mark message as processed
-                                    processedMessageIds.current.add(message.id);
-                                    // Extract program array and process routines
-                                    const processedRoutines = processHevyRoutines(parsed.program);
-                                    setHevyProgram(processedRoutines);
+                        // Look for TOON code blocks (```toon ... ```)
+                        // Use non-greedy match to find complete blocks
+                        const toonCodeBlockMatch = text.match(/```toon\s*([\s\S]*?)\s*```/);
+                        if (toonCodeBlockMatch) {
+                            // Extract content directly from match result (index 1 is the captured group)
+                            const toonContent = toonCodeBlockMatch[1]?.trim();
+
+                            // Validate that we have content and the block appears complete
+                            if (!toonContent || toonContent.length === 0) {
+                                return;
+                            }
+
+                            // Check if the TOON block looks structurally complete
+                            // A complete TOON block should have at least a header line with brackets
+                            if (!toonContent.includes('[') || !toonContent.includes(']')) {
+                                return;
+                            }
+
+                            // Additional validation: Check if TOON structure appears complete
+                            // Look for the routines header pattern: routines[N]{...}:
+                            const routinesHeaderMatch = toonContent.match(/routines\[(\d+)\]/);
+                            if (routinesHeaderMatch) {
+                                const expectedRoutineCount = parseInt(routinesHeaderMatch[1], 10);
+                                // Count how many routine entries we can see (look for routine- prefix followed by comma or newline)
+                                const routineEntryMatches = toonContent.match(/routine-\w+/g);
+                                const actualRoutineCount = routineEntryMatches ? routineEntryMatches.length : 0;
+
+                                // If we're still loading and don't have all expected routines, skip parsing
+                                if (isLastMessage && isLoading && actualRoutineCount < expectedRoutineCount) {
+                                    return;
                                 }
-                            } catch {
-                                // Try to find JSON code blocks
-                                const codeBlockMatch = text.match(/```(?:json)?\s*(\{\s*"program"\s*:\s*\[[\s\S]*?"(?:folder_id|exercises|title)"[\s\S]*?\]\s*\})\s*```/);
-                                if (codeBlockMatch) {
-                                    try {
-                                        const parsed = JSON.parse(codeBlockMatch[1]) as { program?: Partial<THevyRoutine>[] };
-                                        if (parsed.program && Array.isArray(parsed.program) && parsed.program.length > 0 && parsed.program[0].folder_id !== undefined) {
-                                            // Mark message as processed
-                                            processedMessageIds.current.add(message.id);
-                                            // Extract program array and process routines
-                                            const processedRoutines = processHevyRoutines(parsed.program);
-                                            setHevyProgram(processedRoutines);
-                                        }
-                                    } catch (e2) {
-                                        console.error('Failed to parse program JSON:', e2);
+                            }
+
+                            try {
+                                console.log('Parsing TOON content, length:', toonContent.length);
+                                const decoded = decode(toonContent) as Partial<THevyRoutine>[];
+
+                                // Improved validation: check if decoded is a valid array with routines
+                                if (!Array.isArray(decoded)) {
+                                    console.warn('Decoded TOON is not an array:', typeof decoded);
+                                    return;
+                                }
+
+                                if (decoded.length === 0) {
+                                    console.warn('Decoded TOON array is empty');
+                                    return;
+                                }
+
+                                // Check if the first routine has required fields
+                                const firstRoutine = decoded[0];
+                                if (!firstRoutine || typeof firstRoutine !== 'object') {
+                                    console.warn('First decoded routine is invalid:', firstRoutine);
+                                    return;
+                                }
+
+                                // folder_id can be 0, so check if it's a number (including 0)
+                                const hasValidFolderId = typeof firstRoutine.folder_id === 'number';
+
+                                if (!hasValidFolderId) {
+                                    console.warn('First routine missing valid folder_id:', firstRoutine);
+                                    return;
+                                }
+
+                                // Mark message as processed
+                                processedMessageIds.current.add(message.id);
+
+                                // Process routines and set program
+                                const processedRoutines = processHevyRoutines(decoded);
+                                console.log('Successfully parsed TOON, setting hevyProgram with', processedRoutines.length, 'routines');
+                                setHevyProgram(processedRoutines);
+                            } catch (e) {
+                                // Only log errors if not streaming (to avoid spam during streaming)
+                                if (!isLoading) {
+                                    console.error('Failed to parse TOON format:', e);
+                                    if (e instanceof Error) {
+                                        console.error('Error details:', e.message, e.stack);
                                     }
                                 }
                             }
@@ -248,89 +303,8 @@ function AgentChat({
                 });
             }
         });
-    }, [messages, setHevyProgram, daysPerWeek]);
+    }, [messages, setHevyProgram, daysPerWeek, isLoading]);
 
-    // Monitor message changes to detect gaps in token streaming
-    useEffect(() => {
-        // Clear any existing timeout
-        if (thinkingTimeoutRef.current) {
-            clearTimeout(thinkingTimeoutRef.current);
-            thinkingTimeoutRef.current = null;
-        }
-
-        // If not loading, reset thinking state
-        if (!isLoading) {
-            // setIsThinking(false);
-            lastMessageTextRef.current = "";
-            return;
-        }
-
-        // Find the last assistant message
-        const lastAssistantMessage = [...messages].reverse().find(
-            (msg) => msg.role === 'assistant'
-        );
-
-        if (!lastAssistantMessage) {
-            lastMessageTextRef.current = "";
-            return;
-        }
-
-        // Get the text content from the last assistant message
-        const textParts = lastAssistantMessage.parts
-            .filter((part): part is { type: 'text'; text: string } => part.type === 'text' && typeof part.text === 'string')
-            .map((part) => part.text);
-        const currentText = textParts.join('');
-
-        // Compare with previous text
-        if (currentText !== lastMessageTextRef.current) {
-            // New tokens arrived - hide thinking and update ref
-            // setIsThinking(false);
-            lastMessageTextRef.current = currentText;
-        } else {
-            // No change in text - set timeout to show thinking after delay
-            // Only show thinking if we have some text already (not at the very start)
-            if (currentText.length > 0) {
-                thinkingTimeoutRef.current = setTimeout(() => {
-                    setIsThinking(true);
-                }, 10);
-            }
-        }
-
-        // Cleanup function
-        return () => {
-            if (thinkingTimeoutRef.current) {
-                clearTimeout(thinkingTimeoutRef.current);
-                thinkingTimeoutRef.current = null;
-            }
-        };
-    }, [messages, isLoading]);
-
-    // TODO: add this back in with a reeprompt request to the AI
-
-    // const handleDefineQueryParams = () => {
-    //     const params = new URLSearchParams();
-    //     if (search) params.append("search", search);
-    //     if (sex) params.append("sex", sex);
-    //     if (age) params.append("age", age);
-    //     if (daysPerWeek) params.append("daysPerWeek", daysPerWeek);
-    //     if (specificDays.length > 0) params.append("specificDays", (specificDays.map(option => option.value).join(', ')));
-    //     if (programLength) params.append("programLength", programLength);
-    //     if (workoutDuration) params.append("workoutDuration", workoutDuration);
-    //     if (activityLevel) params.append("activityLevel", activityLevel);
-    //     if (goals.length > 0) params.append("goals", JSON.stringify(goals));
-    //     if (specialization.length > 0) params.append("specialization", (specialization.map(option => option.value).join(', ')));
-    //     if (equipment.length > 0) params.append("equipment", (equipment.map(option => option.value).join(', ')));
-    //     if (focusAreas.length > 0) params.append("focusAreas", (focusAreas.map(option => option.value).join(', ')));
-    //     if (difficultyLevel.length > 0) params.append("difficultyLevel", (difficultyLevel.map(option => option.value).join(', ')));
-    //     if (excludeAreas.length > 0) params.append("excludeAreas", (excludeAreas.map(option => option.value).join(', ')));
-    //     if (excludeEquipment.length > 0) params.append("excludeEquipment", (excludeEquipment.map(option => option.value).join(', ')));
-    //     if (excludeSpecializations.length > 0) params.append("excludeSpecializations", (excludeSpecializations.map(option => option.value).join(', ')));
-    //     if (healthIssues.length > 0) params.append("healthIssues", (healthIssues.map(option => option.value).join(', ')));
-    //     if (programTitle) params.append("programTitle", programTitle);
-    //     if (explore) params.append("explore", "true");
-
-    //     return params.toString();
-    // };
 
     const handleSubmit = () => {
         if (!input.trim()) return
@@ -339,142 +313,6 @@ function AgentChat({
         setInput('');
     }
 
-    // Helper function to detect if text contains program JSON ({ program: THevyRoutine[] } format)
-    const containsProgramJson = (text: string): boolean => {
-        return /\{\s*"program"\s*:\s*\[/.test(text) ||
-               /"program"\s*:\s*\[[\s\S]*?"(?:folder_id|exercises|title)"/.test(text) ||
-               /"folder_id"\s*:/.test(text) ||
-               /"exercises"\s*:\s*\[/.test(text);
-    };
-
-    // Helper function to extract non-JSON text (conversational parts)
-    const extractConversationalText = (text: string): string => {
-        // Try to find text before JSON code blocks
-        const beforeJson = text.split(/```(?:json)?/)[0].trim();
-        if (beforeJson && beforeJson.length > 0 && !containsProgramJson(beforeJson)) {
-            return beforeJson;
-        }
-        // Try to find text before JSON object ({ program: [...] } format)
-        const jsonMatch = text.match(/(.*?)(?:\{\s*"program"\s*:\s*\[[\s\S]*?"(?:folder_id|exercises|title)")/);
-        if (jsonMatch && jsonMatch[1] && jsonMatch[1].trim().length > 0) {
-            return jsonMatch[1].trim();
-        }
-        return '';
-    };
-
-    // Helper function to get program generation status message
-    const getProgramGenerationStatus = (text: string): { message: string; isComplete: boolean; stepId?: string; completedStepMessage?: string } => {
-        if (!containsProgramJson(text)) {
-            return { message: '', isComplete: false };
-        }
-
-        // Check if JSON object with program array is complete
-        try {
-            const objectMatch = text.match(/\{\s*"program"\s*:\s*\[[\s\S]*?"(?:folder_id|exercises|title)"[\s\S]*?\]\s*\}/);
-            if (objectMatch) {
-                const parsed = JSON.parse(objectMatch[0]) as { program?: THevyRoutine[] };
-                if (parsed.program && Array.isArray(parsed.program) && parsed.program.length > 0) {
-                    // Check if all routines have exercises
-                    const allRoutinesComplete = parsed.program.every((routine) =>
-                        routine.exercises && Array.isArray(routine.exercises) && routine.exercises.length > 0
-                    );
-                    if (allRoutinesComplete) {
-                        return { message: 'Workout program generated', isComplete: true, stepId: 'final' };
-                    }
-                }
-            }
-        } catch {
-            // JSON not complete yet, continue checking progress
-        }
-
-        // Analyze streaming progress
-        const hasProgramKey = /"program"\s*:\s*\[/.test(text);
-        const hasArrayStart = /\[\s*\{/.test(text);
-        const hasFolderId = /"folder_id"\s*:/.test(text);
-
-        // Count routines by finding "folder_id" occurrences (each routine should have one)
-        const folderIdMatches = text.match(/"folder_id"/g);
-        const routinesCount = folderIdMatches ? folderIdMatches.length : 0;
-
-        // Try to count exercises per routine by analyzing structure
-        const routineSections = text.split(/"folder_id"/);
-        const exercisesPerRoutine: number[] = [];
-        routineSections.slice(1).forEach((section) => {
-            const exercisesInSection = (section.match(/"exercise_template_id"/g) || []).length;
-            exercisesPerRoutine.push(exercisesInSection);
-        });
-
-        // Determine progress stage
-        if (!hasProgramKey && !hasArrayStart && !hasFolderId) {
-            return { message: 'Analyzing your fitness goals and preferences...', isComplete: false, stepId: 'analyzing' };
-        }
-
-        if ((hasProgramKey || hasArrayStart) && !hasFolderId) {
-            return { message: 'Creating program structure...', isComplete: false, stepId: 'structure' };
-        }
-
-        if (hasFolderId && routinesCount === 0) {
-            return { message: 'Building workout routines...', isComplete: false, stepId: 'building-routines' };
-        }
-
-        const daysPerWeekValue = daysPerWeek ? Number(daysPerWeek) : (searchParams.get('daysPerWeek') ? Number(searchParams.get('daysPerWeek')) : undefined);
-
-        // If daysPerWeek is not provided, we can't calculate week/day status accurately
-        if (daysPerWeekValue === undefined) {
-            return { message: 'Generating workout program...', isComplete: false, stepId: 'generating' };
-        }
-
-        if (routinesCount === 1) {
-            const exercisesInRoutine1 = exercisesPerRoutine[0] || 0;
-            // Try to extract folder_id and order from the text to determine week/day
-            const folderIdMatch = text.match(/"folder_id"\s*:\s*(\d+)/);
-            const orderMatch = text.match(/"order"\s*:\s*"(\d+)"/);
-            const folderId = folderIdMatch ? Number(folderIdMatch[1]) : 0;
-            const order = orderMatch ? Number(orderMatch[1]) : 1;
-            const actualWeek = folderId + 1; // folder_id is 0-indexed
-            const dayInWeek = order;
-
-            if (exercisesInRoutine1 === 0) {
-                return { message: `Building Week ${actualWeek}, Day ${dayInWeek}...`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
-            } else if (exercisesInRoutine1 < 4) {
-                return { message: `Adding exercises to Week ${actualWeek}, Day ${dayInWeek}... (${exercisesInRoutine1} exercises)`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
-            } else {
-                const nextRoutine = 2;
-                const nextWeek = Math.ceil(nextRoutine / daysPerWeekValue);
-                const nextDayInWeek = ((nextRoutine - 1) % daysPerWeekValue) + 1;
-                return { message: `Building Week ${nextWeek}, Day ${nextDayInWeek}...`, isComplete: false, stepId: `week-${nextWeek}-day-${nextDayInWeek}`, completedStepMessage: `Week ${actualWeek}, Day ${dayInWeek} complete` };
-            }
-        }
-
-        if (routinesCount >= 2) {
-            const currentRoutine = routinesCount;
-            const exercisesInCurrentRoutine = exercisesPerRoutine[currentRoutine - 1] || 0;
-            // Try to extract folder_id and order from the last routine in the text
-            const folderIdMatches = text.match(/"folder_id"\s*:\s*(\d+)/g);
-            const orderMatches = text.match(/"order"\s*:\s*"(\d+)"/g);
-            const lastFolderId = folderIdMatches && folderIdMatches.length > 0
-                ? Number(folderIdMatches[folderIdMatches.length - 1].match(/\d+/)?.[0])
-                : Math.floor((currentRoutine - 1) / daysPerWeekValue);
-            const lastOrder = orderMatches && orderMatches.length > 0
-                ? Number(orderMatches[orderMatches.length - 1].match(/\d+/)?.[0])
-                : ((currentRoutine - 1) % daysPerWeekValue) + 1;
-            const actualWeek = lastFolderId + 1; // folder_id is 0-indexed
-            const dayInWeek = lastOrder;
-
-            if (exercisesInCurrentRoutine === 0) {
-                return { message: `Building Week ${actualWeek}, Day ${dayInWeek}...`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
-            } else if (exercisesInCurrentRoutine < 4) {
-                return { message: `Adding exercises to Week ${actualWeek}, Day ${dayInWeek}... (${exercisesInCurrentRoutine} exercises)`, isComplete: false, stepId: `week-${actualWeek}-day-${dayInWeek}` };
-            } else {
-                const nextRoutine = currentRoutine + 1;
-                const nextWeek = Math.ceil(nextRoutine / daysPerWeekValue);
-                const nextDayInWeek = ((nextRoutine - 1) % daysPerWeekValue) + 1;
-                return { message: `Building Week ${nextWeek}, Day ${nextDayInWeek}...`, isComplete: false, stepId: `week-${nextWeek}-day-${nextDayInWeek}`, completedStepMessage: `Week ${actualWeek}, Day ${dayInWeek} complete` };
-            }
-        }
-
-        return { message: 'Generating workout program...', isComplete: false, stepId: 'generating' };
-    };
 
 
     return (
@@ -518,12 +356,9 @@ function AgentChat({
                                 switch (part.type) {
                                 case 'text': {
                                     const text = part.text;
-                                    const hasProgramJson = containsProgramJson(text);
-                                    const conversationalText = extractConversationalText(text);
-                                    const status = getProgramGenerationStatus(text);
 
                                     // If message contains program JSON, show compact view
-                                    if (hasProgramJson && isAssistant) {
+                                    if (isAssistant) {
                                         return (
                                             <Message
                                                 key={`${message.id}-${index}`}
@@ -533,22 +368,13 @@ function AgentChat({
                                                 )}
                                             >
                                                 <div className="group flex w-full flex-col gap-0">
-                                                    {conversationalText && (
                                                         <MessageContent
                                                             className="text-foreground prose w-full flex-1 rounded-lg bg-transparent p-0 mb-2"
                                                             markdown
                                                         >
-                                                            {conversationalText}
+                                                            {text}
                                                         </MessageContent>
-                                                    )}
-                                                    <ProgramAccordion
-                                                        messages={messages}
-                                                        isLoading={isLoading}
-                                                        currentStatus={status}
-                                                        daysPerWeek={daysPerWeek ? Number(daysPerWeek) : (searchParams.get('daysPerWeek') ? Number(searchParams.get('daysPerWeek')) : undefined)}
-                                                        getProgramGenerationStatus={getProgramGenerationStatus}
-                                                        containsProgramJson={containsProgramJson}
-                                                    />
+
                                                     <MessageActions
                                                         className={cn(
                                                             "-ml-2.5 flex gap-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100",
@@ -684,19 +510,67 @@ function AgentChat({
                                     );
                                 }
                                 case "tool-displayBuildWorkoutProgram": {
-                                    // Handle tool result - extract program if present
-                                    const toolOutput = part.output as { program?: THevyRoutine[] };
-                                    if (toolOutput?.program && Array.isArray(toolOutput.program)) {
-                                        setHevyProgram(toolOutput.program);
+                                    // Handle tool result - extract program if present (could be TOON or JSON)
+                                    const toolOutput = part.output as { program?: THevyRoutine[] | string };
+                                    if (toolOutput?.program) {
+                                        if (Array.isArray(toolOutput.program)) {
+                                            // Already in JSON format
+                                            setHevyProgram(toolOutput.program);
+                                        } else if (typeof toolOutput.program === 'string') {
+                                            // TOON format string - decode it
+                                            try {
+                                                const decoded = decode(toolOutput.program) as Partial<THevyRoutine>[];
+                                                if (Array.isArray(decoded) && decoded.length > 0) {
+                                                    const now = new Date().toISOString();
+                                                    const processedRoutines = decoded.map((routine, index) => ({
+                                                        id: routine.id || `routine-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`,
+                                                        title: routine.title || `Day ${index + 1}`,
+                                                        folder_id: typeof routine.folder_id === 'number' ? routine.folder_id : 0,
+                                                        order: routine.order || String((index % (daysPerWeek ? Number(daysPerWeek) : 7)) + 1),
+                                                        notes: routine.notes || '',
+                                                        exercises: routine.exercises || [],
+                                                        created_at: routine.created_at || now,
+                                                        updated_at: routine.updated_at || now,
+                                                    }));
+                                                    setHevyProgram(processedRoutines);
+                                                }
+                                            } catch (e) {
+                                                console.error('Failed to decode TOON program from tool output:', e);
+                                            }
+                                        }
                                     }
                                     return null;
                                 }
                                 default: {
-                                    // Check if part is a tool result with program data
+                                    // Check if part is a tool result with program data (could be TOON or JSON)
                                     if (part.type === 'tool-result' && 'output' in part) {
-                                        const output = (part as { output?: { program?: THevyRoutine[] } }).output;
-                                        if (output?.program && Array.isArray(output.program)) {
-                                            setHevyProgram(output.program);
+                                        const output = (part as { output?: { program?: THevyRoutine[] | string } }).output;
+                                        if (output?.program) {
+                                            if (Array.isArray(output.program)) {
+                                                // Already in JSON format
+                                                setHevyProgram(output.program);
+                                            } else if (typeof output.program === 'string') {
+                                                // TOON format string - decode it
+                                                try {
+                                                    const decoded = decode(output.program) as Partial<THevyRoutine>[];
+                                                    if (Array.isArray(decoded) && decoded.length > 0) {
+                                                        const now = new Date().toISOString();
+                                                        const processedRoutines = decoded.map((routine, index) => ({
+                                                            id: routine.id || `routine-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`,
+                                                            title: routine.title || `Day ${index + 1}`,
+                                                            folder_id: typeof routine.folder_id === 'number' ? routine.folder_id : 0,
+                                                            order: routine.order || String((index % (daysPerWeek ? Number(daysPerWeek) : 7)) + 1),
+                                                            notes: routine.notes || '',
+                                                            exercises: routine.exercises || [],
+                                                            created_at: routine.created_at || now,
+                                                            updated_at: routine.updated_at || now,
+                                                        }));
+                                                        setHevyProgram(processedRoutines);
+                                                    }
+                                                } catch (e) {
+                                                    console.error('Failed to decode TOON program from tool output:', e);
+                                                }
+                                            }
                                         }
                                     }
                                     return null;
@@ -705,7 +579,7 @@ function AgentChat({
                             })}
                             </div>
                         ))}
-                {!isFilters && isThinking && isLoading && (
+                {!isFilters && isLoading && (
                     <Message
                         className={cn(
                             "mx-auto flex w-full max-w-3xl flex-col gap-2 px-0 md:px-6 pt-2",

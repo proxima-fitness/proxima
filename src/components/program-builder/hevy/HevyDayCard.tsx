@@ -356,8 +356,13 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                         ) : (
                             <Button
                                 variant="ghost"
-                                className="mt-1 w-full font-bold bg-lightGray dark:bg-darkGray text-lightSecondary uppercase hover:text-lightSecondary hover:bg-gray-200 h-12 border-2 border-lightSecondary dark:border-darkGray"
-                                onClick={() => setEditMode(true)}
+                                disabled={!day.exercises || day.exercises.length < 2}
+                                className="mt-1 w-full font-bold bg-lightGray dark:bg-darkGray text-lightSecondary disabled:text-gray-500 uppercase hover:text-lightSecondary hover:bg-gray-200 h-12 border-2 border-lightSecondary dark:border-darkGray disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-lightGray dark:disabled:hover:bg-darkGray disabled:border-gray-300 dark:disabled:border-gray-600"
+                                onClick={() => {
+                                    if (day.exercises && day.exercises.length >= 2) {
+                                        setEditMode(true);
+                                    }
+                                }}
                             >
                                 <LinkIcon className="mr-2" />Create Superset
                             </Button>

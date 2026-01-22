@@ -38,7 +38,12 @@ export function BuildProgramClient() {
     const [sidebarPosition, setSidebarPosition] = useState<"left" | "right">("left");
     const [sidebarSize, setSidebarSize] = useState(20);
     const [mobileTab, setMobileTab] = useState<string>("chat");
+
+    /*************************************************************************************/
+    /*** STATE FOR THE PROGRAM BUILDER ***/
     const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>([]);
+    console.log('hevyProgram', hevyProgram);
+    /*************************************************************************************/
 
     const empty = searchParams.get('empty') ?? '';
     const search = searchParams.get('search') ?? '';

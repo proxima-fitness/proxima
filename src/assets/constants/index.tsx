@@ -74,7 +74,7 @@ export const programBuilderSteps = [
     { title: "Step 1", description: "Prompt your Program" },
     { title: "Step 2", description: "Edit and Refine" },
     { title: "Step 3", description: "Finish and Review" },
-    { title: "Step 4", description: "Sign in and Start Tracking" },
+    { title: "Step 4", description: "Sign in and Export Program" },
 ];
 
 export const primaryMuscleGroups = [
