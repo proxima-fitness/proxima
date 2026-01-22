@@ -37,35 +37,33 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
 
                     {/* Founder Card Section */}
                     <section className={`${styles.flexCenter} flex-col mb-20`} data-aos="fade-up" data-aos-delay="100">
-                        <Card className="bg-lightGray border-2 border-gray-200 dark:border-white/10 shadow-lg max-w-[500px] w-full">
-                            <CardHeader className="flex flex-col items-center pb-4">
-                                <div className="relative h-[400px] w-[400px] max-sm:h-[300px] max-sm:w-full group mb-6">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 to-lightSecondary/20 rounded-xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-300" />
+                        <Card className="dark:border-white/10  max-w-[600px] md:max-w-[900px] w-full">
+                            <CardHeader className="flex flex-col md:flex-row md:items-center md:gap-6 items-center pb-4 p-0">
+                                <div className="relative h-[400px] w-[400px] max-sm:h-[300px] max-sm:w-full md:h-[300px] md:flex-1 md:w-auto group mb-6 md:mb-0">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 to-lightSecondary/20 rounded-xl md:rounded-tl-xl md:rounded-bl-xl md:rounded-tr-none md:rounded-br-none opacity-50 group-hover:opacity-75 transition-opacity duration-300" />
                                     <img
                                         src={(jack as any).src}
                                         alt="Jack Hanlon"
-                                        className="relative rounded-xl w-full h-full object-cover transition-opacity duration-300 shadow-2xl"
+                                        className="relative w-full rounded-t-md md:rounded-tl-md md:rounded-bl-md md:rounded-tr-none md:rounded-br-none h-full object-cover transition-opacity duration-300"
                                     />
                                     <img
                                         src={(jack_jacked as any).src}
                                         alt="Jack Hanlon Jacked"
-                                        className="rounded-xl w-full h-full object-cover object-[center_20%] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-2xl"
+                                        className="w-full rounded-t-md md:rounded-tl-md md:rounded-bl-md md:rounded-tr-none md:rounded-br-none h-full object-cover object-[center_20%] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                                     />
                                 </div>
-                                <div className="text-center">
-                                    <h2 className="font-main text-2xl ss:text-3xl  dark:text-black text-white mb-2">
+                                <div className="text-center md:text-left md:flex md:flex-col md:justify-center md:flex-1">
+                                    <h2 className="font-main text-2xl ss:text-3xl dark:text-white  text-black mb-2">
                                         JACK HANLON
                                     </h2>
-                                    <p className="font-second text-lightSecondary dark:text-black text-lg font-semibold mb-4">
+                                    <p className="font-second text-lightSecondary text-lg font-semibold mb-4">
                                         FOUNDER
+                                    </p>
+                                    <p className={`text-md pr-4 max-sm:pl-4 pb-4 text-black font-third text-left text-gray-700 dark:text-offWhite`}>
+                                        Jack was a Software Engineer before creating Proxima, and an avid lifter with a Bench Press PR of 240lbs. Jack enjoys weightlifting and playing with his two rescue puppies.
                                     </p>
                                 </div>
                             </CardHeader>
-                            <CardContent className="pt-0">
-                                <p className={`${styles.paragraph} dark:text-black text-white font-third text-center text-gray-700 dark:text-offWhite`}>
-                                    Jack was a Software Engineer before creating Proxima, and an avid lifter with a Bench Press PR of 240lbs. Jack enjoys weightlifting and playing with his two rescue puppies.
-                                </p>
-                            </CardContent>
                         </Card>
                     </section>
 
@@ -82,7 +80,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                     <section className={`${layout.section} flex-col`} data-aos="fade-up" data-aos-delay="200">
                         <div className="max-w-4xl mx-auto space-y-8">
                             {/* Story Card 1 */}
-                            <Card className="bg-lightGray dark:bg-black-gradient-2 border-2 border-gray-200 dark:border-white/10 shadow-lg hover:bg-gray-200 dark:hover:bg-black-gradient transition-all duration-300" data-aos="fade-up" data-aos-delay="300">
+                            <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="300">
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
                                         <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
@@ -90,7 +88,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                                         </div>
                                         <div className="flex-1">
                                             <p className={`${styles.paragraph} font-third leading-relaxed text-gray-700 dark:text-offWhite`}>
-                                                In 2020, <span className=" italic text-black dark:text-black">my journey to fitness</span> started under less-than-ideal circumstances. I was in a tough spot - <span className=" italic text-black dark:text-black">recovering from a breakup, feeling skinny fat, and unhappy</span> with how I looked and felt. My energy was low, my confidence was lower, and I knew <span className=" italic text-black dark:text-black">something had to change</span>.
+                                                In 2020, <span className=" italic text-black dark:text-white">my journey to fitness</span> started under less-than-ideal circumstances. I was in a tough spot - <span className=" italic text-black dark:text-white">recovering from a breakup, feeling skinny fat, and unhappy</span> with how I looked and felt. My energy was low, my confidence was lower, and I knew <span className=" italic text-black dark:text-white">something had to change</span>.
                                             </p>
                                         </div>
                                     </div>
@@ -98,7 +96,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                             </Card>
 
                             {/* Story Card 2 */}
-                            <Card className="bg-lightGray dark:bg-black-gradient-2 border-2 border-gray-200 dark:border-white/10 shadow-lg hover:bg-gray-200 dark:hover:bg-black-gradient transition-all duration-300" data-aos="fade-up" data-aos-delay="400">
+                            <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="400">
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
                                         <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
@@ -106,10 +104,10 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                                         </div>
                                         <div className="flex-1">
                                             <p className={`${styles.paragraph} font-third leading-relaxed mb-4 text-gray-700 dark:text-offWhite`}>
-                                                I took my first step toward transformation by <span className=" italic text-black dark:text-black">hiring a personal trainer</span>. It was an investment, and while I learned a lot, I found myself <span className=" italic text-black dark:text-black">yearning for more</span> advanced exercises and methods. I dove into the vast library of YouTube fitness channels, soaking up the expertise of bodybuilders and fitness influencers. Slowly but surely, I started building muscle, learning to control my nutrition, and shedding fat.
+                                                I took my first step toward transformation by <span className=" italic text-black dark:text-white">hiring a personal trainer</span>. It was an investment, and while I learned a lot, I found myself <span className=" italic text-black dark:text-white">yearning for more</span> advanced exercises and methods. I dove into the vast library of YouTube fitness channels, soaking up the expertise of bodybuilders and fitness influencers. Slowly but surely, I started building muscle, learning to control my nutrition, and shedding fat.
                                             </p>
                                             <p className={`${styles.paragraph} font-third leading-relaxed text-gray-700 dark:text-offWhite`}>
-                                                When my career began in 2021, <span className=" italic text-black dark:text-black">life became busier</span>. The demands of work meant less time for the gym, and while I stayed consistent, I found myself <span className=" italic text-black dark:text-black">hitting a plateau</span>. Progress slowed, and I started to <span className=" italic text-black dark:text-black">feel stuck</span> - something I knew many people experience when balancing fitness with real-life responsibilities.
+                                                When my career began in 2021, <span className=" italic text-black dark:text-white">life became busier</span>. The demands of work meant less time for the gym, and while I stayed consistent, I found myself <span className=" italic text-black dark:text-white">hitting a plateau</span>. Progress slowed, and I started to <span className=" italic text-black dark:text-white">feel stuck</span> - something I knew many people experience when balancing fitness with real-life responsibilities.
                                             </p>
                                         </div>
                                     </div>
@@ -117,7 +115,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                             </Card>
 
                             {/* Story Card 3 */}
-                            <Card className="bg-lightGray dark:bg-black-gradient-2 border-2 border-gray-200 dark:border-white/10 shadow-lg hover:bg-gray-200 dark:hover:bg-black-gradient transition-all duration-300" data-aos="fade-up" data-aos-delay="500">
+                            <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="500">
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
                                         <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
@@ -125,7 +123,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                                         </div>
                                         <div className="flex-1">
                                             <p className={`${styles.paragraph} font-third leading-relaxed text-gray-700 dark:text-offWhite`}>
-                                                In 2022, a heavy squatting session led to a <span className=" italic text-black dark:text-black">chronic knee injury: Plica Syndrome</span>. Exacerbated by an old ankle break injury from a few years back. The injury was a significant setback, both physically and mentally. I lost muscle mass in my legs and felt demotivated about training. The gym, which had been my sanctuary, became a source of frustration.
+                                                In 2022, a heavy squatting session led to a <span className=" italic text-black dark:text-white">chronic knee injury: Plica Syndrome</span>. Exacerbated by an old ankle break injury from a few years back. The injury was a significant setback, both physically and mentally. I lost muscle mass in my legs and felt demotivated about training. The gym, which had been my sanctuary, became a source of frustration.
                                             </p>
                                         </div>
                                     </div>
@@ -133,7 +131,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                             </Card>
 
                             {/* Story Card 4 */}
-                            <Card className="bg-lightGray dark:bg-black-gradient-2 border-2 border-gray-200 dark:border-white/10 shadow-lg hover:bg-gray-200 dark:hover:bg-black-gradient transition-all duration-300" data-aos="fade-up" data-aos-delay="600">
+                            <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="600">
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
                                         <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
@@ -141,7 +139,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                                         </div>
                                         <div className="flex-1">
                                             <p className={`${styles.paragraph} font-third leading-relaxed text-gray-700 dark:text-offWhite`}>
-                                                But <span className=" italic text-black dark:text-black">every setback is an opportunity for a comeback</span>. In 2023, <span className=" italic text-black dark:text-black">I channeled my passion for fitness</span> and my experiences into something bigger - <span className=" italic text-black dark:text-black">Proxima Fitness</span>. I wanted to create a platform that would help intermediate lifters, like myself, push through plateaus, manage the challenges of work-life balance, and continue progressing even when life throws curveballs.
+                                                But <span className=" italic text-black dark:text-white">every setback is an opportunity for a comeback</span>. In 2023, <span className=" italic text-black dark:text-white">I channeled my passion for fitness</span> and my experiences into something bigger - <span className=" italic text-black dark:text-white">Proxima Fitness</span>. I wanted to create a platform that would help intermediate lifters, like myself, push through plateaus, manage the challenges of work-life balance, and continue progressing even when life throws curveballs.
                                             </p>
                                         </div>
                                     </div>
@@ -149,7 +147,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                             </Card>
 
                             {/* Story Card 5 */}
-                            <Card className="bg-lightGray dark:bg-black-gradient-2 border-2 border-gray-200 dark:border-white/10 shadow-lg hover:bg-gray-200 dark:hover:bg-black-gradient transition-all duration-300" data-aos="fade-up" data-aos-delay="700">
+                            <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="700">
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
                                         <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
@@ -157,10 +155,10 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                                         </div>
                                         <div className="flex-1">
                                             <p className={`${styles.paragraph} font-third leading-relaxed mb-4 text-gray-700 dark:text-offWhite`}>
-                                                Fast forward to 2025, and <span className=" text-black dark:text-black">Proxima Fitness has officially launched</span>. As I prepare for <span className=" italic text-black dark:text-black">ankle surgery (and potentially knee surgery too)</span>, I&apos;m excited to recover and rebuild with the very tools I&apos;ve helped create. Proxima isn&apos;t just a product; it&apos;s the culmination of years of hard work, learning, and overcoming obstacles.
+                                                Fast forward to 2025, and <span className=" text-black dark:text-white">Proxima Fitness has officially launched</span>. As I prepare for <span className=" italic text-black dark:text-white">ankle surgery (and potentially knee surgery too)</span>, I&apos;m excited to recover and rebuild with the very tools I&apos;ve helped create. Proxima isn&apos;t just a product; it&apos;s the culmination of years of hard work, learning, and overcoming obstacles.
                                             </p>
                                             <p className={`${styles.paragraph} font-third leading-relaxed mb-4 text-gray-700 dark:text-offWhite`}>
-                                                This journey has been about <span className=" italic text-black dark:text-black">more than just getting jacked - it&apos;s been about resilience, adaptation, and sharing the lessons I&apos;ve learned with others</span> who are ready to <span className=" italic text-black dark:text-black">transform their own lives</span>.
+                                                This journey has been about <span className=" italic text-black dark:text-white">more than just getting jacked - it&apos;s been about resilience, adaptation, and sharing the lessons I&apos;ve learned with others</span> who are ready to <span className=" italic text-black dark:text-white">transform their own lives</span>.
                                             </p>
                                         </div>
                                     </div>
@@ -168,7 +166,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                             </Card>
 
                             {/* Story Card 6 */}
-                            <Card className="bg-lightGray dark:bg-black-gradient-2 border-2 border-gray-200 dark:border-white/10 shadow-lg hover:bg-gray-200 dark:hover:bg-black-gradient transition-all duration-300" data-aos="fade-up" data-aos-delay="800">
+                            <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="800">
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
                                         <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
@@ -176,7 +174,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                                         </div>
                                         <div className="flex-1">
                                             <p className={`${styles.paragraph} font-third leading-relaxed text-gray-700 dark:text-offWhite`}>
-                                                Looking ahead to 2026, <span className="text-black dark:text-black">Proxima is focused on making the program builder the best in the world</span>. We&apos;re committed to creating an unparalleled experience that helps fitness enthusiasts design, customize, and optimize their training programs with ease. Additionally, we&apos;re expanding our integration capabilities by <span className=" italic text-black dark:text-black">enabling exports to various fitness apps</span>, making it easier than ever for users to seamlessly transfer their programs to their preferred platforms and continue their fitness journey wherever they train.
+                                                Looking ahead to 2026, <span className="text-black dark:text-white">Proxima is focused on making the program builder the best in the world</span>. We&apos;re committed to creating an unparalleled experience that helps fitness enthusiasts design, customize, and optimize their training programs with ease. Additionally, we&apos;re expanding our integration capabilities by <span className=" italic text-black dark:text-white">enabling exports to various fitness apps</span>, making it easier than ever for users to seamlessly transfer their programs to their preferred platforms and continue their fitness journey wherever they train.
                                             </p>
                                         </div>
                                     </div>
