@@ -36,7 +36,7 @@ export function BuildProgramClient() {
     const shared = searchParams.get('shared') ?? '';
 
     const [sidebarPosition, setSidebarPosition] = useState<"left" | "right">("left");
-    const [sidebarSize, setSidebarSize] = useState(20);
+    const [sidebarSize, setSidebarSize] = useState(28);
     const [mobileTab, setMobileTab] = useState<string>("chat");
 
     /*************************************************************************************/

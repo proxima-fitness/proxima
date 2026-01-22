@@ -215,14 +215,14 @@ export const DayCard: FC<IProps> = (props) => {
                                         Add Note
                                         <DropdownMenuShortcut>⌘I</DropdownMenuShortcut>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={ () => {
+                                    {/* <DropdownMenuItem onClick={ () => {
                                         handleOpenGenerateDayDialog({ weekOrder: Number(weekOrder), dayOrder: Number(day.order), isOpen: true });
                                         } }
                                         className="cursor-pointer"
                                     >
                                         Generate Day
                                         <DropdownMenuShortcut>⌘G</DropdownMenuShortcut>
-                                    </DropdownMenuItem>
+                                    </DropdownMenuItem> */}
                                 </DropdownMenuContent>
                             </DropdownMenu>
                             <TooltipProvider delayDuration={ 0 }>

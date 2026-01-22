@@ -47,7 +47,61 @@ import {
 } from "@/components/ui/tooltip";
 import { Loader2 } from "lucide-react";
 import { decode } from '@toon-format/toon';
+import { IQuestion, Questions } from "@/components/ui/questions"
 
+
+const sampleQuestions: IQuestion[] = [
+    {
+      id: "nutrition",
+      question: "What should the nutrition feature include?",
+      options: [
+        {
+          id: "meal-tracking",
+          label: "Meal tracking (log meals/foods with calories and macros)",
+        },
+        {
+          id: "macro-counting",
+          label: "Macro counting (set and track protein, carbs, fats goals)",
+        },
+        {
+          id: "meal-planning",
+          label: "Meal planning (create meal plans and recipes)",
+        },
+        {
+          id: "calorie-tracking",
+          label: "Calorie tracking (daily calorie goals and intake)",
+        },
+        {
+          id: "all-above",
+          label: "All of the above (comprehensive nutrition feature)",
+        },
+      ],
+      allowOther: true,
+    },
+    {
+      id: "workout",
+      question: "How would you like to track your workouts?",
+      options: [
+        {
+          id: "manual",
+          label: "Manual entry (log exercises, sets, reps)",
+        },
+        {
+          id: "templates",
+          label: "Workout templates (pre-built routines)",
+        },
+        {
+          id: "ai-generated",
+          label: "AI-generated workouts (personalized plans)",
+        },
+        {
+          id: "integration",
+          label: "Integration with fitness devices",
+        },
+      ],
+      allowOther: true,
+    },
+  ]
 interface IRePromptProps {
     sidebarPosition: "left" | "right";
     onTogglePosition: () => void;
@@ -164,6 +218,14 @@ function AgentChat({
         typeof window !== 'undefined' ? sessionStorage.getItem('lastSentSearch') : null
     );
     const processedMessageIds = useRef<Set<string>>(new Set());
+
+    const handleComplete = (answers: Record<string, string | string[]>) => {
+        console.log("Completed with answers:", answers)
+      }
+
+      const handleSkip = () => {
+        console.log("Questions skipped")
+      }
 
 
     // Initialize with search parameter if present
@@ -348,6 +410,9 @@ function AgentChat({
             </div>
         <ChatContainerRoot className={`flex-1 relative max-sm:h-full ${isFilters ? "overflow-hidden" : "overflow-y-auto"}`}>
             <ChatContainerContent className="h-full max-sm:pb-[220px]">
+                <div className="p-2">
+                <Questions questions={sampleQuestions} onComplete={handleComplete} onSkip={handleSkip} />
+                </div>
                 {!isFilters && messages.map(message => (
                             <div key={message.id} className="whitespace-pre-wrap">
                             {message.parts.map((part, index) => {

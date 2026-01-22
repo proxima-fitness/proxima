@@ -279,7 +279,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                         Duplicate Day
                                         <DropdownMenuShortcut>⌘Y</DropdownMenuShortcut>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={ () => {
+                                    {/* <DropdownMenuItem onClick={ () => {
                                         // handleOpenGenerateDayDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true });
                                         setDropdownOpen(false);
                                     } }
@@ -287,7 +287,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                     >
                                         Generate Day
                                         <DropdownMenuShortcut>⌘G</DropdownMenuShortcut>
-                                    </DropdownMenuItem>
+                                    </DropdownMenuItem> */}
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
