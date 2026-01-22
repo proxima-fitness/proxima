@@ -17,6 +17,7 @@ interface IProgramItemProps {
 const ProgramItem: React.FC<IProgramItemProps> = memo(({ item, userData }) => {
 
     const randomColour = useMemo(() => {
+        // eslint-disable-next-line react-hooks/purity
         return lightColours[Math.floor(Math.random() * lightColours.length)];
     }, []);
 
@@ -85,7 +86,7 @@ const ProgramItem: React.FC<IProgramItemProps> = memo(({ item, userData }) => {
                 </AvatarFallback>
             </Avatar>
             <SplitIcon className="w-4 h-4" />
-            <span className="text-sm">{item.saves + 1} {(item.saves + 1) === 1 ? "Remix" : "Remixes"}</span>
+            <span className="text-sm">{item.saves + 1} {(item.saves + 1) === 1 ? "Save" : "Saves"}</span>
             </div>
         </div>
     );
@@ -112,6 +113,7 @@ export const AiProgramGrid: React.FC = () => {
         if (programs && programs.length > 0) {
             if (offset === 0) {
                 // First page, replace all programs
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setAllPrograms(programs);
             } else {
                 // Subsequent pages, append to existing programs
