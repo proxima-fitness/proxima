@@ -74,6 +74,8 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
             {day?.exercises?.map((exercise: THevyExercise, i: number) => {
                 const isSelected = selectedExercises.includes(i);
                 const supersetColor = getSupersetColor(exercise.supersets_id);
+                const isEvenRow = i % 2 === 0;
+                const isLastRow = i === (day?.exercises?.length ?? 0) - 1;
 
                 // Build dynamic styles for superset border
                 const borderStyle = supersetColor && !isSelected ? {
@@ -82,13 +84,20 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                     borderRightStyle: 'solid' as const
                 } : {};
 
+                // Alternating row colors: selected state takes precedence
+                const rowBackgroundClass = isSelected
+                    ? 'bg-lightSecondary text-white'
+                    : isEvenRow
+                        ? 'bg-white dark:bg-darkGray'
+                        : 'bg-extraLightGray dark:bg-[#1a2332]';
+
                 return (
                     <TooltipProvider key={"Week" + (Number(folder_id) + 1) + "Day" + i} delayDuration={0}>
                         <Tooltip>
                             <TooltipTrigger
                                 asChild
                                 onClick={(e) => editHandler(e, Number(folder_id), Number(day.order), i, exercise)}
-                                className={`w-full min-h-14 border-gray-200 cursor-pointer ${isSelected ? 'bg-lightSecondary text-white' : ''} ${supersetColor && !isSelected ? 'border-r-4' : ''}`}
+                                className={`w-full min-h-14 border-gray-200 cursor-pointer ${rowBackgroundClass} ${supersetColor && !isSelected ? 'border-r-4' : ''} ${isLastRow ? 'rounded-b-md' : ''}`}
                                 style={supersetColor && !isSelected ? borderStyle : {}}
                             >
                                     <div>
@@ -109,12 +118,12 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                         )}
                                         { exercise.supersets_id !== null && exercise.supersets_id !== undefined && editMode && (
                                                 <span className="flex flex-row justify-end items-center w-full pt-2">
-                                                <span className="text-xs flex flex-row items-center gap-2 pr-2"> <LinkIcon className="w-4 h-4" /> Superset {exercise.supersets_id + 1}</span>
+                                                <span className={`text-xs flex flex-row items-center gap-2 pr-2 ${isSelected ? 'text-white' : ''}`}> <LinkIcon className="w-4 h-4" /> Superset {exercise.supersets_id + 1}</span>
                                             </span>
                                         ) }
-                                <div className={`flex flex-row justify-between items-center text-xs border-b-2 ${exercise.supersets_id && !editMode ? 'pb-2' : 'py-2'}  relative`}>
+                                <div className={`flex flex-row justify-between items-center text-xs ${isLastRow ? '' : 'border-b'} ${exercise.supersets_id && !editMode ? 'pb-2' : 'py-2'}  relative`}>
                                     <div className="flex flex-row gap-2 items-center justify-start max-w-[50%]">
-                                        <div className="text-lightSecondary dark:text-white pr-1">
+                                        <div className="text-lightSecondary dark:text-white pr-1 pl-2">
                                             {editMode ? (
                                                 <div className="" onClick={(e) => e.stopPropagation()}>
                                                     <input
@@ -137,7 +146,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                         </div>
                                         <HevyExerciseGif thumbnailOrImage={"thmb"} name={exercise.title} gif_id={hevyExercises?.find((hevyExercise: THevyExerciseTemplate) => hevyExercise.id === exercise.exercise_template_id)?.gif_id} resolution={"180"} file_type={'jpg'} />
                                         <div className="flex flex-row items-center justify-between">
-                                            <div className="dark:text-offWhite">
+                                            <div className={isSelected ? 'text-white' : 'dark:text-offWhite'}>
                                                 {exercise.title}
                                             </div>
                                             {exercise.notes && (
@@ -152,7 +161,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             )}
                                         </div>
                                     </div>
-                                    <div className="text-center flex flex-row items-center justify-end max-w-[50%] w-[50%] dark:text-offWhite">
+                                    <div className={`text-center flex flex-row items-center justify-end max-w-[50%] w-[50%] ${isSelected ? 'text-white' : 'dark:text-offWhite'}`}>
                                         <div className="min-w-[33%] flex flex-col justify-center items-center">
                                             {exercise.sets.length}
                                         </div>
