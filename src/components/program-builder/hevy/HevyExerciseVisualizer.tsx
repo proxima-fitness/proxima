@@ -97,7 +97,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                             <TooltipTrigger
                                 asChild
                                 onClick={(e) => editHandler(e, Number(folder_id), Number(day.order), i, exercise)}
-                                className={`w-full min-h-14 border-gray-200 cursor-pointer ${rowBackgroundClass} ${supersetColor && !isSelected ? 'border-r-4' : ''} ${isLastRow ? 'rounded-b-md' : ''}`}
+                                className={`w-full min-h-14 border-gray-200 cursor-pointer ${rowBackgroundClass} ${supersetColor && !isSelected ? 'border-r-4' : ''}`}
                                 style={supersetColor && !isSelected ? borderStyle : {}}
                             >
                                     <div>

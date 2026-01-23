@@ -293,7 +293,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                         </div>
                     </div>
 
-                    <div className="text-xs rounded-md mt-2 flex flex-row justify-between pl-2 pr-2 gap-2 sm:gap-4 border-t border-b py-2 border-gray-200 dark:text-offWhite dark:border-darkGray bg-[#e8e8e8] dark:bg-[#0a0f1a]">
+                    <div className="text-xs mt-2 flex flex-row justify-between pl-2 pr-2 gap-2 sm:gap-4 border-t border-b py-2 border-gray-200 dark:text-offWhite dark:border-darkGray bg-[#e8e8e8] dark:bg-[#0a0f1a]">
                         <div className="flex flex-row gap-2 sm:gap-4 flex-shrink min-w-0">
                             <div className="flex-shrink-0">
                                 #

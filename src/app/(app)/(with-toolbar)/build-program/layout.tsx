@@ -2,6 +2,7 @@ import { Breadcrumbs } from "@/components/program-builder/shared/Breadcrumbs";
 import { ReactNode, Suspense } from "react";
 import { StepButton } from "@/components/program-builder/shared/StepButton";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function ProgramBuilderLayout({ children }: { children: ReactNode }) {
     return (
@@ -12,24 +13,60 @@ export default function ProgramBuilderLayout({ children }: { children: ReactNode
 
                 {/* Set Types - Centered on desktop only */}
                 <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-2">
-                    <Badge variant="outline" className="bg-gray-300 dark:text-black border-none text-xs gap-2 justify-start">
-                        Warmup
-                    </Badge>
-                    <Badge variant="outline" className="text-xs gap-2 justify-start">
-                         Working
-                    </Badge>
-                    <Badge
-                        variant="outline"
-                        className="bg-[#33bbcf] text-white border-none text-xs gap-2 justify-start"
-                    >
-                         Drop
-                    </Badge>
-                    <Badge
-                        variant="outline"
-                        className="bg-[#01579B] text-white border-none text-xs gap-2 justify-start"
-                    >
-                         Failure
-                    </Badge>
+                    <TooltipProvider delayDuration={0}>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Badge variant="outline" className="bg-gray-300 dark:text-black border-none text-xs gap-2 justify-start">
+                                    Warmup
+                                </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent className="bg-gray-600 max-w-xs text-white rounded-lg">
+                                <p><strong>Definition:</strong> A warmup set prepares your muscles and joints for the working sets. Performed with lighter weight to increase blood flow and reduce injury risk.</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider delayDuration={0}>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Badge variant="outline" className="text-xs gap-2 justify-start">
+                                     Working
+                                </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent className="bg-gray-600 max-w-xs text-white rounded-lg">
+                                <p><strong>Definition:</strong> A working set is your main training set performed at your target intensity. This is where you build strength and muscle.</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider delayDuration={0}>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Badge
+                                    variant="outline"
+                                    className="bg-[#33bbcf] text-white border-none text-xs gap-2 justify-start"
+                                >
+                                     Drop
+                                </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent className="bg-gray-600 max-w-xs text-white rounded-lg">
+                                <p><strong>Definition:</strong> A drop set involves immediately reducing the weight after reaching failure and continuing the set. Used to maximize muscle fatigue and growth.</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider delayDuration={0}>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Badge
+                                    variant="outline"
+                                    className="bg-[#01579B] text-white border-none text-xs gap-2 justify-start"
+                                >
+                                     Failure
+                                </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent className="bg-gray-600 max-w-xs text-white rounded-lg">
+                                <p><strong>Definition:</strong> A failure set is performed until you cannot complete another rep with proper form. Used to maximize muscle recruitment and growth.</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
                 </div>
 
                 <div className="flex flex-row items-center justify-between gap-4 max-sm:ml-auto">
