@@ -242,7 +242,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                     { (reps && reps.length > 0) && reps?.map((rep: string | number, index: number) => (
                         <div
                             key={ "Set" + index }
-                            className={ `flex flex-row justify-center gap-2 items-center w-full py-1 pl-3 ${ setTypes[index] === "warmup" ? "bg-gray-300" : setTypes[index] === "dropset" ? "bg-[#33bbcf]" : setTypes[index] === "failure" ? "bg-[#01579B]" : "" }` }>
+                            className={ `flex flex-row justify-center gap-2 items-center w-full py-1 pl-3 ${ setTypes[index] === "warmup" ? "bg-gray-300 dark:text-black" : setTypes[index] === "dropset" ? "bg-[#33bbcf]" : setTypes[index] === "failure" ? "bg-[#01579B]" : "" }` }>
                             <div className="flex items-center justify-start w-[8%]">
                                 { index + 1 }
                             </div>

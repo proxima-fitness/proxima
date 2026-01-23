@@ -2,8 +2,8 @@ import { AndyWaitlistForm } from "@/components/waitlist/AndyWaitlistForm";
 import { proxima_logo_black, hevy_logo } from "public";
 
 export const metadata = {
-  title: "Join the Waitlist | Andy AI Personal Trainer for Hevy",
-  description: "Be among the first to experience Andy, the AI Personal Trainer Agent for Hevy. Get personalized workout guidance powered by artificial intelligence.",
+  title: "Join the Waitlist | Andy Agentic Workout Builder for Hevy",
+  description: "Be among the first to experience Andy, the Agentic Workout Builder for Hevy. Get personalized workout guidance powered by artificial intelligence.",
 };
 
 export default function WaitlistPage() {
@@ -44,7 +44,7 @@ export default function WaitlistPage() {
               Meet Andy
             </h1>
             <p className="text-xl sm:text-2xl text-gray-700 dark:text-gray-300 mb-2 font-semibold">
-              Your AI Personal Trainer Agent for Hevy
+              Your Agentic Workout Builder for Hevy
             </p>
             <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mt-4">
               Give your Hevy subscription superpowers with Andy. He reads your Hevy data to recommend personalized programs, schedule your workouts, and takes away the headache of planning your training.

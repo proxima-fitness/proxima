@@ -12,7 +12,7 @@ export default function ProgramBuilderLayout({ children }: { children: ReactNode
 
                 {/* Set Types - Centered on desktop only */}
                 <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-2">
-                    <Badge variant="outline" className="bg-gray-300 border-none text-xs gap-2 justify-start">
+                    <Badge variant="outline" className="bg-gray-300 dark:text-black border-none text-xs gap-2 justify-start">
                         Warmup
                     </Badge>
                     <Badge variant="outline" className="text-xs gap-2 justify-start">
