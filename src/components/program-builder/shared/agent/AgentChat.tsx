@@ -72,6 +72,7 @@ const sampleQuestions: IQuestion[] = [
   {
     id: "exclude-equipment",
     question: "Exclude equipment?",
+    type: "multi-select",
     options: [
         { id: "barbell", label: "Barbell" },
         { id: "dumbbell", label: "Dumbbell" },
@@ -93,6 +94,7 @@ const sampleQuestions: IQuestion[] = [
   {
     id: "health-issues",
     question: "Health issues to consider?",
+    type: "multi-select",
     options: healthIssuesOptions.map(opt => ({
       id: opt.value,
       label: opt.label
@@ -139,7 +141,7 @@ const sampleQuestions: IQuestion[] = [
     id: "deload-week",
     question: "Would you like me to add a deload week at the end of your program?",
     options: [
-      { id: "yes", label: "Yes ( Adds an easier week at the end of the program)" },
+      { id: "yes", label: "Yes ( Add an easier week at the end of the program)" },
       { id: "no", label: "No ( No deload week at the end of the program)" },
     ],
     allowOther: false,

@@ -4,6 +4,7 @@ import * as React from "react"
 import { ChevronUp, ChevronDown, CircleHelp, CornerDownLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 
 export interface IQuestionOption {
   id: string
@@ -15,6 +16,7 @@ export interface IQuestion {
   question: string
   options: IQuestionOption[]
   allowOther?: boolean
+  type?: "select" | "multi-select"
 }
 
 interface IQuestionsProps {
@@ -24,13 +26,258 @@ interface IQuestionsProps {
   className?: string
 }
 
+// QuestionSelect sub-component for single-select (radio) questions
+interface IQuestionSelectProps {
+  question: IQuestion
+  selectedAnswer: string | undefined
+  otherText: string
+  onSelect: (questionId: string, optionId: string) => void
+  onOtherSelect: (questionId: string) => void
+  onOtherTextChange: (questionId: string, text: string) => void
+  letterKeys: string[]
+  questionIndex: number
+}
+
+function QuestionSelect({
+  question,
+  selectedAnswer,
+  otherText,
+  onSelect,
+  onOtherSelect,
+  onOtherTextChange,
+  letterKeys,
+  questionIndex,
+}: IQuestionSelectProps) {
+  const isOtherSelected = selectedAnswer?.startsWith("other:")
+
+  return (
+    <>
+      <p className="mb-3 text-sm font-semibold">
+        {questionIndex + 1}. {question.question}
+      </p>
+
+      {/* Options */}
+      <div className="flex flex-col gap-1">
+        {question.options.map((option, optionIndex) => {
+          const isSelected = selectedAnswer === option.id
+          return (
+            <button
+              key={option.id}
+              onClick={() => onSelect(question.id, option.id)}
+              className={cn(
+                "flex items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm transition-colors",
+                "hover:bg-accent",
+                isSelected && "bg-accent"
+              )}
+            >
+              <span
+                className={cn(
+                  "flex size-5 shrink-0 items-center justify-center rounded text-xs font-medium",
+                  "bg-muted text-muted-foreground",
+                  isSelected && "bg-lightSecondary text-white"
+                )}
+              >
+                {letterKeys[optionIndex]}
+              </span>
+              <span className="text-foreground">{option.label}</span>
+            </button>
+          )
+        })}
+
+        {/* Other Option */}
+        {question.allowOther && (
+          <div className="mt-1">
+            <button
+              onClick={() => onOtherSelect(question.id)}
+              className={cn(
+                "flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm transition-colors",
+                "hover:bg-accent",
+                isOtherSelected && "bg-accent"
+              )}
+            >
+              <span
+                className={cn(
+                  "flex size-5 shrink-0 items-center justify-center rounded text-xs font-medium",
+                  "bg-muted text-muted-foreground",
+                  isOtherSelected && "bg-lightSecondary text-white"
+                )}
+              >
+                {letterKeys[question.options.length]}
+              </span>
+              {isOtherSelected ? (
+                <input
+                  type="text"
+                  value={otherText || ""}
+                  onChange={(e) =>
+                    onOtherTextChange(question.id, e.target.value)
+                  }
+                  placeholder="Type your answer..."
+                  className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none"
+                  autoFocus
+                  onClick={(e) => e.stopPropagation()}
+                />
+              ) : (
+                <span className="text-muted-foreground">Other...</span>
+              )}
+            </button>
+          </div>
+        )}
+      </div>
+    </>
+  )
+}
+
+// QuestionMultiSelect sub-component for multi-select (checkbox) questions
+interface IQuestionMultiSelectProps {
+  question: IQuestion
+  selectedAnswers: string[]
+  otherText: string
+  onToggle: (questionId: string, optionId: string) => void
+  onOtherToggle: (questionId: string) => void
+  onOtherTextChange: (questionId: string, text: string) => void
+  letterKeys: string[]
+  questionIndex: number
+}
+
+function QuestionMultiSelect({
+  question,
+  selectedAnswers,
+  otherText,
+  onToggle,
+  onOtherToggle,
+  onOtherTextChange,
+  letterKeys,
+  questionIndex,
+}: IQuestionMultiSelectProps) {
+  const isOtherSelected = selectedAnswers.includes("other")
+
+  return (
+    <>
+      <p className="mb-3 text-sm font-semibold">
+        {questionIndex + 1}. {question.question}
+      </p>
+
+      {/* Options */}
+      <div className="flex flex-col gap-1">
+        {question.options.map((option, optionIndex) => {
+          const isSelected = selectedAnswers.includes(option.id)
+          const handleKeyDown = (e: React.KeyboardEvent) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault()
+              onToggle(question.id, option.id)
+            }
+          }
+          const handleClick = (e: React.MouseEvent) => {
+            // If clicking directly on the checkbox or its children, let it handle the toggle
+            // Otherwise, toggle on container click (e.g., clicking the label area)
+            const target = e.target as HTMLElement
+            if (target.closest('[role="checkbox"]') || target.closest('button[role="checkbox"]')) {
+              return // Let checkbox handle it via onCheckedChange
+            }
+            onToggle(question.id, option.id)
+          }
+          return (
+            <div
+              key={option.id}
+              role="button"
+              tabIndex={0}
+              onClick={handleClick}
+              onKeyDown={handleKeyDown}
+              className={cn(
+                "flex items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm transition-colors cursor-pointer",
+                "hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                isSelected && "bg-accent"
+              )}
+            >
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={() => onToggle(question.id, option.id)}
+                className="shrink-0"
+              />
+              <span
+                className={cn(
+                  "flex size-5 shrink-0 items-center justify-center rounded text-xs font-medium",
+                  "bg-muted text-muted-foreground",
+                  isSelected && "bg-lightSecondary text-white"
+                )}
+              >
+                {letterKeys[optionIndex]}
+              </span>
+              <span className="text-foreground">{option.label}</span>
+            </div>
+          )
+        })}
+
+        {/* Other Option */}
+        {question.allowOther && (
+          <div className="mt-1">
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={(e) => {
+                // If clicking directly on the checkbox or input, let them handle it
+                const target = e.target as HTMLElement
+                if (target.closest('[role="checkbox"]') || target.tagName === "INPUT") {
+                  return // Let checkbox or input handle it
+                }
+                onOtherToggle(question.id)
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault()
+                  onOtherToggle(question.id)
+                }
+              }}
+              className={cn(
+                "flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm transition-colors cursor-pointer",
+                "hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                isOtherSelected && "bg-accent"
+              )}
+            >
+              <Checkbox
+                checked={isOtherSelected}
+                onCheckedChange={() => onOtherToggle(question.id)}
+                className="shrink-0"
+              />
+              <span
+                className={cn(
+                  "flex size-5 shrink-0 items-center justify-center rounded text-xs font-medium",
+                  "bg-muted text-muted-foreground",
+                  isOtherSelected && "bg-lightSecondary text-white"
+                )}
+              >
+                {letterKeys[question.options.length]}
+              </span>
+              {isOtherSelected ? (
+                <input
+                  type="text"
+                  value={otherText || ""}
+                  onChange={(e) =>
+                    onOtherTextChange(question.id, e.target.value)
+                  }
+                  placeholder="Type your answer..."
+                  className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none"
+                  autoFocus
+                  onClick={(e) => e.stopPropagation()}
+                />
+              ) : (
+                <span className="text-muted-foreground">Other...</span>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </>
+  )
+}
+
 export function Questions({
   questions,
   onComplete,
   onSkip,
   className,
 }: IQuestionsProps) {
-  const [answers, setAnswers] = React.useState<Record<string, string>>({})
+  const [answers, setAnswers] = React.useState<Record<string, string | string[]>>({})
   const [otherTexts, setOtherTexts] = React.useState<Record<string, string>>({})
   const [visibleIndex, setVisibleIndex] = React.useState(0)
 
@@ -40,6 +287,7 @@ export function Questions({
   const totalQuestions = questions.length
   const letterKeys = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
 
+  // Handler for single-select questions
   const handleOptionSelect = (questionId: string, optionId: string) => {
     setAnswers((prev) => ({
       ...prev,
@@ -57,6 +305,7 @@ export function Questions({
     }
   }
 
+  // Handler for single-select "Other" option
   const handleOtherSelect = (questionId: string) => {
     setAnswers((prev) => ({
       ...prev,
@@ -74,16 +323,66 @@ export function Questions({
     }
   }
 
+  // Handler for multi-select questions
+  const handleOptionToggle = (questionId: string, optionId: string) => {
+    setAnswers((prev) => {
+      const current = prev[questionId]
+      const currentArray = Array.isArray(current) ? current : []
+
+      if (currentArray.includes(optionId)) {
+        // Remove option
+        return {
+          ...prev,
+          [questionId]: currentArray.filter(id => id !== optionId),
+        }
+      } else {
+        // Add option
+        return {
+          ...prev,
+          [questionId]: [...currentArray, optionId],
+        }
+      }
+    })
+  }
+
+  // Handler for multi-select "Other" option
+  const handleOtherToggle = (questionId: string) => {
+    setAnswers((prev) => {
+      const current = prev[questionId]
+      const currentArray = Array.isArray(current) ? current : []
+
+      if (currentArray.includes("other")) {
+        // Remove "other" option
+        return {
+          ...prev,
+          [questionId]: currentArray.filter(id => id !== "other"),
+        }
+      } else {
+        // Add "other" option
+        return {
+          ...prev,
+          [questionId]: [...currentArray, "other"],
+        }
+      }
+    })
+  }
+
   const handleOtherTextChange = (questionId: string, text: string) => {
     setOtherTexts((prev) => ({
       ...prev,
       [questionId]: text,
     }))
-    if (answers[questionId]?.startsWith("other:")) {
+
+    // Update answer if "other" is selected
+    const current = answers[questionId]
+    if (typeof current === "string" && current.startsWith("other:")) {
       setAnswers((prev) => ({
         ...prev,
         [questionId]: `other:${text}`,
       }))
+    } else if (Array.isArray(current) && current.includes("other")) {
+      // For multi-select, keep "other" in array and store text separately
+      // The text is stored in otherTexts, and we'll format it in handleContinue
     }
   }
 
@@ -111,8 +410,26 @@ export function Questions({
   }
 
   const handleContinue = React.useCallback(() => {
-    onComplete?.(answers)
-  }, [onComplete, answers])
+    // Format answers properly - convert "other" entries to "other:text" format
+    const formattedAnswers: Record<string, string | string[]> = {}
+
+    for (const [questionId, answer] of Object.entries(answers)) {
+      if (Array.isArray(answer)) {
+        // Multi-select: replace "other" with "other:text" if text exists
+        formattedAnswers[questionId] = answer.map(id => {
+          if (id === "other" && otherTexts[questionId]) {
+            return `other:${otherTexts[questionId]}`
+          }
+          return id
+        })
+      } else {
+        // Single-select: already formatted
+        formattedAnswers[questionId] = answer
+      }
+    }
+
+    onComplete?.(formattedAnswers)
+  }, [onComplete, answers, otherTexts])
 
   // Track which question is in view on scroll
   React.useEffect(() => {
@@ -184,8 +501,8 @@ export function Questions({
         className="max-h-80 overflow-y-auto scroll-smooth"
       >
         {questions.map((question, questionIndex) => {
-          const selectedAnswer = answers[question.id]
-          const isOtherSelected = selectedAnswer?.startsWith("other:")
+          const questionType = question.type || "select"
+          const answer = answers[question.id]
 
           return (
             <div
@@ -196,77 +513,29 @@ export function Questions({
                 questionIndex < questions.length - 1 && "border-b border-dashed"
               )}
             >
-              <p className="mb-3 text-sm font-semibold">
-                {questionIndex + 1}. {question.question}
-              </p>
-
-              {/* Options */}
-              <div className="flex flex-col gap-1">
-                {question.options.map((option, optionIndex) => {
-                  const isSelected = selectedAnswer === option.id
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => handleOptionSelect(question.id, option.id)}
-                      className={cn(
-                        "flex items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm transition-colors",
-                        "hover:bg-accent",
-                        isSelected && "bg-accent"
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "flex size-5 shrink-0 items-center justify-center rounded text-xs font-medium",
-                          "bg-muted text-muted-foreground",
-                          isSelected && "bg-lightSecondary text-white"
-                        )}
-                      >
-                        {letterKeys[optionIndex]}
-                      </span>
-                      <span className="text-foreground">{option.label}</span>
-                    </button>
-                  )
-                })}
-
-                {/* Other Option */}
-                {question.allowOther && (
-                  <div className="mt-1">
-                    <button
-                      onClick={() => handleOtherSelect(question.id)}
-                      className={cn(
-                        "flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm transition-colors",
-                        "hover:bg-accent",
-                        isOtherSelected && "bg-accent"
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "flex size-5 shrink-0 items-center justify-center rounded text-xs font-medium",
-                          "bg-muted text-muted-foreground",
-                          isOtherSelected && "bg-lightSecondary text-white"
-                        )}
-                      >
-                        {letterKeys[question.options.length]}
-                      </span>
-                      {isOtherSelected ? (
-                        <input
-                          type="text"
-                          value={otherTexts[question.id] || ""}
-                          onChange={(e) =>
-                            handleOtherTextChange(question.id, e.target.value)
-                          }
-                          placeholder="Type your answer..."
-                          className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none"
-                          autoFocus
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      ) : (
-                        <span className="text-muted-foreground">Other...</span>
-                      )}
-                    </button>
-                  </div>
-                )}
-              </div>
+              {questionType === "multi-select" ? (
+                <QuestionMultiSelect
+                  question={question}
+                  selectedAnswers={Array.isArray(answer) ? answer : []}
+                  otherText={otherTexts[question.id] || ""}
+                  onToggle={handleOptionToggle}
+                  onOtherToggle={handleOtherToggle}
+                  onOtherTextChange={handleOtherTextChange}
+                  letterKeys={letterKeys}
+                  questionIndex={questionIndex}
+                />
+              ) : (
+                <QuestionSelect
+                  question={question}
+                  selectedAnswer={typeof answer === "string" ? answer : undefined}
+                  otherText={otherTexts[question.id] || ""}
+                  onSelect={handleOptionSelect}
+                  onOtherSelect={handleOtherSelect}
+                  onOtherTextChange={handleOtherTextChange}
+                  letterKeys={letterKeys}
+                  questionIndex={questionIndex}
+                />
+              )}
             </div>
           )
         })}
