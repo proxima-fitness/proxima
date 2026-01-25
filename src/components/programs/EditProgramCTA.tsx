@@ -1,6 +1,6 @@
 "use client";
 
-import { EditIcon } from "lucide-react";
+import { SparklesIcon } from "lucide-react";
 import Link from "next/link";
 interface IProps {
     programId: string;
@@ -16,8 +16,8 @@ export const EditProgramCTA: React.FC<IProps> = ({ programId }) => {
                         href={`/build-program?shareId=${programId}&edit=true&shared=true`}
                         className="flex flex-row items-center justify-center gap-3 px-6 py-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors text-white"
                     >
-                        <EditIcon className="w-5 h-5" />
-                        <span className="font-main text-sm">Edit</span>
+                        <SparklesIcon className="w-5 h-5" />
+                        <span className="font-main text-sm">Customize</span>
                     </Link>
                 </div>
             </div>

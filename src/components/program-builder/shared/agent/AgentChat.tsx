@@ -51,57 +51,100 @@ import { IQuestion, Questions } from "@/components/ui/questions"
 
 
 const sampleQuestions: IQuestion[] = [
-    {
-      id: "nutrition",
-      question: "What should the nutrition feature include?",
-      options: [
-        {
-          id: "meal-tracking",
-          label: "Meal tracking (log meals/foods with calories and macros)",
-        },
-        {
-          id: "macro-counting",
-          label: "Macro counting (set and track protein, carbs, fats goals)",
-        },
-        {
-          id: "meal-planning",
-          label: "Meal planning (create meal plans and recipes)",
-        },
-        {
-          id: "calorie-tracking",
-          label: "Calorie tracking (daily calorie goals and intake)",
-        },
-        {
-          id: "all-above",
-          label: "All of the above (comprehensive nutrition feature)",
-        },
-      ],
-      allowOther: true,
-    },
-    {
-      id: "workout",
-      question: "How would you like to track your workouts?",
-      options: [
-        {
-          id: "manual",
-          label: "Manual entry (log exercises, sets, reps)",
-        },
-        {
-          id: "templates",
-          label: "Workout templates (pre-built routines)",
-        },
-        {
-          id: "ai-generated",
-          label: "AI-generated workouts (personalized plans)",
-        },
-        {
-          id: "integration",
-          label: "Integration with fitness devices",
-        },
-      ],
-      allowOther: true,
-    },
-  ]
+  {
+    id: "program-length",
+    question: "Program length?",
+    options: programLengthOptions.map(opt => ({
+      id: opt.value,
+      label: opt.label === "8 Weeks" ? "8 Weeks (Recommended)" : opt.label
+    })),
+    allowOther: true,
+  },
+  {
+    id: "days-per-week",
+    question: "Days per week?",
+    options: dayPerWeekOptions.map(opt => ({
+      id: opt.value,
+      label: opt.label
+    })),
+    allowOther: true,
+  },
+  {
+    id: "exclude-equipment",
+    question: "Exclude equipment?",
+    options: [
+        { id: "barbell", label: "Barbell" },
+        { id: "dumbbell", label: "Dumbbell" },
+        { id: "kettlebell", label: "Kettlebell" },
+        { id: "machine", label: "Machine" },
+        { id: "bodyweight", label: "Bodyweight" },
+        { id: "smith machine", label: "Smith Machine" },
+        { id: "cable", label: "Cable" },
+        { id: "cardio", label: "Cardio" },
+        { id: "band", label: "Band" },
+        { id: "suspension", label: "Suspension" },
+        { id: "resistance_band", label: "Resistance band" },
+        { id: "plate", label: "Plate" },
+        { id: "other", label: "Other" },
+        { id: "none", label: "None" },
+    ],
+    allowOther: true,
+  },
+  {
+    id: "health-issues",
+    question: "Health issues to consider?",
+    options: healthIssuesOptions.map(opt => ({
+      id: opt.value,
+      label: opt.label
+    })),
+    allowOther: true,
+  },
+  {
+    id: "split-type",
+    question: "Preferred split?",
+    options: [
+      { id: "default", label: "Based on your goals (Recommended)" },
+      { id: "ppl", label: "PPL (Push, Pull, Legs)" },
+      { id: "pplul", label: "PPLUL (Push, Pull, Legs, Upper, Lower)" },
+      { id: "ul", label: "UL (Upper, Lower)" },
+      { id: "fb", label: "FB (Full Body)" },
+      { id: "other", label: "Other" },
+    ],
+    allowOther: true,
+  },
+  {
+    id: "exercise-variability",
+    question: "Exercise variability?",
+    options: [
+      { id: "little", label: "Don't vary the exercises (Recommended for strength and hypertrophy programs)" },
+      { id: "lots", label: "Vary the exercises (Recommended if you get bored easily)" },
+    ],
+    allowOther: true,
+  },
+  {
+    id: "progression-system",
+    question: "Add progressive overload system?",
+    options: [
+      { id: "default", label: "Based on your goals (Recommended)" },
+      { id: "linear", label: "Linear" },
+      { id: "double", label: "Double " },
+      { id: "rpe-based", label: "RPE-based" },
+      { id: "wave-loading", label: "Wave-loading" },
+      { id: "density", label: "Density" },
+      { id: "other", label: "Other" },
+    ],
+    allowOther: true,
+  },
+  {
+    id: "deload-week",
+    question: "Would you like me to add a deload week at the end of your program?",
+    options: [
+      { id: "yes", label: "Yes ( Adds an easier week at the end of the program)" },
+      { id: "no", label: "No ( No deload week at the end of the program)" },
+    ],
+    allowOther: false,
+  },
+]
 interface IRePromptProps {
     sidebarPosition: "left" | "right";
     onTogglePosition: () => void;

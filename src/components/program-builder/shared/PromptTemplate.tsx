@@ -180,7 +180,7 @@ export const PromptTemplate: React.FC = () => {
                             variant="ghost"
                             size="sm"
                             onClick={() => setActiveCategory("")}
-                            className="mb-1 w-fit h-8 px-3 text-xs text-muted-foreground hover:text-foreground dark:text-gray-400 dark:hover:text-white"
+                            className="mb-1 w-fit h-8 px-3 text-xs text-muted-foreground hover:text-foreground dark:text-gray-300 dark:hover:text-white self-end relative z-20"
                         >
                             <X className="size-4 mr-1" />
                             Cancel

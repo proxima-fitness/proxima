@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronUp, ChevronDown, CircleHelp } from "lucide-react"
+import { ChevronUp, ChevronDown, CircleHelp, CornerDownLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
@@ -38,13 +38,23 @@ export function Questions({
   const questionRefs = React.useRef<(HTMLDivElement | null)[]>([])
 
   const totalQuestions = questions.length
-  const letterKeys = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
+  const letterKeys = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
 
   const handleOptionSelect = (questionId: string, optionId: string) => {
     setAnswers((prev) => ({
       ...prev,
       [questionId]: optionId,
     }))
+
+    // Find current question index and scroll to next
+    const currentIndex = questions.findIndex(q => q.id === questionId)
+    if (currentIndex !== -1 && currentIndex < questions.length - 1) {
+      setTimeout(() => {
+        const nextIndex = currentIndex + 1
+        setVisibleIndex(nextIndex)
+        scrollToQuestion(nextIndex)
+      }, 150) // Small delay to ensure state update completes
+    }
   }
 
   const handleOtherSelect = (questionId: string) => {
@@ -52,6 +62,16 @@ export function Questions({
       ...prev,
       [questionId]: `other:${otherTexts[questionId] || ""}`,
     }))
+
+    // Find current question index and scroll to next
+    const currentIndex = questions.findIndex(q => q.id === questionId)
+    if (currentIndex !== -1 && currentIndex < questions.length - 1) {
+      setTimeout(() => {
+        const nextIndex = currentIndex + 1
+        setVisibleIndex(nextIndex)
+        scrollToQuestion(nextIndex)
+      }, 150)
+    }
   }
 
   const handleOtherTextChange = (questionId: string, text: string) => {
@@ -90,9 +110,9 @@ export function Questions({
     }
   }
 
-  const handleContinue = () => {
+  const handleContinue = React.useCallback(() => {
     onComplete?.(answers)
-  }
+  }, [onComplete, answers])
 
   // Track which question is in view on scroll
   React.useEffect(() => {
@@ -260,10 +280,13 @@ export function Questions({
         <Button
           size="sm"
           onClick={handleContinue}
-          className="bg-lightSecondary text-white hover:bg-lightSecondary/80"
+          className="bg-[#fbbf24] text-black hover:bg-[#fbbf24]/80"
         >
-          Continue
-          <ChevronDown className="ml-1 size-3.5" />
+          Build
+          <span className="flex items-center">
+            <span className="">⌘</span>
+            <CornerDownLeft className="size-4" />
+          </span>
         </Button>
       </div>
     </div>
