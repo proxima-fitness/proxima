@@ -46,7 +46,7 @@ export const useBlogs = (limit: number, offset: number) => {
 };
 
 // FETCHES THE FULL NAME OF A USER BY ID
-export const useUserFullName = (id: string | undefined, id_type: "program" | "user") => {
+export const useUserFullName = (id: number | undefined, id_type: "program" | "user") => {
     return useQuery({
         queryKey: ["full-name", id, id_type],
         queryFn: () => getUserFullName(id, id_type),
@@ -122,18 +122,20 @@ export const useUserMetadata = (id: string) => {
 };
 
 // FETCHES A PROGRAM BY PROGRAM ID
-export const useProgramById = (program_id: string) => {
+export const useProgramById = (program_id: number) => {
     return useQuery({
         queryKey: ['program', program_id],
         queryFn: () => getProgramByID(program_id),
+        enabled: !!program_id,
     });
 };
 
 // FETCHES A PROGRAM THUMBNAIL BY ID
-export const useProgramThumbnail = (id: string) => {
+export const useProgramThumbnail = (id: number) => {
     return useQuery({
         queryKey: ["program-thumbnail", id],
         queryFn: () => getProgramThumbnailByID(id),
+        enabled: !!id,
     });
 };
 
@@ -193,7 +195,7 @@ export const useHevySecret = (user: User | undefined | null) => {
 /*********************************/
 
 // FETCHES A PROGRAM BY PROGRAM ID USING SSR
-export const useProgramByIdSSR = async (program_id: string) => {
+export const useProgramByIdSSR = async (program_id: number) => {
 
     const program = await getProgramByID(program_id) ?? [];
     const schedule = await getExplorePageProgramDetails(program_id);
@@ -208,7 +210,7 @@ export const useProgramByIdSSR = async (program_id: string) => {
 };
 
 // FETCHES THE FULL NAME OF A USER BY ID USING SSR
-export const useUserFullNameSSR = (id: string, id_type: "program" | "user") => {
+export const useUserFullNameSSR = (id: number, id_type: "program" | "user") => {
     return getUserFullName(id, id_type);
 };
 
@@ -228,19 +230,19 @@ export const useOpUserMetadataSSR = async (id: string) => {
     return getUserMetaData(userId);
 };
 
-// FETCHES THE USER ID OF THE OP OF A WORKOUT PROGRAM
-export const useProgramOpUserId = (program_id: string) => {
-    return getOpUserId(program_id);
-};
+// // FETCHES THE USER ID OF THE OP OF A WORKOUT PROGRAM
+// export const useProgramOpUserId = (program_id: number) => {
+//     return getOpUserId(program_id);
+// };
 
-export const useOpProfilePictureByIdSSR = async (id: string) => {
-    const userId = await getOpUserId(id);
-    if (!userId) {
-        console.error("User ID not found");
-        return null;
-    }
-    return await getProfilePicByID(userId);
-};
+// export const useOpProfilePictureByIdSSR = async (id: string) => {
+//     const userId = await getOpUserId(id);
+//     if (!userId) {
+//         console.error("User ID not found");
+//         return null;
+//     }
+//     return await getProfilePicByID(userId);
+// };
 // GET BLOG BY ID
 export const useBlogByIdSSR = async (id: string) => {
     const blog = await getBlogById(Number(id));

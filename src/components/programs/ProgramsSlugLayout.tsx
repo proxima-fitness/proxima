@@ -16,7 +16,7 @@ import { CalendarIcon } from "lucide-react";
 import { convertSupabaseDateToReadable } from "@/utils/general/helpers";
 
 interface IProps {
-    id: string;
+    id: number;
 }
 
 export const ProgramsSlugLayout: FC<IProps> =  async (props) => {
@@ -27,7 +27,7 @@ export const ProgramsSlugLayout: FC<IProps> =  async (props) => {
     // eslint-disable-next-line
     const fullName = await useUserFullNameSSR(id, "program");
     // eslint-disable-next-line
-    const programCreatorMetadata = await useOpUserMetadataSSR(id);
+    const programCreatorMetadata = await useOpUserMetadataSSR(id.toString());
     // const programCreatorProfilePic = await useOpProfilePictureByIdSSR(id);
 
     let sortedWorkoutsByWeek: TScheduleWorkouts[][] = [];
@@ -76,7 +76,7 @@ export const ProgramsSlugLayout: FC<IProps> =  async (props) => {
                             <ProgramOverviewCard program={ program } />
                         </div>
                         <div className="row-span-2 row-start-1 flex items-start h-full max-sm:row-span-1 max-sm:row-start-auto">
-                            <ExportProgramCTA />
+                            <ExportProgramCTA programId={id} />
                         </div>
                         <div className="row-start-3 h-full max-sm:row-start-auto">
                             <EditProgramCTA programId={id} />

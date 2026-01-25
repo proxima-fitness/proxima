@@ -38,7 +38,7 @@ const NavItems = (pathname: string) => {
     // this should get the user if they logged in server side (via social logins)
     const { user, isLoading } = useUserContext();
     const { theme, setTheme } = useTheme()
-    const { data: userFullName } = useUserFullName(user?.id, "user");
+    const { data: userFullName } = useUserFullName(user?.id ? Number(user?.id) : undefined, "user");
     const { data: hevyApiKey } = useHevySecret(user);
 
     const [dropdownOpen, setDropdownOpen] = useState(false);

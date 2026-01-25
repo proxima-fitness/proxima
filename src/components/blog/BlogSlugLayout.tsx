@@ -20,13 +20,13 @@ export const BlogSlugLayout: FC<IProps> = async (props) => {
         <>
             <div className="grid grid-cols-3 gap-12">
                 <div className="col-span-2">
-                    <div className="text-4xl font-bold py-2">
+                    <div className="text-4xl font-bold py-2 text-foreground">
                         {blog.title}
                     </div>
-                    <div className="py-2 text-sm">
+                    <div className="py-2 text-sm text-muted-foreground">
                         Created by the Proxima Fitness Team
                     </div>
-                    <div className="italic text-sm">
+                    <div className="italic text-sm text-muted-foreground">
                         { convertSupabaseDateToReadable(blog.created_at) } | {blog.time} Mins | 205 Views
                     </div>
                     <div className="py-8">

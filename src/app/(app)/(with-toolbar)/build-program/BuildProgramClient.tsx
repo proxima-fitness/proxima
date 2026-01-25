@@ -86,7 +86,7 @@ export function BuildProgramClient() {
         const emptyParam = searchParams.get('empty') ?? '';
 
         const fetchSharedProgram = async () => {
-            const sharedProgram = await getSharedProgram(shareId);
+            const sharedProgram = await getSharedProgram(Number(shareId));
             if (sharedProgram) {
                 setHevyProgram(appendOrderToHevyRoutines(sharedProgram));
             }

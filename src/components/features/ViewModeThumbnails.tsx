@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { getProgramThumbnailByID } from "../../api/programs";
 
 interface IProps {
-    programID: string
+    programID: number;
 }
 
 export const ViewModeThumbnails: React.FC<IProps> = (props) => {
@@ -14,7 +14,7 @@ export const ViewModeThumbnails: React.FC<IProps> = (props) => {
     const [ thumbnail, setThumbnail ] = useState<Blob | null | undefined>();
 
     useEffect(() => {
-        const fetchProgramThumbnail = async (programID: string) => {
+        const fetchProgramThumbnail = async (programID: number) => {
             const fetchedThumbnail = await getProgramThumbnailByID(programID);
             setThumbnail(fetchedThumbnail);
         };

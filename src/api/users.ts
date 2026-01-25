@@ -18,7 +18,7 @@ export const getOpUserId = async (program_id: string) => {
     }
 };
 // Gets the users full name
-export const getUserFullName = async (id: string | undefined, id_type: "program" | "user") => {
+export const getUserFullName = async (id: number | undefined, id_type: "program" | "user") => {
     if (id_type === "program") {
         try {
 
@@ -29,7 +29,7 @@ export const getUserFullName = async (id: string | undefined, id_type: "program"
             const { data: userId, error: userIdError } = await
                 supabase.from("programs").
                 select("user_id").
-                eq("id",id);
+                eq("id",id.toString());
 
             if (userIdError) {
                 console.error("Error fetching users userID", userIdError);
@@ -60,7 +60,7 @@ export const getUserFullName = async (id: string | undefined, id_type: "program"
             const { data: fullName, error: fullNameError } = await supabase.
             from("users")
             .select("first_name,last_name")
-            .eq("id",id);
+            .eq("id",id?.toString() ?? '');
 
             if (fullNameError) {
                 console.error('Error fetching users full name:', fullNameError);

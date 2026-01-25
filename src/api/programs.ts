@@ -113,7 +113,7 @@ export const getCommunityAiProgramsPaginated = async (limit: number = 20, offset
 }
 
 // GET THE SCHEDULE FOR A SPECIFIC PROGRAM
-export const getExplorePageProgramDetails = async (program_id: string) => {
+export const getExplorePageProgramDetails = async (program_id: number) => {
     try {
             const { data, error } = await supabase
             .from('programs')
@@ -198,18 +198,18 @@ export const getPrograms = async (limit?: number) => {
 };
 
 // GET A SPECIFIC PROGRAM BY PROGRAM ID
-export const getProgramByID = async (program_id: string) => {
+export const getProgramByID = async (program_id: number) => {
     try {
         const { data, error } = await supabase
         .from('programs')
-        .select('id,title,details,program_length,workout_duration,equipment,specialization,difficulty,user_id').eq("id",program_id);
+        .select('id,title,details,program_length,workout_duration,equipment,specialization,difficulty,user_id').eq("id", program_id);
         if (error) {
-            console.error('Error fetching explore page programs:', error);
+            console.error('Error fetching program by ID:', error);
         } else if (data && data.length > 0 ) {
             return data as unknown as TProgram[];
         }
     } catch (error: unknown) {
-        console.error(`Error fetching explore page programs: ${error}`);
+        console.error(`Error fetching program by ID: ${error}`);
     }
 };
 
@@ -235,7 +235,7 @@ export const sortWorkouts = (scheduleWorkouts: TScheduleWorkouts[]) => {
 
 
 // GET A SHARED PROGRAM BY SHARE ID
-export const getSharedProgram = async (shareId: string): Promise<THevyRoutine[] | undefined> => {
+export const getSharedProgram = async (shareId: number): Promise<THevyRoutine[] | undefined> => {
     try {
         const { data, error } = await supabase
             .from('programs')
@@ -298,10 +298,9 @@ export const getSharedProgram = async (shareId: string): Promise<THevyRoutine[] 
 }
 
 // CHECK IF A PROGRAM THUMBNAIL EXISTS IN USERS S3 STORAGE FOLDER (PROGRAM Exists ?)
-export const getProgramThumbnailStatus = async (id?: string) => {
-
+export const getProgramThumbnailStatus = async (id?: number) => {
     try {
-        const { data, error } = await supabase.storage.from('programs').list(id , {
+        const { data, error } = await supabase.storage.from('programs').list(id?.toString() ?? '' , {
             limit: 100,
             offset: 0,
             sortBy: { column: 'name', order: 'asc' },
@@ -324,9 +323,10 @@ export const getProgramThumbnailStatus = async (id?: string) => {
 
 
 
-// GET PROGRAM THUMBNAIL FOR A PROGRAM VIA UUID
-export const getProgramThumbnailByID = async (id: string) => {
+// GET PROGRAM THUMBNAIL FOR A PROGRAM VIA ID
+export const getProgramThumbnailByID = async (id: number) => {
     try {
+        if (!id) return undefined;
             const fileName = await getProgramThumbnailStatus(id);
             if (fileName !== null  && fileName.length > 0) {
                 const { data, error } = await supabase.storage.from('programs').download(id + "/" + fileName);
@@ -341,12 +341,12 @@ export const getProgramThumbnailByID = async (id: string) => {
     }
 };
 
-// GET PROGRAM THUMBNAIL FOR A PROGRAM VIA UUID ( GETS PROGRAM THUMBNAIL AS WORKAROUND FOR CORS. PROGRAM S3 BUCKET IS NOW PUBLIC)
-export const getProgramThumbnailByIDViaPublicUrl = async (id: string) => {
+// GET PROGRAM THUMBNAIL FOR A PROGRAM VIA ID ( GETS PROGRAM THUMBNAIL AS WORKAROUND FOR CORS. PROGRAM S3 BUCKET IS NOW PUBLIC)
+export const getProgramThumbnailByIDViaPublicUrl = async (id: number) => {
     try {
         const { data, error } = await supabase.storage
             .from('programs')
-            .list(id, {
+            .list(id.toString(), {
                 limit: 1,
                 sortBy: { column: 'name', order: 'asc' },
             });
@@ -396,7 +396,7 @@ export const getSubscribedPrograms = async (user: User): Promise<TProgram[]> => 
         // Extract program IDs
         const programIds = subscriptions
             .map(sub => sub.program_id)
-            .filter((id): id is string => id !== null);
+            .filter((id): id is number => id !== null);
 
         if (programIds.length === 0) {
             return [];
@@ -433,7 +433,7 @@ export const getSubscribedPrograms = async (user: User): Promise<TProgram[]> => 
 };
 
 // POST A NEW SUBSCRIBER TO PROGRAM WITH PROGRAM ID
-export const postNewProgramSubscriber = async (user: User, program_id: string) => {
+export const postNewProgramSubscriber = async (user: User, program_id: number) => {
 
     try {
         const subscriberObject: { [key: string]: unknown } = {};

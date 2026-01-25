@@ -4,7 +4,10 @@
 import { hevy_logo, macrofactor_logo, strong_logo } from "public";
 import { FileText, Table } from "lucide-react";
 
-export const ExportProgramCTA: React.FC = () => {
+interface IProps {
+    programId: number;
+}
+export const ExportProgramCTA: React.FC<IProps> = ({ programId }) => {
     const exportOptions = [
         {
             id: "hevy",
@@ -58,12 +61,12 @@ export const ExportProgramCTA: React.FC = () => {
 
     const handleExport = (exportType: string) => {
         // Placeholder for export functionality
-        console.log(`Export to ${exportType}`);
+        console.log(`Export to ${exportType} for program ${programId}`);
         // TODO: Implement export functionality
     };
 
     return (
-        <div className="rounded-xl bg-gray-900 border-l border-gray-300 flex flex-col text-center justify-start items-center px-8 w-full h-full max-sm:h-auto max-sm:pb-4">
+        <div className="rounded-xl bg-gray-900 border-2 border-gray-700 shadow-md flex flex-col text-center justify-start items-center px-8 w-full h-full max-sm:h-auto max-sm:pb-4">
             <div className="flex flex-col w-full">
                 <h2 className="font-main text-5xl max-sm:text-3xl pt-4 font-bold text-white">Export Program</h2>
                 <div className="max-sm:pt-2 pt-6 flex flex-col gap-3 w-full">

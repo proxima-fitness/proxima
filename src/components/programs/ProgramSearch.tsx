@@ -105,6 +105,7 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
             );
         }
 
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setFilteredPrograms(filteredItems);
     }, [appliedProgramLengthFilter, appliedWorkoutDurationFilter, appliedEquipmentFilter, appliedSpecializationFilter, appliedDifficultyFilter, programs]);
 
@@ -175,7 +176,7 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
                         key={ program.id }
                         target="_self"
                         rel="noopener noreferrer"
-                        href={ `programs/${program.id}/${program.title.trim().replace(/[\s,]+/g, '-').toLowerCase()}` }
+                        href={ `programs/${program.title.trim().toLowerCase().replace(/[\s,/]+/g, '-').replace(/[^a-z0-9-]/g, '')}/${program.id}` }
                     >
                         <ProgramCard
                             program={ program }
