@@ -126,6 +126,10 @@ const sampleQuestions: IQuestion[] = [
   {
     id: "progression-system",
     question: "Add progressive overload system?",
+    subtitle: {
+      text: "Learn more",
+      link: "https://jackproxima.substack.com/p/demystifying-progressive-overload"
+    },
     options: [
       { id: "default", label: "Based on your goals (Recommended)" },
       { id: "linear", label: "Linear" },

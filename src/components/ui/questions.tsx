@@ -17,6 +17,7 @@ export interface IQuestion {
   options: IQuestionOption[]
   allowOther?: boolean
   type?: "select" | "multi-select"
+  subtitle?: { text: string; link: string }
 }
 
 interface IQuestionsProps {
@@ -55,6 +56,16 @@ function QuestionSelect({
       <p className="mb-3 text-sm font-semibold">
         {questionIndex + 1}. {question.question}
       </p>
+      {question.subtitle && (
+        <a
+          href={question.subtitle.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mb-3 block text-xs text-muted-foreground hover:text-foreground underline transition-colors"
+        >
+          {question.subtitle.text}
+        </a>
+      )}
 
       {/* Options */}
       <div className="flex flex-col gap-1">
@@ -156,6 +167,16 @@ function QuestionMultiSelect({
       <p className="mb-3 text-sm font-semibold">
         {questionIndex + 1}. {question.question}
       </p>
+      {question.subtitle && (
+        <a
+          href={question.subtitle.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mb-3 block text-xs text-muted-foreground hover:text-foreground underline transition-colors"
+        >
+          {question.subtitle.text}
+        </a>
+      )}
 
       {/* Options */}
       <div className="flex flex-col gap-1">
