@@ -139,7 +139,7 @@ const sampleQuestions: IQuestion[] = [
   },
   {
     id: "deload-week",
-    question: "Would you like me to add a deload week at the end of your program?",
+    question: "Add a Deload week?",
     options: [
       { id: "yes", label: "Yes ( Add an easier week at the end of the program)" },
       { id: "no", label: "No ( No deload week at the end of the program)" },

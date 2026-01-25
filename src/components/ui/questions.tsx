@@ -192,7 +192,7 @@ function QuestionMultiSelect({
               <Checkbox
                 checked={isSelected}
                 onCheckedChange={() => onToggle(question.id, option.id)}
-                className="shrink-0"
+                className="shrink-0 data-[state=checked]:text-white"
               />
               <span
                 className={cn(
@@ -237,7 +237,7 @@ function QuestionMultiSelect({
               <Checkbox
                 checked={isOtherSelected}
                 onCheckedChange={() => onOtherToggle(question.id)}
-                className="shrink-0"
+                className="shrink-0 data-[state=checked]:text-white"
               />
               <span
                 className={cn(
