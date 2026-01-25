@@ -18,7 +18,7 @@ export const getOpUserId = async (program_id: string) => {
     }
 };
 // Gets the users full name
-export const getUserFullName = async (id: number | undefined, id_type: "program" | "user") => {
+export const getUserFullName = async (id: string | number | undefined, id_type: "program" | "user") => {
     if (id_type === "program") {
         try {
 
@@ -26,16 +26,19 @@ export const getUserFullName = async (id: number | undefined, id_type: "program"
                 return "Anonymous";
             }
 
+            // Convert to string for database query (programs.id is a string in DB)
+            const programId = typeof id === 'string' ? id : id.toString();
+
             const { data: userId, error: userIdError } = await
                 supabase.from("programs").
                 select("user_id").
-                eq("id",id.toString());
+                eq("id", programId);
 
             if (userIdError) {
                 console.error("Error fetching users userID", userIdError);
             }
 
-            if (userId) {
+            if (userId && userId.length > 0) {
                 const { data: fullName, error: fullNameError } = await
                     supabase.from("users").
                     select("first_name,last_name").
@@ -44,7 +47,7 @@ export const getUserFullName = async (id: number | undefined, id_type: "program"
                 if (fullNameError) {
                     return "Anonymous";
                 } else {
-                    if (fullName[0].first_name && fullName[0].last_name && fullName[0].first_name !== null && fullName[0].last_name !== null) {
+                    if (fullName && fullName.length > 0 && fullName[0].first_name && fullName[0].last_name && fullName[0].first_name !== null && fullName[0].last_name !== null) {
                         return fullName[0].first_name + " " + fullName[0].last_name;
                     } else {
                         return "Anonymous";
@@ -57,15 +60,23 @@ export const getUserFullName = async (id: number | undefined, id_type: "program"
     }
     else if (id_type === "user") {
         try {
+            if (!id) {
+                return "Anonymous";
+            }
+
+            // Convert to string for database query (users.id is a string UUID in DB)
+            const userId = typeof id === 'string' ? id : id.toString();
+
             const { data: fullName, error: fullNameError } = await supabase.
             from("users")
             .select("first_name,last_name")
-            .eq("id",id?.toString() ?? '');
+            .eq("id", userId);
 
             if (fullNameError) {
                 console.error('Error fetching users full name:', fullNameError);
+                return "Anonymous";
             } else {
-                if (fullName[0].first_name && fullName[0].last_name && fullName[0].first_name !== null && fullName[0].last_name !== null) {
+                if (fullName && fullName.length > 0 && fullName[0].first_name && fullName[0].last_name && fullName[0].first_name !== null && fullName[0].last_name !== null) {
                     return fullName[0].first_name + " " + fullName[0].last_name;
                 } else {
                     return "Anonymous";
@@ -73,8 +84,11 @@ export const getUserFullName = async (id: number | undefined, id_type: "program"
             }
         } catch (error) {
             console.error("Error fetching users full name", error);
+            return "Anonymous";
         }
     }
+    
+    return "Anonymous";
 };
 
 // GETS ALL USER METADATA

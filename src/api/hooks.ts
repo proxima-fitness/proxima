@@ -46,7 +46,7 @@ export const useBlogs = (limit: number, offset: number) => {
 };
 
 // FETCHES THE FULL NAME OF A USER BY ID
-export const useUserFullName = (id: number | undefined, id_type: "program" | "user") => {
+export const useUserFullName = (id: string | number | undefined, id_type: "program" | "user") => {
     return useQuery({
         queryKey: ["full-name", id, id_type],
         queryFn: () => getUserFullName(id, id_type),
@@ -210,7 +210,7 @@ export const useProgramByIdSSR = async (program_id: number) => {
 };
 
 // FETCHES THE FULL NAME OF A USER BY ID USING SSR
-export const useUserFullNameSSR = (id: number, id_type: "program" | "user") => {
+export const useUserFullNameSSR = (id: string | number, id_type: "program" | "user") => {
     return getUserFullName(id, id_type);
 };
 

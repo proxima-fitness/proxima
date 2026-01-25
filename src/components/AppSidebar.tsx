@@ -51,7 +51,7 @@ const baseItems = [
 
 export function AppSidebar() {
     const { user, isLoading } = useUserContext();
-    const { data: userFullName } = useUserFullName(user?.id ? Number(user.id) : undefined, "user");
+    const { data: userFullName } = useUserFullName(user?.id ? user.id : undefined, "user");
 
     const handleLogout = async () => {
         await signOutUser();
