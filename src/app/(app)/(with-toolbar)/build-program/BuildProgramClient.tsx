@@ -42,7 +42,6 @@ export function BuildProgramClient() {
     /*************************************************************************************/
     /*** STATE FOR THE PROGRAM BUILDER ***/
     const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>([]);
-    console.log('hevyProgram', hevyProgram);
     /*************************************************************************************/
 
     const empty = searchParams.get('empty') ?? '';

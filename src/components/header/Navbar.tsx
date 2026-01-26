@@ -39,7 +39,6 @@ const NavItems = (pathname: string) => {
     const { user, isLoading } = useUserContext();
     const { theme, setTheme } = useTheme()
     const { data: userFullName } = useUserFullName(user?.id ? user.id : undefined, "user");
-    console.log("userFullName", userFullName);
     const { data: hevyApiKey } = useHevySecret(user);
 
     const [dropdownOpen, setDropdownOpen] = useState(false);

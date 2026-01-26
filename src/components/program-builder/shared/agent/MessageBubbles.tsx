@@ -30,6 +30,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
 
 
     const { messages, setHevyProgram, daysPerWeek } = props;
+    console.log("messages in MessageBubbles", messages);
 
     return (
 
