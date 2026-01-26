@@ -8,7 +8,7 @@ import {
     ResizablePanelGroup,
   } from "@/components/ui/resizable";
 
-import { AgentChat } from "@/components/program-builder/shared/agent/AgentChat";
+import { Agent } from "@/components/program-builder/shared/agent/Agent";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { MessageSquare, Calendar } from "lucide-react";
@@ -242,7 +242,8 @@ export function BuildProgramClient() {
                             maxSize={70}
                             className="border-extraLightGray bg-extraLightGray dark:bg-extraDarkGray dark:text-white"
                         >
-                            <AgentChat
+                            <Agent
+                                search={search}
                                 sidebarPosition={sidebarPosition}
                                 onTogglePosition={toggleSidebarPosition}
                                 setHevyProgram={setHevyProgram}
@@ -328,7 +329,8 @@ export function BuildProgramClient() {
                             maxSize={70}
                             className="border-extraLightGray bg-extraLightGray dark:bg-extraDarkGray dark:text-white"
                         >
-                            <AgentChat
+                            <Agent
+                                search={search}
                                 sidebarPosition={sidebarPosition}
                                 onTogglePosition={toggleSidebarPosition}
                                 setHevyProgram={setHevyProgram}
@@ -384,7 +386,8 @@ export function BuildProgramClient() {
                     setMobileTab(value);
                 }} className="flex flex-col h-full">
                     <TabsContent value="chat" className="flex-1 m-0 mt-0 px-4 pb-20">
-                        <AgentChat
+                        <Agent
+                            search={search}
                             sidebarPosition="left"
                             onTogglePosition={ () => {}}
                             setHevyProgram={setHevyProgram}
