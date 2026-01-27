@@ -77,6 +77,11 @@ export function BuildProgramClient() {
     const [excludeSpecializations, setExcludeSpecializations] = useState<IOption[]>([]);
     const [healthIssues, setHealthIssues] = useState<IOption[]>([]);
 
+    console.log("excludeEquipment", excludeEquipment);
+    console.log("programLength", programLength);
+    console.log("daysPerWeek", daysPerWeek);
+    console.log("healthIssues", healthIssues);
+
     const [explore, toggleExplore] = useReducer(prev => !prev, true);
     const [programTitle, setProgramTitle] = useState("My Proxima Program");
 

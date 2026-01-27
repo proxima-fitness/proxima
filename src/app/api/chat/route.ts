@@ -2,6 +2,7 @@ import { ToolLoopAgent, createAgentUIStreamResponse, gateway, tool } from 'ai';
 import { z } from 'zod';
 import { getHevyExercises } from '@/components/program-builder/api/hevy';
 import { encode } from '@toon-format/toon';
+import { sampleQuestions } from '@/assets/constants';
 
 
 import { NodeSDK } from "@opentelemetry/sdk-node";
@@ -102,8 +103,46 @@ const buildWorkoutProgramTool = tool({
   },
 });
 
+// Define the getMoreInfoQuestions tool
+const getMoreInfoQuestionsTool = tool({
+  description: 'Opens a questions component to gather additional information from the user before building a workout program. Use this tool when a user requests to create, build, make, or generate a workout program, training program, or exercise routine. This should be called FIRST before building the program.',
+  inputSchema: z.object({
+    userRequest: z.string().optional().describe('The user\'s original request for context'),
+  }),
+  execute: async ({ userRequest }) => {
+    try {
+      console.log("entered getMoreInfoQuestionsTool execute");
+      // Return the questions data that will be displayed in the UI
+      return {
+        questions: sampleQuestions,
+        userRequest: userRequest || '',
+        message: 'Questions component opened to gather program preferences.',
+      };
+    } catch (error) {
+      console.error('Error in getMoreInfoQuestions tool:', error);
+      return {
+        error: 'Failed to load questions',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  },
+  toModelOutput: async ({ output }) => {
+    if (output.error) {
+      return {
+        type: 'text' as const,
+        value: `Error: ${output.message || 'Failed to load questions'}`,
+      };
+    }
+    return {
+      type: 'text' as const,
+      value: 'Questions component has been opened. Please wait for the user to complete the questions before proceeding with program generation.',
+    };
+  },
+});
+
 export const baseTools = {
   buildWorkoutProgram: buildWorkoutProgramTool,
+  getMoreInfoQuestions: getMoreInfoQuestionsTool,
 };
 
 // Function to create agent with current program context
@@ -160,7 +199,8 @@ function createAgentWithProgram(
   const instructions = `You are Andy an AI Personal Trainer. You help users create workout programs and answer questions about fitness, exercise, and training.
 
 You have access to tools that can help you:
-- buildWorkoutProgram: Provides access to all available Hevy exercises (as a reference list with IDs and titles) and program parameters. Use this when users want to create workout programs.
+- getMoreInfoQuestions: Opens a questions component to gather additional information before building a workout program. CRITICAL: When a user asks to create, build, make, or generate a workout program, training program, or exercise routine, you MUST call this tool FIRST. After calling it, respond with a brief, friendly message like: "Great! Before I build that program, could you share a bit more about what you're looking for?" Then wait for the user to complete the questions before proceeding.
+- buildWorkoutProgram: Provides access to all available Hevy exercises (as a reference list with IDs and titles) and program parameters. Use this when users want to create workout programs AFTER they have completed the questions.
 ${hevyProgram && hevyProgram.length > 0 ? '- getCurrentProgram: Returns the current workout program state. ALWAYS call this first to check if a program already exists before creating a new one.' : ''}
 
 IMPORTANT: ${hevyProgram && hevyProgram.length > 0
@@ -170,7 +210,8 @@ ${paramsContext}
 
 When users ask about creating or modifying workouts or programs:
 1. ${hevyProgram && hevyProgram.length > 0 ? 'First, call getCurrentProgram to see the current program state in TOON format.' : ''}
-2. Call the buildWorkoutProgram tool with their requirements${daysPerWeek !== undefined && daysPerWeek !== null ? `, making sure to pass daysPerWeek: ${daysPerWeek}` : ''}
+2. If the user is requesting a NEW workout program (not modifying an existing one), respond with a brief message asking them to complete the following questions. Then you MUST call getMoreInfoQuestions to gather their preferences. Only proceed to buildWorkoutProgram after they have completed the questions, and told you to Build my program.
+3. Call the buildWorkoutProgram tool with their requirements${daysPerWeek !== undefined && daysPerWeek !== null && programLength !== undefined && programLength !== null ? `, making sure to pass daysPerWeek: ${daysPerWeek} and programLength: ${programLength}` : ''}
 3. The tool will return a reference list of available exercises in the format "id: title". Use the exercise IDs from this list to select appropriate exercises for the workout program.
 4. CRITICAL: You MUST return workout programs using TOON (Token-Oriented Object Notation) format. TOON is a compact, token-efficient format designed specifically for LLMs that reduces token usage by 30-60% compared to JSON while maintaining full data fidelity.
 

@@ -6183,7 +6183,7 @@ export const sampleQuestions: IQuestion[] = [
         id: opt.value,
         label: opt.label === "8 Weeks" ? "8 Weeks (Recommended)" : opt.label
       })),
-      allowOther: true,
+      allowOther: false,
     },
     {
       id: "days-per-week",
@@ -6192,7 +6192,7 @@ export const sampleQuestions: IQuestion[] = [
         id: opt.value,
         label: opt.label
       })),
-      allowOther: true,
+      allowOther: false,
     },
     {
       id: "exclude-equipment",
@@ -6214,7 +6214,7 @@ export const sampleQuestions: IQuestion[] = [
           { id: "other", label: "Other" },
           { id: "none", label: "None" },
       ],
-      allowOther: true,
+      allowOther: false,
     },
     {
       id: "health-issues",

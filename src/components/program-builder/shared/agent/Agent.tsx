@@ -163,14 +163,20 @@ export const Agent: React.FC<IProps> = (props) => {
                         handleProgramTitle={handleProgramTitle}
                         handleExplore={handleExplore}
                     />
-                ) : ( isSubmitted ?
-                    <Analyzing /> : (
-
-                    <MessageBubbles
-                        messages={messages}
-                        setHevyProgram={setHevyProgram}
-                        daysPerWeek={daysPerWeek} />
-                    ))
+                ) : (
+                    <>
+                        <MessageBubbles
+                            messages={messages}
+                            setHevyProgram={setHevyProgram}
+                            daysPerWeek={daysPerWeek}
+                            sendMessage={sendMessage}
+                            handleProgramLength={handleProgramLength}
+                            handleDaysPerWeek={handleDaysPerWeek}
+                            handleExcludeEquipment={handleExcludeEquipment}
+                            handleHealthIssues={handleHealthIssues} />
+                        {isSubmitted && <Analyzing />}
+                    </>
+                )
                 }
                 <div className="absolute bottom-4 right-5 z-50">
                     <ScrollButton className="shadow-sm" />
