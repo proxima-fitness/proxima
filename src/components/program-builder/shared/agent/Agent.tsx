@@ -88,20 +88,27 @@ export const Agent: React.FC<IProps> = (props) => {
     const isLoading = isSubmitted || isStreaming;
 
     const [isFilters, setIsFilters] = useState(false)
-    const lastSentSearch = useRef<string | null>(
-        typeof window !== 'undefined' ? sessionStorage.getItem('lastSentSearch') : null
-    );
+    const hasSentInitialMessage = useRef<boolean>(false);
+    const sendMessageRef = useRef(sendMessage);
+
+    // Keep sendMessage ref in sync
+    useEffect(() => {
+        sendMessageRef.current = sendMessage;
+    }, [sendMessage]);
 
     // Initialize with search parameter if present
     useEffect(() => {
-        if (search && search.trim().length > 0 && search !== lastSentSearch.current) {
-            lastSentSearch.current = search;
+        // Only send if we have a search value, haven't sent it yet in this instance, and sendMessage is available
+        if (search && search.trim().length > 0 && !hasSentInitialMessage.current && sendMessageRef.current) {
+            // On initial mount with search parameter, always send the message
+            // This ensures fresh navigation from home page always triggers sendMessage
+            hasSentInitialMessage.current = true;
             if (typeof window !== 'undefined') {
                 sessionStorage.setItem('lastSentSearch', search);
             }
-            sendMessage({ text: search });
+            sendMessageRef.current({ text: search });
         }
-    }, [search, sendMessage]);
+    }, [search]);
 
 
     const handleSubmit = () => {

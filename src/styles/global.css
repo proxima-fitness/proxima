@@ -193,18 +193,73 @@ ul {
 }
 
 .blue__gradient {
-  background: linear-gradient(180deg, rgba(188, 165, 255, 0) 0%, #33bbcf 100%);
-  filter: blur(123px);
+  background: radial-gradient(
+    circle at center,
+    rgba(92, 225, 230, 0.4) 0%,
+    rgba(51, 187, 207, 0.5) 25%,
+    rgba(59, 91, 219, 0.4) 50%,
+    rgba(26, 31, 58, 0.3) 75%,
+    rgba(26, 31, 58, 0) 100%
+  );
+  filter: blur(180px);
 }
 
 .pink__gradient {
-  background: linear-gradient(90deg, #f4c4f3 0%, #fc67fa 100%);
-  filter: blur(900px);
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 140, 105, 0.4) 0%,
+    rgba(255, 107, 157, 0.5) 25%,
+    rgba(252, 103, 250, 0.5) 50%,
+    rgba(139, 26, 139, 0.4) 75%,
+    rgba(139, 26, 139, 0) 100%
+  );
+  filter: blur(850px);
 }
 
 .white__gradient {
-  background: rgba(255, 255, 255, 0.6);
+  background: radial-gradient(
+    circle at center,
+    rgba(224, 231, 255, 0.5) 0%,
+    rgba(167, 139, 250, 0.4) 30%,
+    rgba(76, 29, 149, 0.3) 60%,
+    rgba(76, 29, 149, 0) 100%
+  );
   filter: blur(750px);
+}
+
+.blue__gradient_light {
+  background: radial-gradient(
+    circle at center,
+    rgba(179, 229, 252, 0.6) 0%,
+    rgba(129, 212, 250, 0.5) 25%,
+    rgba(159, 168, 218, 0.45) 50%,
+    rgba(159, 168, 218, 0.2) 75%,
+    rgba(159, 168, 218, 0) 100%
+  );
+  filter: blur(160px);
+}
+
+.pink__gradient_light {
+  background: radial-gradient(
+    circle at center,
+    rgba(248, 187, 208, 0.6) 0%,
+    rgba(244, 143, 177, 0.55) 25%,
+    rgba(255, 171, 145, 0.5) 50%,
+    rgba(255, 171, 145, 0.2) 75%,
+    rgba(255, 171, 145, 0) 100%
+  );
+  filter: blur(750px);
+}
+
+.white__gradient_light {
+  background: radial-gradient(
+    circle at center,
+    rgba(225, 190, 231, 0.5) 0%,
+    rgba(206, 147, 216, 0.45) 30%,
+    rgba(186, 104, 200, 0.4) 60%,
+    rgba(186, 104, 200, 0) 100%
+  );
+  filter: blur(650px);
 }
 
 @layer base {
