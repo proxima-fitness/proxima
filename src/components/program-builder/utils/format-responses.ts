@@ -18,6 +18,8 @@ export const appendWeekOrderAndIdToProgramDays = (program: TProgramCreatorDay[][
 
 export const appendOrderToHevyRoutines = (routines: THevyRoutine[]): THevyRoutine[] => {
 
+    if (!routines || routines.length === 0) return [];
+
     const sortedRoutines = [...routines].sort((a, b) => a.folder_id - b.folder_id);
 
     let currentFolderId = sortedRoutines[0].folder_id;
