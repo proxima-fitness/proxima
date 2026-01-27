@@ -23,6 +23,7 @@ import { HevyRoutine } from "@/components/program-builder/hevy/HevyRoutine";
 import { getSharedProgram } from "@/api/programs";
 import { emptyHevyRoutineProgram } from "@/assets/constants";
 import { IOption } from "@/components/ui/multi-select";
+import { inferDaysPerWeek, inferProgramLength } from "@/components/program-builder/utils/helpers";
 
 export function BuildProgramClient() {
 
@@ -225,6 +226,25 @@ export function BuildProgramClient() {
     const handleHealthIssues = (value: IOption[]) => { setHealthIssues(value); };
     const handleProgramTitle = (value: string) => { setProgramTitle(value); };
     const handleExplore = () => { toggleExplore(); };
+
+    // Auto-set filters from search prompt on initial load
+    useEffect(() => {
+        if (search && search.trim().length > 0) {
+            // Only set if current filter value is empty (don't override user-set values)
+            if (!daysPerWeek) {
+                const inferredDays = inferDaysPerWeek(search);
+                if (inferredDays) {
+                    setDaysPerWeek(inferredDays);
+                }
+            }
+            if (!programLength) {
+                const inferredLength = inferProgramLength(search);
+                if (inferredLength) {
+                    setProgramLength(inferredLength);
+                }
+            }
+        }
+    }, [daysPerWeek, programLength, search]); // Only run when search changes, not when daysPerWeek/programLength change
 
     return (
         <>

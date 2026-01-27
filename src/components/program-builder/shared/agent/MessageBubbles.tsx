@@ -11,11 +11,48 @@ import { UIDataTypes, UIMessage, UITools } from "ai";
 import { decode } from "@toon-format/toon";
 import { Questions, IQuestion } from "@/components/ui/questions";
 import { IOption } from "@/components/ui/multi-select";
+import { inferDaysPerWeek, inferProgramLength } from "@/components/program-builder/utils/helpers";
+
+// Helper function to generate empty hevyProgram structure
+const generateEmptyHevyProgram = (weeksValue: string, daysValue: string): THevyRoutine[] => {
+    const weeks = weeksValue ? Number(weeksValue) : 0;
+    const days = daysValue ? Number(daysValue) : 0;
+
+    // Handle edge cases - return empty array if invalid values
+    if (!weeks || !days || weeks <= 0 || days <= 0) {
+        return [];
+    }
+
+    const now = new Date().toISOString();
+    const routines: THevyRoutine[] = [];
+    let routineIndex = 0;
+
+    // For each week (0-indexed folder_id)
+    for (let weekIndex = 0; weekIndex < weeks; weekIndex++) {
+        // For each day in the week (1-indexed order)
+        for (let dayIndex = 1; dayIndex <= days; dayIndex++) {
+            routines.push({
+                id: String(routineIndex + 1),
+                title: "",
+                folder_id: weekIndex,
+                order: String(dayIndex),
+                exercises: [],
+                notes: "",
+                created_at: now,
+                updated_at: now,
+            });
+            routineIndex++;
+        }
+    }
+
+    return routines;
+};
 
 interface IProps {
     messages: UIMessage<unknown, UIDataTypes, UITools>[];
     setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
     daysPerWeek: string;
+    programLength: string;
     sendMessage: (message: { text: string }) => void;
     handleProgramLength: (value: string) => void;
     handleDaysPerWeek: (value: string) => void;
@@ -36,7 +73,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     // }
 
 
-    const { messages, setHevyProgram, daysPerWeek, sendMessage, handleProgramLength, handleDaysPerWeek, handleExcludeEquipment, handleHealthIssues } = props;
+    const { messages, setHevyProgram, daysPerWeek, programLength, sendMessage, handleProgramLength, handleDaysPerWeek, handleExcludeEquipment, handleHealthIssues } = props;
     console.log("messages in MessageBubbles", messages);
 
     return (
@@ -202,23 +239,35 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
 
                                             if (toolOutput?.questions && Array.isArray(toolOutput.questions)) {
                                                 const handleComplete = (answers: Record<string, string | string[]>) => {
+                                                    // #region agent log
+                                                    fetch('http://127.0.0.1:7242/ingest/989fa07b-d372-405e-9502-d6aaedd11f0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'MessageBubbles.tsx:241',message:'handleComplete called',data:{answers,programLength,daysPerWeek},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+                                                    // #endregion
                                                     // Map question answers to filter state
                                                         // Process each answer and set the corresponding filter
+
+                                                        let programLengthValue = programLength;
+                                                        let daysPerWeekValue = daysPerWeek;
+
                                                         Object.entries(answers).forEach(([questionId, answerValue]) => {
                                                             const question = toolOutput.questions?.find(q => q.id === questionId);
+
 
                                                             if (!question) return;
 
                                                             switch (questionId) {
                                                                 case "program-length": {
-                                                                    console.log("program-length answerValue:", answerValue);
                                                                     if (typeof answerValue === 'string') {
+                                                                        programLengthValue = answerValue;
                                                                         handleProgramLength(answerValue);
                                                                     }
                                                                     break;
                                                                 }
                                                                 case "days-per-week": {
+                                                                    // #region agent log
+                                                                    fetch('http://127.0.0.1:7242/ingest/989fa07b-d372-405e-9502-d6aaedd11f0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'MessageBubbles.tsx:264',message:'days-per-week answer found',data:{answerValue,daysPerWeek},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+                                                                    // #endregion
                                                                     if (typeof answerValue === 'string') {
+                                                                        daysPerWeekValue = answerValue;
                                                                         handleDaysPerWeek(answerValue);
                                                                     }
                                                                     break;
@@ -253,16 +302,102 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                             }
                                                         });
 
-                                                        // Send message after state updates
-                                                        setTimeout(() => {
 
+                                                        // Fallback: Extract from userRequest if still empty
+                                                    if (!programLengthValue && toolOutput.userRequest) {
+                                                        const inferredLength = inferProgramLength(toolOutput.userRequest);
+                                                        if (inferredLength) {
+                                                            programLengthValue = inferredLength;
+                                                            handleProgramLength(inferredLength);
+                                                        }
+                                                    }
+                                                    if (!daysPerWeekValue && toolOutput.userRequest) {
+                                                        const inferredDays = inferDaysPerWeek(toolOutput.userRequest);
+                                                        if (inferredDays) {
+                                                            daysPerWeekValue = inferredDays;
+                                                            handleDaysPerWeek(inferredDays);
+                                                        }
+                                                    }
+
+                                                    // Final fallback: Use defaults if still empty
+                                                    if (!programLengthValue) {
+                                                        programLengthValue = "12";
+                                                        handleProgramLength("12");
+                                                    }
+                                                    if (!daysPerWeekValue) {
+                                                        daysPerWeekValue = "6";
+                                                        handleDaysPerWeek("6");
+                                                    }
+
+                                                    // Generate empty program using the answer values (or extracted/fallback values)
+                                                    const emptyProgram = generateEmptyHevyProgram(programLengthValue, daysPerWeekValue);
+                                                    setHevyProgram(emptyProgram);
                                                     sendMessage({ text: "Build my program" });
-                                                }, 1000);
 
                                                 };
 
                                                 const handleSkip = () => {
-                                                    sendMessage({ text: "I'll skip the questions for now, and build my program with the information I currently have." });
+                                                    // Extract programLength and daysPerWeek from userRequest or messages before skipping
+                                                    let programLengthValue = programLength;
+                                                    let daysPerWeekValue = daysPerWeek;
+
+                                                    // Try to extract from userRequest first
+                                                    if (toolOutput.userRequest) {
+                                                        if (!programLengthValue) {
+                                                            const inferredLength = inferProgramLength(toolOutput.userRequest);
+                                                            if (inferredLength) {
+                                                                programLengthValue = inferredLength;
+                                                                handleProgramLength(inferredLength);
+                                                            }
+                                                        }
+                                                        if (!daysPerWeekValue) {
+                                                            const inferredDays = inferDaysPerWeek(toolOutput.userRequest);
+                                                            if (inferredDays) {
+                                                                daysPerWeekValue = inferredDays;
+                                                                handleDaysPerWeek(inferredDays);
+                                                            }
+                                                        }
+                                                    }
+
+                                                    // Try to extract from user messages if still empty
+                                                    if ((!programLengthValue || !daysPerWeekValue) && messages.length > 0) {
+                                                        const userMessages = messages
+                                                            .filter(msg => msg.role === 'user')
+                                                            .map(msg => {
+                                                                const textPart = msg.parts.find(p => p.type === 'text');
+                                                                return textPart && 'text' in textPart ? textPart.text : '';
+                                                            })
+                                                            .join(' ');
+
+                                                        if (userMessages) {
+                                                            if (!programLengthValue) {
+                                                                const inferredLength = inferProgramLength(userMessages);
+                                                                if (inferredLength) {
+                                                                    programLengthValue = inferredLength;
+                                                                    handleProgramLength(inferredLength);
+                                                                }
+                                                            }
+                                                            if (!daysPerWeekValue) {
+                                                                const inferredDays = inferDaysPerWeek(userMessages);
+                                                                if (inferredDays) {
+                                                                    daysPerWeekValue = inferredDays;
+                                                                    handleDaysPerWeek(inferredDays);
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+
+                                                    // Final fallback: Use defaults if still empty
+                                                    if (!programLengthValue) {
+                                                        programLengthValue = "12";
+                                                        handleProgramLength("12");
+                                                    }
+                                                    if (!daysPerWeekValue) {
+                                                        daysPerWeekValue = "6";
+                                                        handleDaysPerWeek("6");
+                                                    }
+
+                                                    sendMessage({ text: "Build my program" });
                                                 };
 
                                                 return (

@@ -176,6 +176,7 @@ export const Agent: React.FC<IProps> = (props) => {
                             messages={messages}
                             setHevyProgram={setHevyProgram}
                             daysPerWeek={daysPerWeek}
+                            programLength={programLength}
                             sendMessage={sendMessage}
                             handleProgramLength={handleProgramLength}
                             handleDaysPerWeek={handleDaysPerWeek}

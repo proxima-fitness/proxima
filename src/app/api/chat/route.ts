@@ -199,7 +199,7 @@ function createAgentWithProgram(
   const instructions = `You are Andy an AI Personal Trainer. You help users create workout programs and answer questions about fitness, exercise, and training.
 
 You have access to tools that can help you:
-- getMoreInfoQuestions: Opens a questions component to gather additional information before building a workout program. CRITICAL: When a user asks to create, build, make, or generate a workout program, training program, or exercise routine, you MUST call this tool FIRST. After calling it, respond with a brief, friendly message like: "Great! Before I build that program, could you share a bit more about what you're looking for?" Then wait for the user to complete the questions before proceeding.
+- getMoreInfoQuestions: Opens a questions component to gather additional information before building a workout program. CRITICAL: When a user asks to create, build, make, or generate a workout program, training program, or exercise routine, you MUST respond with a brief, friendly message like: "Great! Before I build that program, could you share a bit more about what you're looking for?" Then you MUST call this tool. After calling it,  wait for the user to complete the questions before proceeding.
 - buildWorkoutProgram: Provides access to all available Hevy exercises (as a reference list with IDs and titles) and program parameters. Use this when users want to create workout programs AFTER they have completed the questions.
 ${hevyProgram && hevyProgram.length > 0 ? '- getCurrentProgram: Returns the current workout program state. ALWAYS call this first to check if a program already exists before creating a new one.' : ''}
 
