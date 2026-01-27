@@ -86,6 +86,7 @@ export const Agent: React.FC<IProps> = (props) => {
     const isSubmitted = status === 'submitted';
     const isStreaming = status === 'streaming';
     const isLoading = isSubmitted || isStreaming;
+    const [isBuilding, setIsBuilding] = useState(false);
 
     const [isFilters, setIsFilters] = useState(false)
     const hasSentInitialMessage = useRef<boolean>(false);
@@ -118,6 +119,14 @@ export const Agent: React.FC<IProps> = (props) => {
         setInput('');
     }
 
+    const handleStop = () => {
+        stop();
+        setIsBuilding(false);
+    }
+
+    const handleStartBuilding = (isBuilding: boolean) => {
+        setIsBuilding(isBuilding);
+    }
 
 
     return (
@@ -181,7 +190,10 @@ export const Agent: React.FC<IProps> = (props) => {
                             handleProgramLength={handleProgramLength}
                             handleDaysPerWeek={handleDaysPerWeek}
                             handleExcludeEquipment={handleExcludeEquipment}
-                            handleHealthIssues={handleHealthIssues} />
+                            handleHealthIssues={handleHealthIssues}
+                            isBuilding={isBuilding}
+                            handleStartBuilding={handleStartBuilding}
+                            />
                         {isSubmitted && <Analyzing />}
                     </>
                 )
@@ -198,7 +210,7 @@ export const Agent: React.FC<IProps> = (props) => {
                 input={input}
                 setInput={setInput}
                 handleSubmit={handleSubmit}
-                stop={stop}
+                handleStop={handleStop}
             />
         </div>
     )

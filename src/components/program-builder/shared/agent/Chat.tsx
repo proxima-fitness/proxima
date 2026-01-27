@@ -17,12 +17,12 @@ interface IProps {
     input: string;
     setInput: (value: string) => void;
     handleSubmit: () => void;
-    stop: () => void;
+    handleStop: () => void;
 }
 
 export const Chat: React.FC<IProps> = (props) => {
 
-    const { isLoading, input, setInput, handleSubmit, stop } = props;
+    const { isLoading, input, setInput, handleSubmit, handleStop } = props;
 
     return (
         <div className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl flex-shrink-0 px-3 pb-3 md:px-5 md:pb-5 max-sm:fixed max-sm:bottom-[70px] max-sm:left-0 max-sm:right-0 max-sm:px-4 max-sm:bg-background border-t pt-4">
@@ -74,7 +74,7 @@ export const Chat: React.FC<IProps> = (props) => {
                     ) : (
                         <Button
                         size="icon"
-                        onClick={stop}
+                        onClick={handleStop}
                         className="size-9 rounded-full bg-lightSecondary"
                         >
                             <Square className="text-white" size={18} />

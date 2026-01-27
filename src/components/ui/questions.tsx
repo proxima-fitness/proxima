@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronUp, ChevronDown, CircleHelp, CornerDownLeft } from "lucide-react"
+import { ChevronUp, ChevronDown, CircleHelp, CornerDownLeft, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -25,6 +25,7 @@ interface IQuestionsProps {
   onComplete?: (answers: Record<string, string | string[]>) => void
   onSkip?: () => void
   className?: string
+  isBuilding?: boolean
 }
 
 // QuestionSelect sub-component for single-select (radio) questions
@@ -296,6 +297,7 @@ export function Questions({
   questions,
   onComplete,
   onSkip,
+  isBuilding,
   className,
 }: IQuestionsProps) {
   const [answers, setAnswers] = React.useState<Record<string, string | string[]>>({})
@@ -570,13 +572,23 @@ export function Questions({
         <Button
           size="sm"
           onClick={handleContinue}
-          className="bg-[#fbbf24] text-black hover:bg-[#fbbf24]/80"
+          disabled={isBuilding}
+          className="bg-[#fbbf24] text-black hover:bg-[#fbbf24]/80 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Build
-          <span className="flex items-center">
-            <span className="">⌘</span>
-            <CornerDownLeft className="size-4" />
-          </span>
+          {isBuilding ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Building
+            </>
+          ) : (
+            <>
+              Build
+              <span className="flex items-center">
+                <span className="">⌘</span>
+                <CornerDownLeft className="size-4" />
+              </span>
+            </>
+          )}
         </Button>
       </div>
     </div>

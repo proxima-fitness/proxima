@@ -58,6 +58,8 @@ interface IProps {
     handleDaysPerWeek: (value: string) => void;
     handleExcludeEquipment: (value: IOption[]) => void;
     handleHealthIssues: (value: IOption[]) => void;
+    isBuilding: boolean;
+    handleStartBuilding: (isBuilding: boolean) => void;
 }
 
 export const MessageBubbles: React.FC<IProps> = (props) => {
@@ -73,7 +75,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     // }
 
 
-    const { messages, setHevyProgram, daysPerWeek, programLength, sendMessage, handleProgramLength, handleDaysPerWeek, handleExcludeEquipment, handleHealthIssues } = props;
+    const { messages, setHevyProgram, daysPerWeek, handleStartBuilding, programLength, sendMessage, handleProgramLength, handleDaysPerWeek, handleExcludeEquipment, handleHealthIssues, isBuilding } = props;
     console.log("messages in MessageBubbles", messages);
 
     return (
@@ -333,7 +335,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                     const emptyProgram = generateEmptyHevyProgram(programLengthValue, daysPerWeekValue);
                                                     setHevyProgram(emptyProgram);
                                                     sendMessage({ text: "Build my program" });
-
+                                                    handleStartBuilding(true);
                                                 };
 
                                                 const handleSkip = () => {
@@ -398,6 +400,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                     }
 
                                                     sendMessage({ text: "Build my program" });
+                                                    handleStartBuilding(true);
                                                 };
 
                                                 return (
@@ -406,6 +409,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                             questions={toolOutput.questions}
                                                             onComplete={handleComplete}
                                                             onSkip={handleSkip}
+                                                            isBuilding={isBuilding}
                                                         />
                                                     </div>
                                                 );
