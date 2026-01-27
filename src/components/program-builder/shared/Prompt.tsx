@@ -32,8 +32,8 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
             <div className="h-screen flex flex-col items-center justify-center gap-10 relative">
                 <div className="flex flex-col items-center justify-center gap-12 w-full relative z-10">
                     <div className="text-center">
-                        <div className="font-main text-4xl max-sm:text-2xl max-sm:px-2 font-bold uppercase dark:text-white">Build your perfect program</div>
-                        <div className="text-xl font-normal px-12 max-sm:text-sm max-sm:px-2 dark:text-white">Create a workout program by chatting with AI</div>
+                        <div className="font-main text-4xl max-sm:text-2xl max-sm:px-2 font-bold uppercase dark:text-white">build your fitness plan</div>
+                        <div className="text-lg font-normal px-12 max-sm:text-sm max-sm:px-2 dark:text-white">Create a workout program by chatting with AI</div>
                     </div>
                     <div className="w-full max-w-3xl max-sm:px-2">
                         <PromptTemplate />
