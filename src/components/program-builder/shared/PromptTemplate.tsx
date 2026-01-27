@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { suggestionGroups } from "@/assets/constants";
+import { useTypewriterPlaceholder } from "@/hooks/useTypewriterPlaceholder";
 
 
 export const PromptTemplate: React.FC = () => {
@@ -27,6 +28,11 @@ export const PromptTemplate: React.FC = () => {
     const [activeCategory, setActiveCategory] = useState("");
     const [files, setFiles] = useState<File[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+
+    // Typewriter placeholder animation - only show when input is empty
+    const animatedPlaceholder = useTypewriterPlaceholder({
+        enabled: search.trim() === "",
+    });
 
     const handleFilesAdded = (newFiles: File[]) => {
         setFiles((prev) => [...prev, ...newFiles])
@@ -105,7 +111,7 @@ export const PromptTemplate: React.FC = () => {
                     </div>
                 )}
                 <PromptInputTextarea
-                    placeholder="Ask Andy to build..."
+                    placeholder={animatedPlaceholder}
                     className="z-10 dark:text-white min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
                     onKeyDown={handleKeyDown}
                 />
