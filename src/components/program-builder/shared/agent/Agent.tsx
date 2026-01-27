@@ -15,7 +15,6 @@ import { Navbar } from "./Navbar"
 import { Analyzing } from "./Analyzing"
 import { MessageBubbles } from "./MessageBubbles"
 
-
 interface IProps {
     search: string;
     sidebarPosition: "left" | "right";
