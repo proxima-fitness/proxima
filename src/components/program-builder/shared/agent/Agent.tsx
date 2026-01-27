@@ -124,7 +124,7 @@ export const Agent: React.FC<IProps> = (props) => {
         setIsBuilding(false);
     }
 
-    const handleStartBuilding = (isBuilding: boolean) => {
+    const handleIsBuilding = (isBuilding: boolean) => {
         setIsBuilding(isBuilding);
     }
 
@@ -192,7 +192,7 @@ export const Agent: React.FC<IProps> = (props) => {
                             handleExcludeEquipment={handleExcludeEquipment}
                             handleHealthIssues={handleHealthIssues}
                             isBuilding={isBuilding}
-                            handleStartBuilding={handleStartBuilding}
+                            handleIsBuilding={handleIsBuilding}
                             />
                         {isSubmitted && <Analyzing />}
                     </>

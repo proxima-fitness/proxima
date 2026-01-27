@@ -59,7 +59,7 @@ interface IProps {
     handleExcludeEquipment: (value: IOption[]) => void;
     handleHealthIssues: (value: IOption[]) => void;
     isBuilding: boolean;
-    handleStartBuilding: (isBuilding: boolean) => void;
+    handleIsBuilding: (isBuilding: boolean) => void;
 }
 
 export const MessageBubbles: React.FC<IProps> = (props) => {
@@ -75,7 +75,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     // }
 
 
-    const { messages, setHevyProgram, daysPerWeek, handleStartBuilding, programLength, sendMessage, handleProgramLength, handleDaysPerWeek, handleExcludeEquipment, handleHealthIssues, isBuilding } = props;
+    const { messages, setHevyProgram, daysPerWeek, handleIsBuilding, programLength, sendMessage, handleProgramLength, handleDaysPerWeek, handleExcludeEquipment, handleHealthIssues, isBuilding } = props;
     console.log("messages in MessageBubbles", messages);
 
     return (
@@ -335,7 +335,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                     const emptyProgram = generateEmptyHevyProgram(programLengthValue, daysPerWeekValue);
                                                     setHevyProgram(emptyProgram);
                                                     sendMessage({ text: "Build my program" });
-                                                    handleStartBuilding(true);
+                                                    handleIsBuilding(true);
                                                 };
 
                                                 const handleSkip = () => {
@@ -400,7 +400,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                     }
 
                                                     sendMessage({ text: "Build my program" });
-                                                    handleStartBuilding(true);
+                                                    handleIsBuilding(true);
                                                 };
 
                                                 return (
