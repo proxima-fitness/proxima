@@ -202,6 +202,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                         case "tool-buildWorkoutProgram": {
                                             // Handle tool result - extract program if present (could be TOON or JSON)
                                             const toolOutput = part.output as { program?: THevyRoutine[] | string };
+                                            console.log("toolOutput in MessageBubbles buildWorkoutProgram", toolOutput);
                                             if (toolOutput?.program) {
                                                 if (Array.isArray(toolOutput.program)) {
                                                     // Already in JSON format
