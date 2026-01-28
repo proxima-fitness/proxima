@@ -10,13 +10,6 @@ const sdk = new NodeSDK({
 
 sdk.start();
 
-// hevyProgram: THevyRoutine[] | undefined,
-// daysPerWeek?: number,
-// programLength?: number,
-// excludeAreas?: string,
-// excludeEquipment?: string,
-// healthIssues?: string
-
 
 /**
  * POST request handler for the chat API route
