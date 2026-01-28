@@ -34,7 +34,6 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
 
         execute: async ({ userRequest, excludeAreas: agentExcludeAreas, excludeEquipment: agentExcludeEquipment, healthIssues: agentHealthIssues }) => {
             try {
-                console.log("entered getExerciseListTool execute");
                 // Use agent-provided values if available, otherwise fall back to closure values
                 const finalExcludeAreas = agentExcludeAreas || excludeAreas;
                 const finalExcludeEquipment = agentExcludeEquipment || excludeEquipment;
@@ -92,7 +91,6 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
         },
 
         toModelOutput: async ({ output }) => {
-            console.log("entered toModelOutput");
             // Return minimal data for AI context to reduce token usage
             // Only send IDs and titles instead of full exercise metadata
             if (output.error) {
@@ -103,8 +101,6 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
             }
 
             const exerciseList = output?.availableExercises?.map(ex => `${ex.id}: ${ex.title}`).join('\n') || '';
-
-            console.log('exerciseList', exerciseList);
 
             return {
                 type: 'text' as const,
@@ -125,7 +121,6 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
         }),
         execute: async ({ userRequest }) => {
             try {
-                console.log("entered getMoreInfoQuestionsTool execute");
                 // Return the questions data that will be displayed in the UI
                 return {
                     questions: sampleQuestions,

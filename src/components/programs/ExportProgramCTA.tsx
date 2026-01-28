@@ -7,6 +7,7 @@ import { FileText, Table } from "lucide-react";
 interface IProps {
     programId: number;
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const ExportProgramCTA: React.FC<IProps> = ({ programId }) => {
     const exportOptions = [
         {
@@ -59,9 +60,10 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId }) => {
         },
     ];
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const handleExport = (exportType: string) => {
         // Placeholder for export functionality
-        console.log(`Export to ${exportType} for program ${programId}`);
+        //console.log(`Export to ${exportType} for program ${programId}`);
         // TODO: Implement export functionality
     };
 

@@ -65,8 +65,6 @@ export const Agent: React.FC<IProps> = (props) => {
 
 
     const [input, setInput] = useState("");
-    console.log("daysPerWeek in Agent", daysPerWeek);
-    console.log("programLength in Agent", programLength);
     const { messages, sendMessage, status, stop } = useChat({
       transport: new DefaultChatTransport({
         api: '/api/chat',

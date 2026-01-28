@@ -105,7 +105,6 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         let excludeEquipmentValue: IOption[] = [];
         let healthIssuesValue: IOption[] = [];
 
-        console.log("Answers:", answers);
         handleIsBuilding(true);
 
 
@@ -244,7 +243,6 @@ const handleSkip = () => {
 };
 
 
-    console.log("messages in MessageBubbles", messages);
 
     return (
 
@@ -370,7 +368,6 @@ const handleSkip = () => {
                                         case "tool-getExerciseList": {
                                             // Handle tool result - extract program if present (could be TOON or JSON)
                                             const toolOutput = part.output as { program?: THevyRoutine[] | string };
-                                            console.log("toolOutput in MessageBubbles getExerciseList", toolOutput);
                                             if (toolOutput?.program) {
                                                 if (Array.isArray(toolOutput.program)) {
                                                     // Already in JSON format
