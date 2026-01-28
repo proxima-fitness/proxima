@@ -1,3 +1,4 @@
+import { useEffect, useRef, useMemo } from "react";
 import {
     Message,
     MessageAction,
@@ -8,11 +9,71 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { Copy, ThumbsUp, ThumbsDown, Pencil, Trash } from "lucide-react"
 import { FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai";
-import { decode } from "@toon-format/toon";
 import { Questions, IQuestion } from "@/components/ui/questions";
 import { IOption } from "@/components/ui/multi-select";
 import { inferDaysPerWeek, inferProgramLength } from "@/components/program-builder/utils/helpers";
 import { equipmentOptions, healthIssuesOptions } from "@/assets/constants";
+
+// Type for buildRoutine tool output
+interface IBuildRoutineOutput {
+    routine?: THevyRoutine;
+    dayNumber?: number;
+    totalDays?: number;
+    exerciseCount?: number;
+    setCount?: number;
+    error?: string;
+    message?: string;
+}
+
+// Progress component to show build status for each day
+const BuildProgress: React.FC<{
+    completedDays: Array<{ dayNumber: number; title: string }>;
+    totalDays: number;
+    isBuilding: boolean;
+}> = ({ completedDays, totalDays, isBuilding }) => {
+    if (totalDays <= 0) return null;
+
+    return (
+        <div className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
+            <div className="flex flex-col gap-2 p-4 bg-muted/50 rounded-lg border border-border">
+                <p className="font-medium text-sm text-foreground">
+                    {completedDays.length === totalDays
+                        ? "Program built successfully!"
+                        : "Building your program..."}
+                </p>
+                <div className="flex flex-col gap-1.5">
+                    {Array.from({ length: totalDays }, (_, i) => {
+                        const dayNum = i + 1;
+                        const completed = completedDays.find(d => d.dayNumber === dayNum);
+                        const isCurrentlyBuilding = isBuilding && !completed &&
+                            dayNum === completedDays.length + 1;
+
+                        return (
+                            <div key={dayNum} className="flex items-center gap-2">
+                                <span className={cn(
+                                    "w-2.5 h-2.5 rounded-full flex-shrink-0 transition-colors duration-300",
+                                    completed ? "bg-green-500" :
+                                    isCurrentlyBuilding ? "bg-yellow-500 animate-pulse" :
+                                    "bg-gray-300 dark:bg-gray-600"
+                                )} />
+                                <span className={cn(
+                                    "text-sm transition-colors duration-300",
+                                    completed ? "text-foreground" : "text-muted-foreground"
+                                )}>
+                                    {completed
+                                        ? `Day ${dayNum}: ${completed.title}`
+                                        : isCurrentlyBuilding
+                                            ? `Day ${dayNum}: Building...`
+                                            : `Day ${dayNum}`}
+                                </span>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        </div>
+    );
+};
 
  // Helper function to generate empty hevyProgram structure
 export const generateEmptyHevyProgram = (weeksValue: string, daysValue: string): THevyRoutine[] => {
@@ -84,8 +145,86 @@ interface IProps {
 
 export const MessageBubbles: React.FC<IProps> = (props) => {
 
-    const { messages, setHevyProgram, daysPerWeek, handleIsBuilding, sendMessage, handleProgramLength, handleDaysPerWeek, handleExcludeEquipment, handleHealthIssues, isBuilding } = props;
+    const { messages, setHevyProgram, handleIsBuilding, sendMessage, handleProgramLength, handleDaysPerWeek, handleExcludeEquipment, handleHealthIssues, isBuilding, programLength, daysPerWeek } = props;
 
+    // Track the last count of completed routines to know when to finalize
+    const lastCompletedCountRef = useRef<number>(0);
+
+    // Collect all completed buildRoutine outputs from messages
+    const { completedDays, totalDays, allRoutines } = useMemo(() => {
+        const days: Array<{ dayNumber: number; title: string }> = [];
+        const routines: THevyRoutine[] = [];
+        let maxTotalDays = 0;
+
+        for (const message of messages) {
+            for (const part of message.parts) {
+                if (part.type === "tool-buildRoutine") {
+                    const toolOutput = (part as { output?: IBuildRoutineOutput }).output;
+
+                    if (toolOutput?.routine && toolOutput?.dayNumber && !toolOutput?.error) {
+                        // Check if we already have this day (avoid duplicates)
+                        if (!days.find(d => d.dayNumber === toolOutput.dayNumber)) {
+                            days.push({
+                                dayNumber: toolOutput.dayNumber,
+                                title: toolOutput.routine.title,
+                            });
+                            routines.push(toolOutput.routine);
+                        }
+
+                        if (toolOutput.totalDays && toolOutput.totalDays > maxTotalDays) {
+                            maxTotalDays = toolOutput.totalDays;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Sort by day number
+        days.sort((a, b) => a.dayNumber - b.dayNumber);
+        routines.sort((a, b) => Number(a.order) - Number(b.order));
+
+        // Use daysPerWeek as fallback for totalDays if not yet known from tool calls
+        const finalTotalDays = maxTotalDays || (daysPerWeek ? Number(daysPerWeek) : 0);
+
+        return {
+            completedDays: days,
+            totalDays: finalTotalDays,
+            allRoutines: routines
+        };
+    }, [messages, daysPerWeek]);
+
+    // Process completed routines - when all days are done, duplicate to all weeks
+    useEffect(() => {
+        // Only finalize when:
+        // 1. We have completed all days
+        // 2. The count has changed (avoid re-processing)
+        // 3. We have routines to process
+        if (
+            totalDays > 0 &&
+            completedDays.length === totalDays &&
+            completedDays.length !== lastCompletedCountRef.current &&
+            allRoutines.length > 0
+        ) {
+            lastCompletedCountRef.current = completedDays.length;
+
+            const weeks = programLength ? Number(programLength) : 1;
+            const fullProgram: THevyRoutine[] = [];
+            let routineId = 1;
+
+            for (let weekIndex = 0; weekIndex < weeks; weekIndex++) {
+                for (const routine of allRoutines) {
+                    fullProgram.push({
+                        ...routine,
+                        id: String(routineId++),
+                        folder_id: weekIndex,
+                    });
+                }
+            }
+
+            setHevyProgram(fullProgram);
+            handleIsBuilding(false);
+        }
+    }, [completedDays.length, totalDays, allRoutines, programLength, setHevyProgram, handleIsBuilding]);
 
     // Helper function to convert string[] to IOption[]
     const convertStringArrayToOptions = (
@@ -366,35 +505,7 @@ const handleSkip = () => {
                                             );
                                         }
                                         case "tool-getExerciseList": {
-                                            // Handle tool result - extract program if present (could be TOON or JSON)
-                                            const toolOutput = part.output as { program?: THevyRoutine[] | string };
-                                            if (toolOutput?.program) {
-                                                if (Array.isArray(toolOutput.program)) {
-                                                    // Already in JSON format
-                                                    setHevyProgram(toolOutput.program);
-                                                } else if (typeof toolOutput.program === 'string') {
-                                                    // TOON format string - decode it
-                                                    try {
-                                                        const decoded = decode(toolOutput.program) as Partial<THevyRoutine>[];
-                                                        if (Array.isArray(decoded) && decoded.length > 0) {
-                                                            const now = new Date().toISOString();
-                                                            const processedRoutines = decoded.map((routine, index) => ({
-                                                                id: routine.id || `routine-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`,
-                                                                title: routine.title || `Day ${index + 1}`,
-                                                                folder_id: typeof routine.folder_id === 'number' ? routine.folder_id : 0,
-                                                                order: routine.order || String((index % (daysPerWeek ? Number(daysPerWeek) : 7)) + 1),
-                                                                notes: routine.notes || '',
-                                                                exercises: routine.exercises || [],
-                                                                created_at: routine.created_at || now,
-                                                                updated_at: routine.updated_at || now,
-                                                            }));
-                                                            setHevyProgram(processedRoutines);
-                                                        }
-                                                    } catch (e) {
-                                                        console.error('Failed to decode TOON program from tool output:', e);
-                                                    }
-                                                }
-                                            }
+                                            // getExerciseList is used by the AI to look up available exercises.
                                             return null;
                                         }
                                         case "tool-getMoreInfoQuestions": {
@@ -422,38 +533,26 @@ const handleSkip = () => {
 
                                             return null;
                                         }
-                                        default: {
-                                            // Check if part is a tool result with program data (could be TOON or JSON)
-                                            if (part.type === 'tool-result' && 'output' in part) {
-                                                const output = (part as { output?: { program?: THevyRoutine[] | string } }).output;
-                                                if (output?.program) {
-                                                    if (Array.isArray(output.program)) {
-                                                        // Already in JSON format
-                                                        setHevyProgram(output.program);
-                                                    } else if (typeof output.program === 'string') {
-                                                        // TOON format string - decode it
-                                                        try {
-                                                            const decoded = decode(output.program) as Partial<THevyRoutine>[];
-                                                            if (Array.isArray(decoded) && decoded.length > 0) {
-                                                                const now = new Date().toISOString();
-                                                                const processedRoutines = decoded.map((routine, index) => ({
-                                                                    id: routine.id || `routine-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`,
-                                                                    title: routine.title || `Day ${index + 1}`,
-                                                                    folder_id: typeof routine.folder_id === 'number' ? routine.folder_id : 0,
-                                                                    order: routine.order || String((index % (daysPerWeek ? Number(daysPerWeek) : 7)) + 1),
-                                                                    notes: routine.notes || '',
-                                                                    exercises: routine.exercises || [],
-                                                                    created_at: routine.created_at || now,
-                                                                    updated_at: routine.updated_at || now,
-                                                                }));
-                                                                setHevyProgram(processedRoutines);
-                                                            }
-                                                        } catch (e) {
-                                                            console.error('Failed to decode TOON program from tool output:', e);
-                                                        }
-                                                    }
-                                                }
+                                        case "tool-buildRoutine": {
+                                            // Show progress UI for buildRoutine calls
+                                            // Only render the progress component once (on the first buildRoutine tool call)
+                                            const toolOutput = (part as { output?: IBuildRoutineOutput }).output;
+
+                                            // Only render progress on day 1 to avoid duplicates
+                                            if (toolOutput?.dayNumber === 1 && totalDays > 0) {
+                                                return (
+                                                    <BuildProgress
+                                                        key={`${message.id}-${index}-progress`}
+                                                        completedDays={completedDays}
+                                                        totalDays={totalDays}
+                                                        isBuilding={isBuilding}
+                                                    />
+                                                );
                                             }
+
+                                            return null;
+                                        }
+                                        default: {
                                             return null;
                                         }
                                     }

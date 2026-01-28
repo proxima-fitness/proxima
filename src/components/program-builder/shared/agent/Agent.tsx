@@ -61,7 +61,48 @@ interface IProps {
 
 export const Agent: React.FC<IProps> = (props) => {
 
-    const { search, sidebarPosition, onTogglePosition, setHevyProgram, sex, age, daysPerWeek, specificDays, programLength, workoutDuration, activityLevel, goals, specialization, equipment, focusAreas, difficultyLevel, excludeAreas, excludeEquipment, excludeSpecializations, healthIssues, programTitle, explore, handleSex, handleAge, handleDaysPerWeek, handleSpecificDays, handleProgramLength, handleWorkoutDuration, handleActivityLevel, handleGoals, handleSpecialization, handleEquipment, handleFocusAreas, handleDifficultyLevel, handleExcludeAreas, handleExcludeEquipment, handleExcludeSpecializations, handleHealthIssues, handleProgramTitle, handleExplore } = props;
+    const {
+        search,
+        sidebarPosition,
+        onTogglePosition,
+        setHevyProgram,
+        sex,
+        age,
+        daysPerWeek,
+        specificDays,
+        programLength,
+        workoutDuration,
+        activityLevel,
+        goals,
+        specialization,
+        equipment,
+        focusAreas,
+        difficultyLevel,
+        excludeAreas,
+        excludeEquipment,
+        excludeSpecializations,
+        healthIssues,
+        programTitle,
+        explore,
+        handleSex,
+        handleAge,
+        handleDaysPerWeek,
+        handleSpecificDays,
+        handleProgramLength,
+        handleWorkoutDuration,
+        handleActivityLevel,
+        handleGoals,
+        handleSpecialization,
+        handleEquipment,
+        handleFocusAreas,
+        handleDifficultyLevel,
+        handleExcludeAreas,
+        handleExcludeEquipment,
+        handleExcludeSpecializations,
+        handleHealthIssues,
+        handleProgramTitle,
+        handleExplore,
+    } = props;
 
 
     const [input, setInput] = useState("");

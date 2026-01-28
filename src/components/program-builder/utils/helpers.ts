@@ -16,6 +16,7 @@ export const getMaxFolderId = (routines: THevyRoutine[]): number => {
 
 
 export const inferDaysPerWeek = (text: string) => {
+    if (!text) return "";
     const normalized = text.toLowerCase();
 
     // Hardcoded common expressions
@@ -76,6 +77,7 @@ export const inferDaysPerWeek = (text: string) => {
 };
 
 export const inferProgramLength = (text: string) => {
+    if (!text) return "";
     const normalized = text.toLowerCase();
 
     // Pattern: "12 weeks", "8 week program", "6-week", "for 10 weeks"

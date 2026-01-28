@@ -19,7 +19,7 @@ interface IProps {
 export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyProgram }: IProps = {}) {
     /**
      * Title: getExerciseListTool
-     * Description: Tool that creates first week of workout Program in TOON format.
+     * Description: Tool that creates first week of workout Program in JSON format.
      * @returns { Tool }
      */
     const getExerciseListTool = tool({
@@ -156,7 +156,7 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
      * @returns { Tool }
      */
     const getCurrentProgramTool = tool({
-        description: 'Returns the current workout program state in TOON format. Use this tool to check what program currently exists before creating a new one or modifying an existing one.',
+        description: 'Returns the current workout program state in JSON format. Use this tool to check what program currently exists before creating a new one or modifying an existing one.',
         inputSchema: z.object({}),
         execute: async () => {
 
@@ -164,8 +164,104 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
             currentProgram: hevyProgram,
             hasProgram: hevyProgram && hevyProgram.length > 0,
             message: hevyProgram && hevyProgram.length > 0
-                ? 'A program currently exists in TOON format. You can modify it or create a new one based on user requests. Always return programs in TOON format.'
-                : 'No program currently exists. Create a new program based on user requests. Always return programs in TOON format.',
+                ? 'A program currently exists in JSON format. You can modify it or create a new one based on user requests. Always return programs in JSON format as a THevyRoutine[] array.'
+                : 'No program currently exists. Create a new program based on user requests. Always return programs in JSON format as a THevyRoutine[] array.',
+            };
+        },
+    });
+
+    /**
+     * Title: buildRoutineTool
+     * Description: Tool to build a single routine/day for the workout program.
+     * @returns { Tool }
+     */
+    const buildRoutineTool = tool({
+        description: 'Builds a single routine/day for the workout program. Call this tool ONCE for each day in the program. For example, for a 4-day program, call this tool 4 times (Day 1, Day 2, Day 3, Day 4). The UI will show progress as each day completes.',
+        inputSchema: z.object({
+            dayNumber: z.number().describe('The day number (1, 2, 3, etc.) - must be called in order'),
+            totalDays: z.number().describe('Total number of days in the program'),
+            title: z.string().describe('The routine/day title (e.g., "Push Day", "Upper Body")'),
+            notes: z.string().optional().describe('Optional notes for the routine'),
+            exercises: z.array(z.object({
+                exercise_template_id: z.string().describe('The exercise ID from the getExerciseList results - MUST be an exact match'),
+                title: z.string().describe('The exercise title'),
+                notes: z.string().optional().describe('Optional notes for the exercise'),
+                rest_seconds: z.string().nullable().optional().describe('Rest time in seconds between sets'),
+                supersets_id: z.number().nullable().optional().describe('Superset ID if part of a superset'),
+                sets: z.array(z.object({
+                    type: z.enum(['normal', 'warmup', 'dropset', 'failure']).describe('The type of set'),
+                    reps: z.number().nullable().optional().describe('Number of reps'),
+                    weight_kg: z.number().nullable().optional().describe('Weight in kg'),
+                    rpe: z.number().nullable().optional().describe('RPE (Rate of Perceived Exertion) 1-10'),
+                    distance_meters: z.number().nullable().optional().describe('Distance in meters'),
+                    duration_seconds: z.number().nullable().optional().describe('Duration in seconds'),
+                    custom_metric: z.number().nullable().optional().describe('Custom metric value'),
+                })).describe('Array of sets for this exercise'),
+            })).describe('Array of exercises for this routine'),
+        }),
+
+        execute: async ({ dayNumber, totalDays, title, notes, exercises }) => {
+            try {
+                const timestamp = new Date().toISOString();
+
+                // Build a single THevyRoutine
+                const routine: THevyRoutine = {
+                    id: String(dayNumber),
+                    title: title,
+                    folder_id: 0, // Week 1 = folder_id 0
+                    order: String(dayNumber),
+                    notes: notes || '',
+                    created_at: timestamp,
+                    updated_at: timestamp,
+                    exercises: exercises.map((exercise, exerciseIndex) => ({
+                        index: exerciseIndex,
+                        title: exercise.title,
+                        notes: exercise.notes || '',
+                        rest_seconds: exercise.rest_seconds ?? null,
+                        exercise_template_id: exercise.exercise_template_id,
+                        supersets_id: exercise.supersets_id ?? null,
+                        sets: exercise.sets.map((set, setIndex) => ({
+                            index: setIndex,
+                            type: set.type,
+                            reps: set.reps ?? null,
+                            weight_kg: set.weight_kg ?? null,
+                            rpe: set.rpe ?? null,
+                            distance_meters: set.distance_meters ?? null,
+                            duration_seconds: set.duration_seconds ?? null,
+                            custom_metric: set.custom_metric ?? null,
+                        })),
+                    })),
+                };
+
+                return {
+                    routine,
+                    dayNumber,
+                    totalDays,
+                    exerciseCount: exercises.length,
+                    setCount: exercises.reduce((sum, e) => sum + e.sets.length, 0),
+                };
+
+            } catch (error) {
+                console.error('Error in buildRoutineTool:', error);
+                return {
+                    error: 'Failed to build routine',
+                    message: error instanceof Error ? error.message : 'Unknown error',
+                };
+            }
+        },
+
+        toModelOutput: async ({ output }) => {
+            if (output.error) {
+                return {
+                    type: 'text' as const,
+                    value: `Error: ${output.message || 'Failed to build routine'}`,
+                };
+            }
+
+            // Return minimal summary - UI extracts routine data from part.output
+            return {
+                type: 'text' as const,
+                value: `Day ${output.dayNumber}/${output.totalDays} complete: ${output?.routine?.title ? output.routine.title : 'No routine title'} (${output.exerciseCount} exercises, ${output.setCount} sets)`,
             };
         },
     });
@@ -174,5 +270,6 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
         getExerciseList: getExerciseListTool,
         getMoreInfoQuestions: getMoreInfoQuestionsTool,
         getCurrentProgram: getCurrentProgramTool,
+        buildRoutine: buildRoutineTool,
     };
 }
