@@ -20,7 +20,11 @@ sdk.start();
 export async function POST(req: Request) {
 
     try {
-        const { messages, hevyProgram, daysPerWeek, programLength, excludeAreas, excludeEquipment, healthIssues } = await req.json();
+        const { messages, hevyProgram = [], daysPerWeek, programLength, excludeAreas = "", excludeEquipment = "", healthIssues = "" } = await req.json();
+
+        console.log("messsages in route", messages);
+        console.log("daysPerWeek in route", daysPerWeek);
+        console.log("programLength in route", programLength);
 
         const systemPrompt = instructions({ hevyProgram, daysPerWeek, programLength });
         const tools = getTools({ excludeAreas, excludeEquipment, healthIssues, hevyProgram });

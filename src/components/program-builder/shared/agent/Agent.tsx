@@ -12,7 +12,7 @@ import { DefaultChatTransport } from "ai";
 import { Filters } from "./Filters"
 import { Chat } from "./Chat"
 import { Navbar } from "./Navbar"
-import { Analyzing } from "./Analyzing"
+import { Thinking } from "./Thinking"
 import { MessageBubbles } from "./MessageBubbles"
 
 interface IProps {
@@ -61,28 +61,18 @@ interface IProps {
 
 export const Agent: React.FC<IProps> = (props) => {
 
-    const { search, sidebarPosition, onTogglePosition, setHevyProgram, hevyProgram, sex, age, daysPerWeek, specificDays, programLength, workoutDuration, activityLevel, goals, specialization, equipment, focusAreas, difficultyLevel, excludeAreas, excludeEquipment, excludeSpecializations, healthIssues, programTitle, explore, handleSex, handleAge, handleDaysPerWeek, handleSpecificDays, handleProgramLength, handleWorkoutDuration, handleActivityLevel, handleGoals, handleSpecialization, handleEquipment, handleFocusAreas, handleDifficultyLevel, handleExcludeAreas, handleExcludeEquipment, handleExcludeSpecializations, handleHealthIssues, handleProgramTitle, handleExplore } = props;
+    const { search, sidebarPosition, onTogglePosition, setHevyProgram, sex, age, daysPerWeek, specificDays, programLength, workoutDuration, activityLevel, goals, specialization, equipment, focusAreas, difficultyLevel, excludeAreas, excludeEquipment, excludeSpecializations, healthIssues, programTitle, explore, handleSex, handleAge, handleDaysPerWeek, handleSpecificDays, handleProgramLength, handleWorkoutDuration, handleActivityLevel, handleGoals, handleSpecialization, handleEquipment, handleFocusAreas, handleDifficultyLevel, handleExcludeAreas, handleExcludeEquipment, handleExcludeSpecializations, handleHealthIssues, handleProgramTitle, handleExplore } = props;
+
 
     const [input, setInput] = useState("");
+    console.log("daysPerWeek in Agent", daysPerWeek);
+    console.log("programLength in Agent", programLength);
     const { messages, sendMessage, status, stop } = useChat({
       transport: new DefaultChatTransport({
         api: '/api/chat',
-        fetch: async (url, options) => {
-          const body = options?.body ? JSON.parse(options.body as string) : {};
-          // Pass daysPerWeek and other relevant params to the chat API
-          body.hevyProgram = hevyProgram;
-          body.daysPerWeek = daysPerWeek ? Number(daysPerWeek) : undefined;
-          body.programLength = programLength ? Number(programLength) : undefined;
-          body.excludeAreas = excludeAreas.length > 0 ? excludeAreas.map(area => area.value).join(', ') : undefined;
-          body.excludeEquipment = excludeEquipment.length > 0 ? excludeEquipment.map(eq => eq.value).join(', ') : undefined;
-          body.healthIssues = healthIssues.length > 0 ? healthIssues.map(issue => issue.value).join(', ') : undefined;
-          return fetch(url, {
-            ...options,
-            body: JSON.stringify(body),
-          });
-        },
       }),
     });
+
     const isSubmitted = status === 'submitted';
     const isStreaming = status === 'streaming';
     const isLoading = isSubmitted || isStreaming;
@@ -194,7 +184,7 @@ export const Agent: React.FC<IProps> = (props) => {
                             isBuilding={isBuilding}
                             handleIsBuilding={handleIsBuilding}
                             />
-                        {isSubmitted && <Analyzing />}
+                        {isSubmitted && <Thinking />}
                     </>
                 )
                 }

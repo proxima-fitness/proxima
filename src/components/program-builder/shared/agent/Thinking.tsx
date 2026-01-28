@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 import { Loader2 } from "lucide-react"
 
 
-export const Analyzing: React.FC = () => {
+export const Thinking: React.FC = () => {
     return (
         <Message
             className={cn(
@@ -18,7 +18,7 @@ export const Analyzing: React.FC = () => {
                 <div className="text-foreground prose w-full flex-1 rounded-lg bg-transparent p-0">
                     <div className="flex items-center gap-2 text-muted-foreground">
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        <span className="text-sm">Analyzing...</span>
+                        <span className="text-sm">Thinking...</span>
                     </div>
                 </div>
             </div>

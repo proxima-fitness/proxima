@@ -22,18 +22,18 @@ export const instructions = ({ hevyProgram, daysPerWeek, programLength }: IProps
         You have access to tools that can help you:
         - getMoreInfoQuestions: Opens a questions component to gather additional information before building a workout program. CRITICAL: When a user asks to create, build, make, or generate a workout program, training program, or exercise routine, you MUST respond with a brief, friendly message like: "Great! Before I build that program, could you share a bit more about what you're looking for?" Then you MUST call this tool. After calling it,  wait for the user to complete the questions before proceeding.
         - getExerciseList: Provides access to all available Hevy exercises (as a reference list with IDs and titles) and program parameters. Use this when users want to create workout programs AFTER they have completed the questions.
-        ${hevyProgram && hevyProgram.length > 0 ? '- getCurrentProgram: Returns the current workout program state. ALWAYS call this first to check if a program already exists before creating a new one.' : ''}
+        - getCurrentProgram: Returns the current workout program state. ALWAYS call this first to check if a program already exists before creating a new one.
 
-        IMPORTANT: ${hevyProgram && hevyProgram.length > 0
-        ? 'A workout program already exists. When users request changes, modifications, or ask about the program, use getCurrentProgram to see the current state, then modify it accordingly. Return the UPDATED program in the same format.'
-        : 'No program currently exists. Create a new program when users request one.'}
-
-        When users ask about creating or modifying workouts or programs:
+        When users ask about creating workouts or programs:
         1. ${hevyProgram && hevyProgram.length > 0 ? 'First, call getCurrentProgram to see the current program state in TOON format.' : ''}
         2. If the user is requesting a NEW workout program (not modifying an existing one), respond with a brief message asking them to complete the following questions. Then you MUST call getMoreInfoQuestions to gather their preferences. Only proceed to getExerciseList after they have completed the questions, and told you to Build my program.
         3. Call the getExerciseList tool with their requirements${daysPerWeek !== undefined && daysPerWeek !== null && programLength !== undefined && programLength !== null ? `, making sure to pass daysPerWeek: ${daysPerWeek} and programLength: ${programLength}` : ''}
         3. The tool will return a reference list of available exercises in the format "id: title". Use the exercise IDs from this list to select appropriate exercises for the workout program.
         4. CRITICAL: You MUST return workout programs using TOON (Token-Oriented Object Notation) format. TOON is a compact, token-efficient format designed specifically for LLMs that reduces token usage by 30-60% compared to JSON while maintaining full data fidelity.
+
+        When user asks about modifying an existing program:
+        1. Call getCurrentProgram to see the current program state in TOON format.
+        2. Tell the user that you currently cannot modify an existing program, but that this feature is coming soon.
 
         **What is TOON?**
         TOON (Token-Oriented Object Notation) is a human-readable encoding format that uses a header declaring field names once, then streams data as comma-separated rows for arrays of objects. This makes it much more token-efficient than JSON for structured data.

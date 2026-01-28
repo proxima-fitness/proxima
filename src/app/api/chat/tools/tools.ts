@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { getHevyExercises } from '@/components/program-builder/api/hevy';
-import { encode } from '@toon-format/toon';
 import { sampleQuestions } from '@/assets/constants';
 import { tool } from 'ai';
 
@@ -28,14 +27,12 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
         description: 'Provides access to all available Hevy exercises for building workout programs. Use this tool when users request workout programs. The tool returns a reference list of exercises (ID and title only) - you should then return a minimal workout structure (TTextToJsonResponse format) with just exercise IDs, titles, sets, reps, and RPE.',
         inputSchema: z.object({
             userRequest: z.string().describe('The user\'s workout request or description'),
-            daysPerWeek: z.number().optional().describe('Number of workout days per week (1-7)'),
-            programLength: z.number().optional().describe('Program length in weeks (defaults to 12 unless specified otherwise)'),
             excludeAreas: z.string().optional().describe('Comma-separated list of muscle groups to exclude'),
             excludeEquipment: z.string().optional().describe('Comma-separated list of equipment to exclude'),
             healthIssues: z.string().optional().describe('Comma-separated list of health issues to consider'),
         }),
 
-        execute: async ({ userRequest, daysPerWeek, programLength, excludeAreas: agentExcludeAreas, excludeEquipment: agentExcludeEquipment, healthIssues: agentHealthIssues }) => {
+        execute: async ({ userRequest, excludeAreas: agentExcludeAreas, excludeEquipment: agentExcludeEquipment, healthIssues: agentHealthIssues }) => {
             try {
                 console.log("entered getExerciseListTool execute");
                 // Use agent-provided values if available, otherwise fall back to closure values
@@ -78,8 +75,6 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
                     totalExercises: filteredExercises.length,
                     parameters: {
                         userRequest,
-                        daysPerWeek: daysPerWeek,
-                        programLength: programLength,
                         excludeAreas: finalExcludeAreas,
                         excludeEquipment: finalExcludeEquipment,
                         healthIssues: finalHealthIssues,
@@ -169,9 +164,9 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
         description: 'Returns the current workout program state in TOON format. Use this tool to check what program currently exists before creating a new one or modifying an existing one.',
         inputSchema: z.object({}),
         execute: async () => {
-            const programToon = hevyProgram && hevyProgram.length > 0 ? encode(hevyProgram) : null;
+
             return {
-            currentProgram: programToon,
+            currentProgram: hevyProgram,
             hasProgram: hevyProgram && hevyProgram.length > 0,
             message: hevyProgram && hevyProgram.length > 0
                 ? 'A program currently exists in TOON format. You can modify it or create a new one based on user requests. Always return programs in TOON format.'

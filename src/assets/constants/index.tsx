@@ -6198,22 +6198,10 @@ export const sampleQuestions: IQuestion[] = [
       id: "exclude-equipment",
       question: "Exclude equipment?",
       type: "multi-select",
-      options: [
-          { id: "barbell", label: "Barbell" },
-          { id: "dumbbell", label: "Dumbbell" },
-          { id: "kettlebell", label: "Kettlebell" },
-          { id: "machine", label: "Machine" },
-          { id: "bodyweight", label: "Bodyweight" },
-          { id: "smith machine", label: "Smith Machine" },
-          { id: "cable", label: "Cable" },
-          { id: "cardio", label: "Cardio" },
-          { id: "band", label: "Band" },
-          { id: "suspension", label: "Suspension" },
-          { id: "resistance_band", label: "Resistance band" },
-          { id: "plate", label: "Plate" },
-          { id: "other", label: "Other" },
-          { id: "none", label: "None" },
-      ],
+      options: equipmentOptions.map(opt => ({
+        id: opt.value,
+        label: opt.label
+      })),
       allowOther: false,
     },
     {
