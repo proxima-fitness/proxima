@@ -2,6 +2,7 @@ import { people03, people02, people01, people04, people05, people06, instagram, 
 import humanizeDuration from "humanize-duration";
 import { IOption } from '@/components/ui/multi-select';
 import { BicepsFlexedIcon, BookOpenIcon, Calculator, FootprintsIcon, SquarePowerIcon } from "lucide-react";
+import { IQuestion } from "@/components/ui/questions";
 
 export const suggestionGroups = [
     {
@@ -74,7 +75,7 @@ export const programBuilderSteps = [
     { title: "Step 1", description: "Prompt your Program" },
     { title: "Step 2", description: "Edit and Refine" },
     { title: "Step 3", description: "Finish and Review" },
-    { title: "Step 4", description: "Sign in and Start Tracking" },
+    { title: "Step 4", description: "Sign in and Export Program" },
 ];
 
 export const primaryMuscleGroups = [
@@ -6172,3 +6173,94 @@ export const healthIssuesOptions: IOption[] = [
     { label: "Hip joints", value: "hip joints"},
     { label: "Knee injuries", value: "knee injuries"},
 ];
+
+
+export const sampleQuestions: IQuestion[] = [
+    {
+      id: "program-length",
+      question: "Program length?",
+      options: programLengthOptions.map(opt => ({
+        id: opt.value,
+        label: opt.label === "8 Weeks" ? "8 Weeks (Recommended)" : opt.label
+      })),
+      allowOther: false,
+    },
+    {
+      id: "days-per-week",
+      question: "Days per week?",
+      options: dayPerWeekOptions.map(opt => ({
+        id: opt.value,
+        label: opt.label
+      })),
+      allowOther: false,
+    },
+    {
+      id: "exclude-equipment",
+      question: "Exclude equipment?",
+      type: "multi-select",
+      options: equipmentOptions.map(opt => ({
+        id: opt.value,
+        label: opt.label
+      })),
+      allowOther: false,
+    },
+    {
+      id: "health-issues",
+      question: "Health issues to consider?",
+      type: "multi-select",
+      options: healthIssuesOptions.map(opt => ({
+        id: opt.value,
+        label: opt.label
+      })),
+      allowOther: true,
+    },
+    {
+      id: "split-type",
+      question: "Preferred split?",
+      options: [
+        { id: "default", label: "Based on your goals (Recommended)" },
+        { id: "ppl", label: "PPL (Push, Pull, Legs)" },
+        { id: "pplul", label: "PPLUL (Push, Pull, Legs, Upper, Lower)" },
+        { id: "ul", label: "UL (Upper, Lower)" },
+        { id: "fb", label: "FB (Full Body)" },
+        { id: "other", label: "Other" },
+      ],
+      allowOther: true,
+    },
+    {
+      id: "exercise-variability",
+      question: "Exercise variability?",
+      options: [
+        { id: "little", label: "Don't vary the exercises (Recommended for strength and hypertrophy programs)" },
+        { id: "lots", label: "Vary the exercises (Recommended if you get bored easily)" },
+      ],
+      allowOther: true,
+    },
+    {
+      id: "progression-system",
+      question: "Add progressive overload system?",
+      subtitle: {
+        text: "Learn more",
+        link: "https://jackproxima.substack.com/p/demystifying-progressive-overload"
+      },
+      options: [
+        { id: "default", label: "Based on your goals (Recommended)" },
+        { id: "linear", label: "Linear" },
+        { id: "double", label: "Double " },
+        { id: "rpe-based", label: "RPE-based" },
+        { id: "wave-loading", label: "Wave-loading" },
+        { id: "density", label: "Density" },
+        { id: "other", label: "Other" },
+      ],
+      allowOther: true,
+    },
+    {
+      id: "deload-week",
+      question: "Add a Deload week?",
+      options: [
+        { id: "yes", label: "Yes ( Add an easier week at the end of the program)" },
+        { id: "no", label: "No ( No deload week at the end of the program)" },
+      ],
+      allowOther: false,
+    },
+  ];

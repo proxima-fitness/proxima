@@ -17,7 +17,7 @@ export const CustomPrograms: React.FC = () => {
                     Create A Tailored <br className="sm:block hidden" />Program in Seconds
                 </h2>
                 <p className={ `${styles.paragraph} max-w-[470px] mt-5` }>
-                    Through our AI Program Builder, you can easily generate your own workout program based on your preferences. Plus, once your program is ready, you can share it on the feed page, inspiring others and building a stronger fitness community!
+                    Through our Agentic Workout Builder, you can easily generate your own workout program based on your preferences. Plus, once your program is ready, you can share it on the feed page, inspiring others and building a stronger fitness community!
                 </p>
                 <Link href="/"><Button text={ "Build Program" } styles={ `py-2 mt-10` } /></Link>
             </div>

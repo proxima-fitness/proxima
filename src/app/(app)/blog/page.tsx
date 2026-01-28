@@ -22,7 +22,7 @@ export default function BlogPage() {
                     </Button>
                 </Link>
             </div>
-            <div className={ `bg-white flex items-center justify-center flex-col px-12 py-6` }>
+            <div className={ `bg-background flex items-center justify-center flex-col px-12 py-6` }>
                 {/* <Suspense fallback={<div className="h-[3000px]"></div>}> */}
                 <BlogLayout initialBlogs={ initialBlogs } />
                 {/* </Suspense> */}

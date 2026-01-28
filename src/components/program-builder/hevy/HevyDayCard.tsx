@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
-import { EllipsisIcon, CopyIcon, PlusIcon, NotebookTextIcon, LinkIcon } from "lucide-react";
+import { EllipsisIcon, PlusIcon, NotebookTextIcon, LinkIcon } from "lucide-react";
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useEffect, useState } from "react";
 import {
@@ -146,6 +146,22 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         };
     }, [day.id, day.order, focusedCardId, folder_id, handleDeleteDay, handleOpenAddNoteDialog]);
 
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (focusedCardId === day.id) {
+                if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "y") {
+                    event.preventDefault();
+                    setDuplicateDayOpen(true);
+                }
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [day.id, focusedCardId, setDuplicateDayOpen]);
+
     const toggleExerciseSelection = (exerciseIndex: number) => {
         if (selectedExercises.includes(exerciseIndex)) {
             setSelectedExercises(selectedExercises.filter((id) => id !== exerciseIndex));
@@ -182,12 +198,12 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                 <Card
                     tabIndex={ 0 }
                     onClick={ handleFocus }
-                    className={`border-[4px] border-gray-100 ${resolvedTheme === "dark" ? "border-extraDarkGray" : "border-gray-100 bg-lightGray"} dark:border-extraDarkGray focus:dark:border-lightSecondary focus:border-gray-300 w-full max-w-full group py-4 px-2 sm:px-4 sm:min-w-[400px] sm:max-w-[400px] my-2 box-border`}>
-                    <div className="flex flex-row justify-between items-center">
-                        <div className="font-main text-lg flex flex-row">
+                    className={`border-[3px] border-gray-100 ${resolvedTheme === "dark" ? "border-extraDarkGray bg-extraDarkGray shadow-xl shadow-black/20" : "border-gray-100 bg-lightGray shadow-lg shadow-gray-200/50"} dark:border-extraDarkGray dark:bg-extraDarkGray dark:shadow-xl dark:shadow-black/20 focus:dark:border-lightSecondary focus:border-gray-300 w-full max-w-full group py-4 sm:pt-2 px-1 sm:px-0 sm:min-w-[400px] sm:max-w-[400px] my-2 box-border`}>
+                    <div className="flex flex-row justify-between items-center px-3 py-1">
+                        <div className="font-main text-lg flex flex-row whitespace-nowrap">
                             Day {day.order}
                         </div>
-                        <div className="font-secondary text-md">
+                        <div className="font-secondary text-md min-w-0 flex-1">
                             { editTitleOpen ?
                                 <Input
                                     value={ currentTitle }
@@ -205,12 +221,21 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                     autoFocus
                                 />
                                 :
-                                <div className="line-clamp-1 px-4">
-                                    {day.title}
-                                </div>
+                                <TooltipProvider delayDuration={ 0 }>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="truncate px-4">
+                                                {day.title}
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="bg-gray-600 text-white rounded-lg">
+                                            <p>{day.title}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
                             }
                         </div>
-                        <div className="flex flex-row gap-2">
+                        <div className="flex flex-col gap-2">
                             { day.notes && day.notes.length > 0 &&
                             <TooltipProvider delayDuration={ 0 }>
                                 <Tooltip>
@@ -250,7 +275,11 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                         Add Note
                                         <DropdownMenuShortcut>⌘V</DropdownMenuShortcut>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={ () => {
+                                    <DropdownMenuItem onClick={ () => { setDuplicateDayOpen(true); setDropdownOpen(false) } } className="cursor-pointer">
+                                        Duplicate Day
+                                        <DropdownMenuShortcut>⌘Y</DropdownMenuShortcut>
+                                    </DropdownMenuItem>
+                                    {/* <DropdownMenuItem onClick={ () => {
                                         // handleOpenGenerateDayDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true });
                                         setDropdownOpen(false);
                                     } }
@@ -258,27 +287,13 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                     >
                                         Generate Day
                                         <DropdownMenuShortcut>⌘G</DropdownMenuShortcut>
-                                    </DropdownMenuItem>
+                                    </DropdownMenuItem> */}
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                            <TooltipProvider delayDuration={ 0 }>
-                                <Tooltip>
-                                    <TooltipTrigger
-                                        className="cursor-pointer group-hover:opacity-100 group-active:opacity-100 opacity-0 "
-                                    >
-                                        <div onClick={ () => setDuplicateDayOpen(true) }>
-                                            <CopyIcon />
-                                        </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent className="bg-gray-600 text-white rounded-lg">
-                                        <p>Duplicate Day</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
                         </div>
                     </div>
 
-                    <div className="text-xs flex flex-row justify-between mt-4 gap-2 sm:gap-4 border-t-2 border-b-2 py-2 border-gray-200 dark:text-offWhite dark:border-darkGray">
+                    <div className="text-xs mt-2 flex flex-row justify-between pl-2 pr-2 gap-2 sm:gap-4 border-t border-b py-2 border-gray-200 dark:text-offWhite dark:border-darkGray bg-[#e8e8e8] dark:bg-[#0a0f1a]">
                         <div className="flex flex-row gap-2 sm:gap-4 flex-shrink min-w-0">
                             <div className="flex-shrink-0">
                                 #
@@ -313,13 +328,13 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                         />
                     </div>
                     <div
-                        className="flex items-center justify-center"
+                        className="flex items-center justify-center px-3 py-2"
                         onClick={ () => {
                             handleOpenAddExerciseDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true});
                          } }>
                         <Button variant="ghost" className="mt-1 w-full font-bold uppercase h-12 hover:bg-gray-200 dark:hover:bg-darkGray text-black dark:text-white"><PlusIcon />Add Exercise</Button>
                     </div>
-                    <div className="flex flex-row justify-between items-center">
+                    <div className="flex flex-row justify-between items-center px-3">
                         {editMode ? (
                             <div className="w-full p-4 bg-[#e6f7f9] dark:bg-darkGray border-t border-[#33bbcf]">
                                 <div className="flex justify-between items-center mb-2">
@@ -356,8 +371,13 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                         ) : (
                             <Button
                                 variant="ghost"
-                                className="mt-1 w-full font-bold bg-lightGray dark:bg-darkGray text-lightSecondary uppercase hover:text-lightSecondary hover:bg-gray-200 h-12 border-2 border-lightSecondary dark:border-darkGray"
-                                onClick={() => setEditMode(true)}
+                                disabled={!day.exercises || day.exercises.length < 2}
+                                className="mt-1 w-full font-bold bg-lightGray dark:bg-darkGray text-lightSecondary disabled:text-gray-500 uppercase hover:text-lightSecondary hover:bg-gray-200 h-12 border-2 border-lightSecondary dark:border-darkGray disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-lightGray dark:disabled:hover:bg-darkGray disabled:border-gray-300 dark:disabled:border-gray-600"
+                                onClick={() => {
+                                    if (day.exercises && day.exercises.length >= 2) {
+                                        setEditMode(true);
+                                    }
+                                }}
                             >
                                 <LinkIcon className="mr-2" />Create Superset
                             </Button>

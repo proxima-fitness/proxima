@@ -16,6 +16,7 @@ export const getMaxFolderId = (routines: THevyRoutine[]): number => {
 
 
 export const inferDaysPerWeek = (text: string) => {
+    if (!text) return "";
     const normalized = text.toLowerCase();
 
     // Hardcoded common expressions
@@ -65,6 +66,68 @@ export const inferDaysPerWeek = (text: string) => {
                     const termIndex = sentence.terms.indexOf(term);
                     const nextFew = sentence.terms.slice(termIndex, termIndex + 4).map((t: { normal: string; }) => t.normal).join(" ");
                     if (/(day|days|times).*(week|program)?/.test(nextFew)) {
+                        return val.toString();
+                    }
+                }
+            }
+        }
+    }
+
+    return "";
+};
+
+export const inferProgramLength = (text: string) => {
+    if (!text) return "";
+    const normalized = text.toLowerCase();
+
+    // Pattern: "12 weeks", "8 week program", "6-week", "for 10 weeks"
+    const weeksMatch = normalized.match(/(\d+)\s*[-]?\s*week(s)?/);
+    if (weeksMatch) {
+        const num = parseInt(weeksMatch[1], 10);
+        if (!isNaN(num) && num >= 1 && num <= 52) {
+            return num.toString();
+        }
+    }
+
+    // Pattern: "12 week program", "8 week training", "program for 6 weeks"
+    const programWeeksMatch = normalized.match(/(?:program|training|plan|routine)\s*(?:for|of|with)?\s*(\d+)\s*week(s)?/);
+    if (programWeeksMatch) {
+        const num = parseInt(programWeeksMatch[1], 10);
+        if (!isNaN(num) && num >= 1 && num <= 52) {
+            return num.toString();
+        }
+    }
+
+    // Pattern: "build a 12 week", "create 8 week", "make a 6 week"
+    const buildWeeksMatch = normalized.match(/(?:build|create|make|generate)\s*(?:a|an)?\s*(\d+)\s*week/);
+    if (buildWeeksMatch) {
+        const num = parseInt(buildWeeksMatch[1], 10);
+        if (!isNaN(num) && num >= 1 && num <= 52) {
+            return num.toString();
+        }
+    }
+
+    // Pattern: "for 12 weeks", "over 8 weeks", "during 6 weeks"
+    const forWeeksMatch = normalized.match(/(?:for|over|during|in)\s*(\d+)\s*week(s)?/);
+    if (forWeeksMatch) {
+        const num = parseInt(forWeeksMatch[1], 10);
+        if (!isNaN(num) && num >= 1 && num <= 52) {
+            return num.toString();
+        }
+    }
+
+    // NLP fallback
+    const doc = nlp(text);
+    const json = doc.json();
+
+    for (const sentence of json) {
+        for (const term of sentence.terms) {
+            if (term.tags.includes("Value")) {
+                const val = term.number || parseInt(term.normal, 10);
+                if (!isNaN(val) && val >= 1 && val <= 52) {
+                    const termIndex = sentence.terms.indexOf(term);
+                    const nextFew = sentence.terms.slice(termIndex, termIndex + 4).map((t: { normal: string; }) => t.normal).join(" ");
+                    if (/week(s)?/.test(nextFew)) {
                         return val.toString();
                     }
                 }

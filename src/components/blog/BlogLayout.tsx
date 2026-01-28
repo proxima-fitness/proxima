@@ -71,8 +71,8 @@ export default function BlogLayout({ initialBlogs }: { initialBlogs: Promise<TBl
                         </PaginationContent>
                     </Pagination>
                 </div>
-                <div className="sm:border-l sm:border-gray-300 flex flex-col justify-start items-start px-4">
-                    <span className="font-bold text-2xl pb-8">Popular Blogs</span>
+                <div className="sm:border-l sm:border-gray-300 dark:sm:border-border flex flex-col justify-start items-start px-4">
+                    <span className="font-bold text-2xl pb-8 text-foreground">Popular Blogs</span>
                     { blogs.map((blog) => {
                     return (
                         <Link

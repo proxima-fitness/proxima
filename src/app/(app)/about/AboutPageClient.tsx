@@ -23,17 +23,12 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
 
     return (
         <main className="min-h-screen bg-white dark:bg-primary relative overflow-hidden">
-            {/* Gradient Background Elements - Hidden in light mode */}
-            <div className="absolute z-0 w-[40%] h-[35%] top-0 pink__gradient opacity-0 dark:opacity-100" />
-            <div className="absolute z-0 w-[80%] h-[80%] rounded-full white__gradient bottom-40 opacity-0 dark:opacity-100" />
-            <div className="absolute z-0 w-[50%] h-[50%] right-20 bottom-20 blue__gradient opacity-0 dark:opacity-100" />
-
             <div className={`${styles.paddingX} ${styles.paddingY} relative z-[1]`}>
                 <div className={`${styles.boxWidth} mx-auto`}>
                     {/* Hero Section */}
                     <section className={`${styles.flexCenter} flex-col mb-16`} data-aos="fade-up">
                         <h1 className={`${styles.heading2Centered} text-center mb-4`}>
-                            <span className="text-black">About Us</span>
+                            <span className="text-black dark:text-white">About Us</span>
                         </h1>
                         <p className={`${styles.paragraph} font-third max-w-[600px] text-center mt-4 text-gray-700 dark:text-offWhite`}>
                             Learn more about the journey behind Proxima Fitness and our mission to empower fitness enthusiasts.
@@ -42,35 +37,33 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
 
                     {/* Founder Card Section */}
                     <section className={`${styles.flexCenter} flex-col mb-20`} data-aos="fade-up" data-aos-delay="100">
-                        <Card className="bg-lightGray border-2 border-gray-200 dark:border-white/10 shadow-lg max-w-[500px] w-full">
-                            <CardHeader className="flex flex-col items-center pb-4">
-                                <div className="relative h-[400px] w-[400px] max-sm:h-[300px] max-sm:w-full group mb-6">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 to-lightSecondary/20 rounded-xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-300" />
+                        <Card className="dark:border-white/10  max-w-[600px] md:max-w-[900px] w-full">
+                            <CardHeader className="flex flex-col md:flex-row md:items-center md:gap-6 items-center pb-4 p-0">
+                                <div className="relative h-[400px] w-[400px] max-sm:h-[300px] max-sm:w-full md:h-[300px] md:flex-1 md:w-auto group mb-6 md:mb-0">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 to-lightSecondary/20 rounded-xl md:rounded-tl-xl md:rounded-bl-xl md:rounded-tr-none md:rounded-br-none opacity-50 group-hover:opacity-75 transition-opacity duration-300" />
                                     <img
                                         src={(jack as any).src}
                                         alt="Jack Hanlon"
-                                        className="relative rounded-xl w-full h-full object-cover transition-opacity duration-300 shadow-2xl"
+                                        className="relative w-full rounded-t-md md:rounded-tl-md md:rounded-bl-md md:rounded-tr-none md:rounded-br-none h-full object-cover transition-opacity duration-300"
                                     />
                                     <img
                                         src={(jack_jacked as any).src}
                                         alt="Jack Hanlon Jacked"
-                                        className="rounded-xl w-full h-full object-cover object-[center_20%] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-2xl"
+                                        className="w-full rounded-t-md md:rounded-tl-md md:rounded-bl-md md:rounded-tr-none md:rounded-br-none h-full object-cover object-[center_20%] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                                     />
                                 </div>
-                                <div className="text-center">
-                                    <h2 className="font-main text-2xl ss:text-3xl  text-black dark:text-white mb-2">
+                                <div className="text-center md:text-left md:flex md:flex-col md:justify-center md:flex-1">
+                                    <h2 className="font-main text-2xl ss:text-3xl dark:text-white  text-black mb-2">
                                         JACK HANLON
                                     </h2>
                                     <p className="font-second text-lightSecondary text-lg font-semibold mb-4">
                                         FOUNDER
                                     </p>
+                                    <p className={`text-md pr-4 max-sm:pl-4 pb-4 text-black font-third text-left text-gray-700 dark:text-offWhite`}>
+                                        Jack was a Software Engineer before creating Proxima, and an avid lifter with a Bench Press PR of 240lbs. Jack enjoys weightlifting and playing with his two rescue puppies.
+                                    </p>
                                 </div>
                             </CardHeader>
-                            <CardContent className="pt-0">
-                                <p className={`${styles.paragraph} font-third text-center text-gray-700 dark:text-offWhite`}>
-                                    Jack was a Software Engineer before creating Proxima, and an avid lifter with a Bench Press PR of 240lbs. Jack enjoys weightlifting and playing with his two rescue puppies.
-                                </p>
-                            </CardContent>
                         </Card>
                     </section>
 
@@ -87,7 +80,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                     <section className={`${layout.section} flex-col`} data-aos="fade-up" data-aos-delay="200">
                         <div className="max-w-4xl mx-auto space-y-8">
                             {/* Story Card 1 */}
-                            <Card className="bg-lightGray dark:bg-black-gradient-2 border-2 border-gray-200 dark:border-white/10 shadow-lg hover:bg-gray-200 dark:hover:bg-black-gradient transition-all duration-300" data-aos="fade-up" data-aos-delay="300">
+                            <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="300">
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
                                         <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
@@ -103,7 +96,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                             </Card>
 
                             {/* Story Card 2 */}
-                            <Card className="bg-lightGray dark:bg-black-gradient-2 border-2 border-gray-200 dark:border-white/10 shadow-lg hover:bg-gray-200 dark:hover:bg-black-gradient transition-all duration-300" data-aos="fade-up" data-aos-delay="400">
+                            <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="400">
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
                                         <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
@@ -122,7 +115,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                             </Card>
 
                             {/* Story Card 3 */}
-                            <Card className="bg-lightGray dark:bg-black-gradient-2 border-2 border-gray-200 dark:border-white/10 shadow-lg hover:bg-gray-200 dark:hover:bg-black-gradient transition-all duration-300" data-aos="fade-up" data-aos-delay="500">
+                            <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="500">
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
                                         <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
@@ -138,7 +131,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                             </Card>
 
                             {/* Story Card 4 */}
-                            <Card className="bg-lightGray dark:bg-black-gradient-2 border-2 border-gray-200 dark:border-white/10 shadow-lg hover:bg-gray-200 dark:hover:bg-black-gradient transition-all duration-300" data-aos="fade-up" data-aos-delay="600">
+                            <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="600">
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
                                         <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
@@ -154,7 +147,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                             </Card>
 
                             {/* Story Card 5 */}
-                            <Card className="bg-lightGray dark:bg-black-gradient-2 border-2 border-gray-200 dark:border-white/10 shadow-lg hover:bg-gray-200 dark:hover:bg-black-gradient transition-all duration-300" data-aos="fade-up" data-aos-delay="700">
+                            <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="700">
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
                                         <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
@@ -173,7 +166,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                             </Card>
 
                             {/* Story Card 6 */}
-                            <Card className="bg-lightGray dark:bg-black-gradient-2 border-2 border-gray-200 dark:border-white/10 shadow-lg hover:bg-gray-200 dark:hover:bg-black-gradient transition-all duration-300" data-aos="fade-up" data-aos-delay="800">
+                            <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="800">
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
                                         <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">

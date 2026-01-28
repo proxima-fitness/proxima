@@ -43,7 +43,7 @@ type TProgramPage = {
 }
 
 type TProgram = {
-    id: string;
+    id: number;
     title: string;
     details: string;
     program_length: number;

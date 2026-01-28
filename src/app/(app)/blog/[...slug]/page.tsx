@@ -30,7 +30,7 @@ export const metadata = {
                     </Button>
                 </Link>
             </div>
-            <div className={ `bg-white flex items-center justify-center flex-col px-12 py-6` }>
+            <div className={ `bg-background flex items-center justify-center flex-col px-12 py-6` }>
                 <BlogSlugLayout id={ slug[0] } />
             </div>
         </>

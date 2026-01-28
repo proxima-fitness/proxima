@@ -3,7 +3,7 @@
 import { useUserFullName } from "@/api/hooks";
 
 interface IProps {
-    id: string;
+    id: number;
     id_type: "program" | "user";
 }
 

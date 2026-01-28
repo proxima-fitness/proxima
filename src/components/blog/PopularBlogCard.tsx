@@ -11,7 +11,7 @@ export const PopularBlogCard: React.FC<IProps> = (props) => {
 
     return (
         <div key={ blog.id }>
-            <div className="pb-8">
+            <div className="pb-8 text-foreground">
                 { blog.title }
             </div>
         </div>

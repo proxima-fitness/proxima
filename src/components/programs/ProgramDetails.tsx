@@ -10,7 +10,7 @@ import { convertSupabaseDateToReadable } from "@/utils/general/helpers";
 import { ProgramThumbnail } from "./ProgramThumbnail";
 
 interface IProps {
-    id: string;
+    id: number;
     program: TProgramPage;
     fullName: string;
     programCreatorMetadata: TUserDetails;
