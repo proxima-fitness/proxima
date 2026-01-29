@@ -249,12 +249,11 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
 
         if (answers['days-per-week'] && answers['days-per-week'].length > 0) {
             daysPerWeekValue = answers['days-per-week'] as string;
-            handleDaysPerWeek(daysPerWeekValue);
         } else {
             const inferredDays = inferDaysPerWeek(answers['userRequest'] as string);
-            daysPerWeekValue = inferredDays;
-            handleDaysPerWeek(daysPerWeekValue);
+            daysPerWeekValue = daysPerWeek || inferredDays || "6";
         }
+        handleDaysPerWeek(daysPerWeekValue);
 
         if (answers['deload-week']) {
             // TODO: Implement deload week
@@ -286,12 +285,11 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
 
         if (answers['program-length'] && answers['program-length'].length > 0) {
             programLengthValue = answers['program-length'] as string;
-            handleProgramLength(programLengthValue);
         } else {
             const inferredLength = inferProgramLength(answers['userRequest'] as string);
-            programLengthValue = inferredLength;
-            handleProgramLength(programLengthValue);
+            programLengthValue = programLength || inferredLength || "12";
         }
+        handleProgramLength(programLengthValue);
 
 
 
