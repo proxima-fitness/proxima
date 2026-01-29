@@ -7,12 +7,14 @@ import {
   } from "@/components/ui/message"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { Copy, ThumbsUp, ThumbsDown, Pencil, Trash } from "lucide-react"
+import { Copy, ThumbsUp, ThumbsDown, Pencil, Trash, AlertCircle, RefreshCw } from "lucide-react"
 import { FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai";
 import { Questions, IQuestion } from "@/components/ui/questions";
 import { IOption } from "@/components/ui/multi-select";
 import { inferDaysPerWeek, inferProgramLength } from "@/components/program-builder/utils/helpers";
 import { equipmentOptions, healthIssuesOptions } from "@/assets/constants";
+import { generateFallbackWorkout } from "../../utils/fallback-workouts";
+import { toast } from "sonner";
 
 // Type for buildRoutine tool output
 interface IBuildRoutineOutput {
@@ -75,7 +77,70 @@ const BuildProgress: React.FC<{
     );
 };
 
- // Helper function to generate empty hevyProgram structure
+// Error display component for when generation fails
+const GenerationError: React.FC<{
+    error: Error | null;
+    onRetry: () => void;
+    onUseFallback: () => void;
+    retryCount: number;
+    maxRetries: number;
+    completedDays: number;
+    totalDays: number;
+}> = ({ error, onRetry, onUseFallback, retryCount, maxRetries, completedDays, totalDays }) => {
+    if (!error) return null;
+
+    const canRetry = retryCount < maxRetries;
+    const hasPartialProgress = completedDays > 0;
+
+    return (
+        <div className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
+            <div className="flex flex-col gap-3 p-4 bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-200 dark:border-red-800">
+                <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                    <div className="flex flex-col gap-1">
+                        <p className="font-medium text-sm text-red-700 dark:text-red-300">
+                            Workout generation failed
+                        </p>
+                        <p className="text-sm text-red-600 dark:text-red-400">
+                            {hasPartialProgress
+                                ? `Generated ${completedDays} of ${totalDays} days before encountering an error.`
+                                : "Something went wrong while building your program."
+                            }
+                        </p>
+                        {retryCount > 0 && (
+                            <p className="text-xs text-red-500 dark:text-red-500 mt-1">
+                                Retry attempt {retryCount} of {maxRetries} failed
+                            </p>
+                        )}
+                    </div>
+                </div>
+                <div className="flex gap-2 mt-1">
+                    {canRetry && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={onRetry}
+                            className="border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/50"
+                        >
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                            Try Again
+                        </Button>
+                    )}
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={onUseFallback}
+                        className="border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/50"
+                    >
+                        Use Template Workout
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// Helper function to generate empty hevyProgram structure
 export const generateEmptyHevyProgram = (weeksValue: string, daysValue: string): THevyRoutine[] => {
     const weeks = weeksValue ? Number(weeksValue) : 0;
     const days = daysValue ? Number(daysValue) : 0;
@@ -142,11 +207,42 @@ interface IProps {
     isBuilding: boolean;
     handleIsBuilding: (isBuilding: boolean) => void;
     isLoading: boolean;
+    // Error handling props
+    error: Error | null;
+    onRetry: () => void;
+    onClearError: () => void;
+    retryCount: number;
+    maxRetries: number;
+    onTimeoutError: () => void;
 }
 
 export const MessageBubbles: React.FC<IProps> = (props) => {
 
-    const { messages, setHevyProgram, handleIsBuilding, sendMessage, handleProgramLength, handleDaysPerWeek, handleExcludeEquipment, handleHealthIssues, isBuilding, programLength, daysPerWeek, isLoading } = props;
+    const {
+        messages,
+        setHevyProgram,
+        handleIsBuilding,
+        sendMessage,
+        handleProgramLength,
+        handleDaysPerWeek,
+        handleExcludeEquipment,
+        handleHealthIssues,
+        isBuilding,
+        programLength,
+        daysPerWeek,
+        isLoading,
+        error,
+        onRetry,
+        onClearError,
+        retryCount,
+        maxRetries,
+        onTimeoutError
+    } = props;
+
+    // Timeout detection - 45 seconds with no progress during building
+    const TIMEOUT_MS = 45000;
+    const lastProgressTimestampRef = useRef<number>(0);
+    const timeoutCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
     // Track the last count of completed routines to know when to finalize
     const lastCompletedCountRef = useRef<number>(0);
@@ -193,6 +289,56 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
             allRoutines: routines
         };
     }, [messages, daysPerWeek]);
+
+    // Update progress timestamp when completed days change
+    useEffect(() => {
+        if (completedDays.length > 0) {
+            lastProgressTimestampRef.current = Date.now();
+        }
+    }, [completedDays.length]);
+
+    // Timeout detection - check every 5 seconds if we're building
+    useEffect(() => {
+        // Clear any existing interval
+        if (timeoutCheckIntervalRef.current) {
+            clearInterval(timeoutCheckIntervalRef.current);
+            timeoutCheckIntervalRef.current = null;
+        }
+
+        // Only start timeout checking when building and not already errored
+        if (isBuilding && !error && totalDays > 0 && completedDays.length < totalDays) {
+            // Initialize the timestamp if not already set
+            if (lastProgressTimestampRef.current === 0) {
+                lastProgressTimestampRef.current = Date.now();
+            }
+
+            timeoutCheckIntervalRef.current = setInterval(() => {
+                const elapsed = Date.now() - lastProgressTimestampRef.current;
+                if (elapsed >= TIMEOUT_MS) {
+                    console.warn(`Workout generation timeout: ${elapsed}ms since last progress`);
+                    onTimeoutError();
+                    if (timeoutCheckIntervalRef.current) {
+                        clearInterval(timeoutCheckIntervalRef.current);
+                        timeoutCheckIntervalRef.current = null;
+                    }
+                }
+            }, 5000);
+        }
+
+        return () => {
+            if (timeoutCheckIntervalRef.current) {
+                clearInterval(timeoutCheckIntervalRef.current);
+                timeoutCheckIntervalRef.current = null;
+            }
+        };
+    }, [isBuilding, error, totalDays, completedDays.length, onTimeoutError]);
+
+    // Reset timeout timestamp when building starts
+    useEffect(() => {
+        if (isBuilding) {
+            lastProgressTimestampRef.current = Date.now();
+        }
+    }, [isBuilding]);
 
     // Process completed routines - when all days are done, duplicate to all weeks
     useEffect(() => {
@@ -325,6 +471,21 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         handleIsBuilding(true);
     }, [sendMessage, handleIsBuilding]);
 
+    // Handle using fallback workouts when AI generation fails
+    const handleUseFallback = useCallback(() => {
+        onClearError();
+        const days = daysPerWeek ? Number(daysPerWeek) : 4;
+        const weeks = programLength ? Number(programLength) : 12;
+        const fallbackProgram = generateFallbackWorkout(days, weeks);
+        setHevyProgram(fallbackProgram);
+
+        // Notify the user that a template workout is being used
+        toast.info("Template workout loaded", {
+            description: `Andy failed to build a workout so we loaded a ${days}-day template workout for ${weeks} weeks. You can customize it to fit your needs.`,
+            duration: 6000,
+        });
+    }, [onClearError, daysPerWeek, programLength, setHevyProgram]);
+
 
 
     return (
@@ -333,6 +494,19 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         //             <Questions questions={sampleQuestions} onComplete={handleComplete} onSkip={handleSkip} />
         //             </div>
         <>
+             {/* Show error UI when generation fails */}
+             {error && (
+                <GenerationError
+                    error={error}
+                    onRetry={onRetry}
+                    onUseFallback={handleUseFallback}
+                    retryCount={retryCount}
+                    maxRetries={maxRetries}
+                    completedDays={completedDays.length}
+                    totalDays={totalDays}
+                />
+             )}
+
              { messages.map(message => (
                             <div key={message.id} className="whitespace-pre-wrap">
                                 {message.parts.map((part, index) => {

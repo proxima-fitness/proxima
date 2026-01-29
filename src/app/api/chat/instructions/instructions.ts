@@ -37,17 +37,25 @@ export const instructions = ({ hevyProgram, daysPerWeek, programLength }: IProps
            - The first week will be automatically duplicated to all remaining weeks by the system.
         6. After ALL days are built, provide a brief summary of what you created (max 5 bullets).
 
-        **When calling buildRoutine, provide:**
-        - dayNumber: The day number (1, 2, 3, etc.)
-        - totalDays: Total number of days in the program${daysPerWeek !== undefined && daysPerWeek !== null ? ` (${daysPerWeek})` : ''}
-        - title: Day name (e.g., "Push Day", "Upper Body")
-        - notes: Optional routine notes
-        - exercises: Array of exercises, each with:
-          - exercise_template_id: MUST be an exact ID from the getExerciseList results
-          - title: Exercise name
-          - notes: Optional exercise notes
-          - rest_seconds: Rest time between sets (optional)
-          - sets: Array of sets, each with type ('normal', 'warmup', 'dropset', 'failure'), reps, rpe, weight_kg, etc.
+        **When calling buildRoutine, you MUST provide a valid JSON object with these fields:**
+        - dayNumber: number (e.g., 1, 2, 3)
+        - totalDays: number${daysPerWeek !== undefined && daysPerWeek !== null ? ` (${daysPerWeek})` : ''}
+        - title: string (e.g., "Push Day", "Upper Body")
+        - notes: string (optional, can be empty string "")
+        - exercises: array of exercise objects
+
+        **Each exercise object MUST have:**
+        - exercise_template_id: string (MUST be an exact ID from getExerciseList)
+        - title: string
+        - sets: array of set objects
+
+        **Each set object MUST have:**
+        - type: one of "normal", "warmup", "dropset", "failure"
+        - reps: number (e.g., 8, 10, 12)
+
+        Optional set fields: rpe (number 1-10), weight_kg (number)
+
+        **IMPORTANT:** Always ensure the tool input is a valid JSON object, not a string. Each field must have the correct type.
 
         **When user asks about modifying an existing program:**
         1. Call getCurrentProgram to see the current program state in JSON format.

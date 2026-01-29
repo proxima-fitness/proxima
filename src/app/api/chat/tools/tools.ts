@@ -178,38 +178,43 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
      * @returns { Tool }
      */
     const buildRoutineTool = tool({
-        description: 'Builds a single routine/day for the workout program. Call this tool ONCE for each day in the program. For example, for a 4-day program, call this tool 4 times (Day 1, Day 2, Day 3, Day 4). The UI will show progress as each day completes.',
+        description: 'Builds a single routine/day for the workout program. Call this tool ONCE for each day in the program. For example, for a 4-day program, call this tool 4 times (Day 1, Day 2, Day 3, Day 4). The UI will show progress as each day completes. IMPORTANT: Always provide a valid JSON object with the required fields.',
         inputSchema: z.object({
             dayNumber: z.number().describe('The day number (1, 2, 3, etc.) - must be called in order'),
             totalDays: z.number().describe('Total number of days in the program'),
             title: z.string().describe('The routine/day title (e.g., "Push Day", "Upper Body")'),
-            notes: z.string().optional().describe('Optional notes for the routine'),
+            notes: z.string().default('').describe('Notes for the routine (optional)'),
             exercises: z.array(z.object({
                 exercise_template_id: z.string().describe('The exercise ID from the getExerciseList results - MUST be an exact match'),
                 title: z.string().describe('The exercise title'),
-                notes: z.string().optional().describe('Optional notes for the exercise'),
-                rest_seconds: z.string().nullable().optional().describe('Rest time in seconds between sets'),
-                supersets_id: z.number().nullable().optional().describe('Superset ID if part of a superset'),
+                notes: z.string().default('').describe('Notes for the exercise (optional)'),
+                rest_seconds: z.string().default('90').describe('Rest time in seconds between sets'),
+                supersets_id: z.number().nullable().default(null).describe('Superset ID if part of a superset'),
                 sets: z.array(z.object({
                     type: z.enum(['normal', 'warmup', 'dropset', 'failure']).describe('The type of set'),
-                    reps: z.number().nullable().optional().describe('Number of reps'),
-                    weight_kg: z.number().nullable().optional().describe('Weight in kg'),
-                    rpe: z.number().nullable().optional().describe('RPE (Rate of Perceived Exertion) 1-10'),
-                    distance_meters: z.number().nullable().optional().describe('Distance in meters'),
-                    duration_seconds: z.number().nullable().optional().describe('Duration in seconds'),
-                    custom_metric: z.number().nullable().optional().describe('Custom metric value'),
-                })).describe('Array of sets for this exercise'),
-            })).describe('Array of exercises for this routine'),
+                    reps: z.number().describe('Number of reps'),
+                    rpe: z.number().optional().describe('RPE (Rate of Perceived Exertion) 1-10'),
+                    weight_kg: z.number().optional().describe('Weight in kg'),
+                })).min(1).describe('Array of sets for this exercise - at least 1 set required'),
+            })).min(1).describe('Array of exercises for this routine - at least 1 exercise required'),
         }),
 
         execute: async ({ dayNumber, totalDays, title, notes, exercises }) => {
             try {
                 const timestamp = new Date().toISOString();
 
+                // Validate inputs
+                if (!Array.isArray(exercises) || exercises.length === 0) {
+                    return {
+                        error: 'Invalid exercises',
+                        message: 'At least one exercise is required',
+                    };
+                }
+
                 // Build a single THevyRoutine
                 const routine: THevyRoutine = {
                     id: String(dayNumber),
-                    title: title,
+                    title: title || `Day ${dayNumber}`,
                     folder_id: 0, // Week 1 = folder_id 0
                     order: String(dayNumber),
                     notes: notes || '',
@@ -217,20 +222,20 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
                     updated_at: timestamp,
                     exercises: exercises.map((exercise, exerciseIndex) => ({
                         index: exerciseIndex,
-                        title: exercise.title,
+                        title: exercise.title || 'Unknown Exercise',
                         notes: exercise.notes || '',
-                        rest_seconds: exercise.rest_seconds ?? null,
-                        exercise_template_id: exercise.exercise_template_id,
+                        rest_seconds: exercise.rest_seconds || '90',
+                        exercise_template_id: exercise.exercise_template_id || '',
                         supersets_id: exercise.supersets_id ?? null,
-                        sets: exercise.sets.map((set, setIndex) => ({
+                        sets: (exercise.sets || []).map((set, setIndex) => ({
                             index: setIndex,
-                            type: set.type,
-                            reps: set.reps ?? null,
+                            type: set.type || 'normal',
+                            reps: set.reps ?? 10,
                             weight_kg: set.weight_kg ?? null,
                             rpe: set.rpe ?? null,
-                            distance_meters: set.distance_meters ?? null,
-                            duration_seconds: set.duration_seconds ?? null,
-                            custom_metric: set.custom_metric ?? null,
+                            distance_meters: null,
+                            duration_seconds: null,
+                            custom_metric: null,
                         })),
                     })),
                 };
@@ -240,7 +245,7 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
                     dayNumber,
                     totalDays,
                     exerciseCount: exercises.length,
-                    setCount: exercises.reduce((sum, e) => sum + e.sets.length, 0),
+                    setCount: exercises.reduce((sum, e) => sum + (e.sets?.length || 0), 0),
                 };
 
             } catch (error) {

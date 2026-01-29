@@ -106,16 +106,30 @@ export const Agent: React.FC<IProps> = (props) => {
 
 
     const [input, setInput] = useState("");
-    const { messages, sendMessage, status, stop } = useChat({
+    const [generationError, setGenerationError] = useState<Error | null>(null);
+    const [retryCount, setRetryCount] = useState(0);
+    const [isBuilding, setIsBuilding] = useState(false);
+    const MAX_RETRIES = 2;
+
+    const { messages, sendMessage, status, stop, error } = useChat({
       transport: new DefaultChatTransport({
         api: '/api/chat',
       }),
+      onError: (err) => {
+        console.error('Chat error:', err);
+        setGenerationError(err);
+        setIsBuilding(false);
+      },
     });
+
+    // Derive error state from useChat error - no need for effect, just use the error directly
+    // The onError callback already handles setting generationError, but we also
+    // check useChat's error for cases where the error comes through the hook
+    const activeError = generationError || error || null;
 
     const isSubmitted = status === 'submitted';
     const isStreaming = status === 'streaming';
     const isLoading = isSubmitted || isStreaming;
-    const [isBuilding, setIsBuilding] = useState(false);
 
     const [isFilters, setIsFilters] = useState(false)
     // Track if initial search has been triggered for this component instance
@@ -152,6 +166,31 @@ export const Agent: React.FC<IProps> = (props) => {
     const handleIsBuilding = useCallback((isBuilding: boolean) => {
         setIsBuilding(isBuilding);
     }, []);
+
+    // Handle retry when generation fails
+    const handleRetry = useCallback(() => {
+        if (retryCount < MAX_RETRIES) {
+            setGenerationError(null);
+            setRetryCount(prev => prev + 1);
+            setIsBuilding(true);
+            sendMessage({ text: "Build my program" });
+        }
+    }, [retryCount, sendMessage]);
+
+    // Clear error state (used when user wants to start fresh or use fallback)
+    const handleClearError = useCallback(() => {
+        setGenerationError(null);
+        setRetryCount(0);
+        setIsBuilding(false);
+    }, []);
+
+    // Handle timeout error - called when no progress is made for 45 seconds
+    const handleTimeoutError = useCallback(() => {
+        console.error('Workout generation timed out - no progress for 45 seconds');
+        setGenerationError(new Error('Generation timed out. The AI took too long to respond.'));
+        setIsBuilding(false);
+        stop(); // Stop the current request
+    }, [stop]);
 
 
     return (
@@ -219,6 +258,12 @@ export const Agent: React.FC<IProps> = (props) => {
                             isBuilding={isBuilding}
                             handleIsBuilding={handleIsBuilding}
                             isLoading={isLoading}
+                            error={activeError}
+                            onRetry={handleRetry}
+                            onClearError={handleClearError}
+                            retryCount={retryCount}
+                            maxRetries={MAX_RETRIES}
+                            onTimeoutError={handleTimeoutError}
                             />
                         {isSubmitted && <Thinking />}
                     </>

@@ -1,4 +1,8 @@
-import { ToolLoopAgent, createAgentUIStreamResponse, gateway } from 'ai';
+import { ToolLoopAgent, createAgentUIStreamResponse, gateway, stepCountIs } from 'ai';
+
+// Vercel serverless function timeout - 2 minutes for workout generation
+// This is important for longer programs that may take time to generate
+export const maxDuration = 120;
 import { NodeSDK } from "@opentelemetry/sdk-node";
 import { LangfuseSpanProcessor } from "@langfuse/otel";
 import { instructions } from './instructions/instructions';
@@ -29,6 +33,10 @@ export async function POST(req: Request) {
             model: gateway('anthropic/claude-sonnet-4.5'),
             instructions: systemPrompt,
             tools: tools,
+            // Explicit step limit to prevent infinite loops
+            // Typical flow: getMoreInfoQuestions (1) + getExerciseList (1) + buildRoutine x N (max 7 days)
+            // = ~10 steps max, but allowing 25 for safety with retries
+            stopWhen: stepCountIs(25),
             experimental_telemetry: { isEnabled: true },
           });
 
