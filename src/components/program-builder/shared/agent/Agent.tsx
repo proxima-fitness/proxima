@@ -118,7 +118,10 @@ export const Agent: React.FC<IProps> = (props) => {
     const [isBuilding, setIsBuilding] = useState(false);
 
     const [isFilters, setIsFilters] = useState(false)
-    const hasSentInitialMessage = useRef<boolean>(false);
+    // Initialize from sessionStorage to persist across tab switches (component unmount/remount)
+    const hasSentInitialMessage = useRef<boolean>(
+        typeof window !== 'undefined' && sessionStorage.getItem('lastSentSearch') === search
+    );
     const sendMessageRef = useRef(sendMessage);
 
     // Keep sendMessage ref in sync

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef, useReducer, useCallback } from "react";
+import { useState, useEffect, useMemo, useReducer, useCallback } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
     ResizableHandle,
@@ -509,18 +509,6 @@ export function BuildProgramClient() {
     }, []);
 
 
-
-
-    // Auto-switch to program tab when program finishes generating
-    const prevProgramLengthRef = useRef(hevyProgram.length);
-    useEffect(() => {
-        if (prevProgramLengthRef.current === 0 && hevyProgram.length > 0) {
-            setMobileTab("program");
-        }
-        prevProgramLengthRef.current = hevyProgram.length;
-    }, [hevyProgram.length]);
-
-
     const request = useMemo(() => ({
         empty,
         search,
@@ -567,10 +555,14 @@ export function BuildProgramClient() {
 
     useEffect(() => {
         if (typeof window !== "undefined") {
+            // Don't overwrite localStorage with empty program when resuming
+            if (hevyProgram.length === 0 && resume === 'true') {
+                return;
+            }
             localStorage.setItem("hevy-program-in-progress", JSON.stringify(hevyProgram));
             localStorage.setItem("hevy-request", JSON.stringify(request));
         }
-    }, [hevyProgram, request]);
+    }, [hevyProgram, request, resume]);
 
     // Save the prompt to local storage so that it can be saved to the database
     useEffect(() => {
@@ -843,8 +835,8 @@ export function BuildProgramClient() {
             </div>
             <div className="max-sm:block sm:hidden h-[calc(100vh-4rem)] flex flex-col relative">
                 <Tabs value={mobileTab} onValueChange={(value) => {
-                    // Prevent switching to Program tab if no program exists
-                    if (value === "program" && hevyProgram.length === 0) {
+                    // Prevent switching to Program tab if program has no exercises
+                    if (value === "program" && !hevyProgram.some(r => r.exercises.length > 0)) {
                         return;
                     }
                     setMobileTab(value);
@@ -945,10 +937,10 @@ export function BuildProgramClient() {
                         </TabsTrigger>
                         <TabsTrigger
                             value="program"
-                            disabled={hevyProgram.length === 0}
+                            disabled={!hevyProgram.some(r => r.exercises.length > 0)}
                             className={cn(
                                 "flex-1 rounded-lg py-2 flex flex-row items-center justify-center gap-2 transition-colors",
-                                hevyProgram.length > 0
+                                hevyProgram.some(r => r.exercises.length > 0)
                                     ? "data-[state=active]:font-semibold data-[state=active]:text-lightSecondary data-[state=active]:bg-gray-100 dark:data-[state=active]:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900"
                                     : "opacity-50 cursor-not-allowed"
                             )}
