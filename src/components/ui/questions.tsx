@@ -307,12 +307,26 @@ export function Questions({
   const [answers, setAnswers] = React.useState<Record<string, string | string[]>>({})
   const [otherTexts, setOtherTexts] = React.useState<Record<string, string>>({})
   const [visibleIndex, setVisibleIndex] = React.useState(0)
+  const [isLargeScreen, setIsLargeScreen] = React.useState(false)
 
   const containerRef = React.useRef<HTMLDivElement>(null)
   const questionRefs = React.useRef<(HTMLDivElement | null)[]>([])
 
   const totalQuestions = questions.length
   const letterKeys = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+
+  // Track screen size to disable auto-scrolling on medium and smaller screens
+  React.useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 1024px)")
+    setIsLargeScreen(mediaQuery.matches)
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setIsLargeScreen(e.matches)
+    }
+
+    mediaQuery.addEventListener("change", handleChange)
+    return () => mediaQuery.removeEventListener("change", handleChange)
+  }, [])
 
   // Handler for single-select questions
   const handleOptionSelect = (questionId: string, optionId: string) => {
@@ -321,14 +335,16 @@ export function Questions({
       [questionId]: optionId,
     }))
 
-    // Find current question index and scroll to next
-    const currentIndex = questions.findIndex(q => q.id === questionId)
-    if (currentIndex !== -1 && currentIndex < questions.length - 1) {
-      setTimeout(() => {
-        const nextIndex = currentIndex + 1
-        setVisibleIndex(nextIndex)
-        scrollToQuestion(nextIndex)
-      }, 150) // Small delay to ensure state update completes
+    // Find current question index and scroll to next (only on large screens)
+    if (isLargeScreen) {
+      const currentIndex = questions.findIndex(q => q.id === questionId)
+      if (currentIndex !== -1 && currentIndex < questions.length - 1) {
+        setTimeout(() => {
+          const nextIndex = currentIndex + 1
+          setVisibleIndex(nextIndex)
+          scrollToQuestion(nextIndex)
+        }, 150) // Small delay to ensure state update completes
+      }
     }
   }
 
@@ -339,14 +355,16 @@ export function Questions({
       [questionId]: `other:${otherTexts[questionId] || ""}`,
     }))
 
-    // Find current question index and scroll to next
-    const currentIndex = questions.findIndex(q => q.id === questionId)
-    if (currentIndex !== -1 && currentIndex < questions.length - 1) {
-      setTimeout(() => {
-        const nextIndex = currentIndex + 1
-        setVisibleIndex(nextIndex)
-        scrollToQuestion(nextIndex)
-      }, 150)
+    // Find current question index and scroll to next (only on large screens)
+    if (isLargeScreen) {
+      const currentIndex = questions.findIndex(q => q.id === questionId)
+      if (currentIndex !== -1 && currentIndex < questions.length - 1) {
+        setTimeout(() => {
+          const nextIndex = currentIndex + 1
+          setVisibleIndex(nextIndex)
+          scrollToQuestion(nextIndex)
+        }, 150)
+      }
     }
   }
 
