@@ -888,7 +888,7 @@ export function BuildProgramClient() {
                             handleExplore={handleExplore}
                         />
                     </TabsContent>
-                    <TabsContent value="program" className="flex-1 overflow-y-auto m-0 mt-0 px-4 pb-20">
+                    <TabsContent value="program" className="flex-1 overflow-y-auto m-0 mt-0 px-4 pb-20 bg-white dark:bg-darkGray">
                         { hevyProgram.length > 0 ? (
                             <div className="w-full max-w-full overflow-x-hidden">
                                 <HevyRoutine
