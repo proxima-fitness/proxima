@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { FC, memo } from "react";
 
 const RandomQuote = memo(() => {
+    // eslint-disable-next-line react-hooks/purity
     const getRandomNumber = () => Math.floor(Math.random() * (coolQuotes.length - 1)) + 1;
     const randomNumber = getRandomNumber();
 
@@ -15,7 +16,7 @@ RandomQuote.displayName = "RandomQuote";
 export const BuildProgramSkeleton: FC = () => {
 
     return (
-        <div className="overflow-auto sm:pl-8">
+        <div className="overflow-auto sm:pl-8 bg-white dark:bg-darkGray min-h-full">
             <div className="py-4 rounded-lg flex flex-row flex-nowrap gap-2">
                 <div className="min-w-[440px] max-w-[440px] h-[40px]">
                     <Skeleton className="rounded-xl h-full w-full" />

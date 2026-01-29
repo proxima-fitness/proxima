@@ -415,8 +415,13 @@ export function Questions({
 
   const scrollToQuestion = (index: number) => {
     const target = questionRefs.current[index]
-    if (target && containerRef.current) {
-      target.scrollIntoView({ behavior: "smooth", block: "start" })
+    const container = containerRef.current
+    if (target && container) {
+      const targetOffset = target.offsetTop
+      container.scrollTo({
+        top: targetOffset,
+        behavior: "smooth"
+      })
     }
   }
 
