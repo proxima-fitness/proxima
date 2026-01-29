@@ -490,9 +490,6 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
 
     return (
 
-        // <div className="p-2">
-        //             <Questions questions={sampleQuestions} onComplete={handleComplete} onSkip={handleSkip} />
-        //             </div>
         <>
              {/* Show error UI when generation fails */}
              {error && (
