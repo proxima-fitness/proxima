@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef, useReducer } from "react";
+import { useState, useEffect, useMemo, useRef, useReducer, useCallback } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
     ResizableHandle,
@@ -587,25 +587,25 @@ export function BuildProgramClient() {
         });
     };
 
-    // Handler functions to avoid tight coupling
-    const handleSex = (value: string) => { setSex(value); };
-    const handleAge = (value: string) => { setAge(value); };
-    const handleDaysPerWeek = (value: string) => { setDaysPerWeek(value); };
-    const handleSpecificDays = (value: IOption[]) => { setSpecificDays(value); };
-    const handleProgramLength = (value: string) => { setProgramLength(value); };
-    const handleWorkoutDuration = (value: string) => { setWorkoutDuration(value); };
-    const handleActivityLevel = (value: string) => { setActivityLevel(value); };
-    const handleGoals = (value: IOption[]) => { setGoals(value); };
-    const handleSpecialization = (value: IOption[]) => { setSpecialization(value); };
-    const handleEquipment = (value: IOption[]) => { setEquipment(value); };
-    const handleFocusAreas = (value: IOption[]) => { setFocusAreas(value); };
-    const handleDifficultyLevel = (value: IOption[]) => { setDifficultyLevel(value); };
-    const handleExcludeAreas = (value: IOption[]) => { setExcludeAreas(value); };
-    const handleExcludeEquipment = (value: IOption[]) => { setExcludeEquipment(value); };
-    const handleExcludeSpecializations = (value: IOption[]) => { setExcludeSpecializations(value); };
-    const handleHealthIssues = (value: IOption[]) => { setHealthIssues(value); };
-    const handleProgramTitle = (value: string) => { setProgramTitle(value); };
-    const handleExplore = () => { toggleExplore(); };
+    // Handler functions memoized to prevent unnecessary re-renders
+    const handleSex = useCallback((value: string) => { setSex(value); }, []);
+    const handleAge = useCallback((value: string) => { setAge(value); }, []);
+    const handleDaysPerWeek = useCallback((value: string) => { setDaysPerWeek(value); }, []);
+    const handleSpecificDays = useCallback((value: IOption[]) => { setSpecificDays(value); }, []);
+    const handleProgramLength = useCallback((value: string) => { setProgramLength(value); }, []);
+    const handleWorkoutDuration = useCallback((value: string) => { setWorkoutDuration(value); }, []);
+    const handleActivityLevel = useCallback((value: string) => { setActivityLevel(value); }, []);
+    const handleGoals = useCallback((value: IOption[]) => { setGoals(value); }, []);
+    const handleSpecialization = useCallback((value: IOption[]) => { setSpecialization(value); }, []);
+    const handleEquipment = useCallback((value: IOption[]) => { setEquipment(value); }, []);
+    const handleFocusAreas = useCallback((value: IOption[]) => { setFocusAreas(value); }, []);
+    const handleDifficultyLevel = useCallback((value: IOption[]) => { setDifficultyLevel(value); }, []);
+    const handleExcludeAreas = useCallback((value: IOption[]) => { setExcludeAreas(value); }, []);
+    const handleExcludeEquipment = useCallback((value: IOption[]) => { setExcludeEquipment(value); }, []);
+    const handleExcludeSpecializations = useCallback((value: IOption[]) => { setExcludeSpecializations(value); }, []);
+    const handleHealthIssues = useCallback((value: IOption[]) => { setHealthIssues(value); }, []);
+    const handleProgramTitle = useCallback((value: string) => { setProgramTitle(value); }, []);
+    const handleExplore = useCallback(() => { toggleExplore(); }, []);
 
     // Auto-set filters from search prompt on initial load
     useEffect(() => {

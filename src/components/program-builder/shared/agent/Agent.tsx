@@ -3,7 +3,7 @@
 
 import { ChatContainerRoot, ChatContainerContent, ChatContainerScrollAnchor } from "@/components/ui/chat-container"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { ScrollButton } from "@/components/ui/scroll-button"
 import { IOption } from "@/components/ui/multi-select"
 
@@ -153,9 +153,9 @@ export const Agent: React.FC<IProps> = (props) => {
         setIsBuilding(false);
     }
 
-    const handleIsBuilding = (isBuilding: boolean) => {
+    const handleIsBuilding = useCallback((isBuilding: boolean) => {
         setIsBuilding(isBuilding);
-    }
+    }, []);
 
 
     return (

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useCallback } from "react";
 import {
     Message,
     MessageAction,
@@ -226,81 +226,57 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         }
     }, [completedDays.length, totalDays, allRoutines, programLength, setHevyProgram, handleIsBuilding]);
 
-    // Helper function to convert string[] to IOption[]
-    const convertStringArrayToOptions = (
+    // Helper function to convert string[] to IOption[] - memoized to prevent recreation
+    const convertStringArrayToOptions = useCallback((
         values: string[],
         options: IOption[]
     ): IOption[] => {
         return values
             .map((value) => options.find(opt => opt.value === value))
             .filter((opt): opt is IOption => opt !== undefined);
-    };
+    }, []);
 
-    const handleComplete = (answers: Record<string, string | string[]>) => {
-
-
+    // Memoized handleComplete - separates API call from state updates
+    const handleComplete = useCallback((answers: Record<string, string | string[]>) => {
+        // 1. COMPUTE all values needed for API call FIRST (no state updates yet)
         let programLengthValue = "";
         let daysPerWeekValue = "";
         let excludeEquipmentValue: IOption[] = [];
         let healthIssuesValue: IOption[] = [];
 
-        handleIsBuilding(true);
-
-
+        // Compute daysPerWeek value
         if (answers['days-per-week'] && answers['days-per-week'].length > 0) {
             daysPerWeekValue = answers['days-per-week'] as string;
         } else {
             const inferredDays = inferDaysPerWeek(answers['userRequest'] as string);
             daysPerWeekValue = daysPerWeek || inferredDays || "6";
         }
-        handleDaysPerWeek(daysPerWeekValue);
 
-        if (answers['deload-week']) {
-            // TODO: Implement deload week
-            // handleDeloadWeek(answers['deload-week'] as string);
-        }
+        // Compute excludeEquipment value
         if (answers['exclude-equipment'] && Array.isArray(answers['exclude-equipment'])) {
-            const options = convertStringArrayToOptions(
+            excludeEquipmentValue = convertStringArrayToOptions(
                 answers['exclude-equipment'],
                 equipmentOptions
             );
-            excludeEquipmentValue = options;
-            handleExcludeEquipment(options);
         }
 
-        if (answers['exercise-variability']) {
-            // TODO: Implement exercise variability
-            //handleExerciseVariability(answers['exercise-variability'] as string);
-        }
-
+        // Compute healthIssues value
         if (answers['health-issues'] && Array.isArray(answers['health-issues'])) {
-            const options = convertStringArrayToOptions(
+            healthIssuesValue = convertStringArrayToOptions(
                 answers['health-issues'],
                 healthIssuesOptions
             );
-            healthIssuesValue = options;
-            handleHealthIssues(options);
         }
 
-
+        // Compute programLength value
         if (answers['program-length'] && answers['program-length'].length > 0) {
             programLengthValue = answers['program-length'] as string;
         } else {
             const inferredLength = inferProgramLength(answers['userRequest'] as string);
             programLengthValue = programLength || inferredLength || "12";
         }
-        handleProgramLength(programLengthValue);
 
-
-
-        if (answers['progression-system']) {
-            // TODO: Implement progression system
-            //handleProgressionSystem(answers['progression-system'] as string);
-        }
-
-        const emptyProgram = generateEmptyHevyProgram(programLengthValue, daysPerWeekValue);
-        setHevyProgram(emptyProgram);
-
+        // 2. MAKE THE API CALL with computed values (before state updates)
         sendMessage(
             { text: "Build my program" },
             {
@@ -312,72 +288,41 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                 }
             }
         );
-};
 
-const handleSkip = () => {
-    // Extract programLength and daysPerWeek from userRequest or messages before skipping
-    // let programLengthValue = programLength;
-    // let daysPerWeekValue = daysPerWeek;
+        // 3. UPDATE UI STATE AFTER (these don't affect the API call)
+        handleIsBuilding(true);
+        handleDaysPerWeek(daysPerWeekValue);
+        handleProgramLength(programLengthValue);
+        if (excludeEquipmentValue.length > 0) {
+            handleExcludeEquipment(excludeEquipmentValue);
+        }
+        if (healthIssuesValue.length > 0) {
+            handleHealthIssues(healthIssuesValue);
+        }
 
-    // // Try to extract from userRequest first
-    // if (toolOutput.userRequest) {
-    //     if (!programLengthValue) {
-    //         const inferredLength = inferProgramLength(toolOutput.userRequest);
-    //         if (inferredLength) {
-    //             programLengthValue = inferredLength;
-    //             handleProgramLength(inferredLength);
-    //         }
-    //     }
-    //     if (!daysPerWeekValue) {
-    //         const inferredDays = inferDaysPerWeek(toolOutput.userRequest);
-    //         if (inferredDays) {
-    //             daysPerWeekValue = inferredDays;
-    //             handleDaysPerWeek(inferredDays);
-    //         }
-    //     }
-    // }
+        const emptyProgram = generateEmptyHevyProgram(programLengthValue, daysPerWeekValue);
+        setHevyProgram(emptyProgram);
+    }, [
+        sendMessage,
+        handleIsBuilding,
+        handleDaysPerWeek,
+        handleProgramLength,
+        handleExcludeEquipment,
+        handleHealthIssues,
+        setHevyProgram,
+        convertStringArrayToOptions,
+        daysPerWeek,
+        programLength
+    ]);
 
-    // // Try to extract from user messages if still empty
-    // if ((!programLengthValue || !daysPerWeekValue) && messages.length > 0) {
-    //     const userMessages = messages
-    //         .filter(msg => msg.role === 'user')
-    //         .map(msg => {
-    //             const textPart = msg.parts.find(p => p.type === 'text');
-    //             return textPart && 'text' in textPart ? textPart.text : '';
-    //         })
-    //         .join(' ');
+    // Memoized handleSkip - calls API first, then updates state
+    const handleSkip = useCallback(() => {
+        // 1. Make the API call first
+        sendMessage({ text: "Build my program" });
 
-    //     if (userMessages) {
-    //         if (!programLengthValue) {
-    //             const inferredLength = inferProgramLength(userMessages);
-    //             if (inferredLength) {
-    //                 programLengthValue = inferredLength;
-    //                 handleProgramLength(inferredLength);
-    //             }
-    //         }
-    //         if (!daysPerWeekValue) {
-    //             const inferredDays = inferDaysPerWeek(userMessages);
-    //             if (inferredDays) {
-    //                 daysPerWeekValue = inferredDays;
-    //                 handleDaysPerWeek(inferredDays);
-    //             }
-    //         }
-    //     }
-    // }
-
-    // // Final fallback: Use defaults if still empty
-    // if (!programLengthValue) {
-    //     programLengthValue = "12";
-    //     handleProgramLength("12");
-    // }
-    // if (!daysPerWeekValue) {
-    //     daysPerWeekValue = "6";
-    //     handleDaysPerWeek("6");
-    // }
-
-    sendMessage({ text: "Build my program" });
-    handleIsBuilding(true);
-};
+        // 2. Update UI state after
+        handleIsBuilding(true);
+    }, [sendMessage, handleIsBuilding]);
 
 
 

@@ -157,7 +157,9 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
      */
     const getCurrentProgramTool = tool({
         description: 'Returns the current workout program state in JSON format. Use this tool to check what program currently exists before creating a new one or modifying an existing one.',
-        inputSchema: z.object({}),
+        inputSchema: z.object({
+            reason: z.string().optional().describe('Optional reason for checking the current program state'),
+        }),
         execute: async () => {
 
             return {
