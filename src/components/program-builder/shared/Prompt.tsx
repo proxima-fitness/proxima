@@ -11,6 +11,7 @@ import { ConditionalHevyGrid } from "../hevy/ConditionalHevyGrid";
 import { RecentProgramsGrid } from "./RecentProgramsGrid";
 import { PromptTemplate } from "./PromptTemplate";
 import { Integrations } from "@/components/header/Integrations";
+import { BuyMeCoffee } from "@/components/ui/buy-me-coffee";
 
 interface IProps {
     userData: User | null;
@@ -36,6 +37,10 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                         <div className="text-lg font-normal px-12 max-sm:text-sm max-sm:px-2 dark:text-white">Create a workout program by chatting with AI</div>
                     </div>
                     <div className="w-full max-w-3xl max-sm:px-2">
+                        {/* Mobile only - Buy Me a Coffee */}
+                        <div className="sm:hidden flex justify-center mb-4">
+                            <BuyMeCoffee />
+                        </div>
                         <PromptTemplate />
                     </div>
                 </div>

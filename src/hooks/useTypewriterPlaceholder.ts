@@ -21,6 +21,7 @@ interface IUseTypewriterPlaceholderOptions {
   pauseAfterTyping?: number // milliseconds to pause after completing an option
   pauseAfterDeleting?: number // milliseconds to pause after deleting an option
   enabled?: boolean // whether animation is enabled
+  showPrefix?: boolean // whether to show "Ask Andy to" prefix
 }
 
 export function useTypewriterPlaceholder({
@@ -29,6 +30,7 @@ export function useTypewriterPlaceholder({
   pauseAfterTyping = 2000,
   pauseAfterDeleting = 500,
   enabled = true,
+  showPrefix = true,
 }: IUseTypewriterPlaceholderOptions = {}) {
   const [currentOptionIndex, setCurrentOptionIndex] = useState(0)
   const [displayedText, setDisplayedText] = useState("")
@@ -97,7 +99,8 @@ export function useTypewriterPlaceholder({
     enabled,
   ])
 
-  const placeholder = enabled ? `${STATIC_PREFIX}${displayedText}` : `${STATIC_PREFIX}build...`
+  const prefix = showPrefix ? STATIC_PREFIX : ""
+  const placeholder = enabled ? `${prefix}${displayedText}` : `${prefix}build...`
 
   return placeholder
 }

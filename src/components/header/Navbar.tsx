@@ -15,6 +15,7 @@ import { useHevySecret, useUserFullName } from "@/api/hooks";
 import { LockIcon } from "lucide-react";
 import { authenticatedNavLinks, navLinks } from "@/assets/constants";
 import { useTheme } from "next-themes"
+import { BuyMeCoffee } from "../ui/buy-me-coffee";
 
 // Client-side function to call the server-side sign out API
 const signOutServer = async () => {
@@ -267,6 +268,9 @@ export const Navbar: React.FC = () => {
                 <img src={ (proxima_logo_white as any).src } alt="Proxima Logo" className="dark:hidden block max-sm:hidden h-[40px] w-[auto]" />
             </Link>
             <ul className="list-none sm:flex hidden justify-end items-center flex-1 relative z-50 pr-6">
+                <li className="mr-6">
+                    <BuyMeCoffee />
+                </li>
                 {NavItems(pathname)}
             </ul>
             <div className="sm:hidden flex flex-1 justify-between items-center">

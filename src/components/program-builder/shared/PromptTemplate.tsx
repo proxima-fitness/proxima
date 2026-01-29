@@ -11,6 +11,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { suggestionGroups } from "@/assets/constants";
 import { useTypewriterPlaceholder } from "@/hooks/useTypewriterPlaceholder";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 
 export const PromptTemplate: React.FC = () => {
@@ -28,10 +29,13 @@ export const PromptTemplate: React.FC = () => {
     const [activeCategory, setActiveCategory] = useState("");
     const [files, setFiles] = useState<File[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const isMobile = useIsMobile();
 
     // Typewriter placeholder animation - only show when input is empty
+    // Hide "Ask Andy to" prefix on mobile
     const animatedPlaceholder = useTypewriterPlaceholder({
         enabled: search.trim() === "",
+        showPrefix: !isMobile,
     });
 
     const handleFilesAdded = (newFiles: File[]) => {
