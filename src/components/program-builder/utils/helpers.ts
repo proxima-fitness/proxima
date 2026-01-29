@@ -17,7 +17,8 @@ export const getMaxFolderId = (routines: THevyRoutine[]): number => {
 
 export const inferDaysPerWeek = (text: string) => {
     if (!text) return "";
-    const normalized = text.toLowerCase();
+    // Normalize various hyphen/dash characters to ASCII hyphen
+    const normalized = text.toLowerCase().replace(/[\u2010\u2011\u2012\u2013\u2014\u2015]/g, '-');
 
     // Hardcoded common expressions
     if (/every\s+day/.test(normalized)) return "7";
@@ -78,7 +79,8 @@ export const inferDaysPerWeek = (text: string) => {
 
 export const inferProgramLength = (text: string) => {
     if (!text) return "";
-    const normalized = text.toLowerCase();
+    // Normalize various hyphen/dash characters to ASCII hyphen
+    const normalized = text.toLowerCase().replace(/[\u2010\u2011\u2012\u2013\u2014\u2015]/g, '-');
 
     // Pattern: "12 weeks", "8 week program", "6-week", "for 10 weeks"
     const weeksMatch = normalized.match(/(\d+)\s*[-]?\s*week(s)?/);
