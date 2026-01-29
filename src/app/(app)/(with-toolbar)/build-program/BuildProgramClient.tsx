@@ -687,6 +687,7 @@ export function BuildProgramClient() {
                             id="main-content"
                             order={2}
                             minSize={30}
+                            className="bg-white dark:bg-darkGray"
                         >
                             { hevyProgram.length > 0 ? (
                             <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
@@ -733,6 +734,7 @@ export function BuildProgramClient() {
                             id="main-content"
                             order={1}
                             minSize={30}
+                            className="bg-white dark:bg-darkGray"
                         >
                             { hevyProgram.length > 0 ? (
                             <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">

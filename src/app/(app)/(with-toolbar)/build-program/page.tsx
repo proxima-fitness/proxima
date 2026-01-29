@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function BuildProgram() {
     return (
-        <div className={ `bg-white dark:bg-darkGray h-screen overflow-hidden` }>
+        <div className={ `bg-extraLightGray dark:bg-extraDarkGray h-screen overflow-hidden` }>
             <Suspense fallback={ <BuildProgramSkeletonSSR /> }>
                 <BuildProgramClient />
             </Suspense>
