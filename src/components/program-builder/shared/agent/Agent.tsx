@@ -222,6 +222,7 @@ export const Agent: React.FC<IProps> = (props) => {
                             handleHealthIssues={handleHealthIssues}
                             isBuilding={isBuilding}
                             handleIsBuilding={handleIsBuilding}
+                            isLoading={isLoading}
                             />
                         {isSubmitted && <Thinking />}
                     </>

@@ -26,6 +26,7 @@ interface IQuestionsProps {
   onSkip?: () => void
   className?: string
   isBuilding?: boolean
+  isLoading?: boolean
 }
 
 // QuestionSelect sub-component for single-select (radio) questions
@@ -298,6 +299,7 @@ export function Questions({
   onComplete,
   onSkip,
   isBuilding,
+  isLoading,
   className,
 }: IQuestionsProps) {
   const [answers, setAnswers] = React.useState<Record<string, string | string[]>>({})
@@ -566,13 +568,13 @@ export function Questions({
 
       {/* Footer */}
       <div className="flex items-center justify-end gap-2 border-t px-4 py-3">
-        <Button variant="ghost" size="sm" onClick={onSkip} disabled={true}>
+        <Button variant="ghost" size="sm" onClick={onSkip} disabled={isLoading || isBuilding}>
           Skip
         </Button>
         <Button
           size="sm"
           onClick={handleContinue}
-          disabled={isBuilding}
+          disabled={isLoading || isBuilding}
           className="bg-[#fbbf24] text-black hover:bg-[#fbbf24]/80 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isBuilding ? (

@@ -141,11 +141,12 @@ interface IProps {
     handleHealthIssues: (value: IOption[]) => void;
     isBuilding: boolean;
     handleIsBuilding: (isBuilding: boolean) => void;
+    isLoading: boolean;
 }
 
 export const MessageBubbles: React.FC<IProps> = (props) => {
 
-    const { messages, setHevyProgram, handleIsBuilding, sendMessage, handleProgramLength, handleDaysPerWeek, handleExcludeEquipment, handleHealthIssues, isBuilding, programLength, daysPerWeek } = props;
+    const { messages, setHevyProgram, handleIsBuilding, sendMessage, handleProgramLength, handleDaysPerWeek, handleExcludeEquipment, handleHealthIssues, isBuilding, programLength, daysPerWeek, isLoading } = props;
 
     // Track the last count of completed routines to know when to finalize
     const lastCompletedCountRef = useRef<number>(0);
@@ -469,6 +470,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                             onComplete={handleComplete}
                                                             onSkip={handleSkip}
                                                             isBuilding={isBuilding}
+                                                            isLoading={isLoading}
                                                         />
                                                     </div>
                                                 );
