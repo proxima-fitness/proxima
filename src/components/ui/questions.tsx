@@ -208,7 +208,7 @@ function QuestionMultiSelect({
               onKeyDown={handleKeyDown}
               className={cn(
                 "flex items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm transition-colors cursor-pointer",
-                "hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                "hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 isSelected && "bg-accent"
               )}
             >
@@ -216,6 +216,7 @@ function QuestionMultiSelect({
                 checked={isSelected}
                 onCheckedChange={() => onToggle(question.id, option.id)}
                 className="shrink-0 data-[state=checked]:text-white"
+                tabIndex={-1}
               />
               <span
                 className={cn(
@@ -253,7 +254,7 @@ function QuestionMultiSelect({
               }}
               className={cn(
                 "flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm transition-colors cursor-pointer",
-                "hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                "hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 isOtherSelected && "bg-accent"
               )}
             >
@@ -261,6 +262,7 @@ function QuestionMultiSelect({
                 checked={isOtherSelected}
                 onCheckedChange={() => onOtherToggle(question.id)}
                 className="shrink-0 data-[state=checked]:text-white"
+                tabIndex={-1}
               />
               <span
                 className={cn(
