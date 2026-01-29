@@ -7,12 +7,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 export default function ProgramBuilderLayout({ children }: { children: ReactNode }) {
     return (
         <div>
-            <div className="sticky top-0 z-50 p-2 bg-extraLightGray dark:bg-extraDarkGray border-b-2 dark:border-darkGray border-white flex flex-row items-center justify-between text-xl text-black dark:text-white relative">
-                <Breadcrumbs />
+            <div className="sticky top-0 z-50 p-2 bg-extraLightGray dark:bg-extraDarkGray border-b-2 dark:border-darkGray border-white flex flex-row items-center text-xl text-black dark:text-white">
+                <div className="flex-1">
+                    <Breadcrumbs />
+                </div>
                 {/* <ProgramBuilderTabs /> */}
 
                 {/* Set Types - Centered on desktop only */}
-                <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-2">
+                <div className="hidden md:flex justify-center items-center gap-2">
                     <TooltipProvider delayDuration={0}>
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -69,7 +71,7 @@ export default function ProgramBuilderLayout({ children }: { children: ReactNode
                     </TooltipProvider>
                 </div>
 
-                <div className="flex flex-row items-center justify-between gap-4 max-sm:ml-auto">
+                <div className="flex-1 flex flex-row items-center justify-end gap-4 max-sm:ml-auto">
                     {/* <ToolsTabs /> */}
                     <Suspense fallback={null}>
                         <StepButton />

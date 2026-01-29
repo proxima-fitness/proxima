@@ -69,7 +69,7 @@ export const Breadcrumbs: React.FC = () => {
   ];
 
   return (
-    <Breadcrumb className="w-[33%] max-sm:hidden">
+    <Breadcrumb className="w-full max-sm:hidden">
       <BreadcrumbList>
         {breadcrumbs.map((bc) => (
           <div

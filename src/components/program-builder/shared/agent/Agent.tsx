@@ -118,10 +118,8 @@ export const Agent: React.FC<IProps> = (props) => {
     const [isBuilding, setIsBuilding] = useState(false);
 
     const [isFilters, setIsFilters] = useState(false)
-    // Initialize from sessionStorage to persist across tab switches (component unmount/remount)
-    const hasSentInitialMessage = useRef<boolean>(
-        typeof window !== 'undefined' && sessionStorage.getItem('lastSentSearch') === search
-    );
+    // Track if initial search has been triggered for this component instance
+    const initialSearchOccurred = useRef<boolean>(false);
     const sendMessageRef = useRef(sendMessage);
 
     // Keep sendMessage ref in sync
@@ -132,13 +130,8 @@ export const Agent: React.FC<IProps> = (props) => {
     // Initialize with search parameter if present
     useEffect(() => {
         // Only send if we have a search value, haven't sent it yet in this instance, and sendMessage is available
-        if (search && search.trim().length > 0 && !hasSentInitialMessage.current && sendMessageRef.current) {
-            // On initial mount with search parameter, always send the message
-            // This ensures fresh navigation from home page always triggers sendMessage
-            hasSentInitialMessage.current = true;
-            if (typeof window !== 'undefined') {
-                sessionStorage.setItem('lastSentSearch', search);
-            }
+        if (search && search.trim().length > 0 && !initialSearchOccurred.current && sendMessageRef.current) {
+            initialSearchOccurred.current = true;
             sendMessageRef.current({ text: search });
         }
     }, [search]);
