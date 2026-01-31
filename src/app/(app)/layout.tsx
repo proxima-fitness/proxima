@@ -83,7 +83,7 @@ export default function RootLayout({
                                                 <Analytics />
                                                 <NextTopLoader
                                                     showSpinner={ false }
-                                                    color="#00f6ff"
+                                                    color="#33bbcf"
                                                 />
 
                                                     {children}

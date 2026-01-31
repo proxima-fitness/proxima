@@ -168,7 +168,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                         </div>
                     }
                     { isMobile ? (
-                        <div className="flex flex-col max-h-[85vh] w-full max-w-full overflow-hidden">
+                        <div className="flex flex-col max-h-screen w-full max-w-full overflow-hidden">
                             <div className="flex flex-row items-center justify-between px-4 py-2 border-b flex-shrink-0 w-full max-w-full">
                                 <Button
                                     onClick={ handlePreviousWeek }
@@ -224,7 +224,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                         <div className="relative w-full">
                             <div
                                 ref={scrollContainerRef}
-                                className={`flex flex-row gap-4 h-[85vh] overflow-scroll w-full ${!user ? "border-t-4 border-lightGray" : ""}`}
+                                className={`flex flex-row gap-4 h-screen overflow-scroll w-full ${!user ? "border-t-4 border-lightGray" : ""}`}
                             >
                                 { numberOfWeeksArr.map((_, index) => (
                                     <HevyColumn
