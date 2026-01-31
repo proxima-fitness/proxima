@@ -141,6 +141,58 @@ export const inferProgramLength = (text: string) => {
 };
 
 /**
+ * Safely extracts and normalizes text from a chat message payload (e.g. { text: string }).
+ * Returns empty string if the message has no string `text` property.
+ */
+export function getTextFromChatMessage(message: unknown): string {
+    if (message == null || typeof message !== "object" || !("text" in message)) return "";
+    const t = (message as { text: unknown }).text;
+    return typeof t === "string" ? t.trim().toLowerCase() : "";
+}
+
+const SHORT_ACKS = ["cool", "thanks", "thank you", "ok", "okay", "sure", "nice", "great", "got it", "sounds good"];
+const PROGRAM_VERB_NORMALS = new Set(["build", "create", "modify", "change", "generate", "explain"]);
+const PROGRAM_NOUN_LOOKUP = ["program", "workout", "routine", "exercise", "exercises"];
+const DAY_1_TO_7_REGEX = /\bday\s*[1-7]\b/;
+
+/**
+ * Returns true only when the message text clearly indicates the user is talking about
+ * the program (building, modifying, or asking about it). Uses compromise for robust
+ * noun/verb/question detection. Default false when uncertain to avoid sending hevyProgram unnecessarily.
+ */
+export function isMessageAboutProgram(text: string): boolean {
+    const normalized = (text || "").trim().toLowerCase().replace(/[\u2010\u2011\u2012\u2013\u2014\u2015]/g, "-");
+    if (!normalized) return false;
+
+    if (normalized.length < 20 && SHORT_ACKS.some((ack) => normalized === ack || normalized.startsWith(ack + " ") || normalized.endsWith(" " + ack))) {
+        return false;
+    }
+
+    const doc = nlp(normalized);
+
+    if (doc.lookup(PROGRAM_NOUN_LOOKUP).found) return true;
+    if (DAY_1_TO_7_REGEX.test(normalized)) return true;
+
+    const json = doc.json();
+    for (const chunk of json) {
+        for (const term of chunk.terms || []) {
+            const tags = (term as { tags?: string[] }).tags || [];
+            if (tags.some((t) => t.includes("Verb"))) {
+                const norm = ((term as { normal?: string }).normal || "").toLowerCase();
+                if (PROGRAM_VERB_NORMALS.has(norm)) return true;
+            }
+        }
+    }
+
+    if (doc.sentences().isQuestion().found) {
+        if (doc.lookup(PROGRAM_NOUN_LOOKUP).found || DAY_1_TO_7_REGEX.test(normalized)) return true;
+        if (normalized.length < 50 && /\b(explain|what|how)\b/.test(normalized)) return true;
+    }
+
+    return false;
+}
+
+/**
  * Converts Proxima schedule workouts into Hevy routine format.
  *
  * Takes a 2D array of schedule workouts (organized by week and day) and converts

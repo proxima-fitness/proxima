@@ -14,6 +14,7 @@ import { Chat } from "./Chat"
 import { Navbar } from "./Navbar"
 import { Thinking } from "./Thinking"
 import { MessageBubbles } from "./MessageBubbles"
+import { getTextFromChatMessage, isMessageAboutProgram } from "@/components/program-builder/utils/helpers"
 
 interface IProps {
     search: string;
@@ -140,8 +141,10 @@ export const Agent: React.FC<IProps> = (props) => {
     // (and getCurrentProgram tool) see the actual state (e.g. when program was loaded via shareId).
     const sendMessageWithContext = useCallback(
         (message: Parameters<typeof sendMessage>[0], options?: Parameters<typeof sendMessage>[1]) => {
+            const text = getTextFromChatMessage(message);
+            const includeProgram = isMessageAboutProgram(text);
             const contextBody = {
-                hevyProgram,
+                hevyProgram: includeProgram ? hevyProgram : [],
                 daysPerWeek: daysPerWeek ? Number(daysPerWeek) : undefined,
                 programLength: programLength ? Number(programLength) : undefined,
                 excludeAreas: excludeAreas?.length ? excludeAreas.map((o) => o.value).join(", ") : "",
