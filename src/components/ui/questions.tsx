@@ -17,7 +17,7 @@ export interface IQuestion {
   options: IQuestionOption[]
   allowOther?: boolean
   type?: "select" | "multi-select"
-  subtitle?: { text: string; link: string }
+  subtitle?: { text: string; link?: string }
 }
 
 interface IQuestionsProps {
@@ -59,14 +59,20 @@ function QuestionSelect({
         {questionIndex + 1}. {question.question}
       </p>
       {question.subtitle && (
-        <a
-          href={question.subtitle.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mb-3 block text-xs text-muted-foreground hover:text-foreground underline transition-colors"
-        >
-          {question.subtitle.text}
-        </a>
+        question.subtitle.link ? (
+          <a
+            href={question.subtitle.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mb-3 block text-xs text-muted-foreground hover:text-foreground underline transition-colors"
+          >
+            {question.subtitle.text}
+          </a>
+        ) : (
+          <p className="mb-3 text-xs font-semibold text-lightSecondary">
+            {question.subtitle.text}
+          </p>
+        )
       )}
 
       {/* Options */}
@@ -170,14 +176,20 @@ function QuestionMultiSelect({
         {questionIndex + 1}. {question.question}
       </p>
       {question.subtitle && (
-        <a
-          href={question.subtitle.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mb-3 block text-xs text-muted-foreground hover:text-foreground underline transition-colors"
-        >
-          {question.subtitle.text}
-        </a>
+        question.subtitle.link ? (
+          <a
+            href={question.subtitle.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mb-3 block text-xs text-muted-foreground hover:text-foreground underline transition-colors"
+          >
+            {question.subtitle.text}
+          </a>
+        ) : (
+          <p className="mb-3 text-xs font-semibold text-lightSecondary">
+            {question.subtitle.text}
+          </p>
+        )
       )}
 
       {/* Options */}
@@ -435,9 +447,11 @@ export function Questions({
     const target = questionRefs.current[index]
     const container = containerRef.current
     if (target && container) {
-      const targetOffset = target.offsetTop
+      const targetRect = target.getBoundingClientRect()
+      const containerRect = container.getBoundingClientRect()
+      const scrollTop = container.scrollTop + (targetRect.top - containerRect.top)
       container.scrollTo({
-        top: targetOffset,
+        top: scrollTop,
         behavior: "smooth"
       })
     }

@@ -6197,6 +6197,7 @@ export const sampleQuestions: IQuestion[] = [
     {
       id: "exclude-equipment",
       question: "Exclude equipment?",
+      subtitle: { text: "Selected equipment will be excluded from your program—not included." },
       type: "multi-select",
       options: equipmentOptions.map(opt => ({
         id: opt.value,
