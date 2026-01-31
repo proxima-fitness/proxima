@@ -30,7 +30,8 @@ export async function POST(req: Request) {
         const tools = getTools({ excludeAreas, excludeEquipment, healthIssues, hevyProgram });
 
         const andy = new ToolLoopAgent({
-            model: gateway('anthropic/claude-sonnet-4.5'),
+            model: gateway('moonshotai/kimi-k2'),
+                //'anthropic/claude-sonnet-4.5'),
             instructions: systemPrompt,
             tools: tools,
             // Explicit step limit to prevent infinite loops
