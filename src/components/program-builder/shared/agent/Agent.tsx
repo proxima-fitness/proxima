@@ -66,6 +66,7 @@ export const Agent: React.FC<IProps> = (props) => {
         sidebarPosition,
         onTogglePosition,
         setHevyProgram,
+        hevyProgram,
         sex,
         age,
         daysPerWeek,
@@ -134,12 +135,29 @@ export const Agent: React.FC<IProps> = (props) => {
     const [isFilters, setIsFilters] = useState(false)
     // Track if initial search has been triggered for this component instance
     const initialSearchOccurred = useRef<boolean>(false);
-    const sendMessageRef = useRef(sendMessage);
 
-    // Keep sendMessage ref in sync
+    // Wrapper that sends current program and filter context with every chat request so the API
+    // (and getCurrentProgram tool) see the actual state (e.g. when program was loaded via shareId).
+    const sendMessageWithContext = useCallback(
+        (message: Parameters<typeof sendMessage>[0], options?: Parameters<typeof sendMessage>[1]) => {
+            const contextBody = {
+                hevyProgram,
+                daysPerWeek: daysPerWeek ? Number(daysPerWeek) : undefined,
+                programLength: programLength ? Number(programLength) : undefined,
+                excludeAreas: excludeAreas?.length ? excludeAreas.map((o) => o.value).join(", ") : "",
+                excludeEquipment: excludeEquipment?.length ? excludeEquipment.map((o) => o.value).join(", ") : "",
+                healthIssues: healthIssues?.length ? healthIssues.map((o) => o.value).join(", ") : "",
+            };
+            return sendMessage(message, { ...options, body: { ...contextBody, ...options?.body } });
+        },
+        [sendMessage, hevyProgram, daysPerWeek, programLength, excludeAreas, excludeEquipment, healthIssues]
+    );
+
+    const sendMessageRef = useRef(sendMessageWithContext);
+
     useEffect(() => {
-        sendMessageRef.current = sendMessage;
-    }, [sendMessage]);
+        sendMessageRef.current = sendMessageWithContext;
+    }, [sendMessageWithContext]);
 
     // Initialize with search parameter if present
     useEffect(() => {
@@ -154,7 +172,7 @@ export const Agent: React.FC<IProps> = (props) => {
     const handleSubmit = () => {
         if (!input.trim()) return
 
-        sendMessage({ text: input });
+        sendMessageWithContext({ text: input });
         setInput('');
     }
 
@@ -173,9 +191,9 @@ export const Agent: React.FC<IProps> = (props) => {
             setGenerationError(null);
             setRetryCount(prev => prev + 1);
             setIsBuilding(true);
-            sendMessage({ text: "Build my program" });
+            sendMessageWithContext({ text: "Build my program" });
         }
-    }, [retryCount, sendMessage]);
+    }, [retryCount, sendMessageWithContext]);
 
     // Clear error state (used when user wants to start fresh or use fallback)
     const handleClearError = useCallback(() => {
@@ -250,7 +268,7 @@ export const Agent: React.FC<IProps> = (props) => {
                             setHevyProgram={setHevyProgram}
                             daysPerWeek={daysPerWeek}
                             programLength={programLength}
-                            sendMessage={sendMessage}
+                            sendMessage={sendMessageWithContext}
                             handleProgramLength={handleProgramLength}
                             handleDaysPerWeek={handleDaysPerWeek}
                             handleExcludeEquipment={handleExcludeEquipment}
