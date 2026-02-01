@@ -273,10 +273,57 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
         },
     });
 
+    /**
+     * JSON Patch operation schema (RFC 6902). Paths are JSON Pointers; document root is the THevyRoutine[] array.
+     */
+    const jsonPatchOperationSchema = z.object({
+        op: z.enum(['add', 'remove', 'replace', 'move', 'copy', 'test']).describe('Operation type'),
+        path: z.string().describe('JSON Pointer to the target (e.g. /0/title, /0/exercises/1/sets/0/reps)'),
+        value: z.unknown().optional().describe('Value for add, replace, test'),
+        from: z.string().optional().describe('JSON Pointer for move/copy source'),
+    });
+
+    /**
+     * Title: modifyProgramTool
+     * Description: Modifies the current workout program by applying a JSON Patch (RFC 6902). Call getCurrentProgram first to see the current state.
+     * @returns { Tool }
+     */
+    const modifyProgramTool = tool({
+        description: 'Modifies the current workout program using a JSON Patch. Call getCurrentProgram first to get the current program state. The document root is the **full routines array** (length = daysPerWeek × weeks, e.g. 48 for 6 days × 8 weeks). Paths use **zero-based indices**: /0 through /N-1 for all routines. The patch array can contain **any number of operations** (e.g. 160 or 1296); for program-wide edits (e.g. convert all to dumbbell), include one operation per routine (or per routine per exercise) so that every index that needs changing is targeted. Use when the user asks to change, edit, or update an existing program (e.g. rename a day, change reps/sets, add/remove an exercise). Path examples: /0 = first routine, /0/title = first routine title, /0/exercises/1 = second exercise of first routine, /0/exercises/0/sets/2/reps = reps of third set of first exercise.',
+        inputSchema: z.object({
+            patch: z.array(jsonPatchOperationSchema).min(1).describe('Array of JSON Patch operations (add, remove, replace, move, copy, test). At least one operation required.'),
+        }),
+        execute: async ({ patch }) => {
+            try {
+                return { patch };
+            } catch (error) {
+                console.error('Error in modifyProgramTool:', error);
+                return {
+                    error: 'Failed to prepare patch',
+                    message: error instanceof Error ? error.message : 'Unknown error',
+                };
+            }
+        },
+
+        toModelOutput: async ({ output }) => {
+            if (output.error) {
+                return {
+                    type: 'text' as const,
+                    value: `Error: ${output.message || 'Failed to prepare patch'}`,
+                };
+            }
+            return {
+                type: 'text' as const,
+                value: `Modify program patch (${output.patch?.length ?? 0} operations) will be applied on the client.`,
+            };
+        },
+    });
+
     return {
         getExerciseList: getExerciseListTool,
         getMoreInfoQuestions: getMoreInfoQuestionsTool,
         getCurrentProgram: getCurrentProgramTool,
         buildRoutine: buildRoutineTool,
+        modifyProgram: modifyProgramTool,
     };
 }

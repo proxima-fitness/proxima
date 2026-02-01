@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 interface IProps {
     sex: string;
     age: string;
-    programLength: string;
+    programLength: ""|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12";
     daysPerWeek: string;
     excludeAreas: IOption[];
     excludeEquipment: IOption[];
@@ -28,7 +28,7 @@ interface IProps {
     handleAge: (value: string) => void;
     handleDaysPerWeek: (value: string) => void;
     handleSpecificDays: (value: IOption[]) => void;
-    handleProgramLength: (value: string) => void;
+    handleProgramLength: (value: ""|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12") => void;
     handleWorkoutDuration: (value: string) => void;
     handleActivityLevel: (value: string) => void;
     handleGoals: (value: IOption[]) => void;
@@ -103,7 +103,19 @@ export const Filters: React.FC<IProps> = (props) => {
                         ))}
                     </SelectContent>
                 </Select>
-                <Select value={ programLength } onValueChange={ (value) => handleProgramLength(value) }>
+                <Select
+                    value={ programLength }
+                    onValueChange={ (value) => {
+                        // Enforce max 12 weeks (program length in weeks)
+                        if (value === "") {
+                            handleProgramLength("");
+                            return;
+                        }
+                        const num = parseInt(value, 10);
+                        const clamped = (isNaN(num) || num < 1 ? "1" : num > 12 ? "12" : String(num)) as "1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12";
+                        handleProgramLength(clamped);
+                    } }
+                >
                     <SelectTrigger className="h-10 bg-white dark:bg-darkGray">
                         <SelectValue placeholder="Program length" />
                     </SelectTrigger>

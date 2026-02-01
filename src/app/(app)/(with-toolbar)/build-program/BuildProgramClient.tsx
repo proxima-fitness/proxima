@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo, useReducer, useCallback } from "react";
+import { useState, useEffect, useMemo, useReducer, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
     ResizableHandle,
@@ -11,7 +12,7 @@ import {
 import { Agent } from "@/components/program-builder/shared/agent/Agent";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { MessageSquare, Calendar } from "lucide-react";
+import { MessageSquare, Calendar, Undo2 } from "lucide-react";
 const SIDEBAR_POSITION_KEY = "andy-sidebar-position";
 const SIDEBAR_SIZE_KEY = "andy-sidebar-size";
 import { useSearchParams } from "next/navigation";
@@ -20,12 +21,14 @@ import { useIsHevy } from "@/contexts/HevyContext";
 import { BuildProgramSkeleton } from "@/components/program-builder/shared/BuildProgramSkeleton";
 import { appendOrderToHevyRoutines } from "@/components/program-builder/utils/format-responses";
 import { HevyRoutine } from "@/components/program-builder/hevy/HevyRoutine";
+import { Button } from "@/components/ui/button";
 import { getSharedProgram } from "@/api/programs";
 import { emptyHevyRoutineProgram } from "@/assets/constants";
 import { IOption } from "@/components/ui/multi-select";
 import { inferDaysPerWeek, inferProgramLength } from "@/components/program-builder/utils/helpers";
 import { toast } from "sonner";
 import { getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy, sortHevyByOrder } from "@/components/program-builder/utils";
+import { applyPatch, type Operation } from "fast-json-patch";
 
 
 export function BuildProgramClient() {
@@ -46,6 +49,9 @@ export function BuildProgramClient() {
     /*************************************************************************************/
     /*** STATE FOR THE PROGRAM BUILDER ***/
     const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>([]);
+    const hevyProgramRef = useRef<THevyRoutine[]>(hevyProgram);
+    hevyProgramRef.current = hevyProgram;
+    const [undoStack, setUndoStack] = useState<Operation[][]>([]);
     /*************************************************************************************/
 
     const empty = searchParams.get('empty') ?? '';
@@ -56,7 +62,7 @@ export function BuildProgramClient() {
     const [age, setAge] = useState<string>("");
     const [daysPerWeek, setDaysPerWeek] = useState<string>("");
     const [specificDays, setSpecificDays] = useState<IOption[]>([]);
-    const [programLength, setProgramLength] = useState<string>("");
+    const [programLength, setProgramLength] = useState<""|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12">("");
     const [workoutDuration, setWorkoutDuration] = useState<string>("");
     const [activityLevel, setActivityLevel] = useState<string>("");
     const [goals, setGoals] = useState<IOption[]>([]);
@@ -459,6 +465,36 @@ export function BuildProgramClient() {
     const numberOfWeeks = useMemo(() => getNumberRoutineFolders(hevyProgram), [hevyProgram]);
     const numberOfWeeksArr = useMemo(() => Array.from({ length: numberOfWeeks }, (_, i) => i), [numberOfWeeks]);
 
+    const addToUndoStack = useCallback((inversePatch: Operation[]) => {
+        setUndoStack((prev) => [...prev, inversePatch]);
+    }, []);
+
+    const handleUndo = useCallback(() => {
+
+        if (undoStack.length === 0) return;
+        const inversePatch: Operation[] = undoStack[undoStack.length - 1];
+        try {
+            const result = applyPatch(
+                hevyProgram as object,
+                inversePatch,
+                true,
+                false
+            ) as { newDocument: THevyRoutine[] };
+            const newDocument = result.newDocument as THevyRoutine[];
+            hevyProgramRef.current = newDocument;
+            setHevyProgram(newDocument);
+            setUndoStack((prev) => prev.slice(0, -1));
+        } catch (e) {
+            toast.error("Undo failed.");
+            console.error("Undo failed.", e);
+        }
+    }, [hevyProgram, undoStack]);
+
+    const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+    useEffect(() => {
+        setPortalTarget(document.getElementById("toolbar-undo-portal"));
+    }, []);
+
     useEffect(() => {
         const emptyParam = searchParams.get('empty') ?? '';
 
@@ -584,7 +620,7 @@ export function BuildProgramClient() {
     const handleAge = useCallback((value: string) => { setAge(value); }, []);
     const handleDaysPerWeek = useCallback((value: string) => { setDaysPerWeek(value); }, []);
     const handleSpecificDays = useCallback((value: IOption[]) => { setSpecificDays(value); }, []);
-    const handleProgramLength = useCallback((value: string) => { setProgramLength(value); }, []);
+    const handleProgramLength = useCallback((value: ""|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12") => { setProgramLength(value); }, []);
     const handleWorkoutDuration = useCallback((value: string) => { setWorkoutDuration(value); }, []);
     const handleActivityLevel = useCallback((value: string) => { setActivityLevel(value); }, []);
     const handleGoals = useCallback((value: IOption[]) => { setGoals(value); }, []);
@@ -618,8 +654,23 @@ export function BuildProgramClient() {
         }
     }, [daysPerWeek, programLength, search]); // Only run when search changes, not when daysPerWeek/programLength change
 
+    const undoButton = portalTarget && createPortal(
+        undoStack.length > 0 ? (
+            <Button
+                size="sm"
+                onClick={handleUndo}
+                className="gap-2 bg-[#fbbf24] hover:bg-[#fbbf24]/80 text-black h-9"
+            >
+                <Undo2 className="h-4 w-4" />
+                Undo
+            </Button>
+        ) : null,
+        portalTarget
+    );
+
     return (
         <>
+            {undoButton}
             <div className="max-sm:hidden sm:block">
                 <ResizablePanelGroup
                     direction="horizontal"
@@ -644,6 +695,8 @@ export function BuildProgramClient() {
                                 onTogglePosition={toggleSidebarPosition}
                                 setHevyProgram={setHevyProgram}
                                 hevyProgram={hevyProgram}
+                                hevyProgramRef={hevyProgramRef}
+                                addToUndoStack={addToUndoStack}
                                 sex={sex}
                                 age={age}
                                 daysPerWeek={daysPerWeek}
@@ -793,6 +846,8 @@ export function BuildProgramClient() {
                                 onTogglePosition={toggleSidebarPosition}
                                 setHevyProgram={setHevyProgram}
                                 hevyProgram={hevyProgram}
+                                hevyProgramRef={hevyProgramRef}
+                                addToUndoStack={addToUndoStack}
                                 sex={sex}
                                 age={age}
                                 daysPerWeek={daysPerWeek}
@@ -850,6 +905,8 @@ export function BuildProgramClient() {
                             onTogglePosition={ () => {}}
                             setHevyProgram={setHevyProgram}
                             hevyProgram={hevyProgram}
+                            hevyProgramRef={hevyProgramRef}
+                            addToUndoStack={addToUndoStack}
                             sex={sex}
                             age={age}
                             daysPerWeek={daysPerWeek}

@@ -11,10 +11,12 @@ import { Copy, ThumbsUp, ThumbsDown, Pencil, Trash, AlertCircle, RefreshCw } fro
 import { FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai";
 import { Questions, IQuestion } from "@/components/ui/questions";
 import { IOption } from "@/components/ui/multi-select";
-import { inferDaysPerWeek, inferProgramLength } from "@/components/program-builder/utils/helpers";
+import { applyModifyProgramPatchesFromMessages, getModifyProgramObjectivesByRoutine, inferDaysPerWeek, inferProgramLength } from "@/components/program-builder/utils/helpers";
+import { ModifyProgramProgress } from "./ModifyProgramProgress";
 import { equipmentOptions, healthIssuesOptions } from "@/assets/constants";
 import { generateFallbackWorkout } from "../../utils/fallback-workouts";
 import { toast } from "sonner";
+import { type Operation } from "fast-json-patch";
 
 // Type for buildRoutine tool output
 interface IBuildRoutineOutput {
@@ -200,7 +202,7 @@ interface IProps {
         messageId?: string;
     }, options?: ChatRequestOptions) => Promise<void>;
 
-    handleProgramLength: (value: string) => void;
+    handleProgramLength: (value: ""|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12") => void;
     handleDaysPerWeek: (value: string) => void;
     handleExcludeEquipment: (value: IOption[]) => void;
     handleHealthIssues: (value: IOption[]) => void;
@@ -214,6 +216,8 @@ interface IProps {
     retryCount: number;
     maxRetries: number;
     onTimeoutError: () => void;
+    hevyProgram: THevyRoutine[];
+    addToUndoStack: (inversePatch: Operation[]) => void;
 }
 
 export const MessageBubbles: React.FC<IProps> = (props) => {
@@ -236,7 +240,9 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         onClearError,
         retryCount,
         maxRetries,
-        onTimeoutError
+        onTimeoutError,
+        hevyProgram,
+        addToUndoStack
     } = props;
 
     // Timeout detection - 45 seconds with no progress during building
@@ -373,6 +379,20 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         }
     }, [completedDays.length, totalDays, allRoutines, programLength, setHevyProgram, handleIsBuilding]);
 
+    // Track which modifyProgram tool results have been applied (avoid re-applying on re-render)
+    const appliedModifyProgramKeysRef = useRef<Set<string>>(new Set());
+
+    // Process modifyProgram tool results: validate, apply with immutable update, store inverse for undo
+    useEffect(() => {
+        applyModifyProgramPatchesFromMessages(
+            messages,
+            hevyProgram,
+            appliedModifyProgramKeysRef,
+            setHevyProgram,
+            addToUndoStack
+        );
+    }, [messages, hevyProgram, setHevyProgram, addToUndoStack]);
+
     // Helper function to convert string[] to IOption[] - memoized to prevent recreation
     const convertStringArrayToOptions = useCallback((
         values: string[],
@@ -386,7 +406,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     // Memoized handleComplete - separates API call from state updates
     const handleComplete = useCallback((answers: Record<string, string | string[]>) => {
         // 1. COMPUTE all values needed for API call FIRST (no state updates yet)
-        let programLengthValue = "";
+        let programLengthValue: ""|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12" = "";
         let daysPerWeekValue = "";
         let excludeEquipmentValue: IOption[] = [];
         let healthIssuesValue: IOption[] = [];
@@ -417,7 +437,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
 
         // Compute programLength value
         if (answers['program-length'] && answers['program-length'].length > 0) {
-            programLengthValue = answers['program-length'] as string;
+            programLengthValue = answers['program-length'] as ""|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12";
         } else {
             const inferredLength = inferProgramLength(answers['userRequest'] as string);
             programLengthValue = programLength || inferredLength || "12";
@@ -668,15 +688,53 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
 
                                             return null;
                                         }
+                                        case "tool-modifyProgram": {
+                                            type ModifyProgramPart = {
+                                                type: "tool-modifyProgram";
+                                                state?: string;
+                                                input?: { patch?: Array<{ op: string; path: string; value?: unknown }> };
+                                                output?: { patch?: Array<{ op: string; path: string; value?: unknown }>; error?: string };
+                                                errorText?: string;
+                                            };
+                                            const modifyPart = part as unknown as ModifyProgramPart;
+                                            const patch = modifyPart.output?.patch ?? modifyPart.input?.patch;
+                                            const objectivesByRoutine = getModifyProgramObjectivesByRoutine(patch, hevyProgram);
+                                            const isComplete =
+                                                modifyPart.state === "output-available" && modifyPart.output?.patch;
+                                            const isError = modifyPart.state === "output-error";
+                                            const errorText = modifyPart.errorText;
+
+                                            if (isError) {
+                                                return (
+                                                    <div
+                                                        key={`${message.id}-${index}-modify-error`}
+                                                        className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2"
+                                                    >
+                                                        <div className="flex items-center gap-2 p-4 bg-muted/50 rounded-lg border border-border">
+                                                            <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 bg-red-500" />
+                                                            <span className="text-sm text-muted-foreground">
+                                                                {errorText || "Program modification failed"}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            }
+
+                                            return (
+                                                <ModifyProgramProgress
+                                                    key={`${message.id}-${index}-modify`}
+                                                    objectivesByRoutine={objectivesByRoutine}
+                                                    status={isComplete ? "complete" : "processing"}
+                                                />
+                                            );
+                                        }
                                         default: {
                                             return null;
                                         }
                                     }
                                 })}
                             </div>
-                        ))
-
-            }
+                        ))}
 
         </>
     )

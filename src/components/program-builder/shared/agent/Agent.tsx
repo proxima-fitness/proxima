@@ -22,11 +22,13 @@ interface IProps {
     onTogglePosition: () => void;
     setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
     hevyProgram: THevyRoutine[];
+    hevyProgramRef?: React.MutableRefObject<THevyRoutine[]>;
+    addToUndoStack: (inversePatch: import("fast-json-patch").Operation[]) => void;
     sex: string;
     age: string;
     daysPerWeek: string;
     specificDays: IOption[];
-    programLength: string;
+    programLength: ""|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12";
     workoutDuration: string;
     activityLevel: string;
     goals: IOption[];
@@ -44,7 +46,7 @@ interface IProps {
     handleAge: (value: string) => void;
     handleDaysPerWeek: (value: string) => void;
     handleSpecificDays: (value: IOption[]) => void;
-    handleProgramLength: (value: string) => void;
+    handleProgramLength: (value: ""|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12") => void;
     handleWorkoutDuration: (value: string) => void;
     handleActivityLevel: (value: string) => void;
     handleGoals: (value: IOption[]) => void;
@@ -68,6 +70,8 @@ export const Agent: React.FC<IProps> = (props) => {
         onTogglePosition,
         setHevyProgram,
         hevyProgram,
+        hevyProgramRef,
+        addToUndoStack,
         sex,
         age,
         daysPerWeek,
@@ -144,7 +148,7 @@ export const Agent: React.FC<IProps> = (props) => {
             const text = getTextFromChatMessage(message);
             const includeProgram = isMessageAboutProgram(text);
             const contextBody = {
-                hevyProgram: includeProgram ? hevyProgram : [],
+                hevyProgram: includeProgram ? (hevyProgramRef?.current ?? hevyProgram) : [],
                 daysPerWeek: daysPerWeek ? Number(daysPerWeek) : undefined,
                 programLength: programLength ? Number(programLength) : undefined,
                 excludeAreas: excludeAreas?.length ? excludeAreas.map((o) => o.value).join(", ") : "",
@@ -153,7 +157,7 @@ export const Agent: React.FC<IProps> = (props) => {
             };
             return sendMessage(message, { ...options, body: { ...contextBody, ...options?.body } });
         },
-        [sendMessage, hevyProgram, daysPerWeek, programLength, excludeAreas, excludeEquipment, healthIssues]
+        [sendMessage, hevyProgram, hevyProgramRef, daysPerWeek, programLength, excludeAreas, excludeEquipment, healthIssues]
     );
 
     const sendMessageRef = useRef(sendMessageWithContext);
@@ -269,6 +273,8 @@ export const Agent: React.FC<IProps> = (props) => {
                         <MessageBubbles
                             messages={messages}
                             setHevyProgram={setHevyProgram}
+                            hevyProgram={hevyProgram}
+                            addToUndoStack={addToUndoStack}
                             daysPerWeek={daysPerWeek}
                             programLength={programLength}
                             sendMessage={sendMessageWithContext}

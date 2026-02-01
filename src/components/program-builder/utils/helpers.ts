@@ -1,5 +1,8 @@
-
+import { UIMessage } from "ai";
 import nlp from "compromise";
+import { applyPatch, compare, validate as validatePatch, type Operation } from "fast-json-patch";
+import Fuse from "fuse.js";
+import { toast } from "sonner";
 
 // Returns the proxima exercise gif_id for a specific hevy exercise using fuzzy matching
 
@@ -155,10 +158,47 @@ const PROGRAM_VERB_NORMALS = new Set(["build", "create", "modify", "change", "ge
 const PROGRAM_NOUN_LOOKUP = ["program", "workout", "routine", "exercise", "exercises"];
 const DAY_1_TO_7_REGEX = /\bday\s*[1-7]\b/;
 
+const RETRY_PHRASES = ["try again", "retry", "try once more", "try one more time", "do it again", "start over", "run it again"];
+const ANGRY_PHRASES = ["doesn't work", "not working", "does not work"];
+const ANGRY_WORDS = ["angry", "frustrated", "mad", "terrible", "awful", "hate", "useless", "wrong", "broken", "frustrating", "annoying", "ridiculous", "stupid", "worst", "waste", "fail", "failed"];
+const SWEAR_WORDS = ["damn", "dammit", "crap", "hell", "sucks", "bs", "bullshit", "screw", "screwed", "freaking", "fricking", "bloody", "bollocks", "fucking", "fuck"];
+
+const FUZZY_WORD_THRESHOLD = 0.45;
+const FUZZY_PHRASE_THRESHOLD = 0.5;
+
+function anyTokenMatchesList(tokens: string[], list: string[], threshold: number): boolean {
+    if (list.length === 0 || tokens.length === 0) return false;
+    const fuse = new Fuse(list.map((w) => ({ w })), { keys: ["w"], threshold, includeScore: false });
+    return tokens.some((token) => fuse.search(token).length > 0);
+}
+
+function fuzzyMatchesPhrase(normalized: string, phrases: string[], threshold: number): boolean {
+    if (phrases.length === 0 || !normalized) return false;
+    const fuse = new Fuse(phrases.map((p) => ({ p })), { keys: ["p"], threshold, includeScore: false });
+    return fuse.search(normalized).length > 0;
+}
+
+function getTokensFromDoc(doc: ReturnType<typeof nlp>): string[] {
+    const tokens: string[] = [];
+    const json = doc.json();
+    for (const chunk of json) {
+        for (const term of chunk.terms || []) {
+            const norm = (term as { normal?: string }).normal;
+            if (typeof norm === "string" && norm.trim()) tokens.push(norm.toLowerCase());
+        }
+    }
+    return tokens.length > 0 ? tokens : (doc.text() || "").toLowerCase().split(/\s+/).filter(Boolean);
+}
+
+const PROGRAM_VERB_LIST = Array.from(PROGRAM_VERB_NORMALS);
+
 /**
- * Returns true only when the message text clearly indicates the user is talking about
- * the program (building, modifying, or asking about it). Uses compromise for robust
- * noun/verb/question detection. Default false when uncertain to avoid sending hevyProgram unnecessarily.
+ * Returns true when the message text clearly indicates the user is talking about
+ * the program (building, modifying, or asking about it), or when the user says
+ * something like "try again" or "retry", or when the message contains angry or
+ * frustrated language (including common swear words). Uses compromise for tokenization/NLP
+ * and Fuse.js for spelling-tolerant (fuzzy) matching on all list-based checks.
+ * Default false when uncertain to avoid sending hevyProgram unnecessarily.
  */
 export function isMessageAboutProgram(text: string): boolean {
     const normalized = (text || "").trim().toLowerCase().replace(/[\u2010\u2011\u2012\u2013\u2014\u2015]/g, "-");
@@ -169,24 +209,19 @@ export function isMessageAboutProgram(text: string): boolean {
     }
 
     const doc = nlp(normalized);
+    const tokens = getTokensFromDoc(doc);
 
-    if (doc.lookup(PROGRAM_NOUN_LOOKUP).found) return true;
+    if (fuzzyMatchesPhrase(normalized, RETRY_PHRASES, FUZZY_PHRASE_THRESHOLD)) return true;
+    if (fuzzyMatchesPhrase(normalized, ANGRY_PHRASES, FUZZY_PHRASE_THRESHOLD)) return true;
+    if (anyTokenMatchesList(tokens, ANGRY_WORDS, FUZZY_WORD_THRESHOLD)) return true;
+    if (anyTokenMatchesList(tokens, SWEAR_WORDS, FUZZY_WORD_THRESHOLD)) return true;
+    if (anyTokenMatchesList(tokens, PROGRAM_NOUN_LOOKUP, FUZZY_WORD_THRESHOLD)) return true;
+    if (anyTokenMatchesList(tokens, PROGRAM_VERB_LIST, FUZZY_WORD_THRESHOLD)) return true;
     if (DAY_1_TO_7_REGEX.test(normalized)) return true;
 
-    const json = doc.json();
-    for (const chunk of json) {
-        for (const term of chunk.terms || []) {
-            const tags = (term as { tags?: string[] }).tags || [];
-            if (tags.some((t) => t.includes("Verb"))) {
-                const norm = ((term as { normal?: string }).normal || "").toLowerCase();
-                if (PROGRAM_VERB_NORMALS.has(norm)) return true;
-            }
-        }
-    }
-
     if (doc.sentences().isQuestion().found) {
-        if (doc.lookup(PROGRAM_NOUN_LOOKUP).found || DAY_1_TO_7_REGEX.test(normalized)) return true;
-        if (normalized.length < 50 && /\b(explain|what|how)\b/.test(normalized)) return true;
+        if (anyTokenMatchesList(tokens, PROGRAM_NOUN_LOOKUP, FUZZY_WORD_THRESHOLD) || DAY_1_TO_7_REGEX.test(normalized)) return true;
+        if (normalized.length < 50 && anyTokenMatchesList(tokens, ["explain", "what", "how"], FUZZY_WORD_THRESHOLD)) return true;
     }
 
     return false;
@@ -284,3 +319,226 @@ export const generateHevySets = (exercise: TSavedWorkoutExercise): THevySets[] =
 
     return sets;
 };
+
+// Type for modifyProgram tool output
+interface IModifyProgramOutput {
+    patch?: Array<{ op: string; path: string; value?: unknown; from?: string }>;
+    error?: string;
+    message?: string;
+}
+
+/** Patch operation shape for describePatchOperation */
+export type PatchOperationForDescribe = { op: string; path: string; value?: unknown; from?: string };
+
+function formatOpValue(value: unknown): string {
+    if (value === undefined || value === null) return "";
+    if (typeof value === "string") return `'${value}'`;
+    if (typeof value === "number" || typeof value === "boolean") return String(value);
+    try {
+        return JSON.stringify(value);
+    } catch {
+        return String(value);
+    }
+}
+
+function formatSimpleFieldOp(opType: string, fieldName: string, value: string): string {
+    if (opType === "replace") return `Set ${fieldName} to ${value}`;
+    if (opType === "add") return `Add ${fieldName} ${value}`;
+    return `${opType} ${fieldName}`;
+}
+
+function parseSegmentNum(seg: string): number | "?" {
+    const n = parseInt(seg, 10);
+    return Number.isNaN(n) ? "?" : n + 1;
+}
+
+type SetPropConfig =
+    | { label: string; suffix?: string; fallback: string }
+    | { replaceText: string; fallback: string };
+
+const SET_PROP_DESCRIPTIONS: Record<string, SetPropConfig> = {
+    reps: { label: "reps", fallback: "reps" },
+    weight: { label: "weight", fallback: "weight" },
+    weight_kg: { label: "weight", suffix: " kg", fallback: "weight" },
+    duration: { label: "duration", fallback: "duration" },
+    duration_seconds: { label: "duration", suffix: " s", fallback: "duration" },
+    rpe: { label: "RPE", fallback: "RPE" },
+    type: { label: "type", fallback: "set type" },
+    distance_meters: { label: "distance", suffix: " m", fallback: "distance" },
+    custom_metric: { label: "custom metric", fallback: "custom metric" },
+    index: { replaceText: "Updated", fallback: "set index" },
+};
+
+/**
+ * Returns a short human-readable description of a single JSON Patch operation
+ * (e.g. "Set title to 'Push Day'", "Exercise 2, Set 1: Set reps to 10").
+ */
+export function describePatchOperation(op: PatchOperationForDescribe): string {
+    const { op: opType, path, value } = op;
+    if (typeof path !== "string" || !path.startsWith("/")) return "Updated program";
+    const segments = path.slice(1).split("/").filter(Boolean);
+    const withinRoutine = segments.slice(1);
+    if (segments.length <= 1 || withinRoutine.length === 0) return "Updated program";
+
+    if (withinRoutine[0] === "title") {
+        return formatSimpleFieldOp(opType, "title", formatOpValue(value));
+    }
+    if (withinRoutine[0] === "notes") {
+        return formatSimpleFieldOp(opType, "notes", formatOpValue(value));
+    }
+
+    if (withinRoutine[0] !== "exercises" || withinRoutine.length < 2) return "Updated program";
+
+    const exerciseNum = parseSegmentNum(withinRoutine[1]);
+    if (withinRoutine.length === 2) {
+        if (opType === "add") return `Add exercise ${exerciseNum}`;
+        if (opType === "remove") return `Remove exercise ${exerciseNum}`;
+        return `${opType} exercise ${exerciseNum}`;
+    }
+    if (withinRoutine[2] === "name") {
+        const v = formatOpValue(value);
+        return opType === "replace"
+            ? `Exercise ${exerciseNum}: Set name to ${v}`
+            : `${opType} exercise ${exerciseNum} name`;
+    }
+    if (withinRoutine[2] !== "sets" || withinRoutine.length < 4) {
+        return `Exercise ${exerciseNum}: Updated`;
+    }
+
+    const setNum = parseSegmentNum(withinRoutine[3]);
+    const v = formatOpValue(value);
+    const setProp = withinRoutine[4];
+    const config = setProp !== undefined ? SET_PROP_DESCRIPTIONS[setProp] : undefined;
+
+    if (config) {
+        if ("replaceText" in config) {
+            return opType === "replace"
+                ? `Exercise ${exerciseNum}, Set ${setNum}: ${config.replaceText}`
+                : `${opType} ${config.fallback}`;
+        }
+        return opType === "replace"
+            ? `Exercise ${exerciseNum}, Set ${setNum}: Set ${config.label} to ${v}${config.suffix ?? ""}`
+            : `${opType} ${config.fallback}`;
+    }
+
+    const propLabel = (setProp ?? "").replace(/_/g, " ");
+    return opType === "replace" && v
+        ? `Exercise ${exerciseNum}, Set ${setNum}: Set ${propLabel} to ${v}`
+        : `Exercise ${exerciseNum}, Set ${setNum}: Updated`;
+}
+
+export type TModifyProgramRoutineObjective = {
+    routineIndex: number;
+    routineLabel: string;
+    count: number;
+    details: string[];
+    /** folder_id (week, 0-indexed) for grouping; undefined when program not available */
+    folder_id?: number;
+};
+
+/**
+ * Groups patch operations by routine index and returns one entry per routine
+ * with a summary label and full list of human-readable change descriptions.
+ * No cap; no "and X more". When hevyProgram is provided, labels use "Week X Day Y".
+ */
+export function getModifyProgramObjectivesByRoutine(
+    patch: Array<{ op: string; path: string; value?: unknown; from?: string }> | undefined,
+    hevyProgram?: THevyRoutine[]
+): TModifyProgramRoutineObjective[] {
+    if (!patch || !Array.isArray(patch) || patch.length === 0) return [];
+
+    const byRoutine = new Map<number, string[]>();
+    for (const op of patch) {
+        const path = op.path;
+        if (typeof path !== "string" || !path.startsWith("/")) continue;
+        const segments = path.slice(1).split("/").filter(Boolean);
+        const routineIndex = segments.length > 0 ? parseInt(segments[0], 10) : 0;
+        if (Number.isNaN(routineIndex)) continue;
+        const list = byRoutine.get(routineIndex) ?? [];
+        list.push(describePatchOperation(op));
+        byRoutine.set(routineIndex, list);
+    }
+
+    const routineIndices = Array.from(byRoutine.keys()).sort((a, b) => a - b);
+    return routineIndices.map((routineIndex) => {
+        const details = byRoutine.get(routineIndex) ?? [];
+        const count = details.length;
+        const label = count === 1 ? "1 change" : `${count} changes`;
+        const routine = hevyProgram?.[routineIndex];
+
+        const routineLabel = `Week ${routine?.folder_id != null ? routine.folder_id + 1 : "?"} Day ${routine?.order ?? "?"}: ${label}`
+        return {
+            routineIndex,
+            routineLabel,
+            count,
+            details,
+            folder_id: routine?.folder_id,
+        };
+    });
+}
+
+/**
+ * Collects unapplied modifyProgram tool results from messages, validates and applies
+ * patches to the current program, pushes inverse patches to undo, and updates
+ * the applied-keys set. Call from useEffect when messages or hevyProgram change.
+ */
+export const applyModifyProgramPatchesFromMessages = (messages: UIMessage[], hevyProgram: THevyRoutine[], appliedKeysRef: React.MutableRefObject<Set<string>>, setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>, addToUndoStack: (inversePatch: Operation[]) => void): void => {
+
+    if (!hevyProgram || hevyProgram.length === 0) return;
+
+    const toApply: { key: string; patch: IModifyProgramOutput["patch"] }[] = [];
+
+    for (const message of messages) {
+        const parts = message.parts ?? [];
+        for (let partIndex = 0; partIndex < parts.length; partIndex++) {
+            const part = parts[partIndex];
+            if (part.type !== "tool-modifyProgram") continue;
+
+            const toolOutput = (part as { output?: IModifyProgramOutput }).output;
+            const patch = toolOutput?.patch;
+            if (!patch || !Array.isArray(patch) || patch.length === 0 || toolOutput?.error) continue;
+
+            const key = `${message.id ?? partIndex}-${partIndex}`;
+            if (appliedKeysRef.current.has(key)) continue;
+
+            toApply.push({ key, patch });
+        }
+    }
+
+    let currentDoc: THevyRoutine[] = hevyProgram;
+    let appliedAny = false;
+
+    for (const { key, patch } of toApply) {
+        const patchOps = patch as Operation[];
+        const err = validatePatch(patchOps, currentDoc as object);
+        if (err) {
+            toast.error("Program modification failed: patch is invalid for current program.");
+            console.error("Program modification failed: patch is invalid for current program",err);
+            appliedKeysRef.current.add(key);
+            break;
+        }
+
+        try {
+            const result = applyPatch(
+                currentDoc as object,
+                patchOps,
+                true,
+                false
+            ) as { newDocument: THevyRoutine[] };
+            const newDocument = result.newDocument as THevyRoutine[];
+            const inversePatch = compare(newDocument as object, currentDoc as object);
+            addToUndoStack(inversePatch);
+            currentDoc = newDocument;
+            appliedKeysRef.current.add(key);
+            appliedAny = true;
+        } catch {
+            toast.error("Program modification failed: could not apply patch.");
+            appliedKeysRef.current.add(key);
+            break;
+        }
+    }
+
+    if (appliedAny && currentDoc !== hevyProgram) {
+        setHevyProgram(currentDoc);
+    }
+}

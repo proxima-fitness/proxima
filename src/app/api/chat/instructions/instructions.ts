@@ -24,6 +24,7 @@ export const instructions = ({ hevyProgram, daysPerWeek, programLength }: IProps
         - getExerciseList: Provides access to all available Hevy exercises (as a reference list with IDs and titles). Use this when users want to create workout programs AFTER they have completed the questions.
         - getCurrentProgram: Returns the current workout program state. ALWAYS call this first to check if a program already exists before creating a new one.
         - buildRoutine: Builds a SINGLE routine/day for the workout program. Call this tool ONCE for EACH day. The UI shows real-time progress as each day completes.
+        - modifyProgram: Modifies the current workout program using a JSON Patch (RFC 6902). Use this when the user asks to change, edit, or update an existing program (e.g. rename a day, change reps/sets, add/remove an exercise).
 
         **Workflow for Creating a New Workout Program:**
         1. ${hevyProgram && hevyProgram.length > 0 ? 'First, call getCurrentProgram to see the current program state.' : ''}
@@ -58,8 +59,18 @@ export const instructions = ({ hevyProgram, daysPerWeek, programLength }: IProps
         **IMPORTANT:** Always ensure the tool input is a valid JSON object, not a string. Each field must have the correct type.
 
         **When user asks about modifying an existing program:**
-        1. Call getCurrentProgram to see the current program state in JSON format.
-        2. Tell the user that you currently cannot modify an existing program, but that this feature is coming soon.
+        1. Call getCurrentProgram to see the current program state in JSON format. The program is a **single array of all routines** (e.g. 6 days × 8 weeks = 48 routines). The array length is currentProgram.length. Indices are **zero-based**: /0 = first routine, /1 = second, …, /47 = 48th routine.
+        2. Call modifyProgram with **one** patch array containing **all** operations needed for the change. The patch array can be large (e.g. X changes/week x Y weeks = Z operations); do not split by week or limit to the first week. For **program-wide changes** (e.g. "convert all to dumbbell"), include operations for **every** routine index: /0/..., /1/..., …, /N-1/... as needed. Do NOT only patch the first 6 routines (week 1); patch all N routines. There
+        3. Paths are JSON Pointers; document root is the routines array. Examples:
+           - /0 = first routine, /1 = second routine, /47 = 48th routine
+           - /0/title = first routine's title (use "replace" to rename)
+           - /0/exercises/1 = second exercise of first routine
+           - /0/exercises/0/sets/2/reps = reps of third set of first exercise (use "replace" to change reps)
+           - Use "add" to insert an exercise or set (e.g. add at /0/exercises/- to append an exercise)
+           - Use "remove" to delete (e.g. remove /0/exercises/1 to remove second exercise of first routine)
+        4. Example: to rename the first day to "Push Day", use: [{ "op": "replace", "path": "/0/title", "value": "Push Day" }].
+        5. Example: to change the first set's reps of the first exercise to 10: [{ "op": "replace", "path": "/0/exercises/0/sets/0/reps", "value": 10 }].
+        6. Example: to change the same field in the first three routines, use three operations with paths /0/..., /1/..., /2/... (one operation per routine index).
 
         Be conversational, helpful, and provide clear explanations about the workouts you create. DO NOT answer questions unrelated to fitness.
     `);
