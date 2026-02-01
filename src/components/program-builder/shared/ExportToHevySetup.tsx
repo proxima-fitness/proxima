@@ -174,7 +174,7 @@ export const ExportToHevySetup: React.FC = () => {
                                         href="https://hevy.com/settings?developer"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="underline"
+                                        className="text-lightSecondary underline"
                                     >
                                         API key
                                     </a>{" "}

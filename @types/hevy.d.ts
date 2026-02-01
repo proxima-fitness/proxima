@@ -115,6 +115,72 @@ type THevyCard = {
     folder_id: number,
 }
 
+
+type THevyRoutineRequestObject = {
+    routine: THevyRoutineRequest;
+}
+
+type THevyRoutineRequest = {
+    title: string; // The routine title
+    folder_id: number | null; // An ID for the folder this routine corresponds to. (Also used to choose the week routine is assigned in drag and drop)
+    notes: string;
+    updated_at?: string; // ISO 8601 timestamp of when the routine was last updated. example: 2021-09-14T12:00:00Z
+    created_at?: string; // ISO 8601 timestamp of when the routine was created. example: 2021-09-14T12:00:00Z
+    exercises: THevyExerciseRequest[];
+}
+
+type TRoutineFolderResponse = {
+    id: number;
+    index: number;
+    title: string;
+    updated_at: string;
+    created_at: string;
+  };
+
+type THevyRoutine = {
+    id: string; // The routine ID
+    title: string; // The routine title
+    folder_id: number | null; // An ID for the folder this routine corresponds to. (Also used to choose the week routine is assigned in drag and drop)
+    updated_at?: string; // ISO 8601 timestamp of when the routine was last updated. example: 2021-09-14T12:00:00Z
+    created_at?: string; // ISO 8601 timestamp of when the routine was created. example: 2021-09-14T12:00:00Z
+    exercises: THevyExercise[];
+    notes: string;
+
+    /* This field are used for the drag and drop but not stored in the DB */
+    order?: string // The day this Routine is assigned on (1-indexed)
+  }
+
+type THevyExerciseHistory = {
+    exercise_history: THevyExerciseHistoryEntry[];
+}
+
+type THevyExerciseHistoryEntry = {
+    workout_id: string;
+    workout_title: string;
+    workout_start_time: string;
+    workout_end_time: string;
+    exercise_template_id: string;
+    weight_kg: number | null;
+    reps: number | null;
+    distance_meters: number | null;
+    duration_seconds: number | null;
+    rpe: number | null;
+    custom_metric: number | null;
+    set_type: string; // (warmup, normal, dropset, failure)
+}
+
+type TRoutineFolderRequest = {
+    routine_folder: {
+        title: string;
+    }
+}
+
+
+type TProgramTitle = {
+    id: string;
+    title: string;
+}
+
 // Interfaces
 /**********************************************************/
 
