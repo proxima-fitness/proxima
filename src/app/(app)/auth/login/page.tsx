@@ -1,12 +1,20 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LoginForm } from '@/components/auth/login-form'
 import { ai_program_builder, completed_sets } from 'public'
 
-export default function Page() {
+type PageProps = {
+  searchParams: Promise<{ next?: string }> | { next?: string };
+};
+
+export default async function Page(props: PageProps) {
+  const searchParams = await Promise.resolve(props.searchParams);
+  const next = searchParams?.next ?? '/';
+
   return (
     <div className="bg-white dark:bg-darkGray flex flex-row sm:min-h-svh w-full items-center justify-around gap-24 md:p-10">
       <div className="w-[100%] pr-12 max-sm:pr-0 max-w-md">
-        <LoginForm />
+        <LoginForm redirectPath={next} />
       </div>
     <div className={ `w-[50%] relative max-sm:hidden` } >
         <img src={ (ai_program_builder as any).src } alt="Program Creator Image" className="relative z-[5]" />

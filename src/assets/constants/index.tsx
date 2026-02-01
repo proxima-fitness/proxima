@@ -1,7 +1,8 @@
-import { people03, people02, people01, people04, people05, people06, instagram, linkedin, star, reddit, twitter } from "public";
+/* eslint-disable @next/next/no-img-element */
+import { people03, people02, people01, people04, people05, people06, instagram, linkedin, star, reddit, twitter, hevy_logo } from "public";
 import humanizeDuration from "humanize-duration";
 import { IOption } from '@/components/ui/multi-select';
-import { BicepsFlexedIcon, BookOpenIcon, Calculator, FootprintsIcon, SquarePowerIcon } from "lucide-react";
+import { BicepsFlexedIcon, BookOpenIcon, Calculator, FileText, FootprintsIcon, SquarePowerIcon, Table } from "lucide-react";
 import { IQuestion } from "@/components/ui/questions";
 
 export const suggestionGroups = [
@@ -61,6 +62,58 @@ export const suggestionGroups = [
 
 ];
 
+export const exportOptions = [
+    {
+        id: "hevy",
+        name: "Hevy",
+        icon: (
+            <img
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                src={(hevy_logo as any).src}
+                alt="Hevy"
+                className="w-full h-6 object-contain"
+            />
+        ),
+        brand: true,
+    },
+    // {
+    //     id: "macrofactor",
+    //     name: "Macrofactor",
+    //     icon: (
+    //         <img
+    //             src={(macrofactor_logo as any).src}
+    //             alt="Macrofactor"
+    //             className="w-full h-6 object-contain"
+    //         />
+    //     ),
+    //     brand: true,
+    // },
+    // {
+    //     id: "strong",
+    //     name: "Strong",
+    //     icon: (
+    //         <img
+    //             src={(strong_logo as any).src}
+    //             alt="Strong"
+    //             className="w-full h-6 "
+    //         />
+    //     ),
+    //     brand: true,
+    // },
+    {
+        id: "pdf",
+        name: "PDF",
+        icon: <FileText className="w-6 h-6" />,
+        brand: false,
+    },
+    {
+        id: "spreadsheet",
+        name: "Spreadsheet",
+        icon: <Table className="w-6 h-6" />,
+        brand: false,
+    },
+];
+
 
 export const programLengths = ["1","2","3","4","5","6","7","8","9","10","11","12"];
 export const repMaxes = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"];
@@ -74,8 +127,8 @@ export const lightColours = ["#DCF9C2", "#F4D1BD", "#E2F2F2", "#E0E1B9", "#D7FEC
 export const programBuilderSteps = [
     { title: "Step 1", description: "Prompt your Program" },
     { title: "Step 2", description: "Edit and Refine" },
-    { title: "Step 3", description: "Finish and Review" },
-    { title: "Step 4", description: "Sign in and Export Program" },
+    { title: "Step 3", description: "Sign in to save" },
+    { title: "Step 4", description: "Export program" },
 ];
 
 export const primaryMuscleGroups = [

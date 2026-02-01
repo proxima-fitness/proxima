@@ -20,7 +20,11 @@ import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from 'react-hook-form'
 
-export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
+type LoginFormProps = React.ComponentPropsWithoutRef<'div'> & {
+  redirectPath?: string;
+};
+
+export function LoginForm({ className, redirectPath = '/', ...props }: LoginFormProps) {
 
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -43,7 +47,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: provider,
                 options: {
-                redirectTo: `https://proximafitness.com/auth/oauth?next=/`,
+                redirectTo: `https://proximafitness.com/auth/oauth?next=${encodeURIComponent(redirectPath)}`,
                 },
             })
 
@@ -168,7 +172,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
             </div>
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{' '}
-              <Link href="/auth/sign-up" className="underline underline-offset-4">
+              <Link href={`/auth/sign-up?next=${encodeURIComponent(redirectPath)}`} className="underline underline-offset-4">
                 Sign up
               </Link>
             </div>
@@ -178,6 +182,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                 email={ watch().email }
                 password={ watch().password }
                 setTurnstileOpen={ setTurnstileOpen }
+                redirectPath={ redirectPath }
             />
         }
         </CardContent>
