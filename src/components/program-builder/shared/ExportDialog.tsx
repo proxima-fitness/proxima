@@ -13,6 +13,7 @@ import { PDFViewer } from "@react-pdf/renderer";
 import { HevyPdfRenderer } from "../hevy/HevyPdfRenderer";
 import { deFlattenHevyRoutine } from "../utils";
 import { ChevronLeft } from "lucide-react";
+import { ExportToHevySetup } from "./ExportToHevySetup";
 
 interface IProps {
     open: boolean;
@@ -47,7 +48,7 @@ export const ExportDialog: React.FC<IProps> = (props) => {
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent
                 className={
-                    selectedExportId === "pdf"
+                    selectedExportId === "pdf" || selectedExportId === "hevy"
                         ? "sm:max-w-6xl max-sm:w-[95vw]"
                         : ""
                 }
@@ -90,8 +91,8 @@ export const ExportDialog: React.FC<IProps> = (props) => {
                         })()}
                     </div>
                 )}
-                {selectedExportId && selectedExportId !== "pdf" && (
-                    <div className="flex flex-col items-start w-full">
+                {selectedExportId === "hevy" && (
+                    <div className="flex flex-col items-start w-full gap-2">
                         <Button
                             variant="ghost"
                             size="sm"
@@ -101,6 +102,9 @@ export const ExportDialog: React.FC<IProps> = (props) => {
                             <ChevronLeft className="w-3 h-3 shrink-0" />
                             Back
                         </Button>
+                        <div className="w-full px-4 py-4 sm:px-6 sm:py-5 md:px-8 md:py-6 lg:px-10 lg:py-6">
+                            <ExportToHevySetup />
+                        </div>
                     </div>
                 )}
             </DialogContent>
