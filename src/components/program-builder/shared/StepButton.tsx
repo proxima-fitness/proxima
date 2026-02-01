@@ -8,7 +8,7 @@ import { ExportDialog } from "./ExportDialog";
 import { useUserContext } from "@/contexts/UserContext";
 // import { ShareDialog } from "./ShareDialog";
 
-const BUILD_PROGRAM_PATH = "/build-program";
+const BUILD_PROGRAM_PATH = "/build-program?resume=true&edit=true";
 const LOGIN_WITH_NEXT = `/auth/login?next=${encodeURIComponent(BUILD_PROGRAM_PATH)}`;
 
 export const StepButton: React.FC = () => {

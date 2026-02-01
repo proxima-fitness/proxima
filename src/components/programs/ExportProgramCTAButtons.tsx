@@ -28,7 +28,7 @@ export const ExportProgramCTAButtons: React.FC<IProps> = ({ programId, exportOpt
                     key={option.id}
                     disabled={true}
                     onClick={() => handleExport(option.id)}
-                    className="flex flex-row items-center justify-center gap-3 px-4 py-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors text-white"
+                    className="cursor-pointer flex flex-row items-center justify-center gap-3 px-4 py-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors text-white"
                 >
                     <span className="flex-shrink-0">{option.icon}</span>
                     {!option.brand ? <span className="font-main text-lg">{option.name}</span> : null}
