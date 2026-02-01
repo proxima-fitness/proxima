@@ -1,10 +1,18 @@
+"use client";
+
 import {
     Dialog,
     DialogContent,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { ExportProgramCTAButtons } from "@/components/programs/ExportProgramCTAButtons";
 import { exportOptions } from "@/assets/constants";
+import { PDFViewer } from "@react-pdf/renderer";
+import { HevyPdfRenderer } from "../hevy/HevyPdfRenderer";
+import { deFlattenHevyRoutine } from "../utils";
+import { ChevronLeft } from "lucide-react";
 
 interface IProps {
     open: boolean;
@@ -14,14 +22,87 @@ interface IProps {
 
 export const ExportDialog: React.FC<IProps> = (props) => {
     const { open, onOpenChange, programId } = props;
+    const [selectedExportId, setSelectedExportId] = useState<string | null>(null);
+
+    const handleOpenChange = (nextOpen: boolean) => {
+        if (!nextOpen) {
+            setSelectedExportId(null);
+        }
+        onOpenChange(nextOpen);
+    };
+
+    const hevyProgramFromStorage = (): THevyRoutine[][] | null => {
+        if (typeof window === "undefined") return null;
+        const raw = localStorage.getItem("hevy-program-in-progress");
+        if (!raw) return null;
+        try {
+            const parsed = JSON.parse(raw) as THevyRoutine[];
+            return deFlattenHevyRoutine(parsed);
+        } catch {
+            return null;
+        }
+    };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="">
+        <Dialog open={open} onOpenChange={handleOpenChange}>
+            <DialogContent
+                className={
+                    selectedExportId === "pdf"
+                        ? "sm:max-w-6xl max-sm:w-[95vw]"
+                        : ""
+                }
+            >
                 <DialogTitle className="font-bold font-main text-xl sm:text-2xl text-center ">
                     Export program
                 </DialogTitle>
-                <ExportProgramCTAButtons programId={programId} exportOptions={exportOptions} />
+                {selectedExportId === null && (
+                    <ExportProgramCTAButtons
+                        programId={programId}
+                        exportOptions={exportOptions}
+                        onSelectExport={setSelectedExportId}
+                    />
+                )}
+                {selectedExportId === "pdf" && (
+                    <div className="flex flex-col items-start w-full gap-2">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 min-w-0 px-2 text-xs gap-1 -ml-2"
+                            onClick={() => setSelectedExportId(null)}
+                        >
+                            <ChevronLeft className="w-3 h-3 shrink-0" />
+                            Back
+                        </Button>
+                        {(() => {
+                            const hevyRoutine = hevyProgramFromStorage();
+                            if (!hevyRoutine || hevyRoutine.length === 0) {
+                                return (
+                                    <p className="text-sm text-muted-foreground py-4">
+                                        No program in progress. Build a program first to export as PDF.
+                                    </p>
+                                );
+                            }
+                            return (
+                                <PDFViewer className="w-full max-sm:h-[50vh] h-[60vh] rounded-lg border">
+                                    <HevyPdfRenderer hevyRoutine={hevyRoutine} />
+                                </PDFViewer>
+                            );
+                        })()}
+                    </div>
+                )}
+                {selectedExportId && selectedExportId !== "pdf" && (
+                    <div className="flex flex-col items-start w-full">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 min-w-0 px-2 text-xs gap-1 -ml-2"
+                            onClick={() => setSelectedExportId(null)}
+                        >
+                            <ChevronLeft className="w-3 h-3 shrink-0" />
+                            Back
+                        </Button>
+                    </div>
+                )}
             </DialogContent>
         </Dialog>
     );

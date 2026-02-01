@@ -41,7 +41,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                         >
                         Week {index + 1}
                     </Text>
-                    <Text style={ { fontSize: "8px", fontFamily: "Russo One"} }>© 2025 Proxima Fitness Inc.</Text>
+                    <Text style={ { fontSize: "8px", fontFamily: "Russo One"} }>© 2026 Proxima Fitness Inc.</Text>
                     <View
                         style={ {
                             display: "flex",
@@ -265,12 +265,11 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
             } }>
                 <View style={ { width: "80vw"} }>
                     <Text style={ { textAlign: "center", fontSize: "14px", fontWeight: "bold", paddingBottom: "8px" } }>Thank you for using the AI Program Builder!</Text>
-                    <Text style={ { paddingVertical: "4px" } }>I hope this custom workout program helps you make the gains you were after. Respect for putting in the work, now it&apos;s time to level up!</Text>
-                    <Text style={ { paddingVertical: "4px" } }>As a special thank you, enjoy 30% off your purchase on the Proxima Fitness App - the ultimate tool for AI-powered workout programming and tracking.</Text>
-                    <Text style={ { paddingVertical: "4px" } }>You can also use your program for FREE in the Proxima Fitness App.</Text>
+                    <Text style={ { paddingVertical: "4px" } }>I hope this custom workout program helps you make the gains you were after. Respect for putting in the work!</Text>
+                    <Text style={ { paddingVertical: "4px" } }>As a special thank you, enjoy 30% off your first year of Proxima Fitness - agentic workout programming .</Text>
+                    <Text style={ { paddingVertical: "4px" } }>Your program will be saved to your Proxima Fitness account in case you want to come back and edit it.</Text>
                     <Text style={ { paddingVertical: "4px", fontWeight: "bold" } }>Use code: GAINS30 at checkout</Text>
-                    <Text style={ { paddingVertical: "4px" } }>Download the app and leave no gains on the table!</Text>
-                    <Text style={ { paddingVertical: "4px" } }>Keep pushing forward, and happy training!</Text>
+                    <Text style={ { paddingVertical: "4px" } }>Subscribe at https://proximafitness.com and leave no gains on the table!</Text>
                     <View style={ { paddingVertical: "4px", display: "flex", flexDirection: "column", gap: "4px" } }>
                         <Text>Jack</Text>
                         <Text>Founder,</Text>

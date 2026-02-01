@@ -111,6 +111,7 @@ export const exportOptions = [
         name: "Spreadsheet",
         icon: <Table className="w-6 h-6" />,
         brand: false,
+        disabled: true,
     },
 ];
 
