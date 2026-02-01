@@ -1,10 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { ChevronUp, ChevronDown, CircleHelp, CornerDownLeft, Loader2 } from "lucide-react"
+import { ChevronUp, ChevronDown, CircleHelp, CornerDownLeft, Loader2, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
 
 export interface IQuestionOption {
   id: string
@@ -211,6 +212,8 @@ function QuestionMultiSelect({
             }
             onToggle(question.id, option.id)
           }
+          const useXIcon = question.id === "exclude-equipment"
+
           return (
             <div
               key={option.id}
@@ -224,12 +227,28 @@ function QuestionMultiSelect({
                 isSelected && "bg-accent"
               )}
             >
-              <Checkbox
-                checked={isSelected}
-                onCheckedChange={() => onToggle(question.id, option.id)}
-                className="shrink-0 data-[state=checked]:text-white"
-                tabIndex={-1}
-              />
+              {useXIcon ? (
+                <CheckboxPrimitive.Root
+                  checked={isSelected}
+                  onCheckedChange={() => onToggle(question.id, option.id)}
+                  className={cn(
+                    "peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
+                    "shrink-0 data-[state=checked]:text-white"
+                  )}
+                  tabIndex={-1}
+                >
+                  <CheckboxPrimitive.Indicator className="flex items-center justify-center text-current">
+                    <X className="h-4 w-4" />
+                  </CheckboxPrimitive.Indicator>
+                </CheckboxPrimitive.Root>
+              ) : (
+                <Checkbox
+                  checked={isSelected}
+                  onCheckedChange={() => onToggle(question.id, option.id)}
+                  className="shrink-0 data-[state=checked]:text-white"
+                  tabIndex={-1}
+                />
+              )}
               <span
                 className={cn(
                   "flex size-5 shrink-0 items-center justify-center rounded text-xs font-medium",

@@ -10,6 +10,7 @@ interface IProps {
     email: string,
     password: string,
     setTurnstileOpen: (turnstileOpen: boolean) => void;
+    redirectPath?: string;
 }
 
 export const TurnstileSignIn: React.FC<IProps> = (props) => {
@@ -18,6 +19,7 @@ export const TurnstileSignIn: React.FC<IProps> = (props) => {
         email,
         password,
         setTurnstileOpen,
+        redirectPath = '/',
     } = props;
 
     const turnstile = useTurnstile();
@@ -40,12 +42,12 @@ export const TurnstileSignIn: React.FC<IProps> = (props) => {
                         turnstile.reset();
 
                     } else {
-                        router.push('/')
+                        router.push(redirectPath)
                     }
                 } }
             />
             { signingIn &&
-                <span className="text-sm text-lightSecondary">Veryifying you're not a bot...</span>
+                <span className="text-sm text-lightSecondary">Veryifying you&apos;re not a bot...</span>
             }
         </>
     );

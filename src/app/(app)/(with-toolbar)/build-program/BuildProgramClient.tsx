@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useReducer, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
+import type { ImperativePanelHandle } from "react-resizable-panels";
 import {
     ResizableHandle,
     ResizablePanel,
@@ -15,6 +16,8 @@ import { cn } from "@/lib/utils";
 import { MessageSquare, Calendar, Undo2 } from "lucide-react";
 const SIDEBAR_POSITION_KEY = "andy-sidebar-position";
 const SIDEBAR_SIZE_KEY = "andy-sidebar-size";
+const COLLAPSED_SIZE = 30;
+const EXPANDED_SIZE = 70;
 import { useSearchParams } from "next/navigation";
 import { usePreview } from "@/contexts/PreviewContext";
 import { useIsHevy } from "@/contexts/HevyContext";
@@ -44,6 +47,7 @@ export function BuildProgramClient() {
 
     const [sidebarPosition, setSidebarPosition] = useState<"left" | "right">("left");
     const [sidebarSize, setSidebarSize] = useState(28);
+    const sidebarPanelRef = useRef<ImperativePanelHandle>(null);
     const [mobileTab, setMobileTab] = useState<string>("chat");
 
     /*************************************************************************************/
@@ -538,7 +542,7 @@ export function BuildProgramClient() {
         const savedSize = localStorage.getItem(SIDEBAR_SIZE_KEY);
         if (savedSize) {
             const size = parseFloat(savedSize);
-            if (size >= 20 && size <= 70) {
+            if (size >= 20 && size <= EXPANDED_SIZE) {
                 setSidebarSize(size);
             }
         }
@@ -615,6 +619,19 @@ export function BuildProgramClient() {
         });
     };
 
+    const onToggleExpand = useCallback(() => {
+        const panel = sidebarPanelRef.current;
+        if (!panel) return;
+        const current = panel.getSize();
+        if (current <= COLLAPSED_SIZE + 5) {
+            panel.resize(EXPANDED_SIZE);
+        } else {
+            panel.resize(COLLAPSED_SIZE);
+        }
+    }, []);
+
+    const isExpanded = sidebarSize >= EXPANDED_SIZE - 5;
+
     // Handler functions memoized to prevent unnecessary re-renders
     const handleSex = useCallback((value: string) => { setSex(value); }, []);
     const handleAge = useCallback((value: string) => { setAge(value); }, []);
@@ -678,6 +695,7 @@ export function BuildProgramClient() {
                 {sidebarPosition === "left" ? (
                     <>
                         <ResizablePanel
+                            ref={sidebarPanelRef}
                             id="sidebar"
                             order={1}
                             defaultSize={sidebarSize}
@@ -686,13 +704,15 @@ export function BuildProgramClient() {
                                 localStorage.setItem(SIDEBAR_SIZE_KEY, size.toString());
                             }}
                             minSize={20}
-                            maxSize={70}
+                            maxSize={EXPANDED_SIZE}
                             className="border-extraLightGray bg-extraLightGray dark:bg-extraDarkGray dark:text-white"
                         >
                             <Agent
                                 search={search}
                                 sidebarPosition={sidebarPosition}
                                 onTogglePosition={toggleSidebarPosition}
+                                onToggleExpand={onToggleExpand}
+                                isExpanded={isExpanded}
                                 setHevyProgram={setHevyProgram}
                                 hevyProgram={hevyProgram}
                                 hevyProgramRef={hevyProgramRef}
@@ -829,6 +849,7 @@ export function BuildProgramClient() {
                         </ResizablePanel>
                         <ResizableHandle withHandle className="" />
                         <ResizablePanel
+                            ref={sidebarPanelRef}
                             id="sidebar"
                             order={2}
                             defaultSize={sidebarSize}
@@ -837,13 +858,15 @@ export function BuildProgramClient() {
                                 localStorage.setItem(SIDEBAR_SIZE_KEY, size.toString());
                             }}
                             minSize={20}
-                            maxSize={70}
+                            maxSize={EXPANDED_SIZE}
                             className="border-extraLightGray bg-extraLightGray dark:bg-extraDarkGray dark:text-white"
                         >
                             <Agent
                                 search={search}
                                 sidebarPosition={sidebarPosition}
                                 onTogglePosition={toggleSidebarPosition}
+                                onToggleExpand={onToggleExpand}
+                                isExpanded={isExpanded}
                                 setHevyProgram={setHevyProgram}
                                 hevyProgram={hevyProgram}
                                 hevyProgramRef={hevyProgramRef}
@@ -902,7 +925,9 @@ export function BuildProgramClient() {
                         <Agent
                             search={search}
                             sidebarPosition="left"
-                            onTogglePosition={ () => {}}
+                            onTogglePosition={() => {}}
+                            onToggleExpand={() => {}}
+                            isExpanded={false}
                             setHevyProgram={setHevyProgram}
                             hevyProgram={hevyProgram}
                             hevyProgramRef={hevyProgramRef}

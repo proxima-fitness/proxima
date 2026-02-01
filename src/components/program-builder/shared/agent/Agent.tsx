@@ -20,6 +20,8 @@ interface IProps {
     search: string;
     sidebarPosition: "left" | "right";
     onTogglePosition: () => void;
+    onToggleExpand: () => void;
+    isExpanded: boolean;
     setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
     hevyProgram: THevyRoutine[];
     hevyProgramRef?: React.MutableRefObject<THevyRoutine[]>;
@@ -68,6 +70,8 @@ export const Agent: React.FC<IProps> = (props) => {
         search,
         sidebarPosition,
         onTogglePosition,
+        onToggleExpand,
+        isExpanded,
         setHevyProgram,
         hevyProgram,
         hevyProgramRef,
@@ -225,6 +229,8 @@ export const Agent: React.FC<IProps> = (props) => {
                 isFilters={isFilters}
                 setIsFilters={setIsFilters}
                 onTogglePosition={onTogglePosition}
+                onToggleExpand={onToggleExpand}
+                isExpanded={isExpanded}
                 sidebarPosition={sidebarPosition}
             />
             <ChatContainerRoot className={`flex-1 relative max-sm:h-full ${isFilters ? "overflow-hidden" : "overflow-y-auto"}`}>
