@@ -421,6 +421,9 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                                 </p>
                                 {isUploading && uploadProgress && (
                                     <div className="flex flex-col gap-2 w-full">
+                                        <p className="text-sm font-medium text-amber-600 dark:text-amber-500">
+                                            Do not leave this page.
+                                        </p>
                                         <div className="flex items-center gap-2 w-full">
                                             <Progress
                                                 className="flex-1"
