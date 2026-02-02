@@ -275,6 +275,7 @@ export const postHevyRoutineProgram = async (
                 const schedule = scheduleUploads[i + routineBatch.indexOf(routine)];
                 if (!schedule) continue;
 
+                // Exercise metadata like reason is UI-only and not stored in Supabase
                 const exercisePromises = (routine.exercises ?? []).map(async (exercise) => {
                     const exerciseId = exercise.exercise_template_id;
                     if (!exerciseId) return null;

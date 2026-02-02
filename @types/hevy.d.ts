@@ -42,7 +42,8 @@ type THevyExercise = {
     exercise_template_id: string; // The id of the exercise template. This can be used to fetch the exercise template.
     supersets_id: number | null; // The id of the superset that the exercise belongs to. A value of null indicates the exercise is not part of a superset.
     sets: THevySets[];
-
+    /** UI-only: short explanation why this exercise was selected. Must not be sent to Hevy or other external systems. */
+    reason?: string;
 }
 
 type THevySets = {

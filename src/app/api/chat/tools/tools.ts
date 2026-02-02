@@ -190,6 +190,7 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
                 notes: z.string().default('').describe('Notes for the exercise (optional)'),
                 rest_seconds: z.string().default('90').describe('Rest time in seconds between sets'),
                 supersets_id: z.number().nullable().default(null).describe('Superset ID if part of a superset'),
+                reason: z.string().max(200).optional().describe('Short reason why this exercise was selected (1 sentence; shown in UI tooltip only, not exported).'),
                 sets: z.array(z.object({
                     type: z.enum(['normal', 'warmup', 'dropset', 'failure']).describe('The type of set'),
                     reps: z.number().describe('Number of reps'),
@@ -227,6 +228,7 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
                         rest_seconds: exercise.rest_seconds || '90',
                         exercise_template_id: exercise.exercise_template_id || '',
                         supersets_id: exercise.supersets_id ?? null,
+                        reason: exercise.reason?.trim() || undefined,
                         sets: (exercise.sets || []).map((set, setIndex) => ({
                             index: setIndex,
                             type: set.type || 'normal',

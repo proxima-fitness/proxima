@@ -324,17 +324,42 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                 </div>
                                 </div>
                             </TooltipTrigger>
-                            <TooltipContent side="right" className="bg-lightSecondary text-white flex flex-row gap-2">
-                                <NotebookTextIcon
-                                    className="cursor-pointer"
-                                    onClick={() => handleOpenAddExerciseNoteDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), exerciseIndex: i, isOpen: true})}
-                                />
-                                <Trash2Icon
-                                    className="cursor-pointer"
-                                    onClick={() => {
-                                        handleDeleteExercise(Number(folder_id), Number(day.order), i);
-                                    }}
-                                />
+                            <TooltipContent
+                                side="right"
+                                className="bg-lightSecondary text-white flex flex-col p-3 max-w-[260px] rounded-md shadow-lg"
+                            >
+                                {exercise.reason && (
+                                    <>
+                                        <p className="text-xs font-semibold uppercase tracking-wide text-white/90 mb-1.5">
+                                            Why this exercise?
+                                        </p>
+                                        <p className="text-sm text-left leading-snug whitespace-normal">
+                                            {exercise.reason}
+                                        </p>
+                                    </>
+                                )}
+                                <div
+                                    className={`flex flex-row items-center gap-4 ${exercise.reason ? "border-t border-white/25 pt-2 mt-1" : ""}`}
+                                >
+                                    <button
+                                        type="button"
+                                        className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 text-sm"
+                                        onClick={() => handleOpenAddExerciseNoteDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), exerciseIndex: i, isOpen: true})}
+                                    >
+                                        <NotebookTextIcon className="shrink-0 size-5" />
+                                        <span>Add note</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 text-sm"
+                                        onClick={() => {
+                                            handleDeleteExercise(Number(folder_id), Number(day.order), i);
+                                        }}
+                                    >
+                                        <Trash2Icon className="shrink-0 size-5" />
+                                        <span>Delete</span>
+                                    </button>
+                                </div>
                             </TooltipContent>
                         </Tooltip>
                     </TooltipProvider>

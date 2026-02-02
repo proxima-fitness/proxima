@@ -50,6 +50,8 @@ export const instructions = ({ hevyProgram, daysPerWeek, programLength }: IProps
         - title: string
         - sets: array of set objects
 
+        - reason (string): Short, succinct explanation why this exercise was selected for this day; shown only in the UI tooltip, not exported. Keep to one sentence. Don't just say explain what the exercise is, explain it's value in the context of the program or routine.
+
         **Each set object MUST have:**
         - type: one of "normal", "warmup", "dropset", "failure"
         - reps: number (e.g., 8, 10, 12)
