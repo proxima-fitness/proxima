@@ -3,18 +3,36 @@
 
 import { ChatContainerRoot, ChatContainerContent, ChatContainerScrollAnchor } from "@/components/ui/chat-container"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState } from "react"
 import { ScrollButton } from "@/components/ui/scroll-button"
 import { IOption } from "@/components/ui/multi-select"
+import { FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai"
 
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
 import { Filters } from "./Filters"
 import { Chat } from "./Chat"
 import { Navbar } from "./Navbar"
 import { Thinking } from "./Thinking"
 import { MessageBubbles } from "./MessageBubbles"
-import { getTextFromChatMessage, isMessageAboutProgram } from "@/components/program-builder/utils/helpers"
+
+type SendMessageWithContext = (message?: (Omit<UIMessage<unknown, UIDataTypes, UITools>, "id" | "role"> & {
+    id?: string;
+    role?: "system" | "user" | "assistant";
+} & {
+    text?: never;
+    files?: never;
+    messageId?: string;
+}) | {
+    text: string;
+    files?: FileList | FileUIPart[];
+    metadata?: unknown;
+    parts?: never;
+    messageId?: string;
+} | {
+    files: FileList | FileUIPart[];
+    metadata?: unknown;
+    parts?: never;
+    messageId?: string;
+}, options?: ChatRequestOptions) => Promise<void>;
 
 interface IProps {
     search: string;
@@ -62,19 +80,34 @@ interface IProps {
     handleHealthIssues: (value: IOption[]) => void;
     handleProgramTitle: (value: string) => void;
     handleExplore: () => void;
+    // AI agent state (lifted from Agent into parent)
+    messages: UIMessage<unknown, UIDataTypes, UITools>[];
+    sendMessageWithContext: SendMessageWithContext;
+    isBuilding: boolean;
+    handleIsBuilding: (isBuilding: boolean) => void;
+    isLoading: boolean;
+    error: Error | null;
+    onRetry: () => void;
+    onClearError: () => void;
+    retryCount: number;
+    maxRetries: number;
+    onTimeoutError: () => void;
+    isSubmitted: boolean;
+    input: string;
+    setInput: React.Dispatch<React.SetStateAction<string>>;
+    handleSubmit: () => void;
+    handleStop: () => void;
 }
 
 export const Agent: React.FC<IProps> = (props) => {
 
     const {
-        search,
         sidebarPosition,
         onTogglePosition,
         onToggleExpand,
         isExpanded,
         setHevyProgram,
         hevyProgram,
-        hevyProgramRef,
         addToUndoStack,
         sex,
         age,
@@ -112,115 +145,26 @@ export const Agent: React.FC<IProps> = (props) => {
         handleHealthIssues,
         handleProgramTitle,
         handleExplore,
+        messages,
+        sendMessageWithContext,
+        isBuilding,
+        handleIsBuilding,
+        isLoading,
+        error,
+        onRetry,
+        onClearError,
+        retryCount,
+        maxRetries,
+        onTimeoutError,
+        isSubmitted,
+        input,
+        setInput,
+        handleSubmit,
+        handleStop,
     } = props;
 
 
-    const [input, setInput] = useState("");
-    const [generationError, setGenerationError] = useState<Error | null>(null);
-    const [retryCount, setRetryCount] = useState(0);
-    const [isBuilding, setIsBuilding] = useState(false);
-    const MAX_RETRIES = 2;
-
-    const { messages, sendMessage, status, stop, error } = useChat({
-      transport: new DefaultChatTransport({
-        api: '/api/chat',
-      }),
-      onError: (err) => {
-        console.error('Chat error:', err);
-        setGenerationError(err);
-        setIsBuilding(false);
-      },
-    });
-
-    // Derive error state from useChat error - no need for effect, just use the error directly
-    // The onError callback already handles setting generationError, but we also
-    // check useChat's error for cases where the error comes through the hook
-    const activeError = generationError || error || null;
-
-    const isSubmitted = status === 'submitted';
-    const isStreaming = status === 'streaming';
-    const isLoading = isSubmitted || isStreaming;
-
     const [isFilters, setIsFilters] = useState(false)
-    // Track if initial search has been triggered for this component instance
-    const initialSearchOccurred = useRef<boolean>(false);
-
-    // Wrapper that sends current program and filter context with every chat request so the API
-    // (and getCurrentProgram tool) see the actual state (e.g. when program was loaded via shareId).
-    const sendMessageWithContext = useCallback(
-        (message: Parameters<typeof sendMessage>[0], options?: Parameters<typeof sendMessage>[1]) => {
-            const text = getTextFromChatMessage(message);
-            const includeProgram = isMessageAboutProgram(text);
-            const contextBody = {
-                hevyProgram: includeProgram ? (hevyProgramRef?.current ?? hevyProgram) : [],
-                daysPerWeek: daysPerWeek ? Number(daysPerWeek) : undefined,
-                programLength: programLength ? Number(programLength) : undefined,
-                excludeAreas: excludeAreas?.length ? excludeAreas.map((o) => o.value).join(", ") : "",
-                excludeEquipment: excludeEquipment?.length ? excludeEquipment.map((o) => o.value).join(", ") : "",
-                healthIssues: healthIssues?.length ? healthIssues.map((o) => o.value).join(", ") : "",
-            };
-            return sendMessage(message, { ...options, body: { ...contextBody, ...options?.body } });
-        },
-        [sendMessage, hevyProgram, hevyProgramRef, daysPerWeek, programLength, excludeAreas, excludeEquipment, healthIssues]
-    );
-
-    const sendMessageRef = useRef(sendMessageWithContext);
-
-    useEffect(() => {
-        sendMessageRef.current = sendMessageWithContext;
-    }, [sendMessageWithContext]);
-
-    // Initialize with search parameter if present
-    useEffect(() => {
-        // Only send if we have a search value, haven't sent it yet in this instance, and sendMessage is available
-        if (search && search.trim().length > 0 && !initialSearchOccurred.current && sendMessageRef.current) {
-            initialSearchOccurred.current = true;
-            sendMessageRef.current({ text: search });
-        }
-    }, [search]);
-
-
-    const handleSubmit = () => {
-        if (!input.trim()) return
-
-        sendMessageWithContext({ text: input });
-        setInput('');
-    }
-
-    const handleStop = () => {
-        stop();
-        setIsBuilding(false);
-    }
-
-    const handleIsBuilding = useCallback((isBuilding: boolean) => {
-        setIsBuilding(isBuilding);
-    }, []);
-
-    // Handle retry when generation fails
-    const handleRetry = useCallback(() => {
-        if (retryCount < MAX_RETRIES) {
-            setGenerationError(null);
-            setRetryCount(prev => prev + 1);
-            setIsBuilding(true);
-            sendMessageWithContext({ text: "Build my program" });
-        }
-    }, [retryCount, sendMessageWithContext]);
-
-    // Clear error state (used when user wants to start fresh or use fallback)
-    const handleClearError = useCallback(() => {
-        setGenerationError(null);
-        setRetryCount(0);
-        setIsBuilding(false);
-    }, []);
-
-    // Handle timeout error - called when no progress is made for 45 seconds
-    const handleTimeoutError = useCallback(() => {
-        console.error('Workout generation timed out - no progress for 45 seconds');
-        setGenerationError(new Error('Generation timed out. The AI took too long to respond.'));
-        setIsBuilding(false);
-        stop(); // Stop the current request
-    }, [stop]);
-
 
     return (
         <div className="flex flex-col h-[85vh] max-sm:pb-[100px]">
@@ -291,12 +235,12 @@ export const Agent: React.FC<IProps> = (props) => {
                             isBuilding={isBuilding}
                             handleIsBuilding={handleIsBuilding}
                             isLoading={isLoading}
-                            error={activeError}
-                            onRetry={handleRetry}
-                            onClearError={handleClearError}
+                            error={error}
+                            onRetry={onRetry}
+                            onClearError={onClearError}
                             retryCount={retryCount}
-                            maxRetries={MAX_RETRIES}
-                            onTimeoutError={handleTimeoutError}
+                            maxRetries={maxRetries}
+                            onTimeoutError={onTimeoutError}
                             />
                         {isSubmitted && <Thinking />}
                     </>
