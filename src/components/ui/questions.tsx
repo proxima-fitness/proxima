@@ -5,6 +5,7 @@ import { ChevronUp, ChevronDown, CircleHelp, CornerDownLeft, Loader2, X } from "
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
 
 export interface IQuestionOption {
@@ -17,7 +18,7 @@ export interface IQuestion {
   question: string
   options: IQuestionOption[]
   allowOther?: boolean
-  type?: "select" | "multi-select"
+  type?: "select" | "multi-select" | "text-with-quickfill"
   subtitle?: { text: string; link?: string }
 }
 
@@ -327,6 +328,75 @@ function QuestionMultiSelect({
   )
 }
 
+// QuestionTextWithQuickfill sub-component for text input with quickfill buttons
+interface IQuestionTextWithQuickfillProps {
+  question: IQuestion
+  value: string
+  onChange: (questionId: string, text: string) => void
+  questionIndex: number
+}
+
+function QuestionTextWithQuickfill({
+  question,
+  value,
+  onChange,
+  questionIndex,
+}: IQuestionTextWithQuickfillProps) {
+  const handleQuickfillClick = (option: IQuestionOption) => {
+    const trimmed = value.trim()
+    const addition = option.label
+    const newValue = trimmed ? `${trimmed}, ${addition}` : addition
+    onChange(question.id, newValue)
+  }
+
+  return (
+    <>
+      <p className="mb-3 text-sm font-semibold">
+        {questionIndex + 1}. {question.question}
+      </p>
+      {question.subtitle && (
+        question.subtitle.link ? (
+          <a
+            href={question.subtitle.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mb-3 block text-xs text-muted-foreground hover:text-foreground underline transition-colors"
+          >
+            {question.subtitle.text}
+          </a>
+        ) : (
+          <p className="mb-3 text-xs font-semibold text-lightSecondary">
+            {question.subtitle.text}
+          </p>
+        )
+      )}
+
+      <Input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(question.id, e.target.value)}
+        placeholder="Enter your health issue, or select from options"
+        className="mb-3 placeholder:text-[12px]"
+      />
+
+      <div className="flex flex-wrap gap-1.5">
+        {question.options.map((option) => (
+          <Button
+            key={option.id}
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => handleQuickfillClick(option)}
+            className="text-xs"
+          >
+            {option.label}
+          </Button>
+        ))}
+      </div>
+    </>
+  )
+}
+
 export function Questions({
   questions,
   onComplete,
@@ -460,6 +530,13 @@ export function Questions({
       // For multi-select, keep "other" in array and store text separately
       // The text is stored in otherTexts, and we'll format it in handleContinue
     }
+  }
+
+  const handleTextWithQuickfillChange = (questionId: string, text: string) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [questionId]: text,
+    }))
   }
 
   const scrollToQuestion = (index: number) => {
@@ -596,7 +673,14 @@ export function Questions({
                 questionIndex < questions.length - 1 && "border-b border-dashed"
               )}
             >
-              {questionType === "multi-select" ? (
+              {questionType === "text-with-quickfill" ? (
+                <QuestionTextWithQuickfill
+                  question={question}
+                  value={typeof answer === "string" ? answer : ""}
+                  onChange={handleTextWithQuickfillChange}
+                  questionIndex={questionIndex}
+                />
+              ) : questionType === "multi-select" ? (
                 <QuestionMultiSelect
                   question={question}
                   selectedAnswers={Array.isArray(answer) ? answer : []}

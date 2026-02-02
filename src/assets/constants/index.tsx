@@ -6262,12 +6262,12 @@ export const sampleQuestions: IQuestion[] = [
     {
       id: "health-issues",
       question: "Health issues to consider?",
-      type: "multi-select",
+      type: "text-with-quickfill",
       options: healthIssuesOptions.map(opt => ({
         id: opt.value,
         label: opt.label
       })),
-      allowOther: true,
+      allowOther: false,
     },
     {
       id: "split-type",
