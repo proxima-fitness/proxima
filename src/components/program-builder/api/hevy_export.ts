@@ -129,7 +129,7 @@ export const generateHevySets = (exercise: TSavedWorkoutExercise): THevySets[] =
             reps: exercise?.reps ? exercise.reps?.[i] || 0 : exercise?.reps_range && exercise?.reps_range?.[i]?.[1] || 0,
             distance_meters: 0, // No distance tracking by default
             duration_seconds: exercise?.time_taken ? exercise.time_taken?.[i] || 0 : exercise?.time_range && exercise.time_range?.[i]?.[1] || 0,
-            rpe: exercise?.rpe ? exercise.rpe?.[i] || 0 : exercise?.rpe_range && exercise.rpe_range?.[i]?.[1] || 0,
+            rpe: exercise?.rpe ? (exercise.rpe[i] ?? null) : (exercise?.rpe_range?.[i]?.[1] ?? null),
             custom_metric: 0, // Placeholder for custom metric
         });
     }

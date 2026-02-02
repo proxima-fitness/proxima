@@ -235,14 +235,18 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                                 ))
                                                             )
                                                         )}
-                                                        { exercise.sets[0] && exercise.sets[0].rpe !== null && exercise.sets[0].rpe > 0 && (
-                                                            exercise.sets.every((intensity, i, arr) => intensity.rpe === arr[0].rpe) ? (
-                                                                <Text>{exercise.sets[0].rpe} RPE</Text>
-                                                            ) : (
-                                                                exercise.sets.map((set, index) => (
-                                                                    <Text key={ index } style={ { display: "flex", flexDirection: "column", color: set.type === "warmup" ? "#FFFFFF" : "#000000", backgroundColor: set.type === "warmup" ? "#cbd5e1" : "#f8f8f8", paddingHorizontal: "4px", borderRadius: "4px" } }>{ set.rpe } RPE</Text>
-                                                                ))
-                                                            )
+                                                        { exercise.sets.some((set) => set.rpe != null && set.rpe > 0) && (
+                                                            (() => {
+                                                                const rpeValues = exercise.sets.map((s) => s.rpe).filter((r): r is number => r != null && r > 0);
+                                                                const allSameRpe = rpeValues.length > 0 && rpeValues.every((v) => v === rpeValues[0]);
+                                                                return allSameRpe ? (
+                                                                    <Text>{rpeValues[0]} RPE</Text>
+                                                                ) : (
+                                                                    exercise.sets.map((set, index) => (
+                                                                        <Text key={ index } style={ { display: "flex", flexDirection: "column", color: set.type === "warmup" ? "#FFFFFF" : "#000000", backgroundColor: set.type === "warmup" ? "#cbd5e1" : "#f8f8f8", paddingHorizontal: "4px", borderRadius: "4px" } }>{ set.rpe != null && set.rpe > 0 ? `${set.rpe} RPE` : "" }</Text>
+                                                                    ))
+                                                                );
+                                                            })()
                                                         )}
                                                     </Text>
                                                 </View>

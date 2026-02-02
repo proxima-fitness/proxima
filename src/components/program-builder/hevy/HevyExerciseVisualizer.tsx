@@ -215,16 +215,20 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                                     ))
                                                 )
                                             )}
-                                            {exercise.sets[0] && exercise.sets[0].rpe !== null && exercise.sets[0].rpe > 0 && (
-                                                exercise.sets.every((intensity, i, arr) => intensity.rpe === arr[0].rpe) ? (
-                                                    <div>{exercise.sets[0].rpe} RPE</div>
-                                                ) : (
-                                                    exercise.sets.map((set, index) => (
-                                                        <div key={index} className={`${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
-                                                            {set.rpe} RPE
-                                                        </div>
-                                                    ))
-                                                )
+                                            {exercise.sets.some((set) => set.rpe != null && set.rpe > 0) && (
+                                                (() => {
+                                                    const rpeValues = exercise.sets.map((s) => s.rpe).filter((r): r is number => r != null && r > 0);
+                                                    const allSameRpe = rpeValues.length > 0 && rpeValues.every((v) => v === rpeValues[0]);
+                                                    return allSameRpe ? (
+                                                        <div>{rpeValues[0]} RPE</div>
+                                                    ) : (
+                                                        exercise.sets.map((set, index) => (
+                                                            <div key={index} className={`${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
+                                                                {set.rpe != null && set.rpe > 0 ? `${set.rpe} RPE` : ""}
+                                                            </div>
+                                                        ))
+                                                    );
+                                                })()
                                             )}
                                         </div>
                                     </div>
