@@ -96,7 +96,7 @@ export const StepButton: React.FC = () => {
         <>
             <Button
                 variant="default"
-                className="text-white bg-lightSecondary hover:bg-black"
+                className="text-black bg-[#fbbf24] hover:bg-[#fbbf24]/80"
                 onClick={() => setOpenExportDialog(true)}
             >
                 <span className="hidden sm:inline">Export</span>

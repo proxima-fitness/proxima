@@ -72,6 +72,7 @@ export const convertHevyOutputIntoInput = (routine: THevyRoutine, folderId: numb
         index === self.findIndex((e) => e.exercise_template_id === exercise.exercise_template_id),
     ) || [];
 
+    // reason on exercises is UI-only and must not be included in the Hevy request
     return {
         title: routine?.title?.length > 0 ? routine.title : "Proxima AI Routine",
         folder_id: folderId,

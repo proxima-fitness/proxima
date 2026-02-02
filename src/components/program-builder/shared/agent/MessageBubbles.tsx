@@ -427,10 +427,16 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
             );
         }
 
-        // Compute healthIssues value
-        if (answers['health-issues'] && Array.isArray(answers['health-issues'])) {
+        // Compute healthIssues value (string from text-with-quickfill, or array from legacy multi-select)
+        const healthIssuesAnswer = answers['health-issues'];
+        if (typeof healthIssuesAnswer === 'string') {
+            const trimmed = healthIssuesAnswer.trim();
+            if (trimmed) {
+                healthIssuesValue = [{ value: trimmed, label: trimmed }];
+            }
+        } else if (healthIssuesAnswer && Array.isArray(healthIssuesAnswer)) {
             healthIssuesValue = convertStringArrayToOptions(
-                answers['health-issues'],
+                healthIssuesAnswer,
                 healthIssuesOptions
             );
         }
@@ -451,7 +457,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                     daysPerWeek: daysPerWeekValue ? Number(daysPerWeekValue) : undefined,
                     programLength: programLengthValue ? Number(programLengthValue) : undefined,
                     excludeEquipment: excludeEquipmentValue?.length > 0 ? excludeEquipmentValue?.map(eq => eq.value).join(', ') : undefined,
-                    healthIssues: healthIssuesValue?.length > 0 ? healthIssuesValue?.map(issue => issue.value).join(', ') : undefined,
+                    healthIssues: healthIssuesValue?.length > 0 ? healthIssuesValue.map(issue => issue.value).join(', ') : undefined,
                 }
             }
         );
