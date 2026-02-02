@@ -149,16 +149,6 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             <div className={isSelected ? 'text-white' : 'dark:text-offWhite'}>
                                                 {exercise.title}
                                             </div>
-                                            {exercise.notes && (
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <NotebookTextIcon className="h-4" />
-                                                    </TooltipTrigger>
-                                                    <TooltipContent className="bg-lightSecondary text-white dark:text-offWhite">
-                                                        {exercise.notes}
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            )}
                                         </div>
                                     </div>
                                     <div className={`text-center flex flex-row items-center justify-end max-w-[50%] w-[50%] ${isSelected ? 'text-white' : 'dark:text-offWhite'}`}>
@@ -170,127 +160,44 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                                 (exercise.sets.every((reps, i, arr) => reps.reps === arr[0].reps) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type)) ? (
                                                     <div className="flex flex-row">
                                                         {exercise.sets[0].reps}
-                                                        {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 && (
-                                                            <Tooltip>
-                                                                <TooltipTrigger asChild>
-                                                                    <TimerIcon className="h-4" />
-                                                                </TooltipTrigger>
-                                                                <TooltipContent className="bg-lightSecondary text-white">
-                                                                    {exercise.rest_seconds} s
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        )}
                                                     </div>
                                                 ) : (
                                                     exercise.sets.map((set, index) => (
                                                         <div key={index} className={`flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
                                                             {set.reps}
-                                                            {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 && (
-                                                                <Tooltip>
-                                                                    <TooltipTrigger asChild>
-                                                                        <TimerIcon className="h-4" />
-                                                                    </TooltipTrigger>
-                                                                    <TooltipContent className="bg-lightSecondary text-white">
-                                                                        {exercise.rest_seconds} s
-                                                                    </TooltipContent>
-                                                                </Tooltip>
-                                                            )}
                                                         </div>
                                                     ))
                                                 )
                                             )}
                                             {exercise.sets[0] && exercise.sets[0].distance_meters !== null && exercise.sets[0].distance_meters > 0 && (
                                                 (exercise.sets.every((reps, i, arr) => reps.distance_meters === arr[0].distance_meters) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type)) ? (
-                                                    <div className="flex flex-row">{exercise.sets[0].distance_meters} m
-                                                        {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 && (
-                                                            <Tooltip>
-                                                                <TooltipTrigger asChild>
-                                                                    <TimerIcon className="h-4" />
-                                                                </TooltipTrigger>
-                                                                <TooltipContent className="bg-lightSecondary text-white">
-                                                                    {exercise.rest_seconds} s
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        )}
-                                                    </div>
+                                                    <div className="flex flex-row">{exercise.sets[0].distance_meters} m</div>
                                                 ) : (
                                                     exercise.sets.map((set, index) => (
                                                         <div key={index} className={`flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
                                                             {set.distance_meters} m
-                                                            {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 && (
-                                                                <Tooltip>
-                                                                    <TooltipTrigger asChild>
-                                                                        <TimerIcon className="h-4" />
-                                                                    </TooltipTrigger>
-                                                                    <TooltipContent className="bg-lightSecondary text-white">
-                                                                        {exercise.rest_seconds} s
-                                                                    </TooltipContent>
-                                                                </Tooltip>
-                                                            )}
                                                         </div>
                                                     ))
                                                 )
                                             )}
                                             {exercise.sets[0] && exercise.sets[0].duration_seconds !== null && exercise.sets[0].duration_seconds > 0 && (
                                                 (exercise.sets.every((reps, i, arr) => reps.duration_seconds === arr[0].duration_seconds) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type)) ? (
-                                                    <div className="flex flex-row">{exercise.sets[0].duration_seconds} s
-                                                        {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 && (
-                                                            <Tooltip>
-                                                                <TooltipTrigger asChild>
-                                                                    <TimerIcon className="h-4" />
-                                                                </TooltipTrigger>
-                                                                <TooltipContent className="bg-lightSecondary text-white">
-                                                                    {exercise.rest_seconds} s
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        )}
-                                                    </div>
+                                                    <div className="flex flex-row">{exercise.sets[0].duration_seconds} s</div>
                                                 ) : (
                                                     exercise.sets.map((set, index) => (
                                                         <div key={index} className={`flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
                                                             {set.duration_seconds} s
-                                                            {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 && (
-                                                                <Tooltip>
-                                                                    <TooltipTrigger asChild>
-                                                                        <TimerIcon className="h-4" />
-                                                                    </TooltipTrigger>
-                                                                    <TooltipContent className="bg-lightSecondary text-white">
-                                                                        {exercise.rest_seconds} s
-                                                                    </TooltipContent>
-                                                                </Tooltip>
-                                                            )}
                                                         </div>
                                                     ))
                                                 )
                                             )}
                                             {exercise.sets[0] && exercise.sets[0].custom_metric !== null && exercise.sets[0].custom_metric > 0 && (
                                                 (exercise.sets.every((reps, i, arr) => reps.custom_metric === arr[0].custom_metric) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type)) ? (
-                                                    <div className="flex flex-row">{exercise.sets[0].custom_metric}
-                                                        {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 && (
-                                                            <Tooltip>
-                                                                <TooltipTrigger asChild>
-                                                                    <TimerIcon className="h-4" />
-                                                                </TooltipTrigger>
-                                                                <TooltipContent className="bg-lightSecondary text-white">
-                                                                    {exercise.rest_seconds} s
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        )}
-                                                    </div>
+                                                    <div className="flex flex-row">{exercise.sets[0].custom_metric}</div>
                                                 ) : (
                                                     exercise.sets.map((set, index) => (
                                                         <div key={index} className={`flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
                                                             {set.custom_metric}
-                                                            {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 && (
-                                                                <Tooltip>
-                                                                    <TooltipTrigger asChild>
-                                                                        <TimerIcon className="h-4" />
-                                                                    </TooltipTrigger>
-                                                                    <TooltipContent className="bg-lightSecondary text-white">
-                                                                        {exercise.rest_seconds} s
-                                                                    </TooltipContent>
-                                                                </Tooltip>
-                                                            )}
                                                         </div>
                                                     ))
                                                 )
@@ -339,26 +246,44 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                     </>
                                 )}
                                 <div
-                                    className={`flex flex-row items-center gap-4 ${exercise.reason ? "border-t border-white/25 pt-2 mt-1" : ""}`}
+                                    className={`flex flex-col ${exercise.notes ? "border-t border-white/25 pt-2 mt-1" : ""}`}
                                 >
-                                    <button
-                                        type="button"
-                                        className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 text-sm"
-                                        onClick={() => handleOpenAddExerciseNoteDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), exerciseIndex: i, isOpen: true})}
-                                    >
-                                        <NotebookTextIcon className="shrink-0 size-5" />
-                                        <span>Add note</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 text-sm"
-                                        onClick={() => {
-                                            handleDeleteExercise(Number(folder_id), Number(day.order), i);
-                                        }}
-                                    >
-                                        <Trash2Icon className="shrink-0 size-5" />
-                                        <span>Delete</span>
-                                    </button>
+                                    {exercise.notes && (
+                                        <div className="mb-2">
+                                            <p className="text-xs font-semibold uppercase tracking-wide text-white/90 mb-1.5">
+                                                Exercise Note
+                                            </p>
+                                            <p className="text-sm text-left leading-snug whitespace-normal">
+                                                {exercise.notes}
+                                            </p>
+                                        </div>
+                                    )}
+                                    {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 && (
+                                        <div className="border-t border-b border-white/25 py-2 my-2 flex items-center gap-1.5 text-sm">
+                                            <TimerIcon className="shrink-0 size-5" />
+                                            Rest time {exercise.rest_seconds} s
+                                        </div>
+                                    )}
+                                    <div className="flex flex-row items-center gap-4">
+                                        <button
+                                            type="button"
+                                            className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 text-sm"
+                                            onClick={() => handleOpenAddExerciseNoteDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), exerciseIndex: i, isOpen: true})}
+                                        >
+                                            <NotebookTextIcon className="shrink-0 size-5" />
+                                            <span>Add note</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 text-sm"
+                                            onClick={() => {
+                                                handleDeleteExercise(Number(folder_id), Number(day.order), i);
+                                            }}
+                                        >
+                                            <Trash2Icon className="shrink-0 size-5" />
+                                            <span>Delete</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </TooltipContent>
                         </Tooltip>

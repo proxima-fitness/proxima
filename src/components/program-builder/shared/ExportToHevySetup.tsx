@@ -17,7 +17,7 @@ import {
 import { postNewProgramSubscriber } from "@/api/programs";
 import { toast } from "sonner";
 import { validate } from "uuid";
-import { Check, Key, Upload } from "lucide-react";
+import { Check, ExternalLink, Key, Upload } from "lucide-react";
 import {
     Accordion,
     AccordionContent,
@@ -78,6 +78,16 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
     useEffect(() => {
         onUploadStateChange?.(isUploading);
     }, [isUploading, onUploadStateChange]);
+
+    useEffect(() => {
+        if (!isUploading) return;
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            e.preventDefault();
+            e.returnValue = "";
+        };
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+    }, [isUploading]);
 
     const handleConnectHevy = async () => {
         if (!user) return;
@@ -325,18 +335,20 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                         ) : (
                             <>
                                 <p className="text-sm text-muted-foreground mb-3 px-8">
-                                    Sync workout programs to Hevy. Paste your{" "}
-                                    <a
-                                        href="https://hevy.com/settings?developer"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-lightSecondary underline"
-                                    >
-                                        API key
-                                    </a>{" "}
-                                    from your Hevy account on Desktop.
+                                    Sync workout programs to Hevy. Paste your API key from your Hevy account on Desktop.
                                 </p>
                                 <div className="grid gap-2 px-8">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="bg-[#fbbf24] text-black w-fit gap-2 hover:bg-[#fbbf24]/90"
+                                        onClick={() =>
+                                            window.open("https://hevy.com/settings?developer", "_blank", "noopener,noreferrer")
+                                        }
+                                    >
+                                        Get your API key
+                                        <ExternalLink className="h-4 w-4 shrink-0" />
+                                    </Button>
                                     <Label htmlFor="hevy-export-api-key">
                                         Paste Hevy API Key
                                     </Label>
@@ -350,12 +362,13 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                                     />
                                     <div className="flex items-center gap-2">
                                         <Button
+                                            variant="default"
                                             className={cn(
                                                 "bg-lightSecondary text-white w-fit",
                                                 !user && "opacity-50"
                                             )}
                                             onClick={handleConnectHevy}
-                                            disabled={!user}
+                                            disabled={!user || !inputValue.trim()}
                                         >
                                             {step1Completed
                                                 ? "Update"
@@ -449,7 +462,8 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                                     </div>
                                 )}
                                 <Button
-                                    className="bg-lightSecondary text-white w-fit gap-2"
+                                    variant="default"
+                                    className="w-fit gap-2 bg-lightSecondary text-white"
                                     onClick={() =>
                                         handleUploadProgram(exportToOneFolder)}
                                     disabled={isUploading}

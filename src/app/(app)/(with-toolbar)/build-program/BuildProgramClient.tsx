@@ -554,11 +554,13 @@ export function BuildProgramClient() {
                         return {
                             ...day,
                             exercises: day.exercises.map((exercise, index) => index === editExercise.exerciseIndex ? {
+                                ...exercise,
                                 index: day.exercises.length + 1,
                                 title: editExercise?.editExercise?.selectedExercise?.title ?? "",
                                 notes: exercise?.notes ?? "",
+                                reason: exercise?.reason ?? "",
                                 exercise_template_id: editExercise?.editExercise?.selectedExercise?.id ?? "",
-                                supersets_id: null,
+                                supersets_id: exercise?.supersets_id ?? null,
                                 sets: sets,
                                 rest_seconds: editExercise?.editExercise?.restSeconds ?? null,
                             } : exercise),
