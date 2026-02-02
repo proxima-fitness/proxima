@@ -189,7 +189,7 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
                 title: z.string().describe('The exercise title'),
                 notes: z.string().default('').describe('Notes for the exercise (optional)'),
                 rest_seconds: z.string().default('90').describe('Rest time in seconds between sets'),
-                supersets_id: z.number().nullable().default(null).describe('Superset ID if part of a superset'),
+                supersets_id: z.number().nullable().default(null).describe('0-indexed superset group: use the same number for all exercises in one superset (0 = first superset, 1 = second, etc.); null or omit = not in a superset'),
                 reason: z.string().max(200).optional().describe('Short reason why this exercise was selected (1 sentence; shown in UI tooltip only, not exported).'),
                 sets: z.array(z.object({
                     type: z.enum(['normal', 'warmup', 'dropset', 'failure']).describe('The type of set'),
