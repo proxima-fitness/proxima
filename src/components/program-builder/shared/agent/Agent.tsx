@@ -3,7 +3,8 @@
 
 import { ChatContainerRoot, ChatContainerContent, ChatContainerScrollAnchor } from "@/components/ui/chat-container"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useStickToBottomContext } from "use-stick-to-bottom"
 import { ScrollButton } from "@/components/ui/scroll-button"
 import { IOption } from "@/components/ui/multi-select"
 import { FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai"
@@ -99,6 +100,21 @@ interface IProps {
     handleStop: () => void;
 }
 
+function StickToBottomScrollWhileStreaming({
+    isLoading,
+    messages,
+}: {
+    isLoading: boolean
+    messages: UIMessage<unknown, UIDataTypes, UITools>[]
+}) {
+    const { scrollToBottom, isAtBottom } = useStickToBottomContext()
+    useEffect(() => {
+        if (!isLoading || !isAtBottom) return
+        scrollToBottom({ animation: "smooth", preserveScrollPosition: true })
+    }, [isLoading, isAtBottom, messages, scrollToBottom])
+    return null
+}
+
 export const Agent: React.FC<IProps> = (props) => {
 
     const {
@@ -178,7 +194,7 @@ export const Agent: React.FC<IProps> = (props) => {
                 sidebarPosition={sidebarPosition}
             />
             <ChatContainerRoot className={`flex-1 relative max-sm:h-full ${isFilters ? "overflow-hidden" : "overflow-y-auto"}`}>
-                <ChatContainerContent className="h-full max-sm:pb-[220px]">
+                <ChatContainerContent className="min-h-full max-sm:pb-[220px]">
                 {isFilters ? (
                     <Filters
                         sex={sex}
@@ -220,6 +236,7 @@ export const Agent: React.FC<IProps> = (props) => {
                     />
                 ) : (
                     <>
+                        <StickToBottomScrollWhileStreaming isLoading={isLoading} messages={messages} />
                         <MessageBubbles
                             messages={messages}
                             setHevyProgram={setHevyProgram}
