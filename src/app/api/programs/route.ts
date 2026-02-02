@@ -4,16 +4,16 @@ import { postHevyRoutineProgram } from '@/components/program-builder/api/hevy';
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { id, hevyRoutines, prompt, request: programRequest } = body;
+        const { hevyRoutines, prompt, request: programRequest } = body;
 
-        if (!id || !hevyRoutines || !prompt) {
+        if (!hevyRoutines || !prompt) {
             return NextResponse.json(
                 { error: 'Missing required fields' },
                 { status: 400 }
             );
         }
 
-        const result = await postHevyRoutineProgram(id, hevyRoutines, prompt, programRequest);
+        const result = await postHevyRoutineProgram(hevyRoutines, prompt, programRequest);
 
         if (result instanceof Error) {
             return NextResponse.json(

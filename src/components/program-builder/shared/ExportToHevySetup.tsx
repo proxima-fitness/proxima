@@ -4,7 +4,17 @@ import { useState, useEffect } from "react";
 import { useUserContext } from "@/contexts/UserContext";
 import { useHevySecret } from "@/api/hooks";
 import { useQueryClient } from "@tanstack/react-query";
-import { postHevyApikey, updateHevyApiKey, deleteHevyApiKey } from "../api/hevy";
+import {
+    postHevyApikey,
+    postHevyRoutineProgram,
+    PostHevyRoutineProgramSuccess,
+    postRoutineProgramToHevy,
+    postRoutineProgramToHevyOneFolder,
+    RATE_LIMIT_EXHAUSTED_MESSAGE,
+    updateHevyApiKey,
+    deleteHevyApiKey,
+} from "../api/hevy";
+import { postNewProgramSubscriber } from "@/api/programs";
 import { toast } from "sonner";
 import { validate } from "uuid";
 import { Check, Key, Upload } from "lucide-react";
@@ -18,26 +28,45 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { deFlattenHevyRoutine } from "../utils";
 
 const TOTAL_STEPS = 2;
+
+function isPostHevyRoutineProgramSuccess(r: unknown): r is PostHevyRoutineProgramSuccess {
+    return (
+        typeof r === "object" &&
+        r !== null &&
+        "status" in r &&
+        (r as { status: string }).status === "success" &&
+        "id" in r &&
+        typeof (r as { id: unknown }).id === "number"
+    );
+}
 
 export const ExportToHevySetup: React.FC = () => {
     const { user } = useUserContext();
     const { data: hevyApiKey } = useHevySecret(user);
     const queryClient = useQueryClient();
 
-    const [expandedStep, setExpandedStep] = useState<string>("step1");
+    const [expandedStep, setExpandedStep] = useState<string>(hevyApiKey ? "step2" : "step1");
     const [inputValue, setInputValue] = useState("");
     const [exportToOneFolder, setExportToOneFolder] = useState(true);
     const [isEditingApiKey, setIsEditingApiKey] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState<{
+        uploaded: number;
+        total: number;
+        status: "uploading" | "rate_limited";
+        rateLimitSecondsLeft?: number;
+    } | null>(null);
 
     const step1Completed = hevyApiKey && hevyApiKey.length > 0;
 
     useEffect(() => {
         if (hevyApiKey) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
+
             setInputValue(hevyApiKey);
         }
     }, [hevyApiKey]);
@@ -96,9 +125,126 @@ export const ExportToHevySetup: React.FC = () => {
         }
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const handleUploadProgram = (_exportToOneFolder: boolean) => {
-        // TODO: implement export to Hevy
+    const handleUploadProgram = async (exportToOneFolderMode: boolean) => {
+
+        if (typeof window === "undefined") return;
+        const rawProgram = localStorage.getItem("hevy-program-in-progress");
+        const promptRaw = localStorage.getItem("prompt");
+
+        if (!rawProgram) {
+            toast.error("Missing program. Build a program first.");
+            console.error("Missing program. Build a program first.");
+            return;
+        }
+
+        let hevyRoutines: THevyRoutine[];
+        let request: TTextToJsonRequest | undefined;
+        try {
+            hevyRoutines = JSON.parse(rawProgram) as THevyRoutine[];
+        } catch (error) {
+            toast.error("Invalid program data.");
+            console.error("Invalid program data.", error);
+            return;
+        }
+        try {
+            const requestRaw = localStorage.getItem("hevy-request");
+            request = requestRaw ? (JSON.parse(requestRaw) as TTextToJsonRequest) : undefined;
+        } catch {
+            request = undefined;
+        }
+
+        const prompt = promptRaw
+            ? (() => {
+                try {
+                    return JSON.parse(promptRaw) as string;
+                } catch {
+                    return promptRaw;
+                }
+            })()
+            : "";
+
+        if (!user) {
+            toast.error("You must be signed in to upload.");
+            console.error("You must be signed in to upload.");
+            return;
+        }
+        if (!hevyApiKey || hevyApiKey.length === 0) {
+            toast.error("Connect your Hevy API key first.");
+            console.error("Connect your Hevy API key first.");
+            return;
+        }
+
+        setIsUploading(true);
+
+        try {
+            const supabaseResult = await postHevyRoutineProgram(hevyRoutines, prompt, request);
+            const saved = isPostHevyRoutineProgramSuccess(supabaseResult);
+            const programId = saved ? supabaseResult.id : undefined;
+            if (!saved || programId === undefined) {
+                toast.error("Failed to save program to My Programs.");
+                return;
+            }
+
+            const programTitle = request?.programTitle
+                ? [{ id: String(programId), title: request.programTitle }]
+                : undefined;
+
+            setUploadProgress({ uploaded: 0, total: hevyRoutines.length, status: "uploading" });
+            const onProgress = (
+                uploaded: number,
+                total: number,
+                status: "uploading" | "rate_limited",
+                rateLimitSecondsLeft?: number,
+            ) => {
+                setUploadProgress({ uploaded, total, status, rateLimitSecondsLeft });
+            };
+
+            if (exportToOneFolderMode) {
+                const hevyResult = await postRoutineProgramToHevyOneFolder(
+                    hevyRoutines,
+                    1,
+                    hevyApiKey,
+                    programTitle,
+                    onProgress,
+                );
+                if (hevyResult?.success !== true) {
+                    const message =
+                        hevyResult?.data instanceof Error &&
+                        hevyResult.data.message.includes("Rate limited after 3 retries")
+                            ? RATE_LIMIT_EXHAUSTED_MESSAGE
+                            : "Failed to upload program to Hevy.";
+                    toast.error(message);
+                    console.error("Failed to upload program to Hevy.", hevyResult);
+                    return;
+                }
+            } else {
+                const hevyResult = await postRoutineProgramToHevy(hevyRoutines, hevyApiKey, onProgress);
+                if (hevyResult?.success !== true) {
+                    const message =
+                        hevyResult?.data instanceof Error &&
+                        hevyResult.data.message.includes("Rate limited after 3 retries")
+                            ? RATE_LIMIT_EXHAUSTED_MESSAGE
+                            : "Failed to upload program to Hevy.";
+                    toast.error(message);
+                    console.error("Failed to upload program to Hevy.", hevyResult);
+                    return;
+                }
+            }
+
+            const subscriberError = await postNewProgramSubscriber(user, String(programId));
+            if (subscriberError) {
+                toast.error("Program saved but failed to add to My Programs.");
+            } else {
+                queryClient.invalidateQueries({ queryKey: ["subscribed-programs", user.id] });
+                toast.success("Program uploaded to Hevy and saved to My Programs.");
+            }
+        } catch (err) {
+            console.error("Upload error:", err);
+            toast.error(err instanceof Error ? err.message : "Upload failed.");
+        } finally {
+            setUploadProgress(null);
+            setIsUploading(false);
+        }
     };
 
     const completedCount = step1Completed ? 1 : 0;
@@ -263,13 +409,40 @@ export const ExportToHevySetup: React.FC = () => {
                                         ? "All weeks will be added to a single folder in Hevy."
                                         : "Each week will be in a separate folder in Hevy."}
                                 </p>
+                                {isUploading && uploadProgress && (
+                                    <div className="flex flex-col gap-2 w-full">
+                                        <div className="flex items-center gap-2 w-full">
+                                            <Progress
+                                                className="flex-1"
+                                                value={
+                                                    uploadProgress.total > 0
+                                                        ? (uploadProgress.uploaded / uploadProgress.total) * 100
+                                                        : 0
+                                                }
+                                            />
+                                            <span className="text-sm text-muted-foreground shrink-0">
+                                                {uploadProgress.uploaded}/{uploadProgress.total} routines uploaded
+                                            </span>
+                                        </div>
+                                        {uploadProgress.status === "rate_limited" && (
+                                            <p className="text-xs text-muted-foreground">
+                                                Rate limited — trying again in {" "}
+                                                {typeof uploadProgress.rateLimitSecondsLeft === "number"
+                                                    ? `${uploadProgress.rateLimitSecondsLeft}`
+                                                    : "60"}{" "}
+                                                seconds…
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
                                 <Button
                                     className="bg-lightSecondary text-white w-fit gap-2"
                                     onClick={() =>
                                         handleUploadProgram(exportToOneFolder)}
+                                    disabled={isUploading}
                                 >
-                                    Upload
-                                    <Upload className="h-4 w-4 shrink-0" />
+                                    {isUploading ? "Uploading…" : "Upload"}
+                                    {!isUploading && <Upload className="h-4 w-4 shrink-0" />}
                                 </Button>
                             </div>
                         )}

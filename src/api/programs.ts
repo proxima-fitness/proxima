@@ -433,7 +433,7 @@ export const getSubscribedPrograms = async (user: User): Promise<TProgram[]> => 
 };
 
 // POST A NEW SUBSCRIBER TO PROGRAM WITH PROGRAM ID
-export const postNewProgramSubscriber = async (user: User, program_id: number) => {
+export const postNewProgramSubscriber = async (user: User, program_id: string) => {
 
     try {
         const subscriberObject: { [key: string]: unknown } = {};
