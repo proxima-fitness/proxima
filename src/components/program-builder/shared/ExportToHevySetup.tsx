@@ -45,7 +45,11 @@ function isPostHevyRoutineProgramSuccess(r: unknown): r is PostHevyRoutineProgra
     );
 }
 
-export const ExportToHevySetup: React.FC = () => {
+interface IExportToHevySetupProps {
+    onUploadStateChange?: (uploading: boolean) => void;
+}
+
+export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadStateChange }) => {
     const { user } = useUserContext();
     const { data: hevyApiKey } = useHevySecret(user);
     const queryClient = useQueryClient();
@@ -70,6 +74,10 @@ export const ExportToHevySetup: React.FC = () => {
             setInputValue(hevyApiKey);
         }
     }, [hevyApiKey]);
+
+    useEffect(() => {
+        onUploadStateChange?.(isUploading);
+    }, [isUploading, onUploadStateChange]);
 
     const handleConnectHevy = async () => {
         if (!user) return;
@@ -182,6 +190,7 @@ export const ExportToHevySetup: React.FC = () => {
             const programId = saved ? supabaseResult.id : undefined;
             if (!saved || programId === undefined) {
                 toast.error("Failed to save program to My Programs.");
+                console.error("Failed to save program to My Programs.", supabaseResult);
                 return;
             }
 
@@ -234,6 +243,7 @@ export const ExportToHevySetup: React.FC = () => {
             const subscriberError = await postNewProgramSubscriber(user, String(programId));
             if (subscriberError) {
                 toast.error("Program saved but failed to add to My Programs.");
+                console.error("Program saved but failed to add to My Programs (subscriber).", subscriberError);
             } else {
                 queryClient.invalidateQueries({ queryKey: ["subscribed-programs", user.id] });
                 toast.success("Program uploaded to Hevy and saved to My Programs.");

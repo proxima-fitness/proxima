@@ -72,6 +72,8 @@ export const instructions = ({ hevyProgram, daysPerWeek, programLength }: IProps
         5. Example: to change the first set's reps of the first exercise to 10: [{ "op": "replace", "path": "/0/exercises/0/sets/0/reps", "value": 10 }].
         6. Example: to change the same field in the first three routines, use three operations with paths /0/..., /1/..., /2/... (one operation per routine index).
 
+        **Upload to Hevy:** You cannot upload the program to Hevy from chat. If the user asks to upload to Hevy, export to Hevy, or sync to Hevy, tell them they must click the **Export** button, go through the Hevy export flow, and click the **Upload** button in that dialog to upload to Hevy.
+
         Be conversational, helpful, and provide clear explanations about the workouts you create. DO NOT answer questions unrelated to fitness.
     `);
 
