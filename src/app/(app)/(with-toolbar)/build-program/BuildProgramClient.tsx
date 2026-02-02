@@ -131,6 +131,7 @@ export function BuildProgramClient() {
     const [input, setInput] = useState("");
     const [retryCount, setRetryCount] = useState(0);
     const [isBuilding, setIsBuilding] = useState(false);
+    const prevIsBuildingRef = useRef(isBuilding);
     const MAX_RETRIES = 2;
 
             // Wrapper that sends current program and filter context with every chat request so the API
@@ -575,6 +576,17 @@ export function BuildProgramClient() {
     const isMobile = useIsMobile();
     const numberOfWeeks = useMemo(() => getNumberRoutineFolders(hevyProgram), [hevyProgram]);
     const numberOfWeeksArr = useMemo(() => Array.from({ length: numberOfWeeks }, (_, i) => i), [numberOfWeeks]);
+
+    // On mobile, auto-switch to My Program tab when build completes
+    useEffect(() => {
+        if (!isMobile) return;
+        const wasBuilding = prevIsBuildingRef.current;
+        const hasProgram = hevyProgram.some((r) => r.exercises.length > 0);
+        if (wasBuilding && !isBuilding && hasProgram) {
+            setMobileTab("program");
+        }
+        prevIsBuildingRef.current = isBuilding;
+    }, [isBuilding, isMobile, hevyProgram, setMobileTab]);
 
     const addToUndoStack = useCallback((inversePatch: Operation[]) => {
         setUndoStack((prev) => [...prev, inversePatch]);
