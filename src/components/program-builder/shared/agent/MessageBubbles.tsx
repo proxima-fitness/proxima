@@ -517,19 +517,6 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     return (
 
         <>
-             {/* Show error UI when generation fails */}
-             {error && (
-                <GenerationError
-                    error={error}
-                    onRetry={onRetry}
-                    onUseFallback={handleUseFallback}
-                    retryCount={retryCount}
-                    maxRetries={maxRetries}
-                    completedDays={completedDays.length}
-                    totalDays={totalDays}
-                />
-             )}
-
              { messages.map(message => (
                             <div key={message.id} className="whitespace-pre-wrap">
                                 {message.parts.map((part, index) => {
@@ -741,6 +728,19 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                 })}
                             </div>
                         ))}
+
+             {/* Show error UI as next assistant message when generation fails */}
+             {error && (
+                <GenerationError
+                    error={error}
+                    onRetry={onRetry}
+                    onUseFallback={handleUseFallback}
+                    retryCount={retryCount}
+                    maxRetries={maxRetries}
+                    completedDays={completedDays.length}
+                    totalDays={totalDays}
+                />
+             )}
 
         </>
     )

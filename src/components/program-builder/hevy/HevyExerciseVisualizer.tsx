@@ -250,7 +250,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                     </>
                                 )}
                                 <div
-                                    className={`flex flex-col ${exercise.notes ? "border-t border-white/25 pt-2 mt-1" : ""}`}
+                                    className={`flex flex-col ${exercise.reason && exercise.notes ? "border-t border-white/25 pt-2 mt-1" : ""}`}
                                 >
                                     {exercise.notes && (
                                         <div className="mb-2">
