@@ -557,6 +557,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                     </Button>
                                                                     <Button
                                                                         size="sm"
+                                                                        className="bg-lightSecondary text-white hover:bg-lightSecondary/80"
                                                                         onClick={() => {
                                                                             setMessages((prev) => prev.slice(0, messageIndex));
                                                                             sendMessage({ text: editingText.trim() });
