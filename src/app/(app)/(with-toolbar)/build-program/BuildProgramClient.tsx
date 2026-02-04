@@ -111,7 +111,7 @@ export function BuildProgramClient() {
     const initialSearchOccurred = useRef<boolean>(false);
 
 
-    const { messages, sendMessage, status, stop, error } = useChat({
+    const { messages, sendMessage, setMessages, status, stop, error } = useChat({
         transport: new DefaultChatTransport({
           api: '/api/chat',
         }),
@@ -875,6 +875,7 @@ export function BuildProgramClient() {
                                 handleProgramTitle={handleProgramTitle}
                                 handleExplore={handleExplore}
                                 messages={messages}
+                                setMessages={setMessages}
                                 sendMessageWithContext={sendMessageWithContext}
                                 isBuilding={isBuilding}
                                 handleIsBuilding={handleIsBuilding}
@@ -1045,6 +1046,7 @@ export function BuildProgramClient() {
                                 handleProgramTitle={handleProgramTitle}
                                 handleExplore={handleExplore}
                                 messages={messages}
+                                setMessages={setMessages}
                                 sendMessageWithContext={sendMessageWithContext}
                                 isBuilding={isBuilding}
                                 handleIsBuilding={handleIsBuilding}
@@ -1122,6 +1124,7 @@ export function BuildProgramClient() {
                             handleProgramTitle={handleProgramTitle}
                             handleExplore={handleExplore}
                             messages={messages}
+                            setMessages={setMessages}
                             sendMessageWithContext={sendMessageWithContext}
                             isBuilding={isBuilding}
                             handleIsBuilding={handleIsBuilding}

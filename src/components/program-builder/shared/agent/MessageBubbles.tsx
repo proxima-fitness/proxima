@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo, useCallback } from "react";
+import { useEffect, useRef, useMemo, useCallback, useState } from "react";
 import {
     Message,
     MessageAction,
@@ -6,6 +6,7 @@ import {
     MessageContent,
   } from "@/components/ui/message"
 import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { Copy, ThumbsUp, ThumbsDown, Pencil, Trash, AlertCircle, RefreshCw } from "lucide-react"
 import { FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai";
@@ -179,6 +180,7 @@ export const generateEmptyHevyProgram = (weeksValue: string, daysValue: string):
 
 interface IProps {
     messages: UIMessage<unknown, UIDataTypes, UITools>[];
+    setMessages: (messages: UIMessage<unknown, UIDataTypes, UITools>[] | ((messages: UIMessage<unknown, UIDataTypes, UITools>[]) => UIMessage<unknown, UIDataTypes, UITools>[])) => void;
     setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
     daysPerWeek: string;
     programLength: string;
@@ -224,6 +226,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
 
     const {
         messages,
+        setMessages,
         setHevyProgram,
         handleIsBuilding,
         sendMessage,
@@ -244,6 +247,9 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         hevyProgram,
         addToUndoStack
     } = props;
+
+    const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+    const [editingText, setEditingText] = useState("");
 
     // Timeout detection - 45 seconds with no progress during building
     const TIMEOUT_MS = 45000;
@@ -517,7 +523,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     return (
 
         <>
-             { messages.map(message => (
+             { messages.map((message, messageIndex) => (
                             <div key={message.id} className="whitespace-pre-wrap">
                                 {message.parts.map((part, index) => {
                                     const isAssistant = message.role === "assistant"
@@ -527,7 +533,44 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                             const text = part.text;
 
                                             if (!isAssistant) {
-                                                // User message - render RHS bubble only
+                                                // User message - render RHS bubble or edit mode
+                                                const isEditing = editingMessageId === message.id;
+                                                if (isEditing) {
+                                                    return (
+                                                        <div
+                                                            key={`${message.id}-${index}`}
+                                                            className="mx-auto flex w-full max-w-3xl flex-col gap-2 px-0 md:px-6 pt-2 items-end"
+                                                        >
+                                                            <div className="flex flex-col gap-2 w-full max-w-[85%] sm:max-w-[75%]">
+                                                                <Textarea
+                                                                    value={editingText}
+                                                                    onChange={(e) => setEditingText(e.target.value)}
+                                                                    className="min-h-[80px] bg-muted text-black dark:text-white rounded-3xl px-5 py-2.5 resize-y"
+                                                                />
+                                                                <div className="flex gap-2 justify-end">
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        onClick={() => setEditingMessageId(null)}
+                                                                    >
+                                                                        Cancel
+                                                                    </Button>
+                                                                    <Button
+                                                                        size="sm"
+                                                                        onClick={() => {
+                                                                            setMessages((prev) => prev.slice(0, messageIndex));
+                                                                            sendMessage({ text: editingText.trim() });
+                                                                            setEditingMessageId(null);
+                                                                        }}
+                                                                        disabled={!editingText.trim()}
+                                                                    >
+                                                                        Save
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                }
                                                 return (
                                                     <Message
                                                         key={`${message.id}-${index}`}
@@ -550,6 +593,10 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                         variant="ghost"
                                                                         size="icon"
                                                                         className="rounded-full"
+                                                                        onClick={() => {
+                                                                            setEditingMessageId(message.id);
+                                                                            setEditingText(text ?? "");
+                                                                        }}
                                                                     >
                                                                         <Pencil />
                                                                     </Button>
@@ -559,6 +606,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                         variant="ghost"
                                                                         size="icon"
                                                                         className="rounded-full"
+                                                                        onClick={() => setMessages((prev) => prev.slice(0, messageIndex))}
                                                                     >
                                                                         <Trash />
                                                                     </Button>
@@ -568,6 +616,11 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                         variant="ghost"
                                                                         size="icon"
                                                                         className="rounded-full"
+                                                                        onClick={() => {
+                                                                            navigator.clipboard.writeText(text ?? "").then(() => {
+                                                                                toast.success("Copied to clipboard");
+                                                                            });
+                                                                        }}
                                                                     >
                                                                         <Copy />
                                                                     </Button>
@@ -600,11 +653,16 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                 isLastMessage && "opacity-100"
                                                             )}
                                                         >
-                                                            <MessageAction tooltip="Edit" delayDuration={100}>
+                                                            <MessageAction tooltip="Copy" delayDuration={100}>
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="icon"
                                                                     className="rounded-full"
+                                                                    onClick={() => {
+                                                                        navigator.clipboard.writeText(text ?? "").then(() => {
+                                                                            toast.success("Copied to clipboard");
+                                                                        });
+                                                                    }}
                                                                 >
                                                                     <Copy />
                                                                 </Button>

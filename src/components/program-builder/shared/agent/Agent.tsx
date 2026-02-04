@@ -83,6 +83,7 @@ interface IProps {
     handleExplore: () => void;
     // AI agent state (lifted from Agent into parent)
     messages: UIMessage<unknown, UIDataTypes, UITools>[];
+    setMessages: (messages: UIMessage<unknown, UIDataTypes, UITools>[] | ((messages: UIMessage<unknown, UIDataTypes, UITools>[]) => UIMessage<unknown, UIDataTypes, UITools>[])) => void;
     sendMessageWithContext: SendMessageWithContext;
     isBuilding: boolean;
     handleIsBuilding: (isBuilding: boolean) => void;
@@ -162,6 +163,7 @@ export const Agent: React.FC<IProps> = (props) => {
         handleProgramTitle,
         handleExplore,
         messages,
+        setMessages,
         sendMessageWithContext,
         isBuilding,
         handleIsBuilding,
@@ -239,6 +241,7 @@ export const Agent: React.FC<IProps> = (props) => {
                         <StickToBottomScrollWhileStreaming isLoading={isLoading} messages={messages} />
                         <MessageBubbles
                             messages={messages}
+                            setMessages={setMessages}
                             setHevyProgram={setHevyProgram}
                             hevyProgram={hevyProgram}
                             addToUndoStack={addToUndoStack}
