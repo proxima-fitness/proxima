@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowRightIcon, Download } from "lucide-react";
+import { ArrowRightIcon, ArrowRightToLineIcon } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import { ExportDialog } from "./ExportDialog";
@@ -96,12 +96,12 @@ export const StepButton: React.FC = () => {
         <>
             <Button
                 variant="default"
-                className="text-black bg-[#fbbf24] hover:bg-[#fbbf24]/80"
+                className="text-white bg-lightSecondary hover:bg-lightSecondary/80"
                 onClick={() => setOpenExportDialog(true)}
             >
                 <span className="hidden sm:inline">Export</span>
                 <span className="sm:hidden">Export</span>
-                <Download />
+                <ArrowRightToLineIcon />
             </Button>
             <ExportDialog
                 open={openExportDialog}
