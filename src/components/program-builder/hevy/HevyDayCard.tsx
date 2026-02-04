@@ -133,7 +133,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (focusedCardId === day.id) {
-                if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "v") {
+                if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "p") {
                     event.preventDefault();
                     handleOpenAddNoteDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true });
                 }
@@ -273,7 +273,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={ () => { handleOpenAddNoteDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true }); setDropdownOpen(false) } } className="cursor-pointer">
                                         Add Note
-                                        <DropdownMenuShortcut>⌘V</DropdownMenuShortcut>
+                                        <DropdownMenuShortcut>⌘P</DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={ () => { setDuplicateDayOpen(true); setDropdownOpen(false) } } className="cursor-pointer">
                                         Duplicate Day
