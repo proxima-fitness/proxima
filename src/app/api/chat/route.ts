@@ -32,7 +32,8 @@ export async function POST(req: Request) {
         const andy = new ToolLoopAgent({
             model: gateway(
                 //'moonshotai/kimi-k2'),
-                'anthropic/claude-sonnet-4.5'),
+                'google/gemini-3-flash'),
+                // 'anthropic/claude-sonnet-4.5'
             instructions: systemPrompt,
             tools: tools,
             // Explicit step limit to prevent infinite loops
