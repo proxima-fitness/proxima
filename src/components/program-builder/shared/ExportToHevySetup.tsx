@@ -31,6 +31,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { deFlattenHevyRoutine } from "../utils";
+import posthog from "posthog-js";
 
 const TOTAL_STEPS = 2;
 
@@ -182,13 +183,17 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
             : "";
 
         if (!user) {
-            toast.error("You must be signed in to upload.");
-            console.error("You must be signed in to upload.");
+            const errorMessage = "You must be signed in to upload.";
+            toast.error(errorMessage);
+            console.error(errorMessage);
+            posthog.capture("export_failed", { user: "user_id_unknown", destination: "hevy", error: errorMessage });
             return;
         }
         if (!hevyApiKey || hevyApiKey.length === 0) {
-            toast.error("Connect your Hevy API key first.");
-            console.error("Connect your Hevy API key first.");
+            const errorMessage = "Connect your Hevy API key first.";
+            toast.error(errorMessage);
+            console.error(errorMessage);
+            posthog.capture("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: errorMessage });
             return;
         }
 
@@ -199,8 +204,10 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
             const saved = isPostHevyRoutineProgramSuccess(supabaseResult);
             const programId = saved ? supabaseResult.id : undefined;
             if (!saved || programId === undefined) {
-                toast.error("Failed to save program to My Programs.");
-                console.error("Failed to save program to My Programs.", supabaseResult);
+                const errorMessage = "Failed to save program to My Programs.";
+                toast.error(errorMessage);
+                console.error(errorMessage, supabaseResult);
+                posthog.capture("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: errorMessage });
                 return;
             }
 
@@ -234,6 +241,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                             : "Failed to upload program to Hevy.";
                     toast.error(message);
                     console.error("Failed to upload program to Hevy.", hevyResult);
+                    posthog.capture("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: message });
                     return;
                 }
             } else {
@@ -246,21 +254,27 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                             : "Failed to upload program to Hevy.";
                     toast.error(message);
                     console.error("Failed to upload program to Hevy.", hevyResult);
+                    posthog.capture("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: message });
                     return;
                 }
             }
 
             const subscriberError = await postNewProgramSubscriber(user, String(programId));
             if (subscriberError) {
-                toast.error("Program saved but failed to add to My Programs.");
-                console.error("Program saved but failed to add to My Programs (subscriber).", subscriberError);
+                const errorMessage = "Program saved but failed to add to My Programs.";
+                toast.error(errorMessage);
+                console.error(errorMessage, subscriberError);
+                posthog.capture("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: errorMessage });
             } else {
                 queryClient.invalidateQueries({ queryKey: ["subscribed-programs", user.id] });
                 toast.success("Program uploaded to Hevy and saved to My Programs.");
+                posthog.capture("exported_program", { user: user?.id ?? "user_id_unknown", destination: "hevy" });
             }
         } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : "Upload failed.";
             console.error("Upload error:", err);
-            toast.error(err instanceof Error ? err.message : "Upload failed.");
+            toast.error(errorMessage);
+            posthog.capture("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: errorMessage });
         } finally {
             setUploadProgress(null);
             setIsUploading(false);

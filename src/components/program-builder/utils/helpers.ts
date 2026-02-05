@@ -482,9 +482,9 @@ export function getModifyProgramObjectivesByRoutine(
  * patches to the current program, pushes inverse patches to undo, and updates
  * the applied-keys set. Call from useEffect when messages or hevyProgram change.
  */
-export const applyModifyProgramPatchesFromMessages = (messages: UIMessage[], hevyProgram: THevyRoutine[], appliedKeysRef: React.MutableRefObject<Set<string>>, setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>, addToUndoStack: (inversePatch: Operation[]) => void): void => {
+export const applyModifyProgramPatchesFromMessages = (messages: UIMessage[], hevyProgram: THevyRoutine[], appliedKeysRef: React.MutableRefObject<Set<string>>, setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>, addToUndoStack: (inversePatch: Operation[]) => void): boolean => {
 
-    if (!hevyProgram || hevyProgram.length === 0) return;
+    if (!hevyProgram || hevyProgram.length === 0) return false;
 
     const toApply: { key: string; patch: IModifyProgramOutput["patch"] }[] = [];
 
@@ -541,4 +541,5 @@ export const applyModifyProgramPatchesFromMessages = (messages: UIMessage[], hev
     if (appliedAny && currentDoc !== hevyProgram) {
         setHevyProgram(currentDoc);
     }
+    return appliedAny;
 }

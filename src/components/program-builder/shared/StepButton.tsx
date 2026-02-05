@@ -6,6 +6,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ExportDialog } from "./ExportDialog";
 import { useUserContext } from "@/contexts/UserContext";
+import posthog from "posthog-js";
 // import { ShareDialog } from "./ShareDialog";
 
 const BUILD_PROGRAM_PATH = "/build-program?resume=true&edit=true";
@@ -97,7 +98,10 @@ export const StepButton: React.FC = () => {
             <Button
                 variant="default"
                 className="text-white bg-lightSecondary hover:bg-lightSecondary/80"
-                onClick={() => setOpenExportDialog(true)}
+                onClick={() => {
+                posthog.capture("opened_export_dialog", { user: user?.id ?? "user_id_unknown" });
+                setOpenExportDialog(true);
+            }}
             >
                 <span className="hidden sm:inline">Export</span>
                 <span className="sm:hidden">Export</span>

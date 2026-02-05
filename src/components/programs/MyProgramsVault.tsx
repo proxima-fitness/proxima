@@ -9,10 +9,16 @@ import { Lock, Archive } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { getTmpPublicUrl } from "@/api/storage";
+import posthog from "posthog-js";
+import { useEffect } from "react";
 
 export const MyProgramsVault: React.FC = () => {
     const { user, isLoading: userLoading } = useUserContext();
     const { data: programs, isError: errorFetchingPrograms, isLoading: loadingPrograms } = useSubscribedPrograms(user);
+
+    useEffect(() => {
+        posthog.capture('page_view', { page: '/my-programs', user: user?.id ?? "user_id_unknown" });
+    }, [user]);
 
     if (userLoading || loadingPrograms) {
         return (

@@ -12,6 +12,7 @@ import { RecentProgramsGrid } from "./RecentProgramsGrid";
 import { PromptTemplate } from "./PromptTemplate";
 import { Integrations } from "@/components/header/Integrations";
 import { BuyMeCoffee } from "@/components/ui/buy-me-coffee";
+import posthog from "posthog-js";
 
 interface IProps {
     userData: User | null;
@@ -26,7 +27,12 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
         if (userData) {
             setUser(userData);
         }
+
+        posthog.capture('page_view', { page: '/', user: userData?.id ?? "user_id_unknown" });
+
     }, [userData, setUser]);
+
+
 
     return (
         <>

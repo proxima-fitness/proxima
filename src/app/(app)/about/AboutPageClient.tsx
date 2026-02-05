@@ -2,9 +2,11 @@
 "use client";
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useUserContext } from "@/contexts/UserContext";
 import styles, { layout } from "@/style";
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import posthog from "posthog-js";
 import { useEffect } from "react";
 
 interface IAboutPageClientProps {
@@ -13,13 +15,16 @@ interface IAboutPageClientProps {
 }
 
 export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
+
+    const { user } = useUserContext();
     // Initialize AOS on the client
     useEffect(() => {
         AOS.init({
             duration: 1000,
             once: true,
         });
-    }, []);
+        posthog.capture('page_view', { page: '/about', user: user?.id ?? "user_id_unknown" });
+    }, [user]);
 
     return (
         <main className="min-h-screen bg-white dark:bg-primary relative overflow-hidden">

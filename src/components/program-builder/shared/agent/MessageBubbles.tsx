@@ -18,6 +18,8 @@ import { equipmentOptions, healthIssuesOptions } from "@/assets/constants";
 import { generateFallbackWorkout } from "../../utils/fallback-workouts";
 import { toast } from "sonner";
 import { type Operation } from "fast-json-patch";
+import posthog from "posthog-js";
+import { useUserContext } from "@/contexts/UserContext";
 
 // Type for buildRoutine tool output
 interface IBuildRoutineOutput {
@@ -224,6 +226,7 @@ interface IProps {
 
 export const MessageBubbles: React.FC<IProps> = (props) => {
 
+    const { user } = useUserContext();
     const {
         messages,
         setMessages,
@@ -382,22 +385,30 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
 
             setHevyProgram(fullProgram);
             handleIsBuilding(false);
+            posthog.capture("generated_a_program", {
+                user: user?.id ?? "user_id_unknown",
+                daysPerWeek: allRoutines.length,
+                programLength: weeks,
+            });
         }
-    }, [completedDays.length, totalDays, allRoutines, programLength, setHevyProgram, handleIsBuilding]);
+    }, [completedDays.length, totalDays, allRoutines, programLength, setHevyProgram, handleIsBuilding, user]);
 
     // Track which modifyProgram tool results have been applied (avoid re-applying on re-render)
     const appliedModifyProgramKeysRef = useRef<Set<string>>(new Set());
 
     // Process modifyProgram tool results: validate, apply with immutable update, store inverse for undo
     useEffect(() => {
-        applyModifyProgramPatchesFromMessages(
+        const modified = applyModifyProgramPatchesFromMessages(
             messages,
             hevyProgram,
             appliedModifyProgramKeysRef,
             setHevyProgram,
             addToUndoStack
         );
-    }, [messages, hevyProgram, setHevyProgram, addToUndoStack]);
+        if (modified) {
+            posthog.capture("modified_a_program", { user: user?.id ?? "user_id_unknown" });
+        }
+    }, [messages, hevyProgram, setHevyProgram, addToUndoStack, user]);
 
     // Helper function to convert string[] to IOption[] - memoized to prevent recreation
     const convertStringArrayToOptions = useCallback((

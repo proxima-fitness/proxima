@@ -35,11 +35,14 @@ import { applyPatch, type Operation } from "fast-json-patch";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { getTextFromChatMessage, isMessageAboutProgram } from "@/components/program-builder/utils/helpers"
+import posthog from "posthog-js";
+import { useUserContext } from "@/contexts/UserContext";
 
 
 export function BuildProgramClient() {
 
     const { isHevy } = useIsHevy();
+    const { user } = useUserContext();
     const { setIsPreview } = usePreview();
     const searchParams = useSearchParams();
 
@@ -154,10 +157,30 @@ export function BuildProgramClient() {
     );
 
     const sendMessageRef = useRef(sendMessageWithContext);
+    const prevErrorRef = useRef<Error | null>(null);
+
+    useEffect(() => {
+        posthog.capture('page_view', { page: '/build-program', user: user?.id ?? "user_id_unknown" });
+    }, [user]);
+
+    useEffect(() => {
+        if (activeError && prevErrorRef.current === null) {
+            posthog.capture("ai_agent_error", {
+                user: user?.id ?? "user_id_unknown",
+                errorMessage: activeError?.message ?? "unknown",
+            });
+            prevErrorRef.current = activeError;
+        }
+        if (activeError === null) {
+            prevErrorRef.current = null;
+        }
+    }, [activeError, user]);
 
     useEffect(() => {
         sendMessageRef.current = sendMessageWithContext;
     }, [sendMessageWithContext]);
+
+
 
     // Initialize with search parameter if present
     useEffect(() => {
@@ -165,8 +188,9 @@ export function BuildProgramClient() {
         if (search && search.trim().length > 0 && !initialSearchOccurred.current && sendMessageRef.current) {
             initialSearchOccurred.current = true;
             sendMessageRef.current({ text: search });
+            posthog.capture('sent_first_prompt_to_ai', { search: search, user: user?.id ?? "user_id_unknown" });
         }
-    }, [search]);
+    }, [search, user]);
 
     const handleSubmit = () => {
         if (!input.trim()) return
