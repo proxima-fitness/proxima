@@ -821,7 +821,7 @@ export function BuildProgramClient() {
             <Button
                 size="sm"
                 onClick={handleUndo}
-                className="gap-2 bg-[#fbbf24] hover:bg-[#fbbf24]/80 text-black h-9"
+                className="gap-2 bg-lightGold hover:bg-lightGold/80 text-black h-9"
             >
                 <Undo2 className="h-4 w-4" />
                 Undo

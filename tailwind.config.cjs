@@ -16,6 +16,7 @@ module.exports = {
   			secondary: '#00f6ff',
   			offWhite: 'oklch(70.8% 0 0)',
   			lightSecondary: '#33bbcf',
+  			lightGold: '#fbbf24',
   			extraLightGray: '#fafafa',
   			lightGray: '#f5f5f5',
   			darkGray: '#1f2937',

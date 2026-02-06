@@ -717,7 +717,7 @@ export function Questions({
           size="sm"
           onClick={handleContinue}
           disabled={isLoading || isBuilding}
-          className="bg-[#fbbf24] text-black hover:bg-[#fbbf24]/80 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-lightGold text-black hover:bg-lightGold/80 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isBuilding ? (
             <>

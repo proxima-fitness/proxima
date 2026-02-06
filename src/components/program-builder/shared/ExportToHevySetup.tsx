@@ -355,7 +355,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                                     <Button
                                         variant="ghost"
                                         size="sm"
-                                        className="bg-[#fbbf24] text-black w-fit gap-2 hover:bg-[#fbbf24]/90"
+                                        className="bg-lightGold text-black w-fit gap-2 hover:bg-lightGold/90"
                                         onClick={() =>
                                             window.open("https://hevy.com/settings?developer", "_blank", "noopener,noreferrer")
                                         }
