@@ -1,7 +1,4 @@
-// import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
-// import { Button } from "@/components/ui/button";
 import { StripeEmbeddedTable } from "@/components/pricing/StripeEmbeddedTable";
-// import { useUserContext } from "@/contexts/UserContext";
 
 export const metadata = {
     title: "Pricing | Proxima Fitness",
