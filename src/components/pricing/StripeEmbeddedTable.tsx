@@ -24,6 +24,15 @@ export const StripeEmbeddedTable: React.FC = () => {
         );
     }
 
+    const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+    if (!publishableKey) {
+        return (
+            <div className="min-h-[200px] flex items-center justify-center rounded-lg border border-dashed border-muted-foreground/25 text-muted-foreground text-sm">
+                Pricing table is not configured.
+            </div>
+        );
+    }
+
     return (
         <div key={resolvedTheme}>
             {resolvedTheme === "dark" ? (
@@ -32,8 +41,7 @@ export const StripeEmbeddedTable: React.FC = () => {
                     { createElement("stripe-pricing-table", {
                         "pricing-table-id": process.env.NEXT_PUBLIC_STRIPE_PRICING_TABLE_ID_DARK,
                         "customer-email": user?.email,
-                        "publishable-key":
-                            process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+                        "publishable-key": publishableKey,
                     })}
                 </>
             ) : (
@@ -42,8 +50,7 @@ export const StripeEmbeddedTable: React.FC = () => {
                     {createElement("stripe-pricing-table", {
                         "pricing-table-id": process.env.NEXT_PUBLIC_STRIPE_PRICING_TABLE_ID,
                         "customer-email": user?.email,
-                        "publishable-key":
-                            process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+                        "publishable-key": publishableKey,
                     })}
                 </>
             )}
