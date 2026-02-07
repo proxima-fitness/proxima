@@ -1,6 +1,7 @@
 "use client";
 
 import { useUserContext } from "@/contexts/UserContext";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useTheme } from "next-themes";
 import Script from "next/script";
 import posthog from "posthog-js";
@@ -9,7 +10,7 @@ import { createElement, useEffect } from "react";
 export const StripeEmbeddedTable: React.FC = () => {
 
     const { user } = useUserContext();
-    const { theme } = useTheme();
+    const { resolvedTheme } = useTheme();
 
     useEffect(() => {
         if (user) {
@@ -17,9 +18,15 @@ export const StripeEmbeddedTable: React.FC = () => {
         }
     }, [user]);
 
+    if (resolvedTheme === undefined) {
+        return (
+            <Skeleton className="min-h-[400px] w-full rounded-lg" />
+        );
+    }
+
     return (
-        <div>
-            { theme === "dark" ? (
+        <div key={resolvedTheme}>
+            {resolvedTheme === "dark" ? (
                 <>
                     <Script src="https://js.stripe.com/v3/pricing-table.js" strategy="afterInteractive" />
                     { createElement("stripe-pricing-table", {
@@ -30,7 +37,6 @@ export const StripeEmbeddedTable: React.FC = () => {
                     })}
                 </>
             ) : (
-
                 <>
                     <Script src="https://js.stripe.com/v3/pricing-table.js" strategy="afterInteractive" />
                     {createElement("stripe-pricing-table", {
