@@ -3,14 +3,18 @@
 import { useUserContext } from "@/contexts/UserContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTheme } from "next-themes";
-import Script from "next/script";
 import posthog from "posthog-js";
-import { createElement, useEffect } from "react";
+import { useEffect } from "react";
+import { EmbeddedTableScript } from "./EmbeddedTableScript";
 
 export const StripeEmbeddedTable: React.FC = () => {
 
     const { user } = useUserContext();
     const { resolvedTheme } = useTheme();
+
+    const pricingTableId = process.env.NEXT_PUBLIC_STRIPE_PRICING_TABLE_ID;
+    const darkPricingTableId = process.env.NEXT_PUBLIC_STRIPE_PRICING_TABLE_ID_DARK;
+
 
     useEffect(() => {
         if (user) {
@@ -37,21 +41,11 @@ export const StripeEmbeddedTable: React.FC = () => {
         <div key={resolvedTheme}>
             {resolvedTheme === "dark" ? (
                 <>
-                    <Script src="https://js.stripe.com/v3/pricing-table.js" strategy="afterInteractive" />
-                    { createElement("stripe-pricing-table", {
-                        "pricing-table-id": process.env.NEXT_PUBLIC_STRIPE_PRICING_TABLE_ID_DARK,
-                        "customer-email": user?.email,
-                        "publishable-key": publishableKey,
-                    })}
+                    <EmbeddedTableScript pricingTableId={darkPricingTableId} publishableKey={publishableKey} />
                 </>
             ) : (
                 <>
-                    <Script src="https://js.stripe.com/v3/pricing-table.js" strategy="afterInteractive" />
-                    {createElement("stripe-pricing-table", {
-                        "pricing-table-id": process.env.NEXT_PUBLIC_STRIPE_PRICING_TABLE_ID,
-                        "customer-email": user?.email,
-                        "publishable-key": publishableKey,
-                    })}
+                    <EmbeddedTableScript pricingTableId={pricingTableId} publishableKey={publishableKey} />
                 </>
             )}
         </div>

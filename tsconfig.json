@@ -44,11 +44,13 @@
     "**/*.jsx",
     "**/*.ts",
     "**/*.tsx",
+    "**/*.d.ts",
     "./dist/types/**/*.ts",
     "./next-env.d.ts",
     "src",
     "src/components",
     "src/custom.d.ts",
+    "./@types",
     ".next/types/**/*.ts"
   ],
     "exclude": [
