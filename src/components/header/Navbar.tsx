@@ -268,9 +268,11 @@ export const Navbar: React.FC = () => {
                 <img src={ (proxima_logo_white as any).src } alt="Proxima Logo" className="dark:hidden block max-sm:hidden h-[40px] w-[auto]" />
             </Link>
             <ul className="list-none sm:flex hidden justify-end items-center flex-1 relative z-50 pr-6">
-                <li className="mr-6">
-                    <BuyMeCoffee />
-                </li>
+                {!pathname.startsWith("/build-program") && (
+                    <li className="mr-6">
+                        <BuyMeCoffee />
+                    </li>
+                )}
                 {NavItems(pathname)}
             </ul>
             <div className="sm:hidden flex flex-1 justify-between items-center">

@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, LogIn, LogOut, PersonStanding, Search, Archive } from "lucide-react";
+import { Home, LogIn, LogOut, PersonStanding, Search, Archive, CreditCard } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -114,6 +114,14 @@ export function AppSidebar() {
                         <SidebarGroup>
                             <SidebarGroupContent>
                                 <SidebarMenu>
+                                    <SidebarMenuItem>
+                                        <SidebarMenuButton asChild>
+                                            <a href="/pricing">
+                                                <CreditCard className="font-main" />
+                                                <span className="font-main">{user ? "Upgrade" : "Pricing"}</span>
+                                            </a>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
                                     {user ? (
                                         <>
                                             <SidebarMenuItem>

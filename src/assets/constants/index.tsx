@@ -5875,6 +5875,10 @@ export const authenticatedNavLinks = [
         id: "programs",
         title: "Explore"
     },
+    {
+        id: "pricing",
+        title: "Upgrade",
+    },
     // {
     //     id: "program-builder",
     //     title: "AI Program Builder",
@@ -5898,10 +5902,10 @@ export const navLinks = [
         id: "about",
         title: "About Us",
     },
-    //   {
-    //     id: "pricing",
-    //     title: "Pricing",
-    //   },
+    {
+        id: "pricing",
+        title: "Pricing",
+    },
     // {
     //     id: "program-builder",
     //     title: "AI Program Builder",
