@@ -12,7 +12,7 @@ export const EmbeddedTableScript: React.FC<IProps> = ({ pricingTableId, publisha
         if (!pricingTableId) missing.push("NEXT_PUBLIC_STRIPE_PRICING_TABLE_ID");
         if (!publishableKey) missing.push("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY");
         console.error(
-            "Stripe pricing table misconfigured — missing or empty env:",
+            "Stripe pricing table misconfigured, missing or empty env:",
             missing.join(", ")
         );
         return null;
