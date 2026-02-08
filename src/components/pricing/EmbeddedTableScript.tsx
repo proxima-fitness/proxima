@@ -68,7 +68,7 @@ export const EmbeddedTableScript: React.FC<IProps> = ({ pricingTableId, publisha
                                 Sign out and sign in again
                             </Button>
                         ) : (
-                            <Button asChild className="text-white bg-lightSecondary hover:bg-black">
+                            <Button size="lg" asChild className="text-white bg-lightSecondary hover:bg-black">
                                 <Link href={LOGIN_NEXT_PRICING}>Sign in</Link>
                             </Button>
                         )}
