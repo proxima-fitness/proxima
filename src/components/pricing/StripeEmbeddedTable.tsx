@@ -41,11 +41,11 @@ export const StripeEmbeddedTable: React.FC = () => {
         <div key={resolvedTheme}>
             {resolvedTheme === "dark" ? (
                 <>
-                    <EmbeddedTableScript pricingTableId={darkPricingTableId} publishableKey={publishableKey} />
+                    <EmbeddedTableScript user={user} pricingTableId={darkPricingTableId} publishableKey={publishableKey} />
                 </>
             ) : (
                 <>
-                    <EmbeddedTableScript pricingTableId={pricingTableId} publishableKey={publishableKey} />
+                    <EmbeddedTableScript user={user} pricingTableId={pricingTableId} publishableKey={publishableKey} />
                 </>
             )}
         </div>

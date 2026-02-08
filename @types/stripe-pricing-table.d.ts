@@ -6,6 +6,7 @@ type StripePricingTableProps = DetailedHTMLProps<
         "pricing-table-id"?: string;
         "publishable-key"?: string;
         "customer-email"?: string;
+        "client-reference-id"?: string;
     },
     HTMLElement
 >;
