@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
 
 export interface IQuestionOption {
@@ -431,6 +432,13 @@ export function Questions({
 
   // Handler for single-select questions
   const handleOptionSelect = (questionId: string, optionId: string) => {
+    if (answers[questionId] === optionId) {
+      setAnswers((prev) => {
+        const { [questionId]: _, ...rest } = prev
+        return rest
+      })
+      return
+    }
     setAnswers((prev) => ({
       ...prev,
       [questionId]: optionId,
@@ -451,6 +459,14 @@ export function Questions({
 
   // Handler for single-select "Other" option
   const handleOtherSelect = (questionId: string) => {
+    const current = answers[questionId]
+    if (typeof current === "string" && current.startsWith("other:")) {
+      setAnswers((prev) => {
+        const { [questionId]: _, ...rest } = prev
+        return rest
+      })
+      return
+    }
     setAnswers((prev) => ({
       ...prev,
       [questionId]: `other:${otherTexts[questionId] || ""}`,
@@ -617,6 +633,10 @@ export function Questions({
     return () => container.removeEventListener("scroll", handleScroll)
   }, [])
 
+  const hasSelections = Object.values(answers).some((v) =>
+    Array.isArray(v) ? v.length > 0 : typeof v === "string" && v.length > 0
+  )
+
   if (questions.length === 0) return null
 
   return (
@@ -710,9 +730,36 @@ export function Questions({
 
       {/* Footer */}
       <div className="flex items-center justify-end gap-2 border-t px-4 py-3">
-        <Button variant="ghost" size="sm" onClick={onSkip} disabled={isLoading || isBuilding}>
-          Skip
-        </Button>
+        {hasSelections ? (
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-block">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onSkip}
+                    disabled={isLoading || isBuilding || hasSelections}
+                  >
+                    Skip
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="bg-lightSecondary text-white">
+                De-select options to skip this questionnaire.
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ) : (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onSkip}
+            disabled={isLoading || isBuilding}
+          >
+            Skip
+          </Button>
+        )}
         <Button
           size="sm"
           onClick={handleContinue}
