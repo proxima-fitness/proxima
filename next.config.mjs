@@ -31,6 +31,17 @@ const nextConfig = {
         destination: '/',
         permanent: true, // use false for temporary (307), true for permanent (308)
       },
+      // Legacy program URL (UUID + slug) -> new URL (slug + numeric id)
+      {
+        source: "/programs/61944abe-1126-4ada-b72d-d1b22cadce10/phrak's-greyskull-lp",
+        destination: "/programs/phraks-greyskull-linear-progression/1035",
+        permanent: true,
+      },
+      {
+        source: "/programs/61944abe-1126-4ada-b72d-d1b22cadce10/phrak%27s-greyskull-lp",
+        destination: "/programs/phraks-greyskull-linear-progression/1035",
+        permanent: true,
+      },
     ]
   }
 }
