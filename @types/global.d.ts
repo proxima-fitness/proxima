@@ -96,3 +96,16 @@ type TMessage = {
     role: "user" | "assistant";
     content: string;
 }
+
+
+type TFeatureLimits = {
+    user_id: string;
+    tier: string;
+    has_active_subscription: boolean | null;
+    max_monthly_exports: number;
+    monthly_exports_used: number;
+    remaining_exports: number;
+    max_monthly_llm_requests: number;
+    monthly_llm_requests_used: number;
+    remaining_llm_requests: number;
+};

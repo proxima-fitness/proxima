@@ -36,13 +36,22 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { getTextFromChatMessage, isMessageAboutProgram } from "@/components/program-builder/utils/helpers"
 import posthog from "posthog-js";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUserContext } from "@/contexts/UserContext";
+import { recordLlmRequest } from "@/api/featureLimits";
 
 
 export function BuildProgramClient() {
 
     const { isHevy } = useIsHevy();
     const { user } = useUserContext();
+    const queryClient = useQueryClient();
+    const { mutate: incrementLlmRequests } = useMutation({
+        mutationFn: () => recordLlmRequest(user),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["feature-limits"] });
+        },
+    });
     const { setIsPreview } = usePreview();
     const searchParams = useSearchParams();
 
@@ -141,6 +150,7 @@ export function BuildProgramClient() {
     // (and getCurrentProgram tool) see the actual state (e.g. when program was loaded via shareId).
     const sendMessageWithContext = useCallback(
         (message: Parameters<typeof sendMessage>[0], options?: Parameters<typeof sendMessage>[1]) => {
+            incrementLlmRequests(undefined, { onError: (err) => console.error("Failed to record LLM usage", err) });
             const text = getTextFromChatMessage(message);
             const includeProgram = isMessageAboutProgram(text);
             const contextBody = {
@@ -153,7 +163,7 @@ export function BuildProgramClient() {
             };
             return sendMessage(message, { ...options, body: { ...contextBody, ...options?.body } });
         },
-        [sendMessage, hevyProgram, hevyProgramRef, daysPerWeek, programLength, excludeAreas, excludeEquipment, healthIssues]
+        [sendMessage, hevyProgram, hevyProgramRef, daysPerWeek, programLength, excludeAreas, excludeEquipment, healthIssues, incrementLlmRequests]
     );
 
     const sendMessageRef = useRef(sendMessageWithContext);

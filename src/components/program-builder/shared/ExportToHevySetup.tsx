@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { useUserContext } from "@/contexts/UserContext";
 import { useHevySecret } from "@/api/hooks";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { incrementMonthlyExportsUsed } from "@/api/featureLimits";
 import {
     postHevyApikey,
     postHevyRoutineProgram,
@@ -52,8 +53,14 @@ interface IExportToHevySetupProps {
 
 export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadStateChange }) => {
     const { user } = useUserContext();
-    const { data: hevyApiKey } = useHevySecret(user);
     const queryClient = useQueryClient();
+    const { data: hevyApiKey } = useHevySecret(user);
+    const { mutate: incrementExportsUsed } = useMutation({
+        mutationFn: () => incrementMonthlyExportsUsed(user),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["feature-limits", user?.id] });
+        },
+    });
 
     const [expandedStep, setExpandedStep] = useState<string>(hevyApiKey ? "step2" : "step1");
     const [inputValue, setInputValue] = useState("");
@@ -269,6 +276,9 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                 queryClient.invalidateQueries({ queryKey: ["subscribed-programs", user.id] });
                 toast.success("Program uploaded to Hevy and saved to My Programs.");
                 posthog.capture("exported_program", { user: user?.id ?? "user_id_unknown", destination: "hevy" });
+                incrementExportsUsed(undefined, {
+                    onError: (err) => console.error("Failed to record export usage", err),
+                });
             }
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "Upload failed.";

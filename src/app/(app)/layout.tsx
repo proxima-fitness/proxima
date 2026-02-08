@@ -64,8 +64,8 @@ export default function RootLayout({
                     enableSystem
                     disableTransitionOnChange
                 >
-                <UserProvider>
-                    <QueryProvider>
+                <QueryProvider>
+                    <UserProvider>
                         <IsHevyProvider>
                             <PreviewProvider>
                                 <SidebarProvider>
@@ -95,8 +95,8 @@ export default function RootLayout({
                                 </SidebarProvider>
                             </PreviewProvider>
                         </IsHevyProvider>
-                    </QueryProvider>
-                </UserProvider>
+                    </UserProvider>
+                </QueryProvider>
                 </ThemeProvider>
             </body>
         </html>

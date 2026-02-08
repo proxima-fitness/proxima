@@ -5,6 +5,7 @@ import { getCommunityAiPrograms, getCommunityAiProgramsPaginated, getExplorePage
 import { getOpUserId, getUserFullName, getUserMetaData, getUsersBatch } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getHevyApiKey, getHevyCustomExercises, getHevyExercises, getHevyPrograms, getHevyRoutines } from "../components/program-builder/api/hevy";
+import { getMyFeatureLimits } from "./featureLimits";
 import { User } from "@supabase/supabase-js";
 
 /*********************************/
@@ -186,6 +187,14 @@ export const useHevySecret = (user: User | undefined | null) => {
         queryKey: ["hevy_api_key"],
         queryFn: () => getHevyApiKey(user),
         enabled: !!user,
+    });
+};
+
+// FETCHES THE CURRENT USER'S FEATURE LIMITS (or anonymous localStorage limits when not logged in)
+export const useMyFeatureLimits = (user: User | undefined | null) => {
+    return useQuery({
+        queryKey: ["feature-limits", user?.id],
+        queryFn: () => getMyFeatureLimits(user),
     });
 };
 

@@ -11,7 +11,7 @@ import { ConditionalHevyGrid } from "../hevy/ConditionalHevyGrid";
 import { RecentProgramsGrid } from "./RecentProgramsGrid";
 import { PromptTemplate } from "./PromptTemplate";
 import { Integrations } from "@/components/header/Integrations";
-import { BuyMeCoffee } from "@/components/ui/buy-me-coffee";
+// import { BuyMeCoffee } from "@/components/ui/buy-me-coffee";
 import posthog from "posthog-js";
 
 interface IProps {
@@ -44,9 +44,9 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                     </div>
                     <div className="w-full max-w-3xl max-sm:px-2">
                         {/* Mobile only - Buy Me a Coffee */}
-                        <div className="sm:hidden flex justify-center mb-4">
+                        {/* <div className="sm:hidden flex justify-center mb-4">
                             <BuyMeCoffee />
-                        </div>
+                        </div> */}
                         <PromptTemplate />
                     </div>
                 </div>
