@@ -4,15 +4,18 @@ import Link from "next/link"
 import { Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
+import type { User } from "@supabase/supabase-js"
 
 interface IUpgradeBannerProps {
   remainingRequests: number
   totalRequests: number
+  user?: User | null
 }
 
 export function UpgradeBanner({
   remainingRequests,
   totalRequests,
+  user,
 }: IUpgradeBannerProps) {
   const usedPercentage = ((totalRequests - remainingRequests) / totalRequests) * 100
 
@@ -37,7 +40,7 @@ export function UpgradeBanner({
             asChild
             className="shrink-0 rounded-full bg-foreground text-background hover:bg-foreground/90"
           >
-            <Link href="/pricing">Upgrade Plan</Link>
+            {user ? <Link href="/pricing">Upgrade Plan</Link> : <Link href={`/auth/login?next=${encodeURIComponent("/build-program?resume=true&edit=true")}`}>Sign in</Link>}
           </Button>
         </div>
       </div>

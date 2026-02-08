@@ -28,17 +28,18 @@ export const Chat: React.FC<IProps> = (props) => {
     const { isLoading, input, setInput, handleSubmit, handleStop } = props;
     const { user } = useUserContext();
     const { data: featureLimits } = useMyFeatureLimits(user);
-    console.log("featureLimits:", featureLimits);
+    const outOfCredits = featureLimits != null && featureLimits.remaining_llm_requests === 0;
     return (
         <div className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl flex-shrink-0 px-3 pb-3 md:px-5 md:pb-5 max-sm:fixed max-sm:bottom-[70px] max-sm:left-0 max-sm:right-0 max-sm:px-4 max-sm:bg-background border-t pt-4">
             {featureLimits && (
-                <UpgradeBanner remainingRequests={featureLimits.remaining_llm_requests } totalRequests={featureLimits.max_monthly_llm_requests } />
+                <UpgradeBanner remainingRequests={featureLimits.remaining_llm_requests} totalRequests={featureLimits.max_monthly_llm_requests} user={user} />
             )}
             <PromptInput
                 isLoading={isLoading}
                 value={input}
                 onValueChange={value => setInput(value)}
                 onSubmit={handleSubmit}
+                disabled={outOfCredits}
                 className="border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-xs"
             >
             <div className="flex flex-col">
@@ -73,7 +74,7 @@ export const Chat: React.FC<IProps> = (props) => {
                     {!isLoading ? (
                         <Button
                         size="icon"
-                        disabled={!input.trim()}
+                        disabled={outOfCredits || !input.trim()}
                         onClick={handleSubmit}
                         className="size-9 rounded-full bg-lightSecondary"
                         >

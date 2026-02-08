@@ -190,12 +190,11 @@ export const useHevySecret = (user: User | undefined | null) => {
     });
 };
 
-// FETCHES THE CURRENT USER'S FEATURE LIMITS
+// FETCHES THE CURRENT USER'S FEATURE LIMITS (or anonymous localStorage limits when not logged in)
 export const useMyFeatureLimits = (user: User | undefined | null) => {
     return useQuery({
         queryKey: ["feature-limits", user?.id],
         queryFn: () => getMyFeatureLimits(user),
-        enabled: !!user,
     });
 };
 

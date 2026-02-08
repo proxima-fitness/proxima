@@ -38,8 +38,7 @@ import { getTextFromChatMessage, isMessageAboutProgram } from "@/components/prog
 import posthog from "posthog-js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUserContext } from "@/contexts/UserContext";
-import { useMyFeatureLimits } from "@/api/hooks";
-import { incrementMonthlyLlmRequests } from "@/api/featureLimits";
+import { recordLlmRequest } from "@/api/featureLimits";
 
 
 export function BuildProgramClient() {
@@ -47,15 +46,12 @@ export function BuildProgramClient() {
     const { isHevy } = useIsHevy();
     const { user } = useUserContext();
     const queryClient = useQueryClient();
-    const { data: featureLimits } = useMyFeatureLimits(user);
     const { mutate: incrementLlmRequests } = useMutation({
-        mutationFn: () => incrementMonthlyLlmRequests(user),
+        mutationFn: () => recordLlmRequest(user),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["feature-limits", user?.id] });
+            queryClient.invalidateQueries({ queryKey: ["feature-limits"] });
         },
     });
-
-    console.log("featureLimits:", featureLimits);
     const { setIsPreview } = usePreview();
     const searchParams = useSearchParams();
 

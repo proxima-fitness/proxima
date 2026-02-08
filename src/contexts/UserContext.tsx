@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/api';
 
@@ -35,6 +36,7 @@ const getServerSession = async (): Promise<User | null> => {
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const queryClient = useQueryClient();
 
     useEffect(() => {
         const initializeSession = async () => {
@@ -63,10 +65,13 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setUser(session?.user ?? null);
             setIsLoading(false);
+            if (session?.user) {
+                queryClient.invalidateQueries({ queryKey: ["feature-limits"] });
+            }
         });
 
         return () => subscription.unsubscribe();
-    }, []);
+    }, [queryClient]);
 
     return (
         <UserContext.Provider value={ { user, setUser, isLoading } }>
