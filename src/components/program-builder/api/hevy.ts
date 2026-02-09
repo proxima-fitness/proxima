@@ -831,7 +831,7 @@ const getDefaultExerciseStalls = (): Array<{
 }> => {
     return [
         {
-            name: "Bench Press",
+            name: "Bench Press (Barbell)",
             weight: 0,
             color: "green",
             trend: Array(15).fill(0),
@@ -839,7 +839,7 @@ const getDefaultExerciseStalls = (): Array<{
             sessions: [],
         },
         {
-            name: "Squat",
+            name: "Squat (Barbell)",
             weight: 0,
             color: "green",
             trend: Array(15).fill(0),
@@ -847,7 +847,7 @@ const getDefaultExerciseStalls = (): Array<{
             sessions: [],
         },
         {
-            name: "Deadlift",
+            name: "Deadlift (Barbell)",
             weight: 0,
             color: "green",
             trend: Array(15).fill(0),

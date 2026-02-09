@@ -21,6 +21,7 @@ module.exports = {
   			lightGray: '#f5f5f5',
   			darkGray: '#1f2937',
   			extraDarkGray: '#111827',
+  			blueGray: '#202a37',
   			dimWhite: 'rgba(255, 255, 255, 0.7)',
   			dimBlue: 'rgba(9, 151, 124, 0.1)',
   			background: 'hsl(var(--background))',

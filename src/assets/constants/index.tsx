@@ -5868,8 +5868,8 @@ export const authenticatedNavLinks = [
     //     title: "Exercises",
     // },
     {
-        id: "my-programs",
-        title: "My Programs"
+        id: "dashboard",
+        title: "My Dashboard"
     },
     {
         id: "programs",

@@ -4,7 +4,7 @@ import { getBlogById, getBlogs } from "./blog";
 import { getCommunityAiPrograms, getCommunityAiProgramsPaginated, getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID, getSubscribedPrograms } from "./programs";
 import { getOpUserId, getUserFullName, getUserMetaData, getUsersBatch } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
-import { getHevyApiKey, getHevyCustomExercises, getHevyExercises, getHevyPrograms, getHevyRoutines } from "../components/program-builder/api/hevy";
+import { getExerciseStallsAnalysis, getHevyApiKey, getHevyCustomExercises, getHevyExercises, getHevyPrograms, getHevyRoutines } from "../components/program-builder/api/hevy";
 import { getMyFeatureLimits } from "./featureLimits";
 import { User } from "@supabase/supabase-js";
 
@@ -76,6 +76,16 @@ export const useSubscribedPrograms = (user: User | undefined | null) => {
         queryKey: ['subscribed-programs', user?.id],
         queryFn: () => getSubscribedPrograms(user!),
         enabled: !!user,
+    });
+};
+
+// FETCHES EXERCISE STALLS ANALYSIS FOR BENCH PRESS, SQUAT, AND DEADLIFT
+export const useExerciseStallsAnalysis = (user: User | undefined | null) => {
+    return useQuery({
+        queryKey: ["exercise-stalls-analysis", user?.id, "v3"],
+        queryFn: () => getExerciseStallsAnalysis(user!),
+        enabled: !!user,
+        networkMode: "online",
     });
 };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, LogIn, LogOut, PersonStanding, Search, Archive, CreditCard } from "lucide-react";
+import { Home, LogIn, LogOut, PersonStanding, Search, LayoutDashboard, CreditCard } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -61,9 +61,9 @@ export function AppSidebar() {
     // Menu items that depend on authentication state
     const authenticatedItems = user ? [
         {
-            title: "My Programs",
-            url: "/my-programs",
-            icon: Archive,
+            title: "My Dashboard",
+            url: "/dashboard",
+            icon: LayoutDashboard,
         },
         {
             title: "Explore",
