@@ -55,7 +55,7 @@ function placeholderExercise(name: string): IExercise {
     };
 }
 
-const STALL_PROMPT = "I have stalled on this exercise can you modify my existing program to fix this plateau. Check my existing program first and then make changes you think would fix this plateau.";
+const STALL_PROMPT = "I have stalled on this exercise can you modify my existing program to fix this plateau. Check my existing program first and then make changes you think would fix this plateau. Explain to me what you're going to do. Then ask me `Would you like me to make these changes to your program now?` and then exit.";
 
 function formatSessionLine(
     s: { date: string; totalVolume: number; maxWeight: number; totalReps?: number },
@@ -208,7 +208,7 @@ export function BlindSpotAnalysisSection() {
                 </div>
             )}
             <Dialog open={exploreFixesDialogOpen} onOpenChange={setExploreFixesDialogOpen}>
-                <DialogContent className="max-w-md">
+                <DialogContent className="max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
                     <DialogHeader>
                         <DialogTitle>Select a program to modify</DialogTitle>
                         <DialogDescription>
@@ -237,7 +237,7 @@ export function BlindSpotAnalysisSection() {
                                 </Link>
                             </div>
                         ) : (
-                            <ul className="space-y-2 max-h-[280px] overflow-y-auto">
+                            <ul className="list-none p-0 space-y-2 max-h-[280px] overflow-y-auto">
                                 {subscribedPrograms.map((program) => (
                                     <li key={program.id}>
                                         <button
