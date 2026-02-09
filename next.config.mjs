@@ -45,6 +45,11 @@ const nextConfig = {
         destination: "/programs/phraks-greyskull-linear-progression/1035",
         permanent: true,
       },
+      {
+        source: '/waitlist',
+        destination: '/',
+        permanent: true,
+      }
     ]
   }
 }
