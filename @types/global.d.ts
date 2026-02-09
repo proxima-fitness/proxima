@@ -109,3 +109,31 @@ type TFeatureLimits = {
     monthly_llm_requests_used: number;
     remaining_llm_requests: number;
 };
+
+
+type THevyWorkoutsResponse = {
+    page: number;
+    page_count: number;
+    workouts: THevyWorkouts[];
+};
+
+type TRoutineResponse = {
+    routine: TRoutine;
+  };
+
+
+type TExerciseStallResult = {
+    name: string;
+    weight: number;
+    color: "green" | "yellow" | "red";
+    trend: number[];
+    hasStall: boolean;
+    sessions: Array<{
+        workoutId: string;
+        date: string;
+        totalVolume: number;
+        maxWeight: number;
+        /** Total reps in the workout (for bodyweight display when totalVolume is 0). */
+        totalReps?: number;
+    }>
+}

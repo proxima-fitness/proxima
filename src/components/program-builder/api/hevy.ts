@@ -2,7 +2,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { getMaxFolderId } from "@/components/program-builder/utils";
 import { User } from "@supabase/supabase-js";
-import { supabase } from "@/api";
+import { supabase } from "@/api/index";
 import { convertHevyOutputIntoInput } from "./hevy_export";
 
 export const defaultFetch = async <T>(url: string, apiKey: string): Promise<T> => {
@@ -574,287 +574,27 @@ export const getHevyExercises = async () => {
     }
 };
 
-
 /**
- * GETS THE EXERCISE HISTORY FOR A SPECIFIC WORKOUT
- * @param apiKey - The hevy api key
- * @param workoutId - The id of the workout
- * @param start_date - The start date of the exercise history ISO 8601 format
- * @param end_date - The end date of the exercise history ISO 8601 format
- * @returns The exercise history
+ * GET EXERCISE HISTORY FOR A SPECIFIC EXERCISE TEMPLATE (HEVY API)
+ * @param apiKey - The Hevy API key
+ * @param exerciseTemplateId - The exercise template ID
+ * @param start_date - Optional start date (ISO 8601)
+ * @param end_date - Optional end date (ISO 8601)
+ * @returns Exercise history entries for that template
  */
-export const getHevyExerciseHistory = async (apiKey: string, exercise_template_id: string, start_date: string, end_date: string) => {
-    try {
-        const response = await defaultFetch<THevyExerciseHistory>(`https://api.hevyapp.com/v1/exercise_history/${exercise_template_id}?start_date=${start_date}&end_date=${end_date}`, apiKey);
-        if (response) {
-            return response;
-        }
-        return [];
-    } catch (error: unknown) {
-        console.error("Error fetching Hevy exercise history", error);
-        return [];
-    }
-};
-
-
-/**
- * ANALYZES EXERCISE STALLS FOR BENCH PRESS, SQUAT, AND DEADLIFT
- * @param user - The user
- * @returns Array of exercise analysis data with trends and stall detection
- */
-export const getExerciseStallsAnalysis = async (user: User): Promise<Array<{
-    name: string;
-    weight: number;
-    color: "green" | "yellow" | "red";
-    trend: number[];
-    hasStall: boolean;
-    sessions: Array<{
-        workoutId: string;
-        date: string;
-        totalVolume: number;
-        maxWeight: number;
-    }>;
-}>> => {
-    try {
-        if (!user) {
-            return getDefaultExerciseStalls();
-        }
-
-        const apiKey = await getHevyApiKey(user);
-        if (!apiKey) {
-            return getDefaultExerciseStalls();
-        }
-
-        // Exercise IDs and names
-        const exercises = [
-            { id: "79D0BB3A", name: "Bench Press (Barbell)" },
-            { id: "D04AC939", name: "Squat (Barbell)" },
-            { id: "C6272009", name: "Deadlift (Barbell)" },
-        ];
-
-        // Calculate date range (2 years back to ensure we get enough data)
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setFullYear(startDate.getFullYear() - 2);
-        const startDateISO = startDate.toISOString();
-        const endDateISO = endDate.toISOString();
-
-        const results = await Promise.all(
-            exercises.map(async (exercise) => {
-                try {
-                    const historyResponse = await getHevyExerciseHistory(
-                        apiKey,
-                        exercise.id,
-                        startDateISO,
-                        endDateISO,
-                    );
-
-                    // Handle case where getHevyExerciseHistory returns empty array or invalid response
-                    if (Array.isArray(historyResponse) || !historyResponse || !('exercise_history' in historyResponse) || !historyResponse.exercise_history || historyResponse.exercise_history.length === 0) {
-                        return {
-                            name: exercise.name,
-                            weight: 0,
-                            color: "green" as const,
-                            trend: Array(15).fill(0),
-                            hasStall: false,
-                            sessions: [],
-                        };
-                    }
-
-                    // Filter to only "normal" sets and sort by workout_start_time (most recent first)
-                    const normalSets = historyResponse.exercise_history
-                        .filter((entry) => entry.set_type === "normal")
-                        .filter((entry) => entry.weight_kg !== null && entry.reps !== null)
-                        .sort((a, b) => {
-                            const dateA = new Date(a.workout_start_time).getTime();
-                            const dateB = new Date(b.workout_start_time).getTime();
-                            return dateB - dateA; // Most recent first
-                        })
-                        .slice(0, 15); // Take 15 most recent
-
-                    if (normalSets.length === 0) {
-                        return {
-                            name: exercise.name,
-                            weight: 0,
-                            color: "green" as const,
-                            trend: Array(15).fill(0),
-                            hasStall: false,
-                            sessions: [],
-                        };
-                    }
-
-                    // Group sets by workout to calculate total volume per workout session
-                    const workoutVolumes = new Map<string, number>();
-                    const workoutWeights = new Map<string, number>();
-
-                    normalSets.forEach((entry) => {
-                        const volume = (entry.weight_kg || 0) * (entry.reps || 0);
-                        const weightKg = entry.weight_kg || 0;
-                        const workoutId = entry.workout_id;
-
-                        // For each workout, sum the volume and track the maximum weight
-                        const currentVolume = workoutVolumes.get(workoutId) || 0;
-                        const currentWeight = workoutWeights.get(workoutId) || 0;
-
-                        workoutVolumes.set(workoutId, currentVolume + volume);
-                        if (weightKg > currentWeight) {
-                            workoutWeights.set(workoutId, weightKg);
-                        }
-                    });
-
-                    // Get unique workouts sorted by date (most recent first)
-                    const uniqueWorkoutsWithDates = Array.from(
-                        new Set(normalSets.map((entry) => entry.workout_id)),
-                    )
-                        .map((workoutId) => {
-                            const entry = normalSets.find((e) => e.workout_id === workoutId);
-                            return {
-                                workoutId,
-                                date: entry ? new Date(entry.workout_start_time).getTime() : 0,
-                                dateString: entry ? entry.workout_start_time : "",
-                            };
-                        })
-                        .sort((a, b) => b.date - a.date)
-                        .slice(0, 15);
-
-                    const uniqueWorkouts = uniqueWorkoutsWithDates.map((w) => w.workoutId);
-
-                    // Build sessions array with volume and max weight for each workout
-                    const sessions = uniqueWorkoutsWithDates.map((workout) => {
-                        const volumeKg = workoutVolumes.get(workout.workoutId) || 0;
-                        const volumeLbs = volumeKg * 2.20462;
-                        const maxWeightKg = workoutWeights.get(workout.workoutId) || 0;
-                        const maxWeightLbs = maxWeightKg * 2.20462;
-
-                        return {
-                            workoutId: workout.workoutId,
-                            date: workout.dateString,
-                            totalVolume: Math.round(volumeLbs),
-                            maxWeight: Math.round(maxWeightLbs),
-                        };
-                    });
-
-                    // Calculate volumes for each workout session (most recent to oldest)
-                    const volumes = uniqueWorkouts.map((workoutId) => workoutVolumes.get(workoutId) || 0);
-
-                    // Reverse to get oldest to newest for trend calculation
-                    const volumesOldestToNewest = [...volumes].reverse();
-
-                    // Determine color and stall status
-                    // If less than 5 sessions, always green (not enough data to determine stall)
-                    let color: "green" | "yellow" | "red" = "green";
-                    let hasStall = false;
-
-                    // Only apply stall detection if we have 5 or more sessions
-                    if (sessions.length >= 5) {
-                        // Calculate percentage change from oldest to newest
-                        let percentageChange = 0;
-                        if (volumesOldestToNewest.length >= 2) {
-                            const oldestVolume = volumesOldestToNewest[0];
-                            const newestVolume = volumesOldestToNewest[volumesOldestToNewest.length - 1];
-                            if (oldestVolume > 0) {
-                                percentageChange = ((newestVolume - oldestVolume) / oldestVolume) * 100;
-                            }
-                        }
-
-                        // Apply stall detection logic
-                        if (percentageChange < 1) {
-                            color = "red";
-                            hasStall = true;
-                        } else if (percentageChange < 5) {
-                            color = "yellow";
-                            hasStall = false;
-                        } else {
-                            color = "green";
-                            hasStall = false;
-                        }
-                    }
-                    // If sessions.length < 5, color and hasStall remain green/false (default values above)
-
-                    // Get current weight (most recent workout's max weight in lbs)
-                    const mostRecentWorkoutId = uniqueWorkouts[0];
-                    const currentWeightKg = workoutWeights.get(mostRecentWorkoutId) || 0;
-                    const currentWeightLbs = currentWeightKg * 2.20462;
-
-                    // Create trend array (pad with zeros if less than 15 entries)
-                    const trend = [...volumes];
-                    while (trend.length < 15) {
-                        trend.unshift(0);
-                    }
-
-                    const result = {
-                        name: exercise.name,
-                        weight: Math.round(currentWeightLbs),
-                        color,
-                        trend: trend.slice(0, 15),
-                        hasStall,
-                        sessions,
-                    };
-                    return result;
-                } catch (error: unknown) {
-                    console.error(`Error analyzing exercise ${exercise.name}:`, error);
-                    return {
-                        name: exercise.name,
-                        weight: 0,
-                        color: "green" as const,
-                        trend: Array(15).fill(0),
-                        hasStall: false,
-                        sessions: [],
-                    };
-                }
-            }),
-        );
-
-        return results;
-    } catch (error: unknown) {
-        console.error("Error fetching exercise stalls analysis", error);
-        return getDefaultExerciseStalls();
-    }
-};
-
-/**
- * RETURNS DEFAULT EXERCISE STALLS DATA WHEN NO DATA IS AVAILABLE
- * @returns Default exercise stalls array
- */
-const getDefaultExerciseStalls = (): Array<{
-    name: string;
-    weight: number;
-    color: "green" | "yellow" | "red";
-    trend: number[];
-    hasStall: boolean;
-    sessions: Array<{
-        workoutId: string;
-        date: string;
-        totalVolume: number;
-        maxWeight: number;
-    }>;
-}> => {
-    return [
-        {
-            name: "Bench Press (Barbell)",
-            weight: 0,
-            color: "green",
-            trend: Array(15).fill(0),
-            hasStall: false,
-            sessions: [],
-        },
-        {
-            name: "Squat (Barbell)",
-            weight: 0,
-            color: "green",
-            trend: Array(15).fill(0),
-            hasStall: false,
-            sessions: [],
-        },
-        {
-            name: "Deadlift (Barbell)",
-            weight: 0,
-            color: "green",
-            trend: Array(15).fill(0),
-            hasStall: false,
-            sessions: [],
-        },
-    ];
+export const getHevyExerciseHistory = async (
+    apiKey: string,
+    exerciseTemplateId: string,
+    start_date?: string,
+    end_date?: string,
+): Promise<THevyExerciseHistory> => {
+    const params = new URLSearchParams();
+    if (start_date) params.set("start_date", start_date);
+    if (end_date) params.set("end_date", end_date);
+    const query = params.toString();
+    const url = `https://api.hevyapp.com/v1/exercise_history/${encodeURIComponent(exerciseTemplateId)}${query ? `?${query}` : ""}`;
+    const response = await defaultFetch<THevyExerciseHistory>(url, apiKey);
+    return response ?? { exercise_history: [] };
 };
 
 /**
@@ -912,33 +652,33 @@ export const getLastKnownHevyWorkoutCount = async (user: User): Promise<number |
  * @param count - The workout count to store
  * @returns True if successful, false otherwise
  */
-export const updateLastKnownHevyWorkoutCount = async (user: User, count: number): Promise<boolean> => {
-    try {
-        if (user) {
-            // Use upsert to insert or update
-            const { error } = await supabase
-                .from('hevy_workouts_count')
-                .upsert({
-                    user_id: user.id,
-                    last_known_workout_count: count,
-                    updated_at: new Date().toISOString(),
-                }, {
-                    onConflict: 'user_id',
-                });
+// export const updateLastKnownHevyWorkoutCount = async (user: User, count: number): Promise<boolean> => {
+//     try {
+//         if (user) {
+//             // Use upsert to insert or update
+//             const { error } = await supabase
+//                 .from('hevy_workouts_count')
+//                 .upsert({
+//                     user_id: user.id,
+//                     last_known_workout_count: count,
+//                     updated_at: new Date().toISOString(),
+//                 }, {
+//                     onConflict: 'user_id',
+//                 });
 
-            if (error) {
-                console.error("Error updating last known Hevy workout count", error);
-                return false;
-            }
+//             if (error) {
+//                 console.error("Error updating last known Hevy workout count", error);
+//                 return false;
+//             }
 
-            return true;
-        }
-        return false;
-    } catch (error: unknown) {
-        console.error("Error updating last known Hevy workout count", error);
-        return false;
-    }
-};
+//             return true;
+//         }
+//         return false;
+//     } catch (error: unknown) {
+//         console.error("Error updating last known Hevy workout count", error);
+//         return false;
+//     }
+// };
 
 /**
  * CALCULATES THE DIFFERENCE BETWEEN CURRENT AND LAST KNOWN HEVY WORKOUT COUNT
@@ -947,41 +687,41 @@ export const updateLastKnownHevyWorkoutCount = async (user: User, count: number)
  * @param user - The user
  * @returns The difference (current - last known), or null if error
  */
-export const getHevyWorkoutCountDiff = async (apiKey: string, user: User): Promise<{ diff: number; currentCount: number } | null> => {
-    try {
-        if (!apiKey || !user) {
-            return null;
-        }
+// export const getHevyWorkoutCountDiff = async (apiKey: string, user: User): Promise<{ diff: number; currentCount: number } | null> => {
+//     try {
+//         if (!apiKey || !user) {
+//             return null;
+//         }
 
-        // Get current count from Hevy API
-        const currentCount = await getHevyWorkoutCount(apiKey);
-        if (currentCount === undefined || currentCount === null) {
-            return null;
-        }
+//         // Get current count from Hevy API
+//         const currentCount = await getHevyWorkoutCount(apiKey);
+//         if (currentCount === undefined || currentCount === null) {
+//             return null;
+//         }
 
-        // Get last known count from database
-        const lastKnownCount = await getLastKnownHevyWorkoutCount(user);
+//         // Get last known count from database
+//         const lastKnownCount = await getLastKnownHevyWorkoutCount(user);
 
-        // If no last known count exists, set current count as baseline and return 0 diff
-        if (lastKnownCount === null) {
-            await updateLastKnownHevyWorkoutCount(user, currentCount);
-            return { diff: 0, currentCount };
-        }
+//         // If no last known count exists, set current count as baseline and return 0 diff
+//         if (lastKnownCount === null) {
+//             await updateLastKnownHevyWorkoutCount(user, currentCount);
+//             return { diff: 0, currentCount };
+//         }
 
-        // Calculate difference
-        const diff = currentCount - lastKnownCount;
+//         // Calculate difference
+//         const diff = currentCount - lastKnownCount;
 
-        // Update database with current count (only if count increased or stayed same)
-        if (diff >= 0) {
-            await updateLastKnownHevyWorkoutCount(user, currentCount);
-        }
+//         // Update database with current count (only if count increased or stayed same)
+//         if (diff >= 0) {
+//             await updateLastKnownHevyWorkoutCount(user, currentCount);
+//         }
 
-        return { diff, currentCount };
-    } catch (error: unknown) {
-        console.error("Error calculating Hevy workout count diff", error);
-        return null;
-    }
-};
+//         return { diff, currentCount };
+//     } catch (error: unknown) {
+//         console.error("Error calculating Hevy workout count diff", error);
+//         return null;
+//     }
+// };
 
 
 
@@ -1199,3 +939,769 @@ export const postRoutineProgramToHevy = async (
         return { success: false, data: error };
     }
 };
+
+/**
+ * FETCHES RECENTLY COMPLETED WORKOUTS FROM THE HEVY API
+ * @param hevyApiKey - The Hevy API key
+ * @param pageSize - The number of workouts to fetch (default: 1)
+ * @returns The recently completed workouts
+ */
+export async function getRecentlyCompletedWorkouts(hevyApiKey: string, pageSize: number = 1): Promise<THevyWorkoutsResponse> {
+    // only can handle max 10 workouts completed in a day (probably fine)
+    const hevyApiUrlWorkouts = `https://api.hevyapp.com/v1/workouts?page=1&pageSize=${pageSize}`;
+    const hevyResponseWorkouts = await fetch(hevyApiUrlWorkouts, {
+        method: "GET",
+        headers: {
+            "accept": "application/json",
+            "api-key": hevyApiKey,
+        },
+    });
+
+
+    if (!hevyResponseWorkouts.ok) {
+        console.error(`Hevy API error: ${hevyResponseWorkouts.status} ${hevyResponseWorkouts.statusText}`);
+    }
+
+    const recentlyCompletedWorkouts: THevyWorkoutsResponse = await hevyResponseWorkouts.json();
+
+    return recentlyCompletedWorkouts;
+
+}
+
+
+/**
+ * FETCHES THE ROUTINE FROM THE HEVY API
+ * @param hevyApiKey - The Hevy API key
+ * @param routine_id - The routine ID to fetch the routine for
+ * @returns The routine
+ */
+export async function getRoutine(hevyApiKey: string, routine_id: string): Promise<TRoutineResponse> {
+    const routineResponse = await fetch(`https://api.hevyapp.com/v1/routines/${routine_id}`, {
+        method: "GET",
+        headers: {
+            "accept": "application/json",
+            "api-key": hevyApiKey,
+        },
+    });
+
+    if (!routineResponse.ok) {
+        console.error(`Hevy API error: ${routineResponse.status} ${routineResponse.statusText}`);
+    }
+
+    const routine: TRoutineResponse = await routineResponse.json();
+
+    return routine;
+
+}
+
+
+/**
+ * FETCHES THE ROUTINE FOLDER FROM THE HEVY API
+ * @param hevyApiKey - The Hevy API key
+ * @param folder_id - The folder ID to fetch the routine folder for
+ * @returns The routine folder
+ */
+export async function getRoutineFolder(hevyApiKey: string, folder_id: number | null): Promise<TRoutineFolderResponse> {
+    if (!folder_id) {
+        console.error(`No folder_id found`);
+    }
+
+    const folderResponse = await fetch(`https://api.hevyapp.com/v1/routine_folders/${folder_id}`, {
+        method: "GET",
+        headers: {
+            "accept": "application/json",
+            "api-key": hevyApiKey,
+        },
+    });
+
+    if (!folderResponse.ok) {
+        console.error(`Hevy API error: ${folderResponse.status} ${folderResponse.statusText}`);
+    }
+
+    const folder: TRoutineFolderResponse = await folderResponse.json();
+
+    return folder;
+
+}
+
+/**
+ * CALLS GET /v1/routines FOR ALL ROUTINES AND RETURNS ONLY THOSE WITH folder_id = folder_id
+ * Excludes the current routine if excludeRoutineId is provided
+ * @param hevyApiKey - The Hevy API key
+ * @param folder_id - The folder ID to filter routines by
+ * @param excludeRoutineId - Optional routine ID to exclude from results
+ * @returns Array of routines with id and title that match the folder_id (excluding the current routine if provided)
+ */
+export async function getRoutinesInFolder(hevyApiKey: string, folder_id: number): Promise<Array<{ id: string; title: string }>> {
+    const routines: Array<{ id: string; title: string }> = [];
+    let page = 1;
+    let hasMore = true;
+
+    // Fetch all routines page by page
+    while (hasMore) {
+        try {
+            const response = await defaultFetch<{
+                page: number;
+                page_count: number;
+                routines: Array<{ id: string; title: string; folder_id: number | null }>;
+            }>(`https://api.hevyapp.com/v1/routines?page=${page}&pageSize=10`, hevyApiKey);
+
+            if (!response || !response.routines) {
+                hasMore = false;
+                break;
+            }
+
+            // Filter routines by folder_id and exclude the current routine if provided
+            const filteredRoutines = response.routines
+                .filter(routine => routine.folder_id === folder_id)
+                .map(routine => ({ id: routine.id, title: routine.title }));
+
+            routines.push(...filteredRoutines);
+
+            // Check if there are more pages
+            hasMore = page < (response.page_count || 1);
+            page++;
+        } catch (error) {
+            console.error(`Error fetching routines page ${page}:`, error);
+            hasMore = false;
+        }
+    }
+
+    return routines;
+}
+
+/**
+ * FINDS A ROUTINE BY DAY NUMBER FROM AN ARRAY OF ROUTINES
+ * Matches routine title pattern like "1 - Day 1" or "1 - {day_title}"
+ * @param routines - Array of routines with id and title
+ * @param nthDay - The day number to find
+ * @returns The routine ID if found, null otherwise
+ */
+export function findRoutineByDay(
+    routines: Array<{ id: string; title: string }>,
+    nthDay: number,
+): string | null {
+    for (const routine of routines) {
+        // Match pattern like "1 - Day 1" or "1 - {day_title}"
+        const pattern = new RegExp(`^${nthDay}\\s*-\\s*(.+)$`);
+        const match = routine.title.match(pattern);
+
+        if (match) {
+          return routine.id;
+        }
+    }
+
+    return null;
+}
+
+
+export const sortWorkouts = (scheduleWorkouts: TScheduleWorkouts[]) => {
+    const workoutsByWeek = scheduleWorkouts.reduce<Record<number, TScheduleWorkouts[]>>((acc, workout) => {
+        const { nthWeek } = workout;
+        if (!acc[nthWeek]) {
+            acc[nthWeek] = [];
+        }
+        acc[nthWeek].push(workout);
+        return acc;
+    }, {});
+
+    const sortedWorkoutsByWeek: TScheduleWorkouts[][] = Object.keys(workoutsByWeek)
+        .sort((a, b) => Number(a) - Number(b))
+        .map(week =>
+            workoutsByWeek[Number(week)].sort((a, b) => a.nthDay - b.nthDay),
+    );
+
+    return sortedWorkoutsByWeek;
+};
+
+
+
+// export async function uploadNewWeek(hevyApiKey: string, program_id: string, week_number: number, programTitle: string): Promise<void> {
+//     const { data: scheduleWorkouts, error: scheduleWorkoutsError } = await supabase
+//         .from('schedule_workouts')
+//         .select(`
+//             nthDay,
+//             nthWeek,
+//             day_title,
+//             program_workout_exercises (
+//                 reps,
+//                 reps_max,
+//                 reps_range,
+//                 time_taken,
+//                 time_range,
+//                 amrap,
+//                 rpe,
+//                 rpe_range,
+//                 percent_rm,
+//                 weights,
+//                 hevy_exercise_templates (
+//                     id,
+//                     title,
+//                     type,
+//                     primary_muscle_group,
+//                     secondary_muscle_groups,
+//                     is_custom,
+//                     equipment,
+//                     normalized_title,
+//                     gif_id,
+//                     instructions
+//                 )
+//             )
+//         `)
+//         .eq('program_id', program_id)
+//         .order('nthWeek', { ascending: true })
+//         .order('nthDay', { ascending: true });
+
+//     if (scheduleWorkoutsError) {
+//         console.error('Failed to retrieve schedule workouts:', scheduleWorkoutsError.message);
+//         throw new HttpError(`Failed to retrieve schedule workouts: ${scheduleWorkoutsError.message}`, 500);
+//     }
+
+//     if (!scheduleWorkouts || scheduleWorkouts.length === 0) {
+//         throw new HttpError(`No schedule workouts found for program_id: ${program_id}, week_number: ${week_number}`, 404);
+//     }
+
+//     // Sort workouts by week and day
+//     const sortedWorkoutsByWeek = sortWorkouts(scheduleWorkouts);
+
+//     // Convert all workouts to Hevy routines
+//     const allHevyRoutines = await convertToHevyRoutine(sortedWorkoutsByWeek);
+
+//     // Filter for the specific week (folder_id is 0-indexed, week_number is 1-indexed)
+//     // So week_number 1 = folder_id 0, week_number 2 = folder_id 1, etc.
+//     const weekHevyRoutines = allHevyRoutines.filter((routine) => routine.folder_id === week_number - 1);
+
+//     if (weekHevyRoutines.length === 0) {
+//         throw new HttpError(`No routines found for week_number: ${week_number}`, 404);
+//     }
+
+//     // 6. Upload to Hevy
+//     await postRoutineProgramToHevyOneFolder(weekHevyRoutines, week_number, hevyApiKey, [{ id: program_id, title: programTitle }]);
+// }
+
+
+
+// PUT /v1/routines/{routineId}. Update an existing routine
+// https://api.hevyapp.com/docs/#/Routines/put_v1_routines__routineId_
+/**
+ * UPDATES AN EXISTING ROUTINE IN HEVY
+ * @param routineId - The routine ID to update
+ * @param updateRoutine - The routine data to update
+ * @param apiKey - The hevy api key
+ * @returns The updated routine
+ */
+// export const putRoutine = async (routineId: string, updateRoutine: THevyRoutineRequest, apiKey: string) => {
+//     const body: THevyRoutineRequestObject = {
+//         routine: updateRoutine,
+//     };
+
+//     const response = await defaultPut<THevyRoutineRequest, THevyRoutineRequestObject>(
+//         `https://api.hevyapp.com/v1/routines/${routineId}`,
+//         apiKey,
+//         body,
+//     );
+
+//     return response;
+// };
+
+/**
+ * APPENDS "  ✅" TO THE ROUTINE TITLE OF A COMPLETED ROUTINE
+ * @param routineId - The routine ID to update
+ * @param currentTitle - The current routine title
+ * @param apiKey - The hevy api key
+ * @param routine - The full routine object (needed to preserve other fields when updating)
+ * @returns The updated routine
+ */
+// export const appendCheckmarkToRoutineTitle = async (
+//     routineId: string,
+//     currentTitle: string,
+//     apiKey: string,
+//     routine: TRoutineResponse
+// ): Promise<void> => {
+//     // Check if the title already has the checkmark
+//     if (currentTitle.endsWith('  ✅')) {
+//         console.log(`Routine ${routineId} already has checkmark in title. Skipping update.`);
+//         return;
+//     }
+
+//     // Append the checkmark to the title
+//     const updatedTitle = `${currentTitle}  ✅`;
+
+//     // Prepare the update payload matching the API structure
+//     // Structure: { routine: { title, notes, exercises: [{ exercise_template_id, superset_id, rest_seconds, notes, sets: [{ type, weight_kg, reps, distance_meters, duration_seconds, custom_metric, rep_range? }] }] } }
+//     // Note: folder_id is NOT included in PUT request body per API documentation
+//     // Note: notes cannot be empty string - API requires non-empty value
+//     const routineNotes = (routine.routine as any).notes;
+//     const updatePayload: THevyRoutineRequest = {
+//         title: updatedTitle,
+//         notes: routineNotes && routineNotes.trim().length > 0 ? routineNotes : ' ',
+//         exercises: routine.routine.exercises.map((exercise) => ({
+//             exercise_template_id: exercise.exercise_template_id,
+//             superset_id: exercise.supersets_id,
+//             rest_seconds: Number(exercise.rest_seconds) || 90,
+//             notes: exercise.notes || '',
+//             sets: exercise.sets.map((set) => {
+//                 const setPayload: any = {
+//                     type: set.type || 'normal',
+//                     weight_kg: set.weight_kg,
+//                     reps: set.reps,
+//                     distance_meters: set.distance_meters,
+//                     duration_seconds: set.duration_seconds,
+//                     custom_metric: set.custom_metric,
+//                 };
+//                 // Include rep_range if it exists (API accepts it in request body even though not in type)
+//                 if (set.rep_range) {
+//                     setPayload.rep_range = set.rep_range;
+//                 }
+//                 return setPayload;
+//             }),
+//         })),
+//     };
+
+//     try {
+//         await putRoutine(routineId, updatePayload, apiKey);
+//         console.log(`Successfully appended checkmark to routine ${routineId} title: "${updatedTitle}"`);
+//     } catch (error) {
+//         console.error(`Failed to update routine ${routineId} title:`, error);
+//         throw error;
+//     }
+// };
+
+
+
+
+/**
+ * Type for tracking which exercises progressed and their types
+ */
+export type ProgressedExercise = {
+    exercise_template_id: string;
+    exercise_name: string;
+    exerciseType: string;
+    completed_value: number; // The value the user completed (e.g., 12 reps)
+    completed_unit: string; // The unit (reps, kg, meters, seconds, etc.)
+    progression_amount: number; // The amount being added (e.g., +2, +2.5)
+    progression_unit: string; // The unit for progression (reps, kg, meters, seconds, etc.)
+};
+
+/**
+ * GETS PROGRESSION METADATA FOR AN EXERCISE TYPE
+ * @param exerciseType - The type of exercise (weight_reps, distance_duration, etc.)
+ * @returns Object with progression amount, unit, and field to update
+ */
+// const getProgressionMetadata = (exerciseType: string): {
+//     progressionAmount: number;
+//     progressionUnit: string;
+//     completedUnit: string;
+//     fieldToUpdate: 'weight_kg' | 'reps' | 'distance_meters' | 'duration_seconds' | 'custom_metric' | null;
+// } => {
+//     switch (exerciseType) {
+//         case 'weight_reps':
+//             return { progressionAmount: 2.5, progressionUnit: 'kg', completedUnit: 'reps', fieldToUpdate: 'weight_kg' };
+//         case 'distance_duration':
+//             return { progressionAmount: 0.25, progressionUnit: 'km', completedUnit: 'km', fieldToUpdate: 'distance_meters' };
+//         case 'reps_only':
+//             return { progressionAmount: 2, progressionUnit: 'reps', completedUnit: 'reps', fieldToUpdate: 'reps' };
+//         case 'duration':
+//             return { progressionAmount: 30, progressionUnit: 'seconds', completedUnit: 'seconds', fieldToUpdate: 'duration_seconds' };
+//         case 'bodyweight_weighted':
+//             return { progressionAmount: 2.5, progressionUnit: 'kg', completedUnit: 'reps', fieldToUpdate: 'weight_kg' };
+//         case 'bodyweight_assisted':
+//             return { progressionAmount: -2.5, progressionUnit: 'kg', completedUnit: 'reps', fieldToUpdate: 'weight_kg' };
+//         case 'short_distance_weight':
+//             return { progressionAmount: 2.5, progressionUnit: 'kg', completedUnit: 'reps', fieldToUpdate: 'weight_kg' };
+//         case 'floors_duration':
+//             return { progressionAmount: 100, progressionUnit: 'floors', completedUnit: 'floors', fieldToUpdate: 'custom_metric' };
+//         case 'steps_duration':
+//             return { progressionAmount: 100, progressionUnit: 'steps', completedUnit: 'steps', fieldToUpdate: 'custom_metric' };
+//         default:
+//             return { progressionAmount: 0, progressionUnit: '', completedUnit: '', fieldToUpdate: null };
+//     }
+// };
+
+/**
+ * APPLIES DOUBLE PROGRESSION TO A SINGLE SET BASED ON EXERCISE TYPE
+ * @param exerciseType - The type of exercise (weight_reps, distance_duration, etc.)
+ * @param routineSet - The routine set to apply progression to (modified in place)
+ * @param exerciseTemplateId - The exercise template ID (for logging)
+ */
+// const applyProgressionToSet = (
+//     exerciseType: string,
+//     routineSet: TRoutineSet,
+//     exerciseTemplateId: string
+// ): void => {
+//     let progressionAmount = 0;
+//     let currentValue = 0;
+//     let useFloor = false;
+//     let conversionFactor = 1;
+//     let fieldToUpdate: 'weight_kg' | 'reps' | 'distance_meters' | 'duration_seconds' | 'custom_metric' | null = null;
+
+//     switch (exerciseType) {
+//         case 'weight_reps':
+//             progressionAmount = 2.5; // +2.5kg
+//             currentValue = routineSet.weight_kg ?? 0;
+//             fieldToUpdate = 'weight_kg';
+//             break;
+
+//         case 'distance_duration':
+//             progressionAmount = 0.25; // +0.25km = +250m
+//             currentValue = routineSet.distance_meters ?? 0;
+//             conversionFactor = 1000; // Convert km to meters
+//             fieldToUpdate = 'distance_meters';
+//             break;
+
+//         case 'reps_only':
+//             progressionAmount = 2; // +2 reps
+//             currentValue = routineSet.reps ?? 0;
+//             useFloor = true; // Use floor for integer values
+//             fieldToUpdate = 'reps';
+//             break;
+
+//         case 'duration':
+//             progressionAmount = 30; // +30 seconds
+//             currentValue = routineSet.duration_seconds ?? 0;
+//             fieldToUpdate = 'duration_seconds';
+//             break;
+
+//         case 'bodyweight_weighted':
+//             progressionAmount = 2.5; // +2.5kg
+//             currentValue = routineSet.weight_kg ?? 0;
+//             fieldToUpdate = 'weight_kg';
+//             break;
+
+//         case 'bodyweight_assisted':
+//             progressionAmount = -2.5; // -2.5kg (reducing assistance)
+//             currentValue = routineSet.weight_kg ?? 0;
+//             let newValue = currentValue + progressionAmount;
+
+//             // Gut check: ensure we don't go negative or make too large a jump
+//             if (newValue < 0) {
+//                 newValue = 0;
+//             } else if (currentValue > 0 && newValue < currentValue * 0.8) {
+//                 // If reducing by more than 20%, limit the reduction
+//                 newValue = currentValue * 0.8;
+//             }
+//             routineSet.weight_kg = newValue;
+//             return; // Early return for special case
+
+//         case 'short_distance_weight':
+//             progressionAmount = 2.5; // +2.5kg
+//             currentValue = routineSet.weight_kg ?? 0;
+//             fieldToUpdate = 'weight_kg';
+//             break;
+
+//         case 'floors_duration':
+//             progressionAmount = 100; // +100 floors
+//             currentValue = routineSet.custom_metric ?? 0;
+//             fieldToUpdate = 'custom_metric';
+//             break;
+
+//         case 'steps_duration':
+//             progressionAmount = 100; // +100 steps
+//             currentValue = routineSet.custom_metric ?? 0;
+//             fieldToUpdate = 'custom_metric';
+//             break;
+
+//         default:
+//             console.warn(`Unknown exercise type: ${exerciseType} for exercise ${exerciseTemplateId}`);
+//             return;
+//     }
+
+//     // Apply gut check once after switch statement
+//     const adjustedProgression = progressionAmount * conversionFactor;
+//     let newValue = currentValue + adjustedProgression;
+
+//     // Gut check: if (current_value + jump) > current_value * 1.2, half the jump
+//     if (newValue > currentValue * 1.2) {
+//         const halvedProgression = useFloor
+//             ? Math.floor(progressionAmount / 2)
+//             : progressionAmount / 2;
+//         newValue = currentValue + (halvedProgression * conversionFactor);
+//     }
+
+//     // Update the appropriate field
+//     if (fieldToUpdate) {
+//         (routineSet as any)[fieldToUpdate] = newValue;
+//     }
+// };
+
+/**
+ * APPLIES DOUBLE PROGRESSION FOR A COMPLETED EXERCISE
+ * Applies progressions to incomplete routines in the current week (or next week if current week is complete)
+ * @param workout - The completed workout
+ * @param routine - The routine of the completed workout
+ * @param program_id - The program ID
+ * @param programHistoryId - The program history ID
+ * @param user_id - The user ID
+ * @param weekNumber - The week number
+ * @param nthDay - The day number
+ * @param hevyApiKey - The hevy api key
+ *
+ * @returns An array of ProgressedExercise objects
+ */
+// export const doubleProgression = async (
+//     workout: THevyWorkouts,
+//     routine: TRoutineResponse,
+//     program_id: string,
+//     programHistoryId: string,
+//     user_id: string,
+//     weekNumber: number,
+//     nthDay: number,
+//     hevyApiKey: string,
+//     hevyExercises: THevyExerciseTemplate[],
+//     folder_id: number | null): Promise<ProgressedExercise[]> => {
+
+//     // An Exercise type can be one of the following options:
+//     // 1. weight_reps (e.g. Squat (Barbell)),
+//     // 2. distance_duration (Sled Push),
+//     // 3. reps_only (e.g. Kipping Pullup),
+//     // 4. duration (e.g. Boxing) ,
+//     // 5. bodyweight_weighted (e.g. Decline Crunch (Weighted)),
+//     // 6. bodyweight_assisted (e.g. Pull Up (Band)),
+//     // 7. short_distance_weight (e.g. Walking lunge dumbbell),
+//     // 8. floors_duration (Stair Machine Floors),
+//     // 9. steps_duration (Stair Machine Steps)
+//     // For each option it will have a different progression increement amount.
+//     // 1. weight_reps: +2.5kg
+//     // 2. distance_duration: +0.25km
+//     // 3. reps_only: +2 reps
+//     // 4. duration: +30 s
+//     // 5. bodyweight_weighted: +2.5kg
+//     // 6. bodyweight_assisted: -2.5kg
+//     // 7. short_distance_weight: +2.5kg
+//     // 8. floors_duration: +100 floors
+//     // 9. steps_duration: +100 steps
+
+//     // We also want to gut check that we're not making a massive leap in difficulty
+//     // for example we can apply a rule such as if (current_weight + jump) > current_weight * 1.2 then we half the jump amount.
+//     // This prevents the algo from making a massive leap in difficulty. E.g. adding 2.5kg to a 10kg exercise would be too much of a jump.
+
+//     // Track which exercises progressed and their types
+//     const progressedExercises: ProgressedExercise[] = [];
+
+//     for (const exercise of workout.exercises) {
+//         // Find the matching exercise in the routine by exercise_template_id
+//         const routineExercise = routine.routine.exercises.find(
+//             (rEx) => rEx.exercise_template_id === exercise.exercise_template_id
+//         );
+
+//         if (!routineExercise) continue;
+
+//         // Fetch exercise template to get the exercise type
+//         const exerciseTemplate = hevyExercises.find(ex => ex.id === exercise.exercise_template_id);
+//         if (!exerciseTemplate) {
+//             console.warn(`Could not fetch exercise template for ${exercise.exercise_template_id}`);
+//             continue;
+//         }
+
+//         const exerciseType = exerciseTemplate.type;
+//         const progressionMetadata = getProgressionMetadata(exerciseType);
+
+//         // Compare sets: check if all workout sets have reps >= routine target reps
+//         // Also capture what the user completed
+//         let allSetsProgressed = true;
+//         let completedValue: number | null = null;
+//         let completedUnit = progressionMetadata.completedUnit;
+
+//         // For most exercises, we check if reps >= target reps
+//         // For distance_duration, we check if duration >= target duration
+//         // For duration, we check if duration >= target duration
+//         if (exerciseType === 'distance_duration') {
+//             // For distance exercises, check duration and capture distance
+//             allSetsProgressed = exercise.sets.every((workoutSet, index) => {
+//                 const routineSet = routineExercise.sets[index];
+//                 if (!routineSet) return false;
+
+//                 const routineTargetDuration = routineSet.duration_seconds ?? 0;
+//                 const workoutDuration = workoutSet.duration_seconds ?? 0;
+
+//                 // Capture the distance from the first set
+//                 if (index === 0 && workoutSet.distance_meters !== null && workoutSet.distance_meters !== undefined) {
+//                     completedValue = workoutSet.distance_meters / 1000; // Convert to km
+//                 }
+
+//                 return workoutDuration >= routineTargetDuration;
+//             });
+//         } else if (exerciseType === 'duration') {
+//             // For duration exercises, capture the target duration
+//             allSetsProgressed = exercise.sets.every((workoutSet, index) => {
+//                 const routineSet = routineExercise.sets[index];
+//                 if (!routineSet) return false;
+
+//                 const routineTargetDuration = routineSet.duration_seconds ?? 0;
+//                 const workoutDuration = workoutSet.duration_seconds ?? 0;
+
+//                 // Capture the target duration from the first set
+//                 if (index === 0) {
+//                     completedValue = routineTargetDuration;
+//                 }
+
+//                 return workoutDuration >= routineTargetDuration;
+//             });
+//         } else {
+//             // For reps-based exercises (weight_reps, reps_only, etc.), check reps and capture target reps
+//             allSetsProgressed = exercise.sets.every((workoutSet, index) => {
+//                 const routineSet = routineExercise.sets[index];
+//                 if (!routineSet) return false;
+
+//                 // Get target reps from routine (rep_range end, or default to 12 for 8-12 range if not set)
+//                 const routineTargetReps = routineSet.rep_range?.end ?? 12;
+//                 const workoutReps = workoutSet.reps ?? 0;
+
+//                 // Capture the target reps from the first set (what they needed to complete)
+//                 if (index === 0) {
+//                     completedValue = routineTargetReps;
+//                     completedUnit = 'reps';
+//                 }
+
+//                 return workoutReps >= routineTargetReps;
+//             });
+//         }
+
+//         if (allSetsProgressed && completedValue !== null) {
+
+//             progressedExercises.push({
+//                 exercise_template_id: exercise.exercise_template_id,
+//                 exercise_name: exerciseTemplate.title,
+//                 exerciseType,
+//                 completed_value: completedValue,
+//                 completed_unit: completedUnit,
+//                 progression_amount: progressionMetadata.progressionAmount,
+//                 progression_unit: progressionMetadata.progressionUnit
+//             });
+
+//             console.log(`Progression detected for exercise ${exercise.exercise_template_id} ${exercise.title} (${exerciseType})`);
+//         }
+//     }
+
+//     if (progressedExercises.length === 0) {
+//         console.log('No progressions detected, skipping update');
+//         return progressedExercises;
+//     }
+//     if (folder_id === null) {
+//         console.warn('No folder_id provided, cannot apply progressions');
+//         return progressedExercises;
+//     }
+
+//     // Get incomplete days for the current week
+//     const incompleteDays = await getIncompleteDaysForWeek(user_id, programHistoryId, weekNumber, program_id);
+
+//     if (incompleteDays.length === 0) {
+//         console.log(`No incomplete days found for week ${weekNumber}, skipping progression updates`);
+//         return progressedExercises;
+//     }
+
+//     // Get all routines in the current week's folder
+//     const routinesInFolder = await getRoutinesInFolder(hevyApiKey, folder_id);
+
+//     if (routinesInFolder.length === 0) {
+//         console.log(`No routines found in folder ${folder_id} for week ${weekNumber}`);
+//         return progressedExercises;
+//     }
+
+//     // For each incomplete day, find and update the routine
+//     for (const incompleteDay of incompleteDays) {
+//         const routineId = findRoutineByDay(routinesInFolder, incompleteDay.nthDay);
+
+//         if (!routineId) {
+//             console.warn(`Could not find routine for day ${incompleteDay.nthDay} in week ${weekNumber}`);
+//             continue;
+//         }
+
+//         try {
+//             // Fetch the full routine
+//             const targetRoutine = await getRoutine(hevyApiKey, routineId);
+
+//             // Track if any progressions were applied to this routine
+//             let routineUpdated = false;
+
+//             // Create a copy of the routine exercises to modify
+//             const updatedExercises = targetRoutine.routine.exercises.map(exercise => {
+//                 // Check if this exercise matches any progressed exercise
+//                 const progressedExercise = progressedExercises.find(
+//                     pe => pe.exercise_template_id === exercise.exercise_template_id
+//                 );
+
+//                 if (!progressedExercise) {
+//                     // No progression for this exercise, return as-is
+//                     return exercise;
+//                 }
+
+//                 // Apply progression to matching exercise
+//                 routineUpdated = true;
+//                 const updatedSets = exercise.sets.map((set) => {
+//                     // Create a copy of the set and apply progression
+//                     const updatedSet: TRoutineSet = {
+//                         ...set,
+//                         rep_range: set.rep_range ? { ...set.rep_range } : null
+//                     };
+
+//                     // Apply progression based on exercise type
+//                     applyProgressionToSet(progressedExercise.exerciseType, updatedSet, exercise.exercise_template_id);
+
+//                     return updatedSet;
+//                 });
+
+//                 return {
+//                     ...exercise,
+//                     sets: updatedSets
+//                 };
+//             });
+
+//             // Only update if at least one exercise was progressed
+//             if (routineUpdated) {
+//                 const routineNotes = (targetRoutine.routine as any).notes;
+//                 const updatePayload: THevyRoutineRequest = {
+//                     title: targetRoutine.routine.title,
+//                     notes: routineNotes && routineNotes.trim().length > 0 ? routineNotes : ' ',
+//                     exercises: updatedExercises.map((exercise) => ({
+//                         exercise_template_id: exercise.exercise_template_id,
+//                         superset_id: exercise.supersets_id,
+//                         rest_seconds: Number(exercise.rest_seconds) || 90,
+//                         notes: exercise.notes || ' ',
+//                         sets: exercise.sets.map((set) => {
+//                             const setPayload: any = {
+//                                 type: set.type || 'normal',
+//                                 weight_kg: set.weight_kg,
+//                                 reps: set.reps,
+//                                 distance_meters: set.distance_meters,
+//                                 duration_seconds: set.duration_seconds,
+//                                 custom_metric: set.custom_metric,
+//                             };
+//                             // Include rep_range if it exists
+//                             if (set.rep_range) {
+//                                 setPayload.rep_range = set.rep_range;
+//                             }
+//                             return setPayload;
+//                         }),
+//                     })),
+//                 };
+
+//                 // Log request details before making the PUT request
+//                 console.log(`[putRoutine] Preparing to update routine:`, {
+//                     routineId,
+//                     url: `https://api.hevyapp.com/v1/routines/${routineId}`,
+//                     payload: JSON.stringify(updatePayload, null, 2),
+//                     payloadSize: JSON.stringify(updatePayload).length,
+//                     exercisesCount: updatePayload.exercises?.length || 0,
+//                     day: incompleteDay.nthDay,
+//                     week: weekNumber,
+//                     apiKeyPrefix: hevyApiKey ? `${hevyApiKey.substring(0, 8)}...` : 'missing'
+//                 });
+
+//                 await putRoutine(routineId, updatePayload, hevyApiKey);
+//                 console.log(`Successfully updated routine ${routineId} (day ${incompleteDay.nthDay}, week ${weekNumber}) with progressions`);
+//             }
+//         } catch (error) {
+//             console.error(`[putRoutine] Failed to update routine for day ${incompleteDay.nthDay} in week ${weekNumber}:`, {
+//                 error: error instanceof Error ? error.message : String(error),
+//                 errorStack: error instanceof Error ? error.stack : undefined,
+//                 routineId,
+//                 day: incompleteDay.nthDay,
+//                 week: weekNumber
+//             });
+//             // Continue with other days even if one fails
+//         }
+//     }
+
+//     return progressedExercises;
+// };

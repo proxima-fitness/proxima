@@ -6,6 +6,7 @@ import { AlertTriangle, ChevronDown, ChevronUp, ArrowRight, PlusIcon, Crown } fr
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import Link from "next/link";
 
@@ -32,6 +33,8 @@ export interface IExercise {
         date: string;
         totalVolume: number;
         maxWeight: number;
+        /** Total reps in the workout (for bodyweight display when totalVolume is 0). */
+        totalReps?: number;
     }>;
 }
 
@@ -40,6 +43,10 @@ interface IProps {
     onExploreFixes?: (exerciseName: string) => void;
     onViewMore?: () => void;
     viewMoreHref?: string;
+    /** When false, the "View more exercises" button is hidden (e.g. when all exercises are already shown). Default true. */
+    showViewMore?: boolean;
+    /** When true, cards show exercise names but skeleton placeholders for weight, trend, and session data (e.g. while exercise history is loading). */
+    dataLoading?: boolean;
 }
 
 const MiniTrendGraph: React.FC<{ trend: number[]; color: string }> = ({ trend, color }) => {
@@ -71,7 +78,7 @@ const MiniTrendGraph: React.FC<{ trend: number[]; color: string }> = ({ trend, c
 };
 
 export const ExerciseStalls: React.FC<IProps> = (props) => {
-    const { exercises, onExploreFixes, onViewMore, viewMoreHref } = props;
+    const { exercises, onExploreFixes, onViewMore, viewMoreHref, showViewMore = true, dataLoading = false } = props;
     const isInLbs = true;
     const isLg = useMediaQuery("(min-width: 1024px)");
     const isSm = useMediaQuery("(min-width: 640px)");
@@ -119,7 +126,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
 
     const formatWeight = (weightInLbs: number): string => {
         if (isInLbs) {
-            return `${weightInLbs}`;
+            return Number(weightInLbs).toFixed(2);
         }
         return (weightInLbs * 0.453592).toFixed(2);
     };
@@ -141,11 +148,11 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                     const rowIndex = Math.floor(index / gridColumns);
                     const colorValue = exercise.weight > 0 ? getColorValue(exercise.color) : "var(--muted-foreground, #999)";
                     const isExpanded = expandedRow === rowIndex;
-                    const hasSessions = exercise.sessions && exercise.sessions.length > 0;
+                    const hasSessions = !dataLoading && exercise.sessions && exercise.sessions.length > 0;
                     const showBottomSpacing = (exercise.hasStall && exercise.weight > 0) || isExpanded;
 
                     return (
-                        <Card key={index} className="w-full box-border dark:bg-blueGray dark:border-0">
+                        <Card key={exercise.name} className="w-full box-border dark:bg-blueGray dark:border-0">
                             <CardContent className="p-4 flex flex-col">
                                 {/* Top section: Exercise name, weight, and trend line */}
                                 <div
@@ -160,13 +167,18 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                                     <div className="flex items-center gap-3 flex-1 min-w-0">
                                         <div
                                             className="w-3 h-3 rounded-full shrink-0"
-                                            style={{ backgroundColor: colorValue }}
+                                            style={{ backgroundColor: dataLoading ? "var(--muted-foreground, #999)" : colorValue }}
                                         />
                                         <div className="flex-1 min-w-0 overflow-hidden">
                                             <div className="text-base font-bold mb-1 overflow-hidden text-ellipsis whitespace-nowrap">
                                                 {exercise.name}
                                             </div>
-                                            {exercise.weight > 0 ? (
+                                            {dataLoading ? (
+                                                <div className="flex items-baseline gap-1">
+                                                    <Skeleton className="h-5 w-14 rounded-full bg-muted-foreground/15" />
+                                                    <Skeleton className="h-3 w-6 rounded-full bg-muted-foreground/10" />
+                                                </div>
+                                            ) : exercise.weight > 0 ? (
                                                 <div className="text-lg font-bold" style={{ color: colorValue }}>
                                                     {formatWeight(exercise.weight)} {getWeightUnit()}
                                                 </div>
@@ -178,7 +190,19 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <MiniTrendGraph trend={exercise.trend} color={colorValue} />
+                                        {dataLoading ? (
+                                            <div className="flex items-end gap-0.5 h-[30px] w-[60px]" aria-hidden>
+                                                {[0.4, 0.6, 0.35, 0.75, 0.5, 0.65, 0.45, 0.8, 0.55, 0.7].map((h, i) => (
+                                                    <Skeleton
+                                                        key={i}
+                                                        className="flex-1 min-w-[3px] rounded-t bg-muted-foreground/15"
+                                                        style={{ height: `${Math.max(20, h * 100)}%` }}
+                                                    />
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <MiniTrendGraph trend={exercise.trend} color={colorValue} />
+                                        )}
                                         {hasSessions && (
                                             <span className="text-muted-foreground">
                                                 {isExpanded ? <ChevronUp className="size-5" /> : <ChevronDown className="size-5" />}
@@ -188,7 +212,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                                 </div>
 
                                 {/* Expanded session history */}
-                                {isExpanded && hasSessions && (
+                                {isExpanded && hasSessions && !dataLoading && (
                                     <>
                                         <Separator className="my-3" />
                                         <div className="pt-0 pb-3 w-full">
@@ -212,7 +236,11 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                                                                     {BLIND_SPOT_STRINGS.Volume}
                                                                 </div>
                                                                 <div className="text-sm font-bold text-foreground">
-                                                                    {formatWeight(session.totalVolume)} {getWeightUnit()}
+                                                                    {session.totalVolume < 0.01
+                                                                        ? (session.totalReps ?? 0) > 0
+                                                                            ? `${session.totalReps} reps x BW`
+                                                                            : "BW"
+                                                                        : `${formatWeight(session.totalVolume)} ${getWeightUnit()}`}
                                                                 </div>
                                                             </div>
                                                             <div className="flex flex-col items-end gap-0.5">
@@ -220,7 +248,9 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                                                                     {BLIND_SPOT_STRINGS.MaxWeight}
                                                                 </div>
                                                                 <div className="text-sm font-bold" style={{ color: colorValue }}>
-                                                                    {formatWeight(session.maxWeight)} {getWeightUnit()}
+                                                                    {session.maxWeight < 0.01
+                                                                        ? `BW ${getWeightUnit()}`
+                                                                        : `${formatWeight(session.maxWeight)} ${getWeightUnit()}`}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -261,25 +291,27 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                 })}
             </div>
 
-            <div className="w-full pt-4 max-w-full box-border overflow-hidden flex justify-center">
-                {viewMoreHref ? (
-                    <Button size="lg" asChild className="mt-2 w-[220px] bg-darkGray text-white hover:text-black hover:bg-lightGold/90">
-                        <Link href={viewMoreHref}>
+            {showViewMore && (
+                <div className="w-full pt-4 max-w-full box-border overflow-hidden flex justify-center">
+                    {viewMoreHref ? (
+                        <Button size="lg" asChild className="mt-2 w-[220px] bg-darkGray text-white hover:text-black hover:bg-lightGold/90">
+                            <Link href={viewMoreHref}>
+                                {BLIND_SPOT_STRINGS.ViewMoreExercises}
+                                <Crown className="size-4 ml-1" />
+                            </Link>
+                        </Button>
+                    ) : (
+                        <Button
+                            size="lg"
+                            onClick={handleViewMore}
+                            className="mt-2 w-[220px] bg-darkGray text-white hover:bg-lightSecondary/90"
+                        >
                             {BLIND_SPOT_STRINGS.ViewMoreExercises}
-                            <Crown className="size-4 ml-1" />
-                        </Link>
-                    </Button>
-                ) : (
-                    <Button
-                        size="lg"
-                        onClick={handleViewMore}
-                        className="mt-2 w-[220px] bg-darkGray text-white hover:bg-lightSecondary/90"
-                    >
-                        {BLIND_SPOT_STRINGS.ViewMoreExercises}
-                        <PlusIcon className="size-4 ml-1" />
-                    </Button>
-                )}
-            </div>
+                            <PlusIcon className="size-4 ml-1" />
+                        </Button>
+                    )}
+                </div>
+            )}
         </div>
     );
 };

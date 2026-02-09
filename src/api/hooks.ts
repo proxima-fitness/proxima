@@ -4,7 +4,7 @@ import { getBlogById, getBlogs } from "./blog";
 import { getCommunityAiPrograms, getCommunityAiProgramsPaginated, getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID, getSubscribedPrograms } from "./programs";
 import { getOpUserId, getUserFullName, getUserMetaData, getUsersBatch } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
-import { getExerciseStallsAnalysis, getHevyApiKey, getHevyCustomExercises, getHevyExercises, getHevyPrograms, getHevyRoutines } from "../components/program-builder/api/hevy";
+import { getHevyApiKey, getHevyCustomExercises, getHevyExercises, getHevyPrograms, getHevyRoutines } from "../components/program-builder/api/hevy";
 import { getMyFeatureLimits } from "./featureLimits";
 import { User } from "@supabase/supabase-js";
 
@@ -79,12 +79,27 @@ export const useSubscribedPrograms = (user: User | undefined | null) => {
     });
 };
 
-// FETCHES EXERCISE STALLS ANALYSIS FOR BENCH PRESS, SQUAT, AND DEADLIFT
+async function fetchExerciseStallsData(): Promise<TExerciseStallResult[]> {
+    const res = await fetch("/api/hevy/exercise-history", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+        credentials: "same-origin",
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+}
+
+/** Fetches full exercise stall data (all exercises). Cached 1hr; no refetch on window focus to avoid Hevy 429. */
 export const useExerciseStallsAnalysis = (user: User | undefined | null) => {
     return useQuery({
-        queryKey: ["exercise-stalls-analysis", user?.id, "v3"],
-        queryFn: () => getExerciseStallsAnalysis(user!),
+        queryKey: ["exercise-stalls-analysis", user?.id, "v6"],
+        queryFn: fetchExerciseStallsData,
         enabled: !!user,
+        staleTime: 60 * 60 * 1000,
+        gcTime: 2 * 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
         networkMode: "online",
     });
 };
