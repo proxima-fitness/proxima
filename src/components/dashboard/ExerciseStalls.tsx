@@ -2,11 +2,12 @@
 
 import * as React from "react";
 import { useState, useMemo } from "react";
-import { AlertTriangle, ChevronDown, ChevronUp, ArrowRight, PlusIcon } from "lucide-react";
+import { AlertTriangle, ChevronDown, ChevronUp, ArrowRight, PlusIcon, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import Link from "next/link";
 
 const BLIND_SPOT_STRINGS = {
     BlindSpotAnalysis: "Blind Spot Analysis",
@@ -38,6 +39,7 @@ interface IProps {
     exercises: IExercise[];
     onExploreFixes?: (exerciseName: string) => void;
     onViewMore?: () => void;
+    viewMoreHref?: string;
 }
 
 const MiniTrendGraph: React.FC<{ trend: number[]; color: string }> = ({ trend, color }) => {
@@ -69,7 +71,7 @@ const MiniTrendGraph: React.FC<{ trend: number[]; color: string }> = ({ trend, c
 };
 
 export const ExerciseStalls: React.FC<IProps> = (props) => {
-    const { exercises, onExploreFixes, onViewMore } = props;
+    const { exercises, onExploreFixes, onViewMore, viewMoreHref } = props;
     const isInLbs = true;
     const isLg = useMediaQuery("(min-width: 1024px)");
     const isSm = useMediaQuery("(min-width: 640px)");
@@ -260,14 +262,23 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
             </div>
 
             <div className="w-full pt-4 max-w-full box-border overflow-hidden flex justify-center">
-                <Button
-                    size="lg"
-                    onClick={handleViewMore}
-                    className="mt-2 w-[220px] bg-darkGray text-white hover:bg-lightSecondary/90"
-                >
-                    {BLIND_SPOT_STRINGS.ViewMoreExercises}
-                    <PlusIcon className="size-4 ml-1" />
-                </Button>
+                {viewMoreHref ? (
+                    <Button size="lg" asChild className="mt-2 w-[220px] bg-darkGray text-white hover:text-black hover:bg-lightGold/90">
+                        <Link href={viewMoreHref}>
+                            {BLIND_SPOT_STRINGS.ViewMoreExercises}
+                            <Crown className="size-4 ml-1" />
+                        </Link>
+                    </Button>
+                ) : (
+                    <Button
+                        size="lg"
+                        onClick={handleViewMore}
+                        className="mt-2 w-[220px] bg-darkGray text-white hover:bg-lightSecondary/90"
+                    >
+                        {BLIND_SPOT_STRINGS.ViewMoreExercises}
+                        <PlusIcon className="size-4 ml-1" />
+                    </Button>
+                )}
             </div>
         </div>
     );

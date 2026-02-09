@@ -1,7 +1,7 @@
 "use client";
 
 import { useUserContext } from "@/contexts/UserContext";
-import { useExerciseStallsAnalysis } from "@/api/hooks";
+import { useExerciseStallsAnalysis, useMyFeatureLimits } from "@/api/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExerciseStalls, type IExercise } from "./ExerciseStalls";
 
@@ -14,6 +14,8 @@ const DEFAULT_EXERCISES: IExercise[] = [
 export function BlindSpotAnalysisSection() {
     const { user } = useUserContext();
     const { data: exerciseStallsData, isLoading: isLoadingExerciseStalls } = useExerciseStallsAnalysis(user);
+    const { data: featureLimits } = useMyFeatureLimits(user);
+    const isPro = featureLimits?.has_active_subscription === true;
 
     const handlePaywallOpen = () => {};
 
@@ -54,6 +56,7 @@ export function BlindSpotAnalysisSection() {
                     exercises={exerciseStallsData ?? DEFAULT_EXERCISES}
                     onExploreFixes={() => {}}
                     onViewMore={handlePaywallOpen}
+                    viewMoreHref={!isPro ? "/pricing" : undefined}
                 />
             )}
         </section>
