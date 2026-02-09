@@ -121,6 +121,8 @@ export function BuildProgramClient() {
 
     // Track if initial search has been triggered for this component instance
     const initialSearchOccurred = useRef<boolean>(false);
+    const sharedProgramLoadAttemptedRef = useRef<boolean>(false);
+    const resumeLoadAttemptedRef = useRef<boolean>(false);
 
 
     const { messages, sendMessage, setMessages, status, stop, error } = useChat({
@@ -192,15 +194,15 @@ export function BuildProgramClient() {
 
 
 
-    // Initialize with search parameter if present
+    // Initialize with search parameter if present (delay until shared/resume load has completed so API receives program)
     useEffect(() => {
-        // Only send if we have a search value, haven't sent it yet in this instance, and sendMessage is available
-        if (search && search.trim().length > 0 && !initialSearchOccurred.current && sendMessageRef.current) {
-            initialSearchOccurred.current = true;
-            sendMessageRef.current({ text: search });
-            posthog.capture('sent_first_prompt_to_ai', { search: search, user: user?.id ?? "user_id_unknown" });
-        }
-    }, [search, user]);
+        if (!search?.trim() || initialSearchOccurred.current || !sendMessageRef.current) return;
+        if (shared === 'true' && shareId && hevyProgram.length === 0 && !sharedProgramLoadAttemptedRef.current) return;
+        if (resume === 'true' && hevyProgram.length === 0 && !resumeLoadAttemptedRef.current) return;
+        initialSearchOccurred.current = true;
+        sendMessageRef.current({ text: search });
+        posthog.capture('sent_first_prompt_to_ai', { search: search, user: user?.id ?? "user_id_unknown" });
+    }, [search, user, hevyProgram, shared, shareId, resume]);
 
     const handleSubmit = () => {
         if (!input.trim()) return
@@ -658,12 +660,15 @@ export function BuildProgramClient() {
         const emptyParam = searchParams.get('empty') ?? '';
 
         const fetchSharedProgram = async () => {
-            const sharedProgram = await getSharedProgram(Number(shareId));
-            if (sharedProgram) {
-                setHevyProgram(appendOrderToHevyRoutines(sharedProgram));
+            try {
+                const sharedProgram = await getSharedProgram(Number(shareId));
+                if (sharedProgram) {
+                    setHevyProgram(appendOrderToHevyRoutines(sharedProgram));
+                }
+            } finally {
+                sharedProgramLoadAttemptedRef.current = true;
             }
-        }
-
+        };
 
         if (edit === 'true') {
             setIsPreview(false);
@@ -676,6 +681,7 @@ export function BuildProgramClient() {
             if (program) {
                 setHevyProgram(appendOrderToHevyRoutines(JSON.parse(program)));
             }
+            resumeLoadAttemptedRef.current = true;
         }
 
         if (shared === 'true') {

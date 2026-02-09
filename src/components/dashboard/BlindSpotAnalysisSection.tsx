@@ -1,13 +1,22 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useUserContext } from "@/contexts/UserContext";
-import { useExerciseStallsAnalysis, useHevyExercises, useMyFeatureLimits } from "@/api/hooks";
+import { useExerciseStallsAnalysis, useHevyExercises, useMyFeatureLimits, useSubscribedPrograms } from "@/api/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from "@/components/ui/dialog";
 import { ExerciseStalls, type IExercise } from "./ExerciseStalls";
+import Link from "next/link";
 
 const PRO_PAGE_SIZE = 9;
 const FREE_LIMIT = 3;
@@ -46,16 +55,77 @@ function placeholderExercise(name: string): IExercise {
     };
 }
 
+const STALL_PROMPT = "I have stalled on this exercise can you modify my existing program to fix this plateau. Check my existing program first and then make changes you think would fix this plateau.";
+
+function formatSessionLine(
+    s: { date: string; totalVolume: number; maxWeight: number; totalReps?: number },
+): string {
+    const dateStr = (() => {
+        try {
+            return new Date(s.date).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+            });
+        } catch {
+            return s.date;
+        }
+    })();
+    if (s.totalVolume < 0.01 && (s.totalReps ?? 0) > 0) {
+        return `${dateStr}: ${s.totalReps} reps x BW`;
+    }
+    if (s.maxWeight < 0.01) {
+        return `${dateStr}: BW`;
+    }
+    return `${dateStr}: ${s.maxWeight.toFixed(1)} lbs max, ${s.totalVolume.toFixed(0)} lbs volume`;
+}
+
+function buildStallSearchString(exercise: IExercise): string {
+    const sessions = (exercise.sessions ?? []).slice(0, 15);
+    const historyLines = sessions.map(formatSessionLine);
+    return [
+        STALL_PROMPT,
+        `Recent history for ${exercise.name} (last 15 sessions):`,
+        ...historyLines,
+    ].join("\n");
+}
+
 export function BlindSpotAnalysisSection() {
+    const router = useRouter();
     const { user } = useUserContext();
     const { data: templates = [], isLoading: isLoadingTemplates } = useHevyExercises();
     const { data: exerciseStallsData, isLoading: isLoadingExerciseStalls } = useExerciseStallsAnalysis(user);
     const { data: featureLimits } = useMyFeatureLimits(user);
+    const { data: subscribedPrograms = [], isLoading: isLoadingPrograms } = useSubscribedPrograms(user);
     const isPro = featureLimits?.has_active_subscription === true;
     const allExercises = useMemo(() => exerciseStallsData ?? [], [exerciseStallsData]);
     const [visibleCount, setVisibleCount] = useState(PRO_PAGE_SIZE);
     const [sortBy, setSortBy] = useState<SortOption>("most_activity");
     const [hideNoData, setHideNoData] = useState(false);
+    const [exploreFixesDialogOpen, setExploreFixesDialogOpen] = useState(false);
+    const [exploreFixesExercise, setExploreFixesExercise] = useState<IExercise | null>(null);
+
+    const handleExploreFixes = useCallback((exercise: IExercise) => {
+        setExploreFixesExercise(exercise);
+        setExploreFixesDialogOpen(true);
+    }, []);
+
+    const handleSelectProgram = useCallback(
+        (program: { id: number }) => {
+            if (!exploreFixesExercise) return;
+            const search = buildStallSearchString(exploreFixesExercise);
+            const params = new URLSearchParams({
+                shareId: String(program.id),
+                shared: "true",
+                edit: "true",
+                search,
+            });
+            router.push(`/build-program?${params.toString()}`);
+            setExploreFixesDialogOpen(false);
+            setExploreFixesExercise(null);
+        },
+        [exploreFixesExercise, router],
+    );
 
     const filteredAndSorted = useMemo(() => {
         const filtered = hideNoData ? allExercises.filter(hasData) : allExercises;
@@ -137,10 +207,57 @@ export function BlindSpotAnalysisSection() {
                     </label>
                 </div>
             )}
+            <Dialog open={exploreFixesDialogOpen} onOpenChange={setExploreFixesDialogOpen}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Select a program to modify</DialogTitle>
+                        <DialogDescription>
+                            {exploreFixesExercise
+                                ? `Choose a saved program to open in the builder with a prompt to address your stall on ${exploreFixesExercise.name}.`
+                                : "Choose a program to modify."}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-2">
+                        {isLoadingPrograms ? (
+                            <div className="space-y-2">
+                                {[1, 2, 3].map((i) => (
+                                    <Skeleton key={i} className="h-12 w-full rounded-md" />
+                                ))}
+                            </div>
+                        ) : subscribedPrograms.length === 0 ? (
+                            <div>
+                                <p className="text-sm text-muted-foreground">
+                                    You don&apos;t have any saved programs yet. Save programs from Explore to modify them.
+                                </p>
+                                <Link
+                                    href="/programs"
+                                    className="mt-3 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
+                                >
+                                    Browse programs
+                                </Link>
+                            </div>
+                        ) : (
+                            <ul className="space-y-2 max-h-[280px] overflow-y-auto">
+                                {subscribedPrograms.map((program) => (
+                                    <li key={program.id}>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleSelectProgram(program)}
+                                            className="w-full rounded-md border bg-card px-4 py-3 text-left text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                        >
+                                            {program.title}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
             {showPlaceholderCards ? (
                 <ExerciseStalls
                     exercises={placeholderExercises}
-                    onExploreFixes={() => {}}
+                    onExploreFixes={handleExploreFixes}
                     onViewMore={hasMore ? () => setVisibleCount((prev) => Math.min(prev + PRO_PAGE_SIZE, templates.length)) : undefined}
                     viewMoreHref={!isPro ? "/pricing" : undefined}
                     showViewMore={!isPro || hasMore}
@@ -173,7 +290,7 @@ export function BlindSpotAnalysisSection() {
             ) : (
                 <ExerciseStalls
                     exercises={exercisesToShow}
-                    onExploreFixes={() => {}}
+                    onExploreFixes={handleExploreFixes}
                     onViewMore={hasMore ? () => setVisibleCount((prev) => Math.min(prev + PRO_PAGE_SIZE, filteredAndSorted.length)) : undefined}
                     viewMoreHref={!isPro ? "/pricing" : undefined}
                     showViewMore={!isPro || hasMore}

@@ -40,7 +40,7 @@ export interface IExercise {
 
 interface IProps {
     exercises: IExercise[];
-    onExploreFixes?: (exerciseName: string) => void;
+    onExploreFixes?: (exercise: IExercise) => void;
     onViewMore?: () => void;
     viewMoreHref?: string;
     /** When false, the "View more exercises" button is hidden (e.g. when all exercises are already shown). Default true. */
@@ -98,8 +98,8 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
         }
     };
 
-    const handleExploreFixes = (exerciseName: string) => {
-        onExploreFixes?.(exerciseName);
+    const handleExploreFixes = (exercise: IExercise) => {
+        onExploreFixes?.(exercise);
     };
 
     const handleViewMore = () => {
@@ -276,7 +276,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                                                 variant="destructive"
                                                 size="sm"
                                                 disabled={exercise.weight === 0}
-                                                onClick={() => handleExploreFixes(exercise.name)}
+                                                onClick={() => handleExploreFixes(exercise)}
                                                 className="shrink-0 h-[38px] px-4 text-xs"
                                             >
                                                 {BLIND_SPOT_STRINGS.ExploreFixes}{" "}
