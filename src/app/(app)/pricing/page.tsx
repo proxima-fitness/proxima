@@ -1,3 +1,4 @@
+import { HevyPromoBanner } from "@/components/pricing/HevyPromoBanner";
 import { StripeEmbeddedTable } from "@/components/pricing/StripeEmbeddedTable";
 
 export const metadata = {
@@ -16,6 +17,7 @@ export default function PricingPage() {
                         Select the best plan that fits your needs.
                     </p>
                 </div>
+                <HevyPromoBanner />
                 <StripeEmbeddedTable />
             </div>
         </section>

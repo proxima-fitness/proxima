@@ -453,3 +453,19 @@ export const postNewProgramSubscriber = async (user: User, program_id: string) =
         console.error("Error Joining Program",error);
     }
 };
+
+// REMOVE A SUBSCRIBER FROM A PROGRAM
+export const deleteProgramSubscriber = async (user_id: string, program_id: string | number) => {
+    try {
+        const programId = typeof program_id === "string" ? parseInt(program_id, 10) : program_id;
+        const { error } = await supabase
+            .from('program_subscribers')
+            .delete()
+            .eq('user_id', user_id)
+            .eq('program_id', programId);
+
+        if (error) return error;
+    } catch (error: unknown) {
+        console.error("Error removing program subscription", error);
+    }
+};

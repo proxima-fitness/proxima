@@ -3,7 +3,22 @@
 import { thumbnail } from "public";
 import { FullName } from "../generic/FullName";
 import { Badge } from "@/components/ui/badge";
-import { Users2Icon } from "lucide-react";
+import { Users2Icon, Bookmark, BookmarkCheck } from "lucide-react";
+import { useUserContext } from "@/contexts/UserContext";
+import { postNewProgramSubscriber, deleteProgramSubscriber } from "@/api/programs";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
+import { useSubscribedPrograms } from "@/api/hooks";
+import { useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface IProps {
     program: TProgram;
@@ -15,19 +30,62 @@ export const ProgramCard: React.FC<IProps> = (props) => {
         program,
     } = props;
 
-    // const { user } = useUserContext();
+    const { user } = useUserContext();
+    const queryClient = useQueryClient();
+    const { data: subscribedPrograms } = useSubscribedPrograms(user);
+    const [isBookmarking, setIsBookmarking] = useState(false);
+    const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
+    const [isRemoving, setIsRemoving] = useState(false);
 
-    // const handleSave = (e: React.MouseEvent<HTMLButtonElement>) => {
-    //     e.preventDefault();
-    //     e.stopPropagation();
-    //     if (user) {
-    //         postNewProgramSubscriber(user, program.id);
-    //         toast.success("Program saved to your account. View it in the Proxima app.");
-    //     }
-    //     else {
-    //         toast.error("Error saving program");
-    //     }
-    // }
+    const isSubscribed = subscribedPrograms?.some((p) => p.id === program.id) ?? false;
+
+    const handleBookmark = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!user) return;
+        if (isSubscribed) {
+            setRemoveDialogOpen(true);
+            return;
+        }
+        if (isBookmarking) return;
+        setIsBookmarking(true);
+        try {
+            const error = await postNewProgramSubscriber(user, String(program.id));
+            if (error) {
+                const isDuplicate = error.code === "23505";
+                if (isDuplicate) {
+                    toast.success("Already in My Programs.");
+                    queryClient.invalidateQueries({ queryKey: ["subscribed-programs", user.id] });
+                } else {
+                    toast.error("Could not save program.");
+                    console.error("Bookmark error:", error);
+                }
+            } else {
+                queryClient.invalidateQueries({ queryKey: ["subscribed-programs", user.id] });
+                toast.success("Program saved to My Programs.");
+            }
+        } finally {
+            setIsBookmarking(false);
+        }
+    };
+
+    const handleConfirmRemove = async () => {
+        if (!user) return;
+        setIsRemoving(true);
+        try {
+            const error = await deleteProgramSubscriber(user.id, program.id);
+            if (error) {
+                toast.error("Could not remove program.");
+                console.error("Remove subscription error:", error);
+            } else {
+                queryClient.invalidateQueries({ queryKey: ["subscribed-programs", user.id] });
+                toast.success("Program removed from My Programs.");
+                setRemoveDialogOpen(false);
+            }
+        } finally {
+            setIsRemoving(false);
+        }
+    };
 
     return (
         <>
@@ -40,22 +98,23 @@ export const ProgramCard: React.FC<IProps> = (props) => {
                             className="w-full h-[200px] object-cover transition-transform duration-300 hover:scale-105"
                             style={ { objectFit: "cover" } }
                         />
-                        {/* {user && (
-                            <div className="absolute inset-0 rounded-t-lg bg-black bg-opacity-40 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
-                                    <button
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            window.location.href = `/build-program?shareId=${program.id}&edit=true&shared=true`;
-                                        }}
-                                        className="my-2 py-2 w-[50%] hover:bg-black hover:text-white bg-white text-black rounded-lg shadow flex flex-row items-center justify-center gap-2">
-                                        <EditIcon />Edit
-                                    </button>
-                                <button onClick={ (e) => handleSave(e) } className="my-2 py-2 w-[50%] hover:bg-black hover:text-white bg-lightSecondary text-white rounded-lg shadow flex flex-row items-center justify-center gap-2">
-                                    <SaveIcon />Save
+                        {user && (
+                            <div className="absolute top-2 right-2 z-10">
+                                <button
+                                    type="button"
+                                    onClick={handleBookmark}
+                                    disabled={isBookmarking}
+                                    className="p-2 rounded-full bg-white/90 dark:bg-gray-900/90 hover:bg-white dark:hover:bg-gray-900 shadow-md transition-colors disabled:opacity-70 disabled:cursor-default"
+                                    aria-label={isSubscribed ? "Remove from My Programs" : "Save to My Programs"}
+                                >
+                                    {isSubscribed ? (
+                                        <BookmarkCheck className="h-5 w-5 text-lightSecondary fill-current" />
+                                    ) : (
+                                        <Bookmark className="h-5 w-5 text-gray-700 dark:text-offWhite" />
+                                    )}
                                 </button>
                             </div>
-                        )} */}
+                        )}
                     </div>
                     <div className="p-4 space-y-2">
                         <div className={ "flex flex-row justify-start items-center font-bold text-xs text-blue-400" }>
@@ -74,6 +133,45 @@ export const ProgramCard: React.FC<IProps> = (props) => {
                     </div>
                 </div>
             </div>
+            <Dialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>
+                <DialogContent
+                    hideClose={isRemoving}
+                    onCloseAutoFocus={(e) => e.preventDefault()}
+                >
+                    <DialogHeader>
+                        <DialogTitle>Remove program?</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to remove this program from My Programs?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setRemoveDialogOpen(false);
+                            }}
+                            disabled={isRemoving}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleConfirmRemove();
+                            }}
+                            disabled={isRemoving}
+                        >
+                            {isRemoving ? "Removing…" : "Remove"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 };
