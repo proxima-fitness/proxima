@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, LogIn, LogOut, PersonStanding, Search, LayoutDashboard, CreditCard } from "lucide-react";
+import { Home, LogIn, LogOut, PersonStanding, Search, LayoutDashboard, CreditCard, Receipt, Crown } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -56,6 +56,7 @@ export function AppSidebar() {
     const { data: userFullName } = useUserFullName(user?.id ? user.id : undefined, "user");
     const { data: featureLimits } = useMyFeatureLimits(user);
     const isPro = featureLimits?.has_active_subscription === true;
+    const stripePortalUrl = process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL?.trim() || "";
 
     const handleLogout = async () => {
         await signOutUser();
@@ -127,6 +128,24 @@ export function AppSidebar() {
                                                 </a>
                                             </SidebarMenuButton>
                                         </SidebarMenuItem>
+                                    )}
+                                    {user && isPro && stripePortalUrl && (
+                                        <>
+                                            <SidebarMenuItem>
+                                                <div className="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-sidebar-foreground/70">
+                                                    <Crown className="size-4 shrink-0" />
+                                                    Pro account
+                                                </div>
+                                            </SidebarMenuItem>
+                                            <SidebarMenuItem>
+                                                <SidebarMenuButton asChild>
+                                                    <a href={stripePortalUrl}>
+                                                        <Receipt className="font-main" />
+                                                        <span className="font-main">Manage Subscription</span>
+                                                    </a>
+                                                </SidebarMenuButton>
+                                            </SidebarMenuItem>
+                                        </>
                                     )}
                                     {user ? (
                                         <>

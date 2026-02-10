@@ -20,7 +20,7 @@ import {
     setTestTierOverride,
     type TestTierOverride,
 } from "@/api/featureLimits";
-import { LockIcon } from "lucide-react";
+import { Crown, LockIcon } from "lucide-react";
 import { authenticatedNavLinks, navLinks } from "@/assets/constants";
 import { useTheme } from "next-themes"
 // import { BuyMeCoffee } from "../ui/buy-me-coffee";
@@ -52,6 +52,7 @@ const NavItems = (pathname: string) => {
     const { data: featureLimits } = useMyFeatureLimits(user);
     const queryClient = useQueryClient();
     const isPro = featureLimits?.has_active_subscription === true;
+    const stripePortalUrl = process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL?.trim() || "";
     const navLinksToShow = authenticatedNavLinks.filter(
         (nav) => !(nav.id === "pricing" && isPro)
     );
@@ -215,6 +216,22 @@ const NavItems = (pathname: string) => {
                                         <span className="font-medium">System</span>
                                     </div>
                                 </DropdownMenuItem>
+                                {isPro && stripePortalUrl && (
+                                    <>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
+                                            <span className="flex items-center gap-1.5">
+                                                <Crown className="w-4 h-4 text-lightGold" />
+                                                Pro account
+                                            </span>
+                                        </DropdownMenuLabel>
+                                        <DropdownMenuItem asChild>
+                                            <a href={stripePortalUrl} className="cursor-pointer">
+                                                Manage Subscription
+                                            </a>
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
                                 {isTestUser(user) && (
                                     <>
                                         <DropdownMenuSeparator />
