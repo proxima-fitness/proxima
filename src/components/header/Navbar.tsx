@@ -12,7 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { ConnectHevyDialog } from "./ConnectHevyDialog";
 import { useEffect, useState } from "react";
 import { signOutUser } from "@/api/authentication";
-import { useHevySecret, useUserFullName } from "@/api/hooks";
+import { useHevySecret, useMyFeatureLimits, useUserFullName } from "@/api/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import {
     getTestTierOverride,
@@ -49,7 +49,12 @@ const NavItems = (pathname: string) => {
     const { theme, setTheme } = useTheme()
     const { data: userFullName } = useUserFullName(user?.id ? user.id : undefined, "user");
     const { data: hevyApiKey } = useHevySecret(user);
+    const { data: featureLimits } = useMyFeatureLimits(user);
     const queryClient = useQueryClient();
+    const isPro = featureLimits?.has_active_subscription === true;
+    const navLinksToShow = authenticatedNavLinks.filter(
+        (nav) => !(nav.id === "pricing" && isPro)
+    );
 
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [testTierOverride, setTestTierOverrideState] = useState<TestTierOverride | null>(() => getTestTierOverride());
@@ -98,7 +103,7 @@ const NavItems = (pathname: string) => {
     }
 
     if (user) {
-        return authenticatedNavLinks.map((nav, index) => {
+        return navLinksToShow.map((nav, index) => {
             return (
                 <div key={ index }>
                     { nav.id === "cta" ?
@@ -110,7 +115,7 @@ const NavItems = (pathname: string) => {
                     : nav.id === "log-in" ?
                         <li
                         key={ nav.id }
-                        className={ `font-main font-normal cursor-pointer text-[16px] text-black ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
+                        className={ `font-main font-normal cursor-pointer text-[16px] text-black ${index === navLinksToShow.length - 1 ? "mr-0" : "mr-10"}` }
                     >
                         <DropdownMenu open={dropdownOpen} onOpenChange={(open) => {
                             setDropdownOpen(open);
@@ -273,7 +278,7 @@ const NavItems = (pathname: string) => {
                     :
                         <li
                             key={ nav.id }
-                            className={ `font-main font-normal cursor-pointer text-[16px] text-black dark:text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
+                            className={ `font-main font-normal cursor-pointer text-[16px] text-black dark:text-white ${index === navLinksToShow.length - 1 ? "mr-0" : "mr-10"}` }
                         >
                             <Link href={ `/${nav.id}` }>{nav.title}</Link>
                         </li>

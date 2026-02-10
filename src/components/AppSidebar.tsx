@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useUserContext } from "@/contexts/UserContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useUserFullName } from "@/api/hooks";
+import { useMyFeatureLimits, useUserFullName } from "@/api/hooks";
 import { signOutUser } from "@/api/authentication";
 import { TestUserTierToggle } from "@/components/TestUserTierToggle";
 import { isTestUser } from "@/api/featureLimits";
@@ -54,6 +54,8 @@ const baseItems = [
 export function AppSidebar() {
     const { user, isLoading } = useUserContext();
     const { data: userFullName } = useUserFullName(user?.id ? user.id : undefined, "user");
+    const { data: featureLimits } = useMyFeatureLimits(user);
+    const isPro = featureLimits?.has_active_subscription === true;
 
     const handleLogout = async () => {
         await signOutUser();
@@ -116,14 +118,16 @@ export function AppSidebar() {
                         <SidebarGroup>
                             <SidebarGroupContent>
                                 <SidebarMenu>
-                                    <SidebarMenuItem>
-                                        <SidebarMenuButton asChild>
-                                            <a href="/pricing">
-                                                <CreditCard className="font-main" />
-                                                <span className="font-main">{user ? "Upgrade" : "Pricing"}</span>
-                                            </a>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
+                                    {!(user && isPro) && (
+                                        <SidebarMenuItem>
+                                            <SidebarMenuButton asChild>
+                                                <a href="/pricing">
+                                                    <CreditCard className="font-main" />
+                                                    <span className="font-main">{user ? "Upgrade" : "Pricing"}</span>
+                                                </a>
+                                            </SidebarMenuButton>
+                                        </SidebarMenuItem>
+                                    )}
                                     {user ? (
                                         <>
                                             <SidebarMenuItem>
