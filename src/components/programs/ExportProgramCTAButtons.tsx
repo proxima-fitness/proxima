@@ -14,7 +14,7 @@ interface IProps {
 
 export const ExportProgramCTAButtons: React.FC<IProps> = ({ programId, exportOptions, onSelectExport }) => {
 
-    console.log(programId);
+    console.log("programId", programId);
 
     // const handleExport = (exportType: string) => {
     //     // Placeholder for export functionality

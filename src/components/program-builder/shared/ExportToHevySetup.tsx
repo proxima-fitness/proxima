@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useUserContext } from "@/contexts/UserContext";
-import { useHevySecret } from "@/api/hooks";
+import { useHevySecret, useMyFeatureLimits } from "@/api/hooks";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { incrementMonthlyExportsUsed } from "@/api/featureLimits";
 import {
@@ -18,7 +19,7 @@ import {
 import { postNewProgramSubscriber } from "@/api/programs";
 import { toast } from "sonner";
 import { validate } from "uuid";
-import { Check, ExternalLink, Key, Upload } from "lucide-react";
+import { Check, Crown, ExternalLink, Key, Upload } from "lucide-react";
 import {
     Accordion,
     AccordionContent,
@@ -55,6 +56,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
     const { user } = useUserContext();
     const queryClient = useQueryClient();
     const { data: hevyApiKey } = useHevySecret(user);
+    const { data: featureLimits } = useMyFeatureLimits(user);
     const { mutate: incrementExportsUsed } = useMutation({
         mutationFn: () => incrementMonthlyExportsUsed(user),
         onSuccess: () => {
@@ -62,11 +64,16 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
         },
     });
 
+    const isFree = featureLimits?.has_active_subscription !== true;
+    const atExportLimit =
+        featureLimits != null && (featureLimits.remaining_exports ?? 0) === 0;
+
     const [expandedStep, setExpandedStep] = useState<string>(hevyApiKey ? "step2" : "step1");
     const [inputValue, setInputValue] = useState("");
     const [exportToOneFolder, setExportToOneFolder] = useState(true);
     const [isEditingApiKey, setIsEditingApiKey] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [showThankYouBanner, setShowThankYouBanner] = useState(false);
     const [uploadProgress, setUploadProgress] = useState<{
         uploaded: number;
         total: number;
@@ -276,6 +283,9 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                 queryClient.invalidateQueries({ queryKey: ["subscribed-programs", user.id] });
                 toast.success("Program uploaded to Hevy and saved to My Programs.");
                 posthog.capture("exported_program", { user: user?.id ?? "user_id_unknown", destination: "hevy" });
+                if (isFree) {
+                    setShowThankYouBanner(true);
+                }
                 incrementExportsUsed(undefined, {
                     onError: (err) => console.error("Failed to record export usage", err),
                 });
@@ -485,21 +495,45 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                                         )}
                                     </div>
                                 )}
-                                <Button
-                                    variant="default"
-                                    className="w-fit gap-2 bg-lightSecondary text-white"
-                                    onClick={() =>
-                                        handleUploadProgram(exportToOneFolder)}
-                                    disabled={isUploading}
-                                >
-                                    {isUploading ? "Uploading…" : "Upload"}
-                                    {!isUploading && <Upload className="h-4 w-4 shrink-0" />}
-                                </Button>
+                                {atExportLimit && (
+                                    <p className="text-sm text-muted-foreground">
+                                        {isFree
+                                            ? "You're out of monthly exports."
+                                            : "You've ran out of your monthly exports, exports will renew next month."}
+                                    </p>
+                                )}
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <Button
+                                        variant="default"
+                                        className="w-fit gap-2 bg-lightSecondary text-white"
+                                        onClick={() =>
+                                            handleUploadProgram(exportToOneFolder)}
+                                        disabled={isUploading || atExportLimit}
+                                    >
+                                        {isUploading ? "Uploading…" : "Upload"}
+                                        {!isUploading && <Upload className="h-4 w-4 shrink-0" />}
+                                    </Button>
+                                    {atExportLimit && isFree && (
+                                        <Button variant="default" className="w-fit gap-2 bg-lightGold text-black hover:bg-lightGold/90" asChild>
+                                            <Link href="/pricing">
+                                                <Crown className="h-4 w-4 shrink-0" />
+                                                Upgrade
+                                            </Link>
+                                        </Button>
+                                    )}
+                                </div>
                             </div>
                         )}
                     </AccordionContent>
                 </AccordionItem>
             </Accordion>
+            {showThankYouBanner && isFree && (
+                <div className="mt-4 rounded-lg border border-border bg-muted/50 px-4 py-3 flex flex-col gap-2">
+                    <p className="text-sm text-foreground">
+                        Thanks for exporting! Upgrade to Pro for more exports and blind spot analysis. Use code <strong>HEVY50</strong> for lifetime 50% discount at checkout.
+                    </p>
+                </div>
+            )}
         </div>
     );
 };
