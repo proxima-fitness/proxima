@@ -37,6 +37,7 @@ export const ConnectHevyDialog: React.FC<IProps> = (props) => {
                     if (updatedApiKey) {
                         toast.success("Hevy API Key saved successfully");
                         queryClient.invalidateQueries({ queryKey: [ "hevy_api_key" ] });
+                        queryClient.invalidateQueries({ queryKey: ["exercise-stalls-analysis", user?.id] });
                     }
                 }
             } else {
@@ -45,6 +46,7 @@ export const ConnectHevyDialog: React.FC<IProps> = (props) => {
                     if (newApiKey && newApiKey.success) {
                         toast.success("Hevy API Key saved successfully");
                         queryClient.invalidateQueries({ queryKey: [ "hevy_api_key" ] });
+                        queryClient.invalidateQueries({ queryKey: ["exercise-stalls-analysis", user?.id] });
                         handleOpenConnectHevyDialog(false);
                     } else {
                         toast.error(`Error saving Hevy API Key: ${ newApiKey && newApiKey?.data ? JSON.stringify(newApiKey.data) : "Unknown error" }`);

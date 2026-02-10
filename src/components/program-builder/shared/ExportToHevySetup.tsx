@@ -116,6 +116,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
             if (updated) {
                 toast.success("Hevy API Key saved successfully");
                 queryClient.invalidateQueries({ queryKey: ["hevy_api_key"] });
+                queryClient.invalidateQueries({ queryKey: ["exercise-stalls-analysis", user?.id] });
                 setIsEditingApiKey(false);
             }
         } else {
@@ -123,6 +124,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
             if (result?.success) {
                 toast.success("Hevy API Key saved successfully");
                 queryClient.invalidateQueries({ queryKey: ["hevy_api_key"] });
+                queryClient.invalidateQueries({ queryKey: ["exercise-stalls-analysis", user?.id] });
                 setIsEditingApiKey(false);
             } else {
                 toast.error(
@@ -137,6 +139,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
         const removed = await deleteHevyApiKey(user);
         if (removed) {
             queryClient.invalidateQueries({ queryKey: ["hevy_api_key"] });
+            queryClient.invalidateQueries({ queryKey: ["exercise-stalls-analysis", user?.id] });
             toast.success("Hevy API Key removed");
             setInputValue("");
             setIsEditingApiKey(false);
