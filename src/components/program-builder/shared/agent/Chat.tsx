@@ -29,9 +29,10 @@ export const Chat: React.FC<IProps> = (props) => {
     const { user } = useUserContext();
     const { data: featureLimits } = useMyFeatureLimits(user);
     const outOfCredits = featureLimits != null && featureLimits.remaining_llm_requests === 0;
+    const isPro = featureLimits?.has_active_subscription === true;
     return (
         <div className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl flex-shrink-0 px-3 pb-3 md:px-5 md:pb-5 max-sm:fixed max-sm:bottom-[70px] max-sm:left-0 max-sm:right-0 max-sm:px-4 max-sm:bg-background border-t pt-4">
-            {featureLimits && (
+            {featureLimits && !isPro && (
                 <UpgradeBanner remainingRequests={featureLimits.remaining_llm_requests} totalRequests={featureLimits.max_monthly_llm_requests} user={user} />
             )}
             <PromptInput

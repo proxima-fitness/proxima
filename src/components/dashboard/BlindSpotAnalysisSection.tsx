@@ -177,6 +177,9 @@ export function BlindSpotAnalysisSection() {
                     <p className="text-xs text-muted-foreground mt-2 transition-opacity duration-300">
                         {LOADING_PHRASES[loadingPhraseIndex]} (30s)
                     </p>
+                    <p className="text-sm font-medium text-yellow-600 dark:text-yellow-500 mt-1">
+                        Don&apos;t leave the page
+                    </p>
                 </div>
             )}
             {!dataLoading && allExercises.length > 0 && (

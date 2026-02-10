@@ -16,6 +16,8 @@ import { useUserContext } from "@/contexts/UserContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUserFullName } from "@/api/hooks";
 import { signOutUser } from "@/api/authentication";
+import { TestUserTierToggle } from "@/components/TestUserTierToggle";
+import { isTestUser } from "@/api/featureLimits";
 
 // Client-side function to call the server-side sign out API
 const signOutServer = async () => {
@@ -157,6 +159,16 @@ export function AppSidebar() {
                                 </SidebarMenu>
                             </SidebarGroupContent>
                         </SidebarGroup>
+                        {user && isTestUser(user) && (
+                            <>
+                                <SidebarSeparator />
+                                <SidebarGroup>
+                                    <SidebarGroupContent>
+                                        <TestUserTierToggle />
+                                    </SidebarGroupContent>
+                                </SidebarGroup>
+                            </>
+                        )}
                     </>
                 )}
             </SidebarContent>

@@ -12,6 +12,13 @@ import { ConnectHevyDialog } from "./ConnectHevyDialog";
 import { useEffect, useState } from "react";
 import { signOutUser } from "@/api/authentication";
 import { useHevySecret, useUserFullName } from "@/api/hooks";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+    getTestTierOverride,
+    isTestUser,
+    setTestTierOverride,
+    type TestTierOverride,
+} from "@/api/featureLimits";
 import { LockIcon } from "lucide-react";
 import { authenticatedNavLinks, navLinks } from "@/assets/constants";
 import { useTheme } from "next-themes"
@@ -41,8 +48,10 @@ const NavItems = (pathname: string) => {
     const { theme, setTheme } = useTheme()
     const { data: userFullName } = useUserFullName(user?.id ? user.id : undefined, "user");
     const { data: hevyApiKey } = useHevySecret(user);
+    const queryClient = useQueryClient();
 
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [testTierOverride, setTestTierOverrideState] = useState<TestTierOverride | null>(() => getTestTierOverride());
     const [openConnectHevyDialog, setOpenConnectHevyDialog] = useState(false);
     // const { isHevy, setIsHevy } = useIsHevy();
 
@@ -102,7 +111,10 @@ const NavItems = (pathname: string) => {
                         key={ nav.id }
                         className={ `font-main font-normal cursor-pointer text-[16px] text-black ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
                     >
-                        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+                        <DropdownMenu open={dropdownOpen} onOpenChange={(open) => {
+                            setDropdownOpen(open);
+                            if (open && isTestUser(user)) setTestTierOverrideState(getTestTierOverride());
+                        }}>
                             <DropdownMenuTrigger asChild>
                                 <div className="cursor-pointer flex flex-row items-center">
                                     <Avatar>
@@ -197,6 +209,47 @@ const NavItems = (pathname: string) => {
                                         <span className="font-medium">System</span>
                                     </div>
                                 </DropdownMenuItem>
+                                {isTestUser(user) && (
+                                    <>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
+                                            Test user
+                                        </DropdownMenuLabel>
+                                        <DropdownMenuItem
+                                            onSelect={(e) => {
+                                                e.preventDefault();
+                                                setTestTierOverride(null);
+                                                setTestTierOverrideState(null);
+                                                queryClient.invalidateQueries({ queryKey: ["feature-limits", user.id] });
+                                            }}
+                                            className={`cursor-pointer ${testTierOverride === null ? 'bg-lightGray text-black focus:bg-lightGray hover:text-black' : 'bg-white dark:bg-darkGray dark:text-white text-black'}`}
+                                        >
+                                            <span className="font-medium">Real</span>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onSelect={(e) => {
+                                                e.preventDefault();
+                                                setTestTierOverride("free");
+                                                setTestTierOverrideState("free");
+                                                queryClient.invalidateQueries({ queryKey: ["feature-limits", user.id] });
+                                            }}
+                                            className={`cursor-pointer ${testTierOverride === "free" ? 'bg-lightGray text-black focus:bg-lightGray hover:text-black' : 'bg-white dark:bg-darkGray dark:text-white text-black'}`}
+                                        >
+                                            <span className="font-medium">Free</span>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onSelect={(e) => {
+                                                e.preventDefault();
+                                                setTestTierOverride("pro");
+                                                setTestTierOverrideState("pro");
+                                                queryClient.invalidateQueries({ queryKey: ["feature-limits", user.id] });
+                                            }}
+                                            className={`cursor-pointer ${testTierOverride === "pro" ? 'bg-lightGray text-black focus:bg-lightGray hover:text-black' : 'bg-white dark:bg-darkGray dark:text-white text-black'}`}
+                                        >
+                                            <span className="font-medium">Pro</span>
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={async () => {
                                     await signOutUser();

@@ -4,6 +4,45 @@ import { User } from "@supabase/supabase-js";
 const ANONYMOUS_LLM_STORAGE_KEY = "proxima_anonymous_llm_remaining";
 const ANONYMOUS_LLM_MAX = 10;
 
+// Test user tier override (client-side only, for allowlisted emails)
+const TEST_USER_EMAILS = (
+    typeof process !== "undefined" && process.env.NEXT_PUBLIC_TEST_USER_EMAILS
+        ? process.env.NEXT_PUBLIC_TEST_USER_EMAILS.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean)
+        : []
+) as string[];
+
+export const TEST_TIER_OVERRIDE_KEY = "proxima_test_tier_override";
+
+export type TestTierOverride = "free" | "pro";
+
+/** Align with public.product_usage_limits: Free 1 export, 20 LLM; Pro 5 exports, 1000 LLM */
+const TIER_LIMITS: Record<TestTierOverride, { tier: string; has_active_subscription: boolean; max_monthly_exports: number; max_monthly_llm_requests: number }> = {
+    free: { tier: "Free", has_active_subscription: false, max_monthly_exports: 1, max_monthly_llm_requests: 20 },
+    pro: { tier: "Pro", has_active_subscription: true, max_monthly_exports: 5, max_monthly_llm_requests: 1000 },
+};
+
+export function isTestUser(user: User | null | undefined): boolean {
+    if (!user?.email) return false;
+    return TEST_USER_EMAILS.includes(user.email.toLowerCase());
+}
+
+export function getTestTierOverride(): TestTierOverride | null {
+    if (typeof window === "undefined") return null;
+    const raw = localStorage.getItem(TEST_TIER_OVERRIDE_KEY);
+    if (raw === "free" || raw === "pro") return raw;
+    return null;
+}
+
+/** Sets test tier override (localStorage). Caller should invalidate ["feature-limits", user?.id] after. */
+export function setTestTierOverride(value: TestTierOverride | null): void {
+    if (typeof window === "undefined") return;
+    if (value === null) {
+        localStorage.removeItem(TEST_TIER_OVERRIDE_KEY);
+    } else {
+        localStorage.setItem(TEST_TIER_OVERRIDE_KEY, value);
+    }
+}
+
 function getAnonymousLimits(): TFeatureLimits {
     if (typeof window === "undefined") {
         return {
@@ -44,7 +83,32 @@ export const getMyFeatureLimits = async (user: User | undefined | null): Promise
             console.error("Error fetching feature limits", error);
             return null;
         }
-        return data[0] as unknown as TFeatureLimits;
+        const row = data[0] as unknown as TFeatureLimits;
+        if (!row) return null;
+
+        if (!isTestUser(user)) return row;
+
+        if (typeof window === "undefined") return row;
+        const override = getTestTierOverride();
+        if (!override) return row;
+
+        const limits = TIER_LIMITS[override];
+        const monthly_exports_used = row.monthly_exports_used ?? 0;
+        const monthly_llm_requests_used = row.monthly_llm_requests_used ?? 0;
+        const remaining_exports = Math.max(0, limits.max_monthly_exports - monthly_exports_used);
+        const remaining_llm_requests = Math.max(0, limits.max_monthly_llm_requests - monthly_llm_requests_used);
+
+        return {
+            ...row,
+            tier: limits.tier,
+            has_active_subscription: limits.has_active_subscription,
+            max_monthly_exports: limits.max_monthly_exports,
+            max_monthly_llm_requests: limits.max_monthly_llm_requests,
+            monthly_exports_used: row.monthly_exports_used ?? 0,
+            monthly_llm_requests_used: row.monthly_llm_requests_used ?? 0,
+            remaining_exports,
+            remaining_llm_requests,
+        };
     } catch (err) {
         console.error("Error fetching feature limits", err);
         return null;
