@@ -118,7 +118,7 @@ export const MyProgramsVault = () => {
                     My Programs ({programs.length})
                 </h2>
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
-                    Permanent storage for your workout programs.
+                    Permanent storage for your workout programs. Stored on Proxima.
                 </p>
             </div>
             <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 max-md:grid-cols-2 pb-8">

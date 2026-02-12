@@ -1,45 +1,130 @@
 "use client";
 
+import { useState } from "react";
 import { useHevyPrograms, useHevySecret } from "@/api/hooks";
 import { useUserContext } from "@/contexts/UserContext";
-import { NotepadTextIcon, EditIcon, EyeIcon } from "lucide-react";
+import { NotepadTextIcon, EditIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { quotes } from "public";
+import { hevy_logo } from "public";
+import { Button } from "@/components/ui/button";
+
+const ROUTINES_PER_PAGE = 4;
+
+function HevyProgramCard({
+    program,
+    onEdit,
+}: {
+    program: { program_title: string; program: THevyRoutine[] };
+    onEdit: () => void;
+}) {
+    const [currentPage, setCurrentPage] = useState(1);
+    const routinesReversed = [...program.program].reverse();
+    const totalRoutines = routinesReversed.length;
+    const totalPages = Math.max(1, Math.ceil(totalRoutines / ROUTINES_PER_PAGE));
+    const start = (currentPage - 1) * ROUTINES_PER_PAGE;
+    const routinesSlice = routinesReversed.slice(start, start + ROUTINES_PER_PAGE);
+
+    const canGoPrev = currentPage > 1;
+    const canGoNext = currentPage < totalPages;
+
+    return (
+        <div
+            className={
+                "flex flex-col rounded-xl border border-border dark:border-0 bg-white dark:bg-blueGray text-black dark:text-white overflow-hidden min-h-[200px] shadow-lg dark:shadow-none"
+            }
+        >
+            {/* Top bar: Hevy logo + workout count */}
+            <div className="flex flex-row items-center justify-between px-4 py-3 bg-extraDarkGray dark:bg-lightSecondary text-white shrink-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                    src={(hevy_logo as { src: string }).src}
+                    alt="Hevy"
+                    className="h-6 object-contain"
+                />
+                <span className="font-third text-sm font-medium">
+                    {totalRoutines} workout{totalRoutines !== 1 ? "s" : ""}
+                </span>
+            </div>
+
+            {/* Program title */}
+            <div className="px-4 pt-3 font-main text-sm text-foreground dark:text-white">
+                {program?.program_title || "No title"}
+            </div>
+
+            {/* Routine list as discrete objects (paginated) */}
+            <div className="flex flex-col gap-2 p-4 flex-1 min-h-0">
+                {routinesSlice.map((routine) => (
+                    <div
+                        key={routine.id}
+                        className="rounded-lg bg-lightGray dark:bg-extraDarkGray px-3 py-2 font-third text-sm"
+                    >
+                        {routine.title}
+                    </div>
+                ))}
+            </div>
+
+            {/* Pagination controls */}
+            {totalRoutines > ROUTINES_PER_PAGE && (
+                <div className="flex flex-row items-center justify-center gap-2 px-4 pb-2">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0"
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={!canGoPrev}
+                        aria-label="Previous page"
+                    >
+                        <ChevronLeft className="size-4" />
+                    </Button>
+                    <span className="font-third text-xs text-muted-foreground min-w-[4rem] text-center">
+                        Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0"
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={!canGoNext}
+                        aria-label="Next page"
+                    >
+                        <ChevronRight className="size-4" />
+                    </Button>
+                </div>
+            )}
+
+            {/* Footer: Edit button */}
+            <div className="flex flex-row justify-end p-4 pt-2 border-t border-border dark:border-white/10 ">
+                <Button
+                    size="lg"
+                    className="gap-2 py-2 bg-lightSecondary text-white hover:bg-black hover:text-white rounded-lg shadow"
+                    onClick={onEdit}
+                >
+                    <EditIcon className="size-4" /> Edit
+                </Button>
+            </div>
+        </div>
+    );
+}
 
 export const HevyProgramsGrid: React.FC = () => {
-
     const { user } = useUserContext();
     const { data: hevyApiKey } = useHevySecret(user);
     const { data: hevyPrograms } = useHevyPrograms(user, hevyApiKey);
     const router = useRouter();
 
-    const handleEditProgram = (program: { program_title: string, program: THevyRoutine[] }, edit: boolean) => {
-        // Store the Hevy program data in localStorage
+    const handleEditProgram = (
+        program: { program_title: string; program: THevyRoutine[] },
+        edit: boolean
+    ) => {
         for (const routine of program.program) {
             routine.folder_id = 0;
         }
-        localStorage.setItem('hevy-program-in-progress', JSON.stringify(program.program));
-        // Set the Hevy context to true        // Navigate to the program builder
+        localStorage.setItem("hevy-program-in-progress", JSON.stringify(program.program));
         router.push(`/build-program?edit=${String(edit)}&resume=true`);
     };
 
-    // useEffect(() => {
-    //     if (typeof window !== "undefined") {
-    //         const localStorageProgram = localStorage.getItem(isHevy ? "hevy-program-in-progress" : "program-in-progress");
-    //         if (localStorageProgram) {
-    //             if (isHevy) {
-    //                 setHevyRoutine(JSON.parse(localStorageProgram));
-    //             } else {
-    //                 setProgram(JSON.parse(localStorageProgram));
-    //             }
-    //         }
-    //     }
-    // }, [isHevy]);
-
     if (!hevyPrograms) {
-        return (
-            <></>
-        )
+        return <></>;
     }
 
     return (
@@ -49,47 +134,17 @@ export const HevyProgramsGrid: React.FC = () => {
                 My Hevy Programs
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-                These are your synced programs from Hevy. Click on a program to modify or ask questions in the builder. Exporting is one-way.
+                These are your synced programs from Hevy. Click on a program to modify or ask
+                questions in the builder. Exporting is one-way.
             </p>
             <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 max-md:grid-cols-2 pb-8">
-                { hevyPrograms && hevyPrograms.map((program, index) => (
-                    <div key={ index } className="relative group bg-white dark:bg-darkGray dark:text-white text-black h-[200px] rounded-lg shadow-lg">
-                    <div className="absolute inset-0 transition duration-300 group-hover:blur-sm z-0">
-                        <div className="flex flex-row items-center justify-start gap-2 font-main text-sm">
-                            <img
-                                src={quotes.src}
-                                alt="Program Thumbnail"
-                                className="p-4 object-contain"
-                            />
-                            { program?.program_title || "No title" }
-                        </div>
-                        <div className="p-4 space-y-2">
-                            <div className="font-third text-sm overflow-hidden text-ellipsis line-clamp-5">
-                                { program?.program.map((routine) => (
-                                    <div key={ routine.id }>
-                                        { routine.title }
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="absolute inset-0 rounded-lg bg-black bg-opacity-40 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
-                        <button
-                            className="my-2 py-2 w-[50%] bg-white text-black hover:bg-black hover:text-white rounded-lg shadow flex flex-row items-center justify-center gap-2"
-                            onClick={() => handleEditProgram(program, true)}
-                        >
-                            <EditIcon />Edit
-                        </button>
-                        <button
-                            className="my-2 py-2 w-[50%] bg-lightSecondary text-white hover:bg-black hover:text-white rounded-lg shadow flex flex-row items-center justify-center gap-2"
-                            onClick={() => handleEditProgram(program, false)}
-                        >
-                            <EyeIcon />View
-                        </button>
-                    </div>
-                </div>
-            ))}
+                {hevyPrograms.map((program, index) => (
+                    <HevyProgramCard
+                        key={index}
+                        program={program}
+                        onEdit={() => handleEditProgram(program, true)}
+                    />
+                ))}
             </div>
         </section>
     );
