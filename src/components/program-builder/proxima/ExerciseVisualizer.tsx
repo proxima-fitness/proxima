@@ -1,5 +1,8 @@
+"use client";
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
+import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
 import { NotebookTextIcon, Trash2Icon } from "lucide-react";
 import { ExerciseGif } from "./ExerciseGif";
 
@@ -20,6 +23,8 @@ export const ExerciseVisualizer: React.FC<IProps> = (props) => {
         handleEdit,
         handleOpenAddExerciseNoteDialog,
     } = props;
+
+    const { isInLbs } = usePoundsOrKgContext();
 
     return (
         <div>
@@ -179,10 +184,10 @@ export const ExerciseVisualizer: React.FC<IProps> = (props) => {
                                         )}
                                         { exercise.intensity?.weights && (
                                             exercise.intensity.weights.every((weightVal, i, arr) => weightVal === arr[0]) ? (
-                                                <div>{exercise.intensity.weights[0]} lbs</div>
+                                                <div>{formatWeight(exercise.intensity.weights[0], isInLbs, "lbs")} {getWeightUnit(isInLbs)}</div>
                                             ) : (
                                                 exercise.intensity.weights.map((weightVal, index) => (
-                                                    <div key={ index } className={ `${exercise?.sets_type?.[index] === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : exercise?.sets_type?.[index] === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : exercise?.sets_type?.[index] === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>{ weightVal } lbs</div>
+                                                    <div key={ index } className={ `${exercise?.sets_type?.[index] === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : exercise?.sets_type?.[index] === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : exercise?.sets_type?.[index] === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}` }>{ formatWeight(weightVal, isInLbs, "lbs") } {getWeightUnit(isInLbs)}</div>
                                                 ))
                                             )
                                         )}

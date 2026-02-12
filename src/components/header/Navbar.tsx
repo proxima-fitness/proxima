@@ -23,6 +23,7 @@ import {
 import { Crown, LockIcon } from "lucide-react";
 import { authenticatedNavLinks, navLinks } from "@/assets/constants";
 import { useTheme } from "next-themes"
+import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 // import { BuyMeCoffee } from "../ui/buy-me-coffee";
 
 // Client-side function to call the server-side sign out API
@@ -46,7 +47,8 @@ const signOutServer = async () => {
 const NavItems = (pathname: string) => {
     // this should get the user if they logged in server side (via social logins)
     const { user, isLoading } = useUserContext();
-    const { theme, setTheme } = useTheme()
+    const { theme, setTheme } = useTheme();
+    const { isInLbs, toggleModePreference } = usePoundsOrKgContext();
     const { data: userFullName } = useUserFullName(user?.id ? user.id : undefined, "user");
     const { data: hevyApiKey } = useHevySecret(user);
 
@@ -215,6 +217,31 @@ const NavItems = (pathname: string) => {
                                 >
                                     <div className="flex flex-col">
                                         <span className="font-medium">System</span>
+                                    </div>
+                                </DropdownMenuItem>
+                                <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
+                                    Units
+                                </DropdownMenuLabel>
+                                <DropdownMenuItem
+                                    onSelect={(e) => {
+                                        e.preventDefault();
+                                        if (!isInLbs) toggleModePreference();
+                                    }}
+                                    className={`cursor-pointer ${isInLbs ? 'bg-lightGray text-black focus:bg-lightGray hover:text-black' : 'bg-white dark:bg-darkGray dark:text-white text-black'}`}
+                                >
+                                    <div className="flex flex-col">
+                                        <span className="font-medium">Pounds (lbs)</span>
+                                    </div>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onSelect={(e) => {
+                                        e.preventDefault();
+                                        if (isInLbs) toggleModePreference();
+                                    }}
+                                    className={`cursor-pointer ${!isInLbs ? 'bg-lightGray text-black focus:bg-lightGray hover:text-black' : 'bg-white dark:bg-darkGray dark:text-white text-black'}`}
+                                >
+                                    <div className="flex flex-col">
+                                        <span className="font-medium">Kilograms (kg)</span>
                                     </div>
                                 </DropdownMenuItem>
                                 {isPro && stripePortalUrl && (

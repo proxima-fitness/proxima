@@ -1,4 +1,8 @@
+"use client";
+
 import { shortEnglishHumanizer } from "@/assets/constants";
+import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
+import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
 import { Page, Text, View, Document} from "@react-pdf/renderer";
 import { Font } from '@react-pdf/renderer';
 
@@ -18,6 +22,8 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
     const {
         hevyRoutine,
     } = props;
+
+    const { isInLbs } = usePoundsOrKgContext();
 
     return (
         <Document>
@@ -228,10 +234,10 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                     <Text style={ { display: "flex", flexDirection: "column" } }>
                                                         { exercise.sets[0] && exercise.sets[0].weight_kg !== null && exercise.sets[0].weight_kg > 0 && (
                                                             exercise.sets.every((intensity, i, arr) => intensity.weight_kg === arr[0].weight_kg) ? (
-                                                                <Text>{exercise.sets[0].weight_kg} kg</Text>
+                                                                <Text>{formatWeight(exercise.sets[0].weight_kg, isInLbs, "kg")} {getWeightUnit(isInLbs)}</Text>
                                                             ) : (
                                                                 exercise.sets.map((set, index) => (
-                                                                    <Text key={ index } style={ { color: set.type === "warmup" ? "#FFFFFF" : "#000000", backgroundColor: set.type === "warmup" ? "#cbd5e1" : "#f8f8f8", paddingHorizontal: "4px", borderRadius: "4px" } }>{ set.weight_kg } kg</Text>
+                                                                    <Text key={ index } style={ { color: set.type === "warmup" ? "#FFFFFF" : "#000000", backgroundColor: set.type === "warmup" ? "#cbd5e1" : "#f8f8f8", paddingHorizontal: "4px", borderRadius: "4px" } }>{ formatWeight(set.weight_kg ?? 0, isInLbs, "kg") } {getWeightUnit(isInLbs)}</Text>
                                                                 ))
                                                             )
                                                         )}

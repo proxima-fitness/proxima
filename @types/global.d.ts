@@ -137,3 +137,8 @@ type TExerciseStallResult = {
         totalReps?: number;
     }>
 }
+
+interface IPoundsOrKgContextValue {
+	isInLbs: boolean;
+	toggleModePreference: () => void;
+}

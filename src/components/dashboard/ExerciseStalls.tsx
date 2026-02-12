@@ -8,6 +8,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
+import { formatWeight as formatWeightUtil, getWeightUnit as getWeightUnitUtil } from "@/lib/weightUtils";
 import Link from "next/link";
 
 const BLIND_SPOT_STRINGS = {
@@ -79,7 +81,8 @@ const MiniTrendGraph: React.FC<{ trend: number[]; color: string }> = ({ trend, c
 
 export const ExerciseStalls: React.FC<IProps> = (props) => {
     const { exercises, onExploreFixes, onViewMore, viewMoreHref, showViewMore = true, dataLoading = false } = props;
-    const isInLbs = true;
+    const { isInLbs } = usePoundsOrKgContext();
+
     const isLg = useMediaQuery("(min-width: 1024px)");
     const isSm = useMediaQuery("(min-width: 640px)");
     const gridColumns = useMemo(() => (isLg ? 3 : isSm ? 2 : 1), [isLg, isSm]);
@@ -122,17 +125,6 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
         } catch {
             return dateString;
         }
-    };
-
-    const formatWeight = (weightInLbs: number): string => {
-        if (isInLbs) {
-            return Number(weightInLbs).toFixed(2);
-        }
-        return (weightInLbs * 0.453592).toFixed(2);
-    };
-
-    const getWeightUnit = (): string => {
-        return isInLbs ? "lbs" : "kg";
     };
 
     return (
@@ -180,7 +172,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                                                 </div>
                                             ) : exercise.weight > 0 ? (
                                                 <div className="text-lg font-bold" style={{ color: colorValue }}>
-                                                    {formatWeight(exercise.weight)} {getWeightUnit()}
+                                                    {formatWeightUtil(exercise.weight, isInLbs, "lbs")} {getWeightUnitUtil(isInLbs)}
                                                 </div>
                                             ) : (
                                                 <div className="text-sm text-muted-foreground">
@@ -240,7 +232,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                                                                         ? (session.totalReps ?? 0) > 0
                                                                             ? `${session.totalReps} reps x BW`
                                                                             : "BW"
-                                                                        : `${formatWeight(session.totalVolume)} ${getWeightUnit()}`}
+                                                                        : `${formatWeightUtil(session.totalVolume, isInLbs, "lbs")} ${getWeightUnitUtil(isInLbs)}`}
                                                                 </div>
                                                             </div>
                                                             <div className="flex flex-col items-end gap-0.5">
@@ -249,8 +241,8 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                                                                 </div>
                                                                 <div className="text-sm font-bold" style={{ color: colorValue }}>
                                                                     {session.maxWeight < 0.01
-                                                                        ? `BW ${getWeightUnit()}`
-                                                                        : `${formatWeight(session.maxWeight)} ${getWeightUnit()}`}
+                                                                        ? `BW ${getWeightUnitUtil(isInLbs)}`
+                                                                        : `${formatWeightUtil(session.maxWeight, isInLbs, "lbs")} ${getWeightUnitUtil(isInLbs)}`}
                                                                 </div>
                                                             </div>
                                                         </div>

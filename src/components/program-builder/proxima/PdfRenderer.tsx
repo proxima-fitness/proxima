@@ -1,4 +1,8 @@
+"use client";
+
 import { shortEnglishHumanizer } from "@/assets/constants";
+import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
+import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
 import { Page, Text, View, Document} from "@react-pdf/renderer";
 import { Font } from '@react-pdf/renderer';
 
@@ -18,6 +22,8 @@ export const PdfRenderer: React.FC<IProps> = (props) => {
     const {
         program,
     } = props;
+
+    const { isInLbs } = usePoundsOrKgContext();
 
     return (
         <Document>
@@ -308,10 +314,10 @@ export const PdfRenderer: React.FC<IProps> = (props) => {
                                                         )}
                                                         { exercise?.weights && (
                                                             exercise.weights.every((weightVal, i, arr) => weightVal === arr[0]) ? (
-                                                                <Text>{exercise.weights[0]} lbs</Text>
+                                                                <Text>{formatWeight(exercise.weights[0], isInLbs, "lbs")} {getWeightUnit(isInLbs)}</Text>
                                                             ) : (
                                                                 exercise.weights.map((weightVal, index) => (
-                                                                    <Text key={ index }>{ weightVal }lbs</Text>
+                                                                    <Text key={ index }>{ formatWeight(weightVal, isInLbs, "lbs") } {getWeightUnit(isInLbs)}</Text>
                                                                 ))
                                                             )
                                                         )}

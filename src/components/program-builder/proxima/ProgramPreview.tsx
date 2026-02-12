@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { shortEnglishHumanizer } from "@/assets/constants";
+import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
+import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -16,6 +18,7 @@ export const ProgramPreview: React.FC<IProps> = (props) => {
         sortedWorkoutsByWeek,
     } = props;
 
+    const { isInLbs } = usePoundsOrKgContext();
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(true);
@@ -241,10 +244,10 @@ export const ProgramPreview: React.FC<IProps> = (props) => {
                                                         )}
                                                         { exercise?.weights && (
                                                             exercise.weights.every((weightVal, i, arr) => weightVal === arr[0]) ? (
-                                                                <div>{exercise.weights[0]} lbs</div>
+                                                                <div>{formatWeight(exercise.weights[0], isInLbs, "lbs")} {getWeightUnit(isInLbs)}</div>
                                                             ) : (
                                                                 exercise.weights.map((weightVal, index) => (
-                                                                    <div key={ index }>{ weightVal }lbs</div>
+                                                                    <div key={ index }>{ formatWeight(weightVal, isInLbs, "lbs") } {getWeightUnit(isInLbs)}</div>
                                                                 ))
                                                             )
                                                         )}

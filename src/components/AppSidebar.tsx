@@ -18,6 +18,7 @@ import { useMyFeatureLimits, useUserFullName } from "@/api/hooks";
 import { signOutUser } from "@/api/authentication";
 import { TestUserTierToggle } from "@/components/TestUserTierToggle";
 import { isTestUser } from "@/api/featureLimits";
+import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 
 // Client-side function to call the server-side sign out API
 const signOutServer = async () => {
@@ -53,6 +54,7 @@ const baseItems = [
 
 export function AppSidebar() {
     const { user, isLoading } = useUserContext();
+    const { isInLbs, toggleModePreference } = usePoundsOrKgContext();
     const { data: userFullName } = useUserFullName(user?.id ? user.id : undefined, "user");
     const { data: featureLimits } = useMyFeatureLimits(user);
     const isPro = featureLimits?.has_active_subscription === true;
@@ -110,6 +112,31 @@ export function AppSidebar() {
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             ) ) }
+                        </SidebarMenu>
+                    </SidebarGroupContent>
+                </SidebarGroup>
+                <SidebarGroup>
+                    <SidebarGroupLabel className="text-sidebar-foreground/70">Units</SidebarGroupLabel>
+                    <SidebarGroupContent>
+                        <SidebarMenu>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    isActive={isInLbs}
+                                    onClick={() => { if (!isInLbs) toggleModePreference(); }}
+                                    className="font-main"
+                                >
+                                    <span className="font-main">Pounds (lbs)</span>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    isActive={!isInLbs}
+                                    onClick={() => { if (isInLbs) toggleModePreference(); }}
+                                    className="font-main"
+                                >
+                                    <span className="font-main">Kilograms (kg)</span>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>

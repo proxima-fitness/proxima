@@ -16,6 +16,7 @@ import { PreviewProvider } from "@/contexts/PreviewContext";
 import { UserProvider } from "@/contexts/UserContext";
 import { ConditionalFooter } from "@/components/footer/ConditionalFooter";
 import { ThemeProvider } from "@/components/theme-provider"
+import { PoundsOrKgProvider } from "@/contexts/PoundsOrKgContext";
 
 export const metadata: Metadata = {
     title: 'Proxima Fitness | Agentic Workout Builder',
@@ -69,6 +70,7 @@ export default function RootLayout({
                         <IsHevyProvider>
                             <PreviewProvider>
                                 <SidebarProvider>
+                                    <PoundsOrKgProvider>
                                     <div className="max-sm:block hidden">
                                         <AppSidebar />
                                     </div>
@@ -92,6 +94,7 @@ export default function RootLayout({
                                         </main>
                                         <ConditionalFooter />
                                     </div>
+                                    </PoundsOrKgProvider>
                                 </SidebarProvider>
                             </PreviewProvider>
                         </IsHevyProvider>

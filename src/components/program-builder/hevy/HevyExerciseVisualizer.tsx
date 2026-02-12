@@ -1,4 +1,8 @@
+"use client";
+
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
+import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
 import { LinkIcon, NotebookTextIcon, TimerIcon, Trash2Icon, XIcon } from "lucide-react";
 import { HevyExerciseGif } from "./HevyExerciseGif";
 import { useHevyExercises } from "@/api/hooks";
@@ -53,6 +57,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
         removeFromSuperset,
     } = props;
 
+    const { isInLbs } = usePoundsOrKgContext();
     const { data: hevyExercises, isLoading } = useHevyExercises();
 
     const editHandler = (e: React.MouseEvent<HTMLButtonElement>, folder_id: number, dayOrder: number, i: number, exercise: THevyExercise) => {
@@ -206,11 +211,11 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                         <div className="min-w-[33%] flex flex-col justify-center items-center h-full">
                                             {exercise.sets[0] && exercise.sets[0].weight_kg !== null && exercise.sets[0].weight_kg > 0 && (
                                                 exercise.sets.every((intensity, i, arr) => intensity.weight_kg === arr[0].weight_kg) ? (
-                                                    <div>{ exercise.sets[0].weight_kg ? exercise.sets[0].weight_kg.toFixed(2) : ''} kg</div>
+                                                    <div>{ formatWeight(exercise.sets[0].weight_kg, isInLbs, "kg") } {getWeightUnit(isInLbs)}</div>
                                                 ) : (
                                                     exercise.sets.map((set, index) => (
                                                         <div key={index} className={`${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
-                                                            { set.weight_kg ? set.weight_kg.toFixed(2) : ''} kg
+                                                            { formatWeight(set.weight_kg ?? 0, isInLbs, "kg") } {getWeightUnit(isInLbs)}
                                                         </div>
                                                     ))
                                                 )

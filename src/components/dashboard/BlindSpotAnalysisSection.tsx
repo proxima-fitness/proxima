@@ -15,6 +15,8 @@ import {
     DialogTitle,
     DialogDescription,
 } from "@/components/ui/dialog";
+import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
+import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
 import { ExerciseStalls, type IExercise } from "./ExerciseStalls";
 import Link from "next/link";
 import { ChartLineIcon } from "lucide-react";
@@ -61,6 +63,7 @@ const STALL_PROMPT = "I have stalled on this exercise can you modify my existing
 
 function formatSessionLine(
     s: { date: string; totalVolume: number; maxWeight: number; totalReps?: number },
+    isInLbs: boolean,
 ): string {
     const dateStr = (() => {
         try {
@@ -79,12 +82,13 @@ function formatSessionLine(
     if (s.maxWeight < 0.01) {
         return `${dateStr}: BW`;
     }
-    return `${dateStr}: ${s.maxWeight.toFixed(1)} lbs max, ${s.totalVolume.toFixed(0)} lbs volume`;
+    const unit = getWeightUnit(isInLbs);
+    return `${dateStr}: ${formatWeight(s.maxWeight, isInLbs, "lbs")} ${unit} max, ${formatWeight(s.totalVolume, isInLbs, "lbs")} ${unit} volume`;
 }
 
-function buildStallSearchString(exercise: IExercise): string {
+function buildStallSearchString(exercise: IExercise, isInLbs: boolean): string {
     const sessions = (exercise.sessions ?? []).slice(0, 15);
-    const historyLines = sessions.map(formatSessionLine);
+    const historyLines = sessions.map((s) => formatSessionLine(s, isInLbs));
     return [
         STALL_PROMPT,
         `Recent history for ${exercise.name} (last 15 sessions):`,
@@ -100,6 +104,7 @@ type BlindSpotAnalysisSectionProps = {
 export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHevy = false }: BlindSpotAnalysisSectionProps) {
     const router = useRouter();
     const { user } = useUserContext();
+    const { isInLbs } = usePoundsOrKgContext();
     const { data: templates = [], isLoading: isLoadingTemplates } = useHevyExercises();
     const { data: exerciseStallsData, isLoading: isLoadingExerciseStalls } = useExerciseStallsAnalysis(user);
     const { data: featureLimits } = useMyFeatureLimits(user);
@@ -120,7 +125,7 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
     const handleSelectProgram = useCallback(
         (program: { id: number }) => {
             if (!exploreFixesExercise) return;
-            const search = buildStallSearchString(exploreFixesExercise);
+            const search = buildStallSearchString(exploreFixesExercise, isInLbs);
             const params = new URLSearchParams({
                 shareId: String(program.id),
                 shared: "true",
@@ -131,13 +136,13 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
             setExploreFixesDialogOpen(false);
             setExploreFixesExercise(null);
         },
-        [exploreFixesExercise, router],
+        [exploreFixesExercise, isInLbs, router],
     );
 
     const handleSelectHevyProgram = useCallback(
         (program: HevyProgramItem) => {
             if (!exploreFixesExercise) return;
-            const search = buildStallSearchString(exploreFixesExercise);
+            const search = buildStallSearchString(exploreFixesExercise, isInLbs);
             for (const routine of program.program) {
                 routine.folder_id = 0;
             }
@@ -151,7 +156,7 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
             setExploreFixesDialogOpen(false);
             setExploreFixesExercise(null);
         },
-        [exploreFixesExercise, router],
+        [exploreFixesExercise, isInLbs, router],
     );
 
     const filteredAndSorted = useMemo(() => {

@@ -1,4 +1,8 @@
+"use client";
+
 import { shortEnglishHumanizer } from "@/assets/constants";
+import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
+import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
 import { Card } from "@/components/ui/card";
 
 interface IProps {
@@ -10,6 +14,8 @@ export const HevyRoutinePreview: React.FC<IProps> = (props) => {
     const {
         deflatHevyRoutine,
     } = props;
+
+    const { isInLbs } = usePoundsOrKgContext();
 
     return (
         <div className="flex flex-row max-sm:flex-col max-sm:w-screen max-h-screen overflow-auto sm:p-2 gap-4 border-t-4 border-lightGray dark:border-darkGray  pt-2">
@@ -103,10 +109,10 @@ export const HevyRoutinePreview: React.FC<IProps> = (props) => {
                                                 <div className="min-w-[33%] flex flex-col justify-center items-center">
                                                     { exercise.sets[0] && exercise.sets[0].weight_kg !== null && exercise.sets[0].weight_kg > 0 && (
                                                         exercise.sets.every((intensity, i, arr) => intensity.weight_kg === arr[0].weight_kg) ? (
-                                                            <div>{exercise.sets[0].weight_kg} kg</div>
+                                                            <div>{formatWeight(exercise.sets[0].weight_kg, isInLbs, "kg")} {getWeightUnit(isInLbs)}</div>
                                                         ) : (
                                                             exercise.sets.map((set, index) => (
-                                                                <div key={ index } className={ set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : "" }>{ set.weight_kg } kg</div>
+                                                                <div key={ index } className={ set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : "" }>{ formatWeight(set.weight_kg ?? 0, isInLbs, "kg") } {getWeightUnit(isInLbs)}</div>
                                                             ))
                                                         )
                                                     )}
