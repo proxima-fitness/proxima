@@ -198,7 +198,7 @@ export function BuildProgramClient() {
     useEffect(() => {
         if (!search?.trim() || initialSearchOccurred.current || !sendMessageRef.current) return;
         if (shared === 'true' && shareId && hevyProgram.length === 0 && !sharedProgramLoadAttemptedRef.current) return;
-        if (resume === 'true' && hevyProgram.length === 0 && !resumeLoadAttemptedRef.current) return;
+        if (resume === 'true' && hevyProgram.length === 0) return;
         initialSearchOccurred.current = true;
         sendMessageRef.current({ text: search });
         posthog.capture('sent_first_prompt_to_ai', { search: search, user: user?.id ?? "user_id_unknown" });

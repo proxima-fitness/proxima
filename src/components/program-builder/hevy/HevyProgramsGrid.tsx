@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useHevyPrograms, useHevySecret } from "@/api/hooks";
-import { useUserContext } from "@/contexts/UserContext";
 import { NotepadTextIcon, EditIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { hevy_logo } from "public";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+
+export type HevyProgramItem = { program_title: string; program: THevyRoutine[] };
 
 const ROUTINES_PER_PAGE = 4;
 
@@ -14,7 +15,7 @@ function HevyProgramCard({
     program,
     onEdit,
 }: {
-    program: { program_title: string; program: THevyRoutine[] };
+    program: HevyProgramItem;
     onEdit: () => void;
 }) {
     const [currentPage, setCurrentPage] = useState(1);
@@ -106,16 +107,15 @@ function HevyProgramCard({
     );
 }
 
-export const HevyProgramsGrid: React.FC = () => {
-    const { user } = useUserContext();
-    const { data: hevyApiKey } = useHevySecret(user);
-    const { data: hevyPrograms } = useHevyPrograms(user, hevyApiKey);
+type HevyProgramsGridProps = {
+    hevyPrograms: HevyProgramItem[] | undefined;
+    isLoadingHevy?: boolean;
+};
+
+export const HevyProgramsGrid: React.FC<HevyProgramsGridProps> = ({ hevyPrograms, isLoadingHevy }) => {
     const router = useRouter();
 
-    const handleEditProgram = (
-        program: { program_title: string; program: THevyRoutine[] },
-        edit: boolean
-    ) => {
+    const handleEditProgram = (program: HevyProgramItem, edit: boolean) => {
         for (const routine of program.program) {
             routine.folder_id = 0;
         }
@@ -123,7 +123,21 @@ export const HevyProgramsGrid: React.FC = () => {
         router.push(`/build-program?edit=${String(edit)}&resume=true`);
     };
 
-    if (!hevyPrograms) {
+    if (isLoadingHevy) {
+        return (
+            <section className="pt-10 pb-12">
+                <Skeleton className="h-8 w-48 mb-6" />
+                <Skeleton className="h-4 w-72 mb-6" />
+                <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 max-md:grid-cols-2 pb-8">
+                    {[1, 2, 3].map((i) => (
+                        <Skeleton key={i} className="h-[200px] w-full rounded-xl" />
+                    ))}
+                </div>
+            </section>
+        );
+    }
+
+    if (!hevyPrograms || hevyPrograms.length === 0) {
         return <></>;
     }
 

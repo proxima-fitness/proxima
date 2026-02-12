@@ -18,6 +18,7 @@ import {
 import { ExerciseStalls, type IExercise } from "./ExerciseStalls";
 import Link from "next/link";
 import { ChartLineIcon } from "lucide-react";
+import type { HevyProgramItem } from "@/components/program-builder/hevy/HevyProgramsGrid";
 
 const PRO_PAGE_SIZE = 9;
 const FREE_LIMIT = 3;
@@ -91,7 +92,12 @@ function buildStallSearchString(exercise: IExercise): string {
     ].join("\n");
 }
 
-export function BlindSpotAnalysisSection() {
+type BlindSpotAnalysisSectionProps = {
+    hevyPrograms?: HevyProgramItem[] | undefined;
+    isLoadingHevy?: boolean;
+};
+
+export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHevy = false }: BlindSpotAnalysisSectionProps) {
     const router = useRouter();
     const { user } = useUserContext();
     const { data: templates = [], isLoading: isLoadingTemplates } = useHevyExercises();
@@ -119,6 +125,26 @@ export function BlindSpotAnalysisSection() {
                 shareId: String(program.id),
                 shared: "true",
                 edit: "true",
+                search,
+            });
+            router.push(`/build-program?${params.toString()}`);
+            setExploreFixesDialogOpen(false);
+            setExploreFixesExercise(null);
+        },
+        [exploreFixesExercise, router],
+    );
+
+    const handleSelectHevyProgram = useCallback(
+        (program: HevyProgramItem) => {
+            if (!exploreFixesExercise) return;
+            const search = buildStallSearchString(exploreFixesExercise);
+            for (const routine of program.program) {
+                routine.folder_id = 0;
+            }
+            localStorage.setItem("hevy-program-in-progress", JSON.stringify(program.program));
+            const params = new URLSearchParams({
+                edit: "true",
+                resume: "true",
                 search,
             });
             router.push(`/build-program?${params.toString()}`);
@@ -222,16 +248,16 @@ export function BlindSpotAnalysisSection() {
                         </DialogDescription>
                     </DialogHeader>
                     <div className="py-2">
-                        {isLoadingPrograms ? (
+                        {isLoadingPrograms || isLoadingHevy ? (
                             <div className="space-y-2">
-                                {[1, 2, 3].map((i) => (
+                                {[1, 2, 3, 4, 5].map((i) => (
                                     <Skeleton key={i} className="h-12 w-full rounded-md" />
                                 ))}
                             </div>
-                        ) : subscribedPrograms.length === 0 ? (
+                        ) : subscribedPrograms.length === 0 && (!hevyPrograms || hevyPrograms.length === 0) ? (
                             <div>
                                 <p className="text-sm text-muted-foreground">
-                                    You don&apos;t have any saved programs yet. Save programs from Explore to modify them.
+                                    You don&apos;t have any saved programs yet. Save programs from Explore to modify them, or connect Hevy to use your Hevy programs.
                                 </p>
                                 <Link
                                     href="/programs"
@@ -242,17 +268,42 @@ export function BlindSpotAnalysisSection() {
                             </div>
                         ) : (
                             <ul className="list-none p-0 space-y-2 max-h-[280px] overflow-y-auto">
-                                {subscribedPrograms.map((program) => (
-                                    <li key={program.id}>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleSelectProgram(program)}
-                                            className="w-full rounded-md border bg-card px-4 py-3 text-left text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                                        >
-                                            {program.title}
-                                        </button>
-                                    </li>
-                                ))}
+                                {subscribedPrograms.length > 0 && (
+                                    <>
+                                        <li className="text-xs font-medium text-muted-foreground uppercase tracking-wide pt-1 pb-0.5">
+                                            Saved on Proxima
+                                        </li>
+                                        {subscribedPrograms.map((program) => (
+                                            <li key={`sub-${program.id}`}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleSelectProgram(program)}
+                                                    className="w-full rounded-md border bg-card px-4 py-3 text-left text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                                >
+                                                    {program.title}
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </>
+                                )}
+                                {hevyPrograms && hevyPrograms.length > 0 && (
+                                    <>
+                                        <li className="text-xs font-medium text-muted-foreground uppercase tracking-wide pt-3 pb-0.5">
+                                            From Hevy
+                                        </li>
+                                        {hevyPrograms.map((program, index) => (
+                                            <li key={`hevy-${index}`}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleSelectHevyProgram(program)}
+                                                    className="w-full rounded-md border bg-card px-4 py-3 text-left text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                                >
+                                                    {program.program_title}
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </>
+                                )}
                             </ul>
                         )}
                     </div>
