@@ -7,8 +7,8 @@ import { User } from "@supabase/supabase-js";
 import { jack, people02, people03, people04, people05 } from "public";
 import { AvatarStack } from "@/components/avatar-stack";
 import { AiProgramGrid } from "./AiProgramGrid";
-import { RecentProgramsGrid } from "./RecentProgramsGrid";
 import { PromptTemplate } from "./PromptTemplate";
+import { ResumeDraftBanner } from "../ResumeDraftBanner";
 import { Integrations } from "@/components/header/Integrations";
 // import { BuyMeCoffee } from "@/components/ui/buy-me-coffee";
 import posthog from "posthog-js";
@@ -40,6 +40,9 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                     <div className="text-center">
                         <div className="font-main text-4xl max-sm:text-2xl max-sm:px-2 font-bold uppercase dark:text-white">build your fitness plan</div>
                         <div className="text-lg font-normal px-12 max-sm:text-sm max-sm:px-2 dark:text-white">Create a workout program by chatting with AI</div>
+                    </div>
+                    <div className="flex items-center justify-center pt-8">
+                        <ResumeDraftBanner />
                     </div>
                     <div className="w-full max-w-3xl max-sm:px-2">
                         {/* Mobile only - Buy Me a Coffee */}
@@ -86,8 +89,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                 <MessageSquareWarningIcon />
                 Please use on a desktop computer for best experience
             </div>
-                <RecentProgramsGrid />
-                <AiProgramGrid />
+            <AiProgramGrid />
             </>
 
     );
