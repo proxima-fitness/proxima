@@ -271,7 +271,7 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
                                 {subscribedPrograms.length > 0 && (
                                     <>
                                         <li className="text-xs font-medium text-muted-foreground uppercase tracking-wide pt-1 pb-0.5">
-                                            Saved on Proxima
+                                            My Programs
                                         </li>
                                         {subscribedPrograms.map((program) => (
                                             <li key={`sub-${program.id}`}>

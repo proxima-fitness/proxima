@@ -41,10 +41,10 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                         <div className="font-main text-4xl max-sm:text-2xl max-sm:px-2 font-bold uppercase dark:text-white">build your fitness plan</div>
                         <div className="text-lg font-normal px-12 max-sm:text-sm max-sm:px-2 dark:text-white">Create a workout program by chatting with AI</div>
                     </div>
-                    <div className="flex items-center justify-center pt-8">
-                        <ResumeDraftBanner />
-                    </div>
-                    <div className="w-full max-w-3xl max-sm:px-2">
+                    <div className="w-full max-w-3xl max-sm:px-2 ">
+                        <div className="pt-8">
+                            <ResumeDraftBanner />
+                        </div>
                         {/* Mobile only - Buy Me a Coffee */}
                         {/* <div className="sm:hidden flex justify-center mb-4">
                             <BuyMeCoffee />
