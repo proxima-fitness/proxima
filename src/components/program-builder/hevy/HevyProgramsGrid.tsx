@@ -99,7 +99,7 @@ function HevyProgramCard({
             )}
 
             {/* Footer: Edit button */}
-            <div className="flex flex-row justify-end p-4 pt-2 border-t border-border dark:border-white/10 ">
+            <div className="flex flex-row justify-end p-4 border-t border-border dark:border-white/10 ">
                 <Button
                     size="lg"
                     className="gap-2 py-2 bg-lightSecondary text-white hover:bg-black hover:text-white rounded-lg shadow"
