@@ -251,7 +251,7 @@ export const postHevyRoutineProgram = async (
             nthDay: Number(routine?.order || '1'),
             day_title: routine.title,
             day_notes: routine?.notes ?? "",
-            program_id: String(newProgramId),
+            program_id: newProgramId,
         }));
 
         // Insert schedules in batches
@@ -286,7 +286,6 @@ export const postHevyRoutineProgram = async (
                     const rpe = exercise.sets?.map((set) => set.rpe) ?? null;
 
                     return {
-                        id: uuidv4(),
                         schedule_id: schedule.id,
                         exercise_id: exerciseId,
                         reps: reps,
@@ -313,7 +312,12 @@ export const postHevyRoutineProgram = async (
             if (batch.length > 0) {
                 const { error: workoutError } = await supabase.from('program_workout_exercises').insert(batch);
                 if (workoutError) {
-                    console.error('Error inserting program workout exercises batch:', workoutError);
+                    console.error('Error inserting program workout exercises batch:', {
+                        code: workoutError.code,
+                        message: workoutError.message,
+                        details: workoutError.details,
+                        fullError: workoutError,
+                    });
                     return workoutError;
                 }
             }

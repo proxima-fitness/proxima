@@ -17,6 +17,7 @@ import { HevyPdfRenderer } from "../hevy/HevyPdfRenderer";
 import { deFlattenHevyRoutine } from "../utils";
 import { ChevronLeft } from "lucide-react";
 import { ExportToHevySetup } from "./ExportToHevySetup";
+import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 
 interface IProps {
     open: boolean;
@@ -26,6 +27,7 @@ interface IProps {
 
 export const ExportDialog: React.FC<IProps> = (props) => {
     const { open, onOpenChange, programId } = props;
+    const { isInLbs } = usePoundsOrKgContext();
     const [selectedExportId, setSelectedExportId] = useState<string | null>(null);
     const [hevyUploading, setHevyUploading] = useState(false);
     const [showBackConfirm, setShowBackConfirm] = useState(false);
@@ -110,7 +112,7 @@ export const ExportDialog: React.FC<IProps> = (props) => {
                             }
                             return (
                                 <PDFViewer className="w-full max-sm:h-[50vh] h-[60vh] rounded-lg border">
-                                    <HevyPdfRenderer hevyRoutine={hevyRoutine} />
+                                    <HevyPdfRenderer hevyRoutine={hevyRoutine} isInLbs={isInLbs} />
                                 </PDFViewer>
                             );
                         })()}

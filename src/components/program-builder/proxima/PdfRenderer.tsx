@@ -15,15 +15,19 @@ Font.register({
 
 interface IProps {
     program: TScheduleWorkouts[][];
+    /** Pass when rendering inside PDFViewer (no provider). Omit when under PoundsOrKgProvider. */
+    isInLbs?: boolean;
 }
 
 export const PdfRenderer: React.FC<IProps> = (props) => {
 
     const {
         program,
+        isInLbs: isInLbsProp,
     } = props;
 
-    const { isInLbs } = usePoundsOrKgContext();
+    const { isInLbs: contextIsInLbs } = usePoundsOrKgContext();
+    const isInLbs = isInLbsProp ?? contextIsInLbs;
 
     return (
         <Document>

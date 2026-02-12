@@ -3,12 +3,14 @@ import { createContext, ReactNode, useContext, useEffect, useState } from 'react
 
 export const PoundsOrKgContext = createContext<IPoundsOrKgContextValue | undefined>(undefined);
 
+const DEFAULT_POUNDS_OR_KG: IPoundsOrKgContextValue = {
+    isInLbs: true,
+    toggleModePreference: () => {},
+};
+
 export const usePoundsOrKgContext = () => {
     const context = useContext(PoundsOrKgContext);
-    if (!context) {
-        throw new Error('usePoundsOrKgContext must be used within a PoundsOrKgProvider');
-    }
-    return context;
+    return context ?? DEFAULT_POUNDS_OR_KG;
 };
 
 const setPoundsOrKgPreference = (isInLbs: string) => {
@@ -26,14 +28,7 @@ const stringToBool = (text: "true" | "false"): boolean => {
 };
 
 export const PoundsOrKgProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [isInLbs, setIsInLbs] = useState<boolean>(() => {
-        const savedMode = getPoundsOrKgPreference();
-        if (savedMode === null) {
-            setPoundsOrKgPreference(String(true));
-            return true; // If no saved preference, default to pounds
-        }
-        return stringToBool(savedMode as "true" | "false");
-    });
+    const [isInLbs, setIsInLbs] = useState<boolean>(true);
 
     useEffect(() => {
         const saved = getPoundsOrKgPreference();
