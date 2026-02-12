@@ -1,11 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { NotepadTextIcon, EditIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { NotepadTextIcon, EditIcon, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { hevy_logo } from "public";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export type HevyProgramItem = { program_title: string; program: THevyRoutine[] };
 
@@ -147,10 +152,30 @@ export const HevyProgramsGrid: React.FC<HevyProgramsGridProps> = ({ hevyPrograms
                 <NotepadTextIcon className="mr-2 size-7" />
                 My Hevy Programs
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-                These are your synced programs from Hevy. Click on a program to modify or ask
-                questions in the builder. Exporting is one-way.
-            </p>
+            <div className="text-gray-600 dark:text-gray-400 mb-6">
+                These are your synced programs from Hevy.{" "}
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="link"
+                            className="h-auto p-0 text-gray-600 dark:text-gray-400 font-normal underline underline-offset-2"
+                            aria-label="Read more about Hevy programs"
+                        >
+                            More Info
+                            <ChevronDown className="ml-0.5 size-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                        align="start"
+                        className="min-w-[20rem] max-w-md p-4"
+                    >
+                        <p className="text-sm text-popover-foreground">
+                            Click &quot;Edit&quot; on a program to modify or ask
+                            questions in the builder. Folders are treated as separate programs, please add your routine to a folder in Hevy to see the program sync here (My Routines folder is not considered a folder by Hevy). Exporting will create a new program in Hevy.
+                        </p>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
             <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 max-md:grid-cols-2 pb-8">
                 {hevyPrograms.map((program, index) => (
                     <HevyProgramCard
