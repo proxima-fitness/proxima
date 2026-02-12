@@ -63,10 +63,12 @@ export const amrapAsNumber = (amrap: string[] = []) => {
 };
 
 
-// Returns the initials of an exercise
-export const getInitials = (name: string) => {
+// Returns the initials of an exercise, or null when there are none (e.g. empty or whitespace-only name)
+export const getInitials = (name: string): string | null => {
     const words = name.trim().split(" ");
-    const initials = words.map(word => word[0].toUpperCase());
+    const nonEmpty = words.filter(w => w.length > 0);
+    if (nonEmpty.length === 0) return null;
+    const initials = nonEmpty.map(word => word[0].toUpperCase());
     if (initials.length > 2) {
         return initials.slice(0, 2).join("");
     }

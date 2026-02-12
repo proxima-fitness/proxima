@@ -49,6 +49,7 @@ const NavItems = (pathname: string) => {
     const { theme, setTheme } = useTheme()
     const { data: userFullName } = useUserFullName(user?.id ? user.id : undefined, "user");
     const { data: hevyApiKey } = useHevySecret(user);
+
     const { data: featureLimits } = useMyFeatureLimits(user);
     const queryClient = useQueryClient();
     const isPro = featureLimits?.has_active_subscription === true;

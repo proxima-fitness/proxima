@@ -13,6 +13,7 @@ import { ProgramsFallback } from "@/components/generic/ProgramsFallback";
 export function DashboardContent() {
     const { user } = useUserContext();
     const { data: hevyApiKey } = useHevySecret(user);
+
     const { data: hevyPrograms, isLoading: isLoadingHevy } = useHevyPrograms(user, hevyApiKey ?? "");
 
     return (

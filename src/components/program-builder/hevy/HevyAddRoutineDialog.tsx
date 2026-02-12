@@ -21,6 +21,7 @@ export const HevyAddRoutineDialog: React.FC<IProps> = (props) => {
 
     const { user } = useUserContext();
     const { data: hevyApiKey } = useHevySecret(user);
+
     const { data: hevyRoutines, isLoading: isLoadingHevyRoutines } = useHevyRoutines(user, hevyApiKey);
     const isMobile = useIsMobile();
 

@@ -35,6 +35,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 
     const { user } = useUserContext();
     const { data: hevyApiKey } = useHevySecret(user);
+
     const isMobile = useIsMobile();
 
     const { data: exercises, isLoading: loadingHevyExercises } = useHevyExercises();

@@ -25,6 +25,7 @@ export const ConnectHevyDialog: React.FC<IProps> = (props) => {
 
     const { user } = useUserContext();
     const { data: hevyApiKey } = useHevySecret(user);
+
     const [inputValue, setInputValue] = useState(hevyApiKey ?? "");
     const queryClient = useQueryClient();
 

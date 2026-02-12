@@ -1,5 +1,7 @@
+/* eslint-disable react-hooks/purity */
 import { useExerciseGif } from "@/api/hooks";
 import { useMemo, useState } from "react";
+import { DumbbellIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { lightColours } from "@/assets/constants";
 import { getInitials } from "@/utils/general/helpers";
@@ -59,11 +61,13 @@ export const ExerciseGif: React.FC<IProps> = (props) => {
                         className="h-14 w-14 min-w-14 min-h-14 flex items-center justify-center rounded-lg cursor-pointer"
                         style={{ background: randomColour }}
                     >
-                    <div>{getInitials(name)}</div>
+                    <div>{getInitials(name) ?? <DumbbellIcon className="h-6 w-6" />}</div>
                     </div>
                 ) : (
                     <div className={containerClass + " flex items-center justify-center"}>
-                    <div className="text-xl font-bold">{getInitials(name)}</div>
+                    <div className="text-xl font-bold">
+                        {getInitials(name) ?? <DumbbellIcon className="h-8 w-8" />}
+                    </div>
                     </div>
                 )}
                 </>

@@ -9,6 +9,7 @@ export const ConditionalHevyGrid: React.FC = () => {
     const { isHevy } = useIsHevy();
     const { user } = useUserContext();
     const { data: hevyApiKey } = useHevySecret(user);
+
     const { data: hevyPrograms, isLoading: isLoadingHevy } = useHevyPrograms(user, hevyApiKey ?? "");
 
     if (!isHevy) {

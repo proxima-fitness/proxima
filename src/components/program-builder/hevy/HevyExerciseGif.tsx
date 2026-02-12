@@ -1,4 +1,6 @@
+/* eslint-disable react-hooks/purity */
 import { useMemo, useState } from "react";
+import { DumbbellIcon } from "lucide-react";
 import { lightColours } from "@/assets/constants";
 import { getInitials } from "@/utils/general/helpers";
 import { useExerciseGif } from "@/api/hooks";
@@ -55,11 +57,13 @@ export const HevyExerciseGif: React.FC<IProps> = (props) => {
                             className={`${containerClass} flex items-center justify-center rounded-lg cursor-pointer`}
                             style={{ background: randomColour }}
                         >
-                        <div>{getInitials(name)}</div>
+                        <div>{getInitials(name) ?? <DumbbellIcon className="h-6 w-6" />}</div>
                         </div>
                     ) : (
                         <div className={`${containerClass} flex items-center justify-center`}>
-                            <div className="text-xl font-bold">{getInitials(name)}</div>
+                            <div className="text-xl font-bold">
+                                {getInitials(name) ?? <DumbbellIcon className="h-8 w-8" />}
+                            </div>
                         </div>
                     )}
                 </>

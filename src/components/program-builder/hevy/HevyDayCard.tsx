@@ -74,6 +74,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
     const [selectedExercises, setSelectedExercises] = useState<number[]>([]);
     const { user } = useUserContext();
     const { data: hevyApiKey } = useHevySecret(user);
+
     const { data: customExercises } = useHevyCustomExercises(user, hevyApiKey);
 
     const handleEdit = async (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: THevyExercise ) => {
