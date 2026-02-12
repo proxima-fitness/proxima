@@ -1,5 +1,6 @@
 import { MyProgramsVault } from "@/components/programs/MyProgramsVault";
 import { BlindSpotAnalysisSection } from "@/components/dashboard/BlindSpotAnalysisSection";
+import { HevyProgramsGrid } from "@/components/program-builder/hevy/HevyProgramsGrid";
 import styles from "../../../style";
 import { Suspense } from "react";
 import { ProgramsFallback } from "@/components/generic/ProgramsFallback";
@@ -14,6 +15,7 @@ export default function DashboardPage() {
         <div className={`bg-white dark:bg-extraDarkGray ${styles.paddingX} ${styles.flexCenter} flex-col`}>
             <div className={`${styles.boxWidth}`}>
                 <BlindSpotAnalysisSection />
+                <HevyProgramsGrid />
                 <Suspense fallback={<ProgramsFallback />}>
                     <MyProgramsVault />
                 </Suspense>

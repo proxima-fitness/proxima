@@ -7,7 +7,6 @@ import { User } from "@supabase/supabase-js";
 import { jack, people02, people03, people04, people05 } from "public";
 import { AvatarStack } from "@/components/avatar-stack";
 import { AiProgramGrid } from "./AiProgramGrid";
-import { ConditionalHevyGrid } from "../hevy/ConditionalHevyGrid";
 import { RecentProgramsGrid } from "./RecentProgramsGrid";
 import { PromptTemplate } from "./PromptTemplate";
 import { Integrations } from "@/components/header/Integrations";
@@ -88,7 +87,6 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                 Please use on a desktop computer for best experience
             </div>
                 <RecentProgramsGrid />
-                <ConditionalHevyGrid />
                 <AiProgramGrid />
             </>
 

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { ExerciseStalls, type IExercise } from "./ExerciseStalls";
 import Link from "next/link";
+import { ChartLineIcon } from "lucide-react";
 
 const PRO_PAGE_SIZE = 9;
 const FREE_LIMIT = 3;
@@ -163,8 +164,8 @@ export function BlindSpotAnalysisSection() {
 
     return (
         <section className="pt-10 pb-12">
-            <h2 className="text-2xl font-main mb-6 text-black dark:text-white">
-                Blind Spot Analysis ({displayCount})
+            <h2 className="text-2xl font-main mb-6 text-black dark:text-white flex items-center justify-start">
+                <ChartLineIcon className="mr-2 size-7" /> Blind Spot Analysis ({displayCount})
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
                 A smoke check for your lifts. Explore fixes for any exercises that are not progressing.

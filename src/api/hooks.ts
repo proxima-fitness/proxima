@@ -100,7 +100,7 @@ export const useExerciseStallsAnalysis = (user: User | undefined | null) => {
         staleTime: 60 * 60 * 1000,
         gcTime: 2 * 60 * 60 * 1000,
         refetchOnWindowFocus: false,
-        networkMode: "online",
+        refetchOnMount: false,
     });
 };
 

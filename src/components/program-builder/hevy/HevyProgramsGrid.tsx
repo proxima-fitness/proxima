@@ -43,13 +43,15 @@ export const HevyProgramsGrid: React.FC = () => {
     }
 
     return (
-        <div className="flex flex-col gap-2 bg-lightGray dark:bg-extraDarkGray sm:mx-12 sm:pb-24">
-            <span className="text-2xl font-bold px-8 pt-8 flex flex-row items-center justify-start gap-2">
-                <NotepadTextIcon />
+        <section className="pt-10 pb-12">
+            <h2 className="text-2xl font-main mb-6 text-black dark:text-white flex items-center justify-start">
+                <NotepadTextIcon className="mr-2 size-7" />
                 My Hevy Programs
-            </span>
-            <span className="text-xs text-start px-8 pt-4">These are your programs from Hevy. Click on a program to fork your program with AI.</span>
-            <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 py-8 px-8">
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+                These are your synced programs from Hevy. Click on a program to modify or ask questions in the builder. Exporting is one-way.
+            </p>
+            <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 max-md:grid-cols-2 pb-8">
                 { hevyPrograms && hevyPrograms.map((program, index) => (
                     <div key={ index } className="relative group bg-white dark:bg-darkGray dark:text-white text-black h-[200px] rounded-lg shadow-lg">
                     <div className="absolute inset-0 transition duration-300 group-hover:blur-sm z-0">
@@ -89,6 +91,6 @@ export const HevyProgramsGrid: React.FC = () => {
                 </div>
             ))}
             </div>
-        </div>
+        </section>
     );
 };

@@ -5,7 +5,7 @@ import { useUserContext } from "@/contexts/UserContext";
 import { ProgramCard } from "./ProgramCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
-import { Lock, SearchIcon } from "lucide-react";
+import { BookOpenTextIcon, Lock, SearchIcon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import posthog from "posthog-js";
@@ -113,7 +113,8 @@ export const MyProgramsVault = () => {
     return (
         <>
             <div className="pt-10 pb-6">
-                <h2 className="text-2xl font-main mb-2 text-black dark:text-white">
+                <h2 className="text-2xl font-main mb-6  text-black dark:text-white flex items-center justify-start">
+                    <BookOpenTextIcon className="mr-2" />
                     My Programs ({programs.length})
                 </h2>
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
