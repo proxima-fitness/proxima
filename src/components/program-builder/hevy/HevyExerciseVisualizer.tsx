@@ -141,13 +141,15 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             ) : (
                                                 <span className="hidden sm:block">{i + 1}</span>
                                             )}
-                                            <Trash2Icon
-                                                className="block sm:hidden"
-                                                onClick={(event) => {
-                                                    event.stopPropagation();
-                                                    handleDeleteExercise(Number(folder_id), Number(day.order), i);
-                                                }}
-                                            />
+                                            {!editMode && (
+                                                <Trash2Icon
+                                                    className="block sm:hidden"
+                                                    onClick={(event) => {
+                                                        event.stopPropagation();
+                                                        handleDeleteExercise(Number(folder_id), Number(day.order), i);
+                                                    }}
+                                                />
+                                            )}
                                         </div>
                                         <HevyExerciseGif thumbnailOrImage={"thmb"} name={exercise.title} gif_id={hevyExercises?.find((hevyExercise: THevyExerciseTemplate) => hevyExercise.id === exercise.exercise_template_id)?.gif_id} resolution={"180"} file_type={'jpg'} />
                                         <div className="flex flex-row items-center justify-between">
