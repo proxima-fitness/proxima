@@ -21,6 +21,7 @@ export function formatWeight(
     } else {
         displayValue = sourceUnit === "lbs" ? weight * LBS_TO_KG : weight;
     }
+    displayValue = Math.round(displayValue * 4) / 4;
     return Number(displayValue).toFixed(2);
 }
 
