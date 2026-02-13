@@ -290,7 +290,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                 posthog.capture("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: errorMessage });
             } else {
                 queryClient.invalidateQueries({ queryKey: ["subscribed-programs", user.id] });
-                toast.success("Program uploaded to Hevy and saved to My Programs.");
+                toast.success("Program uploaded to Hevy and saved to My Dashboard");
                 posthog.capture("exported_program", { user: user?.id ?? "user_id_unknown", destination: "hevy" });
                 if (isFree) {
                     setShowThankYouBanner(true);
