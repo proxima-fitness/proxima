@@ -1,5 +1,6 @@
 // File for endpoints to the Hevy App Public API
 import { v4 as uuidv4 } from "uuid";
+import { validate as validateUuid } from "uuid";
 import { getMaxFolderId } from "@/components/program-builder/utils";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/api/index";
@@ -196,8 +197,16 @@ export const getHevyRoutines = async (user: User | undefined | null, apiKey: str
     return syncedRoutines;
 };
 
+/** One exercise omitted from the saved program (e.g. not found in library). Caller should show a warning toast. */
+export type SkippedExercise = { exerciseName: string; reason: string };
+
 /** Success shape returned by postHevyRoutineProgram when the program is saved. */
-export type PostHevyRoutineProgramSuccess = { status: "success"; id: number };
+export type PostHevyRoutineProgramSuccess = {
+    status: "success";
+    id: number;
+    /** Exercises that were omitted; UI should show a warning toast per item. */
+    skippedExercises?: SkippedExercise[];
+};
 
 /**
  * POSTS A PROGRAM TO SUPABASE DATABASE (IN PROXIMA SCHEMA FORMAT)
@@ -264,29 +273,80 @@ export const postHevyRoutineProgram = async (
             }
         }
 
-        // STEP 3: Process exercises in batches
+        // STEP 3: Load exercise template lookup (valid IDs + title/normalized_title -> id for fallback)
+        const { data: exerciseTemplates, error: templatesError } = await supabase
+            .from('hevy_exercise_templates')
+            .select('id, title, normalized_title');
+        if (templatesError) {
+            console.error('Error fetching hevy_exercise_templates:', templatesError);
+            return templatesError;
+        }
+        const templates = exerciseTemplates ?? [];
+        const validExerciseIds = new Set(templates.map((t) => t.id));
+        const titleToId = new Map<string, string>();
+        for (const t of templates) {
+            const keyTitle = (t.title ?? '').trim().toLowerCase();
+            const keyNorm = (t.normalized_title ?? '').trim().toLowerCase();
+            if (keyTitle && !titleToId.has(keyTitle)) titleToId.set(keyTitle, t.id);
+            if (keyNorm && !titleToId.has(keyNorm)) titleToId.set(keyNorm, t.id);
+        }
+
+        const skippedExercises: SkippedExercise[] = [];
+        const OMIT_REASON = "Exercise not found in library and will be omitted from your saved program.";
+
+        // STEP 4: Process exercises and build insert rows (resolve exercise_id by ID then by title; sanitize UUIDs)
         const allWorkoutUploads: { [key: string]: unknown }[] = [];
 
         for (let i = 0; i < hevyRoutines.length; i += BATCH_SIZE) {
             const routineBatch = hevyRoutines.slice(i, i + BATCH_SIZE);
 
-            // Process each routine in the batch
             for (const routine of routineBatch) {
                 const schedule = scheduleUploads[i + routineBatch.indexOf(routine)];
                 if (!schedule) continue;
 
-                // Exercise metadata like reason is UI-only and not stored in Supabase
-                const exercisePromises = (routine.exercises ?? []).map(async (exercise) => {
-                    const exerciseId = exercise.exercise_template_id;
-                    if (!exerciseId) return null;
+                const scheduleId = schedule.id;
+                const scheduleIdValid =
+                    typeof scheduleId === "string" &&
+                    scheduleId !== "null" &&
+                    validateUuid(scheduleId);
+                if (!scheduleIdValid) {
+                    console.warn('Invalid schedule_id skipped (invalid UUID or "null" string):', scheduleId);
+                    continue;
+                }
+
+                for (const exercise of routine.exercises ?? []) {
+                    const rawId = exercise.exercise_template_id;
+                    const title = (exercise.title ?? '').trim();
+                    const isEmptyOrNullId =
+                        rawId == null ||
+                        (typeof rawId === "string" && (rawId === "" || rawId === "null"));
+
+                    let exerciseId: string | null = null;
+                    if (!isEmptyOrNullId && typeof rawId === "string" && validExerciseIds.has(rawId)) {
+                        exerciseId = rawId;
+                    } else if (title) {
+                        const lookupKey = title.toLowerCase();
+                        exerciseId = titleToId.get(lookupKey) ?? null;
+                    }
+
+                    if (!exerciseId) {
+                        skippedExercises.push({
+                            exerciseName: title || rawId || "Unknown exercise",
+                            reason: OMIT_REASON,
+                        });
+                        if (title || rawId) {
+                            console.warn('Exercise omitted from saved program:', { title, rawId });
+                        }
+                        continue;
+                    }
 
                     const reps = exercise.sets?.map((set) => set.reps) ?? null;
                     const timeTaken = exercise.sets?.map((set) => set.duration_seconds) ?? null;
                     const weights = exercise.sets?.map((set) => set.weight_kg) ?? null;
                     const rpe = exercise.sets?.map((set) => set.rpe) ?? null;
 
-                    return {
-                        schedule_id: schedule.id,
+                    allWorkoutUploads.push({
+                        schedule_id: scheduleId,
                         exercise_id: exerciseId,
                         reps: reps,
                         reps_range: null,
@@ -298,15 +358,12 @@ export const postHevyRoutineProgram = async (
                         rpe: rpe?.[0] === null ? null : rpe,
                         rpe_range: null,
                         percent_rm: null,
-                    };
-                });
-
-                const batchResults = await Promise.all(exercisePromises);
-                allWorkoutUploads.push(...batchResults.filter((result): result is NonNullable<typeof result> => result !== null));
+                    });
+                }
             }
         }
 
-        // STEP 4: Insert workouts in batches
+        // STEP 5: Insert workouts in batches
         for (let i = 0; i < allWorkoutUploads.length; i += BATCH_SIZE) {
             const batch = allWorkoutUploads.slice(i, i + BATCH_SIZE);
             if (batch.length > 0) {
@@ -323,7 +380,11 @@ export const postHevyRoutineProgram = async (
             }
         }
 
-        return { status: "success", id: newProgramId };
+        return {
+            status: "success",
+            id: newProgramId,
+            ...(skippedExercises.length > 0 ? { skippedExercises } : {}),
+        };
     } catch (error) {
         console.error('Unexpected error:', error);
         return error;

@@ -228,6 +228,12 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                 return;
             }
 
+            if (saved && supabaseResult.skippedExercises?.length) {
+                for (const skipped of supabaseResult.skippedExercises) {
+                    toast.warning(`${skipped.exerciseName}: ${skipped.reason}`);
+                }
+            }
+
             const programTitle = request?.programTitle
                 ? [{ id: String(programId), title: request.programTitle }]
                 : undefined;
