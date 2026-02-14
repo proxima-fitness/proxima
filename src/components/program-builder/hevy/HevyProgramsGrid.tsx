@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { NotepadTextIcon, EditIcon, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import Link from "next/link";
+import { NotepadTextIcon, EditIcon, ChevronLeft, ChevronRight, ChevronDown, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { hevy_logo } from "public";
 import { Button } from "@/components/ui/button";
+import { BUILD_PROGRAM_EMPTY_URL } from "@/components/program-builder/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
     DropdownMenu,
@@ -148,10 +150,15 @@ export const HevyProgramsGrid: React.FC<HevyProgramsGridProps> = ({ hevyPrograms
 
     return (
         <section className="pt-10 pb-12">
-            <h2 className="text-2xl font-main mb-6 text-black dark:text-white flex items-center justify-start">
-                <NotepadTextIcon className="mr-2 size-7" />
-                My Hevy Programs
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-main text-black dark:text-white flex items-center justify-start">
+                    <NotepadTextIcon className="mr-2 size-7" />
+                    My Hevy Programs
+                </h2>
+                <Link href={BUILD_PROGRAM_EMPTY_URL} target="_self" rel="noopener noreferrer">
+                    <Button variant="outline">New Program<Plus className="ml-2 size-4" /></Button>
+                </Link>
+            </div>
             <div className="text-gray-600 dark:text-gray-400 mb-6">
                 These are your synced programs from Hevy.{" "}
                 <DropdownMenu>

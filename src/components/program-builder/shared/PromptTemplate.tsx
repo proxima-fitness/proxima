@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { suggestionGroups } from "@/assets/constants";
+import { BUILD_PROGRAM_EMPTY_URL } from "@/components/program-builder/utils";
 import { useTypewriterPlaceholder } from "@/hooks/useTypewriterPlaceholder";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -220,7 +221,7 @@ export const PromptTemplate: React.FC = () => {
                                     target="_self"
                                     className="z-10"
                                     rel="noopener noreferrer"
-                                    href={ `/build-program?empty=true&edit=true` }
+                                    href={BUILD_PROGRAM_EMPTY_URL}
                                 >
                                     <PromptSuggestion className="capitalize h-8 p-4 text-xs dark:bg-darkGray">
                                         {suggestion.icon}
