@@ -1,14 +1,6 @@
 "use client";
 
-import { useUserContext } from "@/contexts/UserContext";
-
 export function HevyPromoBanner() {
-    const { user } = useUserContext();
-
-    if (!user) {
-        return null;
-    }
-
     return (
         <div className="mx-auto mb-8 max-w-xl rounded-xl border border-border bg-muted px-4 py-3 text-center">
             <p className="text-foreground font-medium">

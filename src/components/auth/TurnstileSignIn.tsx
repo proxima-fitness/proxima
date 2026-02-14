@@ -9,8 +9,10 @@ import { useRouter } from "next/navigation";
 interface IProps {
     email: string,
     password: string,
-    setTurnstileOpen: (turnstileOpen: boolean) => void;
+    handleTurnstileClose: () => void;
+    onSignInError?: () => void;
     redirectPath?: string;
+
 }
 
 export const TurnstileSignIn: React.FC<IProps> = (props) => {
@@ -18,7 +20,8 @@ export const TurnstileSignIn: React.FC<IProps> = (props) => {
     const {
         email,
         password,
-        setTurnstileOpen,
+        handleTurnstileClose,
+        onSignInError,
         redirectPath = '/',
     } = props;
 
@@ -35,13 +38,14 @@ export const TurnstileSignIn: React.FC<IProps> = (props) => {
                     setSigningIn(true);
                     const status = await handleSignInViaEmail(email, password, token);
                     if (status instanceof AuthError) {
+                        onSignInError?.();
                         toast.error("Error signing in: " + status.message);
                         setTimeout(() => {
-                            setTurnstileOpen(false);
+                            handleTurnstileClose();
                         }, 3000);
                         turnstile.reset();
 
-                    } else {
+                    } else if (status) {
                         router.push(redirectPath)
                     }
                 } }

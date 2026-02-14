@@ -32,6 +32,14 @@ export function LoginForm({ className, redirectPath = '/', ...props }: LoginForm
     const [appleIsLoading, setAppleIsLoading] = useState(false);
     const [turnstileOpen, setTurnstileOpen] = useState(false);
 
+    const handleIsLoading = (isLoading: boolean) => {
+        setIsLoading(isLoading);
+    }
+
+    const handleTurnstileOpen = (turnstileOpen: boolean) => {
+        setTurnstileOpen(turnstileOpen);
+    }
+
     const handleSocialLogin = async (e: React.FormEvent, provider: Provider) => {
         e.preventDefault()
         const supabase = createClient()
@@ -73,7 +81,7 @@ export function LoginForm({ className, redirectPath = '/', ...props }: LoginForm
             .required("Password is required"),
     });
 
-    const { register, watch, handleSubmit, formState } = useForm({
+    const { register, watch, handleSubmit, formState, setValue } = useForm({
         mode: "onChange",
         resolver: yupResolver(schema),
         defaultValues: {
@@ -88,8 +96,17 @@ export function LoginForm({ className, redirectPath = '/', ...props }: LoginForm
     const { onChange: onPasswordChange } = register("password");
 
     const handleLogin = () => {
-        setIsLoading(true)
-        setTurnstileOpen(true);
+        handleIsLoading(true)
+        handleTurnstileOpen(true);
+    }
+
+    const handleTurnstileClose = () => {
+        handleTurnstileOpen(false);
+        handleIsLoading(false);
+    }
+
+    const handleSignInError = () => {
+        setValue('password', '');
     }
 
   return (
@@ -181,7 +198,8 @@ export function LoginForm({ className, redirectPath = '/', ...props }: LoginForm
             <TurnstileSignIn
                 email={ watch().email }
                 password={ watch().password }
-                setTurnstileOpen={ setTurnstileOpen }
+                handleTurnstileClose={ handleTurnstileClose }
+                onSignInError={ handleSignInError }
                 redirectPath={ redirectPath }
             />
         }
