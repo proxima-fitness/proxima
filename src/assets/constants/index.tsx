@@ -95,7 +95,7 @@ export const exportOptions = [
                 className="w-full h-5 object-contain"
             />
         ),
-        subtitle: "Download a CSV you can import into Macrofactor Workouts",
+        subtitle: "Download a .XLSX you can import into Macrofactor Workouts",
         brand: true,
         disabled: true,
     },
