@@ -11,6 +11,13 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { formatWeight as formatWeightUtil, getWeightUnit as getWeightUnitUtil } from "@/lib/weightUtils";
 import Link from "next/link";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const BLIND_SPOT_STRINGS = {
     BlindSpotAnalysis: "Blind Spot Analysis",
@@ -40,6 +47,14 @@ export interface IExercise {
     }>;
 }
 
+/** Build page entries for pagination (numbers and "..." for ellipsis). */
+function getPaginationPages(currentPage: number, totalPages: number): (number | "...")[] {
+    if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    if (currentPage <= 3) return [1, 2, 3, "...", totalPages];
+    if (currentPage >= totalPages - 2) return [1, "...", totalPages - 2, totalPages - 1, totalPages];
+    return [1, "...", currentPage, "...", totalPages];
+}
+
 interface IProps {
     exercises: IExercise[];
     onExploreFixes?: (exercise: IExercise) => void;
@@ -49,6 +64,12 @@ interface IProps {
     showViewMore?: boolean;
     /** When true, cards show exercise names but skeleton placeholders for weight, trend, and session data (e.g. while exercise history is loading). */
     dataLoading?: boolean;
+    /** Current page (1-based). When set with totalPages and onPageChange, pagination UI is shown. */
+    currentPage?: number;
+    /** Total number of pages. When > 1 and onPageChange is set, pagination UI is shown. */
+    totalPages?: number;
+    /** Called when user selects a page. */
+    onPageChange?: (page: number) => void;
 }
 
 const MiniTrendGraph: React.FC<{ trend: number[]; color: string }> = ({ trend, color }) => {
@@ -80,7 +101,17 @@ const MiniTrendGraph: React.FC<{ trend: number[]; color: string }> = ({ trend, c
 };
 
 export const ExerciseStalls: React.FC<IProps> = (props) => {
-    const { exercises, onExploreFixes, onViewMore, viewMoreHref, showViewMore = true, dataLoading = false } = props;
+    const {
+        exercises,
+        onExploreFixes,
+        onViewMore,
+        viewMoreHref,
+        showViewMore = true,
+        dataLoading = false,
+        currentPage,
+        totalPages,
+        onPageChange,
+    } = props;
     const { isInLbs } = usePoundsOrKgContext();
 
     const isLg = useMediaQuery("(min-width: 1024px)");
@@ -135,7 +166,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4 w-full max-w-full box-border">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4 w-full max-w-full box-border min-h-[32rem]">
                 {exercises.map((exercise, index) => {
                     const rowIndex = Math.floor(index / gridColumns);
                     const colorValue = exercise.weight > 0 ? getColorValue(exercise.color) : "var(--muted-foreground, #999)";
@@ -144,7 +175,11 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                     const showBottomSpacing = (exercise.hasStall && exercise.weight > 0) || isExpanded;
 
                     return (
-                        <Card key={exercise.name} className="w-full box-border dark:bg-blueGray dark:border-0">
+                        <Card
+                            key={exercise.name}
+                            className="w-full box-border border border-l-4 border-border dark:bg-blueGray dark:border dark:border-l-4"
+                            style={{ borderLeftColor: colorValue }}
+                        >
                             <CardContent className="p-4 flex flex-col">
                                 {/* Top section: Exercise name, weight, and trend line */}
                                 <div
@@ -171,7 +206,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                                                     <Skeleton className="h-3 w-6 rounded-full bg-muted-foreground/10" />
                                                 </div>
                                             ) : exercise.weight > 0 ? (
-                                                <div className="text-lg font-bold" style={{ color: colorValue }}>
+                                                <div className="text-lg font-bold text-gray-500 dark:text-offWhite">
                                                     {formatWeightUtil(exercise.weight, isInLbs, "lbs")} {getWeightUnitUtil(isInLbs)}
                                                 </div>
                                             ) : (
@@ -239,7 +274,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                                                                 <div className="text-[10px] text-muted-foreground uppercase">
                                                                     {BLIND_SPOT_STRINGS.MaxWeight}
                                                                 </div>
-                                                                <div className="text-sm font-bold" style={{ color: colorValue }}>
+                                                                <div className="text-sm font-bold text-darkGray dark:text-offWhite">
                                                                     {session.maxWeight < 0.01
                                                                         ? `BW ${getWeightUnitUtil(isInLbs)}`
                                                                         : `${formatWeightUtil(session.maxWeight, isInLbs, "lbs")} ${getWeightUnitUtil(isInLbs)}`}
@@ -259,8 +294,8 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                                         <Separator className="my-3" />
                                         <div className="flex flex-row items-center justify-between gap-2 pt-0 pb-0">
                                             <div className="flex items-center gap-2 flex-1">
-                                                <AlertTriangle className="size-4 text-destructive shrink-0" />
-                                                <span className="text-xs text-destructive">
+                                                <AlertTriangle className="size-4 text-red-600 shrink-0" />
+                                                <span className="text-xs text-red-600">
                                                     {BLIND_SPOT_STRINGS.StallDetected}
                                                 </span>
                                             </div>
@@ -269,7 +304,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                                                 size="sm"
                                                 disabled={exercise.weight === 0}
                                                 onClick={() => handleExploreFixes(exercise)}
-                                                className="shrink-0 h-[38px] px-4 text-xs"
+                                                className="shrink-0 h-[38px] px-4 text-xs  text-white hover:bg-red-900 bg-red-700 dark:bg-destructive dark:text-destructive-foreground dark:hover:bg-destructive/90"
                                             >
                                                 {BLIND_SPOT_STRINGS.ExploreFixes}{" "}
                                                 <ArrowRight className="size-4 ml-1" />
@@ -282,6 +317,54 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                     );
                 })}
             </div>
+
+            {totalPages != null && totalPages > 1 && currentPage != null && onPageChange && (
+                <Pagination className="pt-4 h-[100px]">
+                    <PaginationContent>
+                        <PaginationPrevious
+                            className="h-[45px] text-lg"
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (currentPage > 1) onPageChange(currentPage - 1);
+                            }}
+                        />
+                        {getPaginationPages(currentPage, totalPages).map((page, index) =>
+                            page === "..." ? (
+                                <PaginationLink
+                                    key={index}
+                                    className="h-[45px] text-lg"
+                                    href="#"
+                                    onClick={(e) => e.preventDefault()}
+                                >
+                                    ...
+                                </PaginationLink>
+                            ) : (
+                                <PaginationLink
+                                    key={index}
+                                    className="h-[45px] text-lg"
+                                    href="#"
+                                    isActive={currentPage === page}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        onPageChange(page);
+                                    }}
+                                >
+                                    {page}
+                                </PaginationLink>
+                            ),
+                        )}
+                        <PaginationNext
+                            className="h-[45px] text-lg"
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (currentPage < totalPages) onPageChange(currentPage + 1);
+                            }}
+                        />
+                    </PaginationContent>
+                </Pagination>
+            )}
 
             {showViewMore && (
                 <div className="w-full pt-4 max-w-full box-border overflow-hidden flex justify-center">

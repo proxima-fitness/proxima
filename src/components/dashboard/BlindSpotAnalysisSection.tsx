@@ -111,7 +111,7 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
     const { data: subscribedPrograms = [], isLoading: isLoadingPrograms } = useSubscribedPrograms(user);
     const isPro = featureLimits?.has_active_subscription === true;
     const allExercises = useMemo(() => exerciseStallsData ?? [], [exerciseStallsData]);
-    const [visibleCount, setVisibleCount] = useState(PRO_PAGE_SIZE);
+    const [currentPage, setCurrentPage] = useState(1);
     const [sortBy, setSortBy] = useState<SortOption>("most_activity");
     const [hideNoData, setHideNoData] = useState(false);
     const [exploreFixesDialogOpen, setExploreFixesDialogOpen] = useState(false);
@@ -165,20 +165,23 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
         return [...filtered].sort((a, b) => activityScore(b) - activityScore(a));
     }, [allExercises, hideNoData, sortBy]);
 
+    const totalPages = Math.max(1, Math.ceil(filteredAndSorted.length / PRO_PAGE_SIZE));
+
     const exercisesToShow = useMemo(() => {
         return isPro
-            ? filteredAndSorted.slice(0, visibleCount)
+            ? filteredAndSorted.slice((currentPage - 1) * PRO_PAGE_SIZE, currentPage * PRO_PAGE_SIZE)
             : filteredAndSorted.slice(0, FREE_LIMIT);
-    }, [filteredAndSorted, isPro, visibleCount]);
+    }, [filteredAndSorted, isPro, currentPage]);
 
     const placeholderExercises = useMemo(() => {
-        const limit = isPro ? visibleCount : FREE_LIMIT;
+        const limit = isPro ? PRO_PAGE_SIZE : FREE_LIMIT;
         return templates.slice(0, limit).map((t) => placeholderExercise(t.title));
-    }, [templates, isPro, visibleCount]);
+    }, [templates, isPro]);
 
-    const hasMore = isLoadingExerciseStalls
-        ? isPro && visibleCount < templates.length
-        : isPro && visibleCount < filteredAndSorted.length;
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setCurrentPage(1);
+    }, [filteredAndSorted.length, sortBy, hideNoData]);
     const dataLoading = isLoadingExerciseStalls;
     const showPlaceholderCards = isLoadingTemplates === false && dataLoading && templates.length > 0;
 
@@ -318,9 +321,8 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
                 <ExerciseStalls
                     exercises={placeholderExercises}
                     onExploreFixes={handleExploreFixes}
-                    onViewMore={hasMore ? () => setVisibleCount((prev) => Math.min(prev + PRO_PAGE_SIZE, templates.length)) : undefined}
                     viewMoreHref={!isPro ? "/pricing" : undefined}
-                    showViewMore={!isPro || hasMore}
+                    showViewMore={!isPro}
                     dataLoading={true}
                 />
             ) : isLoadingTemplates ? (
@@ -351,9 +353,11 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
                 <ExerciseStalls
                     exercises={exercisesToShow}
                     onExploreFixes={handleExploreFixes}
-                    onViewMore={hasMore ? () => setVisibleCount((prev) => Math.min(prev + PRO_PAGE_SIZE, filteredAndSorted.length)) : undefined}
                     viewMoreHref={!isPro ? "/pricing" : undefined}
-                    showViewMore={!isPro || hasMore}
+                    showViewMore={!isPro}
+                    currentPage={isPro ? currentPage : undefined}
+                    totalPages={isPro ? totalPages : undefined}
+                    onPageChange={isPro ? setCurrentPage : undefined}
                 />
             )}
         </section>
