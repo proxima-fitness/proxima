@@ -85,6 +85,10 @@ module.exports = {
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
   		},
+  		spacing: {
+  			golden: '1.618rem',
+  			goldenSm: '0.618rem'
+  		},
   		keyframes: {
   			'accordion-down': {
   				from: {

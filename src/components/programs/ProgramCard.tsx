@@ -116,7 +116,7 @@ export const ProgramCard: React.FC<IProps> = (props) => {
                             </div>
                         )}
                     </div>
-                    <div className="p-4 space-y-2">
+                    <div className="p-4 space-y-goldenSm">
                         <div className={ "flex flex-row justify-start items-center font-bold text-xs text-blue-400" }>
                             <Users2Icon className=" h-3 w-3 mr-1" /> {program?.saves} Lifters Joined
                         </div>
@@ -125,10 +125,10 @@ export const ProgramCard: React.FC<IProps> = (props) => {
                             Program By <FullName id={ program.id } id_type={ "program" } />
                         </div>
                         <h3 className="text-xl font-main overflow-hidden text-ellipsis line-clamp-1">{ program.title }</h3>
-                        <div className="flex items-center justify-start gap-2">
-                            <Badge className="text-[10px] text-white p-1 bg-lightSecondary dark:bg-gray-300 dark:text-black overflow-hidden text-ellipsis line-clamp-1">{ program?.difficulty?.map((level: string ) => level).join(' - ') || "Not specified"  }</Badge>
-                            <Badge className="text-[10px] text-white p-1 bg-lightSecondary dark:bg-gray-300 dark:text-black overflow-hidden text-ellipsis line-clamp-1 ">{ program?.equipment || "Not specified" }</Badge>
-                            <Badge className="text-[10px] text-white p-1 bg-lightSecondary dark:bg-gray-300 dark:text-black overflow-hidden text-ellipsis line-clamp-1 ">{ program?.workout_duration || "Not specified" } Mins</Badge>
+                        <div className="scrollbar-thin w-full min-h-10 overflow-x-auto overflow-y-hidden flex items-center gap-2">
+                            <Badge className="text-[10px] text-white p-1 bg-lightSecondary dark:bg-gray-300 dark:text-black whitespace-nowrap flex-shrink-0">{ program?.difficulty?.map((level: string ) => level).join(' - ') || "Not specified"  }</Badge>
+                            <Badge className="text-[10px] text-white p-1 bg-lightSecondary dark:bg-gray-300 dark:text-black whitespace-nowrap flex-shrink-0">{ program?.equipment || "Not specified" }</Badge>
+                            <Badge className="text-[10px] text-white p-1 bg-lightSecondary dark:bg-gray-300 dark:text-black whitespace-nowrap flex-shrink-0">{ program?.workout_duration || "Not specified" } Mins</Badge>
                         </div>
                     </div>
                 </div>

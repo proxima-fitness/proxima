@@ -12,11 +12,11 @@ export const ProgramCardLoading: React.FC = () => {
                         <Skeleton
                             className="w-full h-[200px] object-cover"
                         />
-                        <div className="p-4 space-y-2">
+                        <div className="p-4 space-y-goldenSm">
                             <div className="uppercase text-sm overflow-hidden text-ellipsis line-clamp-1">
                             </div>
                             <h3 className="text-xl font-main overflow-hidden text-ellipsis line-clamp-1"></h3>
-                            <div className="flex items-center justify-start gap-2">
+                            <div className="scrollbar-thin w-full min-h-10 overflow-x-auto overflow-y-hidden flex items-center gap-2">
                                 <Skeleton className="text-[10px] w-full text-white p-1  overflow-hidden text-ellipsis line-clamp-1"></Skeleton>
                                 <Skeleton className="text-[10px] w-full text-white p-1 overflow-hidden text-ellipsis line-clamp-1 "></Skeleton>
                                 <Skeleton className="text-[10px] w-full text-white p-1 overflow-hidden text-ellipsis line-clamp-1 "></Skeleton>
@@ -29,11 +29,11 @@ export const ProgramCardLoading: React.FC = () => {
                         <Skeleton
                             className="w-full h-[200px] object-cover"
                         />
-                        <div className="p-4 space-y-2">
+                        <div className="p-4 space-y-goldenSm">
                             <div className="uppercase text-sm overflow-hidden text-ellipsis line-clamp-1">
                             </div>
                             <h3 className="text-xl font-main overflow-hidden text-ellipsis line-clamp-1"></h3>
-                            <div className="flex items-center justify-start gap-2">
+                            <div className="scrollbar-thin w-full min-h-10 overflow-x-auto overflow-y-hidden flex items-center gap-2">
                                 <Skeleton className="text-[10px] w-full text-white p-1  overflow-hidden text-ellipsis line-clamp-1"></Skeleton>
                                 <Skeleton className="text-[10px] w-full text-white p-1 overflow-hidden text-ellipsis line-clamp-1 "></Skeleton>
                                 <Skeleton className="text-[10px] w-full text-white p-1 overflow-hidden text-ellipsis line-clamp-1 "></Skeleton>
@@ -46,11 +46,11 @@ export const ProgramCardLoading: React.FC = () => {
                         <Skeleton
                             className="w-full h-[200px] object-cover"
                         />
-                        <div className="p-4 space-y-2">
+                        <div className="p-4 space-y-goldenSm">
                             <div className="uppercase text-sm overflow-hidden text-ellipsis line-clamp-1">
                             </div>
                             <h3 className="text-xl font-main overflow-hidden text-ellipsis line-clamp-1"></h3>
-                            <div className="flex items-center justify-start gap-2">
+                            <div className="scrollbar-thin w-full min-h-10 overflow-x-auto overflow-y-hidden flex items-center gap-2">
                                 <Skeleton className="text-[10px] w-full text-white p-1  overflow-hidden text-ellipsis line-clamp-1"></Skeleton>
                                 <Skeleton className="text-[10px] w-full text-white p-1 overflow-hidden text-ellipsis line-clamp-1 "></Skeleton>
                                 <Skeleton className="text-[10px] w-full text-white p-1 overflow-hidden text-ellipsis line-clamp-1 "></Skeleton>
@@ -63,11 +63,11 @@ export const ProgramCardLoading: React.FC = () => {
                         <Skeleton
                             className="w-full h-[200px] object-cover"
                         />
-                        <div className="p-4 space-y-2">
+                        <div className="p-4 space-y-goldenSm">
                             <div className="uppercase text-sm overflow-hidden text-ellipsis line-clamp-1">
                             </div>
                             <h3 className="text-xl font-main overflow-hidden text-ellipsis line-clamp-1"></h3>
-                            <div className="flex items-center justify-start gap-2">
+                            <div className="scrollbar-thin w-full min-h-10 overflow-x-auto overflow-y-hidden flex items-center gap-2">
                                 <Skeleton className="text-[10px] w-full text-white p-1  overflow-hidden text-ellipsis line-clamp-1"></Skeleton>
                                 <Skeleton className="text-[10px] w-full text-white p-1 overflow-hidden text-ellipsis line-clamp-1 "></Skeleton>
                                 <Skeleton className="text-[10px] w-full text-white p-1 overflow-hidden text-ellipsis line-clamp-1 "></Skeleton>
@@ -80,11 +80,11 @@ export const ProgramCardLoading: React.FC = () => {
                         <Skeleton
                             className="w-full h-[200px] object-cover"
                         />
-                        <div className="p-4 space-y-2">
+                        <div className="p-4 space-y-goldenSm">
                             <div className="uppercase text-sm overflow-hidden text-ellipsis line-clamp-1">
                             </div>
                             <h3 className="text-xl font-main overflow-hidden text-ellipsis line-clamp-1"></h3>
-                            <div className="flex items-center justify-start gap-2">
+                            <div className="scrollbar-thin w-full min-h-10 overflow-x-auto overflow-y-hidden flex items-center gap-2">
                                 <Skeleton className="text-[10px] w-full text-white p-1  overflow-hidden text-ellipsis line-clamp-1"></Skeleton>
                                 <Skeleton className="text-[10px] w-full text-white p-1 overflow-hidden text-ellipsis line-clamp-1 "></Skeleton>
                                 <Skeleton className="text-[10px] w-full text-white p-1 overflow-hidden text-ellipsis line-clamp-1 "></Skeleton>
@@ -97,11 +97,11 @@ export const ProgramCardLoading: React.FC = () => {
                         <Skeleton
                             className="w-full h-[200px] object-cover"
                         />
-                        <div className="p-4 space-y-2">
+                        <div className="p-4 space-y-goldenSm">
                             <div className="uppercase text-sm overflow-hidden text-ellipsis line-clamp-1">
                             </div>
                             <h3 className="text-xl font-main overflow-hidden text-ellipsis line-clamp-1"></h3>
-                            <div className="flex items-center justify-start gap-2">
+                            <div className="scrollbar-thin w-full min-h-10 overflow-x-auto overflow-y-hidden flex items-center gap-2">
                                 <Skeleton className="text-[10px] w-full text-white p-1  overflow-hidden text-ellipsis line-clamp-1"></Skeleton>
                                 <Skeleton className="text-[10px] w-full text-white p-1 overflow-hidden text-ellipsis line-clamp-1 "></Skeleton>
                                 <Skeleton className="text-[10px] w-full text-white p-1 overflow-hidden text-ellipsis line-clamp-1 "></Skeleton>

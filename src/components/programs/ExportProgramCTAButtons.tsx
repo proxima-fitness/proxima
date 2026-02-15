@@ -11,9 +11,15 @@ interface IProps {
         disabled?: boolean;
     }[];
     onSelectExport?: (id: string) => void;
+    showComingSoonLabel?: boolean;
 }
 
-export const ExportProgramCTAButtons: React.FC<IProps> = ({ programId, exportOptions, onSelectExport }) => {
+export const ExportProgramCTAButtons: React.FC<IProps> = ({
+    programId,
+    exportOptions,
+    onSelectExport,
+    showComingSoonLabel = true,
+}) => {
 
     console.log("programId", programId);
 
@@ -44,18 +50,20 @@ export const ExportProgramCTAButtons: React.FC<IProps> = ({ programId, exportOpt
                 <span className="">{option.icon}</span>
                 {!option.brand ? <span className="font-main text-lg">{option.name}</span> : null}
             </div>
-            {option.subtitle ? <span className="text-sm text-gray-400">{option.subtitle}</span> : null}
+            {option.subtitle ? <span className="text-sm  text-left text-gray-400">{option.subtitle}</span> : null}
         </button>
     );
 
     return (
         <div className="flex flex-col gap-3">
             {enabledOptions.map(renderOption)}
-            {disabledOptions.length > 0 && (
+            {showComingSoonLabel && disabledOptions.length > 0 ? (
                 <>
-                    <p className="text-sm text-gray-400 pt-2">Coming soon</p>
+                    <p className="text-sm text-gray-400 pt-2">Coming soon...</p>
                     {disabledOptions.map(renderOption)}
                 </>
+            ) : (
+                disabledOptions.map(renderOption)
             )}
         </div>
     );
