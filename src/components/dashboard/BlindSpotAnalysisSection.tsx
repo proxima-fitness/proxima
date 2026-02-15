@@ -268,17 +268,22 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
                             </ToggleGroupItem>
                         </ToggleGroup>
                     </div>
-                    <button
-                        type="button"
-                        onClick={() => setHideNoData((prev) => !prev)}
+                    <div
                         className="flex items-center gap-2 cursor-pointer text-left"
+                        role="group"
                     >
                         <Checkbox
                             checked={hideNoData}
+                            onCheckedChange={(checked) => setHideNoData(!!checked)}
                             className="data-[state=checked]:text-white data-[state=checked]:bg-lightSecondary dark:data-[state=unchecked]:bg-white"
                         />
-                        <Label className="text-sm font-normal cursor-pointer">Hide exercises with no data</Label>
-                    </button>
+                        <Label
+                            className="text-sm font-normal cursor-pointer"
+                            onClick={() => setHideNoData((prev) => !prev)}
+                        >
+                            Hide exercises with no data
+                        </Label>
+                    </div>
                 </div>
             )}
             <Dialog open={exploreFixesDialogOpen} onOpenChange={setExploreFixesDialogOpen}>
