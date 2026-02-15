@@ -63,10 +63,11 @@ export const useExplorePagePrograms = (filters?: TProgramFilters, limit?: number
     });
 };
 // FETCHES THE PROGRAM NAMES DISPLAYED ON THE PROGRAMS PAGE WITH THUMBNAILS
-export const usePrograms = (limit?: number) => {
+export const usePrograms = (limit?: number, is_coach?: boolean, options?: { enabled?: boolean }) => {
     return useQuery({
-        queryKey: ['programs'],
-        queryFn: () => getPrograms(limit),
+        queryKey: ['programs', is_coach],
+        queryFn: () => getPrograms(limit, is_coach),
+        enabled: options?.enabled ?? true,
     });
 };
 

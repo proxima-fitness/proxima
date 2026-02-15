@@ -1,12 +1,24 @@
+"use client";
+
+import { useState } from "react";
 import { usePrograms } from "@/api/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProgramSearch } from "./ProgramSearch";
 
 export const Programs: React.FC = () => {
 
-    const { data: programs, isError: errorFetchingPrograms, isLoading: loadingPrograms } = usePrograms();
+    const [viewMode, setViewMode] = useState<"coaches" | "community">("coaches");
 
-    if (loadingPrograms) {
+    const { data: coachPrograms, isError: errorFetchingCoachPrograms, isLoading: loadingCoach } = usePrograms(undefined, true);
+    const { data: communityPrograms, isError: errorFetchingCommunityPrograms, isLoading: loadingCommunity } = usePrograms(undefined, false, { enabled: viewMode === "community" });
+
+    const programs = viewMode === "coaches" ? (coachPrograms ?? []) : (communityPrograms ?? []);
+    const loading = (viewMode === "coaches" && loadingCoach) || (viewMode === "community" && loadingCommunity);
+    const errorFetchingPrograms = viewMode === "coaches" ? errorFetchingCoachPrograms : errorFetchingCommunityPrograms;
+    const coachCount = coachPrograms?.length ?? 0;
+    const communityCount = communityPrograms?.length ?? 0;
+
+    if (loading) {
         return (
             <>
                 <div className="pt-10 h-[500px]">
@@ -133,9 +145,13 @@ export const Programs: React.FC = () => {
 
     return (
         <>
-            { programs !== undefined &&
-                <ProgramSearch programs={ programs } />
-            }
+            <ProgramSearch
+                programs={ programs }
+                viewMode={ viewMode }
+                onViewModeChange={ setViewMode }
+                coachCount={ coachCount }
+                communityCount={ communityCount }
+            />
             { errorFetchingPrograms &&
                 <div className="h-96 w-full text-center">An error occured fetching programs</div>
             }

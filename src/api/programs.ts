@@ -165,14 +165,21 @@ export const getExplorePageProgramDetails = async (program_id: number) => {
 };
 
 // GET THE PROGRAMS DISPLAYED ON THE PROGRAMS PAGE INCLUDING THUMBNAILS
-export const getPrograms = async (limit?: number) => {
+export const getPrograms = async (limit?: number, is_coach?: boolean) => {
     try {
         let query = supabase
             .from('programs')
-            .select('id,title,details,program_length,workout_duration,equipment,specialization,difficulty,user_id, saves').eq('explore', true)
-            .not('user_id', 'is', null)
-            .neq('title', 'My AI Program')
-            .order('saves', { ascending: false });
+            .select('id,title,details,program_length,workout_duration,equipment,specialization,difficulty,user_id, saves, is_coach')
+            .eq('explore', true)
+            .not('user_id', 'is', null);
+
+        if (is_coach === true) {
+            query = query.eq('is_coach', true);
+        } else {
+            query = query.or('is_coach.is.null,is_coach.eq.false');
+        }
+
+        query = query.order('saves', { ascending: false });
 
         if (limit !== undefined) {
             query = query.limit(limit);

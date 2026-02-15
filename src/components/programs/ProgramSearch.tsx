@@ -12,16 +12,25 @@ import { getProgramsSearchResultsWithThumbnail } from "@/api/search";
 import { Card } from "../ui/card";
 import Link from "next/link";
 import { ProgramCard } from "./ProgramCard";
+import { CoachesCommunityToggle } from "./CoachesCommunityToggle";
 import { useDebouncedCallback } from "use-debounce";
 
 interface IProps {
     programs: TProgram[];
+    viewMode: "coaches" | "community";
+    onViewModeChange: (mode: "coaches" | "community") => void;
+    coachCount: number;
+    communityCount: number;
 }
 
 export const ProgramSearch: React.FC<IProps> = (props) => {
 
     const {
         programs,
+        viewMode,
+        onViewModeChange,
+        coachCount,
+        communityCount,
     } = props;
 
     const commandRef = useRef<HTMLInputElement>(null);
@@ -169,6 +178,14 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
                         </div>
                     </div>
                 </Card>
+            </div>
+            <div className="pt-6">
+                <CoachesCommunityToggle
+                    viewMode={viewMode}
+                    onViewModeChange={onViewModeChange}
+                    coachCount={coachCount}
+                    communityCount={communityCount}
+                />
             </div>
             <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 max-md:grid-cols-2 py-8">
                 { filteredPrograms?.map((program) => (

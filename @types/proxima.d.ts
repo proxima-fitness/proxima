@@ -55,6 +55,7 @@ type TProgram = {
     thumbnail?: Blob;
     prompt?: string;
     saves: number;
+    is_coach: boolean;
 }
 
 type TDialog = {
