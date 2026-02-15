@@ -37,6 +37,7 @@ const LOADING_PHRASES = [
 const PHRASE_ROTATE_MS = 2800;
 
 type SortOption = "most_activity" | "alphabetical";
+type StatusFilter = "all" | "progressing" | "stalling" | "stalled";
 
 function hasData(exercise: IExercise): boolean {
     return (exercise.sessions?.length ?? 0) > 0 || exercise.weight > 0;
@@ -114,6 +115,7 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
     const [currentPage, setCurrentPage] = useState(1);
     const [sortBy, setSortBy] = useState<SortOption>("most_activity");
     const [hideNoData, setHideNoData] = useState(false);
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
     const [exploreFixesDialogOpen, setExploreFixesDialogOpen] = useState(false);
     const [exploreFixesExercise, setExploreFixesExercise] = useState<IExercise | null>(null);
 
@@ -160,10 +162,19 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
     );
 
     const filteredAndSorted = useMemo(() => {
-        const filtered = hideNoData ? allExercises.filter(hasData) : allExercises;
+        let filtered = hideNoData ? allExercises.filter(hasData) : allExercises;
+        if (statusFilter !== "all") {
+            const colorMap: Record<Exclude<StatusFilter, "all">, IExercise["color"]> = {
+                progressing: "green",
+                stalling: "yellow",
+                stalled: "red",
+            };
+            const color = colorMap[statusFilter];
+            filtered = filtered.filter((e) => e.color === color);
+        }
         if (sortBy === "alphabetical") return filtered;
         return [...filtered].sort((a, b) => activityScore(b) - activityScore(a));
-    }, [allExercises, hideNoData, sortBy]);
+    }, [allExercises, hideNoData, sortBy, statusFilter]);
 
     const totalPages = Math.max(1, Math.ceil(filteredAndSorted.length / PRO_PAGE_SIZE));
 
@@ -181,7 +192,7 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setCurrentPage(1);
-    }, [filteredAndSorted.length, sortBy, hideNoData]);
+    }, [filteredAndSorted.length, sortBy, hideNoData, statusFilter]);
     const dataLoading = isLoadingExerciseStalls;
     const showPlaceholderCards = isLoadingTemplates === false && dataLoading && templates.length > 0;
 
@@ -232,6 +243,28 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
                             </ToggleGroupItem>
                             <ToggleGroupItem value="alphabetical" aria-label="Alphabetical">
                                 Alphabetical
+                            </ToggleGroupItem>
+                        </ToggleGroup>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">Status:</span>
+                        <ToggleGroup
+                            type="single"
+                            value={statusFilter}
+                            onValueChange={(v) => v && setStatusFilter(v as StatusFilter)}
+                            className="justify-start"
+                        >
+                            <ToggleGroupItem value="all" aria-label="All">
+                                All
+                            </ToggleGroupItem>
+                            <ToggleGroupItem value="progressing" aria-label="Progressing">
+                                Progressing
+                            </ToggleGroupItem>
+                            <ToggleGroupItem value="stalling" aria-label="Stalling">
+                                Stalling
+                            </ToggleGroupItem>
+                            <ToggleGroupItem value="stalled" aria-label="Stalled">
+                                Stalled
                             </ToggleGroupItem>
                         </ToggleGroup>
                     </div>
