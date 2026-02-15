@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { people03, people02, people01, people04, people05, people06, instagram, linkedin, star, reddit, twitter, hevy_logo } from "public";
+import { people03, people02, people01, people04, people05, people06, instagram, linkedin, star, reddit, twitter, hevy_logo, macrofactor_logo, google_sheets_logo_icon } from "public";
 import humanizeDuration from "humanize-duration";
 import { IOption } from '@/components/ui/multi-select';
 import { BicepsFlexedIcon, BookOpenIcon, Calculator, FileText, FootprintsIcon, SquarePowerIcon, Table } from "lucide-react";
@@ -74,42 +74,51 @@ export const exportOptions = [
                 className="w-full h-6 object-contain"
             />
         ),
+        subtitle: "Upload your program to Hevy so you can train from the app",
         brand: true,
     },
-    // {
-    //     id: "macrofactor",
-    //     name: "Macrofactor",
-    //     icon: (
-    //         <img
-    //             src={(macrofactor_logo as any).src}
-    //             alt="Macrofactor"
-    //             className="w-full h-6 object-contain"
-    //         />
-    //     ),
-    //     brand: true,
-    // },
-    // {
-    //     id: "strong",
-    //     name: "Strong",
-    //     icon: (
-    //         <img
-    //             src={(strong_logo as any).src}
-    //             alt="Strong"
-    //             className="w-full h-6 "
-    //         />
-    //     ),
-    //     brand: true,
-    // },
     {
         id: "pdf",
         name: "PDF",
         icon: <FileText className="w-6 h-6" />,
+        subtitle: "Download a printable PDF of your program",
         brand: false,
+    },
+    {
+        id: "macrofactor",
+        name: "Macrofactor",
+        icon: (
+            <img
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                src={(macrofactor_logo as any).src}
+                alt="Macrofactor"
+                className="w-full h-5 object-contain"
+            />
+        ),
+        subtitle: "Download a CSV you can import into Macrofactor Workouts",
+        brand: true,
+        disabled: true,
+    },
+    {
+        id: "google_sheets",
+        name: "Google Sheets",
+        icon: (
+            <img
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                src={(google_sheets_logo_icon as any).src}
+                alt="Google Sheets"
+                className="w-full h-8 object-contain"
+            />
+        ),
+        subtitle: "Sync your program to a  Google Sheet",
+        brand: false,
+        disabled: true,
     },
     {
         id: "spreadsheet",
         name: "Spreadsheet",
         icon: <Table className="w-6 h-6" />,
+        subtitle: "Download your program as a CSV or spreadsheet file",
         brand: false,
         disabled: true,
     },

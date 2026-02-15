@@ -53,6 +53,7 @@ import garmin_logo from "./garmin.svg";
 import whoop_logo from "./whoop.svg";
 import strong_logo from "./strong_logo.png";
 import macrofactor_logo from "./macrofactor_logo.png";
+import google_sheets_logo_icon from "./google-sheets-logo-icon.svg";
 
 export {
     qr_code,
@@ -110,4 +111,5 @@ export {
     whoop_logo,
     strong_logo,
     macrofactor_logo,
+    google_sheets_logo_icon,
 }

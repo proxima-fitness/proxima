@@ -314,9 +314,9 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
     const completionLabel = `${completedCount}/${TOTAL_STEPS}`;
 
     return (
-        <div className="w-full bg-muted border border-border rounded-lg p-4 sm:p-5">
-            <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-semibold">Export to Hevy</h3>
+        <div className="w-full bg-muted border border-border rounded-lg p-6 sm:p-8">
+            <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold tracking-tight">Export to Hevy</h3>
                 <span className="text-sm text-muted-foreground">
                     {completionLabel}
                 </span>
@@ -328,35 +328,34 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                 collapsible
                 className="w-full"
             >
-                <AccordionItem value="step1" className="border-b border-border">
-                    <AccordionTrigger className="hover:no-underline">
-                        <div className="flex items-center gap-2 text-left">
+                <AccordionItem value="step1" className="border-b border-border last:border-b-0 bg-background rounded-t-lg p-4">
+                    <AccordionTrigger className="hover:no-underline py-5">
+                        <div className="flex items-center gap-3 text-left">
                             {step1Completed ? (
-                                <Check
-                                    className="h-5 w-5 shrink-0 text-green-600 dark:text-green-400"
-                                    aria-hidden
-                                />
+                                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-600 dark:text-green-400" aria-hidden>
+                                    <Check className="h-5 w-5" aria-hidden />
+                                </span>
                             ) : (
                                 <span
-                                className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-border bg-white text-xs font-medium text-muted-foreground"
-                                aria-hidden
-                            >
-                                1
-                            </span>
+                                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border bg-muted/30 text-xs font-medium text-muted-foreground"
+                                    aria-hidden
+                                >
+                                    1
+                                </span>
                             )}
                             <span>Connect your Hevy account</span>
                         </div>
                     </AccordionTrigger>
-                    <AccordionContent>
+                    <AccordionContent className="pb-6 pt-2">
                         {step1Completed && !isEditingApiKey ? (
-                            <div className="flex flex-row items-center justify-between gap-4 rounded-lg border border-border bg-muted/50 px-4 py-3">
-                                <div className="flex items-center gap-2">
+                            <div className="flex flex-row items-center justify-between gap-4 rounded-lg border border-border bg-muted/50 px-5 py-4">
+                                <div className="flex items-center gap-4">
                                     <Key className="h-5 w-5 shrink-0 text-muted-foreground" />
                                     <span className="text-sm font-medium">
                                         API Key Configured
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-4">
                                     <Button
                                         variant="link"
                                         size="sm"
@@ -376,22 +375,22 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                                 </div>
                             </div>
                         ) : (
-                            <>
-                                <p className="text-sm text-muted-foreground mb-3 px-8">
+                            <div className="flex flex-col gap-4">
+                                <p className="text-sm text-muted-foreground">
                                     Sync workout programs to Hevy. Paste your API key from your Hevy account on Desktop.
                                 </p>
-                                <div className="grid gap-2 px-8">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="bg-lightGold text-black w-fit gap-2 hover:bg-lightGold/90"
-                                        onClick={() =>
-                                            window.open("https://hevy.com/settings?developer", "_blank", "noopener,noreferrer")
-                                        }
-                                    >
-                                        Get your API key
-                                        <ExternalLink className="h-4 w-4 shrink-0" />
-                                    </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="bg-lightGold text-black w-fit gap-2 hover:bg-lightGold/90"
+                                    onClick={() =>
+                                        window.open("https://hevy.com/settings?developer", "_blank", "noopener,noreferrer")
+                                    }
+                                >
+                                    Get your API key
+                                    <ExternalLink className="h-4 w-4 shrink-0" />
+                                </Button>
+                                <div className="flex flex-col gap-2">
                                     <Label htmlFor="hevy-export-api-key">
                                         Paste Hevy API Key
                                     </Label>
@@ -403,41 +402,41 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                                         onChange={(e) =>
                                             setInputValue(e.currentTarget.value)}
                                     />
-                                    <div className="flex items-center gap-2">
-                                        <Button
-                                            variant="default"
-                                            className={cn(
-                                                "bg-lightSecondary text-white w-fit",
-                                                !user && "opacity-50"
-                                            )}
-                                            onClick={handleConnectHevy}
-                                            disabled={!user || !inputValue.trim()}
-                                        >
-                                            {step1Completed
-                                                ? "Update"
-                                                : "Connect"}
-                                        </Button>
-                                        {step1Completed && (
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() =>
-                                                    setIsEditingApiKey(false)}
-                                            >
-                                                Cancel
-                                            </Button>
-                                        )}
-                                    </div>
                                 </div>
-                            </>
+                                <div className="flex items-center gap-3">
+                                    <Button
+                                        variant="default"
+                                        className={cn(
+                                            "bg-lightSecondary text-white w-fit",
+                                            !user && "opacity-50"
+                                        )}
+                                        onClick={handleConnectHevy}
+                                        disabled={!user || !inputValue.trim()}
+                                    >
+                                        {step1Completed
+                                            ? "Update"
+                                            : "Connect"}
+                                    </Button>
+                                    {step1Completed && (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() =>
+                                                setIsEditingApiKey(false)}
+                                        >
+                                            Cancel
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
                         )}
                     </AccordionContent>
                 </AccordionItem>
-                <AccordionItem value="step2" className="border-b border-border">
-                    <AccordionTrigger className="hover:no-underline">
-                        <div className="flex items-center gap-2 text-left">
+                <AccordionItem value="step2" className="border-b border-border last:border-b-0 bg-background rounded-b-lg p-4">
+                    <AccordionTrigger className="hover:no-underline py-5">
+                        <div className="flex items-center gap-3 text-left">
                             <span
-                                className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-border bg-white text-xs font-medium text-muted-foreground"
+                                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border bg-muted/30 text-xs font-medium text-muted-foreground"
                                 aria-hidden
                             >
                                 2
@@ -445,15 +444,15 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                             <span>Upload your Program to Hevy</span>
                         </div>
                     </AccordionTrigger>
-                    <AccordionContent>
+                    <AccordionContent className="pb-6 pt-2">
                         {!hasProgramInProgress() ? (
                             <p className="text-sm text-muted-foreground py-2">
                                 No program in progress. Build a program first to
                                 export to Hevy.
                             </p>
                         ) : (
-                            <div className="flex flex-col gap-4">
-                                <div className="flex items-center space-x-2">
+                            <div className="flex flex-col gap-4 pl-8">
+                                <div className="flex items-center gap-3">
                                     <Checkbox
                                         id="export-to-one-folder"
                                         checked={exportToOneFolder}
@@ -476,11 +475,11 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                                         : "Each week will be in a separate folder in Hevy."}
                                 </p>
                                 {isUploading && uploadProgress && (
-                                    <div className="flex flex-col gap-2 w-full">
+                                    <div className="flex flex-col gap-3 w-full">
                                         <p className="text-sm font-medium text-amber-600 dark:text-amber-500">
                                             Do not leave this page.
                                         </p>
-                                        <div className="flex items-center gap-2 w-full">
+                                        <div className="flex items-center gap-3 w-full">
                                             <Progress
                                                 className="flex-1"
                                                 value={
@@ -511,7 +510,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                                             : "You've ran out of your monthly exports, exports will renew next month."}
                                     </p>
                                 )}
-                                <div className="flex flex-wrap items-center gap-2">
+                                <div className="flex flex-wrap items-center gap-3">
                                     <Button
                                         variant="default"
                                         className="w-fit gap-2 bg-lightSecondary text-white"
@@ -537,7 +536,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                 </AccordionItem>
             </Accordion>
             {showThankYouBanner && isFree && (
-                <div className="mt-4 rounded-lg border border-border bg-muted/50 px-4 py-3 flex flex-col gap-2">
+                <div className="mt-6 rounded-lg border border-border bg-muted/50 px-5 py-4 flex flex-col gap-3">
                     <p className="text-sm text-foreground">
                         Thanks for exporting! Upgrade to Pro for more exports and blind spot analysis. Use code <strong>HEVY50</strong> for lifetime 50% discount at checkout.
                     </p>

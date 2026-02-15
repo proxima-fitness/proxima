@@ -84,6 +84,11 @@ export const ExportDialog: React.FC<IProps> = (props) => {
                     Export program
                 </DialogTitle>
                 {selectedExportId === null && (
+                    <DialogDescription className="text-center text-muted-foreground">
+                        Select a destination for your program
+                    </DialogDescription>
+                )}
+                {selectedExportId === null && (
                     <ExportProgramCTAButtons
                         programId={programId}
                         exportOptions={exportOptions}
