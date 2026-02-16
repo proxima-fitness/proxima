@@ -183,8 +183,8 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
                 <CoachesCommunityToggle
                     viewMode={viewMode}
                     onViewModeChange={onViewModeChange}
-                    coachCount={coachCount}
-                    communityCount={communityCount}
+                    coachCount={viewMode === "coaches" ? filteredPrograms.length : coachCount}
+                    communityCount={viewMode === "community" ? filteredPrograms.length : communityCount}
                 />
             </div>
             <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 max-md:grid-cols-2 py-8">
