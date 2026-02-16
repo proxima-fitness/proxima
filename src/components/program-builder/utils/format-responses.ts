@@ -1,4 +1,5 @@
 import { amrapAsNumber, getHevyExerciseFromLocalStorageByID } from "@/utils/general/helpers";
+import * as Papa from "papaparse";
 
 // Used to add week order and Id to program days for the drag and drop
 export const appendWeekOrderAndIdToProgramDays = (program: TProgramCreatorDay[][]) => {
@@ -187,7 +188,7 @@ export const getNumberRoutineFolders = (routines: THevyRoutine[]): number => {
     return maxFolderId - minFolderId + 1;
 };
 
-/** One row per set for CSV export. Column names are stable for imports (e.g. Google Sheets). */
+/** One row per set (or one row for identical sets) for CSV export. Column names are stable for imports (e.g. Google Sheets). */
 export type HevyCsvRow = {
     week: number;
     day: string;
@@ -198,6 +199,7 @@ export type HevyCsvRow = {
     rest_seconds: string | null;
     set_index: number;
     set_type: string;
+    sets_count: number;
     weight_kg: number | null;
     reps: number | null;
     distance_meters: number | null;
@@ -206,7 +208,43 @@ export type HevyCsvRow = {
     custom_metric: number | null;
 };
 
-/** Flattens THevyRoutine[] into one CSV row per set for jsonToCSV. */
+/** Data-only columns for CSV (no week/day). Order used for header and data rows. */
+const HEVY_CSV_DATA_COLUMNS: (keyof Omit<HevyCsvRow, "week" | "day">)[] = [
+    "routine_title",
+    "routine_notes",
+    "exercise_title",
+    "exercise_notes",
+    "rest_seconds",
+    "set_index",
+    "set_type",
+    "sets_count",
+    "weight_kg",
+    "reps",
+    "distance_meters",
+    "duration_seconds",
+    "rpe",
+    "custom_metric",
+];
+
+/** Returns true when all sets share the same rep metric value, type, weight_kg, and RPE (aligned with HevyExerciseVisualizer). */
+function canCollapseExerciseSets(sets: THevySets[]): boolean {
+    if (sets.length === 0) return false;
+    const first = sets[0];
+    const repMetric: keyof Pick<THevySets, "reps" | "distance_meters" | "duration_seconds" | "custom_metric"> =
+        first.reps != null && first.reps > 0 ? "reps" :
+        first.distance_meters != null && first.distance_meters > 0 ? "distance_meters" :
+        first.duration_seconds != null && first.duration_seconds > 0 ? "duration_seconds" :
+        first.custom_metric != null && first.custom_metric > 0 ? "custom_metric" :
+        "reps";
+    const sameRepMetric = sets.every((s, i, arr) => (s[repMetric] ?? null) === (arr[0][repMetric] ?? null));
+    const sameType = sets.every((s, i, arr) => (s.type ?? "") === (arr[0].type ?? ""));
+    const sameWeight = sets.every((s, i, arr) => (s.weight_kg ?? null) === (arr[0].weight_kg ?? null));
+    const rpeValues = sets.map((s) => s.rpe).filter((r): r is number => r != null && r > 0);
+    const sameRpe = rpeValues.length === 0 || (rpeValues.length === sets.length && rpeValues.every((v) => v === rpeValues[0]));
+    return sameRepMetric && sameType && sameWeight && sameRpe;
+}
+
+/** Flattens THevyRoutine[] into CSV rows. When reps and intensity are the same for all sets in an exercise, emits one row with sets_count = N; otherwise one row per set with sets_count = 1. */
 export const hevyRoutinesToCsvRows = (routines: THevyRoutine[]): HevyCsvRow[] => {
     const rows: HevyCsvRow[] = [];
     for (const routine of routines) {
@@ -219,7 +257,9 @@ export const hevyRoutinesToCsvRows = (routines: THevyRoutine[]): HevyCsvRow[] =>
             const exerciseNotes = exercise.notes ?? "";
             const restSeconds = exercise.rest_seconds ?? null;
             const sets = exercise.sets ?? [];
-            for (const set of sets) {
+            if (sets.length === 0) continue;
+            if (canCollapseExerciseSets(sets)) {
+                const set = sets[0];
                 rows.push({
                     week,
                     day,
@@ -228,8 +268,9 @@ export const hevyRoutinesToCsvRows = (routines: THevyRoutine[]): HevyCsvRow[] =>
                     exercise_title: exerciseTitle,
                     exercise_notes: exerciseNotes,
                     rest_seconds: restSeconds,
-                    set_index: set.index,
+                    set_index: 0,
                     set_type: set.type ?? "",
+                    sets_count: sets.length,
                     weight_kg: set.weight_kg ?? null,
                     reps: set.reps ?? null,
                     distance_meters: set.distance_meters ?? null,
@@ -237,11 +278,90 @@ export const hevyRoutinesToCsvRows = (routines: THevyRoutine[]): HevyCsvRow[] =>
                     rpe: set.rpe ?? null,
                     custom_metric: set.custom_metric ?? null,
                 });
+            } else {
+                for (const set of sets) {
+                    rows.push({
+                        week,
+                        day,
+                        routine_title: routineTitle,
+                        routine_notes: routineNotes,
+                        exercise_title: exerciseTitle,
+                        exercise_notes: exerciseNotes,
+                        rest_seconds: restSeconds,
+                        set_index: set.index,
+                        set_type: set.type ?? "",
+                        sets_count: 1,
+                        weight_kg: set.weight_kg ?? null,
+                        reps: set.reps ?? null,
+                        distance_meters: set.distance_meters ?? null,
+                        duration_seconds: set.duration_seconds ?? null,
+                        rpe: set.rpe ?? null,
+                        custom_metric: set.custom_metric ?? null,
+                    });
+                }
             }
         }
     }
     return rows;
 };
+
+function rowToDataCells(row: HevyCsvRow): string[] {
+    return HEVY_CSV_DATA_COLUMNS.map((key) => {
+        const v = row[key];
+        if (v === null || v === undefined) return "";
+        return String(v);
+    });
+}
+
+function emptyRow(length: number): string[] {
+    return Array.from({ length }, () => "");
+}
+
+/** Builds full CSV string with "Week N" and "Day N" title rows only (no week/day columns). Repeats data header before each day. */
+export function hevyRoutinesToCsvWithWeekAndDayTitles(routines: THevyRoutine[]): string {
+    const rows = hevyRoutinesToCsvRows(routines);
+    if (rows.length === 0) return "";
+
+    const numCols = HEVY_CSV_DATA_COLUMNS.length;
+    const byWeek = new Map<number, HevyCsvRow[]>();
+    for (const row of rows) {
+        const list = byWeek.get(row.week) ?? [];
+        list.push(row);
+        byWeek.set(row.week, list);
+    }
+    const weeks = Array.from(byWeek.keys()).sort((a, b) => a - b);
+    const csvRows: string[][] = [];
+
+    for (const week of weeks) {
+        const weekRows = byWeek.get(week) ?? [];
+        const byDay = new Map<string, HevyCsvRow[]>();
+        for (const row of weekRows) {
+            const list = byDay.get(row.day) ?? [];
+            list.push(row);
+            byDay.set(row.day, list);
+        }
+        const days = Array.from(byDay.keys()).sort((a, b) => Number(a) - Number(b));
+
+        const weekTitleRow = emptyRow(numCols);
+        weekTitleRow[0] = `Week ${week}`;
+        csvRows.push(weekTitleRow);
+        csvRows.push(emptyRow(numCols));
+
+        for (const day of days) {
+            const dayRows = byDay.get(day) ?? [];
+            const dayTitleRow = emptyRow(numCols);
+            dayTitleRow[0] = `Day ${day}`;
+            csvRows.push(dayTitleRow);
+            csvRows.push(HEVY_CSV_DATA_COLUMNS.slice());
+            for (const row of dayRows) {
+                csvRows.push(rowToDataCells(row));
+            }
+            csvRows.push(emptyRow(numCols));
+        }
+    }
+
+    return Papa.unparse(csvRows);
+}
 
 // Converts TAddExercise type into TProgramCreatorExercise type
 export const addExerciseToProgramCreatorExerciseConverter = async (addExercise: TAddExercise) => {

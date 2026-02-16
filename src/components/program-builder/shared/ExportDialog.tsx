@@ -14,8 +14,7 @@ import { ExportProgramCTAButtons } from "@/components/programs/ExportProgramCTAB
 import { exportOptions } from "@/assets/constants";
 import { PDFViewer } from "@react-pdf/renderer";
 import { HevyPdfRenderer } from "../hevy/HevyPdfRenderer";
-import { deFlattenHevyRoutine, hevyRoutinesToCsvRows } from "../utils";
-import { usePapaParse } from "react-papaparse";
+import { deFlattenHevyRoutine, hevyRoutinesToCsvWithWeekAndDayTitles } from "../utils";
 import { ChevronLeft } from "lucide-react";
 import { ExportToHevySetup } from "./ExportToHevySetup";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
@@ -29,7 +28,6 @@ interface IProps {
 export const ExportDialog: React.FC<IProps> = (props) => {
     const { open, onOpenChange, programId } = props;
     const { isInLbs } = usePoundsOrKgContext();
-    const { jsonToCSV } = usePapaParse();
     const [selectedExportId, setSelectedExportId] = useState<string | null>(null);
     const [hevyUploading, setHevyUploading] = useState(false);
     const [showBackConfirm, setShowBackConfirm] = useState(false);
@@ -68,14 +66,13 @@ export const ExportDialog: React.FC<IProps> = (props) => {
     const handleDownloadCsv = () => {
         const routines = hevyProgramFlattenedFromStorage();
         if (!routines || routines.length === 0) return;
-        const rows = hevyRoutinesToCsvRows(routines);
-        const csv = jsonToCSV(rows, { header: true, delimiter: "," });
+        const csv = hevyRoutinesToCsvWithWeekAndDayTitles(routines);
         const bom = "\uFEFF";
         const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8;" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "program-export.csv";
+        a.download = "my-proxima-program.csv";
         a.click();
         URL.revokeObjectURL(url);
     };
