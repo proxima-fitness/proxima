@@ -14,7 +14,8 @@ import { ExportProgramCTAButtons } from "@/components/programs/ExportProgramCTAB
 import { exportOptions } from "@/assets/constants";
 import { PDFViewer } from "@react-pdf/renderer";
 import { HevyPdfRenderer } from "../hevy/HevyPdfRenderer";
-import { deFlattenHevyRoutine } from "../utils";
+import { deFlattenHevyRoutine, hevyRoutinesToCsvRows } from "../utils";
+import { usePapaParse } from "react-papaparse";
 import { ChevronLeft } from "lucide-react";
 import { ExportToHevySetup } from "./ExportToHevySetup";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
@@ -28,6 +29,7 @@ interface IProps {
 export const ExportDialog: React.FC<IProps> = (props) => {
     const { open, onOpenChange, programId } = props;
     const { isInLbs } = usePoundsOrKgContext();
+    const { jsonToCSV } = usePapaParse();
     const [selectedExportId, setSelectedExportId] = useState<string | null>(null);
     const [hevyUploading, setHevyUploading] = useState(false);
     const [showBackConfirm, setShowBackConfirm] = useState(false);
@@ -50,6 +52,32 @@ export const ExportDialog: React.FC<IProps> = (props) => {
         } catch {
             return null;
         }
+    };
+
+    const hevyProgramFlattenedFromStorage = (): THevyRoutine[] | null => {
+        if (typeof window === "undefined") return null;
+        const raw = localStorage.getItem("hevy-program-in-progress");
+        if (!raw) return null;
+        try {
+            return JSON.parse(raw) as THevyRoutine[];
+        } catch {
+            return null;
+        }
+    };
+
+    const handleDownloadCsv = () => {
+        const routines = hevyProgramFlattenedFromStorage();
+        if (!routines || routines.length === 0) return;
+        const rows = hevyRoutinesToCsvRows(routines);
+        const csv = jsonToCSV(rows, { header: true, delimiter: "," });
+        const bom = "\uFEFF";
+        const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "program-export.csv";
+        a.click();
+        URL.revokeObjectURL(url);
     };
 
     const isHevyStepAndUploading = selectedExportId === "hevy" && hevyUploading;
@@ -137,6 +165,39 @@ export const ExportDialog: React.FC<IProps> = (props) => {
                         <div className="w-full px-4 py-4 sm:px-6 sm:py-5 md:px-8 md:py-6 lg:px-10 lg:py-6">
                             <ExportToHevySetup onUploadStateChange={setHevyUploading} />
                         </div>
+                    </div>
+                )}
+                {selectedExportId === "spreadsheet" && (
+                    <div className="flex flex-col items-start w-full gap-2">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 min-w-0 px-2 text-xs gap-1 -ml-2"
+                            onClick={() => setSelectedExportId(null)}
+                        >
+                            <ChevronLeft className="w-3 h-3 shrink-0" />
+                            Back
+                        </Button>
+                        {(() => {
+                            const routines = hevyProgramFlattenedFromStorage();
+                            if (!routines || routines.length === 0) {
+                                return (
+                                    <p className="text-sm text-muted-foreground py-4">
+                                        No program in progress. Build a program first to export as CSV.
+                                    </p>
+                                );
+                            }
+                            return (
+                                <div className="w-full flex flex-col items-center justify-center text-center gap-3 py-6">
+                                    <p className="text-sm text-muted-foreground">
+                                        Open in Excel, Google Sheets, or any spreadsheet app.
+                                    </p>
+                                    <Button className="bg-lightSecondary hover:bg-lightSecondary/80 text-white" onClick={handleDownloadCsv}>
+                                        Download CSV
+                                    </Button>
+                                </div>
+                            );
+                        })()}
                     </div>
                 )}
             </DialogContent>

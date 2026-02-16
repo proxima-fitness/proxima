@@ -187,6 +187,61 @@ export const getNumberRoutineFolders = (routines: THevyRoutine[]): number => {
     return maxFolderId - minFolderId + 1;
 };
 
+/** One row per set for CSV export. Column names are stable for imports (e.g. Google Sheets). */
+export type HevyCsvRow = {
+    week: number;
+    day: string;
+    routine_title: string;
+    routine_notes: string;
+    exercise_title: string;
+    exercise_notes: string;
+    rest_seconds: string | null;
+    set_index: number;
+    set_type: string;
+    weight_kg: number | null;
+    reps: number | null;
+    distance_meters: number | null;
+    duration_seconds: number | null;
+    rpe: number | null;
+    custom_metric: number | null;
+};
+
+/** Flattens THevyRoutine[] into one CSV row per set for jsonToCSV. */
+export const hevyRoutinesToCsvRows = (routines: THevyRoutine[]): HevyCsvRow[] => {
+    const rows: HevyCsvRow[] = [];
+    for (const routine of routines) {
+        const week = routine.folder_id + 1;
+        const day = routine.order ?? "";
+        const routineTitle = routine.title ?? "";
+        const routineNotes = routine.notes ?? "";
+        for (const exercise of routine.exercises ?? []) {
+            const exerciseTitle = exercise.title ?? "";
+            const exerciseNotes = exercise.notes ?? "";
+            const restSeconds = exercise.rest_seconds ?? null;
+            const sets = exercise.sets ?? [];
+            for (const set of sets) {
+                rows.push({
+                    week,
+                    day,
+                    routine_title: routineTitle,
+                    routine_notes: routineNotes,
+                    exercise_title: exerciseTitle,
+                    exercise_notes: exerciseNotes,
+                    rest_seconds: restSeconds,
+                    set_index: set.index,
+                    set_type: set.type ?? "",
+                    weight_kg: set.weight_kg ?? null,
+                    reps: set.reps ?? null,
+                    distance_meters: set.distance_meters ?? null,
+                    duration_seconds: set.duration_seconds ?? null,
+                    rpe: set.rpe ?? null,
+                    custom_metric: set.custom_metric ?? null,
+                });
+            }
+        }
+    }
+    return rows;
+};
 
 // Converts TAddExercise type into TProgramCreatorExercise type
 export const addExerciseToProgramCreatorExerciseConverter = async (addExercise: TAddExercise) => {

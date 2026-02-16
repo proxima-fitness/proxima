@@ -118,9 +118,8 @@ export const exportOptions = [
         id: "spreadsheet",
         name: "Spreadsheet",
         icon: <Table className="w-6 h-6" />,
-        subtitle: "Download your program as a CSV or spreadsheet file",
+        subtitle: "Download your program as a CSV file",
         brand: false,
-        disabled: true,
     },
 ];
 
