@@ -105,7 +105,21 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                 className={`w-full min-h-14 border-gray-200 cursor-pointer appearance-none p-0 m-0 text-left font-inherit focus:outline-none focus-visible:ring-2 focus-visible:ring-lightSecondary focus-visible:ring-inset ${rowBackgroundClass} ${supersetColor && !isSelected ? 'border-r-4' : ''}`}
                                 style={supersetColor && !isSelected ? borderStyle : {}}
                             >
-                                    <button type="button" className="w-full">
+                                    <div
+                                        role="button"
+                                        tabIndex={0}
+                                        className="w-full"
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter" || e.key === " ") {
+                                                e.preventDefault();
+                                                if (editMode) {
+                                                    toggleExerciseSelection(i);
+                                                } else {
+                                                    handleEdit(Number(folder_id), Number(day.order), i, exercise);
+                                                }
+                                            }
+                                        }}
+                                    >
                                         {exercise.supersets_id !== null && exercise.supersets_id !== undefined && !editMode && (
                                             <button
                                                 onClick={(e) => {
@@ -240,7 +254,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                         </div>
                                     </div>
                                     </div>
-                                </button>
+                                </div>
                             </TooltipTrigger>
                             <TooltipContent
                                 side="right"
