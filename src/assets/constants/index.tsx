@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { people03, people02, people01, people04, people05, people06, instagram, linkedin, star, reddit, twitter, hevy_logo, macrofactor_logo, google_sheets_logo_icon } from "public";
+import { people03, people02, people01, people04, people05, people06, instagram, linkedin, star, reddit, twitter, hevy_logo, google_sheets_logo_icon } from "public";
 import humanizeDuration from "humanize-duration";
 import { IOption } from '@/components/ui/multi-select';
 import { BicepsFlexedIcon, BookOpenIcon, Calculator, FileText, FootprintsIcon, SquarePowerIcon, Table } from "lucide-react";
@@ -84,21 +84,21 @@ export const exportOptions = [
         subtitle: "Download a printable PDF of your program",
         brand: false,
     },
-    {
-        id: "macrofactor",
-        name: "Macrofactor",
-        icon: (
-            <img
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                src={(macrofactor_logo as any).src}
-                alt="Macrofactor"
-                className="w-full h-5 object-contain"
-            />
-        ),
-        subtitle: "Download a .XLSX you can import into Macrofactor Workouts",
-        brand: true,
-        disabled: true,
-    },
+    // {
+    //     id: "macrofactor",
+    //     name: "Macrofactor",
+    //     icon: (
+    //         <img
+    //             // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //             src={(macrofactor_logo as any).src}
+    //             alt="Macrofactor"
+    //             className="w-full h-5 object-contain"
+    //         />
+    //     ),
+    //     subtitle: "Download a .XLSX you can import into Macrofactor Workouts",
+    //     brand: true,
+    //     disabled: true,
+    // },
     {
         id: "google_sheets",
         name: "Google Sheets",
