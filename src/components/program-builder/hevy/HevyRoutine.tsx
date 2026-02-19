@@ -169,17 +169,17 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                     }
                     { isMobile ? (
                         <div className="flex flex-col max-h-screen w-full max-w-full overflow-hidden">
-                            <div className="flex flex-row items-center justify-between px-4 py-2 border-b flex-shrink-0 w-full max-w-full">
+                            <div className="flex flex-row items-center justify-between px-4 py-2 border-b shrink-0 w-full max-w-full">
                                 <Button
                                     onClick={ handlePreviousWeek }
                                     disabled={ currentWeekIndex === 0 }
                                     variant="ghost"
                                     size="icon"
-                                    className={ `flex-shrink-0 ${currentWeekIndex === 0 ? "opacity-50 cursor-not-allowed" : ""}` }
+                                    className={ `shrink-0 ${currentWeekIndex === 0 ? "opacity-50 cursor-not-allowed" : ""}` }
                                 >
                                     <ChevronLeft className="h-6 w-6" />
                                 </Button>
-                                <div className="text-lg font-semibold flex-shrink-0">
+                                <div className="text-lg font-semibold shrink-0">
                                     Week { currentWeekIndex + 1 } / { numberOfWeeks }
                                 </div>
                                 <Button
@@ -187,7 +187,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                                     disabled={ currentWeekIndex >= numberOfWeeks - 1 }
                                     variant="ghost"
                                     size="icon"
-                                    className={ `flex-shrink-0 ${currentWeekIndex >= numberOfWeeks - 1 ? "opacity-50 cursor-not-allowed" : ""}` }
+                                    className={ `shrink-0 ${currentWeekIndex >= numberOfWeeks - 1 ? "opacity-50 cursor-not-allowed" : ""}` }
                                 >
                                     <ChevronRight className="h-6 w-6" />
                                 </Button>

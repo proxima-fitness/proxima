@@ -166,7 +166,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4 w-full max-w-full box-border min-h-[32rem]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4 w-full max-w-full box-border min-h-128">
                 {exercises.map((exercise, index) => {
                     const rowIndex = Math.floor(index / gridColumns);
                     const colorValue = exercise.weight > 0 ? getColorValue(exercise.color) : "var(--muted-foreground, #999)";

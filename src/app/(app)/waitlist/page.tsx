@@ -8,14 +8,14 @@ export const metadata = {
 
 export default function WaitlistPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-darkGray dark:to-gray-900 flex items-center justify-center">
+    <main className="min-h-screen bg-linear-to-b from-gray-50 to-gray-100 dark:from-darkGray dark:to-gray-900 flex items-center justify-center">
       <div className="container px-4 py-16 sm:py-24 w-full">
         <div className="max-w-7xl mx-auto">
           {/* Header Section */}
           <div className="text-center mb-12">
             <div className="inline-flex items-center justify-center gap-4 mb-6">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur-2xl opacity-30"></div>
+                <div className="absolute inset-0 bg-linear-to-r from-blue-500 to-purple-600 rounded-full blur-2xl opacity-30"></div>
                 <div className="relative bg-black rounded-full p-3">
                 <img src={ proxima_logo_black.src } alt="Proxima Logo" className="w-12 h-12" />
                 </div>
@@ -34,7 +34,7 @@ export default function WaitlistPage() {
                 />
               </svg>
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur-2xl opacity-30"></div>
+                <div className="absolute inset-0 bg-linear-to-r from-blue-500 to-purple-600 rounded-full blur-2xl opacity-30"></div>
                 <div className="relative bg-black rounded-full p-3">
                   <img src={ hevy_logo.src } alt="Hevy Logo" className="w-12 h-12" />
                 </div>
@@ -54,7 +54,7 @@ export default function WaitlistPage() {
 
           {/* Features Grid */}
           <div className="grid md:grid-cols-3 gap-8 mb-12">
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 text-center">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-xs border border-gray-200 dark:border-gray-700 text-center">
               <div className="w-full rounded-lg overflow-hidden mb-4 mx-auto">
                 <video
                 // controls
@@ -76,7 +76,7 @@ export default function WaitlistPage() {
               </p>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 text-center">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-xs border border-gray-200 dark:border-gray-700 text-center">
               <div className="w-full rounded-lg overflow-hidden mb-4 mx-auto">
                 <video
                 // controls
@@ -96,7 +96,7 @@ export default function WaitlistPage() {
               <p className="text-gray-600 dark:text-gray-400 text-sm">
               Andy is a fitness-expert AI agent with full access to your Hevy data. He can answer your training questions and take actions on your behalf.              </p>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 text-center">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-xs border border-gray-200 dark:border-gray-700 text-center">
               <div className="w-full rounded-lg overflow-hidden mb-4 mx-auto">
                 <video
                 // controls

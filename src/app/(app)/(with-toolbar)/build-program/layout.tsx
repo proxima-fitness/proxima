@@ -14,7 +14,7 @@ export default function ProgramBuilderLayout({ children }: { children: ReactNode
                 {/* <ProgramBuilderTabs /> */}
 
                 {/* Set Types - Centered on desktop only */}
-                <div className="hidden md:flex flex-shrink-0 justify-center items-center gap-2">
+                <div className="hidden md:flex shrink-0 justify-center items-center gap-2">
                     <TooltipProvider delayDuration={0}>
                         <Tooltip>
                             <TooltipTrigger asChild>

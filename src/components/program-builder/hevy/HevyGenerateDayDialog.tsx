@@ -79,7 +79,7 @@ export const HevyGenerateDayDialog: React.FC<IProps> = (props) => {
                                     />
                                 <Button
                                         type="submit"
-                                        className="w-[auto] h-10 bg-[#33bbcf] text-white">
+                                        className="w-auto h-10 bg-[#33bbcf] text-white">
                                     <SparklesIcon /> Generate
                                 </Button>
                             </form>

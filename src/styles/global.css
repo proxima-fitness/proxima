@@ -1,24 +1,42 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-:root {
-  --black-gradient: linear-gradient(
-    144.39deg,
-    #ffffff -278.56%,
-    #6d6d6d -78.47%,
-    #11101d 91.61%
-  );
+@config '../../tailwind.config.cjs';
 
-  --black-gradient-2: linear-gradient(
-    -168.39deg,
-    #ffffff -278.56%,
-    #6d6d6d -78.47%,
-    #11101d 91.61%
-  );
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
 
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
 
-  --blue-gradient : linear-gradient(
+@layer utilities {
+  :root {
+    --black-gradient: linear-gradient(
+      144.39deg,
+      #ffffff -278.56%,
+      #6d6d6d -78.47%,
+      #11101d 91.61%
+    );
+
+    --black-gradient-2: linear-gradient(
+      -168.39deg,
+      #ffffff -278.56%,
+      #6d6d6d -78.47%,
+      #11101d 91.61%
+    );
+
+    --blue-gradient: linear-gradient(
       157.81deg,
       #def9fa -43.27%,
       #bef3f5 -21.24%,
@@ -28,32 +46,32 @@
       #33bbcf 90.29%
     );
 
-  background: #11101d 91.61%;
-  --card-shadow: 0px 20px 100px -10px rgba(66, 71, 91, 0.1);
-}
+    background: #11101d 91.61%;
+    --card-shadow: 0px 20px 100px -10px rgba(66, 71, 91, 0.1);
+  }
 
-* {
-  scroll-behavior: smooth;
-}
+  * {
+    scroll-behavior: smooth;
+  }
 
-/* Thin horizontal scrollbar for program card metadata chips */
-.scrollbar-thin {
-  scrollbar-width: thin;
-}
-.scrollbar-thin::-webkit-scrollbar {
-  height: 4px;
-}
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: transparent;
-}
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  @apply rounded-full bg-gray-300 dark:bg-gray-600;
-}
-.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-400 dark:bg-gray-500;
-}
+  /* Thin horizontal scrollbar for program card metadata chips */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    height: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-gray-300 dark:bg-gray-600;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400 dark:bg-gray-500;
+  }
 
-@keyframes spin-slow {
+  @keyframes spin-slow {
     0% {
       transform: rotate(0deg);
     }
@@ -67,7 +85,8 @@
   }
 
   @keyframes pulse {
-    0%, 100% {
+    0%,
+    100% {
       opacity: 1;
     }
     50% {
@@ -92,204 +111,204 @@
     animation: loading-bar 1.5s ease-in-out infinite;
   }
 
-.text-gradient {
-  background: radial-gradient(
-    64.18% 64.18% at 71.16% 35.69%,
-    #def9fa 0.89%,
-    #bef3f5 17.23%,
-    #9dedf0 42.04%,
-    #7de7eb 55.12%,
-    #5ce1e6 71.54%,
-    #33bbcf 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-fill-color: transparent;
-}
+  .text-gradient {
+    background: radial-gradient(
+      64.18% 64.18% at 71.16% 35.69%,
+      #def9fa 0.89%,
+      #bef3f5 17.23%,
+      #9dedf0 42.04%,
+      #7de7eb 55.12%,
+      #5ce1e6 71.54%,
+      #33bbcf 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+  }
 
-.bg-blue-gradient {
-  background: linear-gradient(
-    157.81deg,
-    #def9fa -43.27%,
-    #bef3f5 -21.24%,
-    #9dedf0 12.19%,
-    #7de7eb 29.82%,
-    #5ce1e6 51.94%,
-    #33bbcf 90.29%
-  );
-}
+  .bg-blue-gradient {
+    background: linear-gradient(
+      157.81deg,
+      #def9fa -43.27%,
+      #bef3f5 -21.24%,
+      #9dedf0 12.19%,
+      #7de7eb 29.82%,
+      #5ce1e6 51.94%,
+      #33bbcf 90.29%
+    );
+  }
 
-.bg-black-gradient {
-  background: linear-gradient(
-    144.39deg,
-    #ffffff -278.56%,
-    #6d6d6d -78.47%,
-    #11101d 91.61%
-  );
-}
+  .bg-black-gradient {
+    background: linear-gradient(
+      144.39deg,
+      #ffffff -278.56%,
+      #6d6d6d -78.47%,
+      #11101d 91.61%
+    );
+  }
 
-.bg-black-gradient-2 {
-  background: linear-gradient(
-    -168.39deg,
-    #ffffff -278.56%,
-    #6d6d6d -78.47%,
-    #11101d 91.61%
-  );
-}
+  .bg-black-gradient-2 {
+    background: linear-gradient(
+      -168.39deg,
+      #ffffff -278.56%,
+      #6d6d6d -78.47%,
+      #11101d 91.61%
+    );
+  }
 
-.bg-gray-gradient {
-  background: linear-gradient(
-    153.47deg,
-    rgba(255, 255, 255, 0) -341.94%,
-    #14101d 95.11%
-  );
-}
+  .bg-gray-gradient {
+    background: linear-gradient(
+      153.47deg,
+      rgba(255, 255, 255, 0) -341.94%,
+      #14101d 95.11%
+    );
+  }
 
-ul {
+  ul {
     list-style-type: disc; /* Options: disc, circle, square, none */
-    padding-left: 20px;      /* Add some padding */
+    padding-left: 20px; /* Add some padding */
   }
   li {
-    margin-bottom: 5px;      /* Add space between points */
+    margin-bottom: 5px; /* Add space between points */
   }
 
-
-.bg-discount-gradient {
-  background: linear-gradient(125.17deg, #272727 0%, #11101d 100%);
-}
-
-.box-shadow {
-  box-shadow: 0px 20px 100px -10px rgba(66, 71, 91, 0.1);
-}
-
-.sidebar {
-  -webkit-animation: slide-top 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-  animation: slide-top 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-}
-
-@-webkit-keyframes slide-top {
-  0% {
-    -webkit-transform: translateY(100px);
-    transform: translateY(100px);
+  .bg-discount-gradient {
+    background: linear-gradient(125.17deg, #272727 0%, #11101d 100%);
   }
-  100% {
-    -webkit-transform: translateY(0);
-    transform: translateY(0);
-  }
-}
 
-@keyframes slide-top {
-  0% {
-    -webkit-transform: translateY(100px);
-    transform: translateY(100px);
+  .box-shadow {
+    box-shadow: 0px 20px 100px -10px rgba(66, 71, 91, 0.1);
   }
-  100% {
-    -webkit-transform: translateY(0);
-    transform: translateY(0);
-  }
-}
 
-.faq-card {
+  .sidebar {
+    -webkit-animation: slide-top 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+    animation: slide-top 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  }
+
+  @-webkit-keyframes slide-top {
+    0% {
+      -webkit-transform: translateY(100px);
+      transform: translateY(100px);
+    }
+    100% {
+      -webkit-transform: translateY(0);
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slide-top {
+    0% {
+      -webkit-transform: translateY(100px);
+      transform: translateY(100px);
+    }
+    100% {
+      -webkit-transform: translateY(0);
+      transform: translateY(0);
+    }
+  }
+
+  .faq-card {
     background: var(--black-gradient);
     box-shadow: var(--card-shadow);
     border-width: 2px;
     border-color: white;
-}
-.feature-card {
+  }
+  .feature-card {
     background: var(--black-gradient-2);
   }
 
-.feature-card:hover {
-  background: var(--black-gradient);
-  box-shadow: var(--card-shadow);
-}
+  .feature-card:hover {
+    background: var(--black-gradient);
+    box-shadow: var(--card-shadow);
+  }
 
-.colour-flip img {
+  .colour-flip img {
     filter: brightness(0) invert(1);
-}
+  }
 
-.feedback-container .feedback-card:last-child {
-  margin-right: 0px;
-}
+  .feedback-container .feedback-card:last-child {
+    margin-right: 0px;
+  }
 
-.feedback-card {
-  background: transparent;
-  height: 500px;
-}
+  .feedback-card {
+    background: transparent;
+    height: 500px;
+  }
 
-.feedback-card:hover {
-  background: var(--black-gradient);
-}
+  .feedback-card:hover {
+    background: var(--black-gradient);
+  }
 
-.blue__gradient {
-  background: radial-gradient(
-    circle at center,
-    rgba(92, 225, 230, 0.4) 0%,
-    rgba(51, 187, 207, 0.5) 25%,
-    rgba(59, 91, 219, 0.4) 50%,
-    rgba(26, 31, 58, 0.3) 75%,
-    rgba(26, 31, 58, 0) 100%
-  );
-  filter: blur(180px);
-}
+  .blue__gradient {
+    background: radial-gradient(
+      circle at center,
+      rgba(92, 225, 230, 0.4) 0%,
+      rgba(51, 187, 207, 0.5) 25%,
+      rgba(59, 91, 219, 0.4) 50%,
+      rgba(26, 31, 58, 0.3) 75%,
+      rgba(26, 31, 58, 0) 100%
+    );
+    filter: blur(180px);
+  }
 
-.pink__gradient {
-  background: radial-gradient(
-    circle at center,
-    rgba(255, 140, 105, 0.4) 0%,
-    rgba(255, 107, 157, 0.5) 25%,
-    rgba(252, 103, 250, 0.5) 50%,
-    rgba(139, 26, 139, 0.4) 75%,
-    rgba(139, 26, 139, 0) 100%
-  );
-  filter: blur(850px);
-}
+  .pink__gradient {
+    background: radial-gradient(
+      circle at center,
+      rgba(255, 140, 105, 0.4) 0%,
+      rgba(255, 107, 157, 0.5) 25%,
+      rgba(252, 103, 250, 0.5) 50%,
+      rgba(139, 26, 139, 0.4) 75%,
+      rgba(139, 26, 139, 0) 100%
+    );
+    filter: blur(850px);
+  }
 
-.white__gradient {
-  background: radial-gradient(
-    circle at center,
-    rgba(224, 231, 255, 0.5) 0%,
-    rgba(167, 139, 250, 0.4) 30%,
-    rgba(76, 29, 149, 0.3) 60%,
-    rgba(76, 29, 149, 0) 100%
-  );
-  filter: blur(750px);
-}
+  .white__gradient {
+    background: radial-gradient(
+      circle at center,
+      rgba(224, 231, 255, 0.5) 0%,
+      rgba(167, 139, 250, 0.4) 30%,
+      rgba(76, 29, 149, 0.3) 60%,
+      rgba(76, 29, 149, 0) 100%
+    );
+    filter: blur(750px);
+  }
 
-.blue__gradient_light {
-  background: radial-gradient(
-    circle at center,
-    rgba(179, 229, 252, 0.6) 0%,
-    rgba(129, 212, 250, 0.5) 25%,
-    rgba(159, 168, 218, 0.45) 50%,
-    rgba(159, 168, 218, 0.2) 75%,
-    rgba(159, 168, 218, 0) 100%
-  );
-  filter: blur(160px);
-}
+  .blue__gradient_light {
+    background: radial-gradient(
+      circle at center,
+      rgba(179, 229, 252, 0.6) 0%,
+      rgba(129, 212, 250, 0.5) 25%,
+      rgba(159, 168, 218, 0.45) 50%,
+      rgba(159, 168, 218, 0.2) 75%,
+      rgba(159, 168, 218, 0) 100%
+    );
+    filter: blur(160px);
+  }
 
-.pink__gradient_light {
-  background: radial-gradient(
-    circle at center,
-    rgba(248, 187, 208, 0.6) 0%,
-    rgba(244, 143, 177, 0.55) 25%,
-    rgba(255, 171, 145, 0.5) 50%,
-    rgba(255, 171, 145, 0.2) 75%,
-    rgba(255, 171, 145, 0) 100%
-  );
-  filter: blur(750px);
-}
+  .pink__gradient_light {
+    background: radial-gradient(
+      circle at center,
+      rgba(248, 187, 208, 0.6) 0%,
+      rgba(244, 143, 177, 0.55) 25%,
+      rgba(255, 171, 145, 0.5) 50%,
+      rgba(255, 171, 145, 0.2) 75%,
+      rgba(255, 171, 145, 0) 100%
+    );
+    filter: blur(750px);
+  }
 
-.white__gradient_light {
-  background: radial-gradient(
-    circle at center,
-    rgba(225, 190, 231, 0.5) 0%,
-    rgba(206, 147, 216, 0.45) 30%,
-    rgba(186, 104, 200, 0.4) 60%,
-    rgba(186, 104, 200, 0) 100%
-  );
-  filter: blur(650px);
+  .white__gradient_light {
+    background: radial-gradient(
+      circle at center,
+      rgba(225, 190, 231, 0.5) 0%,
+      rgba(206, 147, 216, 0.45) 30%,
+      rgba(186, 104, 200, 0.4) 60%,
+      rgba(186, 104, 200, 0) 100%
+    );
+    filter: blur(650px);
+  }
 }
 
 @layer base {

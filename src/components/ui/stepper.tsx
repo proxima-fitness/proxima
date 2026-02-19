@@ -14,7 +14,7 @@ interface IStepProps {
 const Step: React.FC<IStepProps> = ({ title, description, isCompleted, isActive }) => {
   return (
     <div className="flex items-center max-sm:items-start">
-      <div className="relative flex items-center justify-center flex-shrink-0">
+      <div className="relative flex items-center justify-center shrink-0">
         <div
           className={cn(
             "w-8 h-8 max-sm:w-5 max-sm:h-5 rounded-full border-2 flex items-center justify-center",

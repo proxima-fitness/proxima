@@ -48,7 +48,7 @@ export const ModifyProgramProgress: React.FC<IProps> = ({
                                     >
                                         <span
                                             className={cn(
-                                                "w-2.5 h-2.5 rounded-full flex-shrink-0 transition-colors duration-300",
+                                                "w-2.5 h-2.5 rounded-full shrink-0 transition-colors duration-300",
                                                 isComplete ? "bg-green-500" : "bg-yellow-500 animate-pulse"
                                             )}
                                         />
@@ -78,7 +78,7 @@ export const ModifyProgramProgress: React.FC<IProps> = ({
                         <div className="flex items-center gap-2">
                             <span
                                 className={cn(
-                                    "w-2.5 h-2.5 rounded-full flex-shrink-0 transition-colors duration-300",
+                                    "w-2.5 h-2.5 rounded-full shrink-0 transition-colors duration-300",
                                     isComplete ? "bg-green-500" : "bg-yellow-500 animate-pulse"
                                 )}
                             />

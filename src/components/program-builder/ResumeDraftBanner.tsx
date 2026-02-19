@@ -75,7 +75,7 @@ export const ResumeDraftBanner: React.FC = () => {
                     href={"/build-program?resume=true&edit=true"}
                     target="_self"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 sm:h-10 text-sm sm:text-base rounded-lg bg-lightSecondary text-white font-medium hover:bg-black hover:text-white transition-colors shadow shrink-0"
+                    className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 sm:h-10 text-sm sm:text-base rounded-lg bg-lightSecondary text-white font-medium hover:bg-black hover:text-white transition-colors shadow-sm shrink-0"
                 >
                     <Redo2Icon className="size-3.5 sm:size-4" />
                     Resume program

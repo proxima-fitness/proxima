@@ -45,7 +45,7 @@ const ProgramItem: React.FC<IProgramItemProps> = memo(({ item, userData }) => {
     return (
         <div className="flex flex-col gap-4">
             <div  className="relative group bg-white dark:bg-darkGray h-[200px] rounded-lg shadow-lg">
-                <div className="absolute inset-0 transition duration-300 group-hover:blur-sm z-0">
+                <div className="absolute inset-0 transition duration-300 group-hover:blur-xs z-0">
                     <img
                         src={quotes.src}
                         alt="Program Thumbnail"
@@ -58,14 +58,14 @@ const ProgramItem: React.FC<IProgramItemProps> = memo(({ item, userData }) => {
                     </div>
                 </div>
 
-                <div className="absolute inset-0 rounded-lg bg-black bg-opacity-40 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                <div className="absolute inset-0 rounded-lg bg-black bg-opacity-40 backdrop-blur-xs flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
                     <Link
                         href={ `/build-program?shareId=${item.id}&edit=true&shared=true` }
                         rel="noopener noreferrer"
                         className="w-[50%]"
                         target="_self"
                     >
-                        <button className="my-2 py-2 w-full hover:bg-black hover:text-white bg-white text-black rounded-lg shadow flex flex-row items-center justify-center gap-2"><EditIcon />Edit</button>
+                        <button className="my-2 py-2 w-full hover:bg-black hover:text-white bg-white text-black rounded-lg shadow-sm flex flex-row items-center justify-center gap-2"><EditIcon />Edit</button>
                     </Link>
                     <Link
                         href={ `/build-program?shareId=${item.id}&shared=true` }
@@ -73,7 +73,7 @@ const ProgramItem: React.FC<IProgramItemProps> = memo(({ item, userData }) => {
                         className="w-[50%]"
                         target="_self"
                     >
-                        <button className="my-2 py-2 w-full hover:bg-black hover:text-white bg-lightSecondary text-white rounded-lg shadow flex flex-row items-center justify-center gap-2"><EyeIcon />View</button>
+                        <button className="my-2 py-2 w-full hover:bg-black hover:text-white bg-lightSecondary text-white rounded-lg shadow-sm flex flex-row items-center justify-center gap-2"><EyeIcon />View</button>
                     </Link>
                 </div>
 

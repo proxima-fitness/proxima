@@ -58,7 +58,7 @@ const BuildProgress: React.FC<{
                         return (
                             <div key={dayNum} className="flex items-center gap-2">
                                 <span className={cn(
-                                    "w-2.5 h-2.5 rounded-full flex-shrink-0 transition-colors duration-300",
+                                    "w-2.5 h-2.5 rounded-full shrink-0 transition-colors duration-300",
                                     completed ? "bg-green-500" :
                                     isCurrentlyBuilding ? "bg-yellow-500 animate-pulse" :
                                     "bg-gray-300 dark:bg-gray-600"
@@ -101,7 +101,7 @@ const GenerationError: React.FC<{
         <div className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
             <div className="flex flex-col gap-3 p-4 bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-200 dark:border-red-800">
                 <div className="flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                    <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
                     <div className="flex flex-col gap-1">
                         <p className="font-medium text-sm text-red-700 dark:text-red-300">
                             Workout generation failed
@@ -774,7 +774,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                         className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2"
                                                     >
                                                         <div className="flex items-center gap-2 p-4 bg-muted/50 rounded-lg border border-border">
-                                                            <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 bg-red-500" />
+                                                            <span className="w-2.5 h-2.5 rounded-full shrink-0 bg-red-500" />
                                                             <span className="text-sm text-muted-foreground">
                                                                 {errorText || "Program modification failed"}
                                                             </span>

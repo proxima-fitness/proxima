@@ -22,7 +22,7 @@ export const Navbar: React.FC<IProps> = (props) => {
     const { isFilters, setIsFilters, onTogglePosition, onToggleExpand, isExpanded, sidebarPosition } = props;
 
     return (
-        <div className="min-h-12  px-2 flex flex-row justify-between items-center gap-2 flex-shrink-0 border-b">
+        <div className="min-h-12  px-2 flex flex-row justify-between items-center gap-2 shrink-0 border-b">
                 <div className="flex flex-row gap-2 max-sm:hidden">
                     <Button variant="ghost" className={`w-24 text-white hover:bg-gray-800 hover:text-white ${!isFilters ? "bg-black dark:bg-white dark:text-black" : "bg-white dark:bg-black dark:text-white text-black"}`} onClick={() => setIsFilters(false)}>Chat</Button>
                     <Button variant="ghost" className={`w-24 text-white hover:bg-gray-800 hover:text-white ${isFilters ? "bg-black dark:bg-white dark:text-black" : "bg-white dark:bg-black dark:text-white text-black"}`} onClick={() => setIsFilters(true)}>Filters</Button>

@@ -48,10 +48,10 @@ export const ThemeSlider: React.FC = () => {
     return (
         <div className="w-full px-6 h-full text-white">
             <Slider { ...settings }>
-                <img src={ (programs_classic_device as any).src } alt="Program Creator Image" className="relative max-w-[180px] h-auto z-[6]" />
-                <img src={ (programs_dark_device as any).src } alt="Program Creator Image" className="relative max-w-[180px] h-auto z-[6]" />
-                <img src={ (programs_mobile_white_device as any).src } alt="Program Creator Image" className="relative max-w-[180px] h-auto z-[6]" />
-                <img src={ (programs_pastel_device as any).src } alt="Program Creator Image" className="relative max-w-[180px] h-auto z-[6]" />
+                <img src={ (programs_classic_device as any).src } alt="Program Creator Image" className="relative max-w-[180px] h-auto z-6" />
+                <img src={ (programs_dark_device as any).src } alt="Program Creator Image" className="relative max-w-[180px] h-auto z-6" />
+                <img src={ (programs_mobile_white_device as any).src } alt="Program Creator Image" className="relative max-w-[180px] h-auto z-6" />
+                <img src={ (programs_pastel_device as any).src } alt="Program Creator Image" className="relative max-w-[180px] h-auto z-6" />
             </Slider>
         </div>
     );

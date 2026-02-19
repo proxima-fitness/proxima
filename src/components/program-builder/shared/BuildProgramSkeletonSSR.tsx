@@ -48,53 +48,53 @@ export const BuildProgramSkeletonSSR: FC = () => {
             </div>
             <div className=" pb-4 flex flex-row flex-nowrap gap-2">
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
-                    <Skeleton className="italic w-[100%] h-[100%] rounded-xl text-center flex items-center justify-center" >
+                    <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
                     </Skeleton>
                 </div>
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
-                    <Skeleton className="italic w-[100%] h-[100%] rounded-xl text-center flex items-center justify-center" >
+                    <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
                     </Skeleton>
                 </div>
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
-                    <Skeleton className="italic w-[100%] h-[100%] rounded-xl text-center flex items-center justify-center" >
+                    <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
                     </Skeleton>
                 </div>
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
-                    <Skeleton className="italic w-[100%] h-[100%] rounded-xl text-center flex items-center justify-center" >
+                    <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
                     </Skeleton>
                 </div>
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
-                    <Skeleton className="italic w-[100%] h-[100%] rounded-xl text-center flex items-center justify-center" >
+                    <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
                     </Skeleton>
                 </div>
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
-                    <Skeleton className="italic w-[100%] h-[100%] rounded-xl text-center flex items-center justify-center" >
+                    <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
                     </Skeleton>
                 </div>
             </div>
             <div className=" pb-4 flex flex-row flex-nowrap gap-2">
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
-                    <Skeleton className="italic w-[100%] h-[100%] rounded-xl text-center flex items-center justify-center" >
+                    <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
                     </Skeleton>
                 </div>
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
-                    <Skeleton className="italic w-[100%] h-[100%] rounded-xl text-center flex items-center justify-center" >
+                    <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
                     </Skeleton>
                 </div>
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
-                    <Skeleton className="italic w-[100%] h-[100%] rounded-xl text-center flex items-center justify-center" >
+                    <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
                     </Skeleton>
                 </div>
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
-                    <Skeleton className="italic w-[100%] h-[100%] rounded-xl text-center flex items-center justify-center" >
+                    <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
                     </Skeleton>
                 </div>
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
-                    <Skeleton className="italic w-[100%] h-[100%] rounded-xl text-center flex items-center justify-center" >
+                    <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
                     </Skeleton>
                 </div>
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
-                    <Skeleton className="italic w-[100%] h-[100%] rounded-xl text-center flex items-center justify-center" >
+                    <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
                     </Skeleton>
                 </div>
             </div>

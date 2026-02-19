@@ -28,7 +28,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
 
     return (
         <main className="min-h-screen bg-white dark:bg-primary relative overflow-hidden">
-            <div className={`${styles.paddingX} ${styles.paddingY} relative z-[1]`}>
+            <div className={`${styles.paddingX} ${styles.paddingY} relative z-1`}>
                 <div className={`${styles.boxWidth} mx-auto`}>
                     {/* Hero Section */}
                     <section className={`${styles.flexCenter} flex-col mb-16`} data-aos="fade-up">
@@ -45,7 +45,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                         <Card className="dark:border-white/10  max-w-[600px] md:max-w-[900px] w-full">
                             <CardHeader className="flex flex-col md:flex-row md:items-center md:gap-6 items-center pb-4 p-0">
                                 <div className="relative h-[400px] w-[400px] max-sm:h-[300px] max-sm:w-full md:h-[300px] md:flex-1 md:w-auto group mb-6 md:mb-0">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 to-lightSecondary/20 rounded-xl md:rounded-tl-xl md:rounded-bl-xl md:rounded-tr-none md:rounded-br-none opacity-50 group-hover:opacity-75 transition-opacity duration-300" />
+                                    <div className="absolute inset-0 bg-linear-to-br from-secondary/20 to-lightSecondary/20 rounded-xl md:rounded-tl-xl md:rounded-bl-xl md:rounded-tr-none md:rounded-br-none opacity-50 group-hover:opacity-75 transition-opacity duration-300" />
                                     <img
                                         src={(jack as any).src}
                                         alt="Jack Hanlon"
@@ -88,7 +88,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                             <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="300">
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
-                                        <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
+                                        <div className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
                                             <span className="text-white  text-sm sm:text-lg">2020</span>
                                         </div>
                                         <div className="flex-1">
@@ -104,7 +104,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                             <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="400">
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
-                                        <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
+                                        <div className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
                                             <span className="text-white  text-sm sm:text-lg">2021</span>
                                         </div>
                                         <div className="flex-1">
@@ -123,7 +123,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                             <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="500">
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
-                                        <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
+                                        <div className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
                                             <span className="text-white  text-sm sm:text-lg">2022</span>
                                         </div>
                                         <div className="flex-1">
@@ -139,7 +139,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                             <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="600">
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
-                                        <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
+                                        <div className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
                                             <span className="text-white  text-sm sm:text-lg">2023</span>
                                         </div>
                                         <div className="flex-1">
@@ -155,7 +155,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                             <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="700">
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
-                                        <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
+                                        <div className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
                                             <span className="text-white  text-sm sm:text-lg">2025</span>
                                         </div>
                                         <div className="flex-1">
@@ -174,7 +174,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                             <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="800">
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
-                                        <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
+                                        <div className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
                                             <span className="text-white text-sm sm:text-lg">2026</span>
                                         </div>
                                         <div className="flex-1">

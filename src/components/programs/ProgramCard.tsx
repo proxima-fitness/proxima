@@ -126,9 +126,9 @@ export const ProgramCard: React.FC<IProps> = (props) => {
                         </div>
                         <h3 className="text-xl font-main overflow-hidden text-ellipsis line-clamp-1">{ program.title }</h3>
                         <div className="scrollbar-thin w-full min-h-10 overflow-x-auto overflow-y-hidden flex items-center gap-2">
-                            <Badge className="text-[10px] text-white p-1 bg-lightSecondary dark:bg-gray-300 dark:text-black whitespace-nowrap flex-shrink-0">{ program?.difficulty?.map((level: string ) => level).join(' - ') || "Not specified"  }</Badge>
-                            <Badge className="text-[10px] text-white p-1 bg-lightSecondary dark:bg-gray-300 dark:text-black whitespace-nowrap flex-shrink-0">{ program?.equipment || "Not specified" }</Badge>
-                            <Badge className="text-[10px] text-white p-1 bg-lightSecondary dark:bg-gray-300 dark:text-black whitespace-nowrap flex-shrink-0">{ program?.workout_duration || "Not specified" } Mins</Badge>
+                            <Badge className="text-[10px] text-white p-1 bg-lightSecondary dark:bg-gray-300 dark:text-black whitespace-nowrap shrink-0">{ program?.difficulty?.map((level: string ) => level).join(' - ') || "Not specified"  }</Badge>
+                            <Badge className="text-[10px] text-white p-1 bg-lightSecondary dark:bg-gray-300 dark:text-black whitespace-nowrap shrink-0">{ program?.equipment || "Not specified" }</Badge>
+                            <Badge className="text-[10px] text-white p-1 bg-lightSecondary dark:bg-gray-300 dark:text-black whitespace-nowrap shrink-0">{ program?.workout_duration || "Not specified" } Mins</Badge>
                         </div>
                     </div>
                 </div>

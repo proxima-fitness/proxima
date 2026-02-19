@@ -289,7 +289,7 @@ function ConversationPromptInput( props: IProps) {
              </div>
              <div className="flex flex-row justify-between items-center">
                  <span className="w-[66%]">
-                     <Button onClick={ () => toggleAdvancedSettingsOpen() } variant="ghost" className="w-[auto] h-[auto]">
+                     <Button onClick={ () => toggleAdvancedSettingsOpen() } variant="ghost" className="w-auto h-auto">
                          Advanced settings { advancedSettingsOpen ? <ChevronUpIcon /> : <ChevronDownIcon /> }
                      </Button>
                  </span>
@@ -301,7 +301,7 @@ function ConversationPromptInput( props: IProps) {
              </div>
              { advancedSettingsOpen &&
                  <span className="flex flex-row justify-between gap-5 max-sm:gap-2">
-                     <span className="grid grid-cols-2 max-sm:grid-cols-1 max-sm:basis-1/2 max-sm:gap-2 max-sm:pr-2 gap-5 sm:flex-grow-[2] basis-2/3 pr-4 border-r-2">
+                     <span className="grid grid-cols-2 max-sm:grid-cols-1 max-sm:basis-1/2 max-sm:gap-2 max-sm:pr-2 gap-5 sm:grow-2 basis-2/3 pr-4 border-r-2">
                          <Select value={ sex } onValueChange={ (value) => setSex(value) }>
                              <SelectTrigger className="h-10 bg-white dark:bg-darkGray">
                                  <SelectValue placeholder="Sex" />
@@ -442,7 +442,7 @@ function ConversationPromptInput( props: IProps) {
                          ) }
                          />
                      </span>
-                     <span className="grid grid-cols-1 flex-grow basis-1/3 ">
+                     <span className="grid grid-cols-1 grow basis-1/3 ">
                          <MultiSelect
                              value = { excludeAreas }
                              onChange={ (value) => setExcludeAreas(value) }
@@ -527,7 +527,7 @@ function ConversationPromptInput( props: IProps) {
           value={prompt}
           onValueChange={setPrompt}
         //   onSubmit={handleSubmit}
-          className="border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-xs"
+          className="border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-2xs"
         >
           <div className="flex flex-col">
             <PromptInputTextarea

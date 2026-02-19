@@ -87,7 +87,7 @@ export const PromptTemplate: React.FC = () => {
         >
 
             <PromptInput
-                className="dark:bg-darkGray border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-xs focus-within:border-1 focus-within:border-gray-300 transition-all duration-200"
+                className="dark:bg-darkGray border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-2xs focus-within:border focus-within:border-gray-300 transition-all duration-200"
                 value={search}
                 onValueChange={handlePromptInputValueChange}
                 onSubmit={handleSend}
@@ -156,7 +156,7 @@ export const PromptTemplate: React.FC = () => {
             </PromptInput>
 
             <FileUploadContent>
-                <div className="flex min-h-[200px] w-full items-center justify-center backdrop-blur-sm">
+                <div className="flex min-h-[200px] w-full items-center justify-center backdrop-blur-xs">
                 <div className="bg-background/90 m-4 w-full max-w-md rounded-lg border p-8 shadow-lg">
                     <div className="mb-4 flex justify-center">
                     <svg

@@ -267,7 +267,7 @@ export const Agent: React.FC<IProps> = (props) => {
                 )
                 }
                 <div className="absolute bottom-4 right-5 z-50">
-                    <ScrollButton className="shadow-sm" />
+                    <ScrollButton className="shadow-xs" />
                 </div>
                 <ChatContainerScrollAnchor />
                 </ChatContainerContent>

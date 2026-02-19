@@ -134,7 +134,7 @@ function QuestionSelect({
                     onOtherTextChange(question.id, e.target.value)
                   }
                   placeholder="Type your answer..."
-                  className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none"
+                  className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-hidden"
                   autoFocus
                   onClick={(e) => e.stopPropagation()}
                 />
@@ -225,7 +225,7 @@ function QuestionMultiSelect({
               onKeyDown={handleKeyDown}
               className={cn(
                 "flex items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm transition-colors cursor-pointer",
-                "hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                "hover:bg-accent focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 isSelected && "bg-accent"
               )}
             >
@@ -234,7 +234,7 @@ function QuestionMultiSelect({
                   checked={isSelected}
                   onCheckedChange={() => onToggle(question.id, option.id)}
                   className={cn(
-                    "peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
+                    "peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
                     "shrink-0 data-[state=checked]:text-white"
                   )}
                   tabIndex={-1}
@@ -287,7 +287,7 @@ function QuestionMultiSelect({
               }}
               className={cn(
                 "flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm transition-colors cursor-pointer",
-                "hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                "hover:bg-accent focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 isOtherSelected && "bg-accent"
               )}
             >
@@ -314,7 +314,7 @@ function QuestionMultiSelect({
                     onOtherTextChange(question.id, e.target.value)
                   }
                   placeholder="Type your answer..."
-                  className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none"
+                  className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-hidden"
                   autoFocus
                   onClick={(e) => e.stopPropagation()}
                 />
@@ -642,7 +642,7 @@ export function Questions({
   return (
     <div
       className={cn(
-        "flex w-full max-w-lg flex-col rounded-lg border bg-card text-card-foreground shadow-sm",
+        "flex w-full max-w-lg flex-col rounded-lg border bg-card text-card-foreground shadow-xs",
         className
       )}
     >
@@ -661,7 +661,7 @@ export function Questions({
           >
             <ChevronUp className="size-4" />
           </button>
-          <span className="min-w-[3.5rem] text-center">
+          <span className="min-w-14 text-center">
             {visibleIndex + 1} of {totalQuestions}
           </span>
           <button

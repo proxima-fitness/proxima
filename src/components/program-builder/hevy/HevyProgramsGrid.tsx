@@ -84,7 +84,7 @@ function HevyProgramCard({
                     >
                         <ChevronLeft className="size-4" />
                     </Button>
-                    <span className="font-third text-xs text-muted-foreground min-w-[4rem] text-center">
+                    <span className="font-third text-xs text-muted-foreground min-w-16 text-center">
                         Page {currentPage} of {totalPages}
                     </span>
                     <Button
@@ -104,7 +104,7 @@ function HevyProgramCard({
             <div className="flex flex-row justify-end p-4 border-t border-border dark:border-white/10 ">
                 <Button
                     size="lg"
-                    className="gap-2 py-2 bg-lightSecondary text-white hover:bg-black hover:text-white rounded-lg shadow"
+                    className="gap-2 py-2 bg-lightSecondary text-white hover:bg-black hover:text-white rounded-lg shadow-sm"
                     onClick={onEdit}
                 >
                     <EditIcon className="size-4" /> Edit

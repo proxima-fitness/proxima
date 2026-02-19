@@ -14,12 +14,12 @@ export const Testimonials: React.FC = () => {
             data-aos-anchor-placement="top-bottom"
             data-aos-once="true"
         >
-            <div className="absolute z-[0] w-[60%] h-[60%] -right-[50%] rounded-full blue__gradient bottom-40" />
+            <div className="absolute z-0 w-[60%] h-[60%] -right-[50%] rounded-full blue__gradient bottom-40" />
             <motion.div
                     initial={ { opacity: 0 } }
                     whileInView={ { opacity: 1 } }
                     viewport={ { once: true } }
-                    className="w-full flex justify-between items-center md:flex-row flex-col sm:mb-16 mb-6 relative z-[1]">
+                    className="w-full flex justify-between items-center md:flex-row flex-col sm:mb-16 mb-6 relative z-1">
                 <h2 className={ styles.heading2 }>
                     <div className="flex md:flex-row flex-col justify-center items-center">
                         <div className="flex flex-row justify-center items-center">

@@ -12,7 +12,7 @@ export const NavDrawer: React.FC = () => {
         <React.Fragment key={ "burger menu" }>
             <CustomTrigger />
             <Link href={ "/" } >
-                <img src={ (proxima_logo as any).src } alt="Proxima Logo" className="h-[40px] w-[auto]" />
+                <img src={ (proxima_logo as any).src } alt="Proxima Logo" className="h-[40px] w-auto" />
             </Link>
         </React.Fragment>
     );

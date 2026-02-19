@@ -31,7 +31,7 @@ export const Chat: React.FC<IProps> = (props) => {
     const outOfCredits = featureLimits != null && featureLimits.remaining_llm_requests === 0;
     const isPro = featureLimits?.has_active_subscription === true;
     return (
-        <div className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl flex-shrink-0 px-3 pb-3 md:px-5 md:pb-5 max-sm:fixed max-sm:bottom-[70px] max-sm:left-0 max-sm:right-0 max-sm:px-4 max-sm:bg-background border-t pt-4">
+        <div className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl shrink-0 px-3 pb-3 md:px-5 md:pb-5 max-sm:fixed max-sm:bottom-[70px] max-sm:left-0 max-sm:right-0 max-sm:px-4 max-sm:bg-background border-t pt-4">
             {featureLimits && !isPro && (
                 <UpgradeBanner remainingRequests={featureLimits.remaining_llm_requests} totalRequests={featureLimits.max_monthly_llm_requests} user={user} />
             )}
@@ -41,7 +41,7 @@ export const Chat: React.FC<IProps> = (props) => {
                 onValueChange={value => setInput(value)}
                 onSubmit={handleSubmit}
                 disabled={outOfCredits}
-                className="border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-xs"
+                className="border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-2xs"
             >
             <div className="flex flex-col">
                 <PromptInputTextarea

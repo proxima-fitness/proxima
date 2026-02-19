@@ -22,10 +22,10 @@ export const metadata = {
 
     return (
         <>
-            <div className="py-2 bg-[#33bbcf] gap-4 h-[auto] flex sm:flex-row flex-col items-center justify-center text-center text-lg font-bold text-white">
+            <div className="py-2 bg-[#33bbcf] gap-4 h-auto flex sm:flex-row flex-col items-center justify-center text-center text-lg font-bold text-white">
                 <div>Looking to get in shape ? Try our free workout programs</div>
                 <Link href={ `/programs` }>
-                    <Button className="w-[auto] h-[auto] bg-black">
+                    <Button className="w-auto h-auto bg-black">
                         Explore Programs
                     </Button>
                 </Link>

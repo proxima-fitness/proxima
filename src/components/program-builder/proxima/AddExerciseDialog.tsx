@@ -230,7 +230,7 @@ export const AddExerciseDialog: React.FC<IProps> = (props) => {
     return (
         <Drawer open={ addExerciseDialog.isOpen } onOpenChange={ () => handleOpenAddExerciseDialog({ weekOrder: 0, dayOrder: 0, isOpen: false} ) }>
             <DrawerContent
-                className="max-h-[98%] sm:max-h-[100%] sm:max-w-[50%]"
+                className="max-h-[98%] sm:max-h-full sm:max-w-[50%]"
             >
                 <div className="overflow-y-scroll mx-auto w-full max-w-3xl">
                 <DrawerTitle className="font-bold flex items-center justify-center">

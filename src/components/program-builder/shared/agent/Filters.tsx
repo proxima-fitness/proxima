@@ -81,7 +81,7 @@ export const Filters: React.FC<IProps> = (props) => {
             Advanced Filters
         </span>
         <span className="flex flex-col justify-between gap-5 max-sm:gap-2">
-            <span className="grid grid-cols-2 max-sm:grid-cols-1 max-sm:basis-1/2 max-sm:gap-2 max-sm:pr-2 gap-5 sm:flex-grow-[2] basis-2/3 pr-4">
+            <span className="grid grid-cols-2 max-sm:grid-cols-1 max-sm:basis-1/2 max-sm:gap-2 max-sm:pr-2 gap-5 sm:grow-2 basis-2/3 pr-4">
                 <Select value={ sex } onValueChange={ (value) => handleSex(value) }>
                     <SelectTrigger className="h-10 bg-white dark:bg-darkGray">
                         <SelectValue placeholder="Sex" />
@@ -237,7 +237,7 @@ export const Filters: React.FC<IProps> = (props) => {
             <span className="font-bold py-2 flex justify-center">
                     Exclude
             </span>
-            <span className="grid grid-cols-1 flex-grow basis-1/3 gap-4">
+            <span className="grid grid-cols-1 grow basis-1/3 gap-4">
                 <MultiSelect
                     value = { excludeAreas }
                     onChange={ (value) => handleExcludeAreas(value) }

@@ -55,7 +55,7 @@ export const DownloadPopup: React.FC<IProps> = (props) => {
                     {/* Temporarily deprecated - mobile app download */}
                     {/* <DialogTitle className="text-3xl pb-4">DOWNLOAD THE APP FOR <span className="text-lightSecondary">FREE</span></DialogTitle>
                     <DialogDescription className={ `flex ${ isMobile ? "flex-col" : "flex-row" } justify-between items-start` }>
-                        <span className="w-[100%] flex flex-col items-center">
+                        <span className="w-full flex flex-col items-center">
                             { !isMobile &&
                             <>
                                 <img src={ (qr_code as any).src } alt="Proxima Logo" className="w-auto h-[200px]" />
@@ -82,7 +82,7 @@ export const DownloadPopup: React.FC<IProps> = (props) => {
                                 4.5 Stars on Apple App Store
                             </span>
                         </span>
-                        <span className="w-[100%]">
+                        <span className="w-full">
                             <span className="block font-normal text-lg pb-2 text-start"><span className="font-black pr-2">&middot;</span> Follow <span className="font-bold">100+</span> Proven Workout Programs</span>
                             <span className="block font-normal text-lg pb-2 text-start"><span className="font-black pr-2">&middot;</span> Use the <span className="font-bold">AI Workout Builder</span> to easily upload your notes / spreadsheets</span>
                             <span className="block font-normal text-lg pb-2 text-start"><span className="font-black pr-2">&middot;</span> <span className="font-bold">Generate</span> Workout Programs with AI</span>
