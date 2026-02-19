@@ -28,8 +28,8 @@ export const ModifyProgramProgress: React.FC<IProps> = ({
     };
 
     return (
-        <div className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
-            <div className="flex flex-col gap-2 p-4 bg-muted/50 rounded-lg border border-border">
+        <div className="w-full pb-4">
+            <div className="flex flex-col p-4 gap-2 bg-muted/50 rounded-lg border border-border">
                 <p className="font-medium text-sm text-foreground">
                     {isComplete ? "Program modified" : "Applying program changes…"}
                 </p>

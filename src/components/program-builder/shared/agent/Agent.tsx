@@ -1,18 +1,20 @@
 "use client"
 
-
-import { ChatContainerRoot, ChatContainerContent, ChatContainerScrollAnchor } from "@/components/ui/chat-container"
-
-import { useEffect, useState } from "react"
-import { useStickToBottomContext } from "use-stick-to-bottom"
-import { ScrollButton } from "@/components/ui/scroll-button"
+import {
+  Conversation,
+  ConversationContent,
+  ConversationEmptyState,
+  ConversationScrollButton,
+} from "@/components/ai-elements/conversation"
+import { Loader2, MessageSquare } from "lucide-react"
+import { useMemo, useState } from "react"
 import { IOption } from "@/components/ui/multi-select"
-import { FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai"
+import { type ChatStatus, FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai"
 
+import { Shimmer } from "@/components/ai-elements/shimmer"
 import { Filters } from "./Filters"
 import { Chat } from "./Chat"
 import { Navbar } from "./Navbar"
-import { Thinking } from "./Thinking"
 import { MessageBubbles } from "./MessageBubbles"
 
 type SendMessageWithContext = (message?: (Omit<UIMessage<unknown, UIDataTypes, UITools>, "id" | "role"> & {
@@ -94,26 +96,10 @@ interface IProps {
     retryCount: number;
     maxRetries: number;
     onTimeoutError: () => void;
-    isSubmitted: boolean;
-    input: string;
-    setInput: React.Dispatch<React.SetStateAction<string>>;
-    handleSubmit: () => void;
+    /** Chat status from useChat; used for status label (e.g. "Reading your message…" vs "Responding…"). */
+    status?: ChatStatus;
+    handleSubmit: (text: string) => void;
     handleStop: () => void;
-}
-
-function StickToBottomScrollWhileStreaming({
-    isLoading,
-    messages,
-}: {
-    isLoading: boolean
-    messages: UIMessage<unknown, UIDataTypes, UITools>[]
-}) {
-    const { scrollToBottom, isAtBottom } = useStickToBottomContext()
-    useEffect(() => {
-        if (!isLoading || !isAtBottom) return
-        scrollToBottom({ animation: "smooth", preserveScrollPosition: true })
-    }, [isLoading, isAtBottom, messages, scrollToBottom])
-    return null
 }
 
 export const Agent: React.FC<IProps> = (props) => {
@@ -174,9 +160,7 @@ export const Agent: React.FC<IProps> = (props) => {
         retryCount,
         maxRetries,
         onTimeoutError,
-        isSubmitted,
-        input,
-        setInput,
+        status: chatStatus,
         handleSubmit,
         handleStop,
     } = props;
@@ -184,8 +168,21 @@ export const Agent: React.FC<IProps> = (props) => {
 
     const [isFilters, setIsFilters] = useState(false)
 
+    const statusLabel = useMemo(() => {
+        if (!isLoading) return null
+        const lastMessage = messages[messages.length - 1]
+        const lastPart = lastMessage?.parts?.[lastMessage.parts?.length - 1]
+        const toolState = lastPart && typeof lastPart === "object" && "state" in lastPart ? (lastPart as { state?: string }).state : undefined
+        const isToolInProgress =
+            lastMessage?.role === "assistant" &&
+            (toolState === "input-available" || toolState === "input-streaming")
+        if (isToolInProgress) return "Running a step…"
+        if (chatStatus === "streaming") return "Responding…"
+        return "Thinking…"
+    }, [isLoading, messages, chatStatus])
+
     return (
-        <div className="flex flex-col h-[85vh] max-sm:pb-[100px]">
+        <div className="flex flex-col h-[85vh] max-h-full min-h-0 max-sm:pb-[100px]">
             { /* The agent's navbar for toggling between chat and filters view */ }
             <Navbar
                 isFilters={isFilters}
@@ -195,8 +192,8 @@ export const Agent: React.FC<IProps> = (props) => {
                 isExpanded={isExpanded}
                 sidebarPosition={sidebarPosition}
             />
-            <ChatContainerRoot className={`flex-1 relative max-sm:h-full ${isFilters ? "overflow-hidden" : "overflow-y-auto"}`}>
-                <ChatContainerContent className="min-h-full max-sm:pb-[220px]">
+            <Conversation className={`flex-1 min-h-0 relative max-sm:h-full overflow-hidden`}>
+                <ConversationContent className="min-h-full max-sm:pb-[220px]">
                 {isFilters ? (
                     <Filters
                         sex={sex}
@@ -238,7 +235,13 @@ export const Agent: React.FC<IProps> = (props) => {
                     />
                 ) : (
                     <>
-                        <StickToBottomScrollWhileStreaming isLoading={isLoading} messages={messages} />
+                        {messages.length === 0 ? (
+                            <ConversationEmptyState
+                                icon={<MessageSquare className="size-12" />}
+                                title="Start building your program"
+                                description="Type a message below to begin chatting"
+                            />
+                        ) : (
                         <MessageBubbles
                             messages={messages}
                             setMessages={setMessages}
@@ -255,6 +258,7 @@ export const Agent: React.FC<IProps> = (props) => {
                             isBuilding={isBuilding}
                             handleIsBuilding={handleIsBuilding}
                             isLoading={isLoading}
+                            status={chatStatus}
                             error={error}
                             onRetry={onRetry}
                             onClearError={onClearError}
@@ -262,21 +266,22 @@ export const Agent: React.FC<IProps> = (props) => {
                             maxRetries={maxRetries}
                             onTimeoutError={onTimeoutError}
                             />
-                        {isSubmitted && <Thinking />}
+                        )}
+                        {isLoading && statusLabel && (
+                            <div className="mx-auto flex w-full max-w-3xl items-center gap-2 px-4 pt-2 md:px-6">
+                                <Loader2 className="size-4 shrink-0 animate-spin text-muted-foreground" />
+                                <Shimmer className="text-black dark:text-white">{statusLabel}</Shimmer>
+                            </div>
+                        )}
                     </>
                 )
                 }
-                <div className="absolute bottom-4 right-5 z-50">
-                    <ScrollButton className="shadow-xs" />
-                </div>
-                <ChatContainerScrollAnchor />
-                </ChatContainerContent>
-            </ChatContainerRoot>
+                <ConversationScrollButton className="absolute bottom-4 right-5 z-50 shadow-xs" />
+                </ConversationContent>
+            </Conversation>
             { /* The chat input is here */ }
             <Chat
                 isLoading={isLoading}
-                input={input}
-                setInput={setInput}
                 handleSubmit={handleSubmit}
                 handleStop={handleStop}
             />

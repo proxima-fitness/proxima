@@ -4,15 +4,24 @@ import {
     MessageAction,
     MessageActions,
     MessageContent,
-  } from "@/components/ui/message"
+    MessageResponse,
+} from "@/components/ai-elements/message"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
-import { Copy, ThumbsUp, ThumbsDown, Pencil, Trash, AlertCircle, RefreshCw } from "lucide-react"
-import { FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai";
+import { Copy, Loader2, ThumbsUp, ThumbsDown, Pencil, Trash, AlertCircle, RefreshCw } from "lucide-react"
+import { type ChatStatus, FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai";
 import { Questions, IQuestion } from "@/components/ui/questions";
 import { IOption } from "@/components/ui/multi-select";
 import { applyModifyProgramPatchesFromMessages, getModifyProgramObjectivesByRoutine, inferDaysPerWeek, inferProgramLength } from "@/components/program-builder/utils/helpers";
+import {
+    Reasoning,
+    ReasoningContent,
+    ReasoningTrigger,
+} from "@/components/ai-elements/reasoning";
+import { Shimmer } from "@/components/ai-elements/shimmer";
+import { Tool, ToolContent, ToolHeader } from "@/components/ai-elements/tool";
+import type { ToolPart } from "@/components/ai-elements/tool";
 import { ModifyProgramProgress } from "./ModifyProgramProgress";
 import { equipmentOptions, healthIssuesOptions } from "@/assets/constants";
 import { generateFallbackWorkout } from "../../utils/fallback-workouts";
@@ -41,7 +50,7 @@ const BuildProgress: React.FC<{
     if (totalDays <= 0) return null;
 
     return (
-        <div className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
+        <div className="w-full pb-4">
             <div className="flex flex-col gap-2 p-4 bg-muted/50 rounded-lg border border-border">
                 <p className="font-medium text-sm text-foreground">
                     {completedDays.length === totalDays
@@ -213,6 +222,7 @@ interface IProps {
     isBuilding: boolean;
     handleIsBuilding: (isBuilding: boolean) => void;
     isLoading: boolean;
+    status?: ChatStatus;
     // Error handling props
     error: Error | null;
     onRetry: () => void;
@@ -241,6 +251,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         programLength,
         daysPerWeek,
         isLoading,
+        status,
         error,
         onRetry,
         onClearError,
@@ -534,16 +545,44 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     return (
 
         <>
-             { messages.map((message, messageIndex) => (
+             { messages.map((message, messageIndex) => {
+                            const isAssistant = message.role === "assistant";
+                            const reasoningParts = message.parts.filter(
+                                (p): p is { type: "reasoning"; text: string } => p.type === "reasoning"
+                            );
+                            const reasoningText = reasoningParts.map((p) => p.text).join("\n\n");
+                            const isLastMessage = messageIndex === messages.length - 1;
+                            const isStreaming = status === "streaming";
+                            const lastPart = message.parts[message.parts.length - 1];
+                            const isReasoningStreaming =
+                                isLastMessage && isStreaming && lastPart?.type === "reasoning";
+                            return (
                             <div key={message.id} className="whitespace-pre-wrap">
+                                {isAssistant && reasoningParts.length > 0 && (
+                                    <Reasoning
+                                        isStreaming={isReasoningStreaming}
+                                        className="mx-auto w-full max-w-3xl px-4 pt-2 md:px-6"
+                                    >
+                                        <ReasoningTrigger />
+                                        <ReasoningContent>{reasoningText}</ReasoningContent>
+                                    </Reasoning>
+                                )}
+                                {isAssistant && isLastMessage && isStreaming && reasoningParts.length === 0 && (
+                                    <div className="mx-auto flex w-full max-w-3xl items-center gap-2 px-4 pt-2 md:px-6">
+                                        <Loader2 className="size-4 shrink-0 animate-spin text-muted-foreground" />
+                                        <Shimmer className="text-sm text-muted-foreground">Thinking…</Shimmer>
+                                    </div>
+                                )}
                                 {message.parts.map((part, index) => {
-                                    const isAssistant = message.role === "assistant"
-                                    const isLastMessage = index === message.parts.length - 1
+                                    const isAssistantPart = message.role === "assistant";
+                                    const isLastMessagePart = index === message.parts.length - 1;
                                     switch (part.type) {
+                                        case "reasoning":
+                                            return null;
                                         case 'text': {
                                             const text = part.text;
 
-                                            if (!isAssistant) {
+                                            if (!isAssistantPart) {
                                                 // User message - render RHS bubble or edit mode
                                                 const isEditing = editingMessageId === message.id;
                                                 if (isEditing) {
@@ -586,6 +625,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 return (
                                                     <Message
                                                         key={`${message.id}-${index}`}
+                                                        from={message.role}
                                                         className={cn(
                                                             "mx-auto flex w-full max-w-3xl flex-col gap-2 px-0 md:px-6 pt-2",
                                                             "items-end"
@@ -593,49 +633,40 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                     >
                                                         <div className="group flex flex-col items-end gap-1">
                                                             <MessageContent className="bg-muted text-black dark:text-white max-w-[85%] rounded-3xl px-5 py-2.5 sm:max-w-[75%]">
-                                                                {text}
+                                                                <MessageResponse>{text}</MessageResponse>
                                                             </MessageContent>
                                                             <MessageActions
                                                                 className={cn(
                                                                     "flex gap-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
                                                                 )}
                                                             >
-                                                                <MessageAction tooltip="Edit" delayDuration={100}>
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        className="rounded-full"
-                                                                        onClick={() => {
-                                                                            setEditingMessageId(message.id);
-                                                                            setEditingText(text ?? "");
-                                                                        }}
-                                                                    >
-                                                                        <Pencil />
-                                                                    </Button>
+                                                                <MessageAction
+                                                                    tooltip="Edit"
+                                                                    className="rounded-full"
+                                                                    onClick={() => {
+                                                                        setEditingMessageId(message.id);
+                                                                        setEditingText(text ?? "");
+                                                                    }}
+                                                                >
+                                                                    <Pencil />
                                                                 </MessageAction>
-                                                                <MessageAction tooltip="Delete" delayDuration={100}>
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        className="rounded-full"
-                                                                        onClick={() => setMessages((prev) => prev.slice(0, messageIndex))}
-                                                                    >
-                                                                        <Trash />
-                                                                    </Button>
+                                                                <MessageAction
+                                                                    tooltip="Delete"
+                                                                    className="rounded-full"
+                                                                    onClick={() => setMessages((prev) => prev.slice(0, messageIndex))}
+                                                                >
+                                                                    <Trash />
                                                                 </MessageAction>
-                                                                <MessageAction tooltip="Copy" delayDuration={100}>
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        className="rounded-full"
-                                                                        onClick={() => {
-                                                                            navigator.clipboard.writeText(text ?? "").then(() => {
-                                                                                toast.success("Copied to clipboard");
-                                                                            });
-                                                                        }}
-                                                                    >
-                                                                        <Copy />
-                                                                    </Button>
+                                                                <MessageAction
+                                                                    tooltip="Copy"
+                                                                    className="rounded-full"
+                                                                    onClick={() => {
+                                                                        navigator.clipboard.writeText(text ?? "").then(() => {
+                                                                            toast.success("Copied to clipboard");
+                                                                        });
+                                                                    }}
+                                                                >
+                                                                    <Copy />
                                                                 </MessageAction>
                                                             </MessageActions>
                                                         </div>
@@ -647,55 +678,38 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                             return (
                                                 <Message
                                                     key={`${message.id}-${index}`}
+                                                    from={message.role}
                                                     className={cn(
                                                         "mx-auto flex w-full max-w-3xl flex-col gap-2 px-4 md:px-6 pt-2",
                                                         "items-start"
                                                     )}
                                                 >
                                                     <div className="group flex w-full flex-col gap-0">
-                                                        <MessageContent
-                                                            className="text-foreground prose w-full flex-1 rounded-lg bg-transparent p-0 mb-2"
-                                                            markdown
-                                                        >
-                                                            {text}
+                                                        <MessageContent className="text-foreground prose w-full flex-1 rounded-lg bg-transparent p-0 mb-2">
+                                                            <MessageResponse >{text}</MessageResponse>
                                                         </MessageContent>
                                                         <MessageActions
                                                             className={cn(
                                                                 "-ml-2.5 flex gap-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100",
-                                                                isLastMessage && "opacity-100"
+                                                                isLastMessagePart && "opacity-100"
                                                             )}
                                                         >
-                                                            <MessageAction tooltip="Copy" delayDuration={100}>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    className="rounded-full"
-                                                                    onClick={() => {
-                                                                        navigator.clipboard.writeText(text ?? "").then(() => {
-                                                                            toast.success("Copied to clipboard");
-                                                                        });
-                                                                    }}
-                                                                >
-                                                                    <Copy />
-                                                                </Button>
+                                                            <MessageAction
+                                                                tooltip="Copy"
+                                                                className="rounded-full"
+                                                                onClick={() => {
+                                                                    navigator.clipboard.writeText(text ?? "").then(() => {
+                                                                        toast.success("Copied to clipboard");
+                                                                    });
+                                                                }}
+                                                            >
+                                                                <Copy />
                                                             </MessageAction>
-                                                            <MessageAction tooltip="Upvote" delayDuration={100}>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    className="rounded-full"
-                                                                >
-                                                                    <ThumbsUp />
-                                                                </Button>
+                                                            <MessageAction tooltip="Upvote" className="rounded-full">
+                                                                <ThumbsUp />
                                                             </MessageAction>
-                                                            <MessageAction tooltip="Downvote" delayDuration={100}>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    className="rounded-full"
-                                                                >
-                                                                    <ThumbsDown />
-                                                                </Button>
+                                                            <MessageAction tooltip="Downvote" className="rounded-full">
+                                                                <ThumbsDown />
                                                             </MessageAction>
                                                         </MessageActions>
                                                     </div>
@@ -712,21 +726,23 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 userRequest?: string,
                                                 message?: string
                                             };
+                                            const toolState = (part as { state?: ToolPart["state"] }).state ?? "output-available";
 
                                             if (toolOutput?.questions && Array.isArray(toolOutput.questions)) {
-
-
-
                                                 return (
-                                                    <div key={`${message.id}-${index}`} className="p-2">
-                                                        <Questions
-                                                            questions={toolOutput.questions}
-                                                            onComplete={handleComplete}
-                                                            onSkip={handleSkip}
-                                                            isBuilding={isBuilding}
-                                                            isLoading={isLoading}
-                                                        />
-                                                    </div>
+                                                    <Tool key={`${message.id}-${index}-questions`} defaultOpen className="mx-auto w-full max-w-3xl px-2 md:px-4 pt-2">
+                                                        <ToolHeader type="tool-getMoreInfoQuestions" state={toolState} title="Survey" />
+                                                        <ToolContent className=" w-full">
+                                                                <Questions
+                                                                    className="w-full min-w-full"
+                                                                    questions={toolOutput.questions}
+                                                                    onComplete={handleComplete}
+                                                                    onSkip={handleSkip}
+                                                                    isBuilding={isBuilding}
+                                                                    isLoading={isLoading}
+                                                                />
+                                                        </ToolContent>
+                                                    </Tool>
                                                 );
                                             }
 
@@ -735,17 +751,28 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                         case "tool-buildRoutine": {
                                             // Show progress UI for buildRoutine calls
                                             // Only render the progress component once (on the first buildRoutine tool call)
-                                            const toolOutput = (part as { output?: IBuildRoutineOutput }).output;
+                                            const buildPart = part as { output?: IBuildRoutineOutput; state?: ToolPart["state"] };
+                                            const toolOutput = buildPart.output;
+                                            const toolState: ToolPart["state"] =
+                                                toolOutput?.routine && !toolOutput?.error
+                                                    ? "output-available"
+                                                    : isBuilding
+                                                        ? "input-available"
+                                                        : "input-streaming";
 
                                             // Only render progress on day 1 to avoid duplicates
                                             if (toolOutput?.dayNumber === 1 && totalDays > 0) {
                                                 return (
-                                                    <BuildProgress
-                                                        key={`${message.id}-${index}-progress`}
-                                                        completedDays={completedDays}
-                                                        totalDays={totalDays}
-                                                        isBuilding={isBuilding}
-                                                    />
+                                                    <Tool key={`${message.id}-${index}-build`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
+                                                        <ToolHeader type="tool-buildRoutine" state={toolState} title="Build routine" />
+                                                        <ToolContent>
+                                                            <BuildProgress
+                                                                completedDays={completedDays}
+                                                                totalDays={totalDays}
+                                                                isBuilding={isBuilding}
+                                                            />
+                                                        </ToolContent>
+                                                    </Tool>
                                                 );
                                             }
 
@@ -766,29 +793,38 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 modifyPart.state === "output-available" && modifyPart.output?.patch;
                                             const isError = modifyPart.state === "output-error";
                                             const errorText = modifyPart.errorText;
+                                            const toolState: ToolPart["state"] = isError
+                                                ? "output-error"
+                                                : isComplete
+                                                    ? "output-available"
+                                                    : "input-available";
 
                                             if (isError) {
                                                 return (
-                                                    <div
-                                                        key={`${message.id}-${index}-modify-error`}
-                                                        className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2"
-                                                    >
-                                                        <div className="flex items-center gap-2 p-4 bg-muted/50 rounded-lg border border-border">
-                                                            <span className="w-2.5 h-2.5 rounded-full shrink-0 bg-red-500" />
-                                                            <span className="text-sm text-muted-foreground">
-                                                                {errorText || "Program modification failed"}
-                                                            </span>
-                                                        </div>
-                                                    </div>
+                                                    <Tool key={`${message.id}-${index}-modify-error`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
+                                                        <ToolHeader type="tool-modifyProgram" state={toolState} title="Modify program" />
+                                                        <ToolContent>
+                                                            <div className="flex items-center gap-2 pb-4 bg-muted/50 rounded-lg border border-border">
+                                                                <span className="w-2.5 h-2.5 rounded-full shrink-0 bg-red-500" />
+                                                                <span className="text-sm text-muted-foreground">
+                                                                    {errorText || "Program modification failed"}
+                                                                </span>
+                                                            </div>
+                                                        </ToolContent>
+                                                    </Tool>
                                                 );
                                             }
 
                                             return (
-                                                <ModifyProgramProgress
-                                                    key={`${message.id}-${index}-modify`}
-                                                    objectivesByRoutine={objectivesByRoutine}
-                                                    status={isComplete ? "complete" : "processing"}
-                                                />
+                                                <Tool key={`${message.id}-${index}-modify`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
+                                                    <ToolHeader type="tool-modifyProgram" state={toolState} title="Modify program" />
+                                                    <ToolContent>
+                                                        <ModifyProgramProgress
+                                                            objectivesByRoutine={objectivesByRoutine}
+                                                            status={isComplete ? "complete" : "processing"}
+                                                        />
+                                                    </ToolContent>
+                                                </Tool>
                                             );
                                         }
                                         default: {
@@ -797,7 +833,8 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                     }
                                 })}
                             </div>
-                        ))}
+                            );
+                        })}
 
              {/* Show error UI as next assistant message when generation fails */}
              {error && (
