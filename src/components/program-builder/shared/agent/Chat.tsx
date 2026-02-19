@@ -40,7 +40,6 @@ export const Chat: React.FC<IProps> = (props) => {
         onSubmit={({ text }) => handleSubmit(text)}
         className="border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-2xs"
       >
-        <div className="flex flex-col">
           <PromptInputTextarea
             placeholder="Ask Andy anything..."
             className="dark:text-white pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
@@ -81,7 +80,6 @@ export const Chat: React.FC<IProps> = (props) => {
               />
             </div>
           </PromptInputFooter>
-        </div>
       </PromptInput>
     </div>
   );

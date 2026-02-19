@@ -793,12 +793,12 @@ export const PromptInput = ({
         type="file"
       />
       <form
-        className={cn("w-full", className)}
+        className={cn("w-full focus-within:ring-1 focus-within:ring-[hsl(var(--prompt-input-focus-ring))] focus-within:ring-offset-0", className)}
         onSubmit={handleSubmit}
         ref={formRef}
         {...props}
       >
-        <InputGroup className="overflow-hidden">{children}</InputGroup>
+        <InputGroup className="overflow-hidden rounded-3xl border-0 bg-transparent shadow-none has-[[data-slot=input-group-control]:focus-visible]:ring-0">{children}</InputGroup>
       </form>
     </>
   );
