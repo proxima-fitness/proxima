@@ -4,7 +4,8 @@ import {
     MessageAction,
     MessageActions,
     MessageContent,
-  } from "@/components/ui/message"
+    MessageResponse,
+} from "@/components/ai-elements/message"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
@@ -586,6 +587,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 return (
                                                     <Message
                                                         key={`${message.id}-${index}`}
+                                                        from={message.role}
                                                         className={cn(
                                                             "mx-auto flex w-full max-w-3xl flex-col gap-2 px-0 md:px-6 pt-2",
                                                             "items-end"
@@ -593,14 +595,14 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                     >
                                                         <div className="group flex flex-col items-end gap-1">
                                                             <MessageContent className="bg-muted text-black dark:text-white max-w-[85%] rounded-3xl px-5 py-2.5 sm:max-w-[75%]">
-                                                                {text}
+                                                                <MessageResponse>{text}</MessageResponse>
                                                             </MessageContent>
                                                             <MessageActions
                                                                 className={cn(
                                                                     "flex gap-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
                                                                 )}
                                                             >
-                                                                <MessageAction tooltip="Edit" delayDuration={100}>
+                                                                <MessageAction tooltip="Edit">
                                                                     <Button
                                                                         variant="ghost"
                                                                         size="icon"
@@ -613,7 +615,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                         <Pencil />
                                                                     </Button>
                                                                 </MessageAction>
-                                                                <MessageAction tooltip="Delete" delayDuration={100}>
+                                                                <MessageAction tooltip="Delete">
                                                                     <Button
                                                                         variant="ghost"
                                                                         size="icon"
@@ -623,7 +625,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                         <Trash />
                                                                     </Button>
                                                                 </MessageAction>
-                                                                <MessageAction tooltip="Copy" delayDuration={100}>
+                                                                <MessageAction tooltip="Copy">
                                                                     <Button
                                                                         variant="ghost"
                                                                         size="icon"
@@ -647,17 +649,15 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                             return (
                                                 <Message
                                                     key={`${message.id}-${index}`}
+                                                    from={message.role}
                                                     className={cn(
                                                         "mx-auto flex w-full max-w-3xl flex-col gap-2 px-4 md:px-6 pt-2",
                                                         "items-start"
                                                     )}
                                                 >
                                                     <div className="group flex w-full flex-col gap-0">
-                                                        <MessageContent
-                                                            className="text-foreground prose w-full flex-1 rounded-lg bg-transparent p-0 mb-2"
-                                                            markdown
-                                                        >
-                                                            {text}
+                                                        <MessageContent className="text-foreground prose w-full flex-1 rounded-lg bg-transparent p-0 mb-2">
+                                                            <MessageResponse >{text}</MessageResponse>
                                                         </MessageContent>
                                                         <MessageActions
                                                             className={cn(
@@ -665,7 +665,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                 isLastMessage && "opacity-100"
                                                             )}
                                                         >
-                                                            <MessageAction tooltip="Copy" delayDuration={100}>
+                                                            <MessageAction tooltip="Copy">
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="icon"
@@ -679,7 +679,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                     <Copy />
                                                                 </Button>
                                                             </MessageAction>
-                                                            <MessageAction tooltip="Upvote" delayDuration={100}>
+                                                            <MessageAction tooltip="Upvote">
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="icon"
@@ -688,7 +688,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                     <ThumbsUp />
                                                                 </Button>
                                                             </MessageAction>
-                                                            <MessageAction tooltip="Downvote" delayDuration={100}>
+                                                            <MessageAction tooltip="Downvote">
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="icon"

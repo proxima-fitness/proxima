@@ -1,15 +1,18 @@
 "use client"
 
 import {
-  ChatContainerContent,
-  ChatContainerRoot,
-} from "@/components/ui/chat-container"
+  Conversation,
+  ConversationContent,
+  ConversationEmptyState,
+  ConversationScrollButton,
+} from "@/components/ai-elements/conversation"
 import {
   Message,
   MessageAction,
   MessageActions,
   MessageContent,
-} from "@/components/ui/message"
+  MessageResponse,
+} from "@/components/ai-elements/message"
 import {
   PromptInput,
   PromptInputActions,
@@ -22,6 +25,7 @@ import {
   ChevronUpIcon,
   Copy,
   InfoIcon,
+  MessageSquare,
   Pencil,
   SparklesIcon,
   ThumbsDown,
@@ -142,15 +146,23 @@ function ConversationPromptInput( props: IProps) {
 
   return (
     <div className="flex h-screen flex-col">
-      <ChatContainerRoot className="relative flex-1 space-y-0 overflow-hidden pt-8">
-        <ChatContainerContent className="space-y-12 max-sm:space-y-1 max-sm:px-4">
-          {chatMessages.map((message, index) => {
+      <Conversation className="relative flex-1 space-y-0 overflow-hidden pt-8">
+        <ConversationContent className="space-y-12 max-sm:space-y-1 max-sm:px-4">
+          {chatMessages.length === 0 ? (
+            <ConversationEmptyState
+              icon={<MessageSquare className="size-12" />}
+              title="Start a conversation"
+              description="Type a message below to begin chatting"
+            />
+          ) : (
+          chatMessages.map((message, index) => {
             const isAssistant = message.role === "assistant"
             const isLastMessage = index === chatMessages.length - 1
 
             return (
               <Message
                 key={message.id}
+                from={message.role}
                 className={cn(
                   "mx-auto flex w-full max-w-3xl flex-col gap-2 px-0 md:px-6",
                   isAssistant ? "items-start" : "items-end"
@@ -158,11 +170,8 @@ function ConversationPromptInput( props: IProps) {
               >
                 {isAssistant ? (
                   <div className="group flex w-full flex-col gap-0">
-                    <MessageContent
-                      className="text-foreground prose w-full flex-1 rounded-lg bg-transparent p-0"
-                      markdown
-                    >
-                      {message.content}
+                    <MessageContent className="text-foreground prose w-full flex-1 rounded-lg bg-transparent p-0">
+                      <MessageResponse>{message.content}</MessageResponse>
                     </MessageContent>
                     <MessageActions
                       className={cn(
@@ -170,7 +179,7 @@ function ConversationPromptInput( props: IProps) {
                         isLastMessage && "opacity-100"
                       )}
                     >
-                      <MessageAction tooltip="Edit" delayDuration={100}>
+                      <MessageAction tooltip="Edit">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -179,7 +188,7 @@ function ConversationPromptInput( props: IProps) {
                           <Copy />
                         </Button>
                       </MessageAction>
-                      <MessageAction tooltip="Upvote" delayDuration={100}>
+                      <MessageAction tooltip="Upvote">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -188,7 +197,7 @@ function ConversationPromptInput( props: IProps) {
                           <ThumbsUp />
                         </Button>
                       </MessageAction>
-                      <MessageAction tooltip="Downvote" delayDuration={100}>
+                      <MessageAction tooltip="Downvote">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -202,14 +211,14 @@ function ConversationPromptInput( props: IProps) {
                 ) : (
                   <div className="group flex flex-col items-end gap-1">
                     <MessageContent className="bg-muted dark:text-white max-w-[85%] rounded-3xl px-5 py-2.5 sm:max-w-[75%]">
-                      {message.content}
+                      <MessageResponse>{message.content}</MessageResponse>
                     </MessageContent>
                     <MessageActions
                       className={cn(
                         "flex gap-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
                       )}
                     >
-                      <MessageAction tooltip="Edit" delayDuration={100}>
+                      <MessageAction tooltip="Edit">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -218,7 +227,7 @@ function ConversationPromptInput( props: IProps) {
                           <Pencil />
                         </Button>
                       </MessageAction>
-                      <MessageAction tooltip="Delete" delayDuration={100}>
+                      <MessageAction tooltip="Delete">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -227,7 +236,7 @@ function ConversationPromptInput( props: IProps) {
                           <Trash />
                         </Button>
                       </MessageAction>
-                      <MessageAction tooltip="Copy" delayDuration={100}>
+                      <MessageAction tooltip="Copy">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -241,7 +250,8 @@ function ConversationPromptInput( props: IProps) {
                 )}
               </Message>
             )
-          })}
+          })
+          )}
           {/* Render streamed reasoning at the bottom if present */}
           {(isStreaming || reasoningText) && (
             <div className="mx-auto flex w-full max-w-3xl flex-col gap-2 px-0 md:px-6">
@@ -519,8 +529,9 @@ function ConversationPromptInput( props: IProps) {
             </div>
 
           }
-        </ChatContainerContent>
-      </ChatContainerRoot>
+        <ConversationScrollButton className="absolute bottom-4 right-5 z-50 shadow-xs" />
+        </ConversationContent>
+      </Conversation>
       <div className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl shrink-0 px-3 pb-3 md:px-5 md:pb-5">
         <PromptInput
           isLoading={true}
