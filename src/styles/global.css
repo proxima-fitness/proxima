@@ -18,6 +18,13 @@
   ::file-selector-button {
     border-color: var(--color-gray-200, currentcolor);
   }
+
+  button {
+    cursor: pointer;
+  }
+  [role="button"] {
+    cursor: pointer;
+  }
 }
 
 @layer utilities {
