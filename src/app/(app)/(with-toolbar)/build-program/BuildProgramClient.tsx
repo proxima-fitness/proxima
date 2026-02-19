@@ -923,7 +923,6 @@ export function BuildProgramClient() {
                                 retryCount={retryCount}
                                 maxRetries={MAX_RETRIES}
                                 onTimeoutError={handleTimeoutError}
-                                isSubmitted={isSubmitted}
                                 status={status}
                                 handleSubmit={handleSubmit}
                                 handleStop={handleStop}
@@ -1093,7 +1092,6 @@ export function BuildProgramClient() {
                                 retryCount={retryCount}
                                 maxRetries={MAX_RETRIES}
                                 onTimeoutError={handleTimeoutError}
-                                isSubmitted={isSubmitted}
                                 status={status}
                                 handleSubmit={handleSubmit}
                                 handleStop={handleStop}
@@ -1170,7 +1168,6 @@ export function BuildProgramClient() {
                             retryCount={retryCount}
                             maxRetries={MAX_RETRIES}
                             onTimeoutError={handleTimeoutError}
-                            isSubmitted={isSubmitted}
                             status={status}
                             handleSubmit={handleSubmit}
                             handleStop={handleStop}

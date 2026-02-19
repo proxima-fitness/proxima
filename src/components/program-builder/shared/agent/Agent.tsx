@@ -6,8 +6,8 @@ import {
   ConversationEmptyState,
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation"
-import { MessageSquare } from "lucide-react"
-import { useState } from "react"
+import { Loader2, MessageSquare } from "lucide-react"
+import { useMemo, useState } from "react"
 import { IOption } from "@/components/ui/multi-select"
 import { type ChatStatus, FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai"
 
@@ -96,7 +96,6 @@ interface IProps {
     retryCount: number;
     maxRetries: number;
     onTimeoutError: () => void;
-    isSubmitted: boolean;
     /** Chat status from useChat; used for status label (e.g. "Reading your message…" vs "Responding…"). */
     status?: ChatStatus;
     handleSubmit: (text: string) => void;
@@ -161,7 +160,6 @@ export const Agent: React.FC<IProps> = (props) => {
         retryCount,
         maxRetries,
         onTimeoutError,
-        isSubmitted,
         status: chatStatus,
         handleSubmit,
         handleStop,
@@ -169,6 +167,19 @@ export const Agent: React.FC<IProps> = (props) => {
 
 
     const [isFilters, setIsFilters] = useState(false)
+
+    const statusLabel = useMemo(() => {
+        if (!isLoading) return null
+        const lastMessage = messages[messages.length - 1]
+        const lastPart = lastMessage?.parts?.[lastMessage.parts?.length - 1]
+        const toolState = lastPart && typeof lastPart === "object" && "state" in lastPart ? (lastPart as { state?: string }).state : undefined
+        const isToolInProgress =
+            lastMessage?.role === "assistant" &&
+            (toolState === "input-available" || toolState === "input-streaming")
+        if (isToolInProgress) return "Running a step…"
+        if (chatStatus === "streaming") return "Responding…"
+        return "Thinking…"
+    }, [isLoading, messages, chatStatus])
 
     return (
         <div className="flex flex-col h-[85vh] max-h-full min-h-0 max-sm:pb-[100px]">
@@ -256,13 +267,10 @@ export const Agent: React.FC<IProps> = (props) => {
                             onTimeoutError={onTimeoutError}
                             />
                         )}
-                        {isSubmitted && (
-                            <div className="mx-auto flex w-full max-w-3xl items-center px-4 pt-2 md:px-6">
-                                <Shimmer className="">
-                                    {chatStatus === "streaming"
-                                        ? "Responding…"
-                                        : "Thinking…"}
-                                </Shimmer>
+                        {isLoading && statusLabel && (
+                            <div className="mx-auto flex w-full max-w-3xl items-center gap-2 px-4 pt-2 md:px-6">
+                                <Loader2 className="size-4 shrink-0 animate-spin text-muted-foreground" />
+                                <Shimmer className="text-black dark:text-white">{statusLabel}</Shimmer>
                             </div>
                         )}
                     </>

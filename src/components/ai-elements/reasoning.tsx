@@ -13,7 +13,7 @@ import { cjk } from "@streamdown/cjk";
 import { code } from "@streamdown/code";
 import { math } from "@streamdown/math";
 import { mermaid } from "@streamdown/mermaid";
-import { BrainIcon, ChevronDownIcon } from "lucide-react";
+import { BrainIcon, ChevronDownIcon, Loader2 } from "lucide-react";
 import {
   createContext,
   memo,
@@ -157,7 +157,12 @@ export type ReasoningTriggerProps = ComponentProps<
 
 const defaultGetThinkingMessage = (isStreaming: boolean, duration?: number) => {
   if (isStreaming || duration === 0) {
-    return <Shimmer duration={1}>Thinking...</Shimmer>;
+    return (
+      <span className="flex items-center gap-2">
+        <Loader2 className="size-4 shrink-0 animate-spin text-muted-foreground" />
+        <Shimmer duration={1}>Thinking...</Shimmer>
+      </span>
+    );
   }
   if (duration === undefined) {
     return <p>Thought for a few seconds</p>;

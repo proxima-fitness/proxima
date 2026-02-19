@@ -194,7 +194,7 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
                 sets: z.array(z.object({
                     type: z.enum(['normal', 'warmup', 'dropset', 'failure']).describe('The type of set'),
                     reps: z.number().describe('Number of reps'),
-                    rpe: z.number().optional().describe('RPE (Rate of Perceived Exertion) 1-10'),
+                    rpe: z.number().min(1).max(10).describe('RPE (Rate of Perceived Exertion) 1-10'),
                     weight_kg: z.number().optional().describe('Weight in kg'),
                 })).min(1).describe('Array of sets for this exercise - at least 1 set required'),
             })).min(1).describe('Array of exercises for this routine - at least 1 exercise required'),
