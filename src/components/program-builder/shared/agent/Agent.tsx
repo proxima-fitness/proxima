@@ -9,12 +9,12 @@ import {
 import { MessageSquare } from "lucide-react"
 import { useState } from "react"
 import { IOption } from "@/components/ui/multi-select"
-import { FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai"
+import { type ChatStatus, FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai"
 
+import { Shimmer } from "@/components/ai-elements/shimmer"
 import { Filters } from "./Filters"
 import { Chat } from "./Chat"
 import { Navbar } from "./Navbar"
-import { Thinking } from "./Thinking"
 import { MessageBubbles } from "./MessageBubbles"
 
 type SendMessageWithContext = (message?: (Omit<UIMessage<unknown, UIDataTypes, UITools>, "id" | "role"> & {
@@ -97,6 +97,8 @@ interface IProps {
     maxRetries: number;
     onTimeoutError: () => void;
     isSubmitted: boolean;
+    /** Chat status from useChat; used for status label (e.g. "Reading your message…" vs "Responding…"). */
+    status?: ChatStatus;
     handleSubmit: (text: string) => void;
     handleStop: () => void;
 }
@@ -160,6 +162,7 @@ export const Agent: React.FC<IProps> = (props) => {
         maxRetries,
         onTimeoutError,
         isSubmitted,
+        status: chatStatus,
         handleSubmit,
         handleStop,
     } = props;
@@ -168,7 +171,7 @@ export const Agent: React.FC<IProps> = (props) => {
     const [isFilters, setIsFilters] = useState(false)
 
     return (
-        <div className="flex flex-col h-[85vh] max-sm:pb-[100px]">
+        <div className="flex flex-col h-[85vh] max-h-full min-h-0 max-sm:pb-[100px]">
             { /* The agent's navbar for toggling between chat and filters view */ }
             <Navbar
                 isFilters={isFilters}
@@ -178,7 +181,7 @@ export const Agent: React.FC<IProps> = (props) => {
                 isExpanded={isExpanded}
                 sidebarPosition={sidebarPosition}
             />
-            <Conversation className={`flex-1 relative max-sm:h-full ${isFilters ? "overflow-hidden" : "overflow-y-auto"}`}>
+            <Conversation className={`flex-1 min-h-0 relative max-sm:h-full overflow-hidden`}>
                 <ConversationContent className="min-h-full max-sm:pb-[220px]">
                 {isFilters ? (
                     <Filters
@@ -244,6 +247,7 @@ export const Agent: React.FC<IProps> = (props) => {
                             isBuilding={isBuilding}
                             handleIsBuilding={handleIsBuilding}
                             isLoading={isLoading}
+                            status={chatStatus}
                             error={error}
                             onRetry={onRetry}
                             onClearError={onClearError}
@@ -252,7 +256,15 @@ export const Agent: React.FC<IProps> = (props) => {
                             onTimeoutError={onTimeoutError}
                             />
                         )}
-                        {isSubmitted && <Thinking />}
+                        {isSubmitted && (
+                            <div className="mx-auto flex w-full max-w-3xl items-center px-4 pt-2 md:px-6">
+                                <Shimmer className="">
+                                    {chatStatus === "streaming"
+                                        ? "Responding…"
+                                        : "Thinking…"}
+                                </Shimmer>
+                            </div>
+                        )}
                     </>
                 )
                 }

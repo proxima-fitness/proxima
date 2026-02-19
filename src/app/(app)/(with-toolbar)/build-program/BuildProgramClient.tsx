@@ -863,7 +863,7 @@ export function BuildProgramClient() {
                             }}
                             minSize={20}
                             maxSize={EXPANDED_SIZE}
-                            className="border-extraLightGray bg-extraLightGray dark:bg-extraDarkGray dark:text-white"
+                            className="border-extraLightGray bg-extraLightGray dark:bg-extraDarkGray dark:text-white overflow-hidden"
                         >
                             <Agent
                                 search={search}
@@ -924,6 +924,7 @@ export function BuildProgramClient() {
                                 maxRetries={MAX_RETRIES}
                                 onTimeoutError={handleTimeoutError}
                                 isSubmitted={isSubmitted}
+                                status={status}
                                 handleSubmit={handleSubmit}
                                 handleStop={handleStop}
                             />
@@ -1032,7 +1033,7 @@ export function BuildProgramClient() {
                             }}
                             minSize={20}
                             maxSize={EXPANDED_SIZE}
-                            className="border-extraLightGray bg-extraLightGray dark:bg-extraDarkGray dark:text-white"
+                            className="border-extraLightGray bg-extraLightGray dark:bg-extraDarkGray dark:text-white overflow-hidden"
                         >
                             <Agent
                                 search={search}
@@ -1093,6 +1094,7 @@ export function BuildProgramClient() {
                                 maxRetries={MAX_RETRIES}
                                 onTimeoutError={handleTimeoutError}
                                 isSubmitted={isSubmitted}
+                                status={status}
                                 handleSubmit={handleSubmit}
                                 handleStop={handleStop}
                             />
@@ -1169,6 +1171,7 @@ export function BuildProgramClient() {
                             maxRetries={MAX_RETRIES}
                             onTimeoutError={handleTimeoutError}
                             isSubmitted={isSubmitted}
+                            status={status}
                             handleSubmit={handleSubmit}
                             handleStop={handleStop}
                         />
