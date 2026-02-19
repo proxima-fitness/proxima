@@ -56,7 +56,7 @@ export const instructions = ({ hevyProgram, daysPerWeek, programLength }: IProps
         - type: one of "normal", "warmup", "dropset", "failure"
         - reps: number (e.g., 8, 10, 12)
 
-        Optional set fields: rpe (number 1-10), weight_kg (number)
+        Include rpe (number 1-10) on every set for best results; if omitted, 8 is used. Optional: weight_kg (number).
 
         **IMPORTANT:** Always ensure the tool input is a valid JSON object, not a string. Each field must have the correct type.
 
