@@ -1,18 +1,41 @@
 "use client"
 
 import { FileUpload, FileUploadContent, FileUploadTrigger } from "@/components/ui/file-upload";
-import { PromptInput, PromptInputActions, PromptInputTextarea } from "@/components/ui/prompt-input";
+import {
+  PromptInput,
+  PromptInputProvider,
+  PromptInputFooter,
+  PromptInputTextarea,
+  PromptInputSubmit,
+  usePromptInputController,
+} from "@/components/ai-elements/prompt-input";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { Paperclip, X, ArrowUpIcon, MicIcon } from "lucide-react";
+import { Paperclip, X, MicIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PromptSuggestion } from "@/components/ui/prompt-suggestion";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { suggestionGroups } from "@/assets/constants";
 import { BUILD_PROGRAM_EMPTY_URL } from "@/components/program-builder/utils";
 import { useTypewriterPlaceholder } from "@/hooks/useTypewriterPlaceholder";
 import { useIsMobile } from "@/hooks/use-mobile";
+
+function SyncSearchFromInput({
+  setSearch,
+  setActiveCategory,
+}: {
+  setSearch: (v: string) => void;
+  setActiveCategory: (v: string) => void;
+}) {
+  const controller = usePromptInputController();
+  useEffect(() => {
+    const value = controller.textInput.value;
+    setSearch(value);
+    if (value.trim() === "") setActiveCategory("");
+  }, [controller.textInput.value, setSearch, setActiveCategory]);
+  return null;
+}
 
 
 export const PromptTemplate: React.FC = () => {
@@ -27,6 +50,8 @@ export const PromptTemplate: React.FC = () => {
     };
 
     const [search, setSearch] = useState<string>("");
+    const [submitKey, setSubmitKey] = useState(0);
+    const [initialInputKey, setInitialInputKey] = useState("");
     const [activeCategory, setActiveCategory] = useState("");
     const [files, setFiles] = useState<File[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -44,28 +69,23 @@ export const PromptTemplate: React.FC = () => {
     };
 
 
-    const handlePromptInputValueChange = (value: string) => {
-        setSearch(value)
-        // Clear active category when typing something different
-        if (value.trim() === "") {
-          setActiveCategory("")
-        }
-      };
-
-      const handleSend = () => {
-        if (search.trim()) {
-            setActiveCategory("");
-        }
-        goToProgramBuilder(search);
+    const handleSend = (text?: string) => {
+        const value = (text ?? search).trim();
+        if (!value) return;
+        setActiveCategory("");
+        goToProgramBuilder(value);
+        setSearch("");
+        setSubmitKey((k) => k + 1);
+        setInitialInputKey("");
         setIsLoading(true);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault()
-          handleSend()
+          e.preventDefault();
+          handleSend();
         }
-      };
+    };
 
     // Get suggestions based on active category
     const activeCategoryData = suggestionGroups.find(
@@ -85,75 +105,68 @@ export const PromptTemplate: React.FC = () => {
             onFilesAdded={ handleFilesAdded }
             accept=".jpg,.jpeg,.png,.pdf,.docx"
         >
-
-            <PromptInput
-                className="dark:bg-darkGray border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-2xs focus-within:border focus-within:border-gray-300 transition-all duration-200"
-                value={search}
-                onValueChange={handlePromptInputValueChange}
-                onSubmit={handleSend}
-            >
-                { files.length > 0 && (
-                    <div className="grid grid-cols-2 gap-2 pb-2 px-4">
-                        {files.map((file, index) => (
-                        <div
-                            key={index}
-                            className="bg-lightGray flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm"
-                        >
-                            <div className="flex items-center gap-2">
-                            <Paperclip className="size-4" />
-                            <span className="max-w-[80px] truncate text-sm">
-                                {file.name}
-                            </span>
-                            </div>
-                            <button
-                            onClick={() => removeFile(index)}
-                            className="hover:bg-white rounded-full p-1"
+            <PromptInputProvider key={`${submitKey}-${initialInputKey}`} initialInput={search}>
+                <SyncSearchFromInput setSearch={setSearch} setActiveCategory={setActiveCategory} />
+                <PromptInput
+                    className="dark:bg-darkGray border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-2xs focus-within:border focus-within:border-gray-300 transition-all duration-200"
+                    onSubmit={({ text }) => handleSend(text)}
+                >
+                    { files.length > 0 && (
+                        <div className="grid grid-cols-2 gap-2 pb-2 px-4">
+                            {files.map((file, index) => (
+                            <div
+                                key={index}
+                                className="bg-lightGray flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm"
                             >
-                            <X className="size-4" />
-                            </button>
-                        </div>
-                        ))}
-                    </div>
-                )}
-                <PromptInputTextarea
-                    placeholder={animatedPlaceholder}
-                    className="z-10 dark:text-white min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
-                    onKeyDown={handleKeyDown}
-                />
-                <PromptInputActions className="mt-5 flex w-full items-end justify-between gap-2 px-3 pb-3">
-                <FileUploadTrigger asChild>
-                    <div className="hover:bg-secondary-foreground/10 flex h-8 w-8 cursor-pointer items-center justify-start rounded-2xl">
-                        <Paperclip className="size-5" />
-                    </div>
-                </FileUploadTrigger>
-                <div className="flex flex-row gap-2">
-                    <TooltipProvider delayDuration={ 0 }>
-                        <Tooltip>
-                            <TooltipTrigger className="">
-                                <div className="p-2">
-                                    <MicIcon className="size-5" />
+                                <div className="flex items-center gap-2">
+                                <Paperclip className="size-4" />
+                                <span className="max-w-[80px] truncate text-sm">
+                                    {file.name}
+                                </span>
                                 </div>
-                            </TooltipTrigger>
-                            <TooltipContent className="bg-gray-600 text-white rounded-lg">
-                                <p>Dictate</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                    <Button
-                        size="sm"
-                        className="h-9 w-9 bg-lightSecondary text-white rounded-full"
-                        onClick={handleSend}
-                        disabled={!search.trim()}
-                    >
-                        {!isLoading ? (
-                    <ArrowUpIcon className="text-white h-4 w-4" />
-                        ) : (
-                            <span className="size-3 rounded-xs bg-white" />
-                        )}
-                    </Button>
-                </div>
-                </PromptInputActions>
-            </PromptInput>
+                                <button
+                                onClick={() => removeFile(index)}
+                                className="hover:bg-white rounded-full p-1"
+                                >
+                                    <X className="size-4" />
+                                </button>
+                            </div>
+                            ))}
+                        </div>
+                    )}
+                    <PromptInputTextarea
+                        placeholder={animatedPlaceholder}
+                        className="z-10 dark:text-white min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
+                        onKeyDown={handleKeyDown}
+                    />
+                    <PromptInputFooter className="mt-5 flex w-full items-end justify-between gap-2 px-3 pb-3">
+                        <FileUploadTrigger asChild>
+                            <div className="hover:bg-secondary-foreground/10 flex h-8 w-8 cursor-pointer items-center justify-start rounded-2xl">
+                                <Paperclip className="size-5" />
+                            </div>
+                        </FileUploadTrigger>
+                        <div className="flex flex-row gap-2">
+                            <TooltipProvider delayDuration={ 0 }>
+                                <Tooltip>
+                                    <TooltipTrigger className="">
+                                        <div className="p-2">
+                                            <MicIcon className="size-5" />
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="bg-gray-600 text-white rounded-lg">
+                                        <p>Dictate</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                            <PromptInputSubmit
+                                status={isLoading ? "submitted" : "ready"}
+                                disabled={!search.trim()}
+                                className="h-9 w-9 bg-lightSecondary text-white rounded-full [&_svg]:text-white"
+                            />
+                        </div>
+                    </PromptInputFooter>
+                </PromptInput>
+            </PromptInputProvider>
 
             <FileUploadContent>
                 <div className="flex min-h-[200px] w-full items-center justify-center backdrop-blur-xs">
@@ -202,9 +215,8 @@ export const PromptTemplate: React.FC = () => {
                                 key={suggestion}
                                 highlight={activeCategoryData.highlight}
                                 onClick={() => {
-                                    setSearch(suggestion)
-                                    // Optional: auto-send
-                                    // handleSend()
+                                    setSearch(suggestion);
+                                    setInitialInputKey(suggestion);
                                 }}
                             >
                             {suggestion}
@@ -235,8 +247,9 @@ export const PromptTemplate: React.FC = () => {
                             <PromptSuggestion
                                 key={suggestion.label}
                                 onClick={() => {
-                                    setActiveCategory(suggestion.label)
-                                    setSearch("") // Clear input when selecting a category
+                                    setActiveCategory(suggestion.label);
+                                    setSearch("");
+                                    setInitialInputKey("");
                                 }}
                                 className="capitalize h-8 p-4 text-xs dark:bg-darkGray z-10"
                             >

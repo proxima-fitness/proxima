@@ -142,7 +142,6 @@ export function BuildProgramClient() {
       const isStreaming = status === 'streaming';
       const isLoading = isSubmitted || isStreaming;
 
-    const [input, setInput] = useState("");
     const [retryCount, setRetryCount] = useState(0);
     const [isBuilding, setIsBuilding] = useState(false);
     const prevIsBuildingRef = useRef(isBuilding);
@@ -204,11 +203,9 @@ export function BuildProgramClient() {
         posthog.capture('sent_first_prompt_to_ai', { search: search, user: user?.id ?? "user_id_unknown" });
     }, [search, user, hevyProgram, shared, shareId, resume]);
 
-    const handleSubmit = () => {
-        if (!input.trim()) return
-
-        sendMessageWithContext({ text: input });
-        setInput('');
+    const handleSubmit = (text: string) => {
+        if (!text.trim()) return;
+        sendMessageWithContext({ text });
     }
 
     const handleStop = () => {
@@ -927,8 +924,6 @@ export function BuildProgramClient() {
                                 maxRetries={MAX_RETRIES}
                                 onTimeoutError={handleTimeoutError}
                                 isSubmitted={isSubmitted}
-                                input={input}
-                                setInput={setInput}
                                 handleSubmit={handleSubmit}
                                 handleStop={handleStop}
                             />
@@ -1098,8 +1093,6 @@ export function BuildProgramClient() {
                                 maxRetries={MAX_RETRIES}
                                 onTimeoutError={handleTimeoutError}
                                 isSubmitted={isSubmitted}
-                                input={input}
-                                setInput={setInput}
                                 handleSubmit={handleSubmit}
                                 handleStop={handleStop}
                             />
@@ -1176,8 +1169,6 @@ export function BuildProgramClient() {
                             maxRetries={MAX_RETRIES}
                             onTimeoutError={handleTimeoutError}
                             isSubmitted={isSubmitted}
-                            input={input}
-                            setInput={setInput}
                             handleSubmit={handleSubmit}
                             handleStop={handleStop}
                         />

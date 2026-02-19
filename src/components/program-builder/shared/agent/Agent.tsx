@@ -97,9 +97,7 @@ interface IProps {
     maxRetries: number;
     onTimeoutError: () => void;
     isSubmitted: boolean;
-    input: string;
-    setInput: React.Dispatch<React.SetStateAction<string>>;
-    handleSubmit: () => void;
+    handleSubmit: (text: string) => void;
     handleStop: () => void;
 }
 
@@ -162,8 +160,6 @@ export const Agent: React.FC<IProps> = (props) => {
         maxRetries,
         onTimeoutError,
         isSubmitted,
-        input,
-        setInput,
         handleSubmit,
         handleStop,
     } = props;
@@ -266,8 +262,6 @@ export const Agent: React.FC<IProps> = (props) => {
             { /* The chat input is here */ }
             <Chat
                 isLoading={isLoading}
-                input={input}
-                setInput={setInput}
                 handleSubmit={handleSubmit}
                 handleStop={handleStop}
             />
