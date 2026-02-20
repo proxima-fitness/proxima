@@ -108,7 +108,7 @@ export const PromptTemplate: React.FC = () => {
             <PromptInputProvider key={`${submitKey}-${initialInputKey}`} initialInput={search}>
                 <SyncSearchFromInput setSearch={setSearch} setActiveCategory={setActiveCategory} />
                 <PromptInput
-                    className="dark:bg-darkGray border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-2xs focus-within:border focus-within:border-gray-300 transition-all duration-200"
+                    className="dark:bg-darkGray border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-2xs focus-within:border focus-within:border-gray-300 transition-all duration-200 max-sm:**:data-[slot=input-group]:flex-row! max-sm:**:data-[slot=input-group]:items-center max-sm:**:data-[slot=input-group-control]:min-w-0 max-sm:**:data-[slot=input-group-control]:flex-1"
                     onSubmit={({ text }) => handleSend(text)}
                 >
                     { files.length > 0 && (
@@ -136,10 +136,10 @@ export const PromptTemplate: React.FC = () => {
                     )}
                     <PromptInputTextarea
                         placeholder={animatedPlaceholder}
-                        className="z-10 dark:text-white min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
+                        className="z-10 dark:text-white min-h-[44px] max-sm:min-h-24 pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
                         onKeyDown={handleKeyDown}
                     />
-                    <PromptInputFooter className="mt-5 flex w-full items-end justify-between gap-2 px-3 pb-3">
+                    <PromptInputFooter className="mt-5 flex w-full items-end justify-between gap-2 px-3 pb-3 max-sm:mt-0 max-sm:w-auto max-sm:shrink-0 max-sm:py-2 max-sm:px-2">
                         <FileUploadTrigger asChild>
                             <div className="hover:bg-secondary-foreground/10 flex h-8 w-8 cursor-pointer items-center justify-start rounded-2xl">
                                 <Paperclip className="size-5" />
