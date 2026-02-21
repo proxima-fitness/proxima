@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
-import { Copy, Loader2, ThumbsUp, ThumbsDown, Pencil, Trash, AlertCircle, RefreshCw } from "lucide-react"
+import { Copy, ThumbsUp, ThumbsDown, Pencil, Trash, AlertCircle, RefreshCw } from "lucide-react"
 import { type ChatStatus, FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai";
 import { Questions, IQuestion } from "@/components/ui/questions";
 import { IOption } from "@/components/ui/multi-select";
@@ -19,7 +19,6 @@ import {
     ReasoningContent,
     ReasoningTrigger,
 } from "@/components/ai-elements/reasoning";
-import { Shimmer } from "@/components/ai-elements/shimmer";
 import { Tool, ToolContent, ToolHeader } from "@/components/ai-elements/tool";
 import type { ToolPart } from "@/components/ai-elements/tool";
 import { ModifyProgramProgress } from "./ModifyProgramProgress";
@@ -566,12 +565,6 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                         <ReasoningTrigger />
                                         <ReasoningContent>{reasoningText}</ReasoningContent>
                                     </Reasoning>
-                                )}
-                                {isAssistant && isLastMessage && isStreaming && reasoningParts.length === 0 && (
-                                    <div className="mx-auto flex w-full max-w-3xl items-center gap-2 px-4 pt-2 md:px-6">
-                                        <Loader2 className="size-4 shrink-0 animate-spin text-muted-foreground" />
-                                        <Shimmer className="text-sm text-muted-foreground">Thinking…</Shimmer>
-                                    </div>
                                 )}
                                 {message.parts.map((part, index) => {
                                     const isAssistantPart = message.role === "assistant";

@@ -12,7 +12,6 @@ import { ResumeDraftBanner } from "../ResumeDraftBanner";
 import { Integrations } from "@/components/header/Integrations";
 // import { BuyMeCoffee } from "@/components/ui/buy-me-coffee";
 import posthog from "posthog-js";
-
 interface IProps {
     userData: User | null;
 }
@@ -49,6 +48,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                         {/* <div className="sm:hidden flex justify-center mb-4">
                             <BuyMeCoffee />
                         </div> */}
+
                         <PromptTemplate />
                     </div>
                 </div>

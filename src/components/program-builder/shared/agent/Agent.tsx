@@ -6,7 +6,7 @@ import {
   ConversationEmptyState,
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation"
-import { Loader2, MessageSquare } from "lucide-react"
+import { MessageSquare } from "lucide-react"
 import { useMemo } from "react"
 import { IOption } from "@/components/ui/multi-select"
 import { type ChatStatus, FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai"
@@ -145,8 +145,14 @@ export const Agent: React.FC<IProps> = (props) => {
         const isToolInProgress =
             lastMessage?.role === "assistant" &&
             (toolState === "input-available" || toolState === "input-streaming")
+        const isStreamingContent =
+            lastPart &&
+            typeof lastPart === "object" &&
+            "type" in lastPart &&
+            ((lastPart as { type?: string }).type === "text" ||
+                (lastPart as { type?: string }).type === "reasoning")
         if (isToolInProgress) return "Running a step…"
-        if (chatStatus === "streaming") return "Responding…"
+        if (chatStatus === "streaming" && isStreamingContent) return "Generating..."
         return "Thinking…"
     }, [isLoading, messages, chatStatus])
 
@@ -196,8 +202,7 @@ export const Agent: React.FC<IProps> = (props) => {
                         )}
                         {isLoading && statusLabel && (
                             <div className="mx-auto flex w-full max-w-3xl items-center gap-2 px-4 pt-2 md:px-6">
-                                <Loader2 className="size-4 shrink-0 animate-spin text-muted-foreground" />
-                                <Shimmer className="text-black dark:text-white">{statusLabel}</Shimmer>
+                                <Shimmer className="text-sm">{statusLabel}</Shimmer>
                             </div>
                         )}
                     </>
