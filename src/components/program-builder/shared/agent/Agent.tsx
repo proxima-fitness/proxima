@@ -7,12 +7,11 @@ import {
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation"
 import { Loader2, MessageSquare } from "lucide-react"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { IOption } from "@/components/ui/multi-select"
 import { type ChatStatus, FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai"
 
 import { Shimmer } from "@/components/ai-elements/shimmer"
-import { Filters } from "./Filters"
 import { Chat } from "./Chat"
 import { Navbar } from "./Navbar"
 import { MessageBubbles } from "./MessageBubbles"
@@ -112,42 +111,12 @@ export const Agent: React.FC<IProps> = (props) => {
         setHevyProgram,
         hevyProgram,
         addToUndoStack,
-        sex,
-        age,
         daysPerWeek,
-        specificDays,
         programLength,
-        workoutDuration,
-        activityLevel,
-        goals,
-        specialization,
-        equipment,
-        focusAreas,
-        difficultyLevel,
-        excludeAreas,
-        excludeEquipment,
-        excludeSpecializations,
-        healthIssues,
-        programTitle,
-        explore,
-        handleSex,
-        handleAge,
         handleDaysPerWeek,
-        handleSpecificDays,
         handleProgramLength,
-        handleWorkoutDuration,
-        handleActivityLevel,
-        handleGoals,
-        handleSpecialization,
-        handleEquipment,
-        handleFocusAreas,
-        handleDifficultyLevel,
-        handleExcludeAreas,
         handleExcludeEquipment,
-        handleExcludeSpecializations,
         handleHealthIssues,
-        handleProgramTitle,
-        handleExplore,
         messages,
         setMessages,
         sendMessageWithContext,
@@ -166,7 +135,7 @@ export const Agent: React.FC<IProps> = (props) => {
     } = props;
 
 
-    const [isFilters, setIsFilters] = useState(false)
+    // const [isFilters, setIsFilters] = useState(false)
 
     const statusLabel = useMemo(() => {
         if (!isLoading) return null
@@ -185,8 +154,6 @@ export const Agent: React.FC<IProps> = (props) => {
         <div className="flex flex-col h-[85vh] max-h-full min-h-0 max-sm:pb-[100px]">
             { /* The agent's navbar for toggling between chat and filters view */ }
             <Navbar
-                isFilters={isFilters}
-                setIsFilters={setIsFilters}
                 onTogglePosition={onTogglePosition}
                 onToggleExpand={onToggleExpand}
                 isExpanded={isExpanded}
@@ -194,46 +161,6 @@ export const Agent: React.FC<IProps> = (props) => {
             />
             <Conversation className={`flex-1 min-h-0 relative max-sm:h-full overflow-hidden`}>
                 <ConversationContent className="min-h-full max-sm:pb-[220px]">
-                {isFilters ? (
-                    <Filters
-                        sex={sex}
-                        age={age}
-                        excludeAreas={excludeAreas}
-                        excludeEquipment={excludeEquipment}
-                        healthIssues={healthIssues}
-                        programLength={programLength}
-                        daysPerWeek={daysPerWeek}
-                        specificDays={specificDays}
-                        workoutDuration={workoutDuration}
-                        activityLevel={activityLevel}
-                        goals={goals}
-                        specialization={specialization}
-                        equipment={equipment}
-                        focusAreas={focusAreas}
-                        difficultyLevel={difficultyLevel}
-                        excludeSpecializations={excludeSpecializations}
-                        programTitle={programTitle}
-                        explore={explore}
-                        handleSex={handleSex}
-                        handleAge={handleAge}
-                        handleDaysPerWeek={handleDaysPerWeek}
-                        handleSpecificDays={handleSpecificDays}
-                        handleProgramLength={handleProgramLength}
-                        handleWorkoutDuration={handleWorkoutDuration}
-                        handleActivityLevel={handleActivityLevel}
-                        handleGoals={handleGoals}
-                        handleSpecialization={handleSpecialization}
-                        handleEquipment={handleEquipment}
-                        handleFocusAreas={handleFocusAreas}
-                        handleDifficultyLevel={handleDifficultyLevel}
-                        handleExcludeAreas={handleExcludeAreas}
-                        handleExcludeEquipment={handleExcludeEquipment}
-                        handleExcludeSpecializations={handleExcludeSpecializations}
-                        handleHealthIssues={handleHealthIssues}
-                        handleProgramTitle={handleProgramTitle}
-                        handleExplore={handleExplore}
-                    />
-                ) : (
                     <>
                         {messages.length === 0 ? (
                             <ConversationEmptyState
@@ -274,8 +201,6 @@ export const Agent: React.FC<IProps> = (props) => {
                             </div>
                         )}
                     </>
-                )
-                }
                 <ConversationScrollButton className="absolute bottom-4 right-5 z-50 shadow-xs" />
                 </ConversationContent>
             </Conversation>
