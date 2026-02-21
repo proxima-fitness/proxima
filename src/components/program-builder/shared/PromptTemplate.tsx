@@ -1,6 +1,6 @@
 "use client"
 
-import { FileUpload, FileUploadContent, FileUploadTrigger } from "@/components/ui/file-upload";
+import { FileUpload, FileUploadContent } from "@/components/ui/file-upload";
 import {
   PromptInput,
   PromptInputProvider,
@@ -140,22 +140,23 @@ export const PromptTemplate: React.FC = () => {
                         onKeyDown={handleKeyDown}
                     />
                     <PromptInputFooter className="mt-5 flex w-full items-end justify-between gap-2 px-3 pb-3 max-sm:mt-0 max-sm:w-auto max-sm:shrink-0 max-sm:py-2 max-sm:px-2">
-                        <FileUploadTrigger asChild>
-                            <div className="hover:bg-secondary-foreground/10 flex h-8 w-8 cursor-pointer items-center justify-start rounded-2xl">
-                                <Paperclip className="size-5" />
-                            </div>
-                        </FileUploadTrigger>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div className="flex h-8 w-8 cursor-not-allowed items-center justify-start rounded-2xl opacity-50">
+                                    <Paperclip className="size-5" />
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent className="bg-lightSecondary text-white">Coming soon</TooltipContent>
+                        </Tooltip>
                         <div className="flex flex-row gap-2">
                             <TooltipProvider delayDuration={ 0 }>
                                 <Tooltip>
-                                    <TooltipTrigger className="">
-                                        <div className="p-2">
+                                    <TooltipTrigger asChild>
+                                        <div className="p-2 cursor-not-allowed opacity-50">
                                             <MicIcon className="size-5" />
                                         </div>
                                     </TooltipTrigger>
-                                    <TooltipContent className="bg-gray-600 text-white rounded-lg">
-                                        <p>Dictate</p>
-                                    </TooltipContent>
+                                    <TooltipContent className="bg-lightSecondary text-white">Coming soon</TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
                             <PromptInputSubmit

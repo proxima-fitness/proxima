@@ -48,29 +48,35 @@ export const Chat: React.FC<IProps> = (props) => {
             <div className="flex items-center gap-2">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="size-9 rounded-full"
-                  >
-                    <MoreHorizontal size={18} />
-                  </Button>
+                  <span className="inline-flex">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="size-9 rounded-full"
+                      disabled
+                    >
+                      <MoreHorizontal size={18} />
+                    </Button>
+                  </span>
                 </TooltipTrigger>
-                <TooltipContent>More actions</TooltipContent>
+                <TooltipContent className="bg-lightSecondary text-white">Coming soon</TooltipContent>
               </Tooltip>
             </div>
             <div className="flex items-center gap-2">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="size-9 rounded-full"
-                  >
-                    <Mic size={18} />
-                  </Button>
+                  <span className="inline-flex">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="size-9 rounded-full"
+                      disabled
+                    >
+                      <Mic size={18} />
+                    </Button>
+                  </span>
                 </TooltipTrigger>
-                <TooltipContent>Voice input</TooltipContent>
+                <TooltipContent className="bg-lightSecondary text-white">Coming soon</TooltipContent>
               </Tooltip>
               <PromptInputSubmit
                 status={isLoading ? "streaming" : "ready"}
