@@ -214,6 +214,7 @@ export const Agent: React.FC<IProps> = (props) => {
                 isLoading={isLoading}
                 handleSubmit={handleSubmit}
                 handleStop={handleStop}
+                showSuggestions={messages.length === 0}
             />
         </div>
     )
