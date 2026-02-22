@@ -1,12 +1,10 @@
 "use client";
 
-import { MessageSquareWarningIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useUserContext } from "@/contexts/UserContext";
 import { User } from "@supabase/supabase-js";
 import { jack, people02, people03, people04, people05 } from "public";
 import { AvatarStack } from "@/components/avatar-stack";
-import { AiProgramGrid } from "./AiProgramGrid";
 import { PromptTemplate } from "./PromptTemplate";
 import { ResumeDraftBanner } from "../ResumeDraftBanner";
 import { Integrations } from "@/components/header/Integrations";
@@ -59,7 +57,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                 <div className="absolute z-0 w-[60%] h-[80%] rounded-full white__gradient_light bottom-40 block dark:hidden" />
                 <div className="absolute z-0 top-40 w-[60%] h-[50%] blue__gradient_light block dark:hidden" />
             </div>
-            <div className="pt-32 pb-16 flex flex-col justify-center items-center max-sm:pt-40 max-sm:text-sm z-10">
+            <div className=" flex flex-col justify-center items-center max-sm:text-sm z-10">
                 <AvatarStack
                     avatars={[
                         {name: "jack.hanlon", image:  jack.src},
@@ -81,15 +79,10 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                 />
                 16,000+ athletes are training smarter with Proxima
             </div>
-            <div className={ `flex flex-row items-center justify-center mt-32` }>
+            <div className={ `flex flex-row items-center  justify-center mt-32` }>
                 <Integrations />
             </div>
-
-            <div className="bg-red-400 py-4 text-white hidden max-sm:flex max-sm:flex-col max-sm:justify-center max-sm:items-center text-center">
-                <MessageSquareWarningIcon />
-                Please use on a desktop computer for best experience
-            </div>
-            <AiProgramGrid />
+            {/* <AiProgramGrid /> */}
             </>
 
     );
