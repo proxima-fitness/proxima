@@ -41,7 +41,7 @@ export const Chat: React.FC<IProps> = (props) => {
         className="border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-2xs max-sm:**:data-[slot=input-group]:flex-row! max-sm:**:data-[slot=input-group]:items-center max-sm:**:data-[slot=input-group-control]:min-w-0 max-sm:**:data-[slot=input-group-control]:flex-1"
       >
           <PromptInputTextarea
-            placeholder="Ask Andy anything..."
+            placeholder="Ask anything..."
             className="dark:text-white pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
           />
           <PromptInputFooter className="mt-5 flex w-full items-center justify-between gap-2 px-3 pb-3 max-sm:mt-0 max-sm:w-auto max-sm:shrink-0 max-sm:py-2 max-sm:px-2">
