@@ -241,7 +241,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                             <TooltipProvider delayDuration={ 0 }>
                                 <Tooltip>
                                     <TooltipTrigger
-                                        className="cursor-pointer group-hover:opacity-100 group-active:opacity-100 opacity-0"
+                                        className="cursor-pointer opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-active:opacity-100"
                                     >
                                         <NotebookTextIcon className="cursor-pointer" />
                                     </TooltipTrigger>
@@ -254,7 +254,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                             <DropdownMenu open={ dropdownOpen } onOpenChange={ () => setDropdownOpen(false) }>
                                 <DropdownMenuTrigger
                                     onClick={ () => setDropdownOpen(true) }
-                                    className="cursor-pointer group-hover:opacity-100 group-active:opacity-100 opacity-0"
+                                    className="cursor-pointer opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-active:opacity-100"
                                     asChild
                                 >
                                     <EllipsisIcon />

@@ -6,6 +6,7 @@ import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
 import { LinkIcon, NotebookTextIcon, TimerIcon, Trash2Icon, XIcon } from "lucide-react";
 import { HevyExerciseGif } from "./HevyExerciseGif";
 import { useHevyExercises } from "@/api/hooks";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 interface IProps {
     day: THevyRoutine;
@@ -59,6 +60,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
 
     const { isInLbs } = usePoundsOrKgContext();
     const { data: hevyExercises, isLoading } = useHevyExercises();
+    const isSm = useMediaQuery("(min-width: 640px)");
 
     const editHandler = (e: React.MouseEvent<HTMLButtonElement>, folder_id: number, dayOrder: number, i: number, exercise: THevyExercise) => {
         if (editMode) {
@@ -96,15 +98,13 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                         ? 'bg-white dark:bg-darkGray'
                         : 'bg-extraLightGray dark:bg-[#1a2332]';
 
-                return (
-                    <TooltipProvider key={"Week" + (Number(folder_id) + 1) + "Day" + i} delayDuration={0}>
-                        <Tooltip>
-                            <TooltipTrigger
-                                asChild
-                                onClick={(e) => editHandler(e, Number(folder_id), Number(day.order), i, exercise)}
-                                className={`w-full min-h-14 border-gray-200 cursor-pointer appearance-none p-0 m-0 text-left font-inherit focus:outline-hidden focus-visible:ring-2 focus-visible:ring-lightSecondary focus-visible:ring-inset ${rowBackgroundClass} ${supersetColor && !isSelected ? 'border-r-4' : ''}`}
-                                style={supersetColor && !isSelected ? borderStyle : {}}
-                            >
+                const rowProps = {
+                    onClick: (e: React.MouseEvent) => editHandler(e as unknown as React.MouseEvent<HTMLButtonElement>, Number(folder_id), Number(day.order), i, exercise),
+                    className: `w-full min-h-14 border-gray-200 cursor-pointer appearance-none p-0 m-0 text-left font-inherit focus:outline-hidden focus-visible:ring-2 focus-visible:ring-lightSecondary focus-visible:ring-inset ${rowBackgroundClass} ${supersetColor && !isSelected ? 'border-r-4' : ''}`,
+                    style: supersetColor && !isSelected ? borderStyle : {},
+                };
+
+                const rowContent = (
                                     <div
                                         role="button"
                                         tabIndex={0}
@@ -255,11 +255,23 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                     </div>
                                     </div>
                                 </div>
-                            </TooltipTrigger>
-                            <TooltipContent
-                                side="right"
-                                className="bg-lightSecondary text-white flex flex-col p-3 max-w-[260px] rounded-md shadow-lg"
-                            >
+                );
+
+                return (
+                    <span key={"Week" + (Number(folder_id) + 1) + "Day" + i} className="contents">
+                        {isSm ? (
+                            <TooltipProvider delayDuration={0}>
+                                <Tooltip>
+                                    <TooltipTrigger
+                                        asChild
+                                        {...rowProps}
+                                    >
+                                        {rowContent}
+                                    </TooltipTrigger>
+                                    <TooltipContent
+                                        side="right"
+                                        className="bg-lightSecondary text-white flex flex-col p-3 max-w-[260px] rounded-md shadow-lg"
+                                    >
                                 {exercise.reason && (
                                     <>
                                         <p className="text-xs font-semibold uppercase tracking-wide text-white/90 mb-1.5">
@@ -310,9 +322,15 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                         </button>
                                     </div>
                                 </div>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        ) : (
+                            <div {...rowProps}>
+                                {rowContent}
+                            </div>
+                        )}
+                    </span>
                 );
             })}
         </div>
