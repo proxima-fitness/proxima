@@ -19,7 +19,7 @@ import { HevyExerciseVisualizer } from "./HevyExerciseVisualizer";
 import { HevyDuplicateDay } from "./HevyDuplicateDay";
 import { IOption } from "@/components/ui/multi-select";
 import { convertHevyExerciseIntoHevyAddExercise } from "../utils";
-import { useHevyCustomExercises, useHevySecret } from "@/api/hooks";
+import { useHevyCustomExercises, useHevyExercises, useHevySecret } from "@/api/hooks";
 import { useUserContext } from "@/contexts/UserContext";
 import { useTheme } from "next-themes";
 
@@ -76,10 +76,11 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
     const { data: hevyApiKey } = useHevySecret(user);
 
     const { data: customExercises } = useHevyCustomExercises(user, hevyApiKey);
+    const { data: hevyExercises } = useHevyExercises();
 
     const handleEdit = async (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: THevyExercise ) => {
             handleIsEditExercise(true);
-            const convertedExercise = await convertHevyExerciseIntoHevyAddExercise(editExercise, customExercises);
+            const convertedExercise = await convertHevyExerciseIntoHevyAddExercise(editExercise, customExercises, hevyExercises);
             handleOpenAddExerciseDialog({folder_id: currentWeek, dayOrder: currentDay, isOpen: true, exerciseIndex: exerciseIndex, editExercise: convertedExercise });
     };
 

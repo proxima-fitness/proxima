@@ -1,4 +1,5 @@
-import { amrapAsNumber, getHevyExerciseFromLocalStorageByID } from "@/utils/general/helpers";
+import { getHevyExercises } from "@/components/program-builder/api/hevy";
+import { amrapAsNumber } from "@/utils/general/helpers";
 import * as Papa from "papaparse";
 
 // Used to add week order and Id to program days for the drag and drop
@@ -364,7 +365,7 @@ export function hevyRoutinesToCsvWithWeekAndDayTitles(routines: THevyRoutine[]):
 }
 
 // Converts TAddExercise type into TProgramCreatorExercise type
-export const addExerciseToProgramCreatorExerciseConverter = async (addExercise: TAddExercise) => {
+export const addExerciseToProgramCreatorExerciseConverter = async (addExercise: TAddExercise, hevyExercises?: THevyExerciseTemplate[]) => {
     let addReps = [];
     let addIntensity = [];
     let sets = 0;
@@ -384,8 +385,11 @@ export const addExerciseToProgramCreatorExerciseConverter = async (addExercise: 
         addIntensity = addExercise.intensityData;
     }
 
+    const exercises = hevyExercises ?? await getHevyExercises();
+    const exercise = exercises.find((ex) => ex.id === addExercise.id);
+
     return {
-        exercise: await getHevyExerciseFromLocalStorageByID(addExercise.id),
+        exercise,
         sets: sets,
         sets_type: addExercise.setTypes,
         reps_type: { [ addExercise.repTypeValue ] : addReps },
@@ -413,7 +417,7 @@ export const hevyAddExerciseToHevySetsConverter = (addExercise: THevyAddExercise
 };
 
 // Converts THevyExercise into THevyAddExercise
-export const convertHevyExerciseIntoHevyAddExercise = async (exercise: THevyExercise, customExercises?: THevyExerciseTemplate[]): Promise<THevyAddExercise> => {
+export const convertHevyExerciseIntoHevyAddExercise = async (exercise: THevyExercise, customExercises?: THevyExerciseTemplate[], hevyExercises?: THevyExerciseTemplate[]): Promise<THevyAddExercise> => {
 
     // Determine the repTypeValue based on the first non-zero value in a rep-type field
     const firstSet = exercise.sets[0];
@@ -452,11 +456,10 @@ export const convertHevyExerciseIntoHevyAddExercise = async (exercise: THevyExer
     );
     const intensityData: number[] | null = filteredIntensityData.length > 0 ? filteredIntensityData : null;
 
-    // Get the exercise template data
+    // Get the exercise template data: use provided list or fetch via getHevyExercises()
     let exerciseTemplate: THevyExerciseTemplate | undefined;
-
-    // First try to get from regular exercises
-    exerciseTemplate = await getHevyExerciseFromLocalStorageByID(exercise.exercise_template_id);
+    const exercises = hevyExercises ?? await getHevyExercises();
+    exerciseTemplate = exercises.find((ex) => ex.id === exercise.exercise_template_id);
 
     // If not found and custom exercises are provided, search there
     if (!exerciseTemplate && customExercises) {

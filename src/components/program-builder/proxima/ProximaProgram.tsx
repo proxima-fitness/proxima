@@ -6,6 +6,7 @@ import { IOption } from "@/components/ui/multi-select";
 import { GenerateDayDialog } from "./GenerateDayDialog";
 import { Column } from "./Column";
 import { addExerciseToProgramCreatorExerciseConverter, aiRequest, appendWeekOrderAndIdToProgramDays, deFlattenProgram, flattenProgram, programCreatorDayToScheduleWorkouts, reorder } from "../utils";
+import { useHevyExercises } from "@/api/hooks";
 import { toast } from "sonner";
 import { AddNoteDialog } from "./AddNoteDialog";
 import { ExerciseNotesDialog } from "./ExerciseNotesDialog";
@@ -26,6 +27,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
 
 
     const { isPreview } = usePreview();
+    const { data: hevyExercises } = useHevyExercises();
 
     const [addExerciseDialog, setAddExerciseDialog] = useState<TDialog>({weekOrder: 0, dayOrder: 0, isOpen: false});
     const [generateDayDialog, setGenerateDayDialog] = useState<TDialog>({weekOrder: 0, dayOrder: 0, isOpen: false});
@@ -251,7 +253,7 @@ export const ProximaProgram: React.FC<IProps> = (props) => {
     const handleEditExercise = async (editExercise: TDialog) => {
 
         if (editExercise.editExercise) {
-            const convertedEditExercise = await addExerciseToProgramCreatorExerciseConverter(editExercise.editExercise);
+            const convertedEditExercise = await addExerciseToProgramCreatorExerciseConverter(editExercise.editExercise, hevyExercises);
 
             setFlattenedProgramDays((prev) => {
                 return prev.map((day) => {

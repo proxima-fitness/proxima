@@ -622,18 +622,6 @@ export const postRoutines = async (postRoutine: THevyRoutineRequest, apiKey: str
  */
 export const getHevyExercises = async () => {
     try {
-        const cached = localStorage.getItem("hevy-exercises");
-        if (cached) {
-            try {
-                const { exercises } = JSON.parse(cached) as { exercises?: THevyExerciseTemplate[] };
-                if (Array.isArray(exercises)) {
-                    return exercises;
-                }
-            } catch {
-                // Invalid or stale cache, fall through to fetch
-            }
-        }
-
         const { data: hevyExercises, error: hevyExercisesError } = await supabase
             .from('hevy_exercise_templates')
             .select('id, title, type, primary_muscle_group, secondary_muscle_groups, is_custom, equipment, normalized_title, gif_id, instructions')
@@ -644,7 +632,6 @@ export const getHevyExercises = async () => {
             return [];
         }
 
-        localStorage.setItem("hevy-exercises", JSON.stringify({ exercises: hevyExercises ?? [] }));
         return hevyExercises as THevyExerciseTemplate[];
     } catch (error) {
         console.error('Error fetching hevy exercises:', error);
