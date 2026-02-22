@@ -3,7 +3,8 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NavDrawer } from "./NavDrawer";
-import { proxima_logo, proxima_logo_white } from "public";
+import { StepButton } from "@/components/program-builder/shared/StepButton";
+import { proxima_logo, proxima_logo_white, proxima_logo_black } from "public";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useUserContext } from "@/contexts/UserContext";
@@ -379,9 +380,16 @@ export const Navbar: React.FC = () => {
                 )} */}
                 {NavItems(pathname)}
             </ul>
-            <div className="sm:hidden flex flex-1 justify-between items-center">
-                <NavDrawer />
-                <div></div>
+            <div className="sm:hidden flex flex-1 relative items-center pr-2">
+                <div className="flex-1 flex justify-start items-center min-w-0">
+                    <NavDrawer />
+                </div>
+                <Link href={ "/" } className="absolute left-1/2 -translate-x-1/2">
+                    <img src={ (proxima_logo_black as any).src } alt="Proxima Logo" className="h-10 w-auto" />
+                </Link>
+                <div className="flex-1 flex justify-end items-center min-w-0">
+                    {pathname.startsWith("/build-program") ? <StepButton /> : <div />}
+                </div>
             </div>
         </nav>
     );

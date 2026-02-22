@@ -7,7 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 export default function ProgramBuilderLayout({ children }: { children: ReactNode }) {
     return (
         <div>
-            <div className="sticky top-0 z-50 p-2 bg-extraLightGray dark:bg-extraDarkGray border-b-2 dark:border-darkGray border-white flex flex-row items-center text-xl text-black dark:text-white">
+            <div className="max-sm:hidden sticky top-0 z-50 p-2 bg-extraLightGray dark:bg-extraDarkGray border-b-2 dark:border-darkGray border-white flex flex-row items-center text-xl text-black dark:text-white">
                 <div className="flex-1 min-w-0 overflow-hidden">
                     <Breadcrumbs />
                 </div>
