@@ -21,9 +21,11 @@ import { PoundsOrKgProvider } from "@/contexts/PoundsOrKgContext";
 export const metadata: Metadata = {
     title: 'Proxima Fitness | Agentic Workout Builder',
     description: 'Proxima Fitness is an Agentic Workout Builder. This is the Proxima Landing page, where you can sign in to the Proxima Web builder and get started building programs right away.',
+    manifest: "/manifest.webmanifest",
     icons: {
         icon: "/favicon.svg", // Use SVG favicon
         shortcut: "/favicon.svg",
+        apple: "/icon-foreground.png",
       },
 };
 
