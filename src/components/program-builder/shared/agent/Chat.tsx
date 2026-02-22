@@ -45,9 +45,6 @@ export const Chat: React.FC<IProps> = (props) => {
 
   return (
     <div className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl shrink-0 px-3 pb-3 md:px-5 md:pb-5 max-sm:fixed max-sm:bottom-[70px] max-sm:left-0 max-sm:right-0 max-sm:px-4 max-sm:bg-background border-t pt-4">
-      {featureLimits && !isPro && (
-        <UpgradeBanner remainingRequests={featureLimits.remaining_llm_requests} totalRequests={featureLimits.max_monthly_llm_requests} user={user} />
-      )}
       {showSuggestions && (
         <Suggestions className="mb-3">
           {CHAT_SUGGESTION_CHIPS.map((label) => (
@@ -58,6 +55,9 @@ export const Chat: React.FC<IProps> = (props) => {
             />
           ))}
         </Suggestions>
+      )}
+      {featureLimits && !isPro && (
+        <UpgradeBanner remainingRequests={featureLimits.remaining_llm_requests} totalRequests={featureLimits.max_monthly_llm_requests} user={user} />
       )}
       <PromptInput
         onSubmit={({ text }) => handleSubmit(text)}
