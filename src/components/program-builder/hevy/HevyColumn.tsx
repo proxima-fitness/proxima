@@ -186,16 +186,17 @@ export const HevyColumn: React.FC<IProps> = (props) => {
     return (
         <div className="flex flex-col w-full sm:min-w-[320px] sm:max-w-[320px] md:min-w-[340px] md:max-w-[340px] lg:min-w-[400px] lg:max-w-[400px] items-center max-w-full max-sm:overflow-x-hidden">
             <div className="pt-2 w-full sm:min-w-[320px] sm:max-w-[320px] md:min-w-[340px] md:max-w-[340px] lg:min-w-[400px] lg:max-w-[400px] max-w-full">
-                <div className="h-[40px] flex flex-row justify-between items-center px-2 sm:px-4">
-                    <div className="text-md dark:text-offWhite">
+                <div className="py-1 sm:h-[40px] sm:py-[10px] flex flex-row justify-between items-center px-2 sm:px-4 box-border">
+                    <div className="text-sm sm:text-md dark:text-offWhite">
                         { title }
                     </div>
-                    <div className="flex flex-row gap-4">
+                    <div className="flex flex-row gap-2 sm:gap-4">
                         <TooltipProvider delayDuration={ 0 }>
                             <Tooltip>
                                 <TooltipTrigger className="">
                                     <div
                                         onClick={ () => handleDuplicateWeekOpen(true) }
+                                        className="[&_svg]:w-4 [&_svg]:h-4 sm:[&_svg]:w-5 sm:[&_svg]:h-5"
                                     >
                                         <CopyIcon />
                                     </div>
