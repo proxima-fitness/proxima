@@ -274,7 +274,7 @@ export const DayCard: FC<IProps> = (props) => {
                         onClick={ () => {
                             handleOpenAddExerciseDialog({weekOrder: Number(weekOrder), dayOrder: Number(day.order), isOpen: true}); }
                         }>
-                        <Button variant="ghost" className="mt-1 w-full font-bold uppercase h-12 hover:bg-gray-200 text-black"><PlusIcon />Add Exercise</Button>
+                        <Button variant="ghost" className="mt-1 w-full font-bold uppercase h-9 sm:h-12 text-sm sm:text-base hover:bg-gray-200 text-black"><PlusIcon />Add Exercise</Button>
                     </div>
                 </Card>
             </motion.div>
