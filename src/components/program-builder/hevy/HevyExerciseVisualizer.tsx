@@ -157,7 +157,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             )}
                                             {!editMode && (
                                                 <Trash2Icon
-                                                    className="block sm:hidden"
+                                                    className="block sm:hidden size-4"
                                                     onClick={(event) => {
                                                         event.stopPropagation();
                                                         handleDeleteExercise(Number(folder_id), Number(day.order), i);

@@ -169,7 +169,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                     }
                     { isMobile ? (
                         <div className="flex flex-col max-h-screen w-full max-w-full overflow-hidden">
-                            <div className="flex flex-row items-center justify-between px-4 py-2 border-b shrink-0 w-full max-w-full">
+                            <div className="flex flex-row items-center justify-between px-4 py-1 h-9 border-b shrink-0 w-full max-w-full">
                                 <Button
                                     onClick={ handlePreviousWeek }
                                     disabled={ currentWeekIndex === 0 }
@@ -177,9 +177,9 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                                     size="icon"
                                     className={ `shrink-0 ${currentWeekIndex === 0 ? "opacity-50 cursor-not-allowed" : ""}` }
                                 >
-                                    <ChevronLeft className="h-6 w-6" />
+                                    <ChevronLeft className="h-5 w-5" />
                                 </Button>
-                                <div className="text-lg font-semibold shrink-0">
+                                <div className="text-sm font-semibold shrink-0">
                                     Week { currentWeekIndex + 1 } / { numberOfWeeks }
                                 </div>
                                 <Button
@@ -189,7 +189,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                                     size="icon"
                                     className={ `shrink-0 ${currentWeekIndex >= numberOfWeeks - 1 ? "opacity-50 cursor-not-allowed" : ""}` }
                                 >
-                                    <ChevronRight className="h-6 w-6" />
+                                    <ChevronRight className="h-5 w-5" />
                                 </Button>
                             </div>
                             <div className="overflow-y-auto overflow-x-hidden flex-1 w-full max-w-full">
