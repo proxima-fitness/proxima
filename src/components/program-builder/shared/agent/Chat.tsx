@@ -82,7 +82,7 @@ export const Chat: React.FC<IProps> = (props) => {
         >
           <PromptInputTextarea
             placeholder="Ask anything..."
-            className="dark:text-white pl-4 text-base leading-[1.3] sm:text-base md:text-base max-sm:min-h-8 max-sm:py-2"
+            className="dark:text-white pl-4 text-base leading-[1.3] sm:text-base md:text-base max-sm:min-h-10 max-sm:py-2"
           />
           <PromptInputFooter className="mt-5 flex w-full items-center justify-between gap-2 px-3 pb-3 max-sm:mt-0 max-sm:w-auto max-sm:shrink-0 max-sm:px-2 max-sm:pb-1.5 max-sm:pt-1 max-sm:justify-end">
             <div className="hidden sm:flex shrink-0">
