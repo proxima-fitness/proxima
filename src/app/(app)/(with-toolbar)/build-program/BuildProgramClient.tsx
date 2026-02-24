@@ -863,7 +863,7 @@ export function BuildProgramClient() {
                             }}
                             minSize={20}
                             maxSize={EXPANDED_SIZE}
-                            className="border-extraLightGray bg-extraLightGray dark:bg-extraDarkGray dark:text-white overflow-hidden"
+                            className="border-extraLightGray bg-white sm:bg-extraLightGray dark:bg-extraDarkGray dark:text-white overflow-hidden"
                         >
                             <Agent
                                 search={search}
@@ -1032,7 +1032,7 @@ export function BuildProgramClient() {
                             }}
                             minSize={20}
                             maxSize={EXPANDED_SIZE}
-                            className="border-extraLightGray bg-extraLightGray dark:bg-extraDarkGray dark:text-white overflow-hidden"
+                            className="border-extraLightGray bg-white sm:bg-extraLightGray dark:bg-extraDarkGray dark:text-white overflow-hidden"
                         >
                             <Agent
                                 search={search}
