@@ -934,7 +934,7 @@ export const PromptInputTextarea = ({
     <InputGroupTextarea
       className={cn(
         "field-sizing-content max-h-48 min-h-16",
-        "[&::placeholder]:block [&::placeholder]:whitespace-nowrap [&::placeholder]:overflow-hidden [&::placeholder]:text-ellipsis",
+        "[&::placeholder]:block [&::placeholder]:whitespace-nowrap [&::placeholder]:overflow-hidden [&::placeholder]:text-ellipsis [&::placeholder]:text-sm",
         className
       )}
       name="message"

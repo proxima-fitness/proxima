@@ -21,7 +21,7 @@ export function UpgradeBanner({
 
   return (
     <div className="mx-auto w-full max-w-4xl px-3 md:px-5 max-sm:px-4">
-      <div className="rounded-t-2xl border border-border bg-[hsl(var(--upgrade-banner))] px-4 py-2 shadow-xs">
+      <div className="rounded-t-2xl max-sm:rounded-b-2xl border border-border bg-[hsl(var(--upgrade-banner))] px-4 py-2 shadow-xs">
         <div className="flex items-center justify-between gap-4">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <div className="flex items-center gap-2">
