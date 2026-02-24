@@ -44,7 +44,7 @@ export const Chat: React.FC<IProps> = (props) => {
   const isPro = featureLimits?.has_active_subscription === true;
 
   return (
-    <div className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl shrink-0 px-3 pb-3 md:px-5 md:pb-5 max-sm:fixed max-sm:bottom-[70px] max-sm:left-0 max-sm:right-0 max-sm:px-4 max-sm:bg-background max-sm:dark:bg-extraDarkGray pt-4">
+    <div className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl shrink-0 px-3 pb-3 md:px-5 md:pb-5 max-sm:fixed max-sm:bottom-[70px] max-sm:left-0 max-sm:right-0 max-sm:px-4 max-sm:bg-background max-sm:dark:bg-extraDarkGray pt-4 max-sm:pt-2">
       {showSuggestions && (
         <Suggestions className="mb-3">
           {CHAT_SUGGESTION_CHIPS.map((label) => (
@@ -59,38 +59,37 @@ export const Chat: React.FC<IProps> = (props) => {
       {featureLimits && !isPro && (
         <UpgradeBanner remainingRequests={featureLimits.remaining_llm_requests} totalRequests={featureLimits.max_monthly_llm_requests} user={user} />
       )}
-      <PromptInput
-        onSubmit={({ text }) => handleSubmit(text)}
-        className="border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-2xs max-sm:**:data-[slot=input-group]:flex-row! max-sm:**:data-[slot=input-group]:items-center max-sm:**:data-[slot=input-group-control]:min-w-0 max-sm:**:data-[slot=input-group-control]:flex-1"
-      >
+      <div className="flex w-full items-center gap-2">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="inline-flex shrink-0">
+              <Button
+                variant="outline"
+                size="icon"
+                className="size-9 rounded-full"
+                disabled
+              >
+                <MoreHorizontal size={18} />
+              </Button>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent className="bg-lightSecondary text-white">Coming soon</TooltipContent>
+        </Tooltip>
+        <PromptInput
+          onSubmit={({ text }) => handleSubmit(text)}
+          className="min-w-0 flex-1 bg-white dark:bg-popover relative z-10 rounded-3xl p-0 pt-1 max-sm:pt-0 shadow-2xs max-sm:**:data-[slot=input-group]:flex-row! max-sm:**:data-[slot=input-group]:items-center max-sm:**:data-[slot=input-group-control]:min-w-0 max-sm:**:data-[slot=input-group-control]:flex-1"
+        >
           <PromptInputTextarea
             placeholder="Ask anything..."
-            className="dark:text-white pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
+            className="dark:text-white pl-4 text-base leading-[1.3] sm:text-base md:text-base max-sm:min-h-8 max-sm:py-2"
           />
-          <PromptInputFooter className="mt-5 flex w-full items-center justify-between gap-2 px-3 pb-3 max-sm:mt-0 max-sm:w-auto max-sm:shrink-0 max-sm:py-2 max-sm:px-2">
+          <PromptInputFooter className="mt-5 flex w-full items-center justify-end gap-2 px-3 pb-3 max-sm:mt-0 max-sm:w-auto max-sm:shrink-0 max-sm:px-2 max-sm:pb-1.5 max-sm:pt-1">
             <div className="flex items-center gap-2">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="inline-flex">
                     <Button
-                      variant="outline"
-                      size="icon"
-                      className="size-9 rounded-full"
-                      disabled
-                    >
-                      <MoreHorizontal size={18} />
-                    </Button>
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent className="bg-lightSecondary text-white">Coming soon</TooltipContent>
-              </Tooltip>
-            </div>
-            <div className="flex items-center gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="inline-flex">
-                    <Button
-                      variant="outline"
+                      variant="ghost"
                       size="icon"
                       className="size-9 rounded-full"
                       disabled
@@ -109,7 +108,8 @@ export const Chat: React.FC<IProps> = (props) => {
               />
             </div>
           </PromptInputFooter>
-      </PromptInput>
+        </PromptInput>
+      </div>
     </div>
   );
 };
