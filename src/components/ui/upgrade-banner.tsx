@@ -27,7 +27,14 @@ export function UpgradeBanner({
             <div className="flex items-center gap-2">
               <Sparkles className="size-4 shrink-0 text-amber-500" />
               <span className="text-xs font-medium text-foreground">
-                { remainingRequests === 0 ? "You have run out of message credits" : `You only have ${remainingRequests} message credits left` }
+                {remainingRequests === 0 ? (
+                  "You have run out of message credits"
+                ) : (
+                  <>
+                    <span className="sm:hidden">{remainingRequests} message credits left</span>
+                    <span className="hidden sm:inline">You only have {remainingRequests} message credits left</span>
+                  </>
+                )}
               </span>
             </div>
             <Progress
