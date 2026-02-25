@@ -23,8 +23,8 @@ import { Tool, ToolContent, ToolHeader } from "@/components/ai-elements/tool";
 import type { ToolPart } from "@/components/ai-elements/tool";
 import { ModifyProgramProgress } from "./ModifyProgramProgress";
 import { equipmentOptions, healthIssuesOptions } from "@/assets/constants";
-import { generateFallbackWorkout } from "../../utils/fallback-workouts";
 import { toast } from "sonner";
+import Link from "next/link";
 import { type Operation } from "fast-json-patch";
 import posthog from "posthog-js";
 import { useUserContext } from "@/contexts/UserContext";
@@ -94,12 +94,11 @@ const BuildProgress: React.FC<{
 const GenerationError: React.FC<{
     error: Error | null;
     onRetry: () => void;
-    onUseFallback: () => void;
     retryCount: number;
     maxRetries: number;
     completedDays: number;
     totalDays: number;
-}> = ({ error, onRetry, onUseFallback, retryCount, maxRetries, completedDays, totalDays }) => {
+}> = ({ error, onRetry, retryCount, maxRetries, completedDays, totalDays }) => {
     if (!error) return null;
 
     const canRetry = retryCount < maxRetries;
@@ -138,14 +137,15 @@ const GenerationError: React.FC<{
                             Try Again
                         </Button>
                     )}
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={onUseFallback}
-                        className="w-full sm:w-auto border-border text-muted-foreground hover:bg-muted/50"
-                    >
-                        Use Template Workout
-                    </Button>
+                    <Link href="/programs">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full sm:w-auto border-border text-muted-foreground hover:bg-muted/50"
+                        >
+                            Explore Programs
+                        </Button>
+                    </Link>
                 </div>
             </div>
         </div>
@@ -252,7 +252,6 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         status,
         error,
         onRetry,
-        onClearError,
         retryCount,
         maxRetries,
         onTimeoutError,
@@ -522,23 +521,6 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         // 2. Update UI state after
         handleIsBuilding(true);
     }, [sendMessage, handleIsBuilding]);
-
-    // Handle using fallback workouts when AI generation fails
-    const handleUseFallback = useCallback(() => {
-        onClearError();
-        const days = daysPerWeek ? Number(daysPerWeek) : 4;
-        const weeks = programLength ? Number(programLength) : 12;
-        const fallbackProgram = generateFallbackWorkout(days, weeks);
-        setHevyProgram(fallbackProgram);
-
-        // Notify the user that a template workout is being used
-        toast.info("Template workout loaded", {
-            description: `Andy failed to build a workout so we loaded a ${days}-day template workout for ${weeks} weeks. You can customize it to fit your needs.`,
-            duration: 6000,
-        });
-    }, [onClearError, daysPerWeek, programLength, setHevyProgram]);
-
-
 
     return (
 
@@ -833,7 +815,6 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                 <GenerationError
                     error={error}
                     onRetry={onRetry}
-                    onUseFallback={handleUseFallback}
                     retryCount={retryCount}
                     maxRetries={maxRetries}
                     completedDays={completedDays.length}
