@@ -314,7 +314,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
     const completionLabel = `${completedCount}/${TOTAL_STEPS}`;
 
     return (
-        <div className="w-full bg-muted border border-border rounded-lg p-6 sm:p-8">
+        <div className="w-full min-w-0 overflow-x-hidden bg-muted border border-border rounded-lg p-6 sm:p-8">
             <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold tracking-tight">Export to Hevy</h3>
                 <span className="text-sm text-muted-foreground">
@@ -346,9 +346,9 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                             <span>Connect your Hevy account</span>
                         </div>
                     </AccordionTrigger>
-                    <AccordionContent className="pb-6 pt-2">
+                    <AccordionContent className="pb-6 pt-2 min-w-0">
                         {step1Completed && !isEditingApiKey ? (
-                            <div className="flex flex-row items-center justify-between gap-4 rounded-lg border border-border bg-muted/50 px-5 py-4">
+                            <div className="flex flex-col gap-3 rounded-lg border border-border bg-muted/50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                                 <div className="flex items-center gap-4">
                                     <Key className="h-5 w-5 shrink-0 text-muted-foreground" />
                                     <span className="text-sm font-medium">
