@@ -7,7 +7,7 @@ import { IQuestion } from "@/components/ui/questions";
 
 export const suggestionGroups = [
     {
-        label: "Empty Template",
+        label: "Start from scratch",
         highlight: "Empty Template",
         items: [
             "Empty Template",
@@ -60,6 +60,15 @@ export const suggestionGroups = [
       icon: <FootprintsIcon />,
     },
 
+];
+
+export const quickTriggerSuggestionChips = [
+  "Not Sure What to Build",
+  "Hypertrophy PPL",
+  "Powerlifting Peak",
+  "Beginner SBD",
+  "Weight Loss",
+  "Body Recomp",
 ];
 
 export const exportOptions = [

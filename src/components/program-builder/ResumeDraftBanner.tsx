@@ -53,7 +53,7 @@ export const ResumeDraftBanner: React.FC = () => {
     }
 
     return (
-        <div className="relative flex flex-col sm:flex-row sm:justify-between sm:items-center w-full max-w-3xl mx-0 sm:mx-auto px-4 sm:px-8 py-3 mb-8 rounded-xl bg-black/10 dark:bg-white/10">
+        <div className="relative flex flex-col sm:flex-row sm:justify-between sm:items-center w-full max-w-3xl mx-0 sm:mx-auto px-4 sm:px-8 py-3 mb-8 rounded-xl bg-transparent sm:bg-black/10 sm:dark:bg-white/10">
             <Button
                 type="button"
                 variant="outline"

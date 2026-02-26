@@ -12,11 +12,10 @@ import {
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Paperclip, X, MicIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PromptSuggestion } from "@/components/ui/prompt-suggestion";
-import Link from "next/link";
+import { Suggestions, Suggestion } from "@/components/ai-elements/suggestion";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { suggestionGroups } from "@/assets/constants";
+import { suggestionGroups, quickTriggerSuggestionChips } from "@/assets/constants";
 import { BUILD_PROGRAM_EMPTY_URL } from "@/components/program-builder/utils";
 import { useTypewriterPlaceholder } from "@/hooks/useTypewriterPlaceholder";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -198,7 +197,17 @@ export const PromptTemplate: React.FC = () => {
             </FileUploadContent>
         </FileUpload>
             <div className="flex w-full flex-col items-center justify-center space-y-2">
-                <div className={`w-full ${showCategorySuggestions ? 'mb-6' : 'h-[70px]'}`}>
+                <div className="mb-3 w-full flex flex-wrap justify-center gap-3 block md:hidden">
+                  {quickTriggerSuggestionChips.map((label) => (
+                    <Suggestion
+                      key={label}
+                      suggestion={label}
+                      onClick={goToProgramBuilder}
+                      className="dark:border-none"
+                    />
+                  ))}
+                </div>
+                <div className={`w-full hidden md:block ${showCategorySuggestions ? 'mb-6' : 'h-[70px]'}`}>
                 {showCategorySuggestions ? (
                     <div className="flex w-full flex-col space-y-1">
                         <Button
@@ -211,55 +220,51 @@ export const PromptTemplate: React.FC = () => {
                             Cancel
                         </Button>
                         {activeCategoryData?.items.map((suggestion) => (
-                            <PromptSuggestion
-                                className="text-left bg-extraLightGray dark:bg-darkGray z-10"
+                            <Suggestion
                                 key={suggestion}
-                                highlight={activeCategoryData.highlight}
+                                suggestion={suggestion}
                                 onClick={() => {
                                     setSearch(suggestion);
                                     setInitialInputKey(suggestion);
                                 }}
-                            >
-                            {suggestion}
-                            </PromptSuggestion>
+                                className="text-left bg-extraLightGray dark:bg-darkGray dark:border-none z-10"
+                            />
                         ))}
                     </div>
                 ) : (
-                    <div className="flex w-full flex-wrap items-stretch justify-start max-sm:justify-center gap-2">
+                    <Suggestions className="w-full">
                     {suggestionGroups.map((suggestion) => {
-                        if (suggestion.label === "Empty Template") {
+                        if (suggestion.label === "Start from scratch") {
                             return (
-                                <Link
+                                <Suggestion
                                     key={suggestion.label}
-                                    target="_self"
-                                    className="z-10"
-                                    rel="noopener noreferrer"
-                                    href={BUILD_PROGRAM_EMPTY_URL}
+                                    suggestion={suggestion.label}
+                                    onClick={() => router.push(BUILD_PROGRAM_EMPTY_URL)}
+                                    className="capitalize h-8 p-4 text-xs dark:bg-darkGray dark:border-none z-10"
                                 >
-                                    <PromptSuggestion className="capitalize h-8 p-4 text-xs dark:bg-darkGray">
-                                        {suggestion.icon}
-                                        {suggestion.label}
-                                    </PromptSuggestion>
-                                </Link>
+                                    {suggestion.icon}
+                                    {suggestion.label}
+                                </Suggestion>
                             );
                         }
 
                         return (
-                            <PromptSuggestion
+                            <Suggestion
                                 key={suggestion.label}
+                                suggestion={suggestion.label}
                                 onClick={() => {
                                     setActiveCategory(suggestion.label);
                                     setSearch("");
                                     setInitialInputKey("");
                                 }}
-                                className="capitalize h-8 p-4 text-xs dark:bg-darkGray z-10"
+                                className="capitalize h-8 p-4 text-xs dark:bg-darkGray dark:border-none z-10"
                             >
                                 {suggestion.icon}
                                 {suggestion.label}
-                            </PromptSuggestion>
+                            </Suggestion>
                         );
                     })}
-                    </div>
+                    </Suggestions>
                 )}
                 </div>
                 </div>

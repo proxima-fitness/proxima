@@ -18,16 +18,7 @@ import {
 import { UpgradeBanner } from "@/components/ui/upgrade-banner";
 import { useMyFeatureLimits } from "@/api/hooks";
 import { useUserContext } from "@/contexts/UserContext";
-
-const CHAT_SUGGESTION_CHIPS = [
-  "PPL hypertrophy program",
-  "12-week powerlifting peak",
-  "5/3/1 raw powerlifting",
-  "Push day: chest & shoulders",
-  "Beginner SBD program",
-  "Weight loss program",
-  "Body recomp program",
-] as const;
+import { quickTriggerSuggestionChips } from "@/assets/constants";
 
 interface IProps {
   isLoading: boolean;
@@ -47,7 +38,7 @@ export const Chat: React.FC<IProps> = (props) => {
     <div className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl shrink-0 px-3 pb-3 md:px-5 md:pb-5 max-sm:fixed max-sm:bottom-[70px] max-sm:left-0 max-sm:right-0 max-sm:px-4 max-sm:bg-background max-sm:dark:bg-extraDarkGray pt-4 max-sm:pt-2">
       {showSuggestions && (
         <Suggestions className="mb-3">
-          {CHAT_SUGGESTION_CHIPS.map((label) => (
+          {quickTriggerSuggestionChips.map((label) => (
             <Suggestion
               key={label}
               suggestion={label}
