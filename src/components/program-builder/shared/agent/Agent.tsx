@@ -97,7 +97,7 @@ interface IProps {
     onTimeoutError: () => void;
     /** Chat status from useChat; used for status label (e.g. "Reading your message…" vs "Responding…"). */
     status?: ChatStatus;
-    handleSubmit: (text: string) => void;
+    handleSubmit: (text: string, files?: FileUIPart[]) => void;
     handleStop: () => void;
 }
 

@@ -34,11 +34,12 @@ import { UpgradeBanner } from "@/components/ui/upgrade-banner";
 import { useMyFeatureLimits } from "@/api/hooks";
 import { useUserContext } from "@/contexts/UserContext";
 import { quickTriggerSuggestionChips } from "@/assets/constants";
+import type { FileUIPart } from "ai";
 import { memo, useCallback } from "react";
 
 interface IProps {
   isLoading: boolean;
-  handleSubmit: (text: string) => void;
+  handleSubmit: (text: string, files?: FileUIPart[]) => void;
   handleStop: () => void;
   showSuggestions?: boolean;
 }
@@ -227,7 +228,7 @@ export const Chat: React.FC<IProps> = (props) => {
           <TooltipContent className="bg-lightSecondary text-white">Coming soon</TooltipContent>
         </Tooltip>
         <PromptInput
-          onSubmit={({ text }) => handleSubmit(text)}
+          onSubmit={({ text, files }) => handleSubmit(text, files)}
           className="min-w-0 flex-1 sm:bg-white bg-extraLightGray dark:bg-darkGray relative z-10 rounded-3xl p-0 pt-1 max-sm:pt-0 shadow-2xs"
         >
           <ChatInputBody

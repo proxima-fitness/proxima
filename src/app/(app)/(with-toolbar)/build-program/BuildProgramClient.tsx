@@ -33,7 +33,7 @@ import { toast } from "sonner";
 import { getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy, sortHevyByOrder } from "@/components/program-builder/utils";
 import { applyPatch, type Operation } from "fast-json-patch";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
+import { DefaultChatTransport, type FileUIPart } from "ai";
 import { getTextFromChatMessage, isMessageAboutProgram } from "@/components/program-builder/utils/helpers"
 import posthog from "posthog-js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -203,9 +203,9 @@ export function BuildProgramClient() {
         posthog.capture('sent_first_prompt_to_ai', { search: search, user: user?.id ?? "user_id_unknown" });
     }, [search, user, hevyProgram, shared, shareId, resume]);
 
-    const handleSubmit = (text: string) => {
-        if (!text.trim()) return;
-        sendMessageWithContext({ text });
+    const handleSubmit = (text: string, files?: FileUIPart[]) => {
+        if (!text.trim() && (!files || files.length === 0)) return;
+        sendMessageWithContext({ text, files });
     }
 
     const handleStop = () => {
