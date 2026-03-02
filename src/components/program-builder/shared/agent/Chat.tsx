@@ -125,7 +125,7 @@ const ChatInputBody = ({
   return (
     <>
       {attachments.files.length > 0 && (
-        <div className="flex w-full shrink-0 justify-start overflow-x-auto overflow-y-hidden px-3 pb-2">
+        <div className="flex w-full shrink-0 justify-start overflow-x-auto overflow-y-hidden pl-4 pt-1 pr-3 pb-2">
           <Attachments variant="inline" className="flex flex-nowrap gap-2 justify-start">
             {attachments.files.map((attachment) => (
               <AttachmentItem
