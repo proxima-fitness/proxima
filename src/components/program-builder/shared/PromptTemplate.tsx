@@ -1,6 +1,5 @@
 "use client"
 
-import { FileUpload, FileUploadContent } from "@/components/ui/file-upload";
 import {
   PromptInput,
   PromptInputProvider,
@@ -8,12 +7,26 @@ import {
   PromptInputTextarea,
   PromptInputSubmit,
   usePromptInputController,
+  usePromptInputAttachments,
 } from "@/components/ai-elements/prompt-input";
+import {
+  Attachment,
+  AttachmentHoverCard,
+  AttachmentHoverCardContent,
+  AttachmentHoverCardTrigger,
+  AttachmentInfo,
+  AttachmentPreview,
+  AttachmentRemove,
+  Attachments,
+  getAttachmentLabel,
+  getMediaCategory,
+} from "@/components/ai-elements/attachments";
+import type { AttachmentData } from "@/components/ai-elements/attachments";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Paperclip, X, MicIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Suggestions, Suggestion } from "@/components/ai-elements/suggestion";
-import { useState, useEffect } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { suggestionGroups, quickTriggerSuggestionChips } from "@/assets/constants";
 import { BUILD_PROGRAM_EMPTY_URL } from "@/components/program-builder/utils";
@@ -36,6 +49,157 @@ function SyncSearchFromInput({
   return null;
 }
 
+interface IAttachmentItemProps {
+  attachment: AttachmentData;
+  onRemove: (id: string) => void;
+}
+
+const AttachmentItem = memo(({ attachment, onRemove }: IAttachmentItemProps) => {
+  const handleRemove = useCallback(
+    () => onRemove(attachment.id),
+    [onRemove, attachment.id]
+  );
+  const mediaCategory = getMediaCategory(attachment);
+  const label = getAttachmentLabel(attachment);
+
+  return (
+    <AttachmentHoverCard>
+      <AttachmentHoverCardTrigger asChild>
+        <Attachment data={attachment} onRemove={handleRemove}>
+          <div className="relative size-5 shrink-0">
+            <div className="absolute inset-0 transition-opacity group-hover:opacity-0">
+              <AttachmentPreview />
+            </div>
+            <AttachmentRemove className="absolute inset-0" />
+          </div>
+          <AttachmentInfo />
+        </Attachment>
+      </AttachmentHoverCardTrigger>
+      <AttachmentHoverCardContent>
+        <div className="space-y-3">
+          {mediaCategory === "image" &&
+            attachment.type === "file" &&
+            attachment.url && (
+              <div className="flex max-h-96 w-80 items-center justify-center overflow-hidden rounded-md border">
+                <img
+                  alt={label}
+                  className="max-h-full max-w-full object-contain"
+                  height={384}
+                  src={attachment.url}
+                  width={320}
+                />
+              </div>
+            )}
+          <div className="space-y-1 px-0.5">
+            <h4 className="font-semibold text-sm leading-none">{label}</h4>
+            {attachment.mediaType && (
+              <p className="font-mono text-muted-foreground text-xs">
+                {attachment.mediaType}
+              </p>
+            )}
+          </div>
+        </div>
+      </AttachmentHoverCardContent>
+    </AttachmentHoverCard>
+  );
+});
+
+AttachmentItem.displayName = "AttachmentItem";
+
+interface IPromptTemplateInputProps {
+  animatedPlaceholder: string;
+  isLoading: boolean;
+  canSubmit: boolean;
+  onSend: (text?: string) => void;
+}
+
+const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
+  animatedPlaceholder,
+  isLoading,
+  canSubmit,
+  onSend,
+}) => {
+  const attachments = usePromptInputAttachments();
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      onSend();
+    }
+  };
+
+  const handlePaperclipClick = () => {
+    attachments.openFileDialog();
+  };
+
+  const handleRemoveAttachment = useCallback(
+    (id: string) => attachments.remove(id),
+    [attachments]
+  );
+
+  return (
+    <PromptInput
+      className="dark:bg-darkGray border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-2xs focus-within:border focus-within:border-gray-300 transition-all duration-200"
+      accept="image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      multiple
+      onSubmit={({ text }) => onSend(text)}
+    >
+      {attachments.files.length > 0 && (
+        <div className="flex w-full shrink-0 justify-start overflow-x-auto overflow-y-hidden px-3 pb-2">
+          <Attachments variant="inline" className="flex flex-nowrap gap-2 justify-start">
+            {attachments.files.map((attachment) => (
+              <AttachmentItem
+                key={attachment.id}
+                attachment={attachment}
+                onRemove={handleRemoveAttachment}
+              />
+            ))}
+          </Attachments>
+        </div>
+      )}
+      <PromptInputTextarea
+        placeholder={animatedPlaceholder}
+        className="z-10 dark:text-white min-h-[44px] max-sm:min-h-10 pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
+        onKeyDown={handleKeyDown}
+      />
+      <PromptInputFooter className="mt-5 flex w-full shrink-0 items-end justify-between gap-2 px-3 pb-3 max-sm:mt-0 max-sm:py-2 max-sm:px-2 max-sm:items-end">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={handlePaperclipClick}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl hover:bg-extraLightGray dark:hover:bg-darkGray/80"
+            >
+              <Paperclip className="size-5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent className="bg-lightSecondary text-white">
+            Attach files
+          </TooltipContent>
+        </Tooltip>
+        <div className="flex shrink-0 flex-row items-end gap-2">
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="p-2 cursor-not-allowed opacity-50">
+                  <MicIcon className="size-5" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent className="bg-lightSecondary text-white">
+                Coming soon
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <PromptInputSubmit
+            status={isLoading ? "submitted" : "ready"}
+            disabled={!canSubmit}
+            className="h-9 w-9 bg-lightSecondary text-white rounded-full [&_svg]:text-white"
+          />
+        </div>
+      </PromptInputFooter>
+    </PromptInput>
+  );
+};
 
 export const PromptTemplate: React.FC = () => {
 
@@ -52,7 +216,6 @@ export const PromptTemplate: React.FC = () => {
     const [submitKey, setSubmitKey] = useState(0);
     const [initialInputKey, setInitialInputKey] = useState("");
     const [activeCategory, setActiveCategory] = useState("");
-    const [files, setFiles] = useState<File[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const isMobile = useIsMobile();
 
@@ -62,11 +225,6 @@ export const PromptTemplate: React.FC = () => {
         enabled: search.trim() === "",
         showPrefix: !isMobile,
     });
-
-    const handleFilesAdded = (newFiles: File[]) => {
-        setFiles((prev) => [...prev, ...newFiles])
-    };
-
 
     const handleSend = (text?: string) => {
         const value = (text ?? search).trim();
@@ -79,123 +237,27 @@ export const PromptTemplate: React.FC = () => {
         setIsLoading(true);
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          handleSend();
-        }
-    };
-
     // Get suggestions based on active category
     const activeCategoryData = suggestionGroups.find(
         (group) => group.label === activeCategory
       );
-
-    const removeFile = (index: number) => {
-        setFiles((prev) => prev.filter((_, i) => i !== index))
-    };
 
     // Determine which suggestions to show
     const showCategorySuggestions = activeCategory !== "";
 
     return (
         <div className="z-10 mx-auto flex w-full max-w-3xl flex-col items-center justify-center gap-4 px-3 pb-3 md:px-5 md:pb-5">
-        <FileUpload
-            onFilesAdded={ handleFilesAdded }
-            accept=".jpg,.jpeg,.png,.pdf,.docx"
-        >
-            <PromptInputProvider key={`${submitKey}-${initialInputKey}`} initialInput={search}>
-                <SyncSearchFromInput setSearch={setSearch} setActiveCategory={setActiveCategory} />
-                <PromptInput
-                    className="dark:bg-darkGray border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-2xs focus-within:border focus-within:border-gray-300 transition-all duration-200 max-sm:**:data-[slot=input-group]:flex-row! max-sm:**:data-[slot=input-group]:items-center max-sm:**:data-[slot=input-group-control]:min-w-0 max-sm:**:data-[slot=input-group-control]:flex-1"
-                    onSubmit={({ text }) => handleSend(text)}
-                >
-                    { files.length > 0 && (
-                        <div className="grid grid-cols-2 gap-2 pb-2 px-4">
-                            {files.map((file, index) => (
-                            <div
-                                key={index}
-                                className="bg-lightGray flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm"
-                            >
-                                <div className="flex items-center gap-2">
-                                <Paperclip className="size-4" />
-                                <span className="max-w-[80px] truncate text-sm">
-                                    {file.name}
-                                </span>
-                                </div>
-                                <button
-                                onClick={() => removeFile(index)}
-                                className="hover:bg-white rounded-full p-1"
-                                >
-                                    <X className="size-4" />
-                                </button>
-                            </div>
-                            ))}
-                        </div>
-                    )}
-                    <PromptInputTextarea
-                        placeholder={animatedPlaceholder}
-                        className="z-10 dark:text-white min-h-[44px] max-sm:min-h-24 pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
-                        onKeyDown={handleKeyDown}
+            <div className="relative z-[100] w-full">
+                <PromptInputProvider key={`${submitKey}-${initialInputKey}`} initialInput={search}>
+                    <SyncSearchFromInput setSearch={setSearch} setActiveCategory={setActiveCategory} />
+                    <PromptTemplateInput
+                        animatedPlaceholder={animatedPlaceholder}
+                        isLoading={isLoading}
+                        canSubmit={!!search.trim()}
+                        onSend={handleSend}
                     />
-                    <PromptInputFooter className="mt-5 flex w-full items-end justify-between gap-2 px-3 pb-3 max-sm:mt-0 max-sm:w-auto max-sm:shrink-0 max-sm:py-2 max-sm:px-2">
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <div className="flex h-8 w-8 cursor-not-allowed items-center justify-start rounded-2xl opacity-50">
-                                    <Paperclip className="size-5" />
-                                </div>
-                            </TooltipTrigger>
-                            <TooltipContent className="bg-lightSecondary text-white">Coming soon</TooltipContent>
-                        </Tooltip>
-                        <div className="flex flex-row gap-2">
-                            <TooltipProvider delayDuration={ 0 }>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <div className="p-2 cursor-not-allowed opacity-50">
-                                            <MicIcon className="size-5" />
-                                        </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent className="bg-lightSecondary text-white">Coming soon</TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                            <PromptInputSubmit
-                                status={isLoading ? "submitted" : "ready"}
-                                disabled={!search.trim()}
-                                className="h-9 w-9 bg-lightSecondary text-white rounded-full [&_svg]:text-white"
-                            />
-                        </div>
-                    </PromptInputFooter>
-                </PromptInput>
-            </PromptInputProvider>
-
-            <FileUploadContent>
-                <div className="flex min-h-[200px] w-full items-center justify-center backdrop-blur-xs">
-                <div className="bg-background/90 m-4 w-full max-w-md rounded-lg border p-8 shadow-lg">
-                    <div className="mb-4 flex justify-center">
-                    <svg
-                        className="text-muted size-8"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
-                        />
-                    </svg>
-                    </div>
-                    <h3 className="mb-2 text-center text-base font-medium">
-                    Drop files to upload
-                    </h3>
-                    <p className="text-muted-foreground text-center text-sm">
-                    Release to add files to your message
-                    </p>
-                </div>
-                </div>
-            </FileUploadContent>
-        </FileUpload>
+                </PromptInputProvider>
+            </div>
             <div className="flex w-full flex-col items-center justify-center space-y-2">
                 <div className="mb-3 w-full flex flex-wrap justify-center gap-3 block md:hidden">
                   {quickTriggerSuggestionChips.map((label) => (

@@ -71,7 +71,7 @@
     "@types/mdx": "^2.0.13",
     "@vercel/analytics": "^1.5.0",
     "@vercel/otel": "^2.1.0",
-    "ai": "^6.0.91",
+    "ai": "^6.0.106",
     "aos": "^2.3.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
