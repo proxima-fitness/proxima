@@ -207,6 +207,8 @@ export type HevyCsvRow = {
     duration_seconds: number | null;
     rpe: number | null;
     custom_metric: number | null;
+    actual_rpe: number | null;
+    actual_weight: number | null;
 };
 
 /** Data-only columns for CSV (no week/day). Order used for header and data rows. */
@@ -225,7 +227,15 @@ const HEVY_CSV_DATA_COLUMNS: (keyof Omit<HevyCsvRow, "week" | "day">)[] = [
     "duration_seconds",
     "rpe",
     "custom_metric",
+    "actual_rpe",
+    "actual_weight",
 ];
+
+/** Human-readable header labels for CSV export. Keys not present use the column key. */
+const HEVY_CSV_HEADER_LABELS: Partial<Record<(typeof HEVY_CSV_DATA_COLUMNS)[number], string>> = {
+    actual_rpe: "Actual RPE",
+    actual_weight: "Actual Weight",
+};
 
 /** Returns true when all sets share the same rep metric value, type, weight_kg, and RPE (aligned with HevyExerciseVisualizer). */
 function canCollapseExerciseSets(sets: THevySets[]): boolean {
@@ -278,6 +288,8 @@ export const hevyRoutinesToCsvRows = (routines: THevyRoutine[]): HevyCsvRow[] =>
                     duration_seconds: set.duration_seconds ?? null,
                     rpe: set.rpe ?? null,
                     custom_metric: set.custom_metric ?? null,
+                    actual_rpe: null,
+                    actual_weight: null,
                 });
             } else {
                 for (const set of sets) {
@@ -298,6 +310,8 @@ export const hevyRoutinesToCsvRows = (routines: THevyRoutine[]): HevyCsvRow[] =>
                         duration_seconds: set.duration_seconds ?? null,
                         rpe: set.rpe ?? null,
                         custom_metric: set.custom_metric ?? null,
+                        actual_rpe: null,
+                        actual_weight: null,
                     });
                 }
             }
@@ -353,7 +367,9 @@ export function hevyRoutinesToCsvWithWeekAndDayTitles(routines: THevyRoutine[]):
             const dayTitleRow = emptyRow(numCols);
             dayTitleRow[0] = `Day ${day}`;
             csvRows.push(dayTitleRow);
-            csvRows.push(HEVY_CSV_DATA_COLUMNS.slice());
+            csvRows.push(
+                HEVY_CSV_DATA_COLUMNS.map((key) => HEVY_CSV_HEADER_LABELS[key] ?? key)
+            );
             for (const row of dayRows) {
                 csvRows.push(rowToDataCells(row));
             }
