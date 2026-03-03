@@ -1,6 +1,22 @@
+/**
+ * @module api/users
+ *
+ * User profile data access layer. Provides lookups for user metadata (name,
+ * username, bio), full-name resolution (from either a user ID or a program ID),
+ * and a batch endpoint for fetching multiple users' names and profile pictures
+ * in a single request with PII-safe guards.
+ *
+ * Depends on: ./index (supabase client)
+ * Used by: hooks.ts, program detail pages, community leaderboards
+ */
 import { supabase } from ".";
 
-
+/**
+ * Resolves the `user_id` of the user who created a given program.
+ *
+ * @param program_id - The program's ID (string)
+ * @returns The creator's user UUID, or undefined on error
+ */
 export const getOpUserId = async (program_id: string) => {
     try {
         const { data: userId, error: userIdError } = await supabase.
@@ -17,7 +33,15 @@ export const getOpUserId = async (program_id: string) => {
         console.error("Error fetching program creator user id",error);
     }
 };
-// Gets the users full name
+/**
+ * Resolves a user's full name ("First Last") from either a user UUID or a
+ * program ID. When given a program ID, first looks up the program's `user_id`
+ * then fetches the name. Falls back to "Anonymous" if data is missing.
+ *
+ * @param id - A user UUID or numeric/string program ID
+ * @param id_type - Whether `id` refers to a "program" or a "user"
+ * @returns The full name string, or "Anonymous"
+ */
 export const getUserFullName = async (id: string | number | undefined, id_type: "program" | "user") => {
     if (id_type === "program") {
         try {
@@ -91,7 +115,13 @@ export const getUserFullName = async (id: string | number | undefined, id_type: 
     return "Anonymous";
 };
 
-// GETS ALL USER METADATA
+/**
+ * Fetches a user's public profile metadata: first name, last name, username,
+ * bio, and account creation date.
+ *
+ * @param id - The user's UUID
+ * @returns The user's metadata as a TUserDetails object, or undefined on error
+ */
 export const getUserMetaData = async (id: string) => {
     try {
         const { data: metaData, error: metaDataError } = await supabase.

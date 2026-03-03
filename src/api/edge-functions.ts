@@ -1,3 +1,19 @@
+/**
+ * @module api/edge-functions
+ *
+ * Client-side wrappers for Supabase Edge Functions that power Proxima's AI
+ * features. Each function constructs a fetch request to a specific edge-function
+ * endpoint, authenticates with the anon key, and returns the parsed response.
+ *
+ * Capabilities include:
+ * - Streaming chat completions (`postChatPrompt`)
+ * - Structured text-to-JSON extraction for workout data (`postTextToJson`)
+ * - Image-to-text and speech-to-text transcription
+ * - NSFW image detection for user-uploaded content
+ *
+ * Depends on: ./index (supabaseUrl, supabaseKey)
+ * Used by: program-builder Agent/Chat, image upload flows, moderation pipeline
+ */
 import { supabaseKey, supabaseUrl } from ".";
 // import { emptyHevyRoutineProgram } from "@/assets/constants";
 // import { aiRequest, buildPrompt } from "@/components/program-builder/utils";
@@ -26,7 +42,16 @@ const speech_to_text = "/functions/v1/speech-to-text";
 const chat = "/functions/v1/chat";
 const nsfw_image_detection = "/functions/v1/nsfw-image-detection";
 
-// Takes in a Prompt and returns a Stream Chat Response
+/**
+ * Sends a prompt to the `chat` edge function and streams the response
+ * chunk-by-chunk via a callback.
+ *
+ * Uses the ReadableStream API so callers can render tokens incrementally
+ * (e.g. in the program-builder chat UI).
+ *
+ * @param prompt - The user/system prompt to send
+ * @param onChunk - Callback invoked with each decoded text chunk as it arrives
+ */
 export const postChatPrompt = async (prompt: string, onChunk: (chunk: string) => void ): Promise<void> => {
 
     const url = supabaseUrl + chat;
@@ -70,7 +95,17 @@ export const postChatPrompt = async (prompt: string, onChunk: (chunk: string) =>
     }
 };
 
-// Text to JSON Edge function, can create workout_history, save_workout_schema, program_details_schema
+/**
+ * Calls the `text-to-json` edge function to convert natural-language text into
+ * a structured JSON object conforming to a given schema.
+ *
+ * Used during program building to parse user descriptions into workout_history,
+ * save_workout_schema, or program_details_schema structures.
+ *
+ * @param query - The natural-language input text
+ * @param schemaType - Which JSON schema the edge function should target
+ * @returns `{ success, data }` on success or `{ success: false, error }` on failure
+ */
 export const postTextToJson = async (query: string, schemaType: TTextToJsonSchema) => {
 
     const url = supabaseUrl + text_to_json;
@@ -101,7 +136,12 @@ export const postTextToJson = async (query: string, schemaType: TTextToJsonSchem
 };
 
 
-// Image to Text Edge function
+/**
+ * Sends an image URL to the `image-to-text` edge function for OCR / description.
+ *
+ * @param imageUrl - Publicly accessible URL of the image to analyze
+ * @returns The extracted text/description string, or undefined on error
+ */
 export const postImageToText = async (imageUrl: string) => {
 
     const url = supabaseUrl + image_to_text;
@@ -128,7 +168,13 @@ export const postImageToText = async (imageUrl: string) => {
     }
 };
 
-// Speech to Text Edge function,
+/**
+ * Sends base64-encoded audio to the `speech-to-text` edge function for
+ * transcription.
+ *
+ * @param base64Audio - The audio data encoded as a base64 string
+ * @returns The transcribed text string, or undefined on error
+ */
 export const postSpeechToText = async (base64Audio: string) => {
 
     const url = supabaseUrl + speech_to_text;
@@ -155,7 +201,13 @@ export const postSpeechToText = async (base64Audio: string) => {
     }
 };
 
-// NSFW Image Detection
+/**
+ * Sends an image URL to the `nsfw-image-detection` edge function for
+ * content-safety classification.
+ *
+ * @param imageUrl - Publicly accessible URL of the image to check
+ * @returns Classification result object from the edge function, or undefined on error
+ */
 export const postNsfwImageDetection = async (imageUrl: string) => {
 
     const url = supabaseUrl + nsfw_image_detection;

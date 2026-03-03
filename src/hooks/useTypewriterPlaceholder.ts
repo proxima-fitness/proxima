@@ -1,9 +1,23 @@
 "use client"
 
+/**
+ * @module useTypewriterPlaceholder
+ *
+ * Provides a typewriter-style animated placeholder string for the AI chat
+ * input field. Cycles through a set of example prompts, typing them out
+ * character-by-character and then deleting them to reveal the next option,
+ * giving users inspiration for what to ask the "Andy" AI agent.
+ *
+ * Depends on: React (useState, useEffect, useRef)
+ * Used by: Chat input / PromptTemplate components in the program-builder flow
+ */
+
 import { useState, useEffect, useRef } from "react"
 
+/** Static prefix shown before the animated portion of the placeholder. */
 const STATIC_PREFIX = "Ask Andy to "
 
+/** Example prompts the typewriter cycles through — order determines display sequence. */
 const PROMPT_OPTIONS = [
     "build a 3-day full body routine",
     "build a training plan for Hyrox",
@@ -13,17 +27,35 @@ const PROMPT_OPTIONS = [
     "build a home gym workout plan",
 ];
 
+/** Current phase of the typewriter animation cycle. */
 type AnimationState = "typing" | "pausing" | "deleting"
 
+/** Tuning knobs for the typewriter animation timing and behaviour. */
 interface IUseTypewriterPlaceholderOptions {
-  typingSpeed?: number // milliseconds per character
-  deletingSpeed?: number // milliseconds per character
-  pauseAfterTyping?: number // milliseconds to pause after completing an option
-  pauseAfterDeleting?: number // milliseconds to pause after deleting an option
-  enabled?: boolean // whether animation is enabled
-  showPrefix?: boolean // whether to show "Ask Andy to" prefix
+  /** Delay between each character being typed (ms). */
+  typingSpeed?: number
+  /** Delay between each character being deleted (ms). */
+  deletingSpeed?: number
+  /** How long to hold the fully-typed prompt before deleting begins (ms). */
+  pauseAfterTyping?: number
+  /** How long to wait after full deletion before typing the next prompt (ms). */
+  pauseAfterDeleting?: number
+  /** Master toggle — when `false`, resets to a static fallback placeholder. */
+  enabled?: boolean
+  /** Whether to prepend the "Ask Andy to " prefix to the placeholder string. */
+  showPrefix?: boolean
 }
 
+/**
+ * Returns an animated placeholder string that types and deletes example
+ * prompts in a loop, giving the user visual cues about what they can ask.
+ *
+ * The animation runs entirely via `setTimeout` chains managed in a single
+ * `useEffect`, so it cleans up correctly on unmount or when `enabled` toggles off.
+ *
+ * @param options - Timing, prefix, and enabled controls (all optional with sensible defaults).
+ * @returns A placeholder string suitable for an `<input>` or `<textarea>` element.
+ */
 export function useTypewriterPlaceholder({
   typingSpeed = 50,
   deletingSpeed = 30,

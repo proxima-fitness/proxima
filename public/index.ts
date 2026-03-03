@@ -1,3 +1,14 @@
+/**
+ * @module PublicAssets
+ *
+ * Central barrel-export file for all static assets in the /public directory.
+ * Provides a single import point so components can reference logos, icons,
+ * social media badges, app screenshots, and other imagery without
+ * hard-coding relative paths to individual SVG/PNG/JPG files.
+ *
+ * Depends on: Static asset files in /public (SVG, PNG, JPG)
+ * Used by: UI components across the landing page (Navbar, Hero, Footer, etc.)
+ */
 import add from "./add.svg";
 import apple from "./apple.svg";
 import proxima_logo from "./proxima_logo_blue-04.svg";

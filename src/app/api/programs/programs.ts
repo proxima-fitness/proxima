@@ -1,3 +1,13 @@
+/**
+ * @module programs (client helper)
+ *
+ * Client-side helper for creating (persisting) a workout program via the
+ * /api/programs POST route. Packages the Hevy routines, original prompt,
+ * and builder request parameters and sends them to the server.
+ *
+ * Depends on: /api/programs/route.ts (server-side handler)
+ * Used by: Program-builder UI after a program is finalised
+ */
 
 type TTextToJsonRequest = {
     programTitle?: string;
@@ -9,6 +19,16 @@ type TTextToJsonRequest = {
     explore?: string;
 };
 
+/**
+ * Persists a newly generated workout program by sending it to the server.
+ *
+ * @param id - Unique identifier for the program (typically a UUID).
+ * @param hevyRoutines - The complete array of Hevy routines that make up the program.
+ * @param prompt - The original user prompt that triggered program generation.
+ * @param request - Additional builder parameters (title, equipment prefs, etc.).
+ * @returns The created `TProgram` record as returned by the server.
+ * @throws Re-throws on network or server errors after logging.
+ */
 export const createProgram = async (
     id: string,
     hevyRoutines: THevyRoutine[],

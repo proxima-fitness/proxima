@@ -1,4 +1,22 @@
-// USE OF REACT QUERY IS STRICTLY CLIENT-SIDE, USE SUPABASE SSR FOR SERVER SIDE
+/**
+ * @module api/hooks
+ *
+ * React Query hooks that wrap every Supabase and Hevy API call used on the
+ * client. Each hook declares a stable `queryKey`, enables/disables itself based
+ * on prerequisite data (e.g. `enabled: !!user`), and returns standard React
+ * Query result objects.
+ *
+ * The file also contains "SSR hooks" — async functions named `use*SSR` that
+ * are called directly in server components / `getServerSideProps` to prefetch
+ * data without React Query.
+ *
+ * NOTE: React Query is strictly client-side. For server-side data fetching,
+ * use the SSR functions at the bottom of this file.
+ *
+ * Depends on: @tanstack/react-query, ./blog, ./programs, ./users, ./storage,
+ *             ./featureLimits, ../components/program-builder/api/hevy
+ * Used by: virtually every page and component that renders dynamic data
+ */
 import { useQuery } from "@tanstack/react-query";
 import { getBlogById, getBlogs } from "./blog";
 import { getCommunityAiPrograms, getCommunityAiProgramsPaginated, getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID, getSubscribedPrograms } from "./programs";
@@ -8,11 +26,16 @@ import { getHevyApiKey, getHevyCustomExercises, getHevyExercises, getHevyProgram
 import { getMyFeatureLimits } from "./featureLimits";
 import { User } from "@supabase/supabase-js";
 
-/*********************************/
-/** CLIENT SIDE RENDERED HOOKS **/
-/*********************************/
+/* ================================
+   CLIENT-SIDE RENDERED HOOKS
+   ================================ */
 
-// FETCHES THE HEVY PROGRAMS
+/**
+ * Fetches the user's saved programs from the Hevy integration.
+ *
+ * @param user - The authenticated Supabase user (query disabled when null)
+ * @param hevyApiKey - The user's Hevy API key (query disabled when empty)
+ */
 export const useHevyPrograms = (user: User | undefined | null, hevyApiKey: string) => {
     return useQuery({
         queryKey: ["hevy-programs"],
@@ -20,7 +43,12 @@ export const useHevyPrograms = (user: User | undefined | null, hevyApiKey: strin
         enabled: !!user && !!hevyApiKey,
     });
 };
-// FETCHES THE HEVY ROUTINES
+/**
+ * Fetches the user's workout routines from the Hevy integration.
+ *
+ * @param user - The authenticated Supabase user
+ * @param hevyApiKey - The user's Hevy API key
+ */
 export const useHevyRoutines = (user: User | undefined | null, hevyApiKey: string) => {
     return useQuery({
         queryKey: ["hevy-routines"],
@@ -29,7 +57,12 @@ export const useHevyRoutines = (user: User | undefined | null, hevyApiKey: strin
     });
 };
 
-// FETCHES THE HEVY CUSTOM EXERCISES
+/**
+ * Fetches the user's custom exercises from the Hevy integration.
+ *
+ * @param user - The authenticated Supabase user
+ * @param hevyApiKey - The user's Hevy API key
+ */
 export const useHevyCustomExercises = (user: User | undefined | null, hevyApiKey: string) => {
     return useQuery({
         queryKey: ["hevy-custom-exercises"],
@@ -38,7 +71,12 @@ export const useHevyCustomExercises = (user: User | undefined | null, hevyApiKey
     });
 };
 
-// GET ALL BLOGS
+/**
+ * Fetches a paginated list of blog posts.
+ *
+ * @param limit - Maximum number of posts to fetch
+ * @param offset - Pagination offset
+ */
 export const useBlogs = (limit: number, offset: number) => {
     return useQuery({
         queryKey: [ 'blogs', limit, offset ],
@@ -46,7 +84,12 @@ export const useBlogs = (limit: number, offset: number) => {
     });
 };
 
-// FETCHES THE FULL NAME OF A USER BY ID
+/**
+ * Resolves a user's full name from either a user ID or a program ID.
+ *
+ * @param id - A user UUID or numeric program ID
+ * @param id_type - Whether `id` refers to a "program" or a "user"
+ */
 export const useUserFullName = (id: string | number | undefined, id_type: "program" | "user") => {
     return useQuery({
         queryKey: ["full-name", id, id_type],
@@ -55,14 +98,26 @@ export const useUserFullName = (id: string | number | undefined, id_type: "progr
     });
 };
 
-// FETCHES THE PROGRAM NAMES DISPLAYED ON THE EXPLORE PAGE
+/**
+ * Fetches explore-page programs with optional filters and pagination.
+ *
+ * @param filters - Optional filter criteria (equipment, specialization, etc.)
+ * @param limit - Maximum number of programs to return
+ * @param offset - Pagination offset
+ */
 export const useExplorePagePrograms = (filters?: TProgramFilters, limit?: number, offset?: number) => {
     return useQuery({
         queryKey: ['explore-page-programs', filters, offset],
         queryFn: () => getExplorePagePrograms(filters, limit, offset),
     });
 };
-// FETCHES THE PROGRAM NAMES DISPLAYED ON THE PROGRAMS PAGE WITH THUMBNAILS
+/**
+ * Fetches programs for the programs page, including thumbnails.
+ *
+ * @param limit - Optional cap on the number of programs returned
+ * @param is_coach - When true, only coach-created programs are returned
+ * @param options - Additional query options (e.g. `enabled`)
+ */
 export const usePrograms = (limit?: number, is_coach?: boolean, options?: { enabled?: boolean }) => {
     return useQuery({
         queryKey: ['programs', is_coach],
@@ -71,7 +126,11 @@ export const usePrograms = (limit?: number, is_coach?: boolean, options?: { enab
     });
 };
 
-// FETCHES USER'S SUBSCRIBED/SAVED PROGRAMS
+/**
+ * Fetches the authenticated user's subscribed/saved programs.
+ *
+ * @param user - The Supabase auth user (query disabled when null)
+ */
 export const useSubscribedPrograms = (user: User | undefined | null) => {
     return useQuery({
         queryKey: ['subscribed-programs', user?.id],
@@ -80,6 +139,10 @@ export const useSubscribedPrograms = (user: User | undefined | null) => {
     });
 };
 
+/**
+ * Calls the internal `/api/hevy/exercise-history` route to retrieve exercise
+ * stall/plateau analysis data for all exercises.
+ */
 async function fetchExerciseStallsData(): Promise<TExerciseStallResult[]> {
     const res = await fetch("/api/hevy/exercise-history", {
         method: "POST",
@@ -125,6 +188,9 @@ export const useExerciseStallsAnalysis = (user: User | undefined | null) => {
 //     });
 // };
 
+/**
+ * Fetches all unique community-shared AI-generated programs (de-duplicated by prompt).
+ */
 export const useCommunityAiPrograms = () => {
     return useQuery({
         queryKey: ['community-ai-programs'],
@@ -132,6 +198,12 @@ export const useCommunityAiPrograms = () => {
     });
 };
 
+/**
+ * Paginated variant of community AI programs, sorted by save count.
+ *
+ * @param limit - Page size (default 20)
+ * @param offset - Pagination offset (default 0)
+ */
 export const useCommunityAiProgramsPaginated = (limit: number = 20, offset: number = 0) => {
     return useQuery({
         queryKey: ['community-ai-programs-paginated', limit, offset],
@@ -139,7 +211,11 @@ export const useCommunityAiProgramsPaginated = (limit: number = 20, offset: numb
     });
 };
 
-// FETCHES THE USER METADATA BY AN ID
+/**
+ * Fetches a user's public metadata (name, username, bio) by their UUID.
+ *
+ * @param id - The user's UUID
+ */
 export const useUserMetadata = (id: string) => {
     return useQuery({
         queryKey: ['user-metadata', id],
@@ -148,7 +224,11 @@ export const useUserMetadata = (id: string) => {
     });
 };
 
-// FETCHES A PROGRAM BY PROGRAM ID
+/**
+ * Fetches a single program's metadata by its numeric ID.
+ *
+ * @param program_id - The program's primary key
+ */
 export const useProgramById = (program_id: number) => {
     return useQuery({
         queryKey: ['program', program_id],
@@ -157,7 +237,11 @@ export const useProgramById = (program_id: number) => {
     });
 };
 
-// FETCHES A PROGRAM THUMBNAIL BY ID
+/**
+ * Fetches a program's thumbnail image blob by program ID.
+ *
+ * @param id - The program's primary key
+ */
 export const useProgramThumbnail = (id: number) => {
     return useQuery({
         queryKey: ["program-thumbnail", id],
@@ -166,7 +250,11 @@ export const useProgramThumbnail = (id: number) => {
     });
 };
 
-// FETCHES A PROFILE PICTURE BY ID
+/**
+ * Fetches a user's profile picture blob by their UUID.
+ *
+ * @param id - The user's UUID
+ */
 export const useProfilePictureByID = (id: string) => {
     return useQuery({
         queryKey: ["profile-picture", id],
@@ -175,7 +263,13 @@ export const useProfilePictureByID = (id: string) => {
     });
 };
 
-// FETCHES USER DATA FOR MULTIPLE USERS IN BATCH
+/**
+ * Batch-fetches public user data (name + profile picture) for multiple user IDs.
+ * De-duplicates and sorts IDs to produce a stable query key, and caches results
+ * for 5 minutes to reduce redundant requests.
+ *
+ * @param userIds - Array of user UUIDs to look up
+ */
 export const useUsersBatch = (userIds: string[]) => {
     // Remove duplicates and filter out invalid IDs
     const uniqueUserIds = Array.from(new Set(userIds.filter(id => id && id.length > 0)));
@@ -190,7 +284,9 @@ export const useUsersBatch = (userIds: string[]) => {
     });
 };
 
-// FETCH EXERCISES FROM THE HEVY APP
+/**
+ * Fetches the global exercise library from the Hevy API.
+ */
 export const useHevyExercises = () => {
     return useQuery({
         queryKey: ["hevy-exercises"],
@@ -198,7 +294,14 @@ export const useHevyExercises = () => {
     });
 };
 
-// FETCHES EITHER A GIF OR IMG AT A PARTICULAR RESOLUTION FROM STORAGE BUCKET FOR AN EXERCISE
+/**
+ * Fetches an exercise animation (GIF) or still image at the requested resolution.
+ *
+ * @param gif_id - Unique identifier for the exercise media asset
+ * @param resolution - Pixel width of the requested media ("180" or "360")
+ * @param file_type - Whether to fetch a GIF animation or a JPG still
+ * @param exercise_name - Used as part of the query key for cache isolation
+ */
 export const useExerciseGif = (gif_id: string | undefined, resolution: "180" | "360", file_type: "gif" | "jpg", exercise_name: string) => {
     return useQuery({
         queryKey: [ "exercise-gif", exercise_name, gif_id, resolution, file_type ],
@@ -207,7 +310,11 @@ export const useExerciseGif = (gif_id: string | undefined, resolution: "180" | "
     });
 };
 
-// FETCHES THE HEVY API KEY FOR A USER
+/**
+ * Fetches the authenticated user's Hevy API key from secure storage.
+ *
+ * @param user - The Supabase auth user (query disabled when null)
+ */
 export const useHevySecret = (user: User | undefined | null) => {
     return useQuery({
         queryKey: ["hevy_api_key"],
@@ -216,7 +323,12 @@ export const useHevySecret = (user: User | undefined | null) => {
     });
 };
 
-// FETCHES THE CURRENT USER'S FEATURE LIMITS (or anonymous localStorage limits when not logged in)
+/**
+ * Fetches the current user's feature limits (export cap, LLM request cap),
+ * falling back to anonymous localStorage limits when not logged in.
+ *
+ * @param user - The Supabase auth user, or null for anonymous access
+ */
 export const useMyFeatureLimits = (user: User | undefined | null) => {
     return useQuery({
         queryKey: ["feature-limits", user?.id],
@@ -225,11 +337,17 @@ export const useMyFeatureLimits = (user: User | undefined | null) => {
 };
 
 
-/*********************************/
-/** SERVER SIDE RENDERED HOOKS **/
-/*********************************/
+/* ================================
+   SERVER-SIDE RENDERED HOOKS
+   ================================ */
 
-// FETCHES A PROGRAM BY PROGRAM ID USING SSR
+/**
+ * Server-side prefetch of a program and its full schedule, composed into
+ * a `TProgramPage` object for the program detail page.
+ *
+ * @param program_id - The program's primary key
+ * @returns A combined program + schedule object, or undefined if not found
+ */
 export const useProgramByIdSSR = async (program_id: number) => {
 
     const program = await getProgramByID(program_id) ?? [];
@@ -244,17 +362,32 @@ export const useProgramByIdSSR = async (program_id: number) => {
     return programOverview;
 };
 
-// FETCHES THE FULL NAME OF A USER BY ID USING SSR
+/**
+ * Server-side variant of `useUserFullName`. Directly returns the promise.
+ *
+ * @param id - A user UUID or program ID
+ * @param id_type - Whether `id` refers to a "program" or a "user"
+ */
 export const useUserFullNameSSR = (id: string | number, id_type: "program" | "user") => {
     return getUserFullName(id, id_type);
 };
 
-// FETCHES THE USER METADATA BY ID USING SSR
+/**
+ * Server-side variant of `useUserMetadata`. Directly returns the promise.
+ *
+ * @param id - The user's UUID
+ */
 export const useUserMetadataSSR = (id: string) => {
     return getUserMetaData(id);
 };
 
-// FETCHES THE OP USER METADATA BY ID USING SSR
+/**
+ * Server-side fetch of the original poster's metadata for a program.
+ * Resolves the user_id from the program first, then fetches their metadata.
+ *
+ * @param id - The program ID (string) whose creator to look up
+ * @returns The creator's user details, or a default anonymous object
+ */
 export const useOpUserMetadataSSR = async (id: string) => {
     const userId = await getOpUserId(id);
     if (!userId) {
@@ -278,7 +411,12 @@ export const useOpUserMetadataSSR = async (id: string) => {
 //     }
 //     return await getProfilePicByID(userId);
 // };
-// GET BLOG BY ID
+/**
+ * Server-side fetch of a single blog post by its string ID.
+ *
+ * @param id - The blog post ID (converted to number internally)
+ * @returns The blog object cast to TBlog
+ */
 export const useBlogByIdSSR = async (id: string) => {
     const blog = await getBlogById(Number(id));
     if (!blog) {
@@ -287,7 +425,11 @@ export const useBlogByIdSSR = async (id: string) => {
     return blog as unknown as TBlog;
 };
 
-// GET ALL BLOGS USING SSR
+/**
+ * Server-side fetch of all blog posts with resolved cover images.
+ *
+ * @returns An array of blog objects with image URLs
+ */
 export const useBlogsSSR = async () => {
     const blogsWithImage = await getBlogs();
     return blogsWithImage as TBlog[];

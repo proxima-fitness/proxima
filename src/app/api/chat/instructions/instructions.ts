@@ -1,7 +1,24 @@
 /**
- * Title: instructions (System Prompt for Andy the AI Personal Trainer)
- * Description: Instructions for the AI to follow when creating a workout program.
- * @returns { string }
+ * @module chat/instructions
+ *
+ * Builds the system prompt for "Andy", the AI personal trainer agent.
+ * The prompt is dynamically assembled from the user's current program state
+ * and program-builder settings (days per week, program length) so the LLM
+ * knows which tools to call and in what order.
+ *
+ * Depends on: THevyRoutine (global type)
+ * Used by: /api/chat/route.ts (injected as `instructions` into ToolLoopAgent)
+ */
+
+/**
+ * Assembles Andy's system prompt, embedding the user's current Hevy program
+ * and program-builder parameters so the agent has full context for tool usage
+ * and workout generation.
+ *
+ * @param props.hevyProgram - The user's current workout routines (may be empty).
+ * @param props.daysPerWeek - Number of training days per week the user selected.
+ * @param props.programLength - Total program length in weeks.
+ * @returns The complete system prompt string.
  */
 
 interface IProps {

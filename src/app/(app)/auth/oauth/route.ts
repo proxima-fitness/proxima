@@ -1,7 +1,28 @@
+/**
+ * @module auth/oauth
+ *
+ * OAuth callback route for Supabase third-party providers (e.g. Google).
+ * After the provider redirects back with an authorization code, this route
+ * exchanges it for a Supabase session and redirects the user into the app.
+ * Handles both local development (direct origin) and production (behind a
+ * load balancer with X-Forwarded-Host).
+ *
+ * Depends on: @/utils/supabase/server (Supabase SSR client)
+ * Used by: Supabase OAuth provider configuration (redirect URL)
+ */
+
 import { NextResponse } from 'next/server'
 // The client you created from the Server-Side Auth instructions
 import { createClient } from '@/utils/supabase/server'
 
+/**
+ * Exchanges an OAuth authorization code for a Supabase session and redirects
+ * the user to the app. Falls back to an error page if the code is missing or
+ * the exchange fails.
+ *
+ * @param request - Incoming request with `code` and optional `next` query params.
+ * @returns A redirect `Response` to the target page or an auth error page.
+ */
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')

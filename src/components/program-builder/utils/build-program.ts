@@ -1,6 +1,45 @@
+/**
+ * @module program-builder/utils/build-program
+ * DEPRECATED: This module is no longer used.
+ * Core program-construction logic for the AI workout builder. Provides two
+ * active helpers:
+ *
+ *  1. `buildPrompt` — assembles a natural-language prompt string from the
+ *     user's form selections (demographics, goals, equipment, etc.).
+ *  2. `aiRequest` — sends the assembled prompt to the AI edge function,
+ *     selecting the correct JSON schema based on the training-day count.
+ *
+ * The bottom half of the file contains commented-out legacy builders that
+ * expanded a single AI response into a full multi-week program. These are
+ * retained for reference during the ongoing data-model migration.
+ *
+ * Depends on: @/api/edge-functions (postTextToJson), sonner (toast)
+ * Used by: program-builder Agent/Chat, PromptTemplate components
+ */
+
 import { postTextToJson } from "@/api/edge-functions";
 import { toast } from "sonner";
 
+/**
+ * Concatenates non-empty user-preference strings into a single AI prompt.
+ * Each parameter is a pre-formatted sentence fragment produced by the
+ * PromptTemplate component; only non-empty fragments are included.
+ *
+ * @param search - Free-text search/instructions from the user
+ * @param sex - Biological sex context for programming
+ * @param age - Age context for programming
+ * @param activityLevel - Current activity / training frequency
+ * @param goals - Primary fitness goals (e.g. hypertrophy, strength)
+ * @param specialization - Preferred training split or style
+ * @param equipment - Available equipment description
+ * @param focusAreas - Muscle groups to emphasise
+ * @param difficultyLevel - Beginner / intermediate / advanced
+ * @param excludeAreas - Body parts to avoid training
+ * @param workoutDuration - Target session length
+ * @param excludeSpecializations - Training styles to exclude
+ * @param healthIssues - Injuries or health considerations
+ * @returns The fully assembled prompt string ready for the AI edge function
+ */
 export const buildPrompt = (
     search: string, // goes into AI Prompt
     sex: string, // goes into AI Prompt
@@ -63,6 +102,17 @@ export const buildPrompt = (
     return prompt;
 };
 
+/**
+ * Sends the assembled prompt to the AI edge function and returns the
+ * structured workout data. The number of training days determines which
+ * JSON schema is requested and what split-specific suffix is appended to
+ * the prompt (e.g. PPL for 3 or 6 days, upper/lower for 2 or 4).
+ *
+ * @param numberOfDaysPerWeek - How many training days per week (1–7). Defaults to 6 if 0.
+ * @param promptBase - The base prompt assembled by {@link buildPrompt}
+ * @returns Parsed AI response data matching the requested schema, or
+ *          `undefined` if the request fails
+ */
 export const aiRequest = async (numberOfDaysPerWeek: number, promptBase: string) => {
 
     toast.info("Generating Routines. This may take up to a minute...");
@@ -71,34 +121,29 @@ export const aiRequest = async (numberOfDaysPerWeek: number, promptBase: string)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let response: any;
 
+        // Treat 0 as "not specified" — fall back to 6-day PPL as the default split
         if (numberOfDaysPerWeek === 0) {
             numberOfDaysPerWeek = 6;
         }
 
         if (numberOfDaysPerWeek === 1) {
-            // 1 Day per week program
             response = await postTextToJson(promptBase + "Create a workout", "one_day_schema");
 
         } else if (numberOfDaysPerWeek === 2 || numberOfDaysPerWeek === 4) {
-            // An Upper / Lower Program
             response = await postTextToJson(promptBase + "Create two distinct workouts based on the split provided. Otherwise, Upper Lower Split.", "ul_schema");
 
         } else if (numberOfDaysPerWeek === 3 || numberOfDaysPerWeek === 6) {
-            // A Push / Pull / Leg Program
             response = await postTextToJson(promptBase + "Create three distinct workouts based on the split provided. Otherwise, a Push Day, a Pull Day and a Leg Day workout", "ppl_schema");
 
         } else if (numberOfDaysPerWeek === 5) {
-            // Chest / Back / Legs / Shoulders / Arms
             response = await postTextToJson(promptBase + "Create five distinct workouts based on the split provided. Otherwise, Create a Chest Day, a Back Day, a Leg Day workout, a Shoulder Day, and an Arm Day Workout", "ppl_schema");
 
         } else if (numberOfDaysPerWeek === 7) {
-            // Push / Pull / Legs / Cardio
             response = await postTextToJson(promptBase + "Create four distinct workouts based on the split provided. Otherwise, Create a Push Day, a Pull Day, a Leg Day and a Cardio Day workout", "pplc_schema");
 
         }
 
         if (!response?.success) {
-            // Use Fallbacks
             toast.warning("Failed to generate a routine" + response?.error);
         }
 

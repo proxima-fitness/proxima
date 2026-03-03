@@ -1,3 +1,14 @@
+/**
+ * @module style
+ *
+ * Centralised Tailwind CSS class-string constants for typography, spacing,
+ * layout, and flex utilities used across the landing-page UI. Keeps visual
+ * consistency by providing a single set of reusable class compositions
+ * rather than scattering raw Tailwind classes throughout components.
+ *
+ * Depends on: Tailwind CSS (class names resolved at build time)
+ * Used by: Layout components, section wrappers, hero/heading elements
+ */
 
 const styles = {
     boxWidth: "xl:max-w-[1280px] w-full",

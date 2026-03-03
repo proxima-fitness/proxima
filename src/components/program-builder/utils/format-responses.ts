@@ -1,8 +1,33 @@
+/**
+ * @module format-responses
+ *
+ * Converts between the multiple data representations used across the program
+ * builder pipeline. The system juggles three exercise/program schemas:
+ *
+ *   1. **TProgramCreatorDay** – Proxima's legacy internal format (flat reps_type / intensity objects)
+ *   2. **THevyRoutine / THevyExercise / THevySets** – The Hevy API format used for syncing
+ *   3. **TScheduleWorkouts** – The scheduling/display format consumed by the calendar UI
+ *   4. **TAddExercise / THevyAddExercise** – Transient form-state shapes from the "add exercise" dialog
+ *
+ * This module also provides CSV export helpers that flatten Hevy routines into
+ * a spreadsheet-friendly format (using papaparse), and drag-and-drop helpers
+ * that annotate days with `weekOrder` / `id` fields for dnd-kit.
+ *
+ * Depends on: hevy API (getHevyExercises), papaparse, @/utils/general/helpers
+ * Used by: ProgramEditor, DragAndDrop week views, CSV export, Agent chat tool handlers
+ */
+
 import { getHevyExercises } from "@/components/program-builder/api/hevy";
 import { amrapAsNumber } from "@/utils/general/helpers";
 import * as Papa from "papaparse";
 
-// Used to add week order and Id to program days for the drag and drop
+/**
+ * Annotates every day in a 2-D program array with a `weekOrder` (0-indexed week)
+ * and a unique `id` for use as drag-and-drop keys.
+ *
+ * @param program - Weeks × days nested array of program creator days
+ * @returns A new nested array with `weekOrder` and `id` fields appended to each day
+ */
 export const appendWeekOrderAndIdToProgramDays = (program: TProgramCreatorDay[][]) => {
 
     if (!program || program.length === 0) return [];
@@ -18,6 +43,13 @@ export const appendWeekOrderAndIdToProgramDays = (program: TProgramCreatorDay[][
     return updatedProgram;
 };
 
+/**
+ * Assigns sequential 1-based `order` values to routines within each folder (week).
+ * Routines are first sorted by `folder_id` so the ordering is deterministic.
+ *
+ * @param routines - Flat array of Hevy routines (may span multiple weeks/folders)
+ * @returns New array with `order` fields set per-folder group
+ */
 export const appendOrderToHevyRoutines = (routines: THevyRoutine[]): THevyRoutine[] => {
 
     if (!routines || routines.length === 0) return [];
@@ -46,12 +78,26 @@ export const appendOrderToHevyRoutines = (routines: THevyRoutine[]): THevyRoutin
 };
 
 
-// Flattens program into days with weekOrder and dayOrder fields. Will then be sorted with the drag and drop and upon output will be re-constructed into the proxima_program_schema
+/**
+ * Flattens a weeks × days nested array into a single array for drag-and-drop
+ * reordering. The existing `weekOrder` annotations preserve group membership
+ * so the array can later be re-nested via {@link deFlattenProgram}.
+ *
+ * @param program - Annotated 2-D program (output of appendWeekOrderAndIdToProgramDays)
+ * @returns Flat array of program creator days
+ */
 export const flattenProgram = (program: TProgramCreatorDay[][]) => {
     return program.flat();
 };
 
-// Re-orders the day order field on the de-structured proxima program
+/**
+ * Re-numbers the `order` field on a flat list of program days after a
+ * drag-and-drop move. Days are grouped by `weekOrder` and each group
+ * receives sequential 1-based order values.
+ *
+ * @param days - Flat array of days (potentially reordered by drag-and-drop)
+ * @returns Same array with corrected `order` values per week group
+ */
 export const reorder = (days: TProgramCreatorDay[]) => {
 
     const groupedByWeek: Record<number, TProgramCreatorDay[]> = days.reduce((acc, item) => {
@@ -74,7 +120,13 @@ export const reorder = (days: TProgramCreatorDay[]) => {
 };
 
 
-// Re-orders the day order field on the Hevy routine program
+/**
+ * Re-numbers `order` for Hevy routines after drag-and-drop reordering.
+ * Groups by `folder_id` (week) and assigns 1-based sequential order.
+ *
+ * @param routines - Flat array of Hevy routines (potentially reordered)
+ * @returns New array with corrected `order` values per folder group
+ */
 export const reorderHevy = (routines: THevyRoutine[]): THevyRoutine[] => {
     // Group routines by folder_id
     const groupedByFolder: Record<number, THevyRoutine[]> = routines.reduce((acc, item) => {
@@ -94,7 +146,13 @@ export const reorderHevy = (routines: THevyRoutine[]): THevyRoutine[] => {
     return updatedRoutines;
 };
 
-// Sorting by day order not by order in the array
+/**
+ * Sorts Hevy routines by their `order` field within each folder group,
+ * ensuring UI display matches the logical day sequence rather than array insertion order.
+ *
+ * @param routines - Flat array of Hevy routines
+ * @returns New array sorted by folder_id then by order within each folder
+ */
 export const sortHevyByOrder = (routines: THevyRoutine[]): THevyRoutine[] => {
     const groupedByFolder: Record<number, THevyRoutine[]> = routines.reduce((acc, item) => {
         if (!acc[item.folder_id]) acc[item.folder_id] = [];
@@ -110,10 +168,25 @@ export const sortHevyByOrder = (routines: THevyRoutine[]): THevyRoutine[] => {
 };
 
 
+/**
+ * Strips the transient `order` field from each routine before API submission,
+ * since the Hevy API derives ordering from folder position.
+ *
+ * @param routines - Routines with order annotations
+ * @returns Routines without the `order` property
+ */
 export const removeOrderHevy = (routines: THevyRoutine[]): Omit<THevyRoutine, 'order'>[] => {
     return routines?.map(({ order, ...rest }) => rest);
 };
 
+/**
+ * Re-nests a flat array of Hevy routines back into a weeks × days 2-D array.
+ * Groups by `folder_id` (sorted ascending), then sorts days within each group
+ * by their `order` field.
+ *
+ * @param routines - Flat array of Hevy routines
+ * @returns 2-D array where each inner array is one week of routines
+ */
 export const deFlattenHevyRoutine = (routines: THevyRoutine[]): THevyRoutine[][] => {
     return Object.entries(
       routines.reduce<Record<number, THevyRoutine[]>>((acc, routine) => {
@@ -134,6 +207,13 @@ export const deFlattenHevyRoutine = (routines: THevyRoutine[]): THevyRoutine[][]
   };
 
 
+/**
+ * Re-nests a flat array of TProgramCreatorDays into weeks × days structure,
+ * stripping the transient `weekOrder` and `id` fields added for drag-and-drop.
+ *
+ * @param flattenedProgram - Flat array with `weekOrder` annotations
+ * @returns 2-D array grouped by week, sorted by weekOrder then day order
+ */
 export const deFlattenProgram = (flattenedProgram: TProgramCreatorDay[]): TProgramCreatorDay[][] => {
     return Object.entries(
       flattenedProgram.reduce<Record<number, TProgramCreatorDay[]>>((acc, day) => {
@@ -155,7 +235,13 @@ export const deFlattenProgram = (flattenedProgram: TProgramCreatorDay[]): TProgr
   };
 
 
-// Converts TProgramCreatorDay[][] into TScheduleWorkouts[][]
+/**
+ * Converts a full program from TProgramCreatorDay format to TScheduleWorkouts
+ * format, which is consumed by the calendar/schedule UI.
+ *
+ * @param program - Weeks × days nested array in program-creator format
+ * @returns Equivalent structure in schedule-workouts format
+ */
 export const programCreatorDayToScheduleWorkouts = (program: TProgramCreatorDay[][]): TScheduleWorkouts[][] => {
     return program.map((week, weekIndex) =>
         week.map((day) => ({
@@ -179,6 +265,13 @@ export const programCreatorDayToScheduleWorkouts = (program: TProgramCreatorDay[
     );
 };
 
+/**
+ * Calculates the total number of distinct week folders in a set of routines.
+ * Returns 12 (default program length) when the array is empty.
+ *
+ * @param routines - Flat array of Hevy routines
+ * @returns Number of weeks (folder span from min to max folder_id, inclusive)
+ */
 export const getNumberRoutineFolders = (routines: THevyRoutine[]): number => {
     if (routines.length === 0) return 12;
 
@@ -237,7 +330,14 @@ const HEVY_CSV_HEADER_LABELS: Partial<Record<(typeof HEVY_CSV_DATA_COLUMNS)[numb
     actual_weight: "Actual Weight",
 };
 
-/** Returns true when all sets share the same rep metric value, type, weight_kg, and RPE (aligned with HevyExerciseVisualizer). */
+/**
+ * Returns true when all sets in an exercise share identical rep metric, type,
+ * weight, and RPE — meaning they can be collapsed into a single CSV row with
+ * `sets_count > 1`. Mirrors the display logic in HevyExerciseVisualizer.
+ *
+ * @param sets - Array of sets for one exercise
+ * @returns Whether the sets are uniform enough to collapse
+ */
 function canCollapseExerciseSets(sets: THevySets[]): boolean {
     if (sets.length === 0) return false;
     const first = sets[0];
@@ -255,7 +355,14 @@ function canCollapseExerciseSets(sets: THevySets[]): boolean {
     return sameRepMetric && sameType && sameWeight && sameRpe;
 }
 
-/** Flattens THevyRoutine[] into CSV rows. When reps and intensity are the same for all sets in an exercise, emits one row with sets_count = N; otherwise one row per set with sets_count = 1. */
+/**
+ * Flattens an array of Hevy routines into tabular CSV rows. When all sets in
+ * an exercise are identical (same reps, type, weight, RPE), they are collapsed
+ * into a single row with `sets_count = N`; otherwise each set emits its own row.
+ *
+ * @param routines - Flat array of Hevy routines spanning the full program
+ * @returns Array of HevyCsvRow objects ready for serialization
+ */
 export const hevyRoutinesToCsvRows = (routines: THevyRoutine[]): HevyCsvRow[] => {
     const rows: HevyCsvRow[] = [];
     for (const routine of routines) {
@@ -320,6 +427,7 @@ export const hevyRoutinesToCsvRows = (routines: THevyRoutine[]): HevyCsvRow[] =>
     return rows;
 };
 
+/** Converts a single CSV row object into an ordered array of string cell values. */
 function rowToDataCells(row: HevyCsvRow): string[] {
     return HEVY_CSV_DATA_COLUMNS.map((key) => {
         const v = row[key];
@@ -328,11 +436,19 @@ function rowToDataCells(row: HevyCsvRow): string[] {
     });
 }
 
+/** Creates an array of empty strings used as a blank spacer row in CSV output. */
 function emptyRow(length: number): string[] {
     return Array.from({ length }, () => "");
 }
 
-/** Builds full CSV string with "Week N" and "Day N" title rows only (no week/day columns). Repeats data header before each day. */
+/**
+ * Builds a human-readable CSV string with "Week N" / "Day N" section titles.
+ * Rather than having week/day columns, the output uses interleaved title rows
+ * and repeats the data header before each day for readability in spreadsheets.
+ *
+ * @param routines - Flat array of Hevy routines for the full program
+ * @returns Complete CSV string (via papaparse) or empty string if no data
+ */
 export function hevyRoutinesToCsvWithWeekAndDayTitles(routines: THevyRoutine[]): string {
     const rows = hevyRoutinesToCsvRows(routines);
     if (rows.length === 0) return "";
@@ -380,8 +496,20 @@ export function hevyRoutinesToCsvWithWeekAndDayTitles(routines: THevyRoutine[]):
     return Papa.unparse(csvRows);
 }
 
-// Converts TAddExercise type into TProgramCreatorExercise type
+/**
+ * Converts the transient "add exercise" form state (TAddExercise) into the
+ * persistent TProgramCreatorExercise shape stored in the program model.
+ * Resolves the exercise template from the provided list or fetches it from
+ * the Hevy API if not supplied.
+ *
+ * @param addExercise - Form state from the add-exercise dialog
+ * @param hevyExercises - Optional pre-fetched exercise template list (avoids extra API call)
+ * @returns A TProgramCreatorExercise ready for insertion into a program day
+ */
 export const addExerciseToProgramCreatorExerciseConverter = async (addExercise: TAddExercise, hevyExercises?: THevyExerciseTemplate[]) => {
+    // Resolve reps and intensity arrays based on the form's discriminator values,
+    // since the TAddExercise shape stores data in different fields depending on
+    // whether the user chose reps vs range vs time vs AMRAP.
     let addReps = [];
     let addIntensity = [];
     let sets = 0;
@@ -414,7 +542,14 @@ export const addExerciseToProgramCreatorExerciseConverter = async (addExercise: 
 
 };
 
-// Convertes TAddExercise to THevyExercise type
+/**
+ * Converts a Hevy-flavored add-exercise form state (THevyAddExercise) into an
+ * array of THevySets. Maps the rep-type and intensity-type discriminator values
+ * to the correct set fields.
+ *
+ * @param addExercise - Hevy add-exercise form state
+ * @returns Array of THevySets matching the form's set count and prescriptions
+ */
 export const hevyAddExerciseToHevySetsConverter = (addExercise: THevyAddExercise): THevySets[] => {
     const sets: THevySets[] = (addExercise.reps ?? []).map((rep, setIndex) => {
         return {
@@ -432,10 +567,22 @@ export const hevyAddExerciseToHevySetsConverter = (addExercise: THevyAddExercise
     return sets;
 };
 
-// Converts THevyExercise into THevyAddExercise
+/**
+ * Reverse-maps a persisted THevyExercise back into the THevyAddExercise form
+ * state so an existing exercise can be loaded into the edit dialog. Infers
+ * the rep-type and intensity-type discriminators from the first set's values.
+ *
+ * @param exercise - The Hevy exercise to convert
+ * @param customExercises - Optional user-created exercise templates to search
+ * @param hevyExercises - Optional pre-fetched standard exercise templates
+ * @returns A THevyAddExercise suitable for populating the add/edit exercise form
+ * @throws If the exercise_template_id cannot be resolved in any template list
+ */
 export const convertHevyExerciseIntoHevyAddExercise = async (exercise: THevyExercise, customExercises?: THevyExerciseTemplate[], hevyExercises?: THevyExerciseTemplate[]): Promise<THevyAddExercise> => {
 
-    // Determine the repTypeValue based on the first non-zero value in a rep-type field
+    // Infer repTypeValue from the first set: Hevy sets store exactly one non-null
+    // rep-metric field. We check in priority order (distance > duration > custom)
+    // because "reps" is the most common and serves as the default fallback.
     const firstSet = exercise.sets[0];
 
     let repTypeValue: THevyAddExercise["repTypeValue"] = "reps";
@@ -447,7 +594,7 @@ export const convertHevyExerciseIntoHevyAddExercise = async (exercise: THevyExer
       repTypeValue = "custom_metric";
     }
 
-    // Determine intensityValue
+    // Hevy exercises use either absolute weight or RPE for intensity — never both.
     const intensityValue: THevyAddExercise["intensityValue"] =
       firstSet?.weight_kg ?? 0 > 0 ? "weight_kg" : "rpe";
 
@@ -499,7 +646,15 @@ export const convertHevyExerciseIntoHevyAddExercise = async (exercise: THevyExer
 };
 
 
-// Converts TProgramCreatorExercise into TAddExercise type
+/**
+ * Converts a persisted TProgramCreatorExercise back into the TAddExercise form
+ * state for the legacy program-creator edit dialog. Infers the rep-type and
+ * intensity-type discriminator from which sub-fields are populated.
+ *
+ * @param programCreatorExercise - The exercise in program-creator format
+ * @returns A TAddExercise suitable for populating the add/edit exercise form
+ * @throws If the exercise has no hevy_exercise_templates or invalid reps_type/intensity
+ */
 export const convertProgramCreatorExerciseToAddExercise = (programCreatorExercise: TProgramCreatorExercise): TAddExercise => {
 
     if (!programCreatorExercise.hevy_exercise_templates) {

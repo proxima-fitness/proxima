@@ -1,4 +1,17 @@
-// This adapter allow Proxima Programs to be exported as Hevy Routines
+/**
+ * @module hevy_export
+ *
+ * Adapter layer that converts Proxima's internal program/workout data model
+ * into the Hevy routine format required by the Hevy public API. Handles the
+ * mapping of schedule workouts (week × day grids) to flat Hevy routine arrays,
+ * the transformation of Proxima exercise properties (reps, weights, RPE, ranges)
+ * into Hevy set objects, and the conversion between internal routine
+ * representations and the Hevy API request shape.
+ *
+ * Depends on: Proxima types (TScheduleWorkouts, TSavedWorkoutExercise),
+ *             Hevy types (THevyRoutine, THevyRoutineRequest, THevySets)
+ * Used by: hevy.ts (postRoutineProgramToHevyOneFolder, postRoutineProgramToHevy)
+ */
 
 /**
  * Converts Proxima schedule workouts into Hevy routine format.

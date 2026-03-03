@@ -1,13 +1,40 @@
+/**
+ * @module helpers
+ *
+ * General-purpose utilities for the program builder feature. Responsibilities:
+ *
+ * 1. **NLP inference** – Extracts structured parameters (days-per-week, program
+ *    length) from free-text user messages using regex heuristics with an NLP
+ *    fallback (compromise.js).
+ * 2. **Message classification** – Determines whether a chat message is
+ *    "about the program" (fuzzy-matched via Fuse.js) to decide if the current
+ *    Hevy program should be sent as tool context.
+ * 3. **Schema conversion** – Converts between the Proxima schedule format
+ *    (TScheduleWorkouts) and the Hevy routine format (THevyRoutine), including
+ *    set generation with support for reps, ranges, time, RPE, and AMRAP.
+ * 4. **JSON Patch helpers** – Human-readable description of patch operations
+ *    and safe application of AI-generated patches to the live program state
+ *    with undo support (via fast-json-patch).
+ *
+ * Depends on: compromise (NLP), fuse.js (fuzzy), fast-json-patch, sonner (toasts), ai (UIMessage)
+ * Used by: Agent chat (Chat.tsx), ProgramEditor, useChat hooks
+ */
+
 import { UIMessage } from "ai";
 import nlp from "compromise";
 import { applyPatch, compare, validate as validatePatch, type Operation } from "fast-json-patch";
 import Fuse from "fuse.js";
 import { toast } from "sonner";
 
-// Returns the proxima exercise gif_id for a specific hevy exercise using fuzzy matching
 
 
-
+/**
+ * Returns the highest folder_id across all routines, which corresponds to the
+ * last week index in the program. Returns 0 for an empty array.
+ *
+ * @param routines - Flat array of Hevy routines
+ * @returns Maximum folder_id value (0-indexed week number)
+ */
 export const getMaxFolderId = (routines: THevyRoutine[]): number => {
 
     if (routines.length === 0) return 0;
@@ -18,6 +45,15 @@ export const getMaxFolderId = (routines: THevyRoutine[]): number => {
 };
 
 
+/**
+ * Attempts to extract the number of training days per week (1–7) from
+ * free-text user input. Uses a cascade of regex patterns for common phrasings
+ * (e.g. "3x/week", "every day", "couple times") and falls back to compromise
+ * NLP tokenization when regexes fail.
+ *
+ * @param text - Raw user message text
+ * @returns String representation of days-per-week ("1"–"7"), or "" if not found
+ */
 export const inferDaysPerWeek = (text: string) => {
     if (!text) return "";
     // Normalize various hyphen/dash characters to ASCII hyphen
@@ -80,6 +116,14 @@ export const inferDaysPerWeek = (text: string) => {
     return "";
 };
 
+/**
+ * Attempts to extract the program length in weeks (1–52) from free-text user
+ * input. Uses regex patterns for phrasings like "12 weeks", "8-week program",
+ * "for 6 weeks", and falls back to compromise NLP when regexes fail.
+ *
+ * @param text - Raw user message text
+ * @returns String representation of weeks ("1"–"52"), or "" if not found
+ */
 export const inferProgramLength = (text: string) => {
     if (!text) return "";
     // Normalize various hyphen/dash characters to ASCII hyphen
@@ -144,8 +188,11 @@ export const inferProgramLength = (text: string) => {
 };
 
 /**
- * Safely extracts and normalizes text from a chat message payload (e.g. { text: string }).
+ * Safely extracts and normalizes text from a chat message payload.
  * Returns empty string if the message has no string `text` property.
+ *
+ * @param message - Arbitrary message payload (expected shape: `{ text: string }`)
+ * @returns Trimmed, lowercased text content, or "" if extraction fails
  */
 export function getTextFromChatMessage(message: unknown): string {
     if (message == null || typeof message !== "object" || !("text" in message)) return "";
@@ -153,8 +200,11 @@ export function getTextFromChatMessage(message: unknown): string {
     return typeof t === "string" ? t.trim().toLowerCase() : "";
 }
 
+/** Short acknowledgements that should NOT be classified as program-related. */
 const SHORT_ACKS = ["cool", "thanks", "thank you", "ok", "okay", "sure", "nice", "great", "got it", "sounds good"];
+/** Verb stems that signal the user wants to act on the program. */
 const PROGRAM_VERB_NORMALS = new Set(["build", "create", "modify", "change", "generate", "explain"]);
+/** Nouns that indicate program-related discussion. */
 const PROGRAM_NOUN_LOOKUP = ["program", "workout", "routine", "exercise", "exercises"];
 const DAY_1_TO_7_REGEX = /\bday\s*[1-7]\b/;
 
@@ -166,18 +216,41 @@ const SWEAR_WORDS = ["damn", "dammit", "crap", "hell", "sucks", "bs", "bullshit"
 const FUZZY_WORD_THRESHOLD = 0.45;
 const FUZZY_PHRASE_THRESHOLD = 0.5;
 
+/**
+ * Returns true if any token fuzzy-matches any word in the list (via Fuse.js).
+ *
+ * @param tokens - Lowercased tokens from the user's message
+ * @param list - Vocabulary list to match against
+ * @param threshold - Fuse.js distance threshold (0 = exact, 1 = anything)
+ * @returns Whether at least one token matches at least one list entry
+ */
 function anyTokenMatchesList(tokens: string[], list: string[], threshold: number): boolean {
     if (list.length === 0 || tokens.length === 0) return false;
     const fuse = new Fuse(list.map((w) => ({ w })), { keys: ["w"], threshold, includeScore: false });
     return tokens.some((token) => fuse.search(token).length > 0);
 }
 
+/**
+ * Returns true if the full normalized string fuzzy-matches any phrase in the list.
+ *
+ * @param normalized - The entire lowercased, trimmed user message
+ * @param phrases - Multi-word phrases to match against (e.g. "try again")
+ * @param threshold - Fuse.js distance threshold
+ * @returns Whether the message as a whole matches any phrase
+ */
 function fuzzyMatchesPhrase(normalized: string, phrases: string[], threshold: number): boolean {
     if (phrases.length === 0 || !normalized) return false;
     const fuse = new Fuse(phrases.map((p) => ({ p })), { keys: ["p"], threshold, includeScore: false });
     return fuse.search(normalized).length > 0;
 }
 
+/**
+ * Extracts lowercase tokens from a compromise NLP document, falling back to
+ * whitespace split when the NLP pipeline yields no terms.
+ *
+ * @param doc - A compromise document instance
+ * @returns Array of lowercased token strings
+ */
 function getTokensFromDoc(doc: ReturnType<typeof nlp>): string[] {
     const tokens: string[] = [];
     const json = doc.json();
@@ -320,7 +393,7 @@ export const generateHevySets = (exercise: TSavedWorkoutExercise): THevySets[] =
     return sets;
 };
 
-// Type for modifyProgram tool output
+/** Shape of the AI modifyProgram tool's JSON output (patch array or error). */
 interface IModifyProgramOutput {
     patch?: Array<{ op: string; path: string; value?: unknown; from?: string }>;
     error?: string;
@@ -330,6 +403,12 @@ interface IModifyProgramOutput {
 /** Patch operation shape for describePatchOperation */
 export type PatchOperationForDescribe = { op: string; path: string; value?: unknown; from?: string };
 
+/**
+ * Formats a patch operation value for display in human-readable change summaries.
+ *
+ * @param value - The JSON Patch operation value (any type)
+ * @returns A quoted string for strings, stringified primitives, or JSON for objects
+ */
 function formatOpValue(value: unknown): string {
     if (value === undefined || value === null) return "";
     if (typeof value === "string") return `'${value}'`;
@@ -341,21 +420,37 @@ function formatOpValue(value: unknown): string {
     }
 }
 
+/**
+ * Builds a human-readable sentence for a simple field-level patch operation.
+ *
+ * @param opType - JSON Patch verb ("replace", "add", "remove", etc.)
+ * @param fieldName - The field being changed (e.g. "title", "notes")
+ * @param value - Pre-formatted display string for the new value
+ * @returns Human-friendly description like "Set title to 'Push Day'"
+ */
 function formatSimpleFieldOp(opType: string, fieldName: string, value: string): string {
     if (opType === "replace") return `Set ${fieldName} to ${value}`;
     if (opType === "add") return `Add ${fieldName} ${value}`;
     return `${opType} ${fieldName}`;
 }
 
+/**
+ * Parses a JSON Patch path segment as a 1-based display index, or "?" if not numeric.
+ *
+ * @param seg - A single path segment from a JSON Patch path (e.g. "0", "exercises")
+ * @returns 1-based numeric index for display, or "?" when the segment isn't a number
+ */
 function parseSegmentNum(seg: string): number | "?" {
     const n = parseInt(seg, 10);
     return Number.isNaN(n) ? "?" : n + 1;
 }
 
+/** Configuration for rendering set-level property changes in human-readable form. */
 type SetPropConfig =
     | { label: string; suffix?: string; fallback: string }
     | { replaceText: string; fallback: string };
 
+/** Maps THevySets property names to display labels and units for change descriptions. */
 const SET_PROP_DESCRIPTIONS: Record<string, SetPropConfig> = {
     reps: { label: "reps", fallback: "reps" },
     weight: { label: "weight", fallback: "weight" },
@@ -439,7 +534,11 @@ export type TModifyProgramRoutineObjective = {
 /**
  * Groups patch operations by routine index and returns one entry per routine
  * with a summary label and full list of human-readable change descriptions.
- * No cap; no "and X more". When hevyProgram is provided, labels use "Week X Day Y".
+ * When hevyProgram is provided, labels use "Week X Day Y" for clarity.
+ *
+ * @param patch - Array of JSON Patch operations from the AI modifyProgram tool
+ * @param hevyProgram - Optional current program state, used to resolve Week/Day labels
+ * @returns Per-routine summary objects with change counts and human-readable details
  */
 export function getModifyProgramObjectivesByRoutine(
     patch: Array<{ op: string; path: string; value?: unknown; from?: string }> | undefined,
@@ -480,7 +579,15 @@ export function getModifyProgramObjectivesByRoutine(
 /**
  * Collects unapplied modifyProgram tool results from messages, validates and applies
  * patches to the current program, pushes inverse patches to undo, and updates
- * the applied-keys set. Call from useEffect when messages or hevyProgram change.
+ * the applied-keys set. Intended to be called from a useEffect when messages or
+ * hevyProgram change.
+ *
+ * @param messages - Chat message history containing tool-modifyProgram parts
+ * @param hevyProgram - Current program state to apply patches against
+ * @param appliedKeysRef - Mutable set of already-applied patch keys (prevents double-apply)
+ * @param setHevyProgram - State setter to commit the patched program
+ * @param addToUndoStack - Callback to record inverse patches for undo support
+ * @returns true if at least one patch was successfully applied, false otherwise
  */
 export const applyModifyProgramPatchesFromMessages = (messages: UIMessage[], hevyProgram: THevyRoutine[], appliedKeysRef: React.MutableRefObject<Set<string>>, setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>, addToUndoStack: (inversePatch: Operation[]) => void): boolean => {
 

@@ -1,12 +1,25 @@
 /**
- * Fallback Workout Generator
+ * @module fallback-workouts
  *
- * Provides template-based workouts when AI generation fails.
- * Uses standard Hevy exercise IDs for common exercises.
+ * Provides deterministic, template-based workout programs as a safety net
+ * when the AI program generator fails or times out. Each template follows
+ * proven training splits (Push/Pull/Legs, Upper/Lower, Full Body) and
+ * uses hardcoded Hevy exercise template IDs so the routines are immediately
+ * compatible with the Hevy API without exercise-matching.
+ *
+ * The module selects an appropriate split based on the requested number of
+ * training days per week (1–7) and repeats it across the requested program
+ * length in weeks.
+ *
+ * Depends on: THevyRoutine, THevyExercise, THevySets (global types)
+ * Used by: program-builder Agent (when AI generation fails)
  */
 
-// Standard Hevy exercise template IDs for common exercises
-// These are well-known exercises that should exist in most accounts
+/**
+ * Well-known Hevy exercise template IDs for common movements.
+ * These IDs correspond to the default exercise library that ships with every
+ * Hevy account, so they are safe to reference without a network lookup.
+ */
 const EXERCISE_IDS = {
     // Chest
     BENCH_PRESS: 'D04AC939',
@@ -53,7 +66,17 @@ const EXERCISE_IDS = {
     LEG_RAISE: 'C0D1E2F3',
 } as const;
 
-// Helper to create a single set
+/**
+ * Creates a single Hevy set with the given rep/intensity prescription.
+ * Weight is always null because fallback templates are load-agnostic;
+ * the user fills in weights during their session.
+ *
+ * @param type - Set category (normal working set, warmup, dropset, or failure)
+ * @param reps - Target rep count for this set
+ * @param rpe - Rate of perceived exertion target, or null if unspecified
+ * @param index - Zero-based position of this set within the exercise
+ * @returns A fully-formed THevySets object ready for the Hevy API
+ */
 function createSet(type: 'normal' | 'warmup' | 'dropset' | 'failure', reps: number, rpe: number | null = null, index: number): THevySets {
     return {
         index,
@@ -67,7 +90,17 @@ function createSet(type: 'normal' | 'warmup' | 'dropset' | 'failure', reps: numb
     };
 }
 
-// Helper to create an exercise
+/**
+ * Builds a complete THevyExercise from a template ID, display title, and set prescriptions.
+ *
+ * @param exerciseTemplateId - Hevy exercise template ID from EXERCISE_IDS
+ * @param title - Human-readable exercise name shown in the UI
+ * @param index - Zero-based position of this exercise within the workout
+ * @param sets - Array of set prescriptions (type, reps, optional rpe)
+ * @param restSeconds - Rest period between sets in seconds (default "90")
+ * @param notes - Optional coaching cues or notes for the exercise
+ * @returns A THevyExercise ready to embed in a workout routine
+ */
 function createExercise(
     exerciseTemplateId: string,
     title: string,
@@ -87,7 +120,7 @@ function createExercise(
     };
 }
 
-// Template workout definitions
+/** Internal shape for a named workout day before it is converted to a THevyRoutine. */
 type WorkoutTemplate = {
     title: string;
     notes: string;
@@ -312,7 +345,21 @@ const fullBodyDay: WorkoutTemplate = {
     ],
 };
 
-// Get workout split based on number of days
+/**
+ * Selects a training split appropriate for the number of workout days per week.
+ *
+ * Split selection follows common strength-training conventions:
+ * - 1 day  -> Full Body
+ * - 2 days -> Upper / Lower
+ * - 3 days -> Push / Pull / Legs
+ * - 4 days -> Upper A / Lower A / Upper B / Lower B
+ * - 5 days -> Push / Pull / Legs / Upper / Lower
+ * - 6 days -> PPL x 2 (A/B variants)
+ * - 7 days -> PPL x 2 + Full Body
+ *
+ * @param daysPerWeek - Number of training days (1–7)
+ * @returns Ordered array of WorkoutTemplates for one microcycle (week)
+ */
 function getWorkoutSplit(daysPerWeek: number): WorkoutTemplate[] {
     switch (daysPerWeek) {
         case 1:
@@ -344,7 +391,15 @@ function getWorkoutSplit(daysPerWeek: number): WorkoutTemplate[] {
     }
 }
 
-// Convert workout template to THevyRoutine
+/**
+ * Converts a WorkoutTemplate into a fully-formed THevyRoutine with timestamps.
+ *
+ * @param template - The workout template to convert
+ * @param routineId - Unique ID string for this routine
+ * @param folderId - Week number (0-indexed) used as the Hevy folder ID
+ * @param order - Day position within the week (1-indexed string)
+ * @returns A THevyRoutine ready for the Hevy API or local state
+ */
 function templateToRoutine(
     template: WorkoutTemplate,
     routineId: string,
@@ -365,10 +420,16 @@ function templateToRoutine(
 }
 
 /**
- * Generate a fallback workout program
- * @param daysPerWeek - Number of workout days per week (1-7)
- * @param programLength - Number of weeks in the program
- * @returns Array of THevyRoutine representing the full program
+ * Generates a complete multi-week fallback workout program by repeating the
+ * weekly split template across the requested duration. Inputs are clamped
+ * (days: 1–7, weeks: 1–52) so callers don't need to validate.
+ *
+ * Each routine receives a sequential numeric ID (stringified) and is assigned
+ * to a folder (week) and day order matching the split template.
+ *
+ * @param daysPerWeek - Number of workout days per week (clamped to 1–7, default 4)
+ * @param programLength - Number of weeks in the program (clamped to 1–52, default 12)
+ * @returns Flat array of THevyRoutine spanning all weeks, ready for Hevy API or local state
  */
 export function generateFallbackWorkout(daysPerWeek: number = 4, programLength: number = 12): THevyRoutine[] {
     // Clamp days to valid range
@@ -399,7 +460,11 @@ export function generateFallbackWorkout(daysPerWeek: number = 4, programLength: 
 }
 
 /**
- * Generate a single week of fallback workouts (useful for preview)
+ * Generates a single week of fallback workouts, useful for UI previews or
+ * quick validation without committing to a full program length.
+ *
+ * @param daysPerWeek - Number of workout days (clamped to 1–7, default 4)
+ * @returns Array of THevyRoutine for one microcycle (week)
  */
 export function generateFallbackWeek(daysPerWeek: number = 4): THevyRoutine[] {
     return generateFallbackWorkout(daysPerWeek, 1);

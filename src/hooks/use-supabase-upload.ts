@@ -1,7 +1,22 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable react-hooks/preserve-manual-memoization */
+/**
+ * @module use-supabase-upload
+ *
+ * Provides a React hook that combines react-dropzone's drag-and-drop file
+ * selection with Supabase Storage uploads. Handles client-side validation
+ * (MIME type, file size, max count), preview URL generation, and partial
+ * retry logic so that only failed files are re-uploaded on subsequent attempts.
+ *
+ * Depends on: @/api (Supabase client), react-dropzone
+ * Used by: any file-upload UI (e.g. profile photo, exercise video attachments)
+ */
+
 import { supabase } from '@/api'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { type FileError, type FileRejection, useDropzone } from 'react-dropzone'
 
+/** A `File` extended with a local object-URL preview and any validation errors from react-dropzone. */
 interface IFileWithPreview extends File {
   preview?: string
   errors: readonly FileError[]
@@ -48,8 +63,19 @@ type UseSupabaseUploadOptions = {
   upsert?: boolean
 }
 
+/** Convenience type exposing everything returned by {@link useSupabaseUpload}. */
 type UseSupabaseUploadReturn = ReturnType<typeof useSupabaseUpload>
 
+/**
+ * Manages file selection (via drag-and-drop) and upload to a Supabase Storage bucket.
+ *
+ * The hook merges react-dropzone props with upload state, so callers can spread
+ * the returned object directly onto a dropzone container. It tracks per-file
+ * successes and errors, and re-uploads only the failed files when called again.
+ *
+ * @param options - Bucket name, optional path prefix, MIME/size constraints, and Supabase upload flags.
+ * @returns Dropzone props, file list with previews, upload status, and an `onUpload` trigger.
+ */
 const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
   const {
     bucketName,
@@ -66,6 +92,7 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
   const [errors, setErrors] = useState<{ name: string; message: string }[]>([])
   const [successes, setSuccesses] = useState<string[]>([])
 
+  /** True only when every selected file has been uploaded without errors. */
   const isSuccess = useMemo(() => {
     if (errors.length === 0 && successes.length === 0) {
       return false
@@ -76,6 +103,11 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
     return false
   }, [errors.length, successes.length, files.length])
 
+  /**
+   * Dropzone callback: merges newly dropped files into state, attaching
+   * preview URLs and validation errors from react-dropzone. Duplicate
+   * filenames (already in state) are silently ignored.
+   */
   const onDrop = useCallback(
     (acceptedFiles: File[], fileRejections: FileRejection[]) => {
       const validFiles = acceptedFiles
@@ -108,6 +140,11 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
     multiple: maxFiles !== 1,
   })
 
+  /**
+   * Uploads all pending files to Supabase Storage. On retry, only files that
+   * previously errored (plus any not yet uploaded) are sent, enabling partial
+   * failure recovery without re-uploading successes.
+   */
   const onUpload = useCallback(async () => {
     setLoading(true)
 

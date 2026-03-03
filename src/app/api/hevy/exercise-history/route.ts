@@ -1,15 +1,44 @@
+/**
+ * @module hevy/exercise-history
+ *
+ * Fetches per-exercise training history from the Hevy API for the
+ * authenticated user and transforms it into stall-detection results.
+ * Requests are batched with limited concurrency and inter-batch delays to
+ * stay within Hevy's rate limits.
+ *
+ * Depends on: @/utils/supabase/server, @/components/program-builder/api/hevy,
+ *             @/lib/exerciseStallsTransform
+ * Used by: Exercise stalls / progress analysis UI
+ */
+
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { getHevyExerciseHistory } from "@/components/program-builder/api/hevy";
 import { transformHistoryToExercise } from "@/lib/exerciseStallsTransform";
 
+/** Max concurrent Hevy API calls per batch. */
 const CONCURRENCY = 3;
+
+/** Milliseconds to wait between batches to respect Hevy rate limits. */
 const DELAY_MS = 200;
 
+/**
+ * Returns a promise that resolves after `ms` milliseconds.
+ *
+ * @param ms - Delay duration in milliseconds.
+ */
 function delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/**
+ * Fetches Hevy exercise history for the authenticated user, optionally
+ * filtered to a specific set of exercise template IDs. Returns an array
+ * of `TExerciseStallResult` objects with trend and stall data.
+ *
+ * @param request - Request whose JSON body may contain `{ exerciseTemplateIds: string[] }`.
+ * @returns JSON array of `TExerciseStallResult`, or an error response.
+ */
 export async function POST(request: Request) {
     try {
         const supabase = await createClient();

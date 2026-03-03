@@ -1,3 +1,19 @@
+/**
+ * @module api/featureLimits
+ *
+ * Feature-gating and usage-tracking layer that enforces per-tier limits on
+ * exports and LLM requests. Supports three user states:
+ *
+ * 1. **Anonymous** — tracked entirely in localStorage (no account needed).
+ * 2. **Free / Pro** — limits fetched from the `get_my_feature_limits` Supabase
+ *    RPC, with usage incremented via `increment_feature_usage`.
+ * 3. **Test users** — allowlisted emails that can override their tier via
+ *    localStorage for QA purposes.
+ *
+ * Depends on: ./index (supabase client), @supabase/supabase-js (User type)
+ * Used by: hooks.ts (useMyFeatureLimits), program-builder (recordLlmRequest),
+ *          export flows (incrementMonthlyExportsUsed)
+ */
 import { supabase } from ".";
 import { User } from "@supabase/supabase-js";
 
@@ -21,11 +37,22 @@ const TIER_LIMITS: Record<TestTierOverride, { tier: string; has_active_subscript
     pro: { tier: "Pro", has_active_subscription: true, max_monthly_exports: 5, max_monthly_llm_requests: 1000 },
 };
 
+/**
+ * Checks whether the given user's email is in the test-user allowlist.
+ *
+ * @param user - The Supabase auth user, or null/undefined
+ * @returns `true` if the user's email matches an entry in NEXT_PUBLIC_TEST_USER_EMAILS
+ */
 export function isTestUser(user: User | null | undefined): boolean {
     if (!user?.email) return false;
     return TEST_USER_EMAILS.includes(user.email.toLowerCase());
 }
 
+/**
+ * Reads the current test-tier override from localStorage.
+ *
+ * @returns `"free"` or `"pro"` if an override is set, otherwise `null`
+ */
 export function getTestTierOverride(): TestTierOverride | null {
     if (typeof window === "undefined") return null;
     const raw = localStorage.getItem(TEST_TIER_OVERRIDE_KEY);
@@ -43,6 +70,10 @@ export function setTestTierOverride(value: TestTierOverride | null): void {
     }
 }
 
+/**
+ * Builds a TFeatureLimits object for unauthenticated users based on the
+ * remaining LLM request count stored in localStorage.
+ */
 function getAnonymousLimits(): TFeatureLimits {
     if (typeof window === "undefined") {
         return {

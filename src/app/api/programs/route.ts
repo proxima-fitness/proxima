@@ -1,6 +1,24 @@
+/**
+ * @module programs/route
+ *
+ * Server-side API route for creating (persisting) a workout program.
+ * Validates the incoming payload and delegates to `postHevyRoutineProgram`
+ * which writes the program to the database (and optionally to Hevy).
+ *
+ * Depends on: @/components/program-builder/api/hevy (postHevyRoutineProgram)
+ * Used by: programs.ts client helper (createProgram)
+ */
+
 import { NextResponse } from 'next/server';
 import { postHevyRoutineProgram } from '@/components/program-builder/api/hevy';
 
+/**
+ * Creates a new workout program from the provided Hevy routines and metadata.
+ *
+ * @param request - Request whose JSON body contains `hevyRoutines` (THevyRoutine[]),
+ *   `prompt` (string), and optional `request` (program builder parameters).
+ * @returns JSON representation of the created program, or an error response.
+ */
 export async function POST(request: Request) {
     try {
         const body = await request.json();

@@ -1,6 +1,21 @@
+/**
+ * @module auth/signout
+ *
+ * Server-side sign-out API route. Invalidates the current Supabase session
+ * so the user is logged out on both client and server.
+ *
+ * Depends on: @/utils/supabase/server (Supabase SSR client)
+ * Used by: Navbar sign-out button, client-side auth hooks
+ */
+
 import { createClient } from "@/utils/supabase/server"
 import { NextResponse } from "next/server"
 
+/**
+ * Signs out the currently authenticated user by destroying their Supabase session.
+ *
+ * @returns JSON `{ success: true }` on success, or `{ success: false, error }` with status 500.
+ */
 export async function POST() {
     try {
         const supabase = await createClient()

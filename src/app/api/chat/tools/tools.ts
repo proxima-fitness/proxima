@@ -1,3 +1,22 @@
+/**
+ * @module chat/tools
+ *
+ * Defines all Vercel AI SDK tools available to the "Andy" ToolLoopAgent.
+ * Each tool is a `tool()` descriptor with a Zod input schema, an `execute`
+ * handler, and a `toModelOutput` transformer that minimises token usage by
+ * returning only a summary to the LLM while sending full data to the client.
+ *
+ * Tools provided:
+ *  - getExerciseList – fetches and filters available Hevy exercises
+ *  - getMoreInfoQuestions – opens the pre-build questionnaire UI
+ *  - getCurrentProgram – returns the live program state
+ *  - buildRoutine – constructs a single THevyRoutine day
+ *  - modifyProgram – applies RFC 6902 JSON Patch edits to the program
+ *
+ * Depends on: ai, zod, @/components/program-builder/api/hevy, @/assets/constants
+ * Used by: /api/chat/route.ts (passed to ToolLoopAgent)
+ */
+
 import { z } from 'zod';
 import { getHevyExercises } from '@/components/program-builder/api/hevy';
 import { sampleQuestions } from '@/assets/constants';
@@ -11,10 +30,15 @@ interface IProps {
 }
 
 /**
- * Title: getTools
- * Description: Factory function that creates tools with closure access to excludeAreas, excludeEquipment, healthIssues, and hevyProgram.
- * @param params { IGetToolsParams } - Parameters to be captured in closure
- * @returns { Object } - Tools object with getExerciseList, getMoreInfoQuestions, and getCurrentProgram
+ * Factory that creates the complete tool set for the chat agent. Captures
+ * user-specific exclusion filters and the current program in a closure so
+ * each tool can reference them without extra round-trips.
+ *
+ * @param props.excludeAreas - Comma-separated muscle groups to exclude from exercise selection.
+ * @param props.excludeEquipment - Comma-separated equipment types to exclude.
+ * @param props.healthIssues - Comma-separated health considerations for exercise filtering.
+ * @param props.hevyProgram - The user's current Hevy routines (used by getCurrentProgram).
+ * @returns An object mapping tool names to Vercel AI SDK tool descriptors.
  */
 export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyProgram }: IProps = {}) {
     /**

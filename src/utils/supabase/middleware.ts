@@ -1,6 +1,31 @@
+/**
+ * @module supabase/middleware
+ *
+ * Next.js middleware helper that refreshes the Supabase auth session on
+ * every matched request. Reads auth tokens from request cookies, attempts
+ * a token refresh via `getUser()` (with a hard timeout to avoid blocking
+ * Vercel's runtime limit), and copies refreshed cookies back onto the
+ * outgoing response so the browser stays in sync.
+ *
+ * Depends on: @supabase/ssr, next/server
+ * Used by: src/proxy.ts (the Next.js middleware entry-point)
+ */
+
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+/**
+ * Refresh the Supabase auth session for an incoming request.
+ *
+ * Creates a server-side Supabase client wired to the request/response
+ * cookies, calls `getSession()` (local, instant) and conditionally
+ * `getUser()` (network, with a 4 s timeout) to refresh tokens. The
+ * returned response carries updated auth cookies that the browser needs
+ * to stay authenticated.
+ *
+ * @param request - The incoming Next.js middleware request
+ * @returns A NextResponse with refreshed Supabase auth cookies
+ */
 export async function updateSession(request: NextRequest) {
 
     let supabaseResponse = NextResponse.next({

@@ -1,3 +1,19 @@
+/**
+ * @module use-infinite-query
+ *
+ * Provides a type-safe, cursor-based infinite scrolling hook for Supabase
+ * Postgres tables. Uses an external store pattern (via useSyncExternalStore)
+ * rather than React Query, giving fine-grained control over pagination state
+ * while remaining compatible with server-side rendering.
+ *
+ * The hook automatically derives TypeScript row types from the generated
+ * Supabase Database type, so callers get full autocompletion and type
+ * checking on table names, columns, and returned data.
+ *
+ * Depends on: @supabase/supabase-js, @supabase/postgrest-js, ./supabase (generated DB types)
+ * Used by: list/feed views that need "load more" pagination (e.g. exercise library, workout history)
+ */
+
 import { createClient } from '@/utils/supabase/client'
 import { PostgrestQueryBuilder } from '@supabase/postgrest-js'
 import { SupabaseClient } from '@supabase/supabase-js'
@@ -6,13 +22,22 @@ import { Database } from './supabase'
 
 const supabase = createClient()
 
-// The following types are used to make the hook type-safe. It extracts the database type from the supabase client.
+/*
+ * --------------------------------------------------------------------------
+ *  Type-level plumbing: extracts row types from the generated Database type
+ *  so every consumer of useInfiniteQuery gets end-to-end type safety.
+ * --------------------------------------------------------------------------
+ */
+
 type SupabaseClientType = Database
 
-// Utility type to check if the type is any
+/** Resolves to Y when T is `any`, N otherwise. Used to provide a safe fallback. */
 type IfAny<T, Y, N> = 0 extends 1 & T ? Y : N
 
-// Extracts the database type from the supabase client. If the supabase client doesn't have a type, it will fallback properly.
+/**
+ * Extracts the generic database parameter from the Supabase client type.
+ * Falls back to a minimal shape when the client is untyped (`any`).
+ */
 type TDatabase =
   SupabaseClientType extends SupabaseClient<infer U>
     ? IfAny<
@@ -28,40 +53,54 @@ type TDatabase =
       >
     : never
 
-// Change this to the database schema you want to use
+/** The `public` schema of the database — change this if targeting a different schema. */
 type DatabaseSchema = TDatabase['public']
 
-// Extracts the table names from the database type
+/** Union of all table names in the public schema. */
 type SupabaseTableName = keyof DatabaseSchema['Tables']
 
-// Extracts the table definition from the database type
+/** Row type for a given table name. */
 type SupabaseTableData<T extends SupabaseTableName> = DatabaseSchema['Tables'][T]['Row']
 
-// PostgrestQueryBuilder signature: PostgrestQueryBuilder<ClientOptions, Schema, Relation, RelationName>
-// Where Relation extends GenericTable | GenericView
-// We use Record<string, never> for ClientOptions (empty object type, all properties in ClientServerOptions are optional)
-// DatabaseSchema['Tables'][T] is the Relation (table definition)
-// T is the RelationName (table name string)
+/**
+ * Return type of `supabase.from(table).select(...)`, parameterised by table name.
+ *
+ * PostgrestQueryBuilder generic args:
+ *   ClientOptions — Record<string, never> (all fields optional)
+ *   Schema        — DatabaseSchema
+ *   Relation      — the table definition
+ *   RelationName  — the table name string
+ */
 type SupabaseSelectBuilder<T extends SupabaseTableName> = ReturnType<
   PostgrestQueryBuilder<Record<string, never>, DatabaseSchema, DatabaseSchema['Tables'][T], T>['select']
 >
 
-// A function that modifies the query. Can be used to sort, filter, etc. If .range is used, it will be overwritten.
+/**
+ * A transformer applied to the Supabase select builder before execution.
+ * Use it to add filters, ordering, etc. Any `.range()` call will be
+ * overwritten by the pagination logic.
+ */
 type SupabaseQueryHandler<T extends SupabaseTableName> = (
   query: SupabaseSelectBuilder<T>
 ) => SupabaseSelectBuilder<T>
 
+/**
+ * Configuration for {@link useInfiniteQuery}.
+ *
+ * @template T - A Supabase table name from the public schema.
+ */
 interface IUseInfiniteQueryProps<T extends SupabaseTableName> {
-  // The table name to query
+  /** The Supabase table to paginate over. */
   tableName: T
-  // The columns to select, defaults to `*`
+  /** PostgREST column selection string (default `"*"`). */
   columns?: string
-  // The number of items to fetch per page, defaults to `20`
+  /** Number of rows fetched per page (default `20`). */
   pageSize?: number
-  // A function that modifies the query. Can be used to sort, filter, etc. If .range is used, it will be overwritten.
+  /** Optional query modifier for filtering/ordering. `.range()` is appended automatically. */
   trailingQuery?: SupabaseQueryHandler<T>
 }
 
+/** Internal pagination state managed by the external store. */
 interface IStoreState<TData> {
   data: TData[]
   count: number
@@ -74,6 +113,14 @@ interface IStoreState<TData> {
 
 type Listener = () => void
 
+/**
+ * Creates a standalone pagination store that lives outside of React's state
+ * tree. This allows `useSyncExternalStore` to subscribe to it, keeping
+ * renders efficient and SSR-safe (the server snapshot returns `initialState`).
+ *
+ * @param props - Query configuration (table, columns, page size, filters).
+ * @returns An object with `getState`, `subscribe`, `fetchNextPage`, and `initialize`.
+ */
 function createStore<TData extends SupabaseTableData<T>, T extends SupabaseTableName>(
   props: IUseInfiniteQueryProps<T>
 ) {
@@ -100,6 +147,7 @@ function createStore<TData extends SupabaseTableData<T>, T extends SupabaseTable
     notify()
   }
 
+  /** Fetches a single page starting at `skip`. Guards against concurrent or exhausted fetches. */
   const fetchPage = async (skip: number) => {
     if (state.hasInitialFetch && (state.isFetching || state.count <= state.data.length)) return
 
@@ -118,6 +166,7 @@ function createStore<TData extends SupabaseTableData<T>, T extends SupabaseTable
       console.error('An unexpected error occurred:', error)
       setState({ error })
     } else {
+        // Deduplicate by `id` to prevent duplicates when rows shift between pages during concurrent inserts.
         const deduplicatedData = ((newData || []) as TData[]).filter(
             (item) => !state.data.find((old) => (old as Record<string, unknown>).id === (item as Record<string, unknown>).id)
         )
@@ -153,7 +202,7 @@ function createStore<TData extends SupabaseTableData<T>, T extends SupabaseTable
   }
 }
 
-// Empty initial state to avoid hydration errors.
+/** SSR-safe snapshot: useSyncExternalStore returns this on the server to avoid hydration mismatches. */
 const initialState: unknown = {
   data: [],
   count: 0,
@@ -164,6 +213,17 @@ const initialState: unknown = {
   hasInitialFetch: false,
 }
 
+/**
+ * Paginate over a Supabase table with infinite-scroll semantics.
+ *
+ * Manages fetch lifecycle (loading / fetching / success / error), deduplicates
+ * rows by `id`, and exposes a `fetchNextPage` callback for scroll-triggered loading.
+ *
+ * @template TData - The row type for the target table.
+ * @template T     - The table name literal.
+ * @param props - Query configuration (table, columns, page size, optional query modifier).
+ * @returns Paginated data, status flags, and a `fetchNextPage` trigger.
+ */
 function useInfiniteQuery<
   TData extends SupabaseTableData<T>,
   T extends SupabaseTableName = SupabaseTableName,

@@ -1,9 +1,23 @@
+/**
+ * @module api/search
+ *
+ * Program search functionality backed by a Supabase RPC (`search_programs_by_prefix`)
+ * that performs prefix-based text matching against program titles. Results are
+ * enriched with thumbnails before being returned to the caller.
+ *
+ * Depends on: ./index (supabase client), ./programs (getProgramThumbnailByID)
+ * Used by: search bar / explore page search input
+ */
 import { supabase } from ".";
 import { getProgramThumbnailByID } from "./programs";
 
-/***** GET REQUESTS *****/
-
-// GET SEARCH RESULTS FOR PROGRAMS
+/**
+ * Searches for programs whose titles match the given prefix and attaches
+ * a thumbnail blob to each result.
+ *
+ * @param searchQuery - The user-typed search prefix (trimmed before use)
+ * @returns Array of matching programs with thumbnails, or empty array on error
+ */
 export const getProgramsSearchResultsWithThumbnail = async (searchQuery: string) => {
     try {
         const { data: searchResults, error: searchError } = await supabase

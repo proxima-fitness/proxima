@@ -1,9 +1,36 @@
+/**
+ * @module api/programs
+ *
+ * CRUD and query operations for workout programs — the central content type in
+ * Proxima. Programs live in the `programs` table and are composed of
+ * `schedule_workouts` which contain `program_workout_exercises` referencing
+ * `hevy_exercise_templates`.
+ *
+ * Responsibilities:
+ * - Fetching programs for the explore page, programs page, and detail views
+ * - Resolving program thumbnails from Supabase Storage
+ * - Managing program subscriptions (save / unsave)
+ * - Fetching shared programs and converting them to Hevy routine format
+ * - Community AI program listing with de-duplication
+ *
+ * Depends on: ./index (supabase client), uuid, @/components/program-builder/utils
+ * Used by: hooks.ts, explore page, program detail page, program-builder
+ */
 import { User } from "@supabase/supabase-js";
 import { supabase } from ".";
 import { v4 as uuidv4 } from 'uuid';
 import { convertToHevyRoutine } from "@/components/program-builder/utils";
 
-// GET THE PROGRAMS DISPLAYED ON THE EXPLORE PAGE
+/**
+ * Fetches publicly listed programs for the explore page with optional filtering
+ * and pagination, sorted by save count descending. Each returned program
+ * includes its thumbnail blob.
+ *
+ * @param filters - Optional key-value filters applied via Postgres `contains`
+ * @param limit - Maximum programs to return
+ * @param offset - Pagination offset
+ * @returns Array of programs with thumbnails attached, or empty array on error
+ */
 export const getExplorePagePrograms = async (filters?: TProgramFilters, limit?: number, offset?: number): Promise<TProgram[]> => {
     try {
         let query = supabase
@@ -54,7 +81,12 @@ export const getExplorePagePrograms = async (filters?: TProgramFilters, limit?: 
     }
 };
 
-// GET THE COMMUNITY AI PROGRAMS
+/**
+ * Fetches all community-shared AI-generated programs, de-duplicated by prompt
+ * text so the same prompt configuration only appears once.
+ *
+ * @returns Array of unique AI programs, or undefined on error
+ */
 export const getCommunityAiPrograms = async () => {
     try {
         const { data, error } = await
@@ -81,7 +113,14 @@ export const getCommunityAiPrograms = async () => {
     }
 }
 
-// GET THE COMMUNITY AI PROGRAMS WITH PAGINATION
+/**
+ * Paginated variant of {@link getCommunityAiPrograms}, sorted by save count
+ * descending with client-side de-duplication by prompt.
+ *
+ * @param limit - Page size (default 20)
+ * @param offset - Pagination offset (default 0)
+ * @returns Array of unique AI programs for the requested page
+ */
 export const getCommunityAiProgramsPaginated = async (limit: number = 20, offset: number = 0) => {
     try {
         const { data, error } = await
@@ -112,7 +151,13 @@ export const getCommunityAiProgramsPaginated = async (limit: number = 20, offset
     }
 }
 
-// GET THE SCHEDULE FOR A SPECIFIC PROGRAM
+/**
+ * Fetches the full schedule for a program: workouts, exercises, and exercise
+ * template details, ordered by week then day. Used on the program detail page.
+ *
+ * @param program_id - The program's primary key
+ * @returns Array of program detail objects with nested schedule, or undefined
+ */
 export const getExplorePageProgramDetails = async (program_id: number) => {
     try {
             const { data, error } = await supabase
@@ -164,7 +209,15 @@ export const getExplorePageProgramDetails = async (program_id: number) => {
     }
 };
 
-// GET THE PROGRAMS DISPLAYED ON THE PROGRAMS PAGE INCLUDING THUMBNAILS
+/**
+ * Fetches publicly listed programs for the programs page, optionally filtered
+ * to coach-only content, sorted by save count. Each program includes its
+ * thumbnail blob.
+ *
+ * @param limit - Optional cap on programs returned
+ * @param is_coach - When true, only coach-created programs; when false/undefined, non-coach programs
+ * @returns Array of programs with thumbnails, or undefined on error
+ */
 export const getPrograms = async (limit?: number, is_coach?: boolean) => {
     try {
         let query = supabase
@@ -204,7 +257,12 @@ export const getPrograms = async (limit?: number, is_coach?: boolean) => {
     }
 };
 
-// GET A SPECIFIC PROGRAM BY PROGRAM ID
+/**
+ * Fetches a single program's metadata by its numeric ID (no schedule data).
+ *
+ * @param program_id - The program's primary key
+ * @returns Array containing the matching program, or undefined if not found
+ */
 export const getProgramByID = async (program_id: number) => {
     try {
         const { data, error } = await supabase
@@ -221,6 +279,13 @@ export const getProgramByID = async (program_id: number) => {
 };
 
 
+/**
+ * Groups schedule workouts by week number and sorts each group by day,
+ * producing a 2D array where the outer index is the week.
+ *
+ * @param scheduleWorkouts - Flat array of schedule workout objects
+ * @returns Nested array: `sortedWorkouts[weekIndex][dayIndex]`
+ */
 export const sortWorkouts = (scheduleWorkouts: TScheduleWorkouts[]) => {
     const workoutsByWeek = scheduleWorkouts.reduce<Record<number, TScheduleWorkouts[]>>((acc, workout) => {
         const { nthWeek } = workout;
@@ -241,7 +306,13 @@ export const sortWorkouts = (scheduleWorkouts: TScheduleWorkouts[]) => {
 };
 
 
-// GET A SHARED PROGRAM BY SHARE ID
+/**
+ * Fetches a shared program by its ID and converts the schedule into an array
+ * of Hevy-compatible routine objects that can be imported directly.
+ *
+ * @param shareId - The program's numeric ID (used as the share identifier)
+ * @returns Array of Hevy routines, or undefined/empty array on error
+ */
 export const getSharedProgram = async (shareId: number): Promise<THevyRoutine[] | undefined> => {
     try {
         const { data, error } = await supabase
@@ -304,7 +375,16 @@ export const getSharedProgram = async (shareId: number): Promise<THevyRoutine[] 
     }
 }
 
-// CHECK IF A PROGRAM THUMBNAIL EXISTS IN USERS S3 STORAGE FOLDER (PROGRAM Exists ?)
+/**
+ * Checks whether a thumbnail file exists in the `programs` storage bucket for
+ * the given program ID, and returns the filename if found.
+ *
+ * Skips the `.emptyFolderPlaceholder` sentinel file that Supabase creates for
+ * empty directories.
+ *
+ * @param id - The program's numeric ID (used as the storage folder name)
+ * @returns The thumbnail filename, null if none exists, or empty array on error
+ */
 export const getProgramThumbnailStatus = async (id?: number) => {
     try {
         const { data, error } = await supabase.storage.from('programs').list(id?.toString() ?? '' , {
@@ -330,7 +410,13 @@ export const getProgramThumbnailStatus = async (id?: number) => {
 
 
 
-// GET PROGRAM THUMBNAIL FOR A PROGRAM VIA ID
+/**
+ * Downloads the actual thumbnail blob for a program by first resolving the
+ * filename via {@link getProgramThumbnailStatus}.
+ *
+ * @param id - The program's numeric ID
+ * @returns The thumbnail as a Blob, or undefined if not found
+ */
 export const getProgramThumbnailByID = async (id: number) => {
     try {
         if (!id) return undefined;
@@ -348,7 +434,13 @@ export const getProgramThumbnailByID = async (id: number) => {
     }
 };
 
-// GET PROGRAM THUMBNAIL FOR A PROGRAM VIA ID ( GETS PROGRAM THUMBNAIL AS WORKAROUND FOR CORS. PROGRAM S3 BUCKET IS NOW PUBLIC)
+/**
+ * Returns the public URL for a program's thumbnail instead of downloading the
+ * blob. This avoids CORS issues since the programs bucket is publicly readable.
+ *
+ * @param id - The program's numeric ID
+ * @returns The public URL string, or undefined if no image file exists
+ */
 export const getProgramThumbnailByIDViaPublicUrl = async (id: number) => {
     try {
         const { data, error } = await supabase.storage
@@ -378,7 +470,14 @@ export const getProgramThumbnailByIDViaPublicUrl = async (id: number) => {
     }
 };
 
-// GET USER'S SUBSCRIBED/SAVED PROGRAMS
+/**
+ * Fetches all programs a user has saved/subscribed to, including thumbnails.
+ * First queries the `program_subscribers` join table, then batch-fetches the
+ * corresponding program rows.
+ *
+ * @param user - The authenticated Supabase user
+ * @returns Array of subscribed programs with thumbnails, or empty array
+ */
 export const getSubscribedPrograms = async (user: User): Promise<TProgram[]> => {
     try {
         if (!user) {
@@ -439,7 +538,14 @@ export const getSubscribedPrograms = async (user: User): Promise<TProgram[]> => 
     }
 };
 
-// POST A NEW SUBSCRIBER TO PROGRAM WITH PROGRAM ID
+/**
+ * Subscribes the current user to a program by inserting a row into the
+ * `program_subscribers` table.
+ *
+ * @param user - The authenticated Supabase user
+ * @param program_id - The program's ID to subscribe to
+ * @returns The Supabase error object if the insert fails, otherwise void
+ */
 export const postNewProgramSubscriber = async (user: User, program_id: string) => {
 
     try {
@@ -461,7 +567,14 @@ export const postNewProgramSubscriber = async (user: User, program_id: string) =
     }
 };
 
-// REMOVE A SUBSCRIBER FROM A PROGRAM
+/**
+ * Unsubscribes a user from a program by deleting the matching row in the
+ * `program_subscribers` table.
+ *
+ * @param user_id - The user's UUID
+ * @param program_id - The program's ID (string or number; coerced to int)
+ * @returns The Supabase error object if deletion fails, otherwise void
+ */
 export const deleteProgramSubscriber = async (user_id: string, program_id: string | number) => {
     try {
         const programId = typeof program_id === "string" ? parseInt(program_id, 10) : program_id;

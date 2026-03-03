@@ -1,8 +1,21 @@
+/**
+ * @module parse-spreadsheet
+ *
+ * Client-side utilities for detecting spreadsheet files and converting them
+ * (CSV, XLSX, XLS, ODS) into plain-text CSV strings. This powers the
+ * file-upload flow where users attach spreadsheets that need to be
+ * serialised into a text representation for the AI chat context.
+ *
+ * Depends on: papaparse, xlsx (SheetJS)
+ * Used by: File-upload / attachment handling in the chat agent UI
+ */
+
 "use client";
 
 import * as Papa from "papaparse";
 import * as XLSX from "xlsx";
 
+/** MIME types recognised as spreadsheet formats. */
 const SPREADSHEET_MIMES = new Set([
   "text/csv",
   "application/csv",
@@ -11,6 +24,14 @@ const SPREADSHEET_MIMES = new Set([
   "application/vnd.oasis.opendocument.spreadsheet",
 ]);
 
+/**
+ * Determine whether a file descriptor represents a spreadsheet.
+ *
+ * Checks the MIME type first, then falls back to file-extension matching.
+ *
+ * @param file - Object with optional mediaType and filename
+ * @returns `true` if the file is a recognised spreadsheet format
+ */
 export function isSpreadsheetFile(file: {
   mediaType?: string;
   filename?: string;
@@ -20,6 +41,13 @@ export function isSpreadsheetFile(file: {
   return ext === "csv" || ext === "xlsx" || ext === "xls" || ext === "ods";
 }
 
+/**
+ * Check whether a Blob is a CSV file by MIME type or filename extension.
+ *
+ * @param blob - The file blob
+ * @param filename - Optional original filename for extension-based detection
+ * @returns `true` if the blob should be treated as CSV
+ */
 function isCsvBlob(blob: Blob, filename?: string): boolean {
   const csvTypes = ["text/csv", "application/csv", "text/plain"];
   if (blob.type && csvTypes.includes(blob.type)) return true;
@@ -27,6 +55,17 @@ function isCsvBlob(blob: Blob, filename?: string): boolean {
   return ext === "csv";
 }
 
+/**
+ * Parse a spreadsheet blob into a plain-text CSV string.
+ *
+ * CSV files are round-tripped through PapaParse for consistent formatting.
+ * Excel/ODS files are read via SheetJS; multi-sheet workbooks produce
+ * labelled sections separated by blank lines.
+ *
+ * @param blob - The raw file blob to parse
+ * @param filename - Optional filename used for format detection
+ * @returns Plain-text CSV representation of the spreadsheet content
+ */
 export async function parseSpreadsheetToText(
   blob: Blob,
   filename?: string

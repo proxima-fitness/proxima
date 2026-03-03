@@ -1,10 +1,33 @@
+/**
+ * @module exerciseStallsTransform
+ *
+ * Transforms raw Hevy exercise-history entries into per-exercise analytics:
+ * session aggregates, a 15-point weight trend, and a stall detection flag.
+ * Used to populate the exercise-stall dashboard that highlights exercises
+ * where the user has stopped progressing.
+ *
+ * Depends on: Hevy type definitions (THevyExerciseTemplate, THevyExerciseHistoryEntry)
+ * Used by: Exercise stall dashboard, workout-analytics views
+ */
+
 const KG_TO_LBS = 2.20462;
 
+/** Round a number to two decimal places. */
 function round2(n: number): number {
     return Math.round(n * 100) / 100;
 }
 
-/** Group Hevy history entries by workout, compute session stats and stall/trend. */
+/**
+ * Aggregate raw Hevy history entries into session-level stats with stall detection.
+ *
+ * Groups entries by workout, computes per-session volume/max weight/reps,
+ * builds a 15-session weight trend (oldest-to-newest), and flags a stall
+ * when the last 3 sessions show no weight increase over the preceding 3.
+ *
+ * @param template - The exercise template (used for the exercise name)
+ * @param historyEntries - Raw set/rep-level history rows from Hevy
+ * @returns Aggregated exercise result with trend array, stall flag, and colour indicator
+ */
 export function transformHistoryToExercise(
     template: THevyExerciseTemplate,
     historyEntries: THevyExerciseHistoryEntry[],

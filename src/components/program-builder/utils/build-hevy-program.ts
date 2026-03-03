@@ -1,3 +1,19 @@
+/**
+ * @module program-builder/utils/build-hevy-program
+ *
+ * (DEPRECATED / commented-out) Conversion layer that transformed AI-generated
+ * workout programs into the Hevy fitness app's routine format (THevyRoutine[]).
+ * Contained builders for every supported training split (1-day, upper/lower,
+ * PPL, 5-day, 7-day) and a fallback path that used hardcoded templates when
+ * the AI request failed.
+ *
+ * All code is currently commented out — retained for reference while the
+ * program builder migrates to a new data model.
+ *
+ * Depends on: @/components/program-builder/api/hevy, @/assets/constants, ./scoring-system
+ * Used by: (currently unused — previously consumed by the program builder orchestrator)
+ */
+
 // import { getHevyExercises } from "@/components/program-builder/api/hevy";
 // import { fallbackCBLSA,  fallbackOneDay, fallbackPPL, fallbackSevenDay, fallbackUpperLower } from "@/assets/constants";
 // import { replaceTextToJsonExercisesHevy } from "./scoring-system";

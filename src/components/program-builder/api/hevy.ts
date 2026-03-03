@@ -1,4 +1,22 @@
-// File for endpoints to the Hevy App Public API
+/**
+ * @module hevy
+ *
+ * Primary integration layer between Proxima and the Hevy workout-tracking app.
+ * Provides functions for every Hevy public-API endpoint the app consumes
+ * (routines, routine folders, workouts, exercise templates, exercise history)
+ * as well as Supabase persistence for programs, API-key management, and
+ * workout-count tracking.
+ *
+ * The upload pipeline converts AI-generated THevyRoutine arrays into Hevy API
+ * requests via hevy_export, batches them to respect rate limits, and reports
+ * progress through an optional callback. Programs are simultaneously saved to
+ * the Proxima Supabase schema (programs → schedule_workouts →
+ * program_workout_exercises) so the app can display them independently of Hevy.
+ *
+ * Depends on: hevy_export (convertHevyOutputIntoInput), @/api/index (supabase),
+ *             @/components/program-builder/utils (getMaxFolderId), uuid
+ * Used by: program-builder UI components, Agent chat flow, API routes
+ */
 import { v4 as uuidv4 } from "uuid";
 import { validate as validateUuid } from "uuid";
 import { getMaxFolderId } from "@/components/program-builder/utils";
@@ -6,6 +24,17 @@ import { User } from "@supabase/supabase-js";
 import { supabase } from "@/api/index";
 import { convertHevyOutputIntoInput } from "./hevy_export";
 
+/**
+ * Generic authenticated GET request against the Hevy public API.
+ *
+ * Wraps `fetch` with the required `api-key` header and JSON parsing.
+ * All Hevy read endpoints in this module delegate to this helper.
+ *
+ * @param url - Fully-qualified Hevy API URL to fetch
+ * @param apiKey - User's Hevy API key for authentication
+ * @returns The parsed JSON response body cast to `T`
+ * @throws {Error} On any non-2xx HTTP status
+ */
 export const defaultFetch = async <T>(url: string, apiKey: string): Promise<T> => {
     const response = await fetch(url, {
         method: 'GET',
@@ -22,7 +51,17 @@ export const defaultFetch = async <T>(url: string, apiKey: string): Promise<T> =
     return (await response.json()) as T;
 };
 
-// GETS CUSTOM EXERCISES FROM HEVY
+/**
+ * Fetches all user-created custom exercise templates from the Hevy API.
+ *
+ * Paginates through up to 10 pages (100 templates/page) and filters for
+ * `is_custom === true`. Used when the program builder needs to know which
+ * exercises exist only in the user's Hevy account (vs. the global library).
+ *
+ * @param user - Authenticated Supabase user; returns `[]` if absent
+ * @param apiKey - User's Hevy API key
+ * @returns All custom exercise templates on the account
+ */
 export const getHevyCustomExercises = async (user: User | undefined | null, apiKey: string): Promise<THevyExerciseTemplate[]> => {
     if (!user) return [];
 
@@ -58,6 +97,19 @@ export const getHevyCustomExercises = async (user: User | undefined | null, apiK
     return customExercises;
 };
 
+/**
+ * Loads all Hevy routines and groups them into "programs" by routine-folder.
+ *
+ * A "program" in Proxima maps to a Hevy routine folder: each folder groups the
+ * routines that belong to one training program. This function fetches every
+ * routine on the account, groups them by `folder_id`, then enriches each group
+ * with its folder title from the Hevy API.
+ *
+ * @param user - Authenticated Supabase user; returns `[]` if absent
+ * @param apiKey - User's Hevy API key; returns `[]` if empty
+ * @returns Array of `{ program_title, program: THevyRoutine[] }` sorted by folder ID,
+ *          or `[]` on any error
+ */
 export const getHevyPrograms = async (user: User | undefined | null, apiKey: string) => {
     try {
         if (!user) {
@@ -131,7 +183,13 @@ export const getHevyPrograms = async (user: User | undefined | null, apiKey: str
     }
 };
 
-// Get individual routine folder
+/**
+ * Fetches a single routine folder by ID from the Hevy API.
+ *
+ * @param apiKey - User's Hevy API key
+ * @param folderId - Numeric ID of the routine folder to retrieve
+ * @returns The routine folder object, or `null` if the request fails
+ */
 export const getHevyRoutineFolder = async (apiKey: string, folderId: number) => {
     try {
         const url = `https://api.hevyapp.com/v1/routine_folders/${folderId}`;
@@ -143,13 +201,17 @@ export const getHevyRoutineFolder = async (apiKey: string, folderId: number) => 
     }
 };
 
-// GET /v1/routine_folders. Get a paginated list of routien folders available on the account.
-// https://api.hevyapp.com/docs/#/RoutineFolders/get_v1_routine_folders
 /**
- * GETS A PAGINATED LIST OF ROUTINE FOLDERS AVAILABLE ON THE ACCOUNT
- * @param apiKey - The hevy api key
- * @param page - The page number
- * @returns The routine folders
+ * Retrieves a single page of routine folders from the Hevy API.
+ *
+ * Maps to `GET /v1/routine_folders`. Each page returns up to 10 folders.
+ * Used during program upload to locate the newly-created folder by title.
+ *
+ * @see https://api.hevyapp.com/docs/#/RoutineFolders/get_v1_routine_folders
+ * @param apiKey - User's Hevy API key
+ * @param page - 1-based page number
+ * @returns A paginated response containing routine folders, or `undefined` on error
+ * @throws Re-throws the fetch error after logging
  */
 export const getRoutineFolders = async (apiKey: string, page: number) => {
     try {
@@ -163,7 +225,16 @@ export const getRoutineFolders = async (apiKey: string, page: number) => {
     }
 };
 
-// GETS HEVY ROUTINES FROM HEVY
+/**
+ * Fetches all routines from the user's Hevy account, paginating through up to 10 pages.
+ *
+ * Each page returns up to 10 routines. Used as the data source for
+ * {@link getHevyPrograms} which groups these routines by folder.
+ *
+ * @param user - Authenticated Supabase user; returns `[]` if absent
+ * @param apiKey - User's Hevy API key
+ * @returns Flat array of every routine on the account
+ */
 export const getHevyRoutines = async (user: User | undefined | null, apiKey: string) => {
 
     if  (!user) return [];
@@ -209,12 +280,24 @@ export type PostHevyRoutineProgramSuccess = {
 };
 
 /**
- * POSTS A PROGRAM TO SUPABASE DATABASE (IN PROXIMA SCHEMA FORMAT)
- * Program id is generated by the database (int4). Returns the new program id.
- * @param hevyRoutines - The hevy routines
- * @param prompt - The prompt
- * @param request - The request
- * @returns { status: "success", id: number } or an Error
+ * Persists an AI-generated program to the Proxima Supabase database.
+ *
+ * Inserts rows into three tables in sequence:
+ *   1. `programs` – top-level program metadata (title, equipment, etc.)
+ *   2. `schedule_workouts` – one row per workout day per week
+ *   3. `program_workout_exercises` – individual exercises linked to schedule rows
+ *
+ * Exercise template IDs are validated against the `hevy_exercise_templates` table.
+ * If an exercise ID is missing or invalid, the function falls back to a
+ * title-based lookup; exercises that still can't be resolved are omitted and
+ * reported in `skippedExercises` so the UI can display a warning toast.
+ *
+ * All inserts are batched (50 rows at a time) to stay within Supabase limits.
+ *
+ * @param hevyRoutines - The AI-generated routines to save (one per workout day)
+ * @param prompt - The original user prompt that generated this program
+ * @param request - Optional request metadata (title, equipment, difficulty, etc.)
+ * @returns `{ status: "success", id, skippedExercises? }` on success, or an Error
  */
 export const postHevyRoutineProgram = async (
     hevyRoutines: THevyRoutine[],
@@ -393,10 +476,14 @@ export const postHevyRoutineProgram = async (
 
 
 /**
- * POSTS USER'S HEVY API KEY TO THEIR SUPABASE USER ACCOUNT
- * @param user - The user
- * @param secret - The hevy api key
- * @returns The hevy api key
+ * Stores the user's Hevy API key in the Supabase vault (encrypted secrets).
+ *
+ * Called during initial Hevy account linking. The key is stored via the
+ * `insert_secret` RPC so it is never exposed in plain-text database columns.
+ *
+ * @param user - Authenticated Supabase user whose vault entry will be created
+ * @param secret - The Hevy API key to store
+ * @returns `{ success: true, data }` on success, or `{ success: false, data: error }`
  */
 export const postHevyApikey = async (user: User, secret: string) => {
 
@@ -420,9 +507,13 @@ export const postHevyApikey = async (user: User, secret: string) => {
 };
 
 /**
- * DELETES USER'S HEVY API KEY FROM THEIR SUPABASE USER ACCOUNT
- * @param user - The user
- * @returns The hevy api key
+ * Removes the user's Hevy API key from the Supabase vault.
+ *
+ * Called when unlinking a Hevy account or as the first step of a key rotation
+ * (see {@link updateHevyApiKey}).
+ *
+ * @param user - Authenticated Supabase user whose secret will be deleted
+ * @returns `true` if deletion succeeded, `false` otherwise
  */
 export const deleteHevyApiKey = async (user: User) => {
 
@@ -448,10 +539,14 @@ export const deleteHevyApiKey = async (user: User) => {
 
 
 /**
- * UPDATES USER'S HEVY API KEY IN THEIR SUPABASE USER ACCOUNT
- * @param user - The user
- * @param secret - The hevy api key
- * @returns The hevy api key
+ * Rotates the user's Hevy API key by deleting the old one and inserting the new one.
+ *
+ * Supabase vault doesn't support in-place updates, so this performs a
+ * delete-then-insert. If either step fails the function returns `false`.
+ *
+ * @param user - Authenticated Supabase user
+ * @param secret - The replacement Hevy API key
+ * @returns `true` if both delete and re-insert succeeded
  */
 export const updateHevyApiKey = async (user: User, secret: string): Promise<boolean> => {
 
@@ -486,9 +581,10 @@ export type HevyUploadProgressCallback = (
 ) => void;
 
 /**
- * DELAYS FOR A SPECIFIC AMOUNT OF TIME
- * @param ms - The amount of time to delay
- * @returns The delayed time
+ * Promise-based sleep utility used between batched API calls.
+ *
+ * @param ms - Milliseconds to wait before resolving
+ * @returns A promise that resolves after the specified delay
  */
 export const delay = (ms: number) => {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -509,6 +605,18 @@ async function delayWithRateLimitCountdown(
 
 
 
+/**
+ * Generic authenticated POST request against the Hevy public API.
+ *
+ * Wraps `fetch` with JSON content-type, the required `api-key` header,
+ * and automatic body serialisation / response parsing.
+ *
+ * @param url - Fully-qualified Hevy API URL to post to
+ * @param apiKey - User's Hevy API key for authentication
+ * @param body - Request payload (will be JSON-stringified)
+ * @returns The parsed JSON response body cast to `T`
+ * @throws {Error} On any non-2xx HTTP status
+ */
 export const defaultPost = async <T, U = unknown>(url: string, apiKey: string, body: U): Promise<T> => {
     const response = await fetch(url, {
         method: 'POST',
@@ -529,9 +637,14 @@ export const defaultPost = async <T, U = unknown>(url: string, apiKey: string, b
 
 
 /**
- * GETS USER'S HEVY API KEY FROM THEIR SUPABASE USER ACCOUNT
- * @param user - The user
- * @returns The hevy api key
+ * Retrieves the user's Hevy API key from the Supabase vault.
+ *
+ * The key name follows the convention `hevy_api_key_{userId}`. Returns an
+ * empty string if the user is not authenticated or the key doesn't exist,
+ * so callers can treat falsy values as "not linked".
+ *
+ * @param user - Authenticated Supabase user, or null/undefined if logged out
+ * @returns The decrypted Hevy API key string, or `""` on failure
  */
 export const getHevyApiKey = async (user: User | undefined | null) => {
 
@@ -558,16 +671,17 @@ export const getHevyApiKey = async (user: User | undefined | null) => {
 
 
 
-// HEVY PUBLIC API REQUESTS: https://api.hevyapp.com/docs/
-
-// Workouts
-
-// GET /v1/workouts. Get a paginated list of workouts available on the account.
-// https://api.hevyapp.com/docs/#/Workouts/get_v1_workouts
 /**
- * GETS THE MOST RECENTLY COMPLETED WORKOUT FROM HEVY
- * @param apiKey - The hevy api key
- * @returns The most recently completed workout, or undefined if error or no workouts found
+ * Fetches the most recently completed workout from the Hevy API.
+ *
+ * Maps to `GET /v1/workouts`. Returns only the first workout in the response
+ * (workouts are returned newest-first by default).
+ *
+ * @see https://api.hevyapp.com/docs/#/Workouts/get_v1_workouts
+ * @param apiKey - User's Hevy API key
+ * @param page - 1-based page number to retrieve
+ * @param pageSize - Number of workouts per page
+ * @returns The first workout on the requested page, or `undefined` if none exist
  */
 export const getMostRecentHevyWorkout = async (apiKey: string, page: number, pageSize: number) => {
     try {
@@ -587,15 +701,16 @@ export const getMostRecentHevyWorkout = async (apiKey: string, page: number, pag
     }
 };
 
-// Routines
-
-// POST /v1/routines. Create a new routine
-// https://api.hevyapp.com/docs/#/Routines/post_v1_routines
 /**
- * POSTS A NEW ROUTINE TO HEVY
- * @param postRoutine - The routine to post
- * @param apiKey - The hevy api key
- * @returns The routine
+ * Creates a single routine in the user's Hevy account.
+ *
+ * Maps to `POST /v1/routines`. Called once per workout-day during the
+ * program upload flow (see {@link postRoutineProgramToHevyOneFolder}).
+ *
+ * @see https://api.hevyapp.com/docs/#/Routines/post_v1_routines
+ * @param postRoutine - Routine payload conforming to the Hevy request schema
+ * @param apiKey - User's Hevy API key
+ * @returns The created routine as returned by the Hevy API
  */
 export const postRoutines = async (postRoutine: THevyRoutineRequest, apiKey: string) => {
     const body: THevyRoutineRequestObject = {
@@ -613,12 +728,13 @@ export const postRoutines = async (postRoutine: THevyRoutineRequest, apiKey: str
 };
 
 
-// ExerciseTemplates
-
 /**
- * GET HEVY EXERCISES STORED BY HEVY (CACHES IN CAPACITOR PREFERENCES)
- * @param user - The user
- * @returns The hevy exercises
+ * Loads the full Hevy exercise template library from the Proxima Supabase mirror.
+ *
+ * The `hevy_exercise_templates` table is a cached copy of Hevy's global exercise
+ * database. Results are sorted alphabetically by title for UI display.
+ *
+ * @returns All exercise templates, or `[]` on error
  */
 export const getHevyExercises = async () => {
     try {
@@ -640,12 +756,16 @@ export const getHevyExercises = async () => {
 };
 
 /**
- * GET EXERCISE HISTORY FOR A SPECIFIC EXERCISE TEMPLATE (HEVY API)
- * @param apiKey - The Hevy API key
- * @param exerciseTemplateId - The exercise template ID
- * @param start_date - Optional start date (ISO 8601)
- * @param end_date - Optional end date (ISO 8601)
- * @returns Exercise history entries for that template
+ * Fetches workout history for a specific exercise template from the Hevy API.
+ *
+ * Optionally filters by date range. Used to display the user's past
+ * performance on a given exercise and inform AI-driven progression decisions.
+ *
+ * @param apiKey - User's Hevy API key
+ * @param exerciseTemplateId - Hevy exercise template ID to look up
+ * @param start_date - Optional ISO 8601 lower bound for the date filter
+ * @param end_date - Optional ISO 8601 upper bound for the date filter
+ * @returns Exercise history response, defaulting to `{ exercise_history: [] }` if empty
  */
 export const getHevyExerciseHistory = async (
     apiKey: string,
@@ -663,9 +783,13 @@ export const getHevyExerciseHistory = async (
 };
 
 /**
- * GETS THE NUMBER OF WORKOUTS ON THE HEVY ACCOUNT
- * @param apiKey - The hevy api key
- * @returns The number of workouts
+ * Returns the total number of completed workouts on the user's Hevy account.
+ *
+ * Maps to `GET /v1/workouts/count`. Used alongside
+ * {@link getLastKnownHevyWorkoutCount} to detect new workout completions.
+ *
+ * @param apiKey - User's Hevy API key
+ * @returns The workout count, or `0` if the response is empty
  */
 export const getHevyWorkoutCount = async (apiKey: string) => {
     try {
@@ -680,9 +804,14 @@ export const getHevyWorkoutCount = async (apiKey: string) => {
 };
 
 /**
- * GETS THE LAST KNOWN HEVY WORKOUT COUNT FROM THE DATABASE
- * @param user - The user
- * @returns The last known workout count, or null if not found
+ * Reads the last-cached Hevy workout count from the Supabase `hevy_workouts_count` table.
+ *
+ * Compared against the live count from {@link getHevyWorkoutCount} to determine
+ * whether the user has completed new workouts since the last check.
+ * Returns `null` (not an error) when no baseline row exists yet.
+ *
+ * @param user - Authenticated Supabase user
+ * @returns The cached workout count, or `null` if no record exists
  */
 export const getLastKnownHevyWorkoutCount = async (user: User): Promise<number | null> => {
     try {
@@ -793,13 +922,17 @@ export const getLastKnownHevyWorkoutCount = async (user: User): Promise<number |
 
 
 
-// POST /v1/routine_folders. Create a new routine folder. The folder will be created at index 0, and all other folders will have their indexes incremented.
-// https://api.hevyapp.com/docs/#/RoutineFolders/post_v1_routine_folders
 /**
- * POSTS A NEW ROUTINE FOLDER TO HEVY
- * @param title - The title of the routine folder
- * @param apiKey - The hevy api key
- * @returns The routine folder
+ * Creates a new routine folder in the user's Hevy account.
+ *
+ * Maps to `POST /v1/routine_folders`. New folders are inserted at index 0;
+ * Hevy automatically increments the index of all existing folders.
+ * Called once per week during the upload flow to group routines by week.
+ *
+ * @see https://api.hevyapp.com/docs/#/RoutineFolders/post_v1_routine_folders
+ * @param title - Display name for the folder (e.g. "Week 1 - My Program")
+ * @param apiKey - User's Hevy API key
+ * @returns The newly created routine folder response
  */
 export const postRoutineFolders = async (title: string, apiKey: string) => {
     const body: TRoutineFolderRequest = {
@@ -821,13 +954,22 @@ export const postRoutineFolders = async (title: string, apiKey: string) => {
 
 
 /**
- * POSTS A NEW ROUTINE PROGRAM TO HEVY
- * @param routineProgram - The routine program to post
- * @param week - Week number for folder title
- * @param apiKey - The hevy api key
- * @param programTitle - Optional program title
- * @param onProgress - Optional callback for upload progress (uploaded, total, status)
- * @returns The routine program result
+ * Uploads a week's worth of routines to Hevy inside a single routine folder.
+ *
+ * This is the primary upload path: it creates one folder titled
+ * "Week N - <programTitle>", then sequentially posts each routine into it.
+ * Rate-limit handling (HTTP 429) uses exponential back-off with a countdown
+ * reported through the `onProgress` callback so the UI can display remaining wait time.
+ *
+ * Routines are uploaded in batches of {@link ROUTINES_BATCH_SIZE} with a
+ * {@link RATE_LIMIT_BACKOFF_MS} pause between batches.
+ *
+ * @param routineProgram - Array of routines for a single week
+ * @param week - 1-based week number used in the folder title
+ * @param apiKey - User's Hevy API key
+ * @param programTitle - Program title metadata (first element's title is used)
+ * @param onProgress - Optional callback receiving upload counts and rate-limit countdowns
+ * @returns `{ success: true, data: [] }` on success, or `{ success: false, data: Error }`
  */
 export const postRoutineProgramToHevyOneFolder = async (
     routineProgram: THevyRoutine[],
@@ -903,12 +1045,17 @@ export const postRoutineProgramToHevyOneFolder = async (
 };
 
 /**
- * DEPRECATED: This function is no longer used.
- * POSTS A NEW ROUTINE PROGRAM TO HEVY (multi-folder: one folder per week)
- * @param routineProgram - The routine program to post
- * @param apiKey - The hevy api key
- * @param onProgress - Optional callback for upload progress (uploaded, total, status)
- * @returns The routine program result
+ * @deprecated Use {@link postRoutineProgramToHevyOneFolder} instead.
+ *
+ * Uploads a full multi-week program to Hevy, creating one folder per week.
+ *
+ * Replaced by the single-folder variant which gives users more control over
+ * which week to upload. Kept for backward compatibility but no longer called.
+ *
+ * @param routineProgram - Array of routines spanning multiple weeks
+ * @param apiKey - User's Hevy API key
+ * @param onProgress - Optional callback receiving upload counts and rate-limit countdowns
+ * @returns `{ success: true, data: [] }` on success, or `{ success: false, data: Error }`
  */
 export const postRoutineProgramToHevy = async (
     routineProgram: THevyRoutine[],
@@ -1006,10 +1153,14 @@ export const postRoutineProgramToHevy = async (
 };
 
 /**
- * FETCHES RECENTLY COMPLETED WORKOUTS FROM THE HEVY API
- * @param hevyApiKey - The Hevy API key
- * @param pageSize - The number of workouts to fetch (default: 1)
- * @returns The recently completed workouts
+ * Fetches the N most-recently completed workouts from the Hevy API.
+ *
+ * Always reads page 1, so results are sorted newest-first. Used by the
+ * workout-completion detection flow to compare against the user's schedule.
+ *
+ * @param hevyApiKey - User's Hevy API key
+ * @param pageSize - Number of workouts to retrieve (default `1`)
+ * @returns The paginated workouts response from Hevy
  */
 export async function getRecentlyCompletedWorkouts(hevyApiKey: string, pageSize: number = 1): Promise<THevyWorkoutsResponse> {
     // only can handle max 10 workouts completed in a day (probably fine)
@@ -1035,10 +1186,14 @@ export async function getRecentlyCompletedWorkouts(hevyApiKey: string, pageSize:
 
 
 /**
- * FETCHES THE ROUTINE FROM THE HEVY API
- * @param hevyApiKey - The Hevy API key
- * @param routine_id - The routine ID to fetch the routine for
- * @returns The routine
+ * Fetches a single routine by ID from the Hevy API.
+ *
+ * Maps to `GET /v1/routines/{routineId}`. Returns the full routine
+ * including exercises and sets.
+ *
+ * @param hevyApiKey - User's Hevy API key
+ * @param routine_id - The Hevy routine ID to retrieve
+ * @returns The full routine response including nested exercises and sets
  */
 export async function getRoutine(hevyApiKey: string, routine_id: string): Promise<TRoutineResponse> {
     const routineResponse = await fetch(`https://api.hevyapp.com/v1/routines/${routine_id}`, {
@@ -1061,10 +1216,14 @@ export async function getRoutine(hevyApiKey: string, routine_id: string): Promis
 
 
 /**
- * FETCHES THE ROUTINE FOLDER FROM THE HEVY API
- * @param hevyApiKey - The Hevy API key
- * @param folder_id - The folder ID to fetch the routine folder for
- * @returns The routine folder
+ * Fetches a single routine folder by ID from the Hevy API.
+ *
+ * Maps to `GET /v1/routine_folders/{folderId}`. Logs an error (but still
+ * attempts the fetch) when `folder_id` is null.
+ *
+ * @param hevyApiKey - User's Hevy API key
+ * @param folder_id - Numeric folder ID, or `null` (which will likely 404)
+ * @returns The routine folder response
  */
 export async function getRoutineFolder(hevyApiKey: string, folder_id: number | null): Promise<TRoutineFolderResponse> {
     if (!folder_id) {
@@ -1090,12 +1249,15 @@ export async function getRoutineFolder(hevyApiKey: string, folder_id: number | n
 }
 
 /**
- * CALLS GET /v1/routines FOR ALL ROUTINES AND RETURNS ONLY THOSE WITH folder_id = folder_id
- * Excludes the current routine if excludeRoutineId is provided
- * @param hevyApiKey - The Hevy API key
- * @param folder_id - The folder ID to filter routines by
- * @param excludeRoutineId - Optional routine ID to exclude from results
- * @returns Array of routines with id and title that match the folder_id (excluding the current routine if provided)
+ * Returns all routines that belong to a given routine folder.
+ *
+ * The Hevy API doesn't support filtering routines by folder directly, so this
+ * paginates through all routines and selects those whose `folder_id` matches.
+ * Used by the progression system to find sibling workout days within a week.
+ *
+ * @param hevyApiKey - User's Hevy API key
+ * @param folder_id - The folder ID to filter by
+ * @returns Lightweight routine stubs `{ id, title }` belonging to the folder
  */
 export async function getRoutinesInFolder(hevyApiKey: string, folder_id: number): Promise<Array<{ id: string; title: string }>> {
     const routines: Array<{ id: string; title: string }> = [];
@@ -1136,11 +1298,15 @@ export async function getRoutinesInFolder(hevyApiKey: string, folder_id: number)
 }
 
 /**
- * FINDS A ROUTINE BY DAY NUMBER FROM AN ARRAY OF ROUTINES
- * Matches routine title pattern like "1 - Day 1" or "1 - {day_title}"
- * @param routines - Array of routines with id and title
- * @param nthDay - The day number to find
- * @returns The routine ID if found, null otherwise
+ * Locates a routine within a folder by its day number using the title convention.
+ *
+ * Proxima names routines as `"<dayNumber> - <dayTitle>"` when uploading.
+ * This function matches that pattern to map a schedule day back to its
+ * Hevy routine ID.
+ *
+ * @param routines - Array of `{ id, title }` stubs from {@link getRoutinesInFolder}
+ * @param nthDay - 1-based day number to search for in the title prefix
+ * @returns The matching routine's ID, or `null` if no match is found
  */
 export function findRoutineByDay(
     routines: Array<{ id: string; title: string }>,
@@ -1160,6 +1326,16 @@ export function findRoutineByDay(
 }
 
 
+/**
+ * Groups and sorts a flat array of schedule workouts into a week × day grid.
+ *
+ * Returns a 2D array where the outer index is the week (ascending) and the
+ * inner index is the day within that week (ascending by `nthDay`). Used to
+ * prepare data for {@link convertToHevyRoutine} in hevy_export.
+ *
+ * @param scheduleWorkouts - Flat list of schedule workout rows from Supabase
+ * @returns 2D array of workouts organised as `[week][day]`
+ */
 export const sortWorkouts = (scheduleWorkouts: TScheduleWorkouts[]) => {
     const workoutsByWeek = scheduleWorkouts.reduce<Record<number, TScheduleWorkouts[]>>((acc, workout) => {
         const { nthWeek } = workout;

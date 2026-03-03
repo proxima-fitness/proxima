@@ -1,3 +1,16 @@
+/**
+ * @module payload.config
+ *
+ * Central Payload CMS configuration. Defines the admin panel settings,
+ * content collections (Users, Media, Blogs), rich-text editor, database
+ * connection, and active plugins. This is the single source of truth for
+ * Payload's runtime behaviour and auto-generated TypeScript types.
+ *
+ * Depends on: @payloadcms/db-postgres, @payloadcms/richtext-lexical,
+ *             @payloadcms/payload-cloud, sharp, collections/*
+ * Used by: Payload CMS runtime, Next.js API routes
+ */
+
 // storage-adapter-import-placeholder
 import { postgresAdapter } from '@payloadcms/db-postgres';
 import { payloadCloudPlugin } from '@payloadcms/payload-cloud';

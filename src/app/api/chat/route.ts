@@ -1,3 +1,18 @@
+/**
+ * @module chat
+ *
+ * Streaming chat API route that powers "Andy", the AI personal trainer.
+ * Receives conversation messages and program-builder context, then runs a
+ * Vercel AI SDK ToolLoopAgent that can invoke tools (exercise lookup,
+ * build routine, modify program, etc.) and streams incremental UI updates
+ * back to the client.
+ *
+ * Observability is provided by Langfuse via OpenTelemetry.
+ *
+ * Depends on: ai (Vercel AI SDK), @langfuse/otel, ./instructions, ./tools
+ * Used by: Chat.tsx (program-builder agent panel)
+ */
+
 import { ToolLoopAgent, createAgentUIStreamResponse, gateway, stepCountIs } from 'ai';
 
 // Vercel serverless function timeout - 2 minutes for workout generation
@@ -14,12 +29,14 @@ const sdk = new NodeSDK({
 
 sdk.start();
 
-
 /**
- * POST request handler for the chat API route
- * @param req { messages: Message[], hevyProgram: THevyRoutine[], daysPerWeek: number, programLength: number, excludeAreas: string, excludeEquipment: string, healthIssues: string }
+ * Handles a chat turn: builds the system prompt and tool set from the request
+ * payload, runs the ToolLoopAgent, and returns a streaming UI response.
  *
- * @returns { Response }
+ * @param req - Request whose JSON body contains `messages`, `hevyProgram`,
+ *   `daysPerWeek`, `programLength`, and optional exclusion/health filters.
+ * @returns A streaming `Response` that the Vercel AI SDK client consumes to
+ *   render incremental agent output and tool invocations.
  */
 export async function POST(req: Request) {
 
