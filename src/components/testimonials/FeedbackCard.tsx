@@ -1,9 +1,21 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
+
+/**
+ * @module FeedbackCard
+ * Single testimonial card: quote, star row, avatar, name, and title. Used in testimonials slider.
+ * Depends on: motion, public quotes/StarGold.
+ * Used by: SimpleSlider (via feedback data).
+ */
 import { motion } from "motion/react";
 import quotes from "../../../public/quotes.svg";
 import starGold from "../../../public/StarGold.svg";
 
+/** @property content - Quote/testimonial text. */
+/** @property name - Author display name. */
+/** @property title - Author title or subtitle. */
+/** @property img - Avatar image URL or asset. */
 interface IProps {
     content: string;
     name: string;
@@ -11,6 +23,7 @@ interface IProps {
     img: any;
 }
 
+/** Renders one feedback card with quote, stars, and author. */
 export const FeedbackCard: React.FC<IProps> = (props) => {
 
     const {

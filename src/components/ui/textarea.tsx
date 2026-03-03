@@ -1,7 +1,14 @@
+/**
+ * @module textarea
+ * Multi-line text input styled to match form fields.
+ * Depends on: @/lib/utils.
+ * Used by: forms, comments, descriptions.
+ */
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
+/** <textarea> with min height, border, focus ring, placeholder styling. */
 const Textarea = React.forwardRef<
   HTMLTextAreaElement,
   React.ComponentProps<"textarea">

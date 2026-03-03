@@ -1,8 +1,15 @@
+/**
+ * @module slider
+ * Single or range slider (thumb on track) built on Radix Slider.
+ * Depends on: @radix-ui/react-slider, @/lib/utils.
+ * Used by: volume, filters, numeric inputs.
+ */
 import * as React from "react";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 
 import { cn } from "@/lib/utils";
 
+/** Slider with track, range fill, and thumb; value/min/max/step via props. */
 const Slider = React.forwardRef<
   React.ElementRef<typeof SliderPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root>

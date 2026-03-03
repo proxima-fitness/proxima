@@ -1,3 +1,9 @@
+/**
+ * @module toggle-group
+ * Group of mutually exclusive or multiple toggles (radio-like or multi-select) built on Radix ToggleGroup.
+ * Depends on: @radix-ui/react-toggle-group, @/lib/utils, @/components/ui/toggle.
+ * Used by: view switchers, filter bars, alignment/format controls.
+ */
 import * as React from "react"
 import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group"
 import { type VariantProps } from "class-variance-authority"
@@ -5,6 +11,7 @@ import { type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 import { toggleVariants } from "@/components/ui/toggle"
 
+/** Shares variant/size with ToggleGroupItem children. */
 const ToggleGroupContext = React.createContext<
   VariantProps<typeof toggleVariants>
 >({
@@ -12,6 +19,7 @@ const ToggleGroupContext = React.createContext<
   variant: "default",
 })
 
+/** Root; type="single" | "multiple" controls single vs multi selection. */
 const ToggleGroup = React.forwardRef<
   React.ElementRef<typeof ToggleGroupPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root> &
@@ -30,12 +38,14 @@ const ToggleGroup = React.forwardRef<
 
 ToggleGroup.displayName = ToggleGroupPrimitive.Root.displayName
 
+/** Single toggle in group; inherits variant/size from context unless overridden. */
 const ToggleGroupItem = React.forwardRef<
   React.ElementRef<typeof ToggleGroupPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Item> &
     VariantProps<typeof toggleVariants>
 >(({ className, children, variant, size, ...props }, ref) => {
   const context = React.useContext(ToggleGroupContext)
+  // Item uses context variant/size when not passed explicitly
 
   return (
     <ToggleGroupPrimitive.Item

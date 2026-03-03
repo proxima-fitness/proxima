@@ -1,13 +1,22 @@
- 
-// import { qr_code, starGold } from "public";
+/**
+ * @module (app)/download/page
+ *
+ * Download page route. Placeholder; mobile app download UI is temporarily
+ * deprecated. Sits at src/app/(app)/download/page.tsx; route "/download".
+ *
+ * Depends on: none (empty fragment).
+ * Used by: Next.js (route "/download").
+ */
 
+// import { qr_code, starGold } from "public";
 
 export const metadata = {
     title: "Download App | Proxima Fitness",
     description: "Download the App on iOS and Android or use the Web Builder",
-  };
+};
 
-  export default function DownloadPage() {
+/** Download page; mobile app download content currently disabled. */
+export default function DownloadPage() {
     return (
         <>
             {/* Temporarily deprecated - mobile app download */}

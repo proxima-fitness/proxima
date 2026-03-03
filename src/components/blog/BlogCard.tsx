@@ -1,11 +1,25 @@
 "use client";
 
+/*
+ * @module BlogCard
+ * @description Card view for a single blog post in a list, showing title, subtitle, date, reading time, and thumbnail.
+ * @dependsOn Date formatting helpers and the shared `TBlog` shape from the blog domain.
+ * @usedBy Blog index layouts and blog-related lists where a compact summary of a post is needed.
+ */
+
 import { convertSupabaseDateToReadable } from "@/utils/general/helpers";
 
+/**
+ * Props for `BlogCard`.
+ * @property blog Blog metadata and content summary used to populate the card.
+ */
 interface IProps {
     blog: TBlog;
 }
 
+/**
+ * BlogCard renders a clickable-looking preview row for a single blog post.
+ */
 export const BlogCard: React.FC<IProps> = (props) => {
 
     const {

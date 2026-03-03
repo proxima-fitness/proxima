@@ -1,8 +1,15 @@
+/**
+ * @module scroll-area
+ * Custom scrollable region with styled scrollbar (Radix ScrollArea).
+ * Depends on: @radix-ui/react-scroll-area, @/lib/utils.
+ * Used by: sidebars, modals, long forms, code blocks.
+ */
 import * as React from "react"
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area"
 
 import { cn } from "@/lib/utils"
 
+/** Root scroll container; viewport + ScrollBar + corner. */
 const ScrollArea = React.forwardRef<
   React.ElementRef<typeof ScrollAreaPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root>
@@ -21,6 +28,7 @@ const ScrollArea = React.forwardRef<
 ))
 ScrollArea.displayName = ScrollAreaPrimitive.Root.displayName
 
+/** Optional scrollbar; orientation vertical or horizontal. */
 const ScrollBar = React.forwardRef<
   React.ElementRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>,
   React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>

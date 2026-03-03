@@ -1,5 +1,24 @@
 "use client";
 
+/**
+ * @module CodeBlock
+ *
+ * Syntax-highlighted code block primitives for AI responses and developer
+ * tools. This module wraps Shiki to provide streaming-friendly highlighting,
+ * line numbers, copy-to-clipboard interactions, and language selection UI
+ * that can be composed into higher-level message and tool components.
+ *
+ * Depends on:
+ * - Shiki for tokenization and theming, including a shared highlighter cache
+ * - Design system components such as `Button` and `Select`
+ * - React context and memoization for efficient re-rendering of large blocks
+ *
+ * Used by:
+ * - `Tool` output rendering for JSON parameters and results
+ * - AI message surfaces that want consistent, theme-aware code snippets
+ * - Any component embedding `CodeBlock` to show static or streaming code
+ */
+
 import type { ComponentProps, CSSProperties, HTMLAttributes } from "react";
 import type {
   BundledLanguage,
@@ -99,18 +118,37 @@ const LineSpan = ({
 );
 
 // Types
+
+/**
+ * Public props for the high-level `CodeBlock` component.
+ *
+ * - `code` is the raw source text to render.
+ * - `language` is the Shiki bundled language used for tokenization.
+ * - `showLineNumbers` toggles the CSS counter-based line number gutter.
+ * - Additional `div` props (e.g., `className`) are applied to the outer
+ *   container so callers can control layout.
+ */
 type CodeBlockProps = HTMLAttributes<HTMLDivElement> & {
   code: string;
   language: BundledLanguage;
   showLineNumbers?: boolean;
 };
 
+/**
+ * Normalized representation of Shiki tokenization results used internally
+ * by the rendering layer. The `tokens` matrix is shaped as
+ * `lines -> tokens per line`.
+ */
 interface ITokenizedCode {
   tokens: ThemedToken[][];
   fg: string;
   bg: string;
 }
 
+/**
+ * Context value exposed to nested helpers (e.g., copy button) so they can
+ * access the current code string without prop drilling.
+ */
 interface ICodeBlockContextType {
   code: string;
 }
@@ -171,7 +209,14 @@ const createRawTokens = (code: string): ITokenizedCode => ({
   ),
 });
 
-// Synchronous highlight with callback for async results
+/**
+ * Synchronously attempt to highlight code for a given language, with an
+ * optional callback that will be invoked when the async Shiki highlighter
+ * finishes and a richer token set becomes available.
+ *
+ * Returns either a cached tokenization result or `null` when only the
+ * asynchronous path is available (callers should fall back to raw tokens).
+ */
 export const highlightCode = (
   code: string,
   language: BundledLanguage,
@@ -304,6 +349,13 @@ const CodeBlockBody = memo(
 
 CodeBlockBody.displayName = "CodeBlockBody";
 
+/**
+ * Outer container for a code block, responsible for borders, background,
+ * and intrinsic sizing hints so that large responses remain performant.
+ *
+ * Use this when you need full control over the header and children around
+ * the code content.
+ */
 export const CodeBlockContainer = ({
   className,
   language,
@@ -325,6 +377,10 @@ export const CodeBlockContainer = ({
   />
 );
 
+/**
+ * Optional header row for a code block, typically used to show language
+ * labels, filenames, and action buttons.
+ */
 export const CodeBlockHeader = ({
   children,
   className,
@@ -341,6 +397,10 @@ export const CodeBlockHeader = ({
   </div>
 );
 
+/**
+ * Left-aligned region within the header that groups an icon and primary
+ * label for the block (e.g., "response.ts").
+ */
 export const CodeBlockTitle = ({
   children,
   className,
@@ -351,6 +411,9 @@ export const CodeBlockTitle = ({
   </div>
 );
 
+/**
+ * Monospace filename text used inside a `CodeBlockTitle`.
+ */
 export const CodeBlockFilename = ({
   children,
   className,
@@ -361,6 +424,10 @@ export const CodeBlockFilename = ({
   </span>
 );
 
+/**
+ * Right-aligned container for action buttons such as copy and language
+ * selectors inside a code block header.
+ */
 export const CodeBlockActions = ({
   children,
   className,
@@ -374,6 +441,10 @@ export const CodeBlockActions = ({
   </div>
 );
 
+/**
+ * Core code content renderer. Handles the transition from raw tokens to
+ * highlighted tokens and supports optional line numbers.
+ */
 export const CodeBlockContent = ({
   code,
   language,
@@ -417,6 +488,12 @@ export const CodeBlockContent = ({
   );
 };
 
+/**
+ * High-level convenience component that wires together the container,
+ * context, and content for a standard code block.
+ *
+ * Use this when you do not need a custom header or additional chrome.
+ */
 export const CodeBlock = ({
   code,
   language,
@@ -441,12 +518,23 @@ export const CodeBlock = ({
   );
 };
 
+/**
+ * Props for the `CodeBlockCopyButton`.
+ *
+ * - `onCopy` is invoked after a successful copy.
+ * - `onError` is invoked when the Clipboard API is unavailable or fails.
+ * - `timeout` controls how long the "copied" state is shown.
+ */
 export type CodeBlockCopyButtonProps = ComponentProps<typeof Button> & {
   onCopy?: () => void;
   onError?: (error: Error) => void;
   timeout?: number;
 };
 
+/**
+ * Button that copies the current code block contents from context into
+ * the clipboard and briefly shows a "copied" state.
+ */
 export const CodeBlockCopyButton = ({
   onCopy,
   onError,
@@ -504,6 +592,10 @@ export const CodeBlockCopyButton = ({
 
 export type CodeBlockLanguageSelectorProps = ComponentProps<typeof Select>;
 
+/**
+ * High-level wrapper for a language-select dropdown that controls the
+ * language shown in the surrounding UI; does not itself retokenize code.
+ */
 export const CodeBlockLanguageSelector = (
   props: CodeBlockLanguageSelectorProps
 ) => <Select {...props} />;
@@ -512,6 +604,10 @@ export type CodeBlockLanguageSelectorTriggerProps = ComponentProps<
   typeof SelectTrigger
 >;
 
+/**
+ * Trigger button used with `CodeBlockLanguageSelector` to open the
+ * language dropdown. Uses a compact, borderless style by default.
+ */
 export const CodeBlockLanguageSelectorTrigger = ({
   className,
   ...props
@@ -529,6 +625,10 @@ export type CodeBlockLanguageSelectorValueProps = ComponentProps<
   typeof SelectValue
 >;
 
+/**
+ * Display component that shows the currently selected language label
+ * inside a `CodeBlockLanguageSelectorTrigger`.
+ */
 export const CodeBlockLanguageSelectorValue = (
   props: CodeBlockLanguageSelectorValueProps
 ) => <SelectValue {...props} />;
@@ -537,6 +637,10 @@ export type CodeBlockLanguageSelectorContentProps = ComponentProps<
   typeof SelectContent
 >;
 
+/**
+ * Menu surface for the language selector. Aligns to the end of the
+ * trigger by default.
+ */
 export const CodeBlockLanguageSelectorContent = ({
   align = "end",
   ...props
@@ -548,6 +652,10 @@ export type CodeBlockLanguageSelectorItemProps = ComponentProps<
   typeof SelectItem
 >;
 
+/**
+ * Individual selectable language option within the code block
+ * language dropdown.
+ */
 export const CodeBlockLanguageSelectorItem = (
   props: CodeBlockLanguageSelectorItemProps
 ) => <SelectItem {...props} />;

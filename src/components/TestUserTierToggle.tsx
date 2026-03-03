@@ -1,5 +1,12 @@
 "use client";
 
+/**
+ * @module TestUserTierToggle
+ * For test users only: dropdown to override tier (Real/Free/Pro) for feature limits. Writes to
+ * getTestTierOverride/setTestTierOverride and invalidates feature-limits queries.
+ * Depends on: UserContext, featureLimits API, UI Select.
+ * Used by: AppSidebar (when user is test user).
+ */
 import { useQueryClient } from "@tanstack/react-query";
 import {
     Select,
@@ -19,6 +26,7 @@ import { useState, useEffect } from "react";
 
 type TierSelectValue = "real" | TestTierOverride;
 
+/** No props. Renders nothing if user is not a test user; otherwise tier select. */
 export function TestUserTierToggle() {
     const { user } = useUserContext();
     const queryClient = useQueryClient();

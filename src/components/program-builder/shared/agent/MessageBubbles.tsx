@@ -1,3 +1,8 @@
+/**
+ * @module MessageBubbles
+ * Renders chat messages (user + assistant), tool outputs (buildRoutine, modifyProgram), build progress, error/retry UI, and applies program updates from tool results. Drives hevyProgram state and timeout/retry logic.
+ * Depends on: message, tool, reasoning, attachments, ModifyProgramProgress, applyModifyProgramPatchesFromMessages, helpers. Used by: Agent.
+ */
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useRef, useMemo, useCallback, useState } from "react";
 import {
@@ -63,7 +68,7 @@ function truncateFilename(filename: string, maxBaseLength = 24): string {
     return base.slice(0, maxBaseLength) + "..." + ext;
 }
 
-// Type for buildRoutine tool output
+/** buildRoutine tool result shape: routine, day/total counts, optional error. */
 interface IBuildRoutineOutput {
     routine?: THevyRoutine;
     dayNumber?: number;
@@ -74,7 +79,7 @@ interface IBuildRoutineOutput {
     message?: string;
 }
 
-// Progress component to show build status for each day
+/** Inline progress list for buildRoutine: completed days + "Building..." for current. */
 const BuildProgress: React.FC<{
     completedDays: Array<{ dayNumber: number; title: string }>;
     totalDays: number;
@@ -124,7 +129,7 @@ const BuildProgress: React.FC<{
     );
 };
 
-// Error display component for when generation fails
+/** Error banner with retry and "Explore Programs" link when build fails. */
 const GenerationError: React.FC<{
     error: Error | null;
     onRetry: () => void;
@@ -186,12 +191,13 @@ const GenerationError: React.FC<{
     );
 };
 
-// Helper function to generate empty hevyProgram structure
+/**
+ * Builds empty THevyRoutine[] with one routine per week/day; folder_id = week index, order = day. Used to initialize program before buildRoutine fills it.
+ */
 export const generateEmptyHevyProgram = (weeksValue: string, daysValue: string): THevyRoutine[] => {
     const weeks = weeksValue ? Number(weeksValue) : 0;
     const days = daysValue ? Number(daysValue) : 0;
 
-    // Handle edge cases - return empty array if invalid values
     if (!weeks || !days || weeks <= 0 || days <= 0) {
         return [];
     }
@@ -221,6 +227,7 @@ export const generateEmptyHevyProgram = (weeksValue: string, daysValue: string):
     return routines;
 };
 
+/** Props: messages/setMessages, program state (hevyProgram, setHevyProgram, addToUndoStack), filter handlers (programLength, daysPerWeek, exclude, health), sendMessage, isBuilding, loading/error/retry, status. */
 interface IProps {
     messages: UIMessage<unknown, UIDataTypes, UITools>[];
     setMessages: (messages: UIMessage<unknown, UIDataTypes, UITools>[] | ((messages: UIMessage<unknown, UIDataTypes, UITools>[]) => UIMessage<unknown, UIDataTypes, UITools>[])) => void;
@@ -266,6 +273,7 @@ interface IProps {
     addToUndoStack: (inversePatch: Operation[]) => void;
 }
 
+/** Renders message list, build/modify progress, applies tool results to hevyProgram, and handles timeout/retry. */
 export const MessageBubbles: React.FC<IProps> = (props) => {
 
     const { user } = useUserContext();
@@ -296,8 +304,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
     const [editingText, setEditingText] = useState("");
 
-    // Timeout detection - 45 seconds with no progress during building
-    const TIMEOUT_MS = 45000;
+    const TIMEOUT_MS = 45000; // No progress for this long during build triggers onTimeoutError
     const lastProgressTimestampRef = useRef<number>(0);
     const timeoutCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -354,9 +361,8 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         }
     }, [completedDays.length]);
 
-    // Timeout detection - check every 5 seconds if we're building
     useEffect(() => {
-        // Clear any existing interval
+        // Timeout: every 5s while building, if no progress for TIMEOUT_MS then onTimeoutError
         if (timeoutCheckIntervalRef.current) {
             clearInterval(timeoutCheckIntervalRef.current);
             timeoutCheckIntervalRef.current = null;
@@ -397,12 +403,8 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         }
     }, [isBuilding]);
 
-    // Process completed routines - when all days are done, duplicate to all weeks
     useEffect(() => {
-        // Only finalize when:
-        // 1. We have completed all days
-        // 2. The count has changed (avoid re-processing)
-        // 3. We have routines to process
+        // When all buildRoutine days are done: duplicate routines across weeks and setHevyProgram
         if (
             totalDays > 0 &&
             completedDays.length === totalDays &&
@@ -435,11 +437,10 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         }
     }, [completedDays.length, totalDays, allRoutines, programLength, setHevyProgram, handleIsBuilding, user]);
 
-    // Track which modifyProgram tool results have been applied (avoid re-applying on re-render)
     const appliedModifyProgramKeysRef = useRef<Set<string>>(new Set());
 
-    // Process modifyProgram tool results: validate, apply with immutable update, store inverse for undo
     useEffect(() => {
+        // Apply modifyProgram patches from messages; skip already-applied; push inverse ops to addToUndoStack
         const modified = applyModifyProgramPatchesFromMessages(
             messages,
             hevyProgram,
@@ -452,7 +453,6 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         }
     }, [messages, hevyProgram, setHevyProgram, addToUndoStack, user]);
 
-    // Helper function to convert string[] to IOption[] - memoized to prevent recreation
     const convertStringArrayToOptions = useCallback((
         values: string[],
         options: IOption[]
@@ -462,9 +462,8 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
             .filter((opt): opt is IOption => opt !== undefined);
     }, []);
 
-    // Memoized handleComplete - separates API call from state updates
     const handleComplete = useCallback((answers: Record<string, string | string[]>) => {
-        // 1. COMPUTE all values needed for API call FIRST (no state updates yet)
+        // Compute all values for sendMessage first, then batch state updates, then send
         let programLengthValue: ""|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12" = "";
         let daysPerWeekValue = "";
         let excludeEquipmentValue: IOption[] = [];

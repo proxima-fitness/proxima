@@ -1,14 +1,24 @@
 "use client"
 
+/**
+ * @module code-block
+ * Syntax-highlighted code display. CodeBlock is wrapper; CodeBlockCode uses Shiki
+ * (async) with SSR fallback; CodeBlockGroup lays out header/actions.
+ * Depends on: @/lib/utils, shiki.
+ * Used by: Markdown code blocks, docs, and ai-elements/code-block.
+ */
+
 import { cn } from "@/lib/utils"
 import { useEffect, useState } from "react"
 import { codeToHtml } from "shiki"
 
+/** @param children - Wrapped content (e.g. CodeBlockCode). @param className - Optional container classes. */
 export type CodeBlockProps = {
   children?: React.ReactNode
   className?: string
 } & React.HTMLProps<HTMLDivElement>
 
+/** Container for code display with border and overflow handling. */
 function CodeBlock({ children, className, ...props }: CodeBlockProps) {
   return (
     <div
@@ -24,6 +34,7 @@ function CodeBlock({ children, className, ...props }: CodeBlockProps) {
   )
 }
 
+/** @param code - Raw source. @param language - Shiki lang (default tsx). @param theme - Shiki theme (default github-light). */
 export type CodeBlockCodeProps = {
   code: string
   language?: string
@@ -31,6 +42,7 @@ export type CodeBlockCodeProps = {
   className?: string
 } & React.HTMLProps<HTMLDivElement>
 
+/** Renders code with Shiki highlighting; shows plain pre/code until hydrated. */
 function CodeBlockCode({
   code,
   language = "tsx",
@@ -58,7 +70,7 @@ function CodeBlockCode({
     className
   )
 
-  // SSR fallback: render plain code if not hydrated yet
+  // SSR: plain <pre><code> until Shiki result is ready
   return highlightedHtml ? (
     <div
       className={classNames}
@@ -74,6 +86,7 @@ function CodeBlockCode({
   )
 }
 
+/** Row layout for code block plus actions (e.g. copy button). */
 export type CodeBlockGroupProps = React.HTMLAttributes<HTMLDivElement>
 
 function CodeBlockGroup({

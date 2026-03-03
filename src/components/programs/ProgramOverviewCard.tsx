@@ -1,9 +1,23 @@
 import { Card } from "../ui/card";
 
+/*
+ * @module ProgramOverviewCard
+ * @description Read-only summary card showing key attributes of a program such as length, description, duration, equipment, specialization, and difficulty.
+ * @dependsOn Shared card UI component and the `TProgramPage` data model for program metadata.
+ * @usedBy Program detail layouts to provide a structured overview of what a program entails.
+ */
+
+/**
+ * Props for `ProgramOverviewCard`.
+ * @property program Program page data whose first schedule/program entry is used to derive overview fields.
+ */
 interface IProps {
     program: TProgramPage;
 }
 
+/**
+ * ProgramOverviewCard renders labeled rows summarizing the main properties of the selected program.
+ */
 export const ProgramOverviewCard: React.FC<IProps> = (props) => {
 
     const {

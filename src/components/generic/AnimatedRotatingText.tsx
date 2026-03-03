@@ -1,7 +1,15 @@
 "use client";
 
+/**
+ * @module AnimatedRotatingText
+ * Hero text that cycles through phrases ("Science Based", "Bodybuilding", etc.) with a slide animation.
+ * Uses a hidden measurement element to reserve space so layout doesn't jump.
+ * Depends on: React, CSS (animationWrapper, staticPhrase, incoming, outgoing).
+ * Used by: programs/landing hero.
+ */
 import { useState, useEffect, useRef, useMemo } from "react"
 
+/** No props. Renders "Train Popular [rotating phrase] Programs" with cycling phrases. */
 export default function AnimatedRotatingText() {
   const [currentPhrase, setCurrentPhrase] = useState("Science Based")
   const [nextPhrase, setNextPhrase] = useState("")
@@ -21,7 +29,7 @@ export default function AnimatedRotatingText() {
     "Functional"
   ], []);
 
-  // Calculate the maximum width and height needed for all phrases
+  // Reserve fixed space so layout doesn't jump: measure all phrases in a hidden element
   // and set a fixed height for the entire heading
   useEffect(() => {
 
@@ -63,20 +71,15 @@ export default function AnimatedRotatingText() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      // Determine the next phrase
       const currentIndex = phrases.indexOf(currentPhrase)
       const nextIndex = (currentIndex + 1) % phrases.length
       setNextPhrase(phrases[nextIndex])
-
-      // Start animation
       setIsAnimating(true)
-
-      // After animation completes, update current phrase and reset
       setTimeout(() => {
         setCurrentPhrase(phrases[nextIndex])
         setIsAnimating(false)
-      }, 1200) // Animation duration + small buffer
-    }, 4000) // Change phrase every 4 seconds
+      }, 1200)
+    }, 4000)
 
     return () => clearInterval(interval)
   }, [currentPhrase, phrases])

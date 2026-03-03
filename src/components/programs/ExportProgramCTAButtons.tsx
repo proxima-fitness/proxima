@@ -1,5 +1,19 @@
+/*
+ * @module ExportProgramCTAButtons
+ * @description Button list for selecting how to export a program (e.g., to partner apps or file formats).
+ * @dependsOn React JSX runtime, shared icon components provided via props, and parent export CTA wrappers.
+ * @usedBy `ExportProgramCTA` to render export options for the current program.
+ */
+
 import { JSX } from "react";
 
+/**
+ * Props for `ExportProgramCTAButtons`.
+ * @property programId Identifier of the program to be exported (used for analytics or future wiring).
+ * @property exportOptions List of export options including metadata such as id, label, icon, and disabled state.
+ * @property onSelectExport Optional callback fired when a user selects a non-disabled export option.
+ * @property showComingSoonLabel Whether to show a "Coming soon" label above disabled options.
+ */
 interface IProps {
     programId: number;
     exportOptions:{
@@ -14,6 +28,9 @@ interface IProps {
     showComingSoonLabel?: boolean;
 }
 
+/**
+ * ExportProgramCTAButtons renders actionable and disabled export options, optionally grouping disabled ones under a "coming soon" label.
+ */
 export const ExportProgramCTAButtons: React.FC<IProps> = ({
     programId,
     exportOptions,

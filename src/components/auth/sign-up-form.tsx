@@ -1,5 +1,12 @@
 'use client'
 
+/**
+ * @module sign-up-form
+ * Registration form: email, password, confirm password, username, first/last name with Yup validation.
+ * On submit shows Turnstile then TurnstileSignUp to complete registration.
+ * Depends on: TurnstileSignUp, UI components, react-hook-form/yup.
+ * Used by: auth sign-up page.
+ */
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,7 +25,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from "@hookform/resolvers/yup";
 import { TurnstileSignUp } from './TurnstileSignUp';
 
-
+/** Props: div props (e.g. className) for the form container. */
 export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
 
     const [isLoading, setIsLoading] = useState(false)

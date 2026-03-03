@@ -1,3 +1,9 @@
+/**
+ * @module pagination
+ * Pagination nav and building blocks (list, item, link, prev/next, ellipsis).
+ * Depends on: @/lib/utils, @/components/ui/button, next/link, lucide-react.
+ * Used by: list views, tables, search results.
+ */
 import * as React from "react";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 
@@ -5,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { IButtonProps, buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 
+/** Root <nav> for pagination; centered, aria-label="pagination". */
 const Pagination = ({ className, ...props }: React.ComponentProps<"nav">) => (
     <nav
     role="navigation"
@@ -15,6 +22,7 @@ const Pagination = ({ className, ...props }: React.ComponentProps<"nav">) => (
 );
 Pagination.displayName = "Pagination";
 
+/** <ul> container for pagination items (flex row, gap-1). */
 const PaginationContent = React.forwardRef<
   HTMLUListElement,
   React.ComponentProps<"ul">
@@ -27,6 +35,7 @@ const PaginationContent = React.forwardRef<
 ));
 PaginationContent.displayName = "PaginationContent";
 
+/** Wrapper <li> for a single pagination control. */
 const PaginationItem = React.forwardRef<
   HTMLLIElement,
   React.ComponentProps<"li">
@@ -35,18 +44,19 @@ const PaginationItem = React.forwardRef<
 ));
 PaginationItem.displayName = "PaginationItem";
 
-// type PaginationLinkProps = {
-//   isActive?: boolean
-// } & Pick<ButtonProps, "size"> &
-//   React.ComponentProps<"a">
-
+/**
+ * Props for a single page link.
+ * @property isActive - Whether this link is the current page (outline variant, aria-current="page").
+ * @property size - Button size; defaults to "icon".
+ * @property href - Target URL (required).
+ */
 type PaginationLinkProps = {
     isActive?: boolean;
     size?: IButtonProps["size"];
     href: string; // <-- required now
   } & Omit<React.ComponentProps<"a">, "href">;
 
-
+/** Page or action link styled as button; active page uses outline variant. */
 const PaginationLink = ({
   className,
   isActive,
@@ -67,6 +77,7 @@ const PaginationLink = ({
 );
 PaginationLink.displayName = "PaginationLink";
 
+/** "Previous" link (ChevronLeft + label); typically href to previous page. */
 const PaginationPrevious = ({
   className,
   ...props
@@ -83,6 +94,7 @@ const PaginationPrevious = ({
 );
 PaginationPrevious.displayName = "PaginationPrevious";
 
+/** "Next" link (label + ChevronRight); typically href to next page. */
 const PaginationNext = ({
   className,
   ...props
@@ -99,6 +111,7 @@ const PaginationNext = ({
 );
 PaginationNext.displayName = "PaginationNext";
 
+/** Placeholder for omitted page numbers (MoreHorizontal icon, sr-only "More pages"). */
 const PaginationEllipsis = ({
   className,
   ...props

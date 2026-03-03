@@ -1,3 +1,8 @@
+/**
+ * @module SetTypesLegend
+ * Hover-reveal legend for set types: Warmup, Working, Drop Set, Failure. Shown next to set-type controls.
+ * Depends on: Badge, Button, framer-motion. Used by: program builder set-type UI.
+ */
 "use client"
 
 import { useState } from "react"
@@ -6,6 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { ActivityIcon, DumbbellIcon, SkullIcon, TrendingDownIcon, InfoIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
+/** Legend button; hover shows tooltip panel with set-type badges. */
 export const SetTypesLegend = () => {
   const [isHovered, setIsHovered] = useState(false)
 

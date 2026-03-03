@@ -1,3 +1,8 @@
+/**
+ * @module ShareDialog
+ * Modal to share program link: copy URL, Facebook, Reddit. Uses shareId from URL or programId prop.
+ * Depends on: Dialog, Button, Input, useSearchParams. Used by: program builder share action.
+ */
 import {
     Dialog,
     DialogContent,
@@ -10,12 +15,17 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
 
+/** Props for the share dialog. */
 interface IProps {
+    /** Whether the dialog is open. */
     openShareDialog: boolean;
+    /** Callback to set dialog open state. */
     handleOpenShareDialog: (openShareDialog: boolean) => void;
+    /** Program id for share URL when shareId is not in URL. */
     programId: string;
 }
 
+/** Share modal: copy link, Facebook, Reddit; URL uses shareId from search params or programId. */
 export const ShareDialog: React.FC<IProps> = (props) => {
     const searchParams = useSearchParams();
     const shareId = searchParams.get('shareId');

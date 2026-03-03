@@ -1,3 +1,8 @@
+/**
+ * @module Chat
+ * Chat input for program builder: suggestions, upgrade banner, PromptInput with attachments and submit/stop. Used inside Agent.
+ * Depends on: prompt-input, attachments, suggestion, UpgradeBanner, useMyFeatureLimits. Used by: Agent.
+ */
 /* eslint-disable @next/next/no-img-element */
 import {
   PromptInput,
@@ -36,10 +41,12 @@ import { quickTriggerSuggestionChips } from "@/assets/constants";
 import type { FileUIPart } from "ai";
 import { memo, useCallback, useState } from "react";
 
+/** Props for the chat input container. */
 interface IProps {
   isLoading: boolean;
   handleSubmit: (text: string, files?: FileUIPart[]) => void;
   handleStop: () => void;
+  /** Whether to show quick-trigger suggestion chips (e.g. when no messages). */
   showSuggestions?: boolean;
 }
 
@@ -106,6 +113,7 @@ interface IChatInputBodyProps {
   handleStop: () => void;
 }
 
+/** Inner input + attachments + submit/stop; desktop stacked, mobile inline row. */
 const ChatInputBody = ({
   isLoading,
   outOfCredits,
@@ -265,6 +273,7 @@ const ChatInputBody = ({
   );
 };
 
+/** Chat footer: suggestions, upgrade banner when not pro, and PromptInput with attachments. */
 export const Chat: React.FC<IProps> = (props) => {
   const { isLoading, handleSubmit, handleStop, showSuggestions = true } = props;
   const { user } = useUserContext();

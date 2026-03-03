@@ -1,4 +1,9 @@
-
+/**
+ * @module CallToAction
+ * Placeholder for the CTA section (e.g. "Download the App"); currently returns null (deprecated).
+ * Depends on: none.
+ * Used by: landing/marketing layout.
+ */
 export const CallToAction: React.FC = () => {
 
     return (

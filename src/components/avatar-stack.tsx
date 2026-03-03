@@ -1,3 +1,9 @@
+/**
+ * @module avatar-stack
+ * Stack of avatars (overlapping) with tooltips; optional max count with "+N" for overflow. Orientation vertical/horizontal.
+ * Depends on: UI Avatar, Tooltip, cva, cn.
+ * Used by: program cards, collaborators, any multi-user display.
+ */
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -16,6 +22,9 @@ const avatarStackVariants = cva('flex -space-x-4 -space-y-4', {
   },
 })
 
+/** @property avatars - List of { name, image } for each avatar. */
+/** @property maxAvatarsAmount - Max avatars shown before "+N"; default 3. */
+/** @property orientation - vertical (default) or horizontal layout. */
 export interface IAvatarStackProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof avatarStackVariants> {
@@ -23,6 +32,7 @@ export interface IAvatarStackProps
   maxAvatarsAmount?: number
 }
 
+/** Renders overlapping avatars with tooltips and optional "+N" for overflow. */
 const AvatarStack = ({
   className,
   orientation,

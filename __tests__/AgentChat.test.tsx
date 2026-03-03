@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
 
+/**
+ * @module AgentChat.test
+ * Vitest suite that verifies normalization of `THevyRoutine[]` data produced by the AgentChat flow.
+ *
+ * Depends on: Vitest test runner, Hevy routine types used by the exporter.
+ * Used by: CI to guard against regressions in Hevy routine parsing and shaping.
+ */
+
 describe('THevyRoutine[] parsing', () => {
   it('should parse THevyRoutine[] format correctly', async () => {
     // Mock THevyRoutine[] data structure (as returned by LLM)
@@ -122,6 +130,12 @@ describe('THevyRoutine[] parsing', () => {
     ];
 
     // Simulate client-side processing (as done in AgentChat.tsx)
+    /**
+     * Normalizes partial `THevyRoutine` objects into fully shaped routines.
+     *
+     * @param routines LLM-produced routine stubs lacking ids and timestamps.
+     * @returns Routines with ids, ordering, and timestamps suitable for export.
+     */
     const processHevyRoutines = (routines: Partial<THevyRoutine>[]): THevyRoutine[] => {
       const now = new Date().toISOString();
       return routines.map((routine, index) => {

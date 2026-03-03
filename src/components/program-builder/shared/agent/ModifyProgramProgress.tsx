@@ -1,3 +1,8 @@
+/**
+ * @module ModifyProgramProgress
+ * Compact progress list for "modify program" tool: per-routine objectives with expand/collapse and week separators.
+ * Depends on: TModifyProgramRoutineObjective. Used by: MessageBubbles (modifyProgram tool UI).
+ */
 "use client";
 
 import { useState } from "react";
@@ -5,11 +10,15 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { TModifyProgramRoutineObjective } from "@/components/program-builder/utils/helpers";
 
+/** Props for the modify-program progress list. */
 export interface IProps {
+    /** Per-routine objectives (label + details) from modifyProgram tool. */
     objectivesByRoutine: TModifyProgramRoutineObjective[];
+    /** Whether modification is still processing or complete. */
     status: "processing" | "complete";
 }
 
+/** Expandable list of routine objectives with status indicator and week dividers. */
 export const ModifyProgramProgress: React.FC<IProps> = ({
     objectivesByRoutine,
     status,

@@ -1,4 +1,13 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable react-hooks/purity */
+/**
+ * @module HevyExerciseGif
+ * Renders an exercise image (GIF or thumbnail) from the API, or a fallback (initials/icon or "No Image") when missing.
+ * Supports thumbnail vs full-size and different resolutions/file types. Uses random colour for fallback placeholder.
+ * Depends on: useExerciseGif, Skeleton, lightColours, getInitials.
+ * Used by: HevyExerciseSearchBar, HevyExerciseVisualizer.
+ */
+
 import { useMemo, useState } from "react";
 import { DumbbellIcon } from "lucide-react";
 import { lightColours } from "@/assets/constants";
@@ -6,15 +15,25 @@ import { getInitials } from "@/utils/general/helpers";
 import { useExerciseGif } from "@/api/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 
+/** Props for the exercise image/placeholder. */
 interface IProps {
+  /** "thmb" for small thumbnail, "img" for full-size display. */
   thumbnailOrImage: "img" | "thmb";
+  /** Exercise name (used for fallback initials and alt). */
   name: string;
+  /** API gif/media id; undefined when no image. */
   gif_id: string | undefined;
+  /** Image resolution: "180" or "360". */
   resolution: "180" | "360";
+  /** File type requested: "jpg" or "gif". */
   file_type: "jpg" | "gif";
+  /** Optional index (e.g. for list key). */
   index?: number;
 }
 
+/**
+ * Renders exercise media from API or fallback (initials/icon / "No Image"). Load state uses Skeleton until loaded.
+ */
 export const HevyExerciseGif: React.FC<IProps> = (props) => {
 
     const { thumbnailOrImage, name, gif_id, resolution, file_type } = props;

@@ -1,10 +1,18 @@
+/**
+ * @module tabs
+ * Tabbed panel (list of triggers + content panels) built on Radix Tabs.
+ * Depends on: @radix-ui/react-tabs, @/lib/utils.
+ * Used by: settings, detail views, segmented controls.
+ */
 import * as React from "react";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 
 import { cn } from "@/lib/utils";
 
+/** Root; value and onValueChange for controlled tabs. */
 const Tabs = TabsPrimitive.Root;
 
+/** Container for tab triggers (pill strip). */
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
@@ -20,6 +28,7 @@ const TabsList = React.forwardRef<
 ));
 TabsList.displayName = TabsPrimitive.List.displayName;
 
+/** Single tab button; value must match a TabsContent value. */
 const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
@@ -35,6 +44,7 @@ const TabsTrigger = React.forwardRef<
 ));
 TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
 
+/** Panel shown when corresponding trigger is selected. */
 const TabsContent = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>

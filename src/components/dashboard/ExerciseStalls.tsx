@@ -1,5 +1,11 @@
 "use client";
 
+/*
+ * @module ExerciseStalls
+ * @description Presentational component that lists exercises with recent history, trend lines, and stall indicators, with optional pagination and upsell.
+ * @dependsOn Card, button, separator, pagination, and skeleton UI primitives, media query hooks, and unit formatting helpers.
+ * @usedBy `BlindSpotAnalysisSection` to visualize potential lift plateaus and provide navigation to explore fixes or more exercises.
+ */
 import * as React from "react";
 import { useState, useMemo } from "react";
 import { AlertTriangle, ChevronDown, ChevronUp, ArrowRight, PlusIcon, Crown } from "lucide-react";
@@ -55,6 +61,18 @@ function getPaginationPages(currentPage: number, totalPages: number): (number | 
     return [1, "...", currentPage, "...", totalPages];
 }
 
+/**
+ * Props for `ExerciseStalls`.
+ * @property exercises List of exercises to render including trend and optional session data.
+ * @property onExploreFixes Optional callback when the user chooses to explore fixes for a stalled exercise.
+ * @property onViewMore Optional callback fired when a non-link “View more exercises” button is clicked.
+ * @property viewMoreHref Optional link used instead of `onViewMore` to navigate to a pricing or upsell page.
+ * @property showViewMore Whether to render the “View more exercises” button or link (defaults to true).
+ * @property dataLoading When true, renders skeleton placeholders for metrics and charts while data loads.
+ * @property currentPage Current page number for paginated exercise lists.
+ * @property totalPages Total page count for pagination controls.
+ * @property onPageChange Callback to change pages when pagination controls are used.
+ */
 interface IProps {
     exercises: IExercise[];
     onExploreFixes?: (exercise: IExercise) => void;
@@ -100,6 +118,9 @@ const MiniTrendGraph: React.FC<{ trend: number[]; color: string }> = ({ trend, c
     );
 };
 
+/**
+ * ExerciseStalls renders a responsive grid of exercise cards with trendlines, expandable session history, stall warnings, and optional pagination.
+ */
 export const ExerciseStalls: React.FC<IProps> = (props) => {
     const {
         exercises,

@@ -1,5 +1,12 @@
 "use client";
 
+/**
+ * @module HevyExerciseNotesDialog
+ * Dialog for adding a note to a specific exercise in a Hevy day. Single text input (max 300 chars) and submit.
+ * Depends on: Dialog, Form, Input, Button, zod.
+ * Used by: HevyRoutine (when user adds a note to an exercise).
+ */
+
 import {
     Dialog,
     DialogContent,
@@ -19,12 +26,19 @@ import {
     FormMessage,
   } from "@/components/ui/form";
 
+/** Props for the add exercise note dialog. */
 interface IProps {
+    /** Called with week, day, exercise index, and note text when user submits. */
     handleAddExerciseNote: (folder_id: number, dayOrder: number, exerciseIndex: number, prompt: string) => void;
+    /** Current dialog state (open, folder_id, dayOrder, exerciseIndex). */
     addExerciseNoteDialog: THevyDialog;
+    /** Called to open/close the dialog. */
     handleOpenAddExerciseNoteDialog: (addExerciseNoteDialog: THevyDialog) => void;
 }
 
+/**
+ * Dialog to add a note to a specific exercise. Submits via handleAddExerciseNote and closes.
+ */
 export const HevyExerciseNotesDialog: React.FC<IProps> = (props) => {
 
     const {

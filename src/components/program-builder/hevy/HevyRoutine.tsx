@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * @module HevyRoutine
+ * Main Hevy program builder view: week columns (or single week on mobile with prev/next), scroll and step UI,
+ * and dialogs for add exercise, add note, add exercise note. Delegates to HevyColumn per week; in preview mode shows HevyRoutinePreview.
+ * Depends on: HevyColumn, HevyAddExerciseDialog, HevyAddNoteDialog, HevyExerciseNotesDialog, HevyRoutinePreview, deFlattenHevyRoutine, Stepper.
+ * Used by: BuildProgramClient.
+ */
+
 import {  useHevyExercises } from "@/api/hooks";
 import { HevyColumn } from "./HevyColumn";
 import { HevyAddExerciseDialog } from "./HevyAddExerciseDialog";
@@ -17,38 +25,71 @@ import { Button } from "@/components/ui/button";
 import { IOption } from "@/components/ui/multi-select";
 import { useEffect, useRef, useState } from "react";
 
+/** Props for the main Hevy routine builder (columns + dialogs). */
 interface IProps {
+    /** Flat list of all days (routines) in the program. */
     hevyProgram: THevyRoutine[];
+    /** Updater for the full program. */
     setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
+    /** When true, single-week view with prev/next; when false, horizontal scroll of all weeks. */
     isMobile: boolean;
+    /** State for the add/edit exercise dialog. */
     addExerciseDialog: THevyDialog;
+    /** State for the add routine note dialog. */
     addNoteDialog: THevyDialog;
+    /** State for the add exercise note dialog. */
     addExerciseNoteDialog: THevyDialog;
+    /** Whether add-exercise dialog is in edit mode. */
     isEditExercise: boolean;
+    /** Setter for edit mode. */
     handleIsEditExercise: (isEditExercise: boolean) => void;
+    /** Duplicate a week to one or more target weeks. */
     handleDuplicateWeek: (fromWeekIndex: number, toWeekIndexes: number[]) => void;
+    /** Duplicate a day to a target week and day slots. */
     handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;
+    /** Open/close add exercise dialog. */
     handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
+    /** Open/close add note dialog. */
     handleOpenAddNoteDialog: (addNoteDialog: THevyDialog) => void;
+    /** Open/close add exercise note dialog. */
     handleOpenAddExerciseNoteDialog: (addExerciseNoteDialog: THevyDialog) => void;
+    /** Add an empty day to a week. */
     handleAddDay: (folder_id: number) => void;
+    /** Delete a day by id. */
     handleDeleteDay: (id: string) => void;
+    /** Update a day title by id. */
     handleEditTitle: (id: string, title: string) => void;
+    /** Delete an exercise from a day. */
     handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
+    /** Add a Hevy routine as a day in a week. */
     handleAddRoutineAsDay: (routine: THevyRoutine, folder_id: number) => void;
+    /** Create a superset from selected exercises in a day. */
     handleCreateSuperset: (dayId: string, selectedExercises: number[]) => void;
+    /** Remove an exercise from its superset. */
     handleRemoveFromSuperset: (dayId: string, exerciseIndex: number) => void;
+    /** Apply edit to an existing exercise (from add-exercise dialog). */
     handleEditExercise: (editExercise: THevyDialog) => void;
+    /** Id of the focused day card. */
     focusedCardId: string;
+    /** Set focused day card. */
     setFocusedCardId: (focusedCardId: string) => void;
+    /** Total number of weeks. */
     numberOfWeeks: number;
+    /** Array of week indices used to map columns. */
     numberOfWeeksArr: number[];
+    /** Add a new exercise to a day. */
     handleAddExercise: (folder_id: number, dayOrder: number, exercise: THevyAddExercise) => Promise<void>;
+    /** Add a note to a day. */
     handleAddRoutineNote: (folder_id: number, dayOrder: number, prompt: string) => void;
+    /** Add a note to an exercise. */
     handleAddExerciseNote: (folder_id: number, dayOrder: number, exerciseIndex: number, prompt: string) => void;
+    /** Returns next superset id for a day (used when creating supersets). */
     getNextSupersetId: (day: THevyRoutine) => number;
 }
 
+/**
+ * Renders either preview (HevyRoutinePreview) or builder: week columns, scroll/stepper, and add-exercise/note dialogs.
+ */
 export const HevyRoutine: React.FC<IProps> = (props) => {
 
     const {

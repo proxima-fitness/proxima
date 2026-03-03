@@ -1,5 +1,15 @@
 "use client";
 
+/*
+ * @module HevyPromoBanner
+ * @description Lightweight promo banner that advertises a discounted pricing code for Hevy users.
+ * @dependsOn Client-side rendering, shared typography styles, and the current pricing layout for positioning.
+ * @usedBy Pricing flows targeting users arriving from Hevy integrations.
+ */
+
+/**
+ * HevyPromoBanner displays a static marketing message with a discount code and expiry date.
+ */
 export function HevyPromoBanner() {
     return (
         <div className="mx-auto mb-8 max-w-xl rounded-xl border border-border bg-muted px-4 py-3 text-center">

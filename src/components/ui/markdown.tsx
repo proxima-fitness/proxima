@@ -1,3 +1,11 @@
+/**
+ * @module markdown
+ * Renders markdown string as React: parses into blocks, uses react-markdown with
+ * GFM and remark-breaks; code blocks use CodeBlock/CodeBlockCode with Shiki.
+ * Depends on: marked, react-markdown, remark-gfm, remark-breaks, code-block, @/lib/utils.
+ * Used by: app and feature components that display user or CMS markdown.
+ */
+
 import { cn } from "@/lib/utils"
 import { marked } from "marked"
 import { memo, useId, useMemo } from "react"
@@ -6,6 +14,7 @@ import remarkBreaks from "remark-breaks"
 import remarkGfm from "remark-gfm"
 import { CodeBlock, CodeBlockCode } from "@/components/ui/code-block"
 
+/** @param children - Raw markdown string. @param components - Override react-markdown components. */
 export type MarkdownProps = {
   children: string
   id?: string
@@ -81,6 +90,7 @@ const MemoizedMarkdownBlock = memo(
 
 MemoizedMarkdownBlock.displayName = "MemoizedMarkdownBlock"
 
+/** Renders markdown by block; each block is memoized on content. */
 function MarkdownComponent({
   children,
   id,

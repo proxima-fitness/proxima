@@ -1,5 +1,15 @@
 "use client";
 
+/*
+ * @module Programs
+ * @description Top-level client component that orchestrates fetching and displaying coach and community programs with loading skeletons.
+ * @dependsOn Program query hooks, skeleton UI primitives, and the `ProgramSearch` component for search and filter behavior.
+ * @usedBy Program routes and layouts to render the primary program discovery experience.
+ */
+
+/**
+ * Programs coordinates program fetching for coach and community views and passes results into `ProgramSearch` for rendering.
+ */
 import { useState } from "react";
 import { usePrograms } from "@/api/hooks";
 import { Skeleton } from "@/components/ui/skeleton";

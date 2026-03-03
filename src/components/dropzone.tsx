@@ -1,3 +1,10 @@
+/**
+ * @module dropzone
+ * File dropzone built on useSupabaseUpload: root (Dropzone), content list with upload/remove (DropzoneContent),
+ * empty-state prompt (DropzoneEmptyState), and useDropzoneContext for children. formatBytes utility exported.
+ * Depends on: use-supabase-upload, UI Button, cn.
+ * Used by: upload flows (e.g. program builder, profile).
+ */
 import { cn } from '@/lib/utils'
 import { type UseSupabaseUploadReturn } from '@/hooks/use-supabase-upload'
 import { Button } from '@/components/ui/button'
@@ -22,10 +29,12 @@ type DropzoneContextType = Omit<UseSupabaseUploadReturn, 'getRootProps' | 'getIn
 
 const DropzoneContext = createContext<DropzoneContextType | undefined>(undefined)
 
+/** Props from useSupabaseUpload plus optional className for the root. */
 type DropzoneProps = UseSupabaseUploadReturn & {
   className?: string
 }
 
+/** Root: provides dropzone context and applies getRootProps/getInputProps to the wrapper div. */
 const Dropzone = ({
   className,
   children,
@@ -59,6 +68,8 @@ const Dropzone = ({
     </DropzoneContext.Provider>
   )
 }
+
+/** Lists files, upload/remove actions, and success/error state; optional className. */
 const DropzoneContent = ({ className }: { className?: string }) => {
   const {
     files,
@@ -180,6 +191,7 @@ const DropzoneContent = ({ className }: { className?: string }) => {
   )
 }
 
+/** Prompt when no files or not yet successful: "Upload N file(s)", drag/drop, max size; hidden when isSuccess. */
 const DropzoneEmptyState = ({ className }: { className?: string }) => {
   const { maxFiles, maxFileSize, inputRef, isSuccess } = useDropzoneContext()
 
@@ -215,6 +227,7 @@ const DropzoneEmptyState = ({ className }: { className?: string }) => {
   )
 }
 
+/** Must be used inside Dropzone; returns upload state and actions for children. */
 const useDropzoneContext = () => {
   const context = useContext(DropzoneContext)
 

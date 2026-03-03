@@ -1,3 +1,8 @@
+/**
+ * @module SaveDialog
+ * Post-creation congratulations modal with View JSON / Preview PDF toggle; placeholder for future save/export actions.
+ * Depends on: Dialog, Button. Used by: program builder (when save flow is triggered).
+ */
 import {
     Dialog,
     DialogContent,
@@ -13,11 +18,15 @@ import {   PartyPopperIcon } from "lucide-react";
 // import { HevyPdfRenderer } from "../hevy/HevyPdfRenderer";
 // import { PdfRenderer } from "../proxima/PdfRenderer";
 
+/** Props for the save/congrats dialog. */
 interface IProps {
+    /** Whether the dialog is open. */
     openSaveDialog: boolean;
+    /** Callback to set dialog open state. */
     handleOpenSaveDialog: (openSaveDialog: boolean) => void;
 }
 
+/** Congrats modal with View JSON / Preview PDF tabs; save CTA currently commented out. */
 export const SaveDialog: React.FC<IProps> = (props) => {
 
     const {

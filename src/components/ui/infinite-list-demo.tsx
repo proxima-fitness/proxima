@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * @module infinite-list-demo
+ * Infinite-scroll list backed by Supabase: fetches pages via useInfiniteQuery and
+ * loads more when sentinel intersects the scroll container.
+ * Depends on: @/lib/utils, @/hooks/use-infinite-query.
+ * Used by: app and feature components that list paginated Supabase data.
+ */
+
 import { cn } from '@/lib/utils'
 import {
   SupabaseQueryHandler,
@@ -9,6 +17,15 @@ import {
 } from '@/hooks/use-infinite-query'
 import * as React from 'react'
 
+/**
+ * @param tableName - Supabase table to query.
+ * @param columns - Select columns (default '*').
+ * @param pageSize - Page size for pagination.
+ * @param trailingQuery - Optional query filter/order.
+ * @param renderItem - Renders each row.
+ * @param renderNoResults - Shown when list is empty.
+ * @param renderSkeleton - Shown while loading (receives count).
+ */
 interface IInfiniteListProps<TableName extends SupabaseTableName> {
   tableName: TableName
   columns?: string
@@ -38,6 +55,7 @@ const defaultSkeleton = (count: number) => (
   </div>
 )
 
+/** Renders a scrollable list with intersection-based load-more. */
 export function InfiniteList<TableName extends SupabaseTableName>({
   tableName,
   columns = '*',

@@ -1,10 +1,20 @@
+/**
+ * @module (app)/privacy/page
+ *
+ * Privacy policy page. Static legal content (definitions, collection, access,
+ * security, retention). Sits at src/app/(app)/privacy/page.tsx; route "/privacy".
+ *
+ * Depends on: none (static markup and exer-card styles).
+ * Used by: Next.js (route "/privacy").
+ */
+
 export const metadata = {
     title: "Privacy Policy | Proxima Fitness",
     description: "These are the Privacy Policies that we abide by",
-  };
+};
 
-  export default function PrivacyPage() {
-
+/** Privacy policy page; static legal text. */
+export default function PrivacyPage() {
     return (
         <main className="min-h-screen px-4 py-10 bg-gray-100">
             <h1 className="text-5xl max-sm:text-3xl pl-28 max-sm:pl-0 max-sm:flex max-sm:justify-center font-bold text-gray-900 mb-6 text-left">

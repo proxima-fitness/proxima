@@ -1,3 +1,14 @@
+/* eslint-disable @next/next/no-img-element */
+/**
+ * @module (app)/waitlist/page
+ *
+ * Andy (Hevy) waitlist page. Hero, feature videos, and waitlist form. Sits at
+ * src/app/(app)/waitlist/page.tsx; route "/waitlist".
+ *
+ * Depends on: AndyWaitlistForm, public logos (proxima_logo_black, hevy_logo).
+ * Used by: Next.js (route "/waitlist").
+ */
+
 import { AndyWaitlistForm } from "@/components/waitlist/AndyWaitlistForm";
 import { proxima_logo_black, hevy_logo } from "public";
 
@@ -6,6 +17,7 @@ export const metadata = {
   description: "Be among the first to experience Andy, the Agentic Workout Builder for Hevy. Get personalized workout guidance powered by artificial intelligence.",
 };
 
+/** Waitlist page for Andy (Hevy) product; form + feature grid. */
 export default function WaitlistPage() {
   return (
     <main className="min-h-screen bg-linear-to-b from-gray-50 to-gray-100 dark:from-darkGray dark:to-gray-900 flex items-center justify-center">

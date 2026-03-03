@@ -1,7 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * @module (app)/auth/sign-up/page
+ *
+ * Sign-up page. Renders SignUpForm with side imagery and gradients. Sits at
+ * src/app/(app)/auth/sign-up/page.tsx; route "/auth/sign-up".
+ *
+ * Depends on: SignUpForm, public images.
+ * Used by: Next.js (route "/auth/sign-up").
+ */
+
 import { SignUpForm } from '@/components/auth/sign-up-form'
 import { ai_program_builder, completed_sets } from 'public'
 
+/** Sign-up page; form and side imagery. */
 export default function Page() {
   return (
     <div className="bg-white dark:bg-darkGray flex flex-row sm:min-h-svh w-full items-center justify-around gap-24 md:p-10">

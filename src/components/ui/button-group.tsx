@@ -1,3 +1,11 @@
+/**
+ * @module button-group
+ * Groups buttons (or triggers) horizontally or vertically with shared borders and
+ * focus handling. Exports ButtonGroup, ButtonGroupText, ButtonGroupSeparator.
+ * Depends on: @radix-ui/react-slot, class-variance-authority, @/lib/utils, separator.
+ * Used by: app and feature components that need segmented controls.
+ */
+
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 
@@ -21,6 +29,7 @@ const buttonGroupVariants = cva(
   }
 )
 
+/** Container for grouped buttons; orientation controls horizontal vs vertical layout. */
 function ButtonGroup({
   className,
   orientation,
@@ -37,6 +46,7 @@ function ButtonGroup({
   )
 }
 
+/** Non-clickable label segment in a button group; supports asChild. */
 function ButtonGroupText({
   className,
   asChild = false,
@@ -57,6 +67,7 @@ function ButtonGroupText({
   )
 }
 
+/** Visual divider between button group segments. */
 function ButtonGroupSeparator({
   className,
   orientation = "vertical",

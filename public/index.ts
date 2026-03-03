@@ -66,12 +66,15 @@ import strong_logo from "./strong_logo.png";
 import macrofactor_logo from "./macrofactor_logo.png";
 import google_sheets_logo_icon from "./google-sheets-logo-icon.svg";
 import proxima_logo_white from "./proxima_logo_white.svg";
+import league_of_innovators_logo from "./league-of-innovators-logo.png";
+import hevy_logo_black from "./hevy-logo-black.svg";
 
 export {
     qr_code,
     quotes,
     star,
     starGold,
+    hevy_logo_black,
     google,
     add,
     apple,
@@ -104,6 +107,7 @@ export {
     people04,
     people05,
     people06,
+    league_of_innovators_logo,
     completed_sets,
     profile_mobile_device_white,
     profile_mobile_device_classic,

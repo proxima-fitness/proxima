@@ -1,5 +1,17 @@
 "use client";
 
+/**
+ * @module (app)/(with-toolbar)/build-program/BuildProgramClient
+ *
+ * Full AI program-builder UI: chat + program editor (Hevy-style routines), filters,
+ * share/resume/empty/search URL handling, undo, dialogs. Sits under build-program
+ * layout; drives useChat, program state, and tool calls.
+ *
+ * Depends on: useChat, UserContext, PreviewContext, HevyContext, resizable panels,
+ * Agent, HevyRoutine, program-builder utils, API (getSharedProgram, recordLlmRequest).
+ * Used by: build-program/page.tsx.
+ */
+
 import { useState, useEffect, useMemo, useReducer, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -45,8 +57,14 @@ import { useUserContext } from "@/contexts/UserContext";
 import { recordLlmRequest } from "@/api/featureLimits";
 
 
+/**
+ * Program builder client: chat sidebar, program state (hevyProgram), filters,
+ * URL params (shareId, edit, resume, shared, empty, search). No props; reads
+ * searchParams and context. Uses hevyProgramRef so sendMessage/API see latest
+ * program without effect dependencies; sendMessageRef for stable callback in
+ * one-time search effect.
+ */
 export function BuildProgramClient() {
-
     const { isHevy } = useIsHevy();
     const { user } = useUserContext();
     const queryClient = useQueryClient();
@@ -75,7 +93,7 @@ export function BuildProgramClient() {
     /*** STATE FOR THE PROGRAM BUILDER ***/
     const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>([]);
     const hevyProgramRef = useRef<THevyRoutine[]>(hevyProgram);
-    hevyProgramRef.current = hevyProgram;
+    hevyProgramRef.current = hevyProgram; // Ref so sendMessageWithContext/API see current program without effect deps
     const [undoStack, setUndoStack] = useState<Operation[][]>([]);
     /*************************************************************************************/
 
@@ -125,7 +143,6 @@ export function BuildProgramClient() {
     // check useChat's error for cases where the error comes through the hook
 
 
-    // Track if initial search has been triggered for this component instance
     const initialSearchOccurred = useRef<boolean>(false);
     const sharedProgramLoadAttemptedRef = useRef<boolean>(false);
     const resumeLoadAttemptedRef = useRef<boolean>(false);
@@ -173,7 +190,7 @@ export function BuildProgramClient() {
         [sendMessage, hevyProgram, hevyProgramRef, daysPerWeek, programLength, excludeAreas, excludeEquipment, healthIssues, incrementLlmRequests]
     );
 
-    const sendMessageRef = useRef(sendMessageWithContext);
+    const sendMessageRef = useRef(sendMessageWithContext); // Stable ref for one-time search effect so effect doesn't re-run on sendMessageWithContext identity change
     const prevErrorRef = useRef<Error | null>(null);
 
     useEffect(() => {
@@ -199,9 +216,9 @@ export function BuildProgramClient() {
 
 
 
-    // Initialize with search parameter if present (delay until shared/resume load has completed so API receives program)
     useEffect(() => {
         const isLongPromptPlaceholder = search === LONG_PROMPT_PLACEHOLDER;
+        // Long prompts: URL uses placeholder; real text in sessionStorage to avoid URL length limits
         const messageText = isLongPromptPlaceholder
             ? (typeof sessionStorage !== "undefined" ? sessionStorage.getItem(PENDING_INITIAL_PROMPT_KEY) : null) ?? ""
             : search;

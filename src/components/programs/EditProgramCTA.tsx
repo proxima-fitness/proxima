@@ -1,11 +1,25 @@
 "use client";
 
+/*
+ * @module EditProgramCTA
+ * @description Call-to-action card that deep-links into the builder so users can customize a shared workout program with AI.
+ * @dependsOn Next.js routing, lucide-react icon primitives, and shared button styling.
+ * @usedBy Program detail layouts to surface an entry point for AI-assisted program customization.
+ */
+
+/**
+ * Props for `EditProgramCTA`.
+ * @property programId Identifier of the program that should be opened in the builder for editing.
+ */
 import { SparklesIcon } from "lucide-react";
 import Link from "next/link";
 interface IProps {
     programId: number;
 }
 
+/**
+ * EditProgramCTA renders a prominent card that links to the AI builder with the selected program preloaded for customization.
+ */
 export const EditProgramCTA: React.FC<IProps> = ({ programId }) => {
     return (
         <div className="rounded-xl dark:bg-gray-900 bg-extraLightGray border-2 border-gray-300 dark:border-gray-700 shadow-md flex flex-col text-center justify-center items-center px-8 py-8 h-full w-full">

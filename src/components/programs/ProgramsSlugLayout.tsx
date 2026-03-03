@@ -1,7 +1,14 @@
+/*
+ * @module ProgramsSlugLayout
+ * @description Server-side layout for an individual program slug page, assembling thumbnails, creator context, overview, and export/edit CTAs.
+ * @dependsOn SSR hooks for program and user metadata, program preview and overview components, export/edit CTAs, and layout utilities.
+ * @usedBy Dynamic program routes to present a full-view experience for a single shared program.
+ */
+
 import { ExportProgramCTA } from "./ExportProgramCTA";
 import { EditProgramCTA } from "./EditProgramCTA";
 import { useOpUserMetadataSSR, useProgramByIdSSR, useUserFullNameSSR } from "@/api/hooks";
-import { ProgramPreview } from "../program-builder/proxima/ProgramPreview";
+import { ProgramPreview } from "./ProgramPreview";
 import { sortWorkouts } from "@/utils/general/helpers";
 import { FC } from "react";
 import { Card } from "../ui/card";
@@ -19,6 +26,9 @@ interface IProps {
     id: number;
 }
 
+/**
+ * ProgramsSlugLayout composes server-fetched program data into a rich program detail page including preview and export options.
+ */
 export const ProgramsSlugLayout: FC<IProps> =  async (props) => {
 
     const { id } = props;

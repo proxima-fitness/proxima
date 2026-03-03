@@ -1,3 +1,10 @@
+/*
+ * @module ConnectHevyDialog
+ * @description Header-level dialog for connecting or updating a user's Hevy API key so Proxima can sync workout data from the Hevy app.
+ * @dependsOn UI dialog primitives, user context, Hevy API helpers, React Query for cache invalidation, and toast notifications.
+ * @usedBy Navbar account menu to let authenticated users manage their Hevy integration.
+ */
+
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
@@ -11,11 +18,19 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useHevySecret } from "@/api/hooks";
 import { LockIcon, LockOpenIcon } from "lucide-react";
 
+/**
+ * Props for `ConnectHevyDialog`.
+ * @property openConnectHevyDialog Controls whether the dialog is visible.
+ * @property handleOpenConnectHevyDialog Callback invoked when the dialog open state changes.
+ */
 interface IProps {
     openConnectHevyDialog: boolean;
     handleOpenConnectHevyDialog: (openConnectHevyDialog: boolean) => void;
 }
 
+/**
+ * ConnectHevyDialog renders a controlled modal for entering, validating, and saving a user's Hevy API key.
+ */
 export const ConnectHevyDialog: React.FC<IProps> = (props) => {
 
     const {
@@ -29,6 +44,7 @@ export const ConnectHevyDialog: React.FC<IProps> = (props) => {
     const [inputValue, setInputValue] = useState(hevyApiKey ?? "");
     const queryClient = useQueryClient();
 
+    // Validate the candidate API key and either update or create it, then refresh dependent queries.
     const handleConnectHevy = async () => {
         const isValidUuid = validate(inputValue);
         if (isValidUuid) {

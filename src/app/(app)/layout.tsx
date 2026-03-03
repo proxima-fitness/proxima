@@ -1,3 +1,14 @@
+/**
+ * @module (app)/layout
+ *
+ * Root layout for the main app segment. Wraps all (app) routes with fonts,
+ * theme, providers (user, Hevy, preview, sidebar, etc.), navbar, and main
+ * content area. Sits at src/app/(app)/layout.tsx; wraps every page under (app).
+ *
+ * Depends on: global.css, Navbar, QueryProvider, theme/sidebar/context providers, Analytics, Toaster.
+ * Used by: All (app) routes as parent layout.
+ */
+
 import "@/styles/global.css";
 
 import { Russo_One, Exo, Inter } from "next/font/google";
@@ -48,11 +59,16 @@ const inter = Inter({
 });
 
 
+/**
+ * Root layout component. Renders html/body with font classes and provider tree.
+ *
+ * @param props.children - The active (app) page content.
+ */
 export default function RootLayout({
     children,
-    }: {
-    children: React.ReactNode
-    } ) {
+}: {
+    children: React.ReactNode;
+}) {
 
     return (
         <html lang="en" className={ `${exo.className} ${russo_one.className} ${inter.className}` } suppressHydrationWarning>

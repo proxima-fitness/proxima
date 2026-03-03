@@ -1,5 +1,12 @@
 "use client";
 
+/**
+ * @module forgot-password-form
+ * Form to request a password reset: email input, submit triggers Turnstile then reset API.
+ * Shows success state ("Check your email") when reset is sent.
+ * Depends on: TurnstileResetPassword, UI card/input/button, cn.
+ * Used by: auth forgot-password page.
+ */
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -15,6 +22,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { TurnstileResetPassword } from './TurnstileResetPassword';
 
+/** Props: div props (e.g. className) for the form container. */
 export function ForgotPasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
 
     const [email, setEmail] = useState('')

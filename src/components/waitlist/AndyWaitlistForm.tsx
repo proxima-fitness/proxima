@@ -1,11 +1,21 @@
 'use client'
 
+/*
+ * @module AndyWaitlistForm
+ * @description Simple email capture form that inserts interested users into the `andy_waitlist` Supabase table with basic success and error handling.
+ * @dependsOn Supabase client helper, shared button/input/label UI components, and React client-side state.
+ * @usedBy Waitlist pages that collect early-access interest for the Andy product.
+ */
+
 import { useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
+/**
+ * AndyWaitlistForm renders an email-only waitlist form with Supabase persistence and inline success/error messaging.
+ */
 export function AndyWaitlistForm() {
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)

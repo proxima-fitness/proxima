@@ -1,9 +1,22 @@
 "use client"
 
+/**
+ * @module prompt-suggestion
+ * Suggestion chip/button with optional substring highlight for chat/command UIs.
+ * Depends on: @/components/ui/button, @/lib/utils, class-variance-authority.
+ * Used by: prompt inputs, quick-reply, search suggestions.
+ */
 import { Button, buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { VariantProps } from "class-variance-authority"
 
+/**
+ * Props for a single suggestion.
+ * @property children - Label (string preferred when using highlight).
+ * @property variant - Button variant; default outline when no highlight, ghost with highlight.
+ * @property size - Button size.
+ * @property highlight - Substring to highlight in children (case-insensitive); enables full-width chip style.
+ */
 export type PromptSuggestionProps = {
   children: React.ReactNode
   variant?: VariantProps<typeof buttonVariants>["variant"]
@@ -12,6 +25,7 @@ export type PromptSuggestionProps = {
   highlight?: string
 } & React.ButtonHTMLAttributes<HTMLButtonElement>
 
+/** Renders as Button; when highlight is set, splits label and highlights matching segment. */
 function PromptSuggestion({
   children,
   variant,
@@ -57,6 +71,7 @@ function PromptSuggestion({
   const contentLower = content.toLowerCase()
   const highlightLower = trimmedHighlight.toLowerCase()
   const shouldHighlight = contentLower.includes(highlightLower)
+  // Split content into before/match/after using first occurrence (case-insensitive index)
 
   return (
     <Button

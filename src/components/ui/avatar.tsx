@@ -1,3 +1,11 @@
+/**
+ * @module avatar
+ * User or entity image with optional fallback (initials/icon). Composed of Root,
+ * Image, and Fallback for loading and a11y.
+ * Depends on: @radix-ui/react-avatar, @/lib/utils.
+ * Used by: AppSidebar, profile UIs, and feature components.
+ */
+
 import * as React from "react";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
 

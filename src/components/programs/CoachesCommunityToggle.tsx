@@ -1,5 +1,19 @@
 "use client";
 
+/*
+ * @module CoachesCommunityToggle
+ * @description Segmented toggle that switches between coach-created and community-created program views while surfacing program counts.
+ * @dependsOn React client rendering, shared button styles, and parent program search layout state.
+ * @usedBy Program discovery pages to let users flip between curated coach programs and community programs.
+ */
+
+/**
+ * Props for `CoachesCommunityToggle`.
+ * @property viewMode Current active view, either "coaches" or "community".
+ * @property onViewModeChange Callback invoked when the user selects a different view mode.
+ * @property coachCount Number of programs available in the coaches view.
+ * @property communityCount Number of programs available in the community view.
+ */
 interface IProps {
     viewMode: "coaches" | "community";
     onViewModeChange: (mode: "coaches" | "community") => void;
@@ -7,6 +21,9 @@ interface IProps {
     communityCount: number;
 }
 
+/**
+ * CoachesCommunityToggle renders a two-state pill control for switching between coach and community program feeds.
+ */
 export function CoachesCommunityToggle({
     viewMode,
     onViewModeChange,

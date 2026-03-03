@@ -1,5 +1,16 @@
 "use client";
 
+/*
+ * @module ExportProgramCTA
+ * @description High-level export call-to-action that wraps export option buttons for sending a program to external destinations.
+ * @dependsOn Export program button group component, shared export option constants, and React client rendering.
+ * @usedBy Program detail pages to present export choices (e.g., Hevy, PDF) for the current program.
+ */
+
+/**
+ * Props for `ExportProgramCTA`.
+ * @property programId Identifier of the program whose data should be exported.
+ */
 import { ExportProgramCTAButtons } from "./ExportProgramCTAButtons";
 import { exportOptions } from "@/assets/constants";
 
@@ -7,6 +18,9 @@ interface IProps {
     programId: number;
 }
 
+/**
+ * ExportProgramCTA renders a styled card wrapper around export buttons for the active program.
+ */
 export const ExportProgramCTA: React.FC<IProps> = ({ programId }) => {
 
     return (

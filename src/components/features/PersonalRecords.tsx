@@ -1,8 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+/*
+ * @module PersonalRecords
+ * @description Marketing section highlighting personal record tracking, social profile stats, and sharing capabilities.
+ * @dependsOn Shared layout and typography styles plus a profile device mock image asset.
+ * @usedBy The marketing homepage features area to explain personal records functionality.
+ */
+
 import { profile_mobile_device_classic } from "public";
 import styles, { layout } from "../../style";
 
+/**
+ * PersonalRecords renders a feature section that explains how users can track and share their lifting personal records.
+ */
 export const PersonalRecords: React.FC = () => {
 
     return (

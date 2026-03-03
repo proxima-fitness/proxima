@@ -1,3 +1,11 @@
+/**
+ * @module command
+ * Command palette / combobox: search input, list, groups, items, shortcuts.
+ * CommandDialog opens it in a modal. Built on cmdk and Radix Dialog.
+ * Depends on: cmdk, @radix-ui/react-dialog, @/lib/utils, dialog.
+ * Used by: multi-select, search UIs, and feature components.
+ */
+
 import * as React from "react";
 import { type DialogProps } from "@radix-ui/react-dialog";
 import { Command as CommandPrimitive } from "cmdk";
@@ -21,6 +29,7 @@ const Command = React.forwardRef<
 ));
 Command.displayName = CommandPrimitive.displayName;
 
+/** Command palette rendered inside a Dialog. */
 const CommandDialog = ({ children, ...props }: DialogProps) => {
   return (
       <Dialog { ...props }>

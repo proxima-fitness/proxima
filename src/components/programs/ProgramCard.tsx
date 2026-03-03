@@ -1,5 +1,17 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
+/*
+ * @module ProgramCard
+ * @description Presentational card for a single shared program including thumbnail, metadata, and bookmark controls.
+ * @dependsOn User context, program subscription APIs, thumbnail assets, badge and dialog UI primitives, and toast notifications.
+ * @usedBy Program lists and grids wherever individual programs need to be previewed with save/remove actions.
+ */
+
+/**
+ * Props for `ProgramCard`.
+ * @property program Program data model used to render title, metadata, and bookmark state.
+ */
 import { thumbnail } from "public";
 import { FullName } from "../generic/FullName";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +36,9 @@ interface IProps {
     program: TProgram;
 }
 
+/**
+ * ProgramCard renders a clickable program preview with thumbnail, author, difficulty chips, and bookmark affordances.
+ */
 export const ProgramCard: React.FC<IProps> = (props) => {
 
     const {

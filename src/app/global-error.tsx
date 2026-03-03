@@ -1,17 +1,32 @@
 "use client";
 
+/**
+ * @module global-error
+ *
+ * Root-level error boundary for the app. Renders a full-document fallback when
+ * an uncaught error occurs anywhere in the tree (replaces the root layout).
+ * Sits at src/app/global-error.tsx; Next.js mounts it in place of the normal
+ * layout when a critical error is thrown.
+ *
+ * Depends on: next/error.
+ * Used by: Next.js App Router (automatic).
+ */
+
 import NextError from "next/error";
 
-export default function GlobalError({ error }:{ error: Error }) {
+/**
+ * Renders the global error UI. Must return a full <html><body> shell because
+ * it replaces the root layout.
+ *
+ * @param props.error - The thrown Error instance (logged to console).
+ */
+export default function GlobalError({ error }: { error: Error }) {
   console.error(error);
 
   return (
     <html>
       <body>
-        {/* `NextError` is the default Next.js error page component. Its type
-        definition requires a `statusCode` prop. However, since the App Router
-        does not expose status codes for errors, we simply pass 0 to render a
-        generic error message. */}
+        {/* NextError requires statusCode; App Router doesn't expose status codes, so we pass 0 for a generic message. */}
         <NextError statusCode={0} />
       </body>
     </html>

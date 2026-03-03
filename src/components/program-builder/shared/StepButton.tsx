@@ -1,3 +1,8 @@
+/**
+ * @module StepButton
+ * CTA for program builder: "Sign in to save" when anonymous, "Export" when logged in; opens ExportDialog.
+ * Depends on: ExportDialog, useUserContext. Used by: build-program toolbar / steps.
+ */
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -12,6 +17,7 @@ import posthog from "posthog-js";
 const BUILD_PROGRAM_PATH = "/build-program?resume=true&edit=true";
 const LOGIN_WITH_NEXT = `/auth/login?next=${encodeURIComponent(BUILD_PROGRAM_PATH)}`;
 
+/** Shows Loading, Sign in link, or Export button; Export opens ExportDialog. */
 export const StepButton: React.FC = () => {
 
     const { user, isLoading } = useUserContext();

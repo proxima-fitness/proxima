@@ -1,5 +1,12 @@
 "use client";
 
+/**
+ * @module HevyGenerateDayDialog
+ * Dialog to (re-)generate a day from a text prompt. Single input (max 300 chars) and Generate button.
+ * Depends on: Dialog, Form, Input, Button, zod.
+ * Used by: HevyRoutine (currently commented out in JSX).
+ */
+
 import {
     Dialog,
     DialogContent,
@@ -19,12 +26,19 @@ import {
     FormMessage,
   } from "@/components/ui/form";
 
+/** Props for the generate-day dialog. */
 interface IProps {
+    /** Called with week index, day index, and user prompt to generate the day. */
     handleGenerateDay: (currentWeekIndex: number, currentDayIndex: number, prompt: string) => void;
+    /** Current dialog state (open, folder_id, dayOrder). */
     generateDayDialog: THevyDialog;
+    /** Called to open/close the dialog. */
     handleOpenGenerateDayDialog: (generateDayDialog: THevyDialog) => void;
 }
 
+/**
+ * Dialog to describe and generate a day. Submits prompt via handleGenerateDay and closes.
+ */
 export const HevyGenerateDayDialog: React.FC<IProps> = (props) => {
 
     const {

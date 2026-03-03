@@ -1,6 +1,12 @@
+/**
+ * @module BuildProgramSkeletonSSR
+ * Server-renderable loading skeleton for program builder (no quotes, no client hooks). Used for SSR/initial paint.
+ * Depends on: Skeleton. Used by: build-program layout (SSR).
+ */
 import { Skeleton } from "@/components/ui/skeleton";
 import { FC } from "react";
 
+/** SSR-safe skeleton: step strips + empty content cells. */
 export const BuildProgramSkeletonSSR: FC = () => {
 
     return (

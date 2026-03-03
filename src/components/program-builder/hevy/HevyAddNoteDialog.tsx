@@ -1,5 +1,12 @@
 "use client";
 
+/**
+ * @module HevyAddNoteDialog
+ * Dialog for adding a routine (day) note to a Hevy program. Single text input with validation (max 300 chars) and submit.
+ * Depends on: Dialog, Form, Input, Button, zod.
+ * Used by: HevyRoutine (when user adds a note to a day).
+ */
+
 import {
     Dialog,
     DialogContent,
@@ -19,12 +26,19 @@ import {
     FormMessage,
   } from "@/components/ui/form";
 
+/** Props for the add routine note dialog. */
 interface IProps {
+    /** Called with week index, day index, and note text when user submits. */
     handleAddRoutineNote: (currentWeekIndex: number, currentDayIndex: number, prompt: string) => void;
+    /** Current dialog state (open, folder_id, dayOrder). */
     addNoteDialog: THevyDialog;
+    /** Called to open/close the dialog. */
     handleOpenAddNoteDialog: (addNoteDialog: THevyDialog) => void;
 }
 
+/**
+ * Dialog to add a note to a specific day in the program. Submits note via handleAddRoutineNote and closes.
+ */
 export const HevyAddNoteDialog: React.FC<IProps> = (props) => {
 
     const {

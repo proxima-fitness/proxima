@@ -1,4 +1,11 @@
 
+/*
+ * @module BlogSlugLayout
+ * @description Server-rendered layout for an individual blog article, including title, metadata, and rich-text content.
+ * @dependsOn Server-side blog fetching hook, date formatting helpers, and the rich-text renderer for Payload content.
+ * @usedBy Dynamic blog slug routes to display a single article based on its identifier.
+ */
+
 import { useBlogByIdSSR } from "@/api/hooks";
 import { convertSupabaseDateToReadable } from "@/utils/general/helpers";
 import { FC } from "react";
@@ -6,10 +13,17 @@ import { FC } from "react";
 import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical';
 import { RichText } from "../rich-text/RichText";
 
+/**
+ * Props for `BlogSlugLayout`.
+ * @property id Blog identifier coming from the route slug, used to fetch the full article.
+ */
 interface IProps {
     id: string;
 }
 
+/**
+ * BlogSlugLayout fetches and renders a single blog article on the server, including rich-text body content.
+ */
 export const BlogSlugLayout: FC<IProps> = async (props) => {
 
     const { id } = props;

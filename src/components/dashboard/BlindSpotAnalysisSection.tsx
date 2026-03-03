@@ -1,5 +1,17 @@
 "use client";
 
+/*
+ * @module BlindSpotAnalysisSection
+ * @description Dashboard section that surfaces exercises with potential stalls and lets users open programs or Hevy templates to address them.
+ * @dependsOn User and unit contexts, exercise stall analysis and template hooks, subscribed program data, dialog and toggle UI components, and the `ExerciseStalls` list.
+ * @usedBy The main dashboard page to provide an overview of lift blind spots and entry points into the builder to fix plateaus.
+ */
+
+/**
+ * Props for `BlindSpotAnalysisSection`.
+ * @property hevyPrograms Optional list of Hevy programs available to open in the builder.
+ * @property isLoadingHevy Whether Hevy programs are still loading.
+ */
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useUserContext } from "@/contexts/UserContext";
@@ -102,6 +114,9 @@ type BlindSpotAnalysisSectionProps = {
     isLoadingHevy?: boolean;
 };
 
+/**
+ * BlindSpotAnalysisSection fetches exercise stall data, templates, and saved programs, then renders a paginated `ExerciseStalls` view with fix flows.
+ */
 export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHevy = false }: BlindSpotAnalysisSectionProps) {
     const router = useRouter();
     const { user } = useUserContext();

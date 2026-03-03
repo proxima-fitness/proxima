@@ -1,10 +1,18 @@
 "use client";
 
+/**
+ * @module sonner
+ * Toast notification container (Sonner) wired to app theme.
+ * Depends on: sonner, next-themes.
+ * Used by: app layout root for success/error/promise toasts.
+ */
 import { useTheme } from "next-themes";
 import { Toaster as Sonner } from "sonner";
 
-type ToasterProps = React.ComponentProps<typeof Sonner>
+/** Props forwarded to Sonner; theme derived from useTheme. */
+type ToasterProps = React.ComponentProps<typeof Sonner>;
 
+/** Renders Sonner with theme and app-specific toast classNames. */
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme();
 

@@ -1,5 +1,14 @@
 'use client';
 
+/**
+ * @module multi-select
+ * Multi-value combobox: Command-based search, selectable options (with optional
+ * groupBy, creatable, async/sync search), badges for selected items, ref for
+ * focus/reset. Supports maxSelected, hideClearAllButton, commandProps, inputProps.
+ * Depends on: cmdk, Badge, Command, @/lib/utils.
+ * Used by: app and feature components needing tag-style or multi-pick inputs.
+ */
+
 import { Command as CommandPrimitive, useCommandState } from 'cmdk';
 import { X } from 'lucide-react';
 import * as React from 'react';
@@ -166,6 +175,7 @@ const CommandEmpty = forwardRef<
 
 CommandEmpty.displayName = 'CommandEmpty';
 
+/** Multi-select combobox with search, optional grouping/creatable, and badge list. Key props: value/onChange, options/defaultOptions, onSearch/onSearchSync, maxSelected, groupBy, creatable, commandProps, inputProps. */
 const MultiSelect = React.forwardRef<IMultipleSelectorRef, IMultipleSelectorProps>(
   (
     {

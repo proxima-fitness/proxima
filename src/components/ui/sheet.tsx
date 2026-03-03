@@ -1,6 +1,12 @@
 /* eslint-disable */
 "use client";
 
+/**
+ * @module sheet
+ * Slide-over panel (drawer) from screen edge, built on Radix Dialog.
+ * Depends on: @radix-ui/react-dialog, class-variance-authority, lucide-react, @/lib/utils.
+ * Used by: mobile nav, filters, cart, sidebar on mobile.
+ */
 import * as React from "react";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -8,14 +14,19 @@ import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
+/** Root; open/onOpenChange control visibility. */
 const Sheet = SheetPrimitive.Root;
 
+/** Button that opens the sheet. */
 const SheetTrigger = SheetPrimitive.Trigger;
 
+/** Closes the sheet (e.g. button or link inside content). */
 const SheetClose = SheetPrimitive.Close;
 
+/** Portal target for overlay and content. */
 const SheetPortal = SheetPrimitive.Portal;
 
+/** Backdrop behind sheet content. */
 const SheetOverlay = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay>
@@ -50,10 +61,12 @@ const sheetVariants = cva(
   },
 );
 
+/** Props for sheet panel. side controls which edge and slide direction. */
 interface SheetContentProps
   extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
     VariantProps<typeof sheetVariants> {}
 
+/** Panel + overlay + close button; side (top/bottom/left/right) drives position and animation. */
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
@@ -75,6 +88,7 @@ const SheetContent = React.forwardRef<
 ));
 SheetContent.displayName = SheetPrimitive.Content.displayName;
 
+/** Header area (title/description); flex column, centered on sm. */
 const SheetHeader = ({
   className,
   ...props
@@ -89,6 +103,7 @@ const SheetHeader = ({
 );
 SheetHeader.displayName = "SheetHeader";
 
+/** Footer area; reverse column on mobile, row with justify-end on sm. */
 const SheetFooter = ({
   className,
   ...props
@@ -103,6 +118,7 @@ const SheetFooter = ({
 );
 SheetFooter.displayName = "SheetFooter";
 
+/** Accessible title (announced when sheet opens). */
 const SheetTitle = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Title>
@@ -115,6 +131,7 @@ const SheetTitle = React.forwardRef<
 ));
 SheetTitle.displayName = SheetPrimitive.Title.displayName;
 
+/** Optional description (accessibility). */
 const SheetDescription = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Description>,
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Description>

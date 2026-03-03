@@ -1,10 +1,20 @@
+/**
+ * @module (app)/terms-of-use/page
+ *
+ * Terms of use page. Static legal content (license, account, acceptable use,
+ * termination, disclaimer, liability). Sits at src/app/(app)/terms-of-use/page.tsx; route "/terms-of-use".
+ *
+ * Depends on: none (static markup and exer-card styles).
+ * Used by: Next.js (route "/terms-of-use").
+ */
+
 export const metadata = {
     title: "Terms Of Use | Proxima Fitness",
     description: "These are the Terms of Use you agree to whilst using Proxima Fitness Inc. products and services",
-  };
+};
 
-  export default function TermsOfUsePage() {
-
+/** Terms of use page; static legal text. */
+export default function TermsOfUsePage() {
     return (
         <main className="min-h-screen px-4 py-10 bg-gray-100">
             <h1 className="text-5xl max-sm:text-3xl pl-28 max-sm:pl-0 max-sm:flex max-sm:justify-center font-bold text-gray-900 mb-6 text-left">

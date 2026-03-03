@@ -2,14 +2,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+/*
+ * @module GetStarted
+ * @description Marketing header call-to-action section that highlights the mobile app download entry point and social proof rating.
+ * @dependsOn Motion primitives for hover animations and static marketing assets such as QR code and app store badges.
+ * @usedBy Header and hero sections wherever an app download or onboarding CTA is needed.
+ */
+
 import { motion } from "motion/react";
 import { apple, google, qr_code, starGold } from "public";
 
+/**
+ * Props for `GetStarted`.
+ * @property noBorder When true, removes borders and rounded corners from app store badges.
+ * @property blog When true, tunes styles for placement within blog content (currently reserved for future use).
+ */
 interface IProps {
     noBorder?: boolean;
     blog?: boolean;
 }
 
+/**
+ * GetStarted renders a small visual block promoting the Proxima app with QR code and rating copy.
+ */
 export const GetStarted: React.FC<IProps> = (props) => {
 
     const { noBorder, blog } = props;

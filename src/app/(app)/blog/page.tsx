@@ -1,3 +1,13 @@
+/**
+ * @module (app)/blog/page
+ *
+ * Blog index page. Top CTA bar + BlogLayout with initial blogs from useBlogsSSR.
+ * Sits at src/app/(app)/blog/page.tsx; route "/blog".
+ *
+ * Depends on: useBlogsSSR, BlogLayout, Button, Link.
+ * Used by: Next.js (route "/blog").
+ */
+
 import { useBlogsSSR } from "@/api/hooks";
 import BlogLayout  from "@/components/blog/BlogLayout";
 import { Button } from "@/components/ui/button";
@@ -8,9 +18,9 @@ export const metadata = {
     description: "Interested in taking your gains to the next level ? Read our blog for new insights!",
 };
 
+/** Blog index; CTA bar and blog list (initial data from useBlogsSSR). */
 export default function BlogPage() {
-
-    const initialBlogs = useBlogsSSR(); // don't await the fetching fct
+    const initialBlogs = useBlogsSSR();
 
     return (
         <>

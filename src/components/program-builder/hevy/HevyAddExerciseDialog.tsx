@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * @module HevyAddExerciseDialog
+ * Modal/drawer for adding or editing an exercise in a Hevy program day. Provides exercise search,
+ * sets/reps/intensity/set-type inputs, rest time, and add/edit/cancel actions. Responsive: drawer on mobile, dialog on desktop.
+ * Depends on: HevyExerciseSearchBar, UI (Drawer/Dialog/Select/Input/Button), hevy constants, API hooks.
+ * Used by: HevyRoutine (when add exercise or edit exercise is triggered).
+ */
+
 import { useHevyCustomExercises, useHevyExercises, useHevySecret } from "@/api/hooks";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState, useMemo } from "react";
@@ -15,14 +23,24 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { useUserContext } from "@/contexts/UserContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 
+/** Props for the add/edit exercise dialog. */
 interface IProps {
+    /** Current dialog state: open/closed, target folder and day, and optional exercise data when editing. */
     addExerciseDialog: THevyDialog;
+    /** When true, dialog is in edit mode and pre-fills from editExercise. */
     isEditExercise: boolean;
+    /** Called to append a new exercise to the given week/day. */
     handleAddExercise: (folder_id: number, dayOrder: number, exercise: THevyAddExercise) => void;
+    /** Called to apply edits to an existing exercise (uses exerciseIndex from dialog). */
     handleEditExercise: (editExercise: THevyDialog) => void;
+    /** Called to open/close the dialog (e.g. set isOpen and clear target). */
     handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
 }
 
+/**
+ * Add or edit exercise dialog: exercise search, sets/reps/intensity/set types, rest, save/cancel.
+ * Renders as Drawer on mobile and Dialog on desktop.
+ */
 export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 
     const {

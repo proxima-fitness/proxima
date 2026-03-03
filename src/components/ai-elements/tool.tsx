@@ -1,5 +1,25 @@
 "use client";
 
+/**
+ * @module Tool
+ *
+ * UI primitives for displaying structured tool calls inside AI responses.
+ * This module provides a collapsible container, status header, and helpers
+ * for rendering tool input and output (including JSON payloads) using the
+ * shared `CodeBlock` component.
+ *
+ * Depends on:
+ * - `ToolUIPart` and `DynamicToolUIPart` from the `ai` SDK
+ * - Design system `Collapsible` and `Badge` components
+ * - The `CodeBlock` module for pretty-printing structured data
+ *
+ * Used by:
+ * - `MessageBubbles` when rendering tool call traces beneath assistant
+ *   messages
+ * - Other debugging and introspection UIs that surface tool execution
+ *   details inline with conversation history.
+ */
+
 import type { DynamicToolUIPart, ToolUIPart } from "ai";
 import type { ComponentProps, ReactNode } from "react";
 
@@ -22,6 +42,10 @@ import { isValidElement } from "react";
 
 import { CodeBlock } from "./code-block";
 
+/**
+ * Props for the root `Tool` container, which wraps a single tool call
+ * in a bordered, collapsible panel.
+ */
 export type ToolProps = ComponentProps<typeof Collapsible>;
 
 export const Tool = ({ className, ...props }: ToolProps) => (
@@ -33,6 +57,12 @@ export const Tool = ({ className, ...props }: ToolProps) => (
 
 export type ToolPart = ToolUIPart | DynamicToolUIPart;
 
+/**
+ * Props for the tool header row.
+ *
+ * - For static tools, `type` and `state` come from `ToolUIPart`.
+ * - For dynamic tools, `toolName` provides a human-friendly label.
+ */
 export type ToolHeaderProps = {
   title?: string;
   className?: string;
@@ -113,6 +143,12 @@ export const ToolContent = ({ className, ...props }: ToolContentProps) => (
   />
 );
 
+/**
+ * Props for the tool input section.
+ *
+ * - `input` is the raw tool input payload, typically an object that
+ *   will be pretty-printed as JSON.
+ */
 export type ToolInputProps = ComponentProps<"div"> & {
   input: ToolPart["input"];
 };
@@ -128,6 +164,14 @@ export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
   </div>
 );
 
+/**
+ * Props for the tool output section.
+ *
+ * - `output` is the returned value from the tool, which may be a
+ *   React node, object, or string.
+ * - `errorText` provides a human-readable description when the tool
+ *   failed.
+ */
 export type ToolOutputProps = ComponentProps<"div"> & {
   output: ToolPart["output"];
   errorText: ToolPart["errorText"];

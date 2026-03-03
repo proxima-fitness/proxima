@@ -1,6 +1,16 @@
+/*
+ * @module Themes
+ * @description Feature section that describes theme customization and embeds the theme preview slider.
+ * @dependsOn Shared layout and typography styles and the `ThemeSlider` carousel component.
+ * @usedBy The marketing homepage to promote available visual themes such as light, dark, and pastel variants.
+ */
+
 import styles, { layout } from "../../style";
 import { ThemeSlider } from "./ThemeSlider";
 
+/**
+ * Themes lays out marketing copy about theme choices alongside the interactive `ThemeSlider`.
+ */
 export const Themes: React.FC = () => {
 
     return (

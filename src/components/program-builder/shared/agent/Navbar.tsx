@@ -1,3 +1,8 @@
+/**
+ * @module Navbar
+ * Agent toolbar: hide chat, expand/collapse, move sidebar left/right. Desktop only.
+ * Depends on: Button, Tooltip. Used by: Agent.
+ */
 import {
     Maximize2,
     Minimize2,
@@ -9,6 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 
+/** Props for the agent navbar. */
 interface IProps {
     onTogglePosition: () => void;
     onToggleExpand: () => void;
@@ -17,6 +23,7 @@ interface IProps {
     sidebarPosition: "left" | "right";
 }
 
+/** Toolbar with hide, expand/collapse, and sidebar position buttons. */
 export const Navbar: React.FC<IProps> = (props) => {
 
     const { onTogglePosition, onToggleExpand, onToggleHide, isExpanded, sidebarPosition } = props;

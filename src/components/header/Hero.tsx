@@ -1,11 +1,21 @@
 
 "use client";
 
+/*
+ * @module Hero
+ * @description Primary landing page hero section introducing the AI personal trainer value proposition with animated headline and hero media.
+ * @dependsOn Global style utilities, the AOS animation library, and a client-side hero video asset.
+ * @usedBy Marketing layout for the main landing page above the fold.
+ */
+
 import styles from "../../style";
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { useEffect } from "react";
 
+/**
+ * Hero renders the top-of-page marketing section with animated copy and supporting media.
+ */
 export const Hero: React.FC = () => {
 
     // Initialize on the client

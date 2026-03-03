@@ -1,14 +1,24 @@
+/**
+ * @module TurnstileResetPassword
+ * Cloudflare Turnstile widget that runs after the user submits the forgot-password email.
+ * On verify, calls the reset-password API with the email and token; toasts result and calls setSuccess on success.
+ * Depends on: react-turnstile, program-builder authentication, @/api sitekey.
+ * Used by: forgot-password-form.
+ */
 import Turnstile from "react-turnstile";
 import { useState } from "react";
 import { toast } from "sonner";
 import { handleResetPasswordRequest } from "../program-builder/utils/authentication";
 import { sitekey } from "@/api";
 
+/** @property email - Email address to send the reset link to. */
+/** @property setSuccess - Callback to mark flow as successful (e.g. show "check your email"). */
 interface IProps {
     email: string,
     setSuccess: (success: boolean) => void,
 }
 
+/** Renders Turnstile; on verify, requests password reset and updates parent via setSuccess/toast. */
 export const TurnstileResetPassword: React.FC<IProps> = (props) => {
 
     const {

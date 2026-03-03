@@ -1,5 +1,20 @@
+/**
+ * @module (app)/auth/error/page
+ *
+ * Auth error page. Displays a card with a generic or code-specific error
+ * message from the auth flow. Sits at src/app/(app)/auth/error/page.tsx; route "/auth/error".
+ *
+ * Depends on: Card components.
+ * Used by: Next.js (route "/auth/error"), auth redirects.
+ */
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
+/**
+ * Renders the auth error UI. Reads error code from search params.
+ *
+ * @param props.searchParams - Promise of query; error code in `error`.
+ */
 export default async function Page({ searchParams }: { searchParams: Promise<{ error: string }> }) {
   const params = await searchParams
 

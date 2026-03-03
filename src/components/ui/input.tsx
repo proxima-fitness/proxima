@@ -1,13 +1,22 @@
+/**
+ * @module input
+ * Text input with optional start/end Lucide icons and theme styles.
+ * Depends on: lucide-react, @/lib/utils.
+ * Used by: input-group, forms, and feature components.
+ */
+
 import * as React from "react";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+/** @param startIcon - Icon shown at leading edge. @param endIcon - Icon shown at trailing edge. */
 export interface IInputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   startIcon?: LucideIcon;
   endIcon?: LucideIcon;
 }
 
+/** Single-line input; padding adjusted when startIcon/endIcon are set. */
 const Input = React.forwardRef<HTMLInputElement, IInputProps>(
   ({ className, type, startIcon, endIcon, ...props }, ref) => {
     const StartIcon = startIcon;

@@ -1,10 +1,36 @@
+/* eslint-disable @next/next/no-img-element */
+/**
+ * @module RichText
+ *
+ * Thin renderer for Payload CMS Lexical rich-text content used in blog
+ * posts and marketing pages. Translates the serialized editor state into
+ * semantic HTML elements styled with the design system.
+ *
+ * Depends on:
+ * - Payload CMS `SerializedEditorState` for document structure
+ * - `getMediaPublicUrl` for resolving uploaded media URLs
+ *
+ * Used by:
+ * - Blog and marketing pages that fetch rich-text content from Payload
+ *   and need a React-friendly renderer.
+ */
+
 import { getMediaPublicUrl } from '@/api/blog';
 import type { SerializedEditorState } from "@payloadcms/richtext-lexical/lexical";
 
 interface IProps {
+    /**
+     * Serialized Lexical editor state produced by Payload's rich-text field.
+     * The renderer walks the `root.children` tree to produce HTML.
+     */
     data: SerializedEditorState;
 }
 
+/**
+ * Render a Payload CMS Lexical rich-text document into semantic HTML
+ * elements, including support for lists, headings, quotes, horizontal
+ * rules, and uploaded media.
+ */
 export const RichText: React.FC<IProps> = (props) => {
 
     const { data } = props;

@@ -1,3 +1,13 @@
+/**
+ * @module (app)/page
+ *
+ * Home page route. Renders the main program-builder prompt and optional CTA.
+ * Sits at src/app/(app)/page.tsx; entry for "/" within the (app) segment.
+ *
+ * Depends on: Prompt, createClient (Supabase server).
+ * Used by: Next.js (route "/").
+ */
+
 import "../../styles/global.css";
 import { Prompt } from '@/components/program-builder/shared/Prompt';
 import { createClient } from "@/utils/supabase/server";
@@ -8,6 +18,7 @@ export function generateStaticParams() {
   return [{ slug: [''] }];
 }
 
+/** Server component for the home page. Fetches current user and passes to Prompt. */
 export default async function Page() {
 
     const supabase = await createClient();

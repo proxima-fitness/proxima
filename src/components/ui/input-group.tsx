@@ -1,5 +1,14 @@
 "use client"
 
+/**
+ * @module input-group
+ * Composite input: bordered container with addons (Addon, Button, Text), Input,
+ * or Textarea. Handles focus ring and invalid state from control. Addon align:
+ * inline-start, inline-end, block-start, block-end.
+ * Depends on: class-variance-authority, @/lib/utils, button, input, textarea.
+ * Used by: app and feature components needing input + buttons or labels.
+ */
+
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
@@ -8,6 +17,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 
+/** Wrapper that provides shared border, focus, and invalid styling for grouped controls. */
 function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -57,6 +67,7 @@ const inputGroupAddonVariants = cva(
   }
 )
 
+/** Label or static text segment; align controls placement (inline-start/end, block-start/end). Click focuses the group input. */
 function InputGroupAddon({
   className,
   align = "inline-start",
@@ -97,6 +108,7 @@ const inputGroupButtonVariants = cva(
   }
 )
 
+/** Button inside group; size (xs, sm, icon-xs, icon-sm) is separate from main Button size. */
 function InputGroupButton({
   className,
   type = "button",
@@ -116,6 +128,7 @@ function InputGroupButton({
   )
 }
 
+/** Inline text or icons inside the group (e.g. prefix/suffix). */
 function InputGroupText({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
@@ -128,6 +141,7 @@ function InputGroupText({ className, ...props }: React.ComponentProps<"span">) {
   )
 }
 
+/** Input styled for group (no border, flex-1, data-slot for focus/invalid). */
 function InputGroupInput({
   className,
   ...props
@@ -144,6 +158,7 @@ function InputGroupInput({
   )
 }
 
+/** Textarea styled for group (no border, flex-1, data-slot). */
 function InputGroupTextarea({
   className,
   ...props

@@ -1,5 +1,16 @@
 "use client";
 
+/**
+ * @module (app)/proxima-app/page
+ *
+ * Proxima app marketing page. Hero, stats, integrations, programs, testimonials,
+ * custom programs, personal records, themes, FAQ. Registers exit-intent handlers
+ * (currently no-op). Sits at src/app/(app)/proxima-app/page.tsx; route "/proxima-app".
+ *
+ * Depends on: UserContext, useExitIntent, Hero, Stats, Integrations, ProgramsSection, Testimonials, CustomPrograms, PersonalRecords, Themes, Faq.
+ * Used by: Next.js (route "/proxima-app").
+ */
+
 import { useUserContext } from "@/contexts/UserContext";
 import { Integrations } from"@/components/header/Integrations";
 import { useExitIntent } from 'use-exit-intent';
@@ -17,11 +28,13 @@ import { Faq } from "@/components/faqs/Faq";
 // export const metadata = {
 //     title: "Proxima Fitness App",
 //     description: "Start logging your progress with our App",
-//   };
+// };
 
-  export default function AppPage() {
-
-        const { user } = useUserContext();
+/**
+ * Proxima app landing: sections + exit-intent handlers (popup currently disabled).
+ */
+export default function AppPage() {
+    const { user } = useUserContext();
     const { registerHandler } = useExitIntent({
         desktop: {
           delayInSecondsToTrigger: 4,

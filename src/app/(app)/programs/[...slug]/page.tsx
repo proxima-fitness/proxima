@@ -1,3 +1,13 @@
+/**
+ * @module (app)/programs/[...slug]/page
+ *
+ * Program detail page (dynamic slug). Metadata derived from slug; program id
+ * is the last segment. Sits at src/app/(app)/programs/[...slug]/page.tsx; route "/programs/[...slug]".
+ *
+ * Depends on: ProgramFallback, ProgramsSlugLayout.
+ * Used by: Next.js (route "/programs/:slug").
+ */
+
 import { ProgramFallback } from "@/components/generic/ProgramFallback";
 import { ProgramsSlugLayout } from "@/components/programs/ProgramsSlugLayout";
 import { Suspense } from "react";
@@ -13,6 +23,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     };
 }
 
+/**
+ * Program detail page; program id is the last slug segment (URL: programs/.../id).
+ *
+ * @param props.params - Promise of dynamic route params.
+ */
 export default async function ProgramsSlugPage({
     params,
 }: {
@@ -20,8 +35,6 @@ export default async function ProgramsSlugPage({
 }) {
     const { slug } = await params;
 
-    // Extract program ID from the last element of the slug array
-    // URL pattern is: programs/{...segments}/{id}
     const programId = slug[slug.length - 1];
     if (!programId) {
         return (

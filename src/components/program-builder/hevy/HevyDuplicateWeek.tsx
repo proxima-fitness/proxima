@@ -1,18 +1,34 @@
 "use client";
 
+/**
+ * @module HevyDuplicateWeek
+ * Dialog to duplicate the current week to one or more other weeks. User toggles target weeks (or Select All) and confirms.
+ * Depends on: Dialog, DialogBadge, Button.
+ * Used by: HevyColumn (when user clicks duplicate week icon).
+ */
+
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { DialogBadge } from "@/components/ui/dialog-badge";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
+/** Props for the duplicate-week dialog. */
 interface IProps {
+    /** Source week index to duplicate. */
     folder_id: number;
+    /** Total number of weeks (for target week badges). */
     programLength: number;
+    /** Whether the dialog is open. */
     duplicateWeekOpen: boolean;
+    /** Setter to open/close the dialog. */
     setDuplicateWeekOpen: (duplicateWeekOpen: boolean) => void;
+    /** Called with source week index and array of target week indexes to perform the duplicate. */
     handleDuplicateWeek: (fromWeekIndex: number, toWeekIndexes: number[]) => void;
 }
 
+/**
+ * Dialog: select target weeks via badges (or Select All), then call handleDuplicateWeek and close.
+ */
 export const HevyDuplicateWeek: React.FC<IProps> = (props) => {
     const {
         folder_id,

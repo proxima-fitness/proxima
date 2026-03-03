@@ -1,3 +1,11 @@
+/**
+ * @module breadcrumb
+ * Navigation trail (List, Item, Link, Page, Separator, Ellipsis). Supports
+ * asChild on Link and ARIA breadcrumb semantics.
+ * Depends on: @radix-ui/react-slot, @/lib/utils.
+ * Used by: app and feature components for hierarchical navigation.
+ */
+
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { ChevronRight, MoreHorizontal } from "lucide-react";

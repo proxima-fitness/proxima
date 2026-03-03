@@ -1,5 +1,11 @@
 "use client"
 
+/**
+ * @module questions
+ * Multi-step question flow (single/multi-select, text-with-quickfill) with optional skip and completion callback.
+ * Depends on: @/lib/utils, @/components/ui/button, checkbox, input, tooltip, @radix-ui/react-checkbox, lucide-react.
+ * Used by: onboarding, program builder, surveys.
+ */
 import * as React from "react"
 import { ChevronUp, ChevronDown, CircleHelp, CornerDownLeft, Loader2, X } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -9,11 +15,18 @@ import { Input } from "@/components/ui/input"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
 
+/** Single choice option (id + label). */
 export interface IQuestionOption {
   id: string
   label: string
 }
 
+/**
+ * Question definition.
+ * @property type - "select" (single), "multi-select", or "text-with-quickfill".
+ * @property allowOther - When true, adds "Other" option and stores value as "other:<text>".
+ * @property subtitle - Optional helper text or link below question.
+ */
 export interface IQuestion {
   id: string
   question: string
@@ -23,6 +36,11 @@ export interface IQuestion {
   subtitle?: { text: string; link?: string }
 }
 
+/**
+ * Props for the Questions flow.
+ * @property onComplete - Called with answers map (questionId -> value or array for multi).
+ * @property isBuilding / isLoading - Disable actions and show loading on primary button.
+ */
 interface IQuestionsProps {
   questions: IQuestion[]
   onComplete?: (answers: Record<string, string | string[]>) => void
@@ -32,7 +50,7 @@ interface IQuestionsProps {
   isLoading?: boolean
 }
 
-// QuestionSelect sub-component for single-select (radio) questions
+/** Props for single-select (radio) question renderer. */
 interface IQuestionSelectProps {
   question: IQuestion
   selectedAnswer: string | undefined
@@ -40,6 +58,7 @@ interface IQuestionSelectProps {
   onSelect: (questionId: string, optionId: string) => void
   onOtherSelect: (questionId: string) => void
   onOtherTextChange: (questionId: string, text: string) => void
+  /** Letter labels for options (e.g. A, B, C). */
   letterKeys: string[]
   questionIndex: number
 }
@@ -149,7 +168,7 @@ function QuestionSelect({
   )
 }
 
-// QuestionMultiSelect sub-component for multi-select (checkbox) questions
+/** Props for multi-select (checkbox) question renderer. */
 interface IQuestionMultiSelectProps {
   question: IQuestion
   selectedAnswers: string[]
@@ -329,7 +348,7 @@ function QuestionMultiSelect({
   )
 }
 
-// QuestionTextWithQuickfill sub-component for text input with quickfill buttons
+/** Props for text-with-quickfill question (free text + optional chips to append). */
 interface IQuestionTextWithQuickfillProps {
   question: IQuestion
   value: string
@@ -398,6 +417,7 @@ function QuestionTextWithQuickfill({
   )
 }
 
+/** Renders one question at a time; dispatches by type (select / multi-select / text-with-quickfill). Completes with answers map; "Other" values stored as "other:<text>". */
 export function Questions({
   questions,
   onComplete,
@@ -586,7 +606,7 @@ export function Questions({
   }
 
   const handleContinue = React.useCallback(() => {
-    // Format answers properly - convert "other" entries to "other:text" format
+    // Answer format: "Other" option stored as "other:<user text>" for both select and multi-select
     const formattedAnswers: Record<string, string | string[]> = {}
 
     for (const [questionId, answer] of Object.entries(answers)) {

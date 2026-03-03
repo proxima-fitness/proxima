@@ -1,3 +1,8 @@
+/**
+ * @module Agent
+ * Program-builder chat container: Navbar, empty state or MessageBubbles, status shimmer, and Chat input. Composes filters/program state and useChat wiring from parent.
+ * Depends on: Conversation, Chat, Navbar, MessageBubbles, Shimmer. Used by: BuildProgramClient (or parent that holds messages/sendMessage).
+ */
 "use client"
 
 import {
@@ -36,6 +41,7 @@ type SendMessageWithContext = (message?: (Omit<UIMessage<unknown, UIDataTypes, U
     messageId?: string;
 }, options?: ChatRequestOptions) => Promise<void>;
 
+/** Props for the agent container (navbar, messages, chat input, and all filter/program/send state). */
 interface IProps {
     search: string;
     sidebarPosition: "left" | "right";
@@ -102,6 +108,7 @@ interface IProps {
     handleStop: () => void;
 }
 
+/** Renders Navbar, conversation area (empty state or MessageBubbles), loading status, and Chat. */
 export const Agent: React.FC<IProps> = (props) => {
 
     const {
@@ -139,6 +146,7 @@ export const Agent: React.FC<IProps> = (props) => {
 
     // const [isFilters, setIsFilters] = useState(false)
 
+    /** "Running a step…" | "Generating..." | "Thinking…" from last message part and chatStatus. */
     const statusLabel = useMemo(() => {
         if (!isLoading) return null
         const lastMessage = messages[messages.length - 1]

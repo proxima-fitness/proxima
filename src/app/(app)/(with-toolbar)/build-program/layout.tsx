@@ -1,9 +1,25 @@
+/**
+ * @module (app)/(with-toolbar)/build-program/layout
+ *
+ * Layout for the build-program route. Sticky toolbar: breadcrumbs, set-type
+ * badges (Warmup/Working/Drop/Failure), and step/undo controls. Sits at
+ * src/app/(app)/(with-toolbar)/build-program/layout.tsx; wraps build-program page.
+ *
+ * Depends on: Breadcrumbs, StepButton, Badge, Tooltip components.
+ * Used by: build-program/page and its BuildProgramClient.
+ */
+
 import { Breadcrumbs } from "@/components/program-builder/shared/Breadcrumbs";
 import { ReactNode, Suspense } from "react";
 import { StepButton } from "@/components/program-builder/shared/StepButton";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
+/**
+ * Program builder toolbar layout; breadcrumbs, set-type tooltips, undo/step area.
+ *
+ * @param props.children - Build-program page content (BuildProgramClient).
+ */
 export default function ProgramBuilderLayout({ children }: { children: ReactNode }) {
     return (
         <div>

@@ -1,3 +1,11 @@
+/**
+ * @module accordion
+ * Expandable/collapsible sections with one or more items. Wraps Radix Accordion
+ * with styled trigger (chevron), content animation, and border layout.
+ * Depends on: @radix-ui/react-accordion, @/lib/utils.
+ * Used by: app and feature components needing FAQ or disclosure UX.
+ */
+
 import * as React from "react"
 import * as AccordionPrimitive from "@radix-ui/react-accordion"
 import { ChevronDown } from "lucide-react"

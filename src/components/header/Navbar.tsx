@@ -1,6 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+/*
+ * @module Navbar
+ * @description Top-level site navigation bar that coordinates global links, user session controls, theme/units settings, and mobile navigation.
+ * @dependsOn User context, feature limit helpers, theme and units contexts, Next.js routing, and shared UI primitives such as dropdown menus and avatars.
+ * @usedBy Application and marketing layouts to provide consistent navigation and account entry points across pages.
+ */
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NavDrawer } from "./NavDrawer";
 import { StepButton } from "@/components/program-builder/shared/StepButton";
@@ -45,6 +52,9 @@ const signOutServer = async () => {
     }
 };
 
+/**
+ * NavItems renders the right-hand navigation content based on route and authentication state.
+ */
 const NavItems = (pathname: string) => {
     // this should get the user if they logged in server side (via social logins)
     const { user, isLoading } = useUserContext();
@@ -363,6 +373,9 @@ const NavItems = (pathname: string) => {
     }
 };
 
+/**
+ * Navbar composes the global header, switching between full navigation and mobile drawer as the viewport changes.
+ */
 export const Navbar: React.FC = () => {
     const pathname = usePathname();
 

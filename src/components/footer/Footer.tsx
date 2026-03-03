@@ -1,9 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+/*
+ * @module Footer
+ * @description Global site footer containing brand identity, navigation links, policies, and social media shortcuts.
+ * @dependsOn Shared layout styles, footer link and social icon configuration, Next.js `Link`, and the Proxima logo asset.
+ * @usedBy Marketing and app layouts via `ConditionalFooter` to close out pages with consistent navigation and branding.
+ */
+
 import styles from "../../style";
 import { proxima_logo } from "public";
 import Link from "next/link";
 import { footerLinks, socialMedia } from "@/assets/constants";
 
+/**
+ * Footer renders the bottom-of-page navigation and branding section.
+ */
 export const Footer: React.FC = () => {
 
     return (

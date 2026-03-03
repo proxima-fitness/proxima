@@ -1,5 +1,15 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * @module (app)/auth/login/page
+ *
+ * Login page. Renders LoginForm with optional redirect path from query; side
+ * imagery and gradients. Sits at src/app/(app)/auth/login/page.tsx; route "/auth/login".
+ *
+ * Depends on: LoginForm, public images.
+ * Used by: Next.js (route "/auth/login").
+ */
+
 import { LoginForm } from '@/components/auth/login-form'
 import { ai_program_builder, completed_sets } from 'public'
 
@@ -7,6 +17,11 @@ type PageProps = {
   searchParams: Promise<{ next?: string }> | { next?: string };
 };
 
+/**
+ * Login page; passes next (redirect) from search params to LoginForm.
+ *
+ * @param props - Page props; searchParams may be Promise or plain object (Next compat).
+ */
 export default async function Page(props: PageProps) {
   const searchParams = await Promise.resolve(props.searchParams);
   const next = searchParams?.next ?? '/';

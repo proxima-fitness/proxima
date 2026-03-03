@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * @module HevyExerciseVisualizer
+ * Renders the list of exercises for one day: each row shows thumbnail, title, sets/reps/intensity, superset styling,
+ * and tooltip/actions (reason, notes, rest, add note, delete). Supports edit mode for superset selection (checkboxes).
+ * Depends on: HevyExerciseGif, useHevyExercises, formatWeight/getWeightUnit, Tooltip.
+ * Used by: HevyDayCard.
+ */
+
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
@@ -8,15 +16,25 @@ import { HevyExerciseGif } from "./HevyExerciseGif";
 import { useHevyExercises } from "@/api/hooks";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
+/** Props for the exercise list within a day card. */
 interface IProps {
+    /** The day (routine) whose exercises are displayed. */
     day: THevyRoutine;
+    /** Week index (folder_id) for callbacks. */
     folder_id: number;
+    /** Deletes an exercise at the given week/day/index. */
     handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
+    /** Opens the add-exercise dialog in edit mode with the given exercise data. */
     handleEdit: (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: THevyExercise) => void;
+    /** Opens the add-exercise-note dialog for a specific exercise. */
     handleOpenAddExerciseNoteDialog: (addExerciseNoteDialog: THevyDialog) => void;
+    /** When true, rows show checkboxes for superset selection instead of opening edit. */
     editMode: boolean;
+    /** Indices of exercises currently selected for superset. */
     selectedExercises: number[];
+    /** Toggles selection of an exercise by index. */
     toggleExerciseSelection: (exerciseIndex: number) => void;
+    /** Removes an exercise from its superset. */
     removeFromSuperset: (exerciseIndex: number) => void;
 }
 
@@ -41,10 +59,12 @@ const getSupersetColor = (supersetId: number | null | undefined): string | null 
     if (supersetId === null || supersetId === undefined) {
         return null;
     }
-    // Use modulo to cycle through colors if there are more supersets than colors
     return SUPERSET_COLORS[supersetId % SUPERSET_COLORS.length];
 };
 
+/**
+ * Renders the exercise rows for one day with thumbnails, sets/reps/intensity, superset styling, tooltips, and edit/superset actions.
+ */
 export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
     const {
         day,

@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * @module HevyDayCard
+ * Single day card in the Hevy program builder: draggable card with title, notes indicator, exercise list,
+ * add exercise button, superset creation, and dropdown (delete, edit title, add note, duplicate day). Keyboard shortcuts when focused.
+ * Depends on: HevyExerciseVisualizer, HevyDuplicateDay, DropIndicator, convertHevyExerciseIntoHevyAddExercise.
+ * Used by: HevyColumn (one per day in that week).
+ */
+
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { EllipsisIcon, PlusIcon, NotebookTextIcon, LinkIcon } from "lucide-react";
@@ -23,26 +31,47 @@ import { useHevyCustomExercises, useHevyExercises, useHevySecret } from "@/api/h
 import { useUserContext } from "@/contexts/UserContext";
 import { useTheme } from "next-themes";
 
+/** Props for a single day card within a week column. */
 interface IProps {
+    /** The day (routine) data: id, order, title, exercises, notes. */
     day: THevyRoutine;
+    /** Week label (e.g. "Week 1") for context. */
     title: string;
+    /** Week index (folder_id) this day belongs to. */
     folder_id: number;
+    /** Total number of weeks (used by duplicate-day target list). */
     programLength: number;
+    /** Called when user starts dragging this card (sets cardId on dataTransfer). */
     handleDragStart: (e: DragEvent, card: THevyCard) => void;
+    /** Updates this day's title. */
     handleEditTitle: (id: string, title: string) => void;
+    /** Deletes this day. */
     handleDeleteDay: (id: string) => void;
+    /** Opens the add-note dialog for this day. */
     handleOpenAddNoteDialog: (addNoteDialog: THevyDialog) => void;
+    /** Opens the add-exercise dialog for this day. */
     handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
+    /** Opens the add-exercise-note dialog. */
     handleOpenAddExerciseNoteDialog: (addExerciseNoteDialog: THevyDialog) => void;
+    /** Duplicates this day to a target week and day slots. */
     handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;
+    /** Deletes an exercise from this day. */
     handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
+    /** Sets add-exercise dialog to edit mode and passes exercise data. */
     handleIsEditExercise: (isEditExercise: boolean) => void;
+    /** Id of the card that currently has focus. */
     focusedCardId: string;
+    /** Sets focused card (this card calls it on click). */
     setFocusedCardId: (focusedCardId: string) => void;
+    /** Creates a superset from the selected exercise indices in this day. */
     handleCreateSuperset: (dayId: string, selectedExercises: number[]) => void;
+    /** Removes an exercise from its superset in this day. */
     handleRemoveFromSuperset: (dayId: string, exerciseIndex: number) => void;
 }
 
+/**
+ * Renders one draggable day card: header (day #, title, notes, menu), exercise table, add exercise, superset UI.
+ */
 export const HevyDayCard: React.FC<IProps> = (props) => {
 
     const {

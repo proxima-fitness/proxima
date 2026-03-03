@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @module SimpleSlider
+ * Horizontal carousel of FeedbackCards using react-slick; responsive (3/2/1 slides), dots, no infinite loop.
+ * Depends on: react-slick, FeedbackCard, assets/constants feedback data.
+ * Used by: Testimonials section.
+ */
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
@@ -7,6 +13,7 @@ import Slider from "react-slick";
 import { feedback } from "../../assets/constants";
 import { FeedbackCard } from "../testimonials/FeedbackCard";
 
+/** No props. Renders a slider of feedback entries from constants. */
 export const SimpleSlider: React.FC = () => {
     const settings = {
         speed: 500,

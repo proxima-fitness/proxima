@@ -1,20 +1,37 @@
 "use client";
 
+/**
+ * @module HevyDuplicateDay
+ * Dialog to duplicate one day to another week and selected day slots. User picks target week and multiple days, then confirms.
+ * Depends on: Dialog, Select, MultiSelect, Button.
+ * Used by: HevyDayCard (when user chooses Duplicate Day).
+ */
+
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import MultiSelect, { IOption } from "@/components/ui/multi-select";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
+/** Props for the duplicate-day dialog. */
 interface IProps {
+    /** The day (routine) to duplicate. */
     day: THevyRoutine;
+    /** Source week index (folder_id). */
     folder_id: number;
+    /** Total number of weeks (for target week dropdown). */
     programLength: number;
+    /** Whether the dialog is open. */
     duplicateDayOpen: boolean;
+    /** Setter to open/close the dialog. */
     setDuplicateDayOpen: (duplicateDayOpen: boolean) => void;
+    /** Called with source week/day, target week, and selected day options to perform the duplicate. */
     handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;
 }
 
+/**
+ * Dialog: select target week and day(s), then call handleDuplicateDay and close.
+ */
 export const HevyDuplicateDay: React.FC<IProps> = (props) => {
 
     const {

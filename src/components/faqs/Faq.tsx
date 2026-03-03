@@ -3,11 +3,18 @@
 
 "use client";
 
+/**
+ * @module Faq
+ * FAQ section: list of expandable Q&A items (FAQItem). Questions/answers are hardcoded in the section.
+ * Depends on: motion, style, public icons.
+ * Used by: landing/faq page.
+ */
 import { useReducer } from "react";
 import { motion } from "motion/react";
 import styles from "../../style";
 import { minus, add } from "public";
 
+/** Single expandable FAQ row: question, toggle icon; when open shows answer. */
 const FAQItem = ({ question, answer }: any) => {
     const [isOpen, toggleIsOpen] = useReducer(prev => !prev, false);
 
@@ -39,6 +46,7 @@ const FAQItem = ({ question, answer }: any) => {
   );
 };
 
+/** No props. Renders the FAQ section with all FAQItem entries. */
 export const Faq = () => {
     return (
         <section id="faqs" data-aos="fade-up" data-aos-anchor-placement="top-bottom" data-aos-once="true" className={ styles.paddingY }>

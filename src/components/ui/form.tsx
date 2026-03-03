@@ -1,3 +1,12 @@
+/**
+ * @module form
+ * Form field wiring for react-hook-form: Form (Provider), FormField (Controller),
+ * FormItem, FormLabel, FormControl, FormDescription, FormMessage. useFormField
+ * connects label/description/message IDs and error state.
+ * Depends on: react-hook-form, @radix-ui/react-label, @radix-ui/react-slot, @/lib/utils, label.
+ * Used by: app and feature components with validated forms.
+ */
+
 import * as React from "react";
 import * as LabelPrimitive from "@radix-ui/react-label";
 import { Slot } from "@radix-ui/react-slot";
@@ -26,6 +35,7 @@ const FormFieldContext = React.createContext<FormFieldContextValue>(
   {} as FormFieldContextValue,
 );
 
+/** Wraps Controller and provides field name to useFormField. */
 const FormField = <
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
@@ -70,6 +80,7 @@ const FormItemContext = React.createContext<FormItemContextValue>(
   {} as FormItemContextValue,
 );
 
+/** Wraps a single field; provides id for label/description/message linking. */
 const FormItem = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>

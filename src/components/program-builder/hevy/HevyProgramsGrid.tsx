@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * @module HevyProgramsGrid
+ * Grid of synced Hevy programs: each card shows program title, paginated routine list, and Edit button.
+ * Edit persists program to localStorage and navigates to build-program. Empty state renders nothing.
+ * Depends on: BUILD_PROGRAM_EMPTY_URL, hevy_logo, Button, Skeleton, DropdownMenu.
+ * Used by: ConditionalHevyGrid, DashboardContent; HevyProgramItem type by BlindSpotAnalysisSection.
+ */
+
 import { useState } from "react";
 import Link from "next/link";
 import { NotepadTextIcon, EditIcon, ChevronLeft, ChevronRight, ChevronDown, Plus } from "lucide-react";
@@ -18,6 +26,7 @@ export type HevyProgramItem = { program_title: string; program: THevyRoutine[] }
 
 const ROUTINES_PER_PAGE = 4;
 
+/** Props for a single program card in the grid. */
 function HevyProgramCard({
     program,
     onEdit,
@@ -114,11 +123,17 @@ function HevyProgramCard({
     );
 }
 
+/** Props for the programs grid. */
 type HevyProgramsGridProps = {
+    /** List of synced Hevy programs (title + routine array); undefined while loading. */
     hevyPrograms: HevyProgramItem[] | undefined;
+    /** When true, show skeleton placeholders. */
     isLoadingHevy?: boolean;
 };
 
+/**
+ * Renders a grid of Hevy program cards with paginated routines and Edit (navigate to builder). Handles loading and empty state.
+ */
 export const HevyProgramsGrid: React.FC<HevyProgramsGridProps> = ({ hevyPrograms, isLoadingHevy }) => {
     const router = useRouter();
 

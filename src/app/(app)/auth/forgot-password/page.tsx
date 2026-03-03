@@ -1,7 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * @module (app)/auth/forgot-password/page
+ *
+ * Forgot-password page. Form plus decorative images and gradients. Sits at
+ * src/app/(app)/auth/forgot-password/page.tsx; route "/auth/forgot-password".
+ *
+ * Depends on: ForgotPasswordForm, public images.
+ * Used by: Next.js (route "/auth/forgot-password").
+ */
+
 import { ForgotPasswordForm } from '@/components/auth/forgot-password-form'
 import { ai_program_builder, completed_sets } from 'public'
 
+/** Forgot-password page; form and side imagery. */
 export default function Page() {
   return (
     <div className="bg-white dark:bg-darkGray flex flex-row sm:min-h-svh w-full items-center justify-around gap-24 md:p-10">

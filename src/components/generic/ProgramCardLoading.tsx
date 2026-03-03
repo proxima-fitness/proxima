@@ -1,7 +1,14 @@
 "use client";
 
+/**
+ * @module ProgramCardLoading
+ * Skeleton grid matching program card layout (image, title, tags) for loading state.
+ * Depends on: UI Skeleton.
+ * Used by: programs list while fetching.
+ */
 import { Skeleton } from "@/components/ui/skeleton";
 
+/** No props. Renders a grid of program-card-shaped skeletons. */
 export const ProgramCardLoading: React.FC = () => {
 
     return (

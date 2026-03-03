@@ -1,14 +1,24 @@
+/**
+ * @module tooltip
+ * Hover/focus tooltip (floating label) built on Radix Tooltip.
+ * Depends on: @radix-ui/react-tooltip, @/lib/utils.
+ * Used by: icon buttons, truncated text, hints, sidebar labels.
+ */
 import * as React from "react";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 
 import { cn } from "@/lib/utils";
 
+/** Wraps app or region; configures delayDuration and other provider options. */
 const TooltipProvider = TooltipPrimitive.Provider;
 
+/** Root for a single tooltip (trigger + content). */
 const Tooltip = TooltipPrimitive.Root;
 
+/** Element that shows tooltip on hover/focus. */
 const TooltipTrigger = TooltipPrimitive.Trigger;
 
+/** Floating content (portal); sideOffset controls distance from trigger. */
 const TooltipContent = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>

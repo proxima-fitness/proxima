@@ -1,3 +1,12 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+/**
+ * @module HevyExerciseSearchBar
+ * Searchable list of Hevy exercise templates: fuzzy search via Fuse, virtual list for performance.
+ * Two modes: editing (search input + scrollable list) or selected (show chosen exercise and image; click to edit).
+ * Depends on: HevyExerciseGif, Input, react-window FixedSizeList, Fuse.js.
+ * Used by: HevyAddExerciseDialog.
+ */
+
 import { useEffect, useState } from 'react';
 import { FixedSizeList as List } from "react-window";
 import Fuse from "fuse.js";
@@ -17,28 +26,40 @@ const options = {
     ],
 };
 
+/** Props for the exercise search bar (list + selection display). */
 interface IProps {
+    /** Full list of exercise templates to search/filter. */
     items: THevyExerciseTemplate[];
+    /** Currently selected exercise (shown when not editing). */
     selectedExercise: THevyExerciseTemplate | undefined;
+    /** When true, show search input and list; when false, show selected exercise and image. */
     isEditing: boolean;
+    /** Called when user picks an exercise from the list. */
     handleSelectedExercise: (item: THevyExerciseTemplate) => Promise<void>;
+    /** Called to switch to edit mode (show search/list). */
     handleIsEditing: (isEditing: boolean) => void;
+    /** Optional label (e.g. "Exercise"). */
     title?: string;
+    /** Optional callback when selection is cancelled. */
     onSelectionCancel?: () => void;
 }
 
+/** Item data passed to each row in the virtual list. */
 interface IRowData {
     filteredItems: THevyExerciseTemplate[];
     selectItem: (item: THevyExerciseTemplate) => void;
 }
 
-  // Define the Row component props
+/** Row component props for react-window. */
 interface IRowProps {
     index: number;
     style: React.CSSProperties;
     data: IRowData;
 }
 
+/**
+ * Renders either search input + virtual list of exercises (editing) or selected exercise + image (click to edit).
+ */
 export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
 
     const {

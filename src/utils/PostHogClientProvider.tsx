@@ -1,9 +1,22 @@
 "use client";
 
+/**
+ * @module PostHogClientProvider
+ * Client-side wrapper that initializes PostHog analytics and exposes its React context.
+ *
+ * Depends on: `posthog-js`, `PostHogProvider`, `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST`.
+ * Used by: Top-level layout to enable analytics for the client application.
+ */
+
 import posthog from 'posthog-js';
 import { PropsWithChildren, useEffect } from 'react'
 import { PostHogProvider } from 'posthog-js/react';
 
+/**
+ * Initializes the PostHog client and provides it to descendant components.
+ *
+ * @param children React subtree that should have access to PostHog analytics.
+ */
 export function PostHogClientProvider({ children }: PropsWithChildren) {
 
     useEffect(() => {

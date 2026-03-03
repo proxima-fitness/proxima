@@ -1,3 +1,11 @@
+/**
+ * @module button
+ * Primary action control with variants (default, destructive, outline, secondary,
+ * ghost, link) and sizes (default, sm, lg, icon). Supports asChild for composition.
+ * Depends on: @radix-ui/react-slot, class-variance-authority, @/lib/utils.
+ * Used by: ExportDialog, DayCard, Chat, ProgramPreview, and many feature components.
+ */
+
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -34,12 +42,18 @@ const buttonVariants = cva(
   },
 );
 
+/**
+ * @param asChild - When true, render as child component (Slot) instead of <button>.
+ * @param variant - Visual style: default | destructive | outline | secondary | ghost | link.
+ * @param size - default | sm | lg | icon.
+ */
 export interface IButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean
 }
 
+/** Renders a styled button or composed element when asChild is true. */
 const Button = React.forwardRef<HTMLButtonElement, IButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";

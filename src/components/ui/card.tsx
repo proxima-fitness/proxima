@@ -1,3 +1,11 @@
+/**
+ * @module card
+ * Content container with Header, Title, Description, Content, Footer. Used for
+ * panels, previews, and structured content blocks.
+ * Depends on: @/lib/utils.
+ * Used by: ProgramPreview, MyProgramsVault, DayCard, auth/error, AboutPageClient, etc.
+ */
+
 import * as React from "react";
 
 import { cn } from "@/lib/utils";

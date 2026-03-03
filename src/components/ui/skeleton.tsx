@@ -1,5 +1,12 @@
+/**
+ * @module skeleton
+ * Placeholder block with pulse animation for loading states.
+ * Depends on: @/lib/utils.
+ * Used by: cards, lists, sidebar menu placeholders, profile.
+ */
 import { cn } from "@/lib/utils";
 
+/** Div with pulse animation and rounded-md; accepts standard div props. */
 function Skeleton({
   className,
   ...props

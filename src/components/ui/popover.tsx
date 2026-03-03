@@ -1,14 +1,24 @@
+/**
+ * @module popover
+ * Uncontrolled popover (trigger opens floating panel) built on Radix Popover.
+ * Depends on: @radix-ui/react-popover, @/lib/utils.
+ * Used by: dropdowns, pickers, hover cards, custom menus.
+ */
 import * as React from "react";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 
 import { cn } from "@/lib/utils";
 
+/** Root; manages open state and trigger/content association. */
 const Popover = PopoverPrimitive.Root;
 
+/** Element that opens the popover on click. */
 const PopoverTrigger = PopoverPrimitive.Trigger;
 
+/** Optional anchor for positioning content relative to an element other than trigger. */
 const PopoverAnchor = PopoverPrimitive.Anchor;
 
+/** Floating panel (portal); align/sideOffset control position. */
 const PopoverContent = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>

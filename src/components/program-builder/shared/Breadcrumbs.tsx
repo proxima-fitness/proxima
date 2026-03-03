@@ -30,6 +30,11 @@
 //     );
 // };
 
+/**
+ * @module Breadcrumbs
+ * Renders Program Builder breadcrumb trail (Program Builder → Build Program → Review Program) with optional click-to-preview.
+ * Depends on: PreviewContext, ui/breadcrumb. Used by: build-program layout / toolbar.
+ */
 "use client";
 
 import { usePathname } from "next/navigation";

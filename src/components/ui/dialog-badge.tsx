@@ -1,3 +1,10 @@
+/**
+ * @module dialog-badge
+ * Badge styled for use inside dialogs (same variants as badge; renders as span).
+ * Depends on: class-variance-authority, @/lib/utils.
+ * Used by: dialog content that needs inline status/labels.
+ */
+
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 
@@ -23,10 +30,12 @@ const badgeVariants = cva(
   },
 );
 
+/** @param variant - default | secondary | destructive | outline. */
 export interface IBadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {}
 
+/** Badge for dialog context; same API as Badge but span-based. */
 function DialogBadge({ className, variant, ...props }: IBadgeProps) {
   return (
       <span className={ cn(badgeVariants({ variant }), className) } { ...props } />

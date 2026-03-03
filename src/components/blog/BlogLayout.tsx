@@ -1,5 +1,12 @@
 "use client";
 
+/*
+ * @module BlogLayout
+ * @description Main blog index layout that lists posts with pagination and a sidebar of popular articles.
+ * @dependsOn Blog card components, pagination primitives, and blog fetching hooks for client-side data loading.
+ * @usedBy The `/blog` route to present discoverable, paginated blog content.
+ */
+
 import Link from "next/link";
 import { BlogCard } from "./BlogCard";
 import { PopularBlogCard } from "./PopularBlogCard";
@@ -16,6 +23,10 @@ import { use, useState } from "react";
 
 const LIMIT = 10;
 
+/**
+ * BlogLayout renders the paginated blog list alongside a sidebar of popular posts.
+ * @param initialBlogs Server-provided promise for the first page of blogs used to hydrate the client view.
+ */
 export default function BlogLayout({ initialBlogs }: { initialBlogs: Promise<TBlog[]> }) {
 
     const firstPageBlogs = use(initialBlogs);

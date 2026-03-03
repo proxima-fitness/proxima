@@ -1,5 +1,13 @@
 "use client"
 
+/**
+ * @module file-upload
+ * Drag-and-drop and click-to-select file input. FileUpload provides context;
+ * FileUploadTrigger opens the file picker; FileUploadContent shows overlay when dragging.
+ * Depends on: @/lib/utils, react-dom (createPortal).
+ * Used by: app and feature components that accept file uploads.
+ */
+
 import { cn } from "@/lib/utils"
 import {
   Children,
@@ -22,6 +30,7 @@ type FileUploadContextValue = {
 
 const FileUploadContext = createContext<FileUploadContextValue | null>(null)
 
+/** @param onFilesAdded - Called with selected/dropped files. @param multiple - Allow multiple files. @param accept - Input accept attribute. @param disabled - Disable input and overlay. */
 export type FileUploadProps = {
   onFilesAdded: (files: File[]) => void
   children: React.ReactNode
@@ -30,6 +39,7 @@ export type FileUploadProps = {
   disabled?: boolean
 }
 
+/** Provider for file input ref and drag state; wires global drag listeners. */
 function FileUpload({
   onFilesAdded,
   children,
@@ -119,11 +129,13 @@ function FileUpload({
   )
 }
 
+/** @param asChild - When true, merge behavior into single child element. */
 export type FileUploadTriggerProps =
   React.ComponentPropsWithoutRef<"button"> & {
     asChild?: boolean
   }
 
+/** Button or composable trigger that opens the hidden file input. */
 function FileUploadTrigger({
   asChild = false,
   className,
@@ -162,6 +174,7 @@ function FileUploadTrigger({
 
 type FileUploadContentProps = React.HTMLAttributes<HTMLDivElement>
 
+/** Full-screen overlay shown while dragging files; portaled to body. Renders only when dragging and mounted. */
 function FileUploadContent({ className, ...props }: FileUploadContentProps) {
   const context = useContext(FileUploadContext)
   const [mounted, setMounted] = useState(false)

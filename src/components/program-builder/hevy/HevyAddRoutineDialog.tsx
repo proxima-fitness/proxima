@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * @module HevyAddRoutineDialog
+ * Modal/drawer that lists the user's Hevy routines and lets them add one as a day into the current week.
+ * Fetches routines via API; each routine is rendered as HevyRoutineCard. Responsive: drawer on mobile, dialog on desktop.
+ * Depends on: HevyRoutineCard, useHevyRoutines, useHevySecret, Drawer/Dialog.
+ * Used by: HevyColumn (when user chooses "Add Hevy Routine" from the Add Day dropdown).
+ */
+
 import { useHevyRoutines, useHevySecret } from "@/api/hooks";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -8,13 +16,21 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Loader2 } from "lucide-react";
 import { HevyRoutineCard } from "./HevyRoutineCard";
 
+/** Props for the add routine-as-day dialog. */
 interface IProps {
+    /** Whether the dialog is open. */
     routineDialogOpen: boolean;
+    /** Setter to open/close the dialog. */
     setRoutineDialogOpen: (routineDialogOpen: boolean) => void;
+    /** Called when user selects a routine to add as a day in the given week (folder_id). */
     handleAddRoutineAsDay: (routine: THevyRoutine, folder_id: number) => void;
+    /** Week index (folder_id) into which the selected routine will be added as a day. */
     folder_id: number;
 }
 
+/**
+ * Lists Hevy routines; on selection, adds that routine as a day in the current week and closes.
+ */
 export const HevyAddRoutineDialog: React.FC<IProps> = (props) => {
 
     const { routineDialogOpen, setRoutineDialogOpen, handleAddRoutineAsDay, folder_id } = props;

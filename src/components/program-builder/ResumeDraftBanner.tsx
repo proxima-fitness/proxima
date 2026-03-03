@@ -1,6 +1,18 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
+/**
+ * @module ResumeDraftBanner
+ *
+ * Banner shown when the user has an in-progress program (Proxima or Hevy format)
+ * stored in localStorage. Renders "Resume program" and "Clear" actions; on clear,
+ * opens a confirmation dialog and removes the draft from localStorage.
+ *
+ * Depends on: HevyContext (useIsHevy), Dialog/Button (ui), Link (next/link),
+ * lucide-react (Redo2Icon, X). Uses global types THevyRoutine, TProgramCreatorDay.
+ * Used by: program-builder/shared/Prompt.tsx, dashboard/DashboardContent.tsx.
+ */
+
 import { useIsHevy } from "@/contexts/HevyContext";
 import {
     Dialog,
@@ -15,9 +27,11 @@ import { Redo2Icon, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+/**
+ * Banner component with no props. Reads draft from localStorage on mount
+ * (key depends on Hevy vs Proxima mode) and renders resume/clear UI or null.
+ */
 export const ResumeDraftBanner: React.FC = () => {
-
-
     const { isHevy } = useIsHevy();
     const [hevyRoutine, setHevyRoutine] = useState<THevyRoutine[]>();
     const [program, setProgram] = useState<TProgramCreatorDay[][]>();
@@ -25,7 +39,8 @@ export const ResumeDraftBanner: React.FC = () => {
 
     useEffect(() => {
         if (typeof window !== "undefined") {
-            const localStorageProgram = localStorage.getItem(isHevy ? "hevy-program-in-progress" : "program-in-progress");
+            const key = isHevy ? "hevy-program-in-progress" : "program-in-progress";
+            const localStorageProgram = localStorage.getItem(key);
             if (localStorageProgram) {
                 if (isHevy) {
                     setHevyRoutine(JSON.parse(localStorageProgram));
@@ -47,9 +62,7 @@ export const ResumeDraftBanner: React.FC = () => {
     };
 
     if (!hevyRoutine && !program) {
-        return (
-            <></>
-        )
+        return <></>;
     }
 
     return (
@@ -104,6 +117,7 @@ export const ResumeDraftBanner: React.FC = () => {
                 </Button>
             </div>
             <Dialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
+                {/* onOpenAutoFocus preventDefault avoids stealing focus from the Clear button that opened the dialog. */}
                 <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
                     <DialogHeader className="pb-">
                         <DialogTitle>Clear program in progress?</DialogTitle>

@@ -1,3 +1,13 @@
+/**
+ * @module (app)/pricing/page
+ *
+ * Pricing page route. Renders pricing headline, sign-in CTA, Hevy promo, and
+ * Stripe plans table. Sits at src/app/(app)/pricing/page.tsx; route "/pricing".
+ *
+ * Depends on: HevyPromoBanner, PricingSignInCta, StripeEmbeddedTable.
+ * Used by: Next.js (route "/pricing").
+ */
+
 import { HevyPromoBanner } from "@/components/pricing/HevyPromoBanner";
 import { PricingSignInCta } from "@/components/pricing/PricingSignInCta";
 import { StripeEmbeddedTable } from "@/components/pricing/StripeEmbeddedTable";
@@ -7,8 +17,8 @@ export const metadata = {
     description: "Review our Pricing plans and our Free tier functionality",
 };
 
+/** Pricing page; sign-in CTA, Hevy promo, and Stripe table. */
 export default function PricingPage() {
-
     return (
         <section className="w-full py-12 md:py-12 lg:py-12 flex justify-center items-center bg-white dark:bg-extraDarkGray">
             <div className="container px-4 md:px-6">

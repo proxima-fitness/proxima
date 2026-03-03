@@ -1,3 +1,13 @@
+/**
+ * @module (app)/blog/[...slug]/page
+ *
+ * Blog post page (dynamic slug). Same CTA bar as index; renders BlogSlugLayout
+ * with first slug segment as post id. Sits at src/app/(app)/blog/[...slug]/page.tsx; route "/blog/[...slug]".
+ *
+ * Depends on: BlogSlugLayout, Button, Link.
+ * Used by: Next.js (route "/blog/:slug").
+ */
+
 import { BlogSlugLayout } from "@/components/blog/BlogSlugLayout";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -7,18 +17,17 @@ export const metadata = {
     description: "Interested in taking your gains to the next level ? Read our blog for new insights!",
 };
 
-  export default async function BlogSlugPage({
+/**
+ * Blog post page; slug[0] is the post id passed to BlogSlugLayout.
+ *
+ * @param props.params - Promise of dynamic route params; slug is the path segments.
+ */
+export default async function BlogSlugPage({
     params,
-  }: {
-    params: Promise < {
-      slug: string[]
-    } > ;
-  }) {
-
-    const {
-        slug,
-    } = await params;
-
+}: {
+    params: Promise<{ slug: string[] }>;
+}) {
+    const { slug } = await params;
 
     return (
         <>

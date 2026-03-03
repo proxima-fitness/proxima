@@ -1,5 +1,15 @@
 "use client";
 
+/*
+ * @module StripeEmbeddedTable
+ * @description Theme-aware wrapper that chooses the appropriate Stripe pricing table configuration and renders a loading skeleton while resolving theme.
+ * @dependsOn User context, Next.js theme provider, PostHog analytics, and `EmbeddedTableScript` for the underlying Stripe integration.
+ * @usedBy Pricing pages as the canonical entry point for embedding Stripe pricing tables.
+ */
+
+/**
+ * StripeEmbeddedTable chooses a light or dark Stripe pricing table based on the resolved theme and records a pricing page view for signed-in users.
+ */
 import { useUserContext } from "@/contexts/UserContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTheme } from "next-themes";

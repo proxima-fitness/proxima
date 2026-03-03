@@ -1,10 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+/**
+ * @module Testimonials
+ * "Clients" section: heading with star rating and SimpleSlider of feedback cards.
+ * Depends on: style, SimpleSlider, motion, public StarGold.
+ * Used by: landing/testimonials section.
+ */
 import styles from "../../style";
 import { SimpleSlider } from "../generic/SimpleSlider";
 import { motion } from "motion/react";
 import starGold from "../../../public/StarGold.svg";
 
+/** No props. Renders testimonials section with rating and slider. */
 export const Testimonials: React.FC = () => {
     return (
         <section

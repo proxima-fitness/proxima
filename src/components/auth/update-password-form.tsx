@@ -1,5 +1,12 @@
 'use client'
 
+/**
+ * @module update-password-form
+ * Form for setting a new password (e.g. after following reset link). Uses Supabase updateUser;
+ * on success redirects to /protected.
+ * Depends on: Supabase client, UI card/input/button, cn.
+ * Used by: auth update-password / reset callback page.
+ */
 import { cn } from '@/lib/utils'
 import { createClient } from '@/utils/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -15,6 +22,7 @@ import { Label } from '@/components/ui/label'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
+/** Props: div props (e.g. className) for the form container. */
 export function UpdatePasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
 
     const [password, setPassword] = useState('')

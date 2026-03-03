@@ -1,14 +1,27 @@
 "use client";
 
+/**
+ * @module HevyRoutinePreview
+ * Read-only preview of the Hevy program: weeks and days as cards with exercise table (sets, reps, intensity).
+ * Used when the builder is in preview mode (e.g. before save). Respects PoundsOrKg for weight display.
+ * Depends on: Card, formatWeight/getWeightUnit, shortEnglishHumanizer.
+ * Used by: HevyRoutine (when isPreview is true).
+ */
+
 import { shortEnglishHumanizer } from "@/assets/constants";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
 import { Card } from "@/components/ui/card";
 
+/** Props for the read-only program preview. */
 interface IProps {
+    /** Program as weeks (outer array) and days per week (inner array); de-flattened from flat hevyProgram. */
     deflatHevyRoutine: THevyRoutine[][];
 }
 
+/**
+ * Renders the full program in read-only form: week sections and day cards with exercise rows (sets/reps/intensity).
+ */
 export const HevyRoutinePreview: React.FC<IProps> = (props) => {
 
     const {

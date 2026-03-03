@@ -1,8 +1,15 @@
+/**
+ * @module progress
+ * Determinate progress bar (0–100) built on Radix Progress.
+ * Depends on: @radix-ui/react-progress, @/lib/utils.
+ * Used by: uploads, quotas, onboarding steps, upgrade-banner.
+ */
 import * as React from "react"
 import * as ProgressPrimitive from "@radix-ui/react-progress"
 
 import { cn } from "@/lib/utils"
 
+/** Progress bar; value drives indicator width via translateX. */
 const Progress = React.forwardRef<
   React.ElementRef<typeof ProgressPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>

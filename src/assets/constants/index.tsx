@@ -1,10 +1,30 @@
 /* eslint-disable @next/next/no-img-element */
+/**
+ * Central app constants module for Proxima.
+ *
+ * What it contains:
+ * - Program builder options (suggestion groups, quick triggers, export options, program lengths, rep types, intensities, muscle groups, equipment, fallback programs, empty program templates).
+ * - Form options (sex, age, days per week, program length, workout duration, activity level, goals, specialization, equipment, focus areas, difficulty, health issues, etc.).
+ * - UI and marketing content such as nav links, features, stats, footer links, social media links, quotes, and filter options.
+ *
+ * Depends on:
+ * - Public assets exported from `public/index.ts`.
+ * - `humanize-duration` for human readable durations.
+ * - UI types from `multi-select` and `questions`.
+ * - Icons from `lucide-react`.
+ *
+ * Used by:
+ * - `PromptTemplate` and other program builder components.
+ * - Navigation and layout including `Navbar`, authenticated nav, sidebars, and footer.
+ * - Landing and marketing pages throughout the app.
+ */
 import { people03, people02, people01, people04, people05, people06, instagram, linkedin, star, reddit, twitter, hevy_logo, google_sheets_logo_icon } from "public";
 import humanizeDuration from "humanize-duration";
 import { IOption } from '@/components/ui/multi-select';
 import { BicepsFlexedIcon, BookOpenIcon, Calculator, FileText, FootprintsIcon, SquarePowerIcon, Table } from "lucide-react";
 import { IQuestion } from "@/components/ui/questions";
 
+/** Suggestion groups for common program builder starting points. */
 export const suggestionGroups = [
     {
         label: "Start from scratch",
@@ -62,6 +82,7 @@ export const suggestionGroups = [
 
 ];
 
+/** Quick chip suggestions for one-tap program prompts. */
 export const quickTriggerSuggestionChips = [
   "Not Sure What to Build",
   "Hypertrophy PPL",
@@ -71,6 +92,7 @@ export const quickTriggerSuggestionChips = [
   "Body Recomp",
 ];
 
+/** Export destinations available for generated programs. */
 export const exportOptions = [
     {
         id: "hevy",
@@ -133,15 +155,24 @@ export const exportOptions = [
 ];
 
 
+/** Program length options in weeks for the program builder. */
 export const programLengths = ["1","2","3","4","5","6","7","8","9","10","11","12"];
+/** One-rep max choices used in strength-related prompts. */
 export const repMaxes = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"];
+/** Session duration options in minutes for program design. */
 export const durations = ["0","10","20","30","40","50","60","70","80","90","100","110","120","130","140","150","160","170", "180"];
+/** Hevy-specific repetition measurement types for export. */
 export const hevy_rep_types = [{label: "Reps", value: "reps"}, {label: "Distance (m)", value: "distance_meters"}, {label: "Time (s)", value: "duration_seconds"}, { label: "Custom Metric", value: "custom_metric"}];
+/** Hevy-specific intensity types (RPE and load) for export. */
 export const hevy_intensities = [{label: "RPE", value: "rpe"}, {label: "Weight (kg)", value: "weight_kg"}];
+/** Internal repetition measurement types supported by the program builder. */
 export const rep_types = [{label: "Reps", value: "reps"},{label: "Reps Max", value: "reps_max"},{label: "Reps Range", value: "reps_range"},{label: "Time", value: "time_taken"},{label: "Time Range", value:"time_range"},{label: "AMRAP", value: "amrap"}];
+/** Intensity scales such as RPE, percentage of 1RM, and weights. */
 export const intensities = [{label: "RPE", value: "rpe"},{ label: "% 1RM", value: "percent_rm" },{ label: "RPE Range", value: "rpe_range" }, {label: "Weights", value: "weights" }];
+/** Light color palette used to visually separate program elements. */
 export const lightColours = ["#DCF9C2", "#F4D1BD", "#E2F2F2", "#E0E1B9", "#D7FEC5", "#EEDACA", "#C5E0EA", "#EADEB5", "#CAC8D9", "#C2EAE6"];
 
+/** Ordered steps for the multi-step program builder flow. */
 export const programBuilderSteps = [
     { title: "Step 1", description: "Prompt your Program" },
     { title: "Step 2", description: "Edit and Refine" },
@@ -149,6 +180,7 @@ export const programBuilderSteps = [
     { title: "Step 4", description: "Export program" },
 ];
 
+/** Primary muscle groups used for tagging exercises and programs. */
 export const primaryMuscleGroups = [
     {label: "Back", value: ["upper_back","lower_back","lats"]},
     {label: "Arms", value: ["biceps", "triceps", "forearms"]},
@@ -159,6 +191,7 @@ export const primaryMuscleGroups = [
     {label: "Glutes", value: ["glutes"]},
     {label: "Full Body", value: ["full_body"]}
 ];
+/** Mapping of common health issues to sensitive muscle groups. */
 export const healthIssuesMuscles = [
     {label: "Post-covid recovery", value: ["cardio"]},
     {label: "Cannot jump", value: ["quadriceps", "glutes", "hamstrings"]},
@@ -168,6 +201,7 @@ export const healthIssuesMuscles = [
     {label: "Knee injuries", value: ["quadriceps", "hamstrings", "glutes"]}
 ];
 
+/** Detailed list of muscle groups for focus and filtering. */
 export const MuscleGroups = [
     { label: "All", value: "All Muscle Groups" },
     { label: "Chest", value: "Chest" },
@@ -196,6 +230,7 @@ export const MuscleGroups = [
     { label: "Other", value: "Other" },
 ];
 
+/** Supported equipment options used in exercises and program filters. */
 export const Equipment = [
     { label: "All Equipment", value: "All Equipment" },
     { label: "Barbell", value: "Barbell" },
@@ -209,6 +244,7 @@ export const Equipment = [
     { label: "Other", value: "Other" },
 ];
 
+/** Fallback upper/lower split program when AI generation fails. */
 export const fallbackUpperLower = {
     workout_days: [
         {
@@ -236,6 +272,7 @@ export const fallbackUpperLower = {
     ],
 };
 
+/** Fallback seven-day program template when AI generation is unavailable. */
 export const fallbackSevenDay = {
     workout_days: [
         {
@@ -282,6 +319,7 @@ export const fallbackSevenDay = {
 };
 
 
+/** Fallback Calgary Barbell style program template. */
 export const fallbackCBLSA = {
     workout_days: [
         {
@@ -338,6 +376,7 @@ export const fallbackCBLSA = {
 };
 
 
+/** Fallback single-day full-body program template. */
 export const fallbackOneDay = {
     workout_days: [
         {
@@ -352,6 +391,7 @@ export const fallbackOneDay = {
         },
     ],
 };
+/** Fallback push/pull/legs (PPL) program template. */
 export const fallbackPPL = {
     workout_days: [
         {
@@ -388,6 +428,7 @@ export const fallbackPPL = {
 };
 
 
+/** Empty Hevy routine template used as a starting point for exports. */
 export const emptyHevyRoutineProgram: THevyRoutine[] = [
     {
         id: "1",
@@ -5679,6 +5720,7 @@ export const emptyHevyRoutineProgram: THevyRoutine[] = [
 //     ],
 // ];
 
+/** Empty Proxima program template used as a starting point in the builder. */
 export const emptyProximaProgram: TProgramCreatorDay[][] = [
     [
         {
@@ -5830,6 +5872,7 @@ export const emptyProximaProgram: TProgramCreatorDay[][] = [
     ],
 ];
 
+/** Humanizer configured for short English duration strings. */
 export const shortEnglishHumanizer = humanizeDuration.humanizer({
     language: "shortEn",
     languages: {
@@ -5846,6 +5889,7 @@ export const shortEnglishHumanizer = humanizeDuration.humanizer({
     },
 } );
 
+/** Filter group options for narrowing down programs and content. */
 export const filterGroupOptions: TFilterGroupOption[] = [
     {
         component: "combobox",
@@ -5879,6 +5923,7 @@ export const filterGroupOptions: TFilterGroupOption[] = [
     },
 ];
 
+/** Navigation links shown to authenticated users. */
 export const authenticatedNavLinks = [
     // {
     //     id: "exercises",
@@ -5910,6 +5955,7 @@ export const authenticatedNavLinks = [
     // },
 ];
 
+/** Public landing page navigation links. */
 export const navLinks = [
     {
         id: "programs",
@@ -5937,6 +5983,7 @@ export const navLinks = [
     // },
 ];
 
+/** Marketing feature descriptions displayed on the landing page. */
 export const features = [
   {
     id: "feature-1",
@@ -5961,6 +6008,7 @@ export const features = [
   },
 ];
 
+/** User testimonial content used in marketing sections. */
 export const feedback = [
     {
         id: "feedback-1",
@@ -6011,6 +6059,7 @@ export const feedback = [
       },
 ];
 
+/** Key product and community statistics for marketing. */
 export const stats = [
   {
     id: "stats-1",
@@ -6029,6 +6078,7 @@ export const stats = [
   },
 ];
 
+/** Link groups rendered in the site footer. */
 export const footerLinks = [
   {
     title: "Useful Links",
@@ -6079,6 +6129,7 @@ export const footerLinks = [
   },
 ];
 
+/** Social media link metadata for the footer and marketing sections. */
 export const socialMedia = [
   {
     id: "social-media-1",
@@ -6102,6 +6153,7 @@ export const socialMedia = [
   },
 ];
 
+/** Curated quotes displayed across the marketing experience. */
 export const coolQuotes: TQuote[] = [
     { quote: "We take on the strength of that which we overcome", author: "Unknown" },
     { quote: "Don't be bitter, be better", author: "Unknown"},
@@ -6131,16 +6183,19 @@ export const coolQuotes: TQuote[] = [
     { quote: "Where your road ends, mine begins", author: "David Goggins"},
 ];
 
+/** Sex options used in onboarding and goal forms. */
 export const sexOptions: IOption[] = [
     { label: "Male", value: "male"},
     { label: "Female", value: "female"},
 ];
 
+/** Age options (in years) used in onboarding and program tailoring. */
 export const ageOptions: IOption[] = Array.from({ length: 100 - 14 + 1 }, (_, i) => {
     const age = (i + 14).toString();
     return { label: age, value: age };
 } );
 
+/** Training frequency options for days per week. */
 export const dayPerWeekOptions: IOption[] = [
     { label: "1x per week", value: "1"},
     { label: "2x per week", value: "2" },
@@ -6151,6 +6206,7 @@ export const dayPerWeekOptions: IOption[] = [
     { label: "7x per week", value: "7" },
 ];
 
+/** Specific weekday selection options for scheduling workouts. */
 export const specificDaysOptions: IOption[] = [
     { label: "Mon", value: "monday"},
     { label: "Tue", value: "tuesday" },
@@ -6161,16 +6217,19 @@ export const specificDaysOptions: IOption[] = [
     { label: "Sun", value: "sunday" },
 ];
 
+/** Program length options (in weeks) used in forms. */
 export const programLengthOptions: IOption[] = Array.from({ length: 12 }, (_, i) => {
     const programLength = (i + 1).toString();
     return { label: `${programLength} Week${programLength === "1" ? "": "s"}`, value: programLength };
 } );
 
+/** Workout duration options (in minutes) used in forms. */
 export const workoutDurationOptions: IOption[] = Array.from({ length: 18 }, (_, i) => {
     const duration = ((i+1)*10).toString();
     return { label: `${duration} Mins`, value: duration };
 } );
 
+/** Self-reported activity level choices for personalization. */
 export const activityLevelOptions: IOption[] = [
     { label: "Sedentary", value: "sedentary"},
     { label: "Light activity", value: "light activity" },
@@ -6179,6 +6238,7 @@ export const activityLevelOptions: IOption[] = [
     { label: "Extreme activity", value: "extreme activity" },
 ];
 
+/** High-level training goal options (strength, hypertrophy, etc.). */
 export const goalsOptions: IOption[] = [
     { label: "Build muscle", value: "build muscle"},
     { label: "Improve fitness", value: "improve fitness" },
@@ -6195,6 +6255,7 @@ export const goalsOptions: IOption[] = [
     { label: "Burn fat", value: "burn fat" },
 ];
 
+/** Specialization focus options such as specific lifts or sports. */
 export const specializationOptions: IOption[] = [
     { label: "Bodybuilding", value: "bodybuilding"},
     { label: "Powerbuilding", value: "powerbuilding" },
@@ -6205,6 +6266,7 @@ export const specializationOptions: IOption[] = [
     { label: "Calisthenics", value: "calisthenics" },
 ];
 
+/** Available equipment options used to constrain program design. */
 export const equipmentOptions: IOption[] = [
     { label: "Barbell", value: "barbell"},
     { label: "Dumbbell", value: "dumbbell"},
@@ -6222,6 +6284,7 @@ export const equipmentOptions: IOption[] = [
     { label: "None", value: "none"},
 ];
 
+/** Focus area options such as body regions or performance attributes. */
 export const focusAreasOptions: IOption[] = [
     { label: "Back", value: "back"},
     { label: "Arms", value: "arms"},
@@ -6233,6 +6296,7 @@ export const focusAreasOptions: IOption[] = [
     { label: "Full body", value: "full body"},
 ];
 
+/** Difficulty level options from beginner to advanced. */
 export const difficultyOptions: IOption[] = [
     { label: "Beginner", value: "beginner"},
     { label: "Novice", value: "novice"},
@@ -6240,6 +6304,7 @@ export const difficultyOptions: IOption[] = [
     { label: "Advanced", value: "advanced"},
 ];
 
+/** Health issue flags surfaced in safety and modification questions. */
 export const healthIssuesOptions: IOption[] = [
     { label: "Post-covid recovery", value: "post-covid recovery"},
     { label: "Cannot jump", value: "cannot jump"},
@@ -6250,6 +6315,7 @@ export const healthIssuesOptions: IOption[] = [
 ];
 
 
+/** Sample prompt questions used to inspire users in the program builder. */
 export const sampleQuestions: IQuestion[] = [
     {
       id: "program-length",

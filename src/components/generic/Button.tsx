@@ -1,12 +1,22 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
+
+/**
+ * @module Button
+ * CTA-style motion button with hover/tap scale; displays text and optional extra class names.
+ * Depends on: motion/react.
+ * Used by: landing CTAs, program builder.
+ */
 import { motion } from "motion/react";
 
+/** @property text - Label shown on the button. */
+/** @property styles - Optional additional CSS classes. */
 interface IProps {
   text: string;
   styles?: string;
 }
 
+/** Renders a motion button with the given text and optional styles. */
 export const Button: React.FC<IProps> = (props) => {
 
     const {

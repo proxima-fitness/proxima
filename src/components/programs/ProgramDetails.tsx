@@ -9,6 +9,20 @@ import { CalendarIcon } from "lucide-react";
 import { convertSupabaseDateToReadable } from "@/utils/general/helpers";
 import { ProgramThumbnail } from "./ProgramThumbnail";
 
+/*
+ * @module ProgramDetails
+ * @description Detail column for a program page that shows the main thumbnail, author hover card, and overview stats.
+ * @dependsOn Program thumbnail and overview card components, hover-card UI primitives, and date formatting utilities.
+ * @usedBy Program slug layouts to render the left-hand description and context for a selected program.
+ */
+
+/**
+ * Props for `ProgramDetails`.
+ * @property id Program identifier used to fetch the thumbnail.
+ * @property program Full program page data including schedule and overview fields.
+ * @property fullName Display name of the program creator.
+ * @property programCreatorMetadata Additional metadata about the creator such as bio and join date.
+ */
 interface IProps {
     id: number;
     program: TProgramPage;
@@ -17,6 +31,9 @@ interface IProps {
     // programCreatorProfilePic: Blob;
 }
 
+/**
+ * ProgramDetails renders the primary program hero area including thumbnail, creator hover card, and high-level overview card.
+ */
 export const ProgramDetails: React.FC<IProps> = (props) => {
 
     const {

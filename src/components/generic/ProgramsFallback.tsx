@@ -1,5 +1,12 @@
+/**
+ * @module ProgramsFallback
+ * Skeleton for programs list page: header block plus grid of program cards.
+ * Depends on: UI Skeleton.
+ * Used by: programs list route while loading.
+ */
 import { Skeleton } from "../ui/skeleton";
 
+/** No props. Renders programs-list-shaped skeletons. */
 export const ProgramsFallback: React.FC = () => {
     return (
         <>

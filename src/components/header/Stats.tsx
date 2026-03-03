@@ -1,7 +1,17 @@
 
+/*
+ * @module Stats
+ * @description Compact marketing strip that highlights key Proxima metrics such as users, workouts, or other growth stats.
+ * @dependsOn Shared layout styles and the `stats` configuration from marketing constants.
+ * @usedBy Landing layouts to provide quick social-proof style numbers below the hero.
+ */
+
 import { stats } from "../../assets/constants";
 import styles from "../../style";
 
+/**
+ * Stats renders a horizontally scrolling row of key-value metrics configured in `assets/constants`.
+ */
 export const Stats: React.FC = () => {
     return (
         <section className={ `${styles.flexCenter} flex-row flex-wrap ${styles.paddingY}` }>

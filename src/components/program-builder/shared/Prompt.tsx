@@ -1,19 +1,36 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-
+/**
+ * @module Prompt
+ * Landing hero: title, subtitle, PromptTemplate input, avatar stack, and integrations. Syncs SSR user into UserContext.
+ * Depends on: PromptTemplate, ResumeDraftBanner, Integrations, AvatarStack, UserContext. Used by: build-program/landing.
+ */
 import { useEffect } from "react";
 import { useUserContext } from "@/contexts/UserContext";
 import { User } from "@supabase/supabase-js";
-import { jack, people02, people03, people04, people05 } from "public";
+import {
+    hevy_logo,
+    hevy_logo_black,
+    jack,
+    league_of_innovators_logo,
+    people02,
+    people03,
+    people04,
+    people05,
+} from "public";
 import { AvatarStack } from "@/components/avatar-stack";
 import { PromptTemplate } from "./PromptTemplate";
 import { ResumeDraftBanner } from "../ResumeDraftBanner";
-import { Integrations } from "@/components/header/Integrations";
 // import { BuyMeCoffee } from "@/components/ui/buy-me-coffee";
 import posthog from "posthog-js";
+/** Props for the landing prompt section. */
 interface IProps {
+    /** User from server (e.g. session); synced into UserContext on mount. */
     userData: User | null;
 }
 
+/** Landing hero with prompt input and social proof; sets UserContext from userData. */
 export const Prompt: React.FC<IProps> = ({ userData }) => {
 
     const { setUser } = useUserContext();
@@ -46,8 +63,68 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                         {/* <div className="sm:hidden flex justify-center mb-4">
                             <BuyMeCoffee />
                         </div> */}
-
                         <PromptTemplate />
+
+                        {/* Social proof band, now inside the hero/prompt section */}
+                        <div className="mt-10">
+                            <div className="rounded-2xl bg-transparent text-card-foreground px-4 sm:px-6 py-4 sm:py-5 flex flex-col md:flex-row items-center justify-between gap-6">
+                                {/* Left: Avatar stack + copy */}
+                                <div className="flex flex-col items-center md:items-start gap-2 max-sm:text-sm">
+                                    <AvatarStack
+                                        avatars={[
+                                            { name: "jack.hanlon", image: jack.src },
+                                            { name: "scottlhanlon", image: people03.src },
+                                            { name: "jordan.vandesande", image: people04.src },
+                                            { name: "robroyjr", image: people05.src },
+                                            { name: "marcola", image: people02.src },
+                                            { name: "john.gardiner", image: people02.src },
+                                            { name: "josh.rubis", image: people02.src },
+                                            { name: "calvin.sytsma", image: people02.src },
+                                            { name: "mark.shaio", image: people02.src },
+                                            { name: "sigilai", image: people02.src },
+                                            { name: "thomas.genet", image: people02.src },
+                                            { name: "lukcamp", image: people02.src },
+                                            { name: "alexabcj", image: people02.src },
+                                            { name: "kalamataspartan", image: people02.src },
+                                            { name: "alexalydiarose", image: people02.src },
+                                        ]}
+                                        maxAvatarsAmount={5}
+                                    />
+                                    <p className="text-xs sm:text-sm text-black dark:text-white text-center md:text-left">
+                                        17,000+ athletes on Proxima
+                                    </p>
+                                </div>
+
+                                {/* Middle: Backed by LOI */}
+                                <div className="flex flex-col items-start gap-1">
+                                    <span className="font-secondary text-[10px] sm:text-xs font-semibold tracking-[0.12em] uppercase text-black dark:text-white">
+                                        Backed by
+                                    </span>
+                                    <a
+                                        href="https://www.loi.ac/"
+                                        target="_blank"
+                                        rel="noreferrer noopener"
+                                    >
+                                        <img
+                                            src={(league_of_innovators_logo as any).src}
+                                            alt="League of Innovators"
+                                            className="h-6 sm:h-7 w-auto"
+                                        />
+                                    </a>
+                                </div>
+
+                                {/* Right: Compact integrations logos */}
+                                <div className="flex flex-col items-center md:items-end gap-2">
+                                    <span className="font-secondary text-[10px] sm:text-xs font-semibold tracking-[0.12em] uppercase text-black dark:text-white">
+                                        Integrated with
+                                    </span>
+                                    <div className="flex flex-row items-center justify-center gap-3 sm:gap-4">
+                                        <img src={hevy_logo.src} alt="Hevy" className="h-5 sm:h-6 w-auto hidden dark:block" />
+                                        <img src={hevy_logo_black.src} alt="Hevy" className="h-5 sm:h-6 w-auto dark:hidden block" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div className="absolute z-0 w-[40%] h-[35%] top-0 pink__gradient hidden dark:block" />
@@ -57,31 +134,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                 <div className="absolute z-0 w-[60%] h-[80%] rounded-full white__gradient_light bottom-40 block dark:hidden" />
                 <div className="absolute z-0 top-40 w-[60%] h-[50%] blue__gradient_light block dark:hidden" />
             </div>
-            <div className=" flex flex-col justify-center items-center max-sm:text-sm z-10">
-                <AvatarStack
-                    avatars={[
-                        {name: "jack.hanlon", image:  jack.src},
-                        {name: "scottlhanlon", image: people03.src},
-                        {name: "jordan.vandesande", image: people04.src},
-                        {name: "marcola", image: people05.src},
-                        {name: "sina", image: people02.src},
-                        {name: "john.gardiner", image: people02.src},
-                        {name: "josh.rubis", image: people02.src},
-                        {name: "calvin.sytsma", image: people02.src},
-                        {name: "mark.shaio", image: people02.src},
-                        {name: "sigilai", image: people02.src},
-                        {name: "thomas.genet", image: people02.src},
-                        {name: "lukcamp", image: people02.src},
-                        {name: "alexabcj", image: people02.src},
-                        {name: "kalamataspartan", image: people02.src},
-                        {name: "alexalydiarose", image: people02.src},
-                    ] }
-                />
-                17,000+ athletes are training smarter with Proxima
-            </div>
-            <div className={ `flex flex-row items-center  justify-center mt-32` }>
-                <Integrations />
-            </div>
+
             {/* <AiProgramGrid /> */}
             </>
 

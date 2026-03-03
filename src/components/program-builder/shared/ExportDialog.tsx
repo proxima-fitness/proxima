@@ -1,3 +1,8 @@
+/**
+ * @module ExportDialog
+ * Modal to choose export destination (PDF, Hevy, spreadsheet) and render PDF preview or Hevy setup / CSV download.
+ * Depends on: ExportProgramCTAButtons, HevyPdfRenderer, ExportToHevySetup, usePoundsOrKgContext, dialog. Used by: StepButton.
+ */
 "use client";
 
 import {
@@ -19,12 +24,17 @@ import { ChevronLeft } from "lucide-react";
 import { ExportToHevySetup } from "./ExportToHevySetup";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 
+/** Props for the export destination modal. */
 interface IProps {
+    /** Whether the dialog is visible. */
     open: boolean;
+    /** Called when dialog open state should change. */
     onOpenChange: (open: boolean) => void;
+    /** Program id (e.g. for analytics); export data comes from localStorage. */
     programId: number;
 }
 
+/** Export modal: pick PDF / Hevy / spreadsheet, then show preview or ExportToHevySetup / CSV download. */
 export const ExportDialog: React.FC<IProps> = (props) => {
     const { open, onOpenChange, programId } = props;
     const { isInLbs } = usePoundsOrKgContext();

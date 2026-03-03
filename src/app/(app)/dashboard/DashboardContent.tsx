@@ -1,5 +1,15 @@
 "use client";
 
+/**
+ * @module (app)/dashboard/DashboardContent
+ *
+ * Client dashboard body: resume-draft banner, blind-spot analysis, Hevy
+ * programs grid, and saved programs vault. Sits under (app)/dashboard/page.
+ *
+ * Depends on: UserContext, useHevyPrograms/useHevySecret, BlindSpotAnalysisSection, HevyProgramsGrid, MyProgramsVault, ResumeDraftBanner.
+ * Used by: (app)/dashboard/page.tsx.
+ */
+
 import { useUserContext } from "@/contexts/UserContext";
 import { useHevyPrograms, useHevySecret } from "@/api/hooks";
 import { MyProgramsVault } from "@/components/programs/MyProgramsVault";
@@ -10,6 +20,9 @@ import styles from "../../../style";
 import { Suspense } from "react";
 import { ProgramsFallback } from "@/components/generic/ProgramsFallback";
 
+/**
+ * Renders dashboard sections; fetches Hevy key and programs for the current user.
+ */
 export function DashboardContent() {
     const { user } = useUserContext();
     const { data: hevyApiKey } = useHevySecret(user);

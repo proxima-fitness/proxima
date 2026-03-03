@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @module sidebar
+ * Collapsible app sidebar (desktop: offcanvas/icon; mobile: sheet) with provider, trigger, menu items, and layout primitives.
+ * Depends on: @radix-ui/react-slot, class-variance-authority, @/hooks/use-mobile, @/lib/utils, button, input, separator, sheet, skeleton, tooltip.
+ * Used by: app layout, dashboards, settings.
+ */
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { VariantProps, cva } from "class-variance-authority";
@@ -32,6 +38,7 @@ const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
 
+/** Context value for sidebar open state (desktop + mobile) and toggle. */
 type SidebarContext = {
   state: "expanded" | "collapsed";
   open: boolean;
@@ -40,10 +47,11 @@ type SidebarContext = {
   setOpenMobile: (open: boolean) => void;
   isMobile: boolean;
   toggleSidebar: () => void;
-}
+};
 
 const SidebarContext = React.createContext<SidebarContext | null>(null);
 
+/** Must be used inside SidebarProvider. */
 function useSidebar() {
   const context = React.useContext(SidebarContext)
   if (!context) {
@@ -53,6 +61,11 @@ function useSidebar() {
   return context
 };
 
+/**
+ * Provider: holds open state, persists to cookie, registers Cmd/Ctrl+B toggle.
+ * @param defaultOpen - Initial expanded state when uncontrolled.
+ * @param open / onOpenChange - Controlled open state.
+ */
 const SidebarProvider = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
@@ -89,7 +102,7 @@ const SidebarProvider = React.forwardRef<
           _setOpen(openState)
         }
 
-        // This sets the cookie to keep the sidebar state.
+        // Persist state to cookie so sidebar stays expanded/collapsed across reloads
         document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
       },
       [setOpenProp, open]
@@ -102,7 +115,7 @@ const SidebarProvider = React.forwardRef<
         : setOpen((open) => !open)
     }, [isMobile, setOpen, setOpenMobile]);
 
-    // Adds a keyboard shortcut to toggle the sidebar.
+    // Cmd/Ctrl+B toggles sidebar
     React.useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
         if (
@@ -162,6 +175,12 @@ const SidebarProvider = React.forwardRef<
 )
 SidebarProvider.displayName = "SidebarProvider";
 
+/**
+ * Sidebar panel. On mobile renders as Sheet; on desktop as fixed panel (offcanvas or icon collapse).
+ * @param side - "left" | "right".
+ * @param variant - "sidebar" | "floating" | "inset" (layout/style).
+ * @param collapsible - "offcanvas" | "icon" | "none" (how it collapses).
+ */
 const Sidebar = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
@@ -199,6 +218,7 @@ const Sidebar = React.forwardRef<
     }
 
     if (isMobile) {
+      // Mobile: render as Sheet overlay
       return (
         <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
           <SheetContent
@@ -269,6 +289,7 @@ const Sidebar = React.forwardRef<
 )
 Sidebar.displayName = "Sidebar"
 
+/** Button that toggles sidebar (desktop) or opens mobile sheet. */
 const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
   React.ComponentProps<typeof Button>
@@ -295,6 +316,7 @@ const SidebarTrigger = React.forwardRef<
 })
 SidebarTrigger.displayName = "SidebarTrigger"
 
+/** Invisible hit area on edge to toggle when collapsible=offcanvas. */
 const SidebarRail = React.forwardRef<
   HTMLButtonElement,
   React.ComponentProps<"button">
@@ -442,7 +464,7 @@ const SidebarGroupLabel = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & { asChild?: boolean }
 >(({ className, asChild = false, ...props }, ref) => {
-  const Comp = asChild ? Slot : "div"
+  const Comp = asChild ? Slot : "div" // asChild: render as child element, keep styles
 
   return (
     <Comp

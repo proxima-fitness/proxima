@@ -1,5 +1,15 @@
 "use client";
 
+/*
+ * @module MyProgramsVault
+ * @description Dashboard section that surfaces a user’s saved workout programs, including loading, empty, and error states.
+ * @dependsOn User context, subscribed program query hooks, program card presentation components, and PostHog analytics.
+ * @usedBy Authenticated dashboards to act as a permanent vault for user-owned programs.
+ */
+
+/**
+ * MyProgramsVault lists the authenticated user’s saved programs with skeletons, empty-state messaging, and navigation helpers.
+ */
 import { useSubscribedPrograms } from "@/api/hooks";
 import { useUserContext } from "@/contexts/UserContext";
 import { ProgramCard } from "./ProgramCard";

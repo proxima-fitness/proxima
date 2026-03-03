@@ -1,3 +1,11 @@
+/**
+ * @module dialog
+ * Modal dialog: Root, Trigger, Portal, Overlay, Content (optional hideClose),
+ * Header, Footer, Title, Description, Close. Built on Radix Dialog.
+ * Depends on: @radix-ui/react-dialog, @/lib/utils.
+ * Used by: ExportDialog, ExerciseNotesDialog, BlindSpotAnalysisSection, command CommandDialog.
+ */
+
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
@@ -27,6 +35,7 @@ const DialogOverlay = React.forwardRef<
 ));
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
+/** @param hideClose - When true, omit the close (X) button. */
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> &

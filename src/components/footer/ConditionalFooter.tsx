@@ -1,9 +1,19 @@
 "use client";
 
+/*
+ * @module ConditionalFooter
+ * @description Wrapper component that decides whether to render the global footer based on the current route.
+ * @dependsOn Next.js pathname hook, shared layout styles, and the `Footer` presentational component.
+ * @usedBy Application shell layouts so program-builder style flows can opt out of showing the marketing footer.
+ */
+
 import { usePathname } from "next/navigation";
 import { Footer } from "./Footer";
 import styles from "@/style";
 
+/**
+ * ConditionalFooter hides the footer on focus-first flows such as the program builder while rendering it elsewhere.
+ */
 export function ConditionalFooter() {
     const pathname = usePathname();
 

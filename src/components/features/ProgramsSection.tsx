@@ -1,5 +1,15 @@
 "use client";
 
+/*
+ * @module ProgramsSection
+ * @description Homepage section that showcases a curated subset of programs along with an animated headline and explore link.
+ * @dependsOn Explore-page program query hook, shared layout and typography styles, program card components, and animated text.
+ * @usedBy The marketing homepage to tease available programs and drive traffic into the full programs catalog.
+ */
+
+/**
+ * ProgramsSection fetches a small sample of programs for the homepage, showing loading placeholders and an explore CTA.
+ */
 import styles, { layout } from "../../style";
 import { Button } from "../generic/Button";
 import Link from "next/link";

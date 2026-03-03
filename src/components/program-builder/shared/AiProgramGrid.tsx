@@ -1,3 +1,9 @@
+/* eslint-disable @next/next/no-img-element */
+/**
+ * @module AiProgramGrid
+ * Renders a paginated grid of community-shared AI programs with edit/view links, avatars, and save counts.
+ * Depends on: useCommunityAiProgramsPaginated, useUsersBatch, Avatar, Button. Used by: program builder / landing.
+ */
 "use client";
 
 import { ArrowDownIcon, EditIcon, EyeIcon, SplitIcon, UsersIcon } from "lucide-react";
@@ -9,11 +15,15 @@ import { memo, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { lightColours } from "@/assets/constants";
 
+/** Props for a single program card in the community grid. */
 interface IProgramItemProps {
+    /** Shared program record. */
     item: TProgram;
+    /** Author display name and profile image (optional). */
     userData?: { fullName: string; profilePic: Blob | null };
 }
 
+/** Single program card with hover actions (Edit/View) and avatar. */
 const ProgramItem: React.FC<IProgramItemProps> = memo(({ item, userData }) => {
 
     const randomColour = useMemo(() => {
@@ -95,6 +105,7 @@ const ProgramItem: React.FC<IProgramItemProps> = memo(({ item, userData }) => {
 // Add display name for debugging
 ProgramItem.displayName = "ProgramItem";
 
+/** Paginated grid of community AI programs with "See More" and skeleton loading. */
 export const AiProgramGrid: React.FC = () => {
     const [offset, setOffset] = useState(0);
     const [allPrograms, setAllPrograms] = useState<TProgram[]>([]);

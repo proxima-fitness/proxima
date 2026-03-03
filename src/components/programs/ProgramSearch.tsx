@@ -1,5 +1,20 @@
 "use client";
 
+/*
+ * @module ProgramSearch
+ * @description Search and filter surface for browsing workout programs with text search, keyboard shortcuts, and structured filters.
+ * @dependsOn Command input primitives, filter configuration constants, program search API, program card components, and the coaches/community toggle.
+ * @usedBy Program listing pages to provide a discoverable interface over coach and community programs.
+ */
+
+/**
+ * Props for `ProgramSearch`.
+ * @property programs Initial list of programs to search and filter.
+ * @property viewMode Current view mode ("coaches" or "community") used to compute displayed counts.
+ * @property onViewModeChange Callback invoked when the user toggles between coaches and community views.
+ * @property coachCount Total number of coach-created programs available.
+ * @property communityCount Total number of community-created programs available.
+ */
 import {
     Command,
     CommandInput,
@@ -23,6 +38,9 @@ interface IProps {
     communityCount: number;
 }
 
+/**
+ * ProgramSearch renders the main program search bar, grouped filters, and result grid with support for keyboard shortcuts and debounced search.
+ */
 export const ProgramSearch: React.FC<IProps> = (props) => {
 
     const {

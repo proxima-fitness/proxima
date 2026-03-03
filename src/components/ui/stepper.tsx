@@ -1,9 +1,20 @@
 "use client"
 
+/**
+ * @module stepper
+ * Horizontal step indicator (circle + label per step, chevrons between).
+ * Depends on: @/lib/utils, lucide-react.
+ * Used by: onboarding, checkout, wizard flows.
+ */
 import * as React from "react"
 import { Check, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+/**
+ * Single step display.
+ * @property isCompleted - Show check icon and completed styling.
+ * @property isActive - Current step styling (border-primary).
+ */
 interface IStepProps {
   title: string
   description?: string
@@ -38,6 +49,11 @@ const Step: React.FC<IStepProps> = ({ title, description, isCompleted, isActive 
   )
 }
 
+/**
+ * @property steps - Step definitions (title, optional description).
+ * @property currentStep - Zero-based index of active step.
+ * @property legend - Optional node (e.g. button) after the step list.
+ */
 interface IStepperProps {
   steps: Array<{ title: string; description?: string }>
   currentStep: number
@@ -45,6 +61,7 @@ interface IStepperProps {
   legend?: React.ReactNode
 }
 
+/** Renders steps in a row with chevrons; completed steps show check, current step is highlighted. */
 export function Stepper({ steps, currentStep, legend }: IStepperProps) {
   return (
     <div className="pt-4">

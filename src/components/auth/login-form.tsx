@@ -1,5 +1,12 @@
 'use client'
 
+/**
+ * @module login-form
+ * Login card: Apple/Google OAuth buttons, email/password form with validation. On submit shows
+ * Turnstile then TurnstileSignIn; supports redirect path and forgot-password link.
+ * Depends on: TurnstileSignIn, Supabase client, UI components, react-hook-form/yup.
+ * Used by: auth login page.
+ */
 import { cn } from '@/lib/utils'
 import { createClient } from '@/utils/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -20,10 +27,12 @@ import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from 'react-hook-form'
 
+/** Props: div props plus redirectPath (where to send user after successful login; default '/'). */
 type LoginFormProps = React.ComponentPropsWithoutRef<'div'> & {
   redirectPath?: string;
 };
 
+/** Renders login card with OAuth, email/password form, and Turnstile-gated sign-in. */
 export function LoginForm({ className, redirectPath = '/', ...props }: LoginFormProps) {
 
     const [error, setError] = useState<string | null>(null);

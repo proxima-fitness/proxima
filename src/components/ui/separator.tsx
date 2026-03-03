@@ -1,8 +1,15 @@
+/**
+ * @module separator
+ * Visual divider line (horizontal or vertical) built on Radix Separator.
+ * Depends on: @radix-ui/react-separator, @/lib/utils.
+ * Used by: layouts, lists, sidebar, sheet header/footer.
+ */
 import * as React from "react";
 import * as SeparatorPrimitive from "@radix-ui/react-separator";
 
 import { cn } from "@/lib/utils";
 
+/** Thin line; orientation controls layout (horizontal = full width, vertical = full height). decorative=true for accessibility. */
 const Separator = React.forwardRef<
   React.ElementRef<typeof SeparatorPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root>

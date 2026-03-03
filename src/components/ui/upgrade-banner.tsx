@@ -1,17 +1,29 @@
 "use client"
 
+/**
+ * @module upgrade-banner
+ * Banner showing message credits remaining and CTA to upgrade or sign in.
+ * Depends on: next/link, @/components/ui/button, progress, @supabase/supabase-js.
+ * Used by: app shell, build flow when credits are low.
+ */
 import Link from "next/link"
 import { Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import type { User } from "@supabase/supabase-js"
 
+/**
+ * @property remainingRequests - Credits left; when 0, copy changes to "run out of message credits".
+ * @property totalRequests - Total quota for progress bar (used = total - remaining).
+ * @property user - If set, CTA is "Upgrade Plan" (→ /pricing); else "Sign in" with return URL.
+ */
 interface IUpgradeBannerProps {
   remainingRequests: number
   totalRequests: number
   user?: User | null
 }
 
+/** Renders progress bar and primary CTA (Upgrade or Sign in). */
 export function UpgradeBanner({
   remainingRequests,
   totalRequests,

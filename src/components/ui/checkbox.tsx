@@ -1,3 +1,10 @@
+/**
+ * @module checkbox
+ * Binary toggle control with check indicator. Wraps Radix Checkbox with theme styles.
+ * Depends on: @radix-ui/react-checkbox, @/lib/utils.
+ * Used by: BlindSpotAnalysisSection and form/selection UIs.
+ */
+
 import * as React from "react"
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
 import { Check } from "lucide-react"

@@ -1,14 +1,30 @@
 "use client";
+
+/*
+ * @module EmbeddedTableScript
+ * @description Thin wrapper around Stripe’s pricing table web component that wires in environment configuration and optional client reference id.
+ * @dependsOn Next.js `Script` component, Supabase `User` typing, and the `sonner` toast library for sign-in prompts.
+ * @usedBy Pricing pages that embed Stripe-hosted pricing tables.
+ */
 import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import Script from "next/script";
 
+/**
+ * Props for `EmbeddedTableScript`.
+ * @property pricingTableId Stripe pricing table identifier for the embedded table.
+ * @property publishableKey Stripe publishable key used by the pricing table script.
+ * @property user Optional authenticated user whose id is forwarded as the client reference id.
+ */
 interface IProps {
     pricingTableId: string | undefined;
     publishableKey: string | undefined;
     user: User | null;
 }
 
+/**
+ * EmbeddedTableScript injects the Stripe pricing table script and configures the pricing table element for the current user.
+ */
 export const EmbeddedTableScript: React.FC<IProps> = ({ pricingTableId, publishableKey, user }) => {
     if (!pricingTableId || !publishableKey) {
         const missing: string[] = [];

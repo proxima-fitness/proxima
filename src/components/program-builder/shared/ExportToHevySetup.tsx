@@ -1,3 +1,8 @@
+/**
+ * @module ExportToHevySetup
+ * Two-step flow: (1) connect Hevy API key, (2) upload program from localStorage to Hevy with progress and rate-limit handling.
+ * Depends on: hevy API, useHevySecret, useMyFeatureLimits, Accordion, Progress. Used by: ExportDialog.
+ */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -37,6 +42,7 @@ import posthog from "posthog-js";
 
 const TOTAL_STEPS = 2;
 
+/** Type guard for successful post-program response from backend. */
 function isPostHevyRoutineProgramSuccess(r: unknown): r is PostHevyRoutineProgramSuccess {
     return (
         typeof r === "object" &&
@@ -48,10 +54,13 @@ function isPostHevyRoutineProgramSuccess(r: unknown): r is PostHevyRoutineProgra
     );
 }
 
+/** Props for the Hevy export setup panel. */
 interface IExportToHevySetupProps {
+    /** Notifies parent when upload is in progress (e.g. to block dialog close). */
     onUploadStateChange?: (uploading: boolean) => void;
 }
 
+/** Step 1: API key connect/edit. Step 2: upload program from localStorage with one-folder vs per-week option. */
 export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadStateChange }) => {
     const { user } = useUserContext();
     const queryClient = useQueryClient();
@@ -148,6 +157,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
         }
     };
 
+    /** Reads localStorage for hevy-program-in-progress; used to enable/disable upload step. */
     const hasProgramInProgress = (): boolean => {
         if (typeof window === "undefined") return false;
         const raw = localStorage.getItem("hevy-program-in-progress");

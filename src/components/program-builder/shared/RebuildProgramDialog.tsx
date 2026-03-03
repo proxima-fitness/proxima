@@ -1,3 +1,8 @@
+/**
+ * @module RebuildProgramDialog
+ * Modal to enter a prompt and re-generate a single day (week/day indices from parent). Submits to handleGenerateDay.
+ * Depends on: Dialog, Form, zod. Used by: program builder day actions.
+ */
 "use client";
 
 import {
@@ -21,12 +26,17 @@ import {
 
 
 
+/** Props for the re-generate-day dialog. */
 interface IProps {
+    /** Invoked with week index, day index, and user prompt to regenerate that day. */
     handleGenerateDay: (currentWeekIndex: number, currentDayIndex: number, prompt: string) => void;
+    /** Current dialog state: which week/day and open/closed. */
     generateDayDialog: TDialog;
+    /** Callback to open/close or update the dialog. */
     handleOpenGenerateDayDialog: (generateDayDialog: TDialog) => void;
 }
 
+/** Dialog with prompt input and Generate button; on submit calls handleGenerateDay and closes. */
 export const RebuildProgramDialog: React.FC<IProps> = (props) => {
 
     const {

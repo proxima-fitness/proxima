@@ -1,5 +1,23 @@
 "use client";
 
+/**
+ * @module Message
+ *
+ * Building blocks for rendering AI chat messages. This module provides
+ * layout primitives for user and assistant bubbles, action toolbars,
+ * branching responses, and markdown rendering via Streamdown so that
+ * higher-level chat components can compose rich message UIs.
+ *
+ * Depends on:
+ * - `UIMessage` shapes from the `ai` SDK
+ * - Design system components such as `Button`, `ButtonGroup`, and `Tooltip`
+ * - `Streamdown` and plugins for rendering markdown, math, code, and diagrams
+ *
+ * Used by:
+ * - `MessageBubbles` in the program builder agent experience
+ * - Other chat interfaces that want a consistent message layout and actions
+ */
+
 import type { UIMessage } from "ai";
 import type { ComponentProps, HTMLAttributes, ReactElement } from "react";
 
@@ -31,10 +49,20 @@ import {
 } from "react";
 import { Streamdown } from "streamdown";
 
+/**
+ * Props for the outer `Message` wrapper.
+ *
+ * - `from` controls whether the bubble is styled as a user or assistant
+ *   message, and is derived from the `UIMessage` role.
+ */
 export type MessageProps = HTMLAttributes<HTMLDivElement> & {
   from: UIMessage["role"];
 };
 
+/**
+ * Root message container that positions and styles a chat bubble
+ * according to the message role.
+ */
 export const Message = ({ className, from, ...props }: MessageProps) => (
   <div
     className={cn(
@@ -46,6 +74,10 @@ export const Message = ({ className, from, ...props }: MessageProps) => (
   />
 );
 
+/**
+ * Props for the message content region, typically containing markdown
+ * or other rich UI for the message body.
+ */
 export type MessageContentProps = HTMLAttributes<HTMLDivElement>;
 
 export const MessageContent = ({
@@ -66,6 +98,9 @@ export const MessageContent = ({
   </div>
 );
 
+/**
+ * Props for the container that holds per-message action buttons.
+ */
 export type MessageActionsProps = ComponentProps<"div">;
 
 export const MessageActions = ({
@@ -78,6 +113,13 @@ export const MessageActions = ({
   </div>
 );
 
+/**
+ * Props for an individual message action button.
+ *
+ * - `tooltip` is shown on hover.
+ * - `label` controls the accessible text when the icon alone is not
+ *   descriptive enough.
+ */
 export type MessageActionProps = ComponentProps<typeof Button> & {
   tooltip?: string;
   label?: string;
@@ -139,6 +181,13 @@ const useMessageBranch = () => {
   return context;
 };
 
+/**
+ * Props for the `MessageBranch` root that manages multiple candidate
+ * responses for a single message.
+ *
+ * - `defaultBranch` selects which branch is shown initially.
+ * - `onBranchChange` is notified when the active branch changes.
+ */
 export type MessageBranchProps = HTMLAttributes<HTMLDivElement> & {
   defaultBranch?: number;
   onBranchChange?: (branchIndex: number) => void;
@@ -195,6 +244,10 @@ export const MessageBranch = ({
   );
 };
 
+/**
+ * Props for the content region inside a `MessageBranch`. Children are
+ * treated as separate branches and only the active one is rendered.
+ */
 export type MessageBranchContentProps = HTMLAttributes<HTMLDivElement>;
 
 export const MessageBranchContent = ({
@@ -228,6 +281,10 @@ export const MessageBranchContent = ({
   ));
 };
 
+/**
+ * Props for the button group that appears under a branched message to
+ * navigate between alternative responses.
+ */
 export type MessageBranchSelectorProps = ComponentProps<typeof ButtonGroup>;
 
 export const MessageBranchSelector = ({
@@ -320,6 +377,9 @@ export const MessageBranchPage = ({
   );
 };
 
+/**
+ * Props for the rich text message body rendered via Streamdown.
+ */
 export type MessageResponseProps = ComponentProps<typeof Streamdown>;
 
 const streamdownPlugins = { cjk, code, math, mermaid };
@@ -340,6 +400,10 @@ export const MessageResponse = memo(
 
 MessageResponse.displayName = "MessageResponse";
 
+/**
+ * Props for an optional toolbar that appears beneath a message, often
+ * used to show branch controls and other contextual actions.
+ */
 export type MessageToolbarProps = ComponentProps<"div">;
 
 export const MessageToolbar = ({

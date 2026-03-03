@@ -1,5 +1,12 @@
 "use client";
 
+/**
+ * @module AppSidebar
+ * Main app sidebar: nav links (Home, About, Dashboard, Explore), units (lbs/kg), pricing/upgrade,
+ * user avatar, logout, and test-user tier toggle. Uses signOutUser + server signout API.
+ * Depends on: UI Sidebar, UserContext, feature limits, authentication API, TestUserTierToggle.
+ * Used by: app layout (sidebar slot).
+ */
 import { Home, LogIn, LogOut, PersonStanding, Search, LayoutDashboard, CreditCard, Receipt, Crown } from "lucide-react";
 import {
   Sidebar,
@@ -52,6 +59,7 @@ const baseItems = [
   },
 ];
 
+/** No props. Renders full sidebar with nav, units, auth and test-tier controls. */
 export function AppSidebar() {
     const { user, isLoading } = useUserContext();
     const { isInLbs, toggleModePreference } = usePoundsOrKgContext();

@@ -1,3 +1,10 @@
+/**
+ * @module hover-card
+ * Popover on hover: Root, Trigger, Content (positioned with align/sideOffset).
+ * Depends on: @radix-ui/react-hover-card, @/lib/utils.
+ * Used by: app and feature components for hover previews.
+ */
+
 import * as React from "react";
 import * as HoverCardPrimitive from "@radix-ui/react-hover-card";
 

@@ -1,3 +1,8 @@
+/**
+ * @module SetTypesToggle
+ * Single-set type selector: warmup, dropset, failure (normal implied). Used per set in the program editor.
+ * Depends on: ToggleGroup, Tooltip. Used by: program builder set rows.
+ */
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { TooltipContent } from "@/components/ui/tooltip";
 import { TooltipTrigger } from "@/components/ui/tooltip";
@@ -7,12 +12,17 @@ import { ActivityIcon, TrendingDownIcon } from "lucide-react";
 import { SkullIcon } from "lucide-react";
 import { useState } from "react";
 
+/** Props for the set-type toggle group. */
 interface IProps {
+    /** Index of the set in the exercise; passed to handleSetType. */
     setIndex: number;
+    /** Current type for this set. */
     setType: ("normal" | "warmup" | "dropset" | "failure");
+    /** Called when user selects a type; (value, setIndex). */
     handleSetType: (value: "normal" | "warmup" | "dropset" | "failure", index: number) => void
 }
 
+/** Toggle group for warmup / dropset / failure; "normal" is default (no icon selected). */
 export const SetTypesToggle = (props: IProps) => {
 
     const { setIndex, setType, handleSetType } = props;

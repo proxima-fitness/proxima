@@ -1,8 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+/*
+ * @module CustomPrograms
+ * @description Marketing section that promotes the agentic workout builder and links users into the program creation flow.
+ * @dependsOn Shared layout and typography styles, a hero image asset, generic button component, and Next.js routing.
+ * @usedBy The marketing homepage features grid to advertise custom program creation.
+ */
+
 import { ai_program_builder } from "public";
 import styles, { layout } from "../../style";
 import { Button } from "../generic/Button";
 import Link from "next/link";
+
+/**
+ * CustomPrograms renders a hero-style section describing the agentic builder and linking to the build program page.
+ */
 
 export const CustomPrograms: React.FC = () => {
 

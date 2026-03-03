@@ -1,5 +1,25 @@
 "use client";
 
+/**
+ * @module PromptInput
+ *
+ * Composable primitives for building AI chat prompt areas. This module
+ * manages controlled text input, file attachments, referenced sources,
+ * drag-and-drop and paste handling, and submit/stop controls so that
+ * higher-level chat experiences can focus on application behavior.
+ *
+ * Depends on:
+ * - `ai` UI parts for file and source document metadata
+ * - Design system input group, select, tooltip, command, and spinner
+ *   components
+ * - Browser APIs for drag-and-drop, clipboard, blobs, and URL lifecycles
+ *
+ * Used by:
+ * - Program builder agent chat surfaces (`PromptTemplate`, `Chat`)
+ * - Other AI UIs that require a rich, attachment-aware input experience
+ *   with optional global state via `PromptInputProvider`.
+ */
+
 import type { ChatStatus, FileUIPart, SourceDocumentUIPart } from "ai";
 import type {
   ChangeEvent,
@@ -105,6 +125,13 @@ const convertBlobUrlToDataUrl = async (url: string): Promise<string | null> => {
 // Provider Context & Types
 // ============================================================================
 
+/**
+ * Attachment management contract used by prompt input components.
+ *
+ * Implementations are responsible for tracking file parts, exposing an
+ * imperative file picker (`openFileDialog`), and cleaning up blob URLs
+ * when files are removed or cleared.
+ */
 export interface IAttachmentsContext {
   files: (FileUIPart & { id: string })[];
   add: (files: File[] | FileList) => void;
@@ -114,12 +141,21 @@ export interface IAttachmentsContext {
   fileInputRef: RefObject<HTMLInputElement | null>;
 }
 
+/**
+ * Minimal text input contract exposed by the controller so that
+ * external components can read and update the current prompt text.
+ */
 export interface ITextInputContext {
   value: string;
   setInput: (v: string) => void;
   clear: () => void;
 }
 
+/**
+ * Internal controller interface binding together text input and
+ * attachment state for consumers that integrate with
+ * `PromptInputProvider`.
+ */
 export interface IPromptInputControllerProps {
   textInput: ITextInputContext;
   attachments: IAttachmentsContext;
@@ -137,6 +173,11 @@ const ProviderAttachmentsContext = createContext<IAttachmentsContext | null>(
   null
 );
 
+/**
+ * Hook for accessing the global prompt input controller created by
+ * `PromptInputProvider`. Throws when used outside the provider to
+ * catch configuration errors early.
+ */
 export const usePromptInputController = () => {
   const ctx = useContext(PromptInputController);
   if (!ctx) {
@@ -164,6 +205,11 @@ export const useProviderAttachments = () => {
 const useOptionalProviderAttachments = () =>
   useContext(ProviderAttachmentsContext);
 
+/**
+ * Props for the optional `PromptInputProvider` wrapper.
+ *
+ * - `initialInput` seeds the shared text value before the first render.
+ */
 export type PromptInputProviderProps = PropsWithChildren<{
   initialInput?: string;
 }>;
@@ -298,6 +344,11 @@ export const PromptInputProvider = ({
 
 const LocalAttachmentsContext = createContext<IAttachmentsContext | null>(null);
 
+/**
+ * Primary hook for accessing the active attachments collection for a
+ * prompt. Prefers the local `PromptInput` context when available and
+ * falls back to the provider-level attachments if present.
+ */
 export const usePromptInputAttachments = () => {
   // Prefer local context (inside PromptInput) as it has validation, fall back to provider
   const provider = useOptionalProviderAttachments();
@@ -315,6 +366,10 @@ export const usePromptInputAttachments = () => {
 // Referenced Sources (Local to PromptInput)
 // ============================================================================
 
+/**
+ * Local-only contract for managing referenced source documents within
+ * a single `PromptInput` instance.
+ */
 export interface IReferencedSourcesContext {
   sources: (SourceDocumentUIPart & { id: string })[];
   add: (sources: SourceDocumentUIPart[] | SourceDocumentUIPart) => void;
@@ -325,6 +380,11 @@ export interface IReferencedSourcesContext {
 export const LocalReferencedSourcesContext =
   createContext<IReferencedSourcesContext | null>(null);
 
+/**
+ * Hook for working with local referenced sources. Throws when used
+ * outside the `LocalReferencedSourcesContext` provider created by
+ * `PromptInput`.
+ */
 export const usePromptInputReferencedSources = () => {
   const ctx = useContext(LocalReferencedSourcesContext);
   if (!ctx) {
@@ -341,6 +401,10 @@ export type PromptInputActionAddAttachmentsProps = ComponentProps<
   label?: string;
 };
 
+/**
+ * Convenience menu item that opens the active prompt input's file
+ * picker when selected, using the current attachments context.
+ */
 export const PromptInputActionAddAttachments = ({
   label = "Add photos or files",
   ...props
@@ -362,11 +426,26 @@ export const PromptInputActionAddAttachments = ({
   );
 };
 
+/**
+ * Canonical message payload produced by `PromptInput` on submit.
+ *
+ * - `text` is the final prompt text (including any spreadsheet
+ *   expansions).
+ * - `files` is the list of attachments that should be sent alongside
+ *   the text.
+ */
 export interface IPromptInputMessage {
   text: string;
   files: FileUIPart[];
 }
 
+/**
+ * Props for the main `PromptInput` component.
+ *
+ * Focuses on input behavior (validation, drag-and-drop, keyboard
+ * shortcuts) rather than visual layout, which is delegated to
+ * `InputGroup` and related design system components.
+ */
 export type PromptInputProps = Omit<
   HTMLAttributes<HTMLFormElement>,
   "onSubmit" | "onError"
@@ -1121,6 +1200,14 @@ export const PromptInputActionMenuItem = ({
 // Note: Actions that perform side-effects (like opening a file dialog)
 // are provided in opt-in modules (e.g., prompt-input-attachments).
 
+/**
+ * Props for the prompt submit/stop button.
+ *
+ * - `status` reflects the current chat lifecycle (idle, submitted,
+ *   streaming, error).
+ * - `onStop` is called when the user clicks while streaming to cancel
+ *   generation instead of submitting a new prompt.
+ */
 export type PromptInputSubmitProps = ComponentProps<typeof InputGroupButton> & {
   status?: ChatStatus;
   onStop?: () => void;

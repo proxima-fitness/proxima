@@ -1,5 +1,17 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+
+/**
+ * @module (app)/about/AboutPageClient
+ *
+ * Client-side About page content: hero, founder card with hover image swap,
+ * and timeline story sections. Sits under (app)/about/page; receives image
+ * assets from the server page.
+ *
+ * Depends on: Card components, UserContext, AOS, posthog, styles.
+ * Used by: (app)/about/page.tsx.
+ */
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useUserContext } from "@/contexts/UserContext";
@@ -9,15 +21,20 @@ import 'aos/dist/aos.css';
 import posthog from "posthog-js";
 import { useEffect } from "react";
 
+/** Props for the About page client component. */
 interface IAboutPageClientProps {
+    /** Static image for founder (default state). */
     jack: any;
+    /** Static image for founder (hover state). */
     jack_jacked: any;
 }
 
+/**
+ * Renders the full About Us content with AOS animations and PostHog page view.
+ */
 export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
-
     const { user } = useUserContext();
-    // Initialize AOS on the client
+
     useEffect(() => {
         AOS.init({
             duration: 1000,

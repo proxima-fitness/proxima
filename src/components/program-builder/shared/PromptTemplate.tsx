@@ -1,3 +1,8 @@
+/**
+ * @module PromptTemplate
+ * Main prompt input on landing: typewriter placeholder, attachments, suggestion groups, and navigation to build-program with search or sessionStorage for long prompts.
+ * Depends on: prompt-input, attachments, suggestion, useTypewriterPlaceholder, BUILD_PROGRAM_EMPTY_URL. Used by: Prompt.
+ */
 /* eslint-disable @next/next/no-img-element */
 "use client"
 
@@ -35,7 +40,7 @@ import { useRouter } from "next/navigation";
 const PENDING_ATTACHMENTS_KEY = "pending-attachments";
 const PENDING_INITIAL_PROMPT_KEY = "pending-initial-prompt";
 const LONG_PROMPT_PLACEHOLDER = "__long_prompt__";
-/** Max chars for search in URL to avoid 431 Request Header Fields Too Large (spreadsheet content goes to sessionStorage) */
+/** Max chars for search in URL; above this, prompt is stored in sessionStorage to avoid 431. */
 const MAX_SEARCH_URL_LENGTH = 1800;
 import { suggestionGroups, quickTriggerSuggestionChips } from "@/assets/constants";
 import { BUILD_PROGRAM_EMPTY_URL } from "@/components/program-builder/utils";
@@ -58,6 +63,7 @@ function SyncSearchFromInput({
   return null;
 }
 
+/** Props for a single attachment chip in the prompt input. */
 interface IAttachmentItemProps {
   attachment: AttachmentData;
   onRemove: (id: string) => void;
@@ -115,6 +121,7 @@ const AttachmentItem = memo(({ attachment, onRemove }: IAttachmentItemProps) => 
 
 AttachmentItem.displayName = "AttachmentItem";
 
+/** Props for the inner prompt input (placeholder, loading, submit callback). */
 interface IPromptTemplateInputProps {
   animatedPlaceholder: string;
   isLoading: boolean;
@@ -153,7 +160,8 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
     [attachments]
   );
 
-  const checkMultiline = useCallback((ta: HTMLTextAreaElement) => {
+    /** Detect multi-line textarea to align footer (items-end vs items-center). */
+    const checkMultiline = useCallback((ta: HTMLTextAreaElement) => {
     const lineHeight = parseFloat(getComputedStyle(ta).lineHeight) || 20;
     const paddingY = parseFloat(getComputedStyle(ta).paddingTop) + parseFloat(getComputedStyle(ta).paddingBottom) || 24;
     const singleLineHeight = lineHeight + paddingY;
@@ -290,6 +298,7 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
   );
 };
 
+/** Landing prompt: input, suggestions, and navigation to build-program (URL or sessionStorage for long prompts). */
 export const PromptTemplate: React.FC = () => {
 
     const router = useRouter();
@@ -297,6 +306,7 @@ export const PromptTemplate: React.FC = () => {
     // const goToFilters = (search: string) => {
     //     router.push(`/program-filters?search=${encodeURIComponent(search)}`);
     // };
+    /** Navigate to build-program; long prompts go to sessionStorage and URL gets placeholder. */
     const goToProgramBuilder = (search: string) => {
         if (search.length > MAX_SEARCH_URL_LENGTH) {
             try {

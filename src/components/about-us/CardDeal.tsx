@@ -1,6 +1,12 @@
-
+/**
+ * @module CardDeal
+ * "About Us" section: heading and short blurb about Proxima/Jack (software dev, bodybuilding, plateau).
+ * Depends on: style/layout.
+ * Used by: about or landing page.
+ */
 import styles, { layout } from "../../style";
 
+/** No props. Renders the about-us content block. */
 export const CardDeal: React.FC = () => {
     return (
         <section id="about_us" className={ layout.section }>

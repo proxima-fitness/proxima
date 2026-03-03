@@ -1,3 +1,10 @@
+/**
+ * @module badge
+ * Small status/label pill with variant styles (default, secondary, destructive, outline).
+ * Depends on: class-variance-authority, @/lib/utils.
+ * Used by: tool, SetTypesLegend, layout, and feature components.
+ */
+
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 
@@ -23,10 +30,15 @@ const badgeVariants = cva(
   },
 );
 
+/**
+ * @param className - Optional extra class names.
+ * @param variant - Visual style: default | secondary | destructive | outline.
+ */
 export interface IBadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {}
 
+/** Renders a small pill with semantic variant styling. */
 function Badge({ className, variant, ...props }: IBadgeProps) {
   return (
       <div className={ cn(badgeVariants({ variant }), className) } { ...props } />

@@ -1,4 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * @module DownloadPopup
+ * Modal dialog for app download CTA; shows platform-specific content (mobile vs desktop). Currently
+ * shows Proxima logo on desktop and placeholder on mobile (app download deprecated).
+ * Depends on: UI Dialog/Button, public assets.
+ * Used by: header/nav when user triggers download CTA.
+ */
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -7,12 +14,16 @@ import {
 } from "@/components/ui/dialog";
 import { proxima_logo_small } from "public";
 
+/** @property isOpen - Whether the dialog is visible. */
+/** @property setIsOpen - Callback to open/close the dialog. */
+/** @property isMobile - If true, show mobile layout (e.g. store badges); else desktop. */
 interface IProps {
     isOpen: boolean;
     setIsOpen: (isOpen: boolean) => void;
     isMobile: boolean;
 }
 
+/** Renders a dialog with download CTA content based on isMobile. */
 export const DownloadPopup: React.FC<IProps> = (props) => {
 
     const { isOpen, setIsOpen, isMobile } = props;

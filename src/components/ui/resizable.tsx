@@ -1,10 +1,17 @@
 "use client"
 
+/**
+ * @module resizable
+ * Resizable panel layout (splitter) built on react-resizable-panels.
+ * Depends on: react-resizable-panels, lucide-react, @/lib/utils.
+ * Used by: dashboards, code/docs splits, settings panels.
+ */
 import { GripVertical } from "lucide-react"
 import * as ResizablePrimitive from "react-resizable-panels"
 
 import { cn } from "@/lib/utils"
 
+/** Container for panels; direction (horizontal/vertical) from data attribute. */
 const ResizablePanelGroup = ({
   className,
   ...props
@@ -18,8 +25,13 @@ const ResizablePanelGroup = ({
   />
 )
 
+/** Single panel; default size/constraints via props. */
 const ResizablePanel = ResizablePrimitive.Panel
 
+/**
+ * Draggable divider between panels.
+ * @param withHandle - When true, shows visible grip icon for easier drag target.
+ */
 const ResizableHandle = ({
   withHandle,
   className,

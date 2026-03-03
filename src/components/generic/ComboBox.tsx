@@ -1,5 +1,12 @@
 "use client";
 
+/**
+ * @module ComboBox
+ * Filter dropdown for program discovery: Program Length, Workout Duration, etc. Uses Command/Popover;
+ * displays value with "Mins" or "Weeks" suffix and a Reset button when a value is selected.
+ * Depends on: UI Command, Popover, Button; lucide-react.
+ * Used by: program discovery/filter UI.
+ */
 import * as React from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 
@@ -19,7 +26,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-
+/** @property options - Choices shown in the dropdown. */
+/** @property title - Filter type; drives label and unit (Mins/Weeks). */
+/** @property handleSelectedFilters - Called with selected option or "" when cleared. */
+/** @property value - Currently selected option (empty string = none). */
 interface IProps {
     options: string[];
     title: "Program Length" | "Workout Duration" | "Equipment" | "Specialization" | "Difficulty";
@@ -27,6 +37,7 @@ interface IProps {
     value: string;
 }
 
+/** Renders a searchable combobox and optional Reset for the filter. */
 export const ComboBox: React.FC<IProps> = (props) => {
 
     const { options, title, handleSelectedFilters, value } = props;

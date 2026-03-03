@@ -1,3 +1,10 @@
+/**
+ * @module label
+ * Form label with peer-disabled styling. Wraps Radix Label.
+ * Depends on: @radix-ui/react-label, class-variance-authority, @/lib/utils.
+ * Used by: form (FormLabel), input-group, and feature components.
+ */
+
 import * as React from "react";
 import * as LabelPrimitive from "@radix-ui/react-label";
 import { cva, type VariantProps } from "class-variance-authority";

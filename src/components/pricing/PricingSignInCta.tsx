@@ -1,5 +1,15 @@
 "use client";
 
+/*
+ * @module PricingSignInCta
+ * @description Sign-in/sign-out call-to-action that ensures users reach the pricing page with a clean session and valid user id.
+ * @dependsOn User context, Next.js routing and links, authentication helpers, and shared button styling.
+ * @usedBy Pricing pages to prompt users to sign in before subscribing to a plan.
+ */
+
+/**
+ * PricingSignInCta conditionally renders a sign-in or re-sign-in button for the pricing page depending on the current user state.
+ */
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LogIn } from "lucide-react";

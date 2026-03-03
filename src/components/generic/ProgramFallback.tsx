@@ -1,6 +1,12 @@
+/**
+ * @module ProgramFallback
+ * Skeleton layout for a single program detail page: hero image, title block, sidebar, week list.
+ * Depends on: UI Skeleton.
+ * Used by: program detail route while loading.
+ */
 import { Skeleton } from "../ui/skeleton"
 
-
+/** No props. Renders full program-detail-shaped skeletons. */
 export const ProgramFallback: React.FC = () => {
 
     return (

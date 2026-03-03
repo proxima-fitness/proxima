@@ -1,3 +1,11 @@
+/**
+ * @module drawer
+ * Bottom sheet / drawer: Root, Trigger, Portal, Overlay, Content, Header, Footer,
+ * Title, Description. Uses vaul for slide-up panel.
+ * Depends on: vaul, @/lib/utils.
+ * Used by: app and feature components for mobile-friendly panels.
+ */
+
 import * as React from "react"
 import { Drawer as DrawerPrimitive } from "vaul"
 

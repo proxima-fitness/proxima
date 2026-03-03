@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * @module HevyPdfRenderer
+ * Renders the Hevy program as a multi-page PDF document (weeks as pages, days as cards with exercises).
+ * Uses @react-pdf/renderer; supports weight unit via PoundsOrKgContext or isInLbs prop. Ends with a thank-you page.
+ * Depends on: @react-pdf/renderer, formatWeight/getWeightUnit, shortEnglishHumanizer, Russo One font.
+ * Used by: ExportDialog (and optionally SaveDialog).
+ */
+
 import { shortEnglishHumanizer } from "@/assets/constants";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
@@ -13,12 +21,17 @@ Font.register({
 });
 
 
+/** Props for the PDF document. */
 interface IProps {
+    /** Program as weeks (outer array) and days per week (inner array). */
     hevyRoutine: THevyRoutine[][];
     /** Pass when rendering inside PDFViewer (no provider). Omit when under PoundsOrKgProvider. */
     isInLbs?: boolean;
 }
 
+/**
+ * Renders a full program PDF: one page per week, day cards with exercises (sets/reps/intensity), then thank-you page.
+ */
 export const HevyPdfRenderer: React.FC<IProps> = (props) => {
 
     const {

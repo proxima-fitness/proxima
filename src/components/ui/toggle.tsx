@@ -1,11 +1,18 @@
 "use client"
 
+/**
+ * @module toggle
+ * Pressable toggle button (on/off state) built on Radix Toggle.
+ * Depends on: @radix-ui/react-toggle, class-variance-authority, @/lib/utils.
+ * Used by: toolbars, filter chips, toggle-group.
+ */
 import * as React from "react"
 import * as TogglePrimitive from "@radix-ui/react-toggle"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
+/** Variant/size styles for toggle (default/outline, default/sm/lg). */
 const toggleVariants = cva(
   "inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors hover:bg-muted hover:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
@@ -28,6 +35,7 @@ const toggleVariants = cva(
   }
 )
 
+/** Toggle button; pressed state via data-state="on". variant/size from toggleVariants. */
 const Toggle = React.forwardRef<
   React.ElementRef<typeof TogglePrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof TogglePrimitive.Root> &

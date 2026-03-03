@@ -1,3 +1,8 @@
+/**
+ * @module Filters
+ * Commented-out advanced filters form (sex, age, program length, days, goals, equipment, exclude, health, etc.). Kept for reference; not rendered.
+ * Depends on: (none – code commented). Used by: none.
+ */
 // import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 // import MultiSelect, { IOption } from "@/components/ui/multi-select"
 // import { Input } from "@/components/ui/input"

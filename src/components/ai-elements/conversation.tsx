@@ -1,5 +1,23 @@
 "use client";
 
+/**
+ * @module Conversation
+ *
+ * Scroll-aware container components for AI chat conversations. This module
+ * wraps `StickToBottom` to keep the viewport anchored to the latest message,
+ * exposes a structured empty state, and provides utilities for scrolling to
+ * the bottom and exporting a transcript as markdown.
+ *
+ * Depends on:
+ * - `use-stick-to-bottom` for scroll anchoring and resize handling
+ * - Design system primitives such as `Button`
+ * - `useIsMobile` for adapting scroll behavior on small screens
+ *
+ * Used by:
+ * - Program builder agent chat surfaces (`Agent`, `Chat`)
+ * - Other AI conversation views that need a consistent scroll and export UX
+ */
+
 import type { ComponentProps } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -9,8 +27,18 @@ import { ArrowDownIcon, DownloadIcon } from "lucide-react";
 import { useCallback } from "react";
 import { StickToBottom, useStickToBottomContext } from "use-stick-to-bottom";
 
+/**
+ * Props for the root `Conversation` container.
+ *
+ * Inherits all props from `StickToBottom`, with `className` commonly used
+ * to size the chat region within a larger layout.
+ */
 export type ConversationProps = ComponentProps<typeof StickToBottom>;
 
+/**
+ * Top-level conversation container that manages scroll anchoring to the
+ * newest messages, with behavior tuned for mobile vs. desktop.
+ */
 export const Conversation = ({ className, ...props }: ConversationProps) => {
   const isMobile = useIsMobile();
   return (
@@ -24,6 +52,10 @@ export const Conversation = ({ className, ...props }: ConversationProps) => {
   );
 };
 
+/**
+ * Props for the `ConversationContent` region that actually holds message
+ * bubbles inside the scroll-managed `Conversation`.
+ */
 export type ConversationContentProps = ComponentProps<
   typeof StickToBottom.Content
 >;
@@ -38,6 +70,12 @@ export const ConversationContent = ({
   />
 );
 
+/**
+ * Props for the empty-state view that appears when there are no messages.
+ *
+ * - `title` and `description` describe the empty conversation.
+ * - `icon` and `children` allow callers to fully customize the visual.
+ */
 export type ConversationEmptyStateProps = ComponentProps<"div"> & {
   title?: string;
   description?: string;
@@ -73,6 +111,9 @@ export const ConversationEmptyState = ({
   </div>
 );
 
+/**
+ * Props for the floating "scroll to bottom" button.
+ */
 export type ConversationScrollButtonProps = ComponentProps<typeof Button>;
 
 export const ConversationScrollButton = ({
@@ -104,11 +145,23 @@ export const ConversationScrollButton = ({
   );
 };
 
+/**
+ * Minimal message abstraction used when exporting a conversation to
+ * markdown. Captures only the author role and rendered content text.
+ */
 export interface IConversationMessage {
   role: "user" | "assistant" | "system" | "data" | "tool";
   content: string;
 }
 
+/**
+ * Props for the conversation download button.
+ *
+ * - `messages` is the chat history to export.
+ * - `filename` controls the downloaded markdown filename.
+ * - `formatMessage` allows callers to override the markdown formatting
+ *   for each message.
+ */
 export type ConversationDownloadProps = Omit<
   ComponentProps<typeof Button>,
   "onClick"
@@ -124,6 +177,10 @@ const defaultFormatMessage = (message: IConversationMessage): string => {
   return `**${roleLabel}:** ${message.content}`;
 };
 
+/**
+ * Convert a sequence of conversation messages to a markdown string using
+ * a caller-provided formatter or the default role-prefixed format.
+ */
 export const messagesToMarkdown = (
   messages: IConversationMessage[],
   formatMessage: (

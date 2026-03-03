@@ -1,6 +1,22 @@
 "use client";
 /* eslint-disable react-hooks/static-components */
 
+/**
+ * @module Shimmer
+ *
+ * Animated text shimmer effect used to indicate that an AI model is
+ * currently "thinking" or streaming content. Renders text with a moving
+ * gradient driven by `motion`.
+ *
+ * Depends on:
+ * - `motion` for declarative animation primitives
+ * - Utility class merging via `cn`
+ *
+ * Used by:
+ * - `ReasoningTrigger` when showing a live "Thinking..." message
+ * - Any surface that needs a reusable, text-only shimmer effect
+ */
+
 import type { MotionProps } from "motion/react";
 import type { CSSProperties, ElementType, JSX } from "react";
 
@@ -25,6 +41,14 @@ const getMotionComponent = (element: keyof JSX.IntrinsicElements) => {
   return component;
 };
 
+/**
+ * Props for the text shimmer component.
+ *
+ * - `children` is the text to animate.
+ * - `as` selects which HTML element to render.
+ * - `duration` and `spread` control the animation timing and gradient
+ *   width respectively.
+ */
 export interface ITextShimmerProps {
   children: string;
   as?: ElementType;

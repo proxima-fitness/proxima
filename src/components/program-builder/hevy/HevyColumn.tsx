@@ -1,3 +1,11 @@
+/**
+ * @module HevyColumn
+ * One week column in the Hevy program builder: header (week title, duplicate week), drop zone for day cards,
+ * drag-and-drop reorder, Add Day dropdown (empty day or add Hevy routine), and HevyDuplicateWeek / HevyAddRoutineDialog.
+ * Depends on: HevyDayCard, HevyDuplicateWeek, HevyAddRoutineDialog, DropIndicator, reorderHevy.
+ * Used by: HevyRoutine (one per week).
+ */
+
 import { useState } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { BookOpen, CopyIcon, Plus, PlusIcon } from "lucide-react";
@@ -10,29 +18,53 @@ import { reorderHevy } from "../utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { HevyAddRoutineDialog } from "./HevyAddRoutineDialog";
 
+/** Props for a single week column in the program builder. */
 interface IProps {
+    /** Column header label (e.g. "Week 1"). */
     title: string;
+    /** Week index (folder_id) this column represents. */
     folder_id: number;
+    /** Total number of weeks in the program (for duplicate-week target list). */
     programLength: number;
+    /** Flat list of all days (routines); this column filters by folder_id. */
     hevyProgram: THevyRoutine[];
+    /** Updater for the full program when days are reordered or added. */
     setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
+    /** Adds an empty day to this week. */
     handleAddDay: (folder_id: number) => void;
+    /** Opens the add-note dialog for a day. */
     handleOpenAddNoteDialog: (addNoteDialog: THevyDialog) => void;
+    /** Opens the add-exercise-note dialog. */
     handleOpenAddExerciseNoteDialog: (addExerciseNoteDialog: THevyDialog) => void;
+    /** Deletes a day by id. */
     handleDeleteDay: (id: string) => void;
+    /** Updates a day's title by id. */
     handleEditTitle: (id: string, title: string) => void;
+    /** Sets edit mode for the add-exercise dialog (add vs edit). */
     handleIsEditExercise: (isEditExercise: boolean) => void;
+    /** Duplicates this week to one or more target week indexes. */
     handleDuplicateWeek: (fromWeekIndex: number, toWeekIndexes: number[]) => void;
+    /** Duplicates a day to a target week and selected day slots. */
     handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;
+    /** Opens the add/edit exercise dialog for a given week/day. */
     handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
+    /** Deletes an exercise from a day. */
     handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
+    /** Id of the day card that currently has focus (for keyboard shortcuts). */
     focusedCardId: string;
+    /** Sets the focused day card id. */
     setFocusedCardId: (focusedCardId: string) => void;
+    /** Groups selected exercises in a day into a superset. */
     handleCreateSuperset: (dayId: string, selectedExercises: number[]) => void;
+    /** Removes an exercise from its superset. */
     handleRemoveFromSuperset: (dayId: string, exerciseIndex: number) => void;
+    /** Adds a Hevy routine as a new day in this week. */
     handleAddRoutineAsDay: (routine: THevyRoutine, folder_id: number) => void;
 }
 
+/**
+ * Renders one week column: day cards for this week, drop indicators, drag-and-drop, Add Day menu, duplicate week/dialog.
+ */
 export const HevyColumn: React.FC<IProps> = (props) => {
 
     const {
