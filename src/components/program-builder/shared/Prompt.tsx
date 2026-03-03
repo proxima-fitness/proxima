@@ -90,8 +90,8 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                                         ]}
                                         maxAvatarsAmount={5}
                                     />
-                                    <p className="text-xs sm:text-sm text-black dark:text-white text-center md:text-left">
-                                        17,000+ athletes on Proxima
+                                    <p className="font-secondary text-[10px] sm:text-xs font-semibold tracking-[0.12em] uppercase text-black dark:text-white">
+                                        17,000+ athletes
                                     </p>
                                 </div>
 
@@ -119,8 +119,15 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                                         Integrated with
                                     </span>
                                     <div className="flex flex-row items-center justify-center gap-3 sm:gap-4">
+                                    <a
+                                        href="https://www.hevyapp.com/"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-label="Visit Hevy website"
+                                    >
                                         <img src={hevy_logo.src} alt="Hevy" className="h-5 sm:h-6 w-auto hidden dark:block" />
                                         <img src={hevy_logo_black.src} alt="Hevy" className="h-5 sm:h-6 w-auto dark:hidden block" />
+                                        </a>
                                     </div>
                                 </div>
                             </div>
