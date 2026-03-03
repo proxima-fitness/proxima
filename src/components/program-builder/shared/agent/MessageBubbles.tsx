@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { useEffect, useRef, useMemo, useCallback, useState } from "react";
 import {
     Message,
@@ -9,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
-import { Copy, ThumbsUp, ThumbsDown, Pencil, Trash, AlertCircle, RefreshCw } from "lucide-react"
+import { Copy, ThumbsUp, ThumbsDown, Pencil, Trash, AlertCircle, RefreshCw, FileText } from "lucide-react"
 import { type ChatStatus, FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai";
 import { Questions, IQuestion } from "@/components/ui/questions";
 import { IOption } from "@/components/ui/multi-select";
@@ -126,12 +127,12 @@ const GenerationError: React.FC<{
                         )}
                     </div>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-2 mt-2 sm:mt-1">
+                <div className="flex flex-col flex-wrap items-center justify-center sm:flex-row gap-2 mt-2 sm:mt-1">
                     {canRetry && (
                         <Button
                             size="sm"
                             onClick={onRetry}
-                            className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white border-0"
+                            className="w-[50%] sm:w-auto bg-red-600 hover:bg-red-700 text-white border-0"
                         >
                             <RefreshCw className="w-4 h-4 mr-2" />
                             Try Again
@@ -141,7 +142,7 @@ const GenerationError: React.FC<{
                         <Button
                             variant="outline"
                             size="sm"
-                            className="w-full sm:w-auto border-border text-muted-foreground hover:bg-muted/50"
+                            className="w-[50%] sm:w-auto border-border text-muted-foreground hover:bg-muted/50"
                         >
                             Explore Programs
                         </Button>
@@ -686,6 +687,39 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                 <ThumbsDown />
                                                             </MessageAction>
                                                         </MessageActions>
+                                                    </div>
+                                                </Message>
+                                            );
+                                        }
+                                        case "file": {
+                                            if (isAssistantPart) return null;
+                                            const filePart = part as FileUIPart;
+                                            const mediaType = filePart.mediaType ?? "";
+                                            const isImage = mediaType.startsWith("image/");
+                                            return (
+                                                <Message
+                                                    key={`${message.id}-${index}-file`}
+                                                    from={message.role}
+                                                    className={cn(
+                                                        "mx-auto flex w-full max-w-3xl flex-col gap-2 px-0 md:px-6 pt-2",
+                                                        "items-end"
+                                                    )}
+                                                >
+                                                    <div className="group flex flex-col items-end gap-1 max-w-[85%] sm:max-w-[75%]">
+                                                        {isImage && filePart.url ? (
+                                                            <img
+                                                                src={filePart.url}
+                                                                alt={filePart.filename ?? "Image"}
+                                                                className="max-w-[200px] max-h-[200px] rounded-xl object-cover border border-border"
+                                                            />
+                                                        ) : (
+                                                            <div className="flex items-center gap-2 bg-muted rounded-xl px-3 py-2 border border-border">
+                                                                <FileText className="size-4 shrink-0 text-muted-foreground" />
+                                                                <span className="text-sm truncate max-w-[180px]">
+                                                                    {filePart.filename ?? "File"}
+                                                                </span>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </Message>
                                             );

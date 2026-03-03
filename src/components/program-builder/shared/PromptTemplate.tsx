@@ -27,8 +27,15 @@ import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/comp
 import { Paperclip, X, MicIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Suggestions, Suggestion } from "@/components/ai-elements/suggestion";
+import type { FileUIPart } from "ai";
 import { memo, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+
+const PENDING_ATTACHMENTS_KEY = "pending-attachments";
+const PENDING_INITIAL_PROMPT_KEY = "pending-initial-prompt";
+const LONG_PROMPT_PLACEHOLDER = "__long_prompt__";
+/** Max chars for search in URL to avoid 431 Request Header Fields Too Large (spreadsheet content goes to sessionStorage) */
+const MAX_SEARCH_URL_LENGTH = 1800;
 import { suggestionGroups, quickTriggerSuggestionChips } from "@/assets/constants";
 import { BUILD_PROGRAM_EMPTY_URL } from "@/components/program-builder/utils";
 import { useTypewriterPlaceholder } from "@/hooks/useTypewriterPlaceholder";
@@ -111,7 +118,7 @@ interface IPromptTemplateInputProps {
   animatedPlaceholder: string;
   isLoading: boolean;
   canSubmit: boolean;
-  onSend: (text?: string) => void;
+  onSend: (text?: string, files?: FileUIPart[]) => void;
 }
 
 const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
@@ -125,7 +132,13 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      onSend();
+      // Trigger form submit so blob-to-dataURL conversion runs and onSend receives files
+      const form = (e.target as HTMLElement).closest("form");
+      if (form) {
+        form.requestSubmit();
+      } else {
+        onSend();
+      }
     }
   };
 
@@ -141,9 +154,9 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
   return (
     <PromptInput
       className="dark:bg-darkGray border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-2xs focus-within:border focus-within:border-gray-300 transition-all duration-200"
-      accept="image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      accept="image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/csv,application/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,.csv,.xlsx,.xls,.ods"
       multiple
-      onSubmit={({ text }) => onSend(text)}
+      onSubmit={({ text, files }) => onSend(text, files)}
     >
       {attachments.files.length > 0 && (
         <div className="flex w-full shrink-0 justify-start overflow-x-auto overflow-y-hidden pl-4 pt-1 pr-3 pb-2">
@@ -210,7 +223,16 @@ export const PromptTemplate: React.FC = () => {
     //     router.push(`/program-filters?search=${encodeURIComponent(search)}`);
     // };
     const goToProgramBuilder = (search: string) => {
-        router.push(`/build-program?search=${encodeURIComponent(search)}&edit=true`);
+        if (search.length > MAX_SEARCH_URL_LENGTH) {
+            try {
+                sessionStorage.setItem(PENDING_INITIAL_PROMPT_KEY, search);
+            } catch {
+                // quota or other; fall back to truncation
+            }
+            router.push(`/build-program?search=${encodeURIComponent(LONG_PROMPT_PLACEHOLDER)}&edit=true`);
+        } else {
+            router.push(`/build-program?search=${encodeURIComponent(search)}&edit=true`);
+        }
     };
 
     const [search, setSearch] = useState<string>("");
@@ -227,10 +249,17 @@ export const PromptTemplate: React.FC = () => {
         showPrefix: !isMobile,
     });
 
-    const handleSend = (text?: string) => {
+    const handleSend = (text?: string, files?: FileUIPart[]) => {
         const value = (text ?? search).trim();
         if (!value) return;
         setActiveCategory("");
+        if (files?.length) {
+            try {
+                sessionStorage.setItem(PENDING_ATTACHMENTS_KEY, JSON.stringify(files));
+            } catch {
+                // ignore quota or serialization errors
+            }
+        }
         goToProgramBuilder(value);
         setSearch("");
         setSubmitKey((k) => k + 1);

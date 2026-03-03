@@ -54,6 +54,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  isSpreadsheetFile,
+  parseSpreadsheetToText,
+} from "@/lib/parse-spreadsheet";
 import { cn } from "@/lib/utils";
 import {
   CornerDownLeftIcon,
@@ -752,7 +756,32 @@ export const PromptInput = ({
           })
         );
 
-        const result = onSubmit({ files: convertedFiles, text }, event);
+        // Parse spreadsheets to text and add to message text instead of sending as file parts
+        // (the API treats file parts as binary inline_data; sending CSV as text avoids base64 decode errors)
+        const filesToSend: FileUIPart[] = [];
+        const spreadsheetTextParts: string[] = [];
+        for (const item of convertedFiles) {
+          if (isSpreadsheetFile(item) && item.url) {
+            try {
+              const response = await fetch(item.url);
+              const blob = await response.blob();
+              const csvText = await parseSpreadsheetToText(blob, item.filename);
+              const label = item.filename ?? "spreadsheet";
+              spreadsheetTextParts.push(`[Attached spreadsheet: ${label}]\n${csvText}`);
+            } catch {
+              // keep as file if parse fails
+              filesToSend.push(item);
+            }
+          } else {
+            filesToSend.push(item);
+          }
+        }
+        const finalText =
+          spreadsheetTextParts.length > 0
+            ? `${text}\n\n${spreadsheetTextParts.join("\n\n")}`.trim()
+            : text;
+
+        const result = onSubmit({ files: filesToSend, text: finalText }, event);
 
         // Handle both sync and async onSubmit
         if (result instanceof Promise) {

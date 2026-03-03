@@ -16,6 +16,9 @@ import { cn } from "@/lib/utils";
 import { MessageSquare, Calendar, Undo2 } from "lucide-react";
 const SIDEBAR_POSITION_KEY = "andy-sidebar-position";
 const SIDEBAR_SIZE_KEY = "andy-sidebar-size";
+const PENDING_ATTACHMENTS_KEY = "pending-attachments";
+const PENDING_INITIAL_PROMPT_KEY = "pending-initial-prompt";
+const LONG_PROMPT_PLACEHOLDER = "__long_prompt__";
 const COLLAPSED_SIZE = 30;
 const EXPANDED_SIZE = 70;
 import { useSearchParams } from "next/navigation";
@@ -195,12 +198,35 @@ export function BuildProgramClient() {
 
     // Initialize with search parameter if present (delay until shared/resume load has completed so API receives program)
     useEffect(() => {
-        if (!search?.trim() || initialSearchOccurred.current || !sendMessageRef.current) return;
+        const isLongPromptPlaceholder = search === LONG_PROMPT_PLACEHOLDER;
+        const messageText = isLongPromptPlaceholder
+            ? (typeof sessionStorage !== "undefined" ? sessionStorage.getItem(PENDING_INITIAL_PROMPT_KEY) : null) ?? ""
+            : search;
+        if (!messageText?.trim() || initialSearchOccurred.current || !sendMessageRef.current) return;
         if (shared === 'true' && shareId && hevyProgram.length === 0 && !sharedProgramLoadAttemptedRef.current) return;
         if (resume === 'true' && hevyProgram.length === 0) return;
         initialSearchOccurred.current = true;
-        sendMessageRef.current({ text: search });
-        posthog.capture('sent_first_prompt_to_ai', { search: search, user: user?.id ?? "user_id_unknown" });
+        if (isLongPromptPlaceholder && typeof sessionStorage !== "undefined") {
+            sessionStorage.removeItem(PENDING_INITIAL_PROMPT_KEY);
+        }
+        let files: FileUIPart[] | undefined;
+        try {
+            const stored = sessionStorage.getItem(PENDING_ATTACHMENTS_KEY);
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed)) {
+                    files = parsed.filter(
+                        (p): p is FileUIPart =>
+                            p != null && typeof p === "object" && p.type === "file" && typeof (p as FileUIPart).url === "string"
+                    );
+                }
+                sessionStorage.removeItem(PENDING_ATTACHMENTS_KEY);
+            }
+        } catch {
+            // ignore parse errors or missing key
+        }
+        sendMessageRef.current(files?.length ? { text: messageText, files } : { text: messageText });
+        posthog.capture('sent_first_prompt_to_ai', { search: messageText.slice(0, 200), user: user?.id ?? "user_id_unknown" });
     }, [search, user, hevyProgram, shared, shareId, resume]);
 
     const handleSubmit = (text: string, files?: FileUIPart[]) => {
