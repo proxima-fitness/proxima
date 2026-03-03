@@ -171,9 +171,9 @@ const ChatInputBody = ({
               <button
                 type="button"
                 onClick={handlePaperclipClick}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl hover:bg-extraLightGray dark:hover:bg-darkGray/80"
+                className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white text-black dark:bg-black dark:text-white hover:bg-white/90"
               >
-                <Paperclip className="size-5" />
+                <Paperclip className="size-4" />
               </button>
             </TooltipTrigger>
             <TooltipContent className="bg-lightSecondary text-white">
@@ -187,7 +187,7 @@ const ChatInputBody = ({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="size-9 rounded-full"
+                    className="size-9 rounded-full bg-white text-black dark:bg-black dark:text-white hover:bg-white/90 hover:text-white [&_svg]:text-black dark:[&_svg]:text-white disabled:opacity-60"
                     disabled
                   >
                     <Mic size={18} />
@@ -221,9 +221,9 @@ const ChatInputBody = ({
             <button
               type="button"
               onClick={handlePaperclipClick}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl hover:bg-extraLightGray dark:hover:bg-darkGray/80"
+              className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white dark:bg-black text-black dark:text-white hover:bg-lightSecondary/90"
             >
-              <Paperclip className="size-5" />
+              <Paperclip className="size-4 text-black dark:text-white" />
             </button>
           </TooltipTrigger>
           <TooltipContent className="bg-lightSecondary text-white">
@@ -242,7 +242,7 @@ const ChatInputBody = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-9 rounded-full"
+                  className="size-9 rounded-full bg-white text-black dark:bg-black dark:text-white hover:bg-white/90 hover:text-white [&_svg]:text-black dark:[&_svg]:text-white disabled:opacity-50"
                   disabled
                 >
                   <Mic size={18} />

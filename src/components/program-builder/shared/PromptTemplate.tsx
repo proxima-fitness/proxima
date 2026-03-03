@@ -176,7 +176,7 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
 
   return (
     <PromptInput
-      className="dark:bg-darkGray border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-2xs focus-within:border focus-within:border-gray-300 transition-all duration-200"
+      className="dark:bg-darkGray border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 max-sm:pt-0 shadow-2xs focus-within:border focus-within:border-gray-300 transition-all duration-200"
       accept="image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/csv,application/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,.csv,.xlsx,.xls,.ods"
       multiple
       onSubmit={({ text, files }) => onSend(text, files)}
@@ -251,9 +251,9 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
             <button
               type="button"
               onClick={handlePaperclipClick}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl hover:bg-extraLightGray dark:hover:bg-darkGray/80"
+              className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white dark:bg-black text-black dark:text-white hover:bg-lightSecondary/90"
             >
-              <Paperclip className="size-5" />
+              <Paperclip className="size-4 text-black dark:text-white" />
             </button>
           </TooltipTrigger>
           <TooltipContent className="bg-lightSecondary text-white">

@@ -53,33 +53,55 @@ export const ResumeDraftBanner: React.FC = () => {
     }
 
     return (
-        <div className="relative flex flex-col sm:flex-row sm:justify-between sm:items-center w-full max-w-3xl mx-0 sm:mx-auto px-4 sm:px-8 py-3 mb-8 rounded-xl bg-transparent sm:bg-black/10 sm:dark:bg-white/10">
-            <Button
-                type="button"
-                variant="outline"
-                onClick={() => setClearDialogOpen(true)}
-                className="order-first sm:order-last self-end sm:self-center h-8 w-8 p-0 min-w-8 sm:h-10 sm:min-h-10 sm:min-w-10 bg-transparent border-none shrink-0"
-                title="Clear program in progress"
-                aria-label="Clear program in progress"
-            >
-                <X className="size-3.5 sm:size-4" />
-            </Button>
-            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 order-last sm:order-first">
-                <span className="text-sm sm:text-base font-medium text-black dark:text-white text-center sm:text-left block sm:hidden">
-                    Pick up where you left off.
-                </span>
-                <span className="text-sm sm:text-base font-medium text-black dark:text-white text-center sm:text-left hidden sm:block">
-                    You have a program in progress. Pick up where you left off.
-                </span>
+        <div className="relative flex flex-row items-center w-full max-w-3xl mx-0 sm:mx-auto px-3 py-2 mb-4 sm:px-8 sm:py-3 sm:mb-8 rounded-xl bg-transparent sm:bg-black/10 sm:dark:bg-white/10">
+            {/* Mobile: centered group of both buttons */}
+            <div className="flex sm:hidden flex-1 justify-center items-center gap-2">
                 <Link
                     href={"/build-program?resume=true&edit=true"}
                     target="_self"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 sm:h-10 text-sm sm:text-base rounded-lg bg-lightSecondary text-white font-medium hover:bg-black hover:text-white transition-colors shadow-sm shrink-0"
+                    className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 h-9 text-sm rounded-lg bg-lightSecondary text-white font-medium hover:bg-black hover:text-white transition-colors shadow-sm shrink-0"
                 >
-                    <Redo2Icon className="size-3.5 sm:size-4" />
+                    <Redo2Icon className="size-3.5" />
                     Resume program
                 </Link>
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setClearDialogOpen(true)}
+                    className="shrink-0 h-9 px-2.5 bg-transparent border-none text-sm"
+                    title="Clear program in progress"
+                    aria-label="Clear program in progress"
+                >
+                    Clear
+                </Button>
+            </div>
+            {/* Desktop: text + link left, X button right */}
+            <div className="hidden sm:flex flex-1 flex-row items-center justify-between gap-4">
+                <div className="flex flex-row items-center gap-4">
+                    <span className="text-base font-medium text-black dark:text-white">
+                        You have a program in progress. Pick up where you left off.
+                    </span>
+                    <Link
+                        href={"/build-program?resume=true&edit=true"}
+                        target="_self"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2.5 h-10 text-base rounded-lg bg-lightSecondary text-white font-medium hover:bg-black hover:text-white transition-colors shadow-sm shrink-0"
+                    >
+                        <Redo2Icon className="size-4" />
+                        Resume program
+                    </Link>
+                </div>
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setClearDialogOpen(true)}
+                    className="shrink-0 h-10 w-10 p-0 min-w-10 bg-transparent border-none"
+                    title="Clear program in progress"
+                    aria-label="Clear program in progress"
+                >
+                    <X className="size-4" />
+                </Button>
             </div>
             <Dialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
                 <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
