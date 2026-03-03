@@ -159,7 +159,7 @@ export const Agent: React.FC<IProps> = (props) => {
     }, [isLoading, messages, chatStatus])
 
     return (
-        <div className="flex flex-col h-[85vh] max-h-full min-h-0 max-sm:pb-[100px]">
+        <div className="flex flex-col h-[85vh] max-h-full min-h-0">
             { /* The agent's navbar for toggling between chat and filters view */ }
             <Navbar
                 onTogglePosition={onTogglePosition}
