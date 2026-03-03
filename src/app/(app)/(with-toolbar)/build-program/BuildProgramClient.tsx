@@ -28,6 +28,7 @@ import { BuildProgramSkeleton } from "@/components/program-builder/shared/BuildP
 import { appendOrderToHevyRoutines } from "@/components/program-builder/utils/format-responses";
 import { HevyRoutine } from "@/components/program-builder/hevy/HevyRoutine";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getSharedProgram } from "@/api/programs";
 import { emptyHevyRoutineProgram } from "@/assets/constants";
 import { IOption } from "@/components/ui/multi-select";
@@ -66,6 +67,8 @@ export function BuildProgramClient() {
     const [sidebarPosition, setSidebarPosition] = useState<"left" | "right">("left");
     const [sidebarSize, setSidebarSize] = useState(28);
     const sidebarPanelRef = useRef<ImperativePanelHandle>(null);
+    const lastSidebarSizeRef = useRef(28);
+    const [isChatHidden, setIsChatHidden] = useState(false);
     const [mobileTab, setMobileTab] = useState<string>("chat");
 
     /*************************************************************************************/
@@ -814,6 +817,20 @@ export function BuildProgramClient() {
         }
     }, []);
 
+    const handleToggleHide = useCallback(() => {
+        sidebarPanelRef.current?.collapse();
+        setIsChatHidden(true);
+    }, []);
+
+    const handleOpenChat = useCallback(() => {
+        const panel = sidebarPanelRef.current;
+        if (panel) {
+            panel.expand();
+            panel.resize(lastSidebarSizeRef.current || 28);
+        }
+        setIsChatHidden(false);
+    }, []);
+
     const isExpanded = sidebarSize >= EXPANDED_SIZE - 5;
 
     // Handler functions memoized to prevent unnecessary re-renders
@@ -872,6 +889,26 @@ export function BuildProgramClient() {
     return (
         <>
             {undoButton}
+            {isChatHidden && (
+                <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleOpenChat}
+                                className="fixed top-31 z-40 max-sm:hidden gap-2 shadow-md bg-white dark:bg-extraDarkGray border-gray-300 dark:border-gray-600 rounded-none rounded-tr-md rounded-br-md"
+                            >
+                                <MessageSquare className="h-4 w-4" />
+
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900">
+                            Open chat
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            )}
             <div className="max-sm:hidden sm:block">
                 <ResizablePanelGroup
                     direction="horizontal"
@@ -886,9 +923,12 @@ export function BuildProgramClient() {
                             onResize={(size) => {
                                 setSidebarSize(size);
                                 localStorage.setItem(SIDEBAR_SIZE_KEY, size.toString());
+                                setIsChatHidden(size < 1);
+                                if (size >= 1) lastSidebarSizeRef.current = size;
                             }}
-                            minSize={20}
+                            minSize={0}
                             maxSize={EXPANDED_SIZE}
+                            collapsible
                             className="border-extraLightGray bg-white sm:bg-extraLightGray dark:bg-extraDarkGray dark:text-white overflow-hidden"
                         >
                             <Agent
@@ -896,6 +936,7 @@ export function BuildProgramClient() {
                                 sidebarPosition={sidebarPosition}
                                 onTogglePosition={toggleSidebarPosition}
                                 onToggleExpand={onToggleExpand}
+                                onToggleHide={handleToggleHide}
                                 isExpanded={isExpanded}
                                 setHevyProgram={setHevyProgram}
                                 hevyProgram={hevyProgram}
@@ -954,7 +995,7 @@ export function BuildProgramClient() {
                                 handleStop={handleStop}
                             />
                         </ResizablePanel>
-                        <ResizableHandle withHandle className="" />
+                        {!isChatHidden && <ResizableHandle withHandle className="" />}
                         <ResizablePanel
                             id="main-content"
                             order={2}
@@ -1046,7 +1087,7 @@ export function BuildProgramClient() {
                                 <BuildProgramSkeleton />
                             )}
                         </ResizablePanel>
-                        <ResizableHandle withHandle className="" />
+                        {!isChatHidden && <ResizableHandle withHandle className="" />}
                         <ResizablePanel
                             ref={sidebarPanelRef}
                             id="sidebar"
@@ -1055,9 +1096,12 @@ export function BuildProgramClient() {
                             onResize={(size) => {
                                 setSidebarSize(size);
                                 localStorage.setItem(SIDEBAR_SIZE_KEY, size.toString());
+                                setIsChatHidden(size < 1);
+                                if (size >= 1) lastSidebarSizeRef.current = size;
                             }}
-                            minSize={20}
+                            minSize={0}
                             maxSize={EXPANDED_SIZE}
+                            collapsible
                             className="border-extraLightGray bg-white sm:bg-extraLightGray dark:bg-extraDarkGray dark:text-white overflow-hidden"
                         >
                             <Agent
@@ -1065,6 +1109,7 @@ export function BuildProgramClient() {
                                 sidebarPosition={sidebarPosition}
                                 onTogglePosition={toggleSidebarPosition}
                                 onToggleExpand={onToggleExpand}
+                                onToggleHide={handleToggleHide}
                                 isExpanded={isExpanded}
                                 setHevyProgram={setHevyProgram}
                                 hevyProgram={hevyProgram}

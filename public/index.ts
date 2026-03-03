@@ -1,7 +1,7 @@
 import add from "./add.svg";
 import apple from "./apple.svg";
 import proxima_logo from "./proxima_logo_blue-04.svg";
-import proxima_logo_white from "./proxima-logo-white.svg";
+import proxima_logo_white_full_text from "./proxima-logo-white.svg";
 import proxima_logo_small from "./proxima_logo_blue_small.svg";
 import arnold from "./arnold.jpg";
 import google from "./google.svg";
@@ -54,6 +54,7 @@ import whoop_logo from "./whoop.svg";
 import strong_logo from "./strong_logo.png";
 import macrofactor_logo from "./macrofactor_logo.png";
 import google_sheets_logo_icon from "./google-sheets-logo-icon.svg";
+import proxima_logo_white from "./proxima_logo_white.svg";
 
 export {
     qr_code,
@@ -64,7 +65,7 @@ export {
     add,
     apple,
     proxima_logo,
-    proxima_logo_white,
+    proxima_logo_white_full_text,
     proxima_logo_black,
     arnold,
     programs_mobile_white_device,
@@ -112,4 +113,5 @@ export {
     strong_logo,
     macrofactor_logo,
     google_sheets_logo_icon,
+    proxima_logo_white,
 }

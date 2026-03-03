@@ -1,6 +1,8 @@
+/* eslint-disable @next/next/no-img-element */
 import {
   PromptInput,
   PromptInputFooter,
+  PromptInputProvider,
   PromptInputTextarea,
   PromptInputSubmit,
   usePromptInputAttachments,
@@ -19,23 +21,20 @@ import {
 } from "@/components/ai-elements/attachments";
 import type { AttachmentData } from "@/components/ai-elements/attachments";
 import { Suggestions, Suggestion } from "@/components/ai-elements/suggestion";
-import {
-  Mic,
-  Paperclip,
-  PlusIcon,
-} from "lucide-react";
+import { Mic, Paperclip } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import { UpgradeBanner } from "@/components/ui/upgrade-banner";
 import { useMyFeatureLimits } from "@/api/hooks";
 import { useUserContext } from "@/contexts/UserContext";
 import { quickTriggerSuggestionChips } from "@/assets/constants";
 import type { FileUIPart } from "ai";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
 
 interface IProps {
   isLoading: boolean;
@@ -113,6 +112,7 @@ const ChatInputBody = ({
   handleStop,
 }: IChatInputBodyProps) => {
   const attachments = usePromptInputAttachments();
+  const [isMultiline, setIsMultiline] = useState(false);
 
   const handleRemoveAttachment = useCallback(
     (id: string) => attachments.remove(id),
@@ -122,6 +122,27 @@ const ChatInputBody = ({
   const handlePaperclipClick = () => {
     attachments.openFileDialog();
   };
+
+  const checkMultiline = useCallback((ta: HTMLTextAreaElement) => {
+    const lineHeight = parseFloat(getComputedStyle(ta).lineHeight) || 20;
+    const paddingY = parseFloat(getComputedStyle(ta).paddingTop) + parseFloat(getComputedStyle(ta).paddingBottom) || 24;
+    const singleLineHeight = lineHeight + paddingY;
+    setIsMultiline(ta.scrollHeight > singleLineHeight);
+  }, []);
+
+  const setRowRef = useCallback(
+    (el: HTMLDivElement | null) => {
+      if (el) {
+        queueMicrotask(() => {
+          const ta = el.querySelector("textarea");
+          if (ta) checkMultiline(ta);
+        });
+      }
+    },
+    [checkMultiline]
+  );
+
+  const alignClass = isMultiline ? "items-end" : "items-center";
 
   return (
     <>
@@ -138,11 +159,63 @@ const ChatInputBody = ({
           </Attachments>
         </div>
       )}
-      <PromptInputTextarea
-        placeholder="Ask anything..."
-        className="dark:text-white pl-4 text-base leading-[1.3] sm:text-base md:text-base max-sm:min-h-10 max-sm:py-2"
-      />
-      <PromptInputFooter className="mt-5 flex w-full shrink-0 items-end justify-between gap-2 px-3 pb-3 max-sm:mt-0 max-sm:py-2 max-sm:px-2 max-sm:items-end">
+      {/* Desktop: original stacked layout (textarea above footer) */}
+      <div data-align="block-end" className="hidden md:block w-full">
+        <PromptInputTextarea
+          placeholder="Ask anything..."
+          className="dark:text-white pl-4 text-base leading-[1.3] sm:text-base md:text-base"
+        />
+        <PromptInputFooter className="mt-5 flex w-full shrink-0 items-end justify-between gap-2 px-3 pb-3">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={handlePaperclipClick}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl hover:bg-extraLightGray dark:hover:bg-darkGray/80"
+              >
+                <Paperclip className="size-5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent className="bg-lightSecondary text-white">
+              Attach files
+            </TooltipContent>
+          </Tooltip>
+          <div className="flex shrink-0 flex-row items-end gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-9 rounded-full"
+                    disabled
+                  >
+                    <Mic size={18} />
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="bg-lightSecondary text-white">
+                Coming soon
+              </TooltipContent>
+            </Tooltip>
+            <PromptInputSubmit
+              status={isLoading ? "streaming" : "ready"}
+              onStop={handleStop}
+              disabled={outOfCredits}
+              className="size-9 rounded-full bg-lightSecondary [&_svg]:text-white"
+            />
+          </div>
+        </PromptInputFooter>
+      </div>
+      {/* Mobile: inline row (paperclip | textarea | mic+submit) */}
+      <div
+        ref={setRowRef}
+        data-align="block-end"
+        className={cn(
+          "flex w-full shrink-0 gap-2 px-3 py-2 max-sm:px-2 order-last md:hidden",
+          alignClass
+        )}
+      >
         <Tooltip>
           <TooltipTrigger asChild>
             <button
@@ -157,7 +230,12 @@ const ChatInputBody = ({
             Attach files
           </TooltipContent>
         </Tooltip>
-        <div className="flex shrink-0 flex-row items-end gap-2">
+        <PromptInputTextarea
+          placeholder="Ask anything..."
+          className="dark:text-white min-h-9 flex-1 min-w-0 py-2 text-base leading-[1.3] max-sm:min-h-8 max-sm:h-auto max-sm:py-1.5 [&::placeholder]:text-sm"
+          onChange={(e) => checkMultiline(e.currentTarget)}
+        />
+        <div className={cn("flex shrink-0 flex-row gap-2", alignClass)}>
           <Tooltip>
             <TooltipTrigger asChild>
               <span className="inline-flex">
@@ -182,7 +260,7 @@ const ChatInputBody = ({
             className="size-9 rounded-full bg-lightSecondary [&_svg]:text-white"
           />
         </div>
-      </PromptInputFooter>
+      </div>
     </>
   );
 };
@@ -211,32 +289,19 @@ export const Chat: React.FC<IProps> = (props) => {
       {featureLimits && !isPro && (
         <UpgradeBanner remainingRequests={featureLimits.remaining_llm_requests} totalRequests={featureLimits.max_monthly_llm_requests} user={user} />
       )}
-      <div className="flex w-full items-center gap-2">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span className="inline-flex shrink-0 max-sm:inline-flex sm:hidden">
-              <Button
-                variant="outline"
-                size="icon"
-                className="size-11 rounded-full dark:bg-darkGray bg-extraLightGray border-none"
-                disabled
-              >
-                <PlusIcon size={18} />
-              </Button>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent className="bg-lightSecondary text-white">Coming soon</TooltipContent>
-        </Tooltip>
-        <PromptInput
-          onSubmit={({ text, files }) => handleSubmit(text, files)}
-          className="min-w-0 flex-1 sm:bg-white bg-extraLightGray dark:bg-darkGray relative z-10 rounded-3xl p-0 pt-1 max-sm:pt-0 shadow-2xs"
-        >
-          <ChatInputBody
+      <div className="flex w-full">
+        <PromptInputProvider>
+          <PromptInput
+            onSubmit={({ text, files }) => handleSubmit(text, files)}
+            className="min-w-0 flex-1 sm:bg-white bg-extraLightGray dark:bg-darkGray relative z-10 rounded-3xl p-0 pt-1 max-sm:pt-0 shadow-2xs"
+          >
+            <ChatInputBody
             isLoading={isLoading}
             outOfCredits={outOfCredits}
             handleStop={handleStop}
           />
         </PromptInput>
+        </PromptInputProvider>
       </div>
     </div>
   );

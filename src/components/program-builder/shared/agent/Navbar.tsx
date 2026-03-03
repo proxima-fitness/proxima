@@ -2,6 +2,7 @@ import {
     Maximize2,
     Minimize2,
     PanelLeft,
+    PanelLeftClose,
     PanelRight,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -11,17 +12,37 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 interface IProps {
     onTogglePosition: () => void;
     onToggleExpand: () => void;
+    onToggleHide?: () => void;
     isExpanded: boolean;
     sidebarPosition: "left" | "right";
 }
 
 export const Navbar: React.FC<IProps> = (props) => {
 
-    const { onTogglePosition, onToggleExpand, isExpanded, sidebarPosition } = props;
+    const { onTogglePosition, onToggleExpand, onToggleHide, isExpanded, sidebarPosition } = props;
 
     return (
         <div className="min-h-12  px-2 flex flex-row justify-between items-center gap-2 shrink-0 border-b max-sm:hidden">
                 <div className="flex flex-row gap-2 max-sm:hidden">
+                    {onToggleHide && (
+                        <TooltipProvider delayDuration={0}>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="text-black dark:text-white bg-white dark:bg-black hover:bg-gray-200 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600"
+                                        onClick={onToggleHide}
+                                    >
+                                        <PanelLeftClose className="h-5 w-5" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900">
+                                    Hide chat
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
                 </div>
                 <div className="max-sm:hidden flex flex-row gap-2">
                     <TooltipProvider delayDuration={0}>

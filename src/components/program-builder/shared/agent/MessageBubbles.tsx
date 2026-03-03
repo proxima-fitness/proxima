@@ -29,6 +29,39 @@ import Link from "next/link";
 import { type Operation } from "fast-json-patch";
 import posthog from "posthog-js";
 import { useUserContext } from "@/contexts/UserContext";
+import {
+    Attachments,
+    Attachment,
+    AttachmentPreview,
+    AttachmentInfo,
+} from "@/components/ai-elements/attachments";
+
+/** Parses user message text to extract spreadsheet blocks for display-only rendering. */
+function parseUserMessageWithSpreadsheets(text: string): {
+    displayText: string;
+    spreadsheetLabels: string[];
+} {
+    const labels: string[] = [];
+    const blockRegex = /\[Attached spreadsheet: ([^\]]+)\]\n[\s\S]*?(?=\n\n\[Attached spreadsheet: [^\]]+\]\n|$)/g;
+    let match;
+    while ((match = blockRegex.exec(text)) !== null) {
+        labels.push(match[1].trim());
+    }
+    const displayText = text
+        .replace(/\[Attached spreadsheet: [^\]]+\]\n[\s\S]*?(?=\n\n\[Attached spreadsheet: [^\]]+\]\n|$)/g, "")
+        .replace(/\n\n+/g, "\n\n")
+        .trim();
+    return { displayText, spreadsheetLabels: labels };
+}
+
+/** Truncates long filenames with ellipsis while keeping the extension visible. */
+function truncateFilename(filename: string, maxBaseLength = 24): string {
+    const lastDot = filename.lastIndexOf(".");
+    const base = lastDot >= 0 ? filename.slice(0, lastDot) : filename;
+    const ext = lastDot >= 0 ? filename.slice(lastDot) : "";
+    if (base.length <= maxBaseLength) return filename;
+    return base.slice(0, maxBaseLength) + "..." + ext;
+}
 
 // Type for buildRoutine tool output
 interface IBuildRoutineOutput {
@@ -597,6 +630,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                         </div>
                                                     );
                                                 }
+                                                const { displayText, spreadsheetLabels } = parseUserMessageWithSpreadsheets(text ?? "");
                                                 return (
                                                     <Message
                                                         key={`${message.id}-${index}`}
@@ -606,45 +640,105 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                             "items-end"
                                                         )}
                                                     >
-                                                        <div className="group flex flex-col items-end gap-1">
-                                                            <MessageContent className="bg-muted text-black dark:text-white max-w-[85%] rounded-3xl px-5 py-2.5 sm:max-w-[75%]">
-                                                                <MessageResponse>{text}</MessageResponse>
-                                                            </MessageContent>
-                                                            <MessageActions
-                                                                className={cn(
-                                                                    "flex gap-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+                                                        {spreadsheetLabels.length > 0 && (
+                                                            <div className="group flex flex-col items-end gap-1 max-w-[85%] sm:max-w-[75%]">
+                                                                <Attachments variant="inline" className="flex flex-wrap gap-2 justify-end">
+                                                                    {spreadsheetLabels.map((label, i) => (
+                                                                        <Attachment
+                                                                            key={`${message.id}-spreadsheet-${i}`}
+                                                                            data={{
+                                                                                type: "file",
+                                                                                filename: truncateFilename(label),
+                                                                                mediaType: "text/csv",
+                                                                                url: "",
+                                                                                id: `spreadsheet-${message.id}-${i}`,
+                                                                            }}
+                                                                            title={label}
+                                                                        >
+                                                                            <AttachmentPreview />
+                                                                            <AttachmentInfo />
+                                                                        </Attachment>
+                                                                    ))}
+                                                                </Attachments>
+                                                                {!displayText && (
+                                                                    <MessageActions
+                                                                        className={cn(
+                                                                            "flex gap-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+                                                                        )}
+                                                                    >
+                                                                        <MessageAction
+                                                                            tooltip="Edit"
+                                                                            className="rounded-full"
+                                                                            onClick={() => {
+                                                                                setEditingMessageId(message.id);
+                                                                                setEditingText(text ?? "");
+                                                                            }}
+                                                                        >
+                                                                            <Pencil />
+                                                                        </MessageAction>
+                                                                        <MessageAction
+                                                                            tooltip="Delete"
+                                                                            className="rounded-full"
+                                                                            onClick={() => setMessages((prev) => prev.slice(0, messageIndex))}
+                                                                        >
+                                                                            <Trash />
+                                                                        </MessageAction>
+                                                                        <MessageAction
+                                                                            tooltip="Copy"
+                                                                            className="rounded-full"
+                                                                            onClick={() => {
+                                                                                navigator.clipboard.writeText(text ?? "").then(() => {
+                                                                                    toast.success("Copied to clipboard");
+                                                                                });
+                                                                            }}
+                                                                        >
+                                                                            <Copy />
+                                                                        </MessageAction>
+                                                                    </MessageActions>
                                                                 )}
-                                                            >
-                                                                <MessageAction
-                                                                    tooltip="Edit"
-                                                                    className="rounded-full"
-                                                                    onClick={() => {
-                                                                        setEditingMessageId(message.id);
-                                                                        setEditingText(text ?? "");
-                                                                    }}
+                                                            </div>
+                                                        )}
+                                                        {displayText && (
+                                                            <div className={cn("group flex flex-col items-end gap-1 max-w-[85%] sm:max-w-[75%]", spreadsheetLabels.length > 0 && "mt-0.5")}>
+                                                                <MessageContent className="bg-muted text-black dark:text-white rounded-3xl px-5 py-2.5 w-full">
+                                                                    <MessageResponse>{displayText}</MessageResponse>
+                                                                </MessageContent>
+                                                                <MessageActions
+                                                                    className={cn(
+                                                                        "flex gap-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+                                                                    )}
                                                                 >
-                                                                    <Pencil />
-                                                                </MessageAction>
-                                                                <MessageAction
-                                                                    tooltip="Delete"
-                                                                    className="rounded-full"
-                                                                    onClick={() => setMessages((prev) => prev.slice(0, messageIndex))}
-                                                                >
-                                                                    <Trash />
-                                                                </MessageAction>
-                                                                <MessageAction
-                                                                    tooltip="Copy"
-                                                                    className="rounded-full"
-                                                                    onClick={() => {
-                                                                        navigator.clipboard.writeText(text ?? "").then(() => {
-                                                                            toast.success("Copied to clipboard");
-                                                                        });
-                                                                    }}
-                                                                >
-                                                                    <Copy />
-                                                                </MessageAction>
-                                                            </MessageActions>
-                                                        </div>
+                                                                    <MessageAction
+                                                                        tooltip="Edit"
+                                                                        className="rounded-full"
+                                                                        onClick={() => {
+                                                                            setEditingMessageId(message.id);
+                                                                            setEditingText(text ?? "");
+                                                                        }}
+                                                                    >
+                                                                        <Pencil />
+                                                                    </MessageAction>
+                                                                    <MessageAction
+                                                                        tooltip="Delete"
+                                                                        className="rounded-full"
+                                                                        onClick={() => setMessages((prev) => prev.slice(0, messageIndex))}
+                                                                    >
+                                                                        <Trash />
+                                                                    </MessageAction>
+                                                                    <MessageAction
+                                                                        tooltip="Copy"
+                                                                        className="rounded-full"
+                                                                        onClick={() => {
+                                                                            navigator.clipboard.writeText(text ?? "").then(() => {
+                                                                                toast.success("Copied to clipboard");
+                                                                            });
+                                                                        }}
+                                                                    >
+                                                                        <Copy />
+                                                                    </MessageAction>
+                                                                </MessageActions>
+                                                            </div>
+                                                        )}
                                                     </Message>
                                                 );
                                             }

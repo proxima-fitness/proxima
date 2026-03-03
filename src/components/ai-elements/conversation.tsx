@@ -3,6 +3,7 @@
 import type { ComponentProps } from "react";
 
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { ArrowDownIcon, DownloadIcon } from "lucide-react";
 import { useCallback } from "react";
@@ -10,15 +11,18 @@ import { StickToBottom, useStickToBottomContext } from "use-stick-to-bottom";
 
 export type ConversationProps = ComponentProps<typeof StickToBottom>;
 
-export const Conversation = ({ className, ...props }: ConversationProps) => (
-  <StickToBottom
-    className={cn("relative flex-1 overflow-y-hidden", className)}
-    initial="smooth"
-    resize="smooth"
-    role="log"
-    {...props}
-  />
-);
+export const Conversation = ({ className, ...props }: ConversationProps) => {
+  const isMobile = useIsMobile();
+  return (
+    <StickToBottom
+      className={cn("relative flex-1 overflow-y-hidden", className)}
+      role="log"
+      {...props}
+      initial={isMobile ? "instant" : (props.initial ?? "smooth")}
+      resize={isMobile ? "instant" : (props.resize ?? "smooth")}
+    />
+  );
+};
 
 export type ConversationContentProps = ComponentProps<
   typeof StickToBottom.Content

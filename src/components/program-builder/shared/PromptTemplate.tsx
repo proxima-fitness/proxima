@@ -27,6 +27,7 @@ import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/comp
 import { Paperclip, X, MicIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Suggestions, Suggestion } from "@/components/ai-elements/suggestion";
+import { cn } from "@/lib/utils";
 import type { FileUIPart } from "ai";
 import { memo, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -128,6 +129,7 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
   onSend,
 }) => {
   const attachments = usePromptInputAttachments();
+  const [isMultiline, setIsMultiline] = useState(false);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -151,6 +153,27 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
     [attachments]
   );
 
+  const checkMultiline = useCallback((ta: HTMLTextAreaElement) => {
+    const lineHeight = parseFloat(getComputedStyle(ta).lineHeight) || 20;
+    const paddingY = parseFloat(getComputedStyle(ta).paddingTop) + parseFloat(getComputedStyle(ta).paddingBottom) || 24;
+    const singleLineHeight = lineHeight + paddingY;
+    setIsMultiline(ta.scrollHeight > singleLineHeight);
+  }, []);
+
+  const setRowRef = useCallback(
+    (el: HTMLDivElement | null) => {
+      if (el) {
+        queueMicrotask(() => {
+          const ta = el.querySelector("textarea");
+          if (ta) checkMultiline(ta);
+        });
+      }
+    },
+    [checkMultiline]
+  );
+
+  const alignClass = isMultiline ? "items-end" : "items-center";
+
   return (
     <PromptInput
       className="dark:bg-darkGray border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-2xs focus-within:border focus-within:border-gray-300 transition-all duration-200"
@@ -171,12 +194,58 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
           </Attachments>
         </div>
       )}
-      <PromptInputTextarea
-        placeholder={animatedPlaceholder}
-        className="z-10 dark:text-white min-h-[44px] max-sm:min-h-10 pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
-        onKeyDown={handleKeyDown}
-      />
-      <PromptInputFooter className="mt-5 flex w-full shrink-0 items-end justify-between gap-2 px-3 pb-3 max-sm:mt-0 max-sm:py-2 max-sm:px-2 max-sm:items-end">
+      {/* Desktop: original stacked layout (textarea above footer) */}
+      <div data-align="block-end" className="hidden md:block w-full">
+        <PromptInputTextarea
+          placeholder={animatedPlaceholder}
+          className="z-10 dark:text-white min-h-[44px] max-sm:min-h-10 pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
+          onKeyDown={handleKeyDown}
+        />
+        <PromptInputFooter className="mt-5 flex w-full shrink-0 items-end justify-between gap-2 px-3 pb-3">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={handlePaperclipClick}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl hover:bg-extraLightGray dark:hover:bg-darkGray/80"
+              >
+                <Paperclip className="size-5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent className="bg-lightSecondary text-white">
+              Attach files
+            </TooltipContent>
+          </Tooltip>
+          <div className="flex shrink-0 flex-row items-end gap-2">
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="p-2 cursor-not-allowed opacity-50">
+                    <MicIcon className="size-5" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="bg-lightSecondary text-white">
+                  Coming soon
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <PromptInputSubmit
+              status={isLoading ? "submitted" : "ready"}
+              disabled={!canSubmit}
+              className="h-9 w-9 bg-lightSecondary text-white rounded-full [&_svg]:text-white"
+            />
+          </div>
+        </PromptInputFooter>
+      </div>
+      {/* Mobile: inline row (paperclip | textarea | mic+submit) */}
+      <div
+        ref={setRowRef}
+        data-align="block-end"
+        className={cn(
+          "flex w-full shrink-0 gap-2 px-3 py-2 max-sm:px-2 order-last md:hidden",
+          alignClass
+        )}
+      >
         <Tooltip>
           <TooltipTrigger asChild>
             <button
@@ -191,7 +260,13 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
             Attach files
           </TooltipContent>
         </Tooltip>
-        <div className="flex shrink-0 flex-row items-end gap-2">
+        <PromptInputTextarea
+          placeholder={animatedPlaceholder}
+          className="z-10 dark:text-white min-h-9 flex-1 min-w-0 py-2 text-base leading-[1.3] max-sm:min-h-8 max-sm:h-auto max-sm:py-1.5 [&::placeholder]:text-sm"
+          onKeyDown={handleKeyDown}
+          onChange={(e) => checkMultiline(e.currentTarget)}
+        />
+        <div className={cn("flex shrink-0 flex-row gap-2", alignClass)}>
           <TooltipProvider delayDuration={0}>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -210,7 +285,7 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
             className="h-9 w-9 bg-lightSecondary text-white rounded-full [&_svg]:text-white"
           />
         </div>
-      </PromptInputFooter>
+      </div>
     </PromptInput>
   );
 };

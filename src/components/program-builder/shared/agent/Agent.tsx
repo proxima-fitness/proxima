@@ -41,6 +41,7 @@ interface IProps {
     sidebarPosition: "left" | "right";
     onTogglePosition: () => void;
     onToggleExpand: () => void;
+    onToggleHide?: () => void;
     isExpanded: boolean;
     setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
     hevyProgram: THevyRoutine[];
@@ -107,6 +108,7 @@ export const Agent: React.FC<IProps> = (props) => {
         sidebarPosition,
         onTogglePosition,
         onToggleExpand,
+        onToggleHide,
         isExpanded,
         setHevyProgram,
         hevyProgram,
@@ -162,6 +164,7 @@ export const Agent: React.FC<IProps> = (props) => {
             <Navbar
                 onTogglePosition={onTogglePosition}
                 onToggleExpand={onToggleExpand}
+                onToggleHide={onToggleHide}
                 isExpanded={isExpanded}
                 sidebarPosition={sidebarPosition}
             />
