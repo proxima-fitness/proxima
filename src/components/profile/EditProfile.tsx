@@ -21,6 +21,12 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+	RegExpMatcher,
+	englishDataset,
+	englishRecommendedTransformers,
+} from 'obscenity';
+import { PROFANITY_ERROR_MESSAGE } from "@/assets/constants";
 
 interface IEditProfileProps {
     user: User;
@@ -78,6 +84,21 @@ function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditPro
         userName: metaData.username ?? "",
         bio: metaData.bio ?? "",
     });
+    const [firstNameProfanity, setFirstNameProfanity] = useState(false);
+    const [lastNameProfanity, setLastNameProfanity] = useState(false);
+    const [usernameProfanity, setUsernameProfanity] = useState(false);
+    const [bioProfanity, setBioProfanity] = useState(false);
+
+    const matcher = useMemo(
+        () =>
+            new RegExpMatcher({
+                ...englishDataset.build(),
+                ...englishRecommendedTransformers,
+            }),
+        []
+    );
+
+    const hasAnyProfanity = firstNameProfanity || lastNameProfanity || usernameProfanity || bioProfanity;
 
     const profilePicUrl = useMemo(() => {
         if (!profilePicBlob) return null;
@@ -95,6 +116,7 @@ function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditPro
     const updateMutation = useMutation({
         mutationKey: ["user-metadata", user.id],
         mutationFn: async () => {
+            if (hasAnyProfanity) throw new Error("Content contains profanity");
             await updateUserMetadataPublic(
                 user,
                 firstName.trim(),
@@ -112,13 +134,21 @@ function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditPro
             onSuccess();
         },
         onError: (error) => {
-            toast.error(error instanceof Error ? error.message : "Failed to update profile");
+            if (error instanceof Error && error.message === "Content contains profanity") {
+                toast.error(PROFANITY_ERROR_MESSAGE);
+            } else {
+                toast.error(error instanceof Error ? error.message : "Failed to update profile");
+            }
         },
     });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!isDirty) return;
+        if (hasAnyProfanity) {
+            toast.error(PROFANITY_ERROR_MESSAGE);
+            return;
+        }
         updateMutation.mutate();
     };
 
@@ -151,7 +181,11 @@ function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditPro
                             <Input
                                 id="edit-first-name"
                                 value={firstName}
-                                onChange={(e) => setForm((p) => ({ ...p, firstName: e.target.value }))}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    setForm((p) => ({ ...p, firstName: value }));
+                                    setFirstNameProfanity(matcher.getAllMatches(value).length > 0);
+                                }}
                                 placeholder="First name"
                                 className="w-full"
                             />
@@ -161,7 +195,11 @@ function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditPro
                             <Input
                                 id="edit-last-name"
                                 value={lastName}
-                                onChange={(e) => setForm((p) => ({ ...p, lastName: e.target.value }))}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    setForm((p) => ({ ...p, lastName: value }));
+                                    setLastNameProfanity(matcher.getAllMatches(value).length > 0);
+                                }}
                                 placeholder="Last name"
                                 className="w-full"
                             />
@@ -171,7 +209,11 @@ function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditPro
                             <Input
                                 id="edit-username"
                                 value={userName}
-                                onChange={(e) => setForm((p) => ({ ...p, userName: e.target.value.toLowerCase() }))}
+                                onChange={(e) => {
+                                    const value = e.target.value.toLowerCase();
+                                    setForm((p) => ({ ...p, userName: value }));
+                                    setUsernameProfanity(matcher.getAllMatches(value).length > 0);
+                                }}
                                 placeholder="Username"
                                 className="w-full lowercase"
                             />
@@ -183,17 +225,26 @@ function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditPro
                     <Textarea
                         id="edit-bio"
                         value={bio}
-                        onChange={(e) => setForm((p) => ({ ...p, bio: e.target.value }))}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            setForm((p) => ({ ...p, bio: value }));
+                            setBioProfanity(matcher.getAllMatches(value).length > 0);
+                        }}
                         placeholder="Enter my Bio here ..."
                         className="min-h-[120px] w-full resize-y"
                         maxLength={250}
                     />
                 </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+                {hasAnyProfanity && (
+                    <p className="text-sm text-destructive font-medium sm:order-first sm:flex-1">
+                        Please remove profanity before saving.
+                    </p>
+                )}
                 <Button
                     type="submit"
-                    disabled={!isDirty || updateMutation.isPending}
+                    disabled={!isDirty || updateMutation.isPending || hasAnyProfanity}
                     className="bg-lightSecondary text-white hover:bg-lightSecondary/90"
                 >
                     {updateMutation.isPending ? "Saving…" : "Save"}

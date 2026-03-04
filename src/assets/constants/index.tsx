@@ -6079,6 +6079,18 @@ export const stats = [
   },
 ];
 
+/** User-facing messages and error copy. */
+export const PROFANITY_ERROR_MESSAGE = "Content contains profanity that does not meet our community guidelines";
+
+/** Reason shown when an exercise is skipped during Hevy upload (not in library). */
+export const HEVY_OMIT_REASON = "Exercise not found in library and will be omitted from your saved program.";
+
+/** Error message when Hevy upload fails after rate-limit retries. */
+export const RATE_LIMIT_EXHAUSTED_MESSAGE = "Upload failed. Rate limited after 3 retries.";
+
+/** Prompt used for blind-spot stall analysis. */
+export const STALL_PROMPT = "I have stalled on this exercise can you modify my existing program to fix this plateau. Check my existing program first and then make changes you think would fix this plateau. Explain to me what you're going to do. Then return three new lines then ask me `Would you like me to make these changes to your program now?` and then exit.";
+
 /** Link groups rendered in the site footer. */
 export const footerLinks = [
   {

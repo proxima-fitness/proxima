@@ -23,6 +23,7 @@ import { getMaxFolderId } from "@/components/program-builder/utils";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/api/index";
 import { convertHevyOutputIntoInput } from "./hevy_export";
+import { HEVY_OMIT_REASON, RATE_LIMIT_EXHAUSTED_MESSAGE } from "@/assets/constants";
 
 /**
  * Generic authenticated GET request against the Hevy public API.
@@ -375,7 +376,6 @@ export const postHevyRoutineProgram = async (
         }
 
         const skippedExercises: SkippedExercise[] = [];
-        const OMIT_REASON = "Exercise not found in library and will be omitted from your saved program.";
 
         // STEP 4: Process exercises and build insert rows (resolve exercise_id by ID then by title; sanitize UUIDs)
         const allWorkoutUploads: { [key: string]: unknown }[] = [];
@@ -415,7 +415,7 @@ export const postHevyRoutineProgram = async (
                     if (!exerciseId) {
                         skippedExercises.push({
                             exerciseName: title || rawId || "Unknown exercise",
-                            reason: OMIT_REASON,
+                            reason: HEVY_OMIT_REASON,
                         });
                         if (title || rawId) {
                             console.warn('Exercise omitted from saved program:', { title, rawId });
@@ -568,9 +568,6 @@ export const RATE_LIMIT_BACKOFF_MS = 60_000;
 
 /** Max retries on 429 before returning error (4 attempts total). */
 export const RATE_LIMIT_MAX_RETRIES = 3;
-
-/** Error message when rate limit retries are exhausted (for UI to show). */
-export const RATE_LIMIT_EXHAUSTED_MESSAGE = "Upload failed. Rate limited after 3 retries.";
 
 /** Callback for upload progress: uploaded count, total count, status, and optional countdown seconds when rate limited. */
 export type HevyUploadProgressCallback = (

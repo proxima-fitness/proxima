@@ -2,7 +2,7 @@
 
 /**
  * @module ProfileHero
- * Profile hero section: avatar, stats (lifts/followers/following), full name, bio, and Edit Profile button.
+ * Profile hero section: avatar, stats (lifts/followers/following), username as header with first/last name underneath, bio, and Edit Profile button.
  * Rendered at the top of the profile page when the user is logged in.
  * Depends on: UserContext, useUserMetadata, useProfilePictureByID, useUserFullName, Button, Avatar.
  * Used by: DashboardContent.
@@ -34,6 +34,8 @@ export function ProfileHero({ onEditProfileClick }: IProfileHeroProps) {
     if (!user) return null;
 
     const displayName = fullName && fullName !== "Anonymous" ? fullName : [metaData?.first_name, metaData?.last_name].filter(Boolean).join(" ") || "User";
+    const headerText = metaData?.username?.trim() || displayName || "User";
+    const fullNameLine = [metaData?.first_name, metaData?.last_name].filter(Boolean).join(" ");
     const initials = displayName
         .split(" ")
         .map((s) => s[0])
@@ -69,7 +71,10 @@ export function ProfileHero({ onEditProfileClick }: IProfileHeroProps) {
                             <span className="text-[11px] text-muted-foreground whitespace-nowrap">following</span>
                         </div>
                     </div>
-                    <p className="text-lg font-bold text-foreground pt-1">{displayName}</p>
+                    <p className="text-lg font-bold text-foreground pt-1">{headerText}</p>
+                    {fullNameLine ? (
+                        <p className="text-sm text-muted-foreground">{fullNameLine}</p>
+                    ) : null}
                     {metaData?.bio ? (
                         <p className="text-sm text-muted-foreground line-clamp-2">{metaData.bio}</p>
                     ) : null}

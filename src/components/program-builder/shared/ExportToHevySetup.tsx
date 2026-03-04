@@ -17,10 +17,10 @@ import {
     PostHevyRoutineProgramSuccess,
     postRoutineProgramToHevy,
     postRoutineProgramToHevyOneFolder,
-    RATE_LIMIT_EXHAUSTED_MESSAGE,
     updateHevyApiKey,
     deleteHevyApiKey,
 } from "../api/hevy";
+import { RATE_LIMIT_EXHAUSTED_MESSAGE } from "@/assets/constants";
 import { postNewProgramSubscriber } from "@/api/programs";
 import { toast } from "sonner";
 import { validate } from "uuid";

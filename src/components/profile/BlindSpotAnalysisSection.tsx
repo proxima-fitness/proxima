@@ -27,6 +27,7 @@ import {
     DialogTitle,
     DialogDescription,
 } from "@/components/ui/dialog";
+import { STALL_PROMPT } from "@/assets/constants";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
 import { ExerciseStalls, type IExercise } from "./ExerciseStalls";
@@ -71,8 +72,6 @@ function placeholderExercise(name: string): IExercise {
         sessions: [],
     };
 }
-
-const STALL_PROMPT = "I have stalled on this exercise can you modify my existing program to fix this plateau. Check my existing program first and then make changes you think would fix this plateau. Explain to me what you're going to do. Then return three new lines then ask me `Would you like me to make these changes to your program now?` and then exit.";
 
 function formatSessionLine(
     s: { date: string; totalVolume: number; maxWeight: number; totalReps?: number },
