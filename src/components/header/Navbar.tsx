@@ -28,11 +28,24 @@ import {
     setTestTierOverride,
     type TestTierOverride,
 } from "@/api/featureLimits";
-import { Crown, LockIcon } from "lucide-react";
+import { Crown, PersonStanding, LockIcon, LogIn, Search, UserRound } from "lucide-react";
 import { authenticatedNavLinks, navLinks } from "@/assets/constants";
 import { useTheme } from "next-themes"
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 // import { BuyMeCoffee } from "../ui/buy-me-coffee";
+
+const navIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+    programs: Search,
+    about: PersonStanding,
+    profile: UserRound,
+    pricing: Crown,
+    "log-in": LogIn,
+};
+
+function NavLinkIcon({ navId }: { navId: string }) {
+    const Icon = navIcons[navId];
+    return Icon ? <Icon className="w-4 h-4 shrink-0" /> : null;
+}
 
 // Client-side function to call the server-side sign out API
 const signOutServer = async () => {
@@ -109,7 +122,10 @@ const NavItems = (pathname: string) => {
                             key={ nav.id }
                             className={ `font-main font-normal cursor-pointer text-[16px] text-black ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
                         >
-                            <Link href={ `/${nav.id}` }>{nav.title}</Link>
+                            <Link href={ `/${nav.id}` } className="flex items-center gap-2">
+                                <NavLinkIcon navId={nav.id} />
+                                {nav.title}
+                            </Link>
                         </li>
                     }
                 </div>
@@ -336,7 +352,10 @@ const NavItems = (pathname: string) => {
                             key={ nav.id }
                             className={ `font-main font-normal cursor-pointer text-[16px] text-black dark:text-white ${index === navLinksToShow.length - 1 ? "mr-0" : "mr-10"}` }
                         >
-                            <Link href={ `/${nav.id}` }>{nav.title}</Link>
+                            <Link href={ `/${nav.id}` } className="flex items-center gap-2">
+                                <NavLinkIcon navId={nav.id} />
+                                {nav.title}
+                            </Link>
                         </li>
                     }
                 </div>
@@ -357,14 +376,20 @@ const NavItems = (pathname: string) => {
                             key={ nav.id }
                             className={ `font-main font-normal cursor-pointer text-[16px] text-black dark:text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
                         >
-                            <Link href={ `/auth/login` }>{nav.title}</Link>
+                            <Link href={ `/auth/login` } className="flex items-center gap-2">
+                                <NavLinkIcon navId={nav.id} />
+                                {nav.title}
+                            </Link>
                             </li>
                     :
                         <li
                             key={ nav.id }
                             className={ `font-main font-normal cursor-pointer text-[16px] text-black dark:text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
                         >
-                            <Link href={ `/${nav.id}` }>{nav.title}</Link>
+                            <Link href={ `/${nav.id}` } className="flex items-center gap-2">
+                                <NavLinkIcon navId={nav.id} />
+                                {nav.title}
+                            </Link>
                         </li>
                     }
                 </div>

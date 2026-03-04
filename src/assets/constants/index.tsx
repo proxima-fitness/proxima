@@ -5929,10 +5929,7 @@ export const authenticatedNavLinks = [
     //     id: "exercises",
     //     title: "Exercises",
     // },
-    {
-        id: "dashboard",
-        title: "My Dashboard"
-    },
+
     {
         id: "programs",
         title: "Explore"
@@ -5945,6 +5942,10 @@ export const authenticatedNavLinks = [
     //     id: "program-builder",
     //     title: "AI Program Builder",
     // },
+    {
+        id: "profile",
+        title: "Profile"
+    },
     {
         id: "log-in",
         title: "Log in",

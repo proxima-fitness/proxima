@@ -10,7 +10,7 @@
  *
  * Depends on: HevyContext (useIsHevy), Dialog/Button (ui), Link (next/link),
  * lucide-react (Redo2Icon, X). Uses global types THevyRoutine, TProgramCreatorDay.
- * Used by: program-builder/shared/Prompt.tsx, dashboard/DashboardContent.tsx.
+ * Used by: program-builder/shared/Prompt.tsx, profile/ProfileContent.tsx.
  */
 
 import { useIsHevy } from "@/contexts/HevyContext";
@@ -66,7 +66,7 @@ export const ResumeDraftBanner: React.FC = () => {
     }
 
     return (
-        <div className="relative flex flex-row items-center w-full max-w-3xl mx-0 sm:mx-auto px-3 py-2 mb-4 sm:px-8 sm:py-3 sm:mb-8 rounded-xl bg-transparent sm:bg-black/10 sm:dark:bg-white/10">
+        <div className="relative flex flex-row items-center w-full max-w-3xl mx-0 sm:mx-auto px-3 py-2 mb-4 sm:px-8 sm:py-3 sm:m-8 rounded-xl bg-transparent sm:bg-black/10 sm:dark:bg-white/10">
             {/* Mobile: centered group of both buttons */}
             <div className="flex sm:hidden flex-1 justify-center items-center gap-2">
                 <Link

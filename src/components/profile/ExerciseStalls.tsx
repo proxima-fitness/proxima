@@ -187,7 +187,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4 w-full max-w-full box-border min-h-128">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4 w-full max-w-full box-border items-start">
                 {exercises.map((exercise, index) => {
                     const rowIndex = Math.floor(index / gridColumns);
                     const colorValue = exercise.weight > 0 ? getColorValue(exercise.color) : "var(--muted-foreground, #999)";
@@ -222,16 +222,16 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                                                 {exercise.name}
                                             </div>
                                             {dataLoading ? (
-                                                <div className="flex items-baseline gap-1">
+                                                <div className="flex items-baseline gap-1 min-h-7">
                                                     <Skeleton className="h-5 w-14 rounded-full bg-muted-foreground/15" />
                                                     <Skeleton className="h-3 w-6 rounded-full bg-muted-foreground/10" />
                                                 </div>
                                             ) : exercise.weight > 0 ? (
-                                                <div className="text-lg font-bold text-gray-500 dark:text-offWhite">
+                                                <div className="text-lg font-bold text-gray-500 dark:text-offWhite min-h-7 flex items-center">
                                                     {formatWeightUtil(exercise.weight, isInLbs, "lbs")} {getWeightUnitUtil(isInLbs)}
                                                 </div>
                                             ) : (
-                                                <div className="text-sm text-muted-foreground">
+                                                <div className="text-sm text-muted-foreground min-h-7 flex items-center">
                                                     {BLIND_SPOT_STRINGS.NoData}
                                                 </div>
                                             )}

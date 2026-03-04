@@ -4,7 +4,7 @@
  * @module BlindSpotAnalysisSection
  * @description Dashboard section that surfaces exercises with potential stalls and lets users open programs or Hevy templates to address them.
  * @dependsOn User and unit contexts, exercise stall analysis and template hooks, subscribed program data, dialog and toggle UI components, and the `ExerciseStalls` list.
- * @usedBy The main dashboard page to provide an overview of lift blind spots and entry points into the builder to fix plateaus.
+ * @usedBy The main profile page to provide an overview of lift blind spots and entry points into the builder to fix plateaus.
  */
 
 /**
@@ -223,7 +223,7 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
     const displayCount = dataLoading ? templates.length : filteredAndSorted.length;
 
     return (
-        <section className="pt-10 pb-12">
+        <section>
             <h2 className="text-2xl font-main mb-6 text-black dark:text-white flex items-center justify-start">
                 <ChartLineIcon className="mr-2 size-7" /> Blind Spot Analysis ({displayCount})
             </h2>
@@ -245,13 +245,13 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
             )}
             {!dataLoading && allExercises.length > 0 && (
                 <div className="flex flex-wrap items-center gap-4 mb-4">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                         <span className="text-sm text-muted-foreground">Sort:</span>
                         <ToggleGroup
                             type="single"
                             value={sortBy}
                             onValueChange={(v) => v && setSortBy(v as SortOption)}
-                            className="justify-start"
+                            className="justify-start flex-wrap"
                         >
                             <ToggleGroupItem value="most_activity" aria-label="Most Activity">
                                 Most Activity
@@ -261,13 +261,13 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
                             </ToggleGroupItem>
                         </ToggleGroup>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                         <span className="text-sm text-muted-foreground">Status:</span>
                         <ToggleGroup
                             type="single"
                             value={statusFilter}
                             onValueChange={(v) => v && setStatusFilter(v as StatusFilter)}
-                            className="justify-start"
+                            className="justify-start flex-wrap"
                         >
                             <ToggleGroupItem value="all" aria-label="All">
                                 All

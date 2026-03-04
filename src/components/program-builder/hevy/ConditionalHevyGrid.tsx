@@ -5,7 +5,7 @@
  * Renders the Hevy programs grid only when the user is in Hevy mode and has synced programs.
  * Gate between HevyContext and the programs list; fetches Hevy API key and programs, then delegates to HevyProgramsGrid.
  * Depends on: HevyContext, UserContext, useHevyPrograms, useHevySecret, HevyProgramsGrid.
- * Used by: build-program / dashboard sections that show Hevy programs.
+ * Used by: build-program / profile sections that show Hevy programs.
  */
 
 import { useIsHevy } from "@/contexts/HevyContext";

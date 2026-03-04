@@ -4,7 +4,7 @@
  * @module MyProgramsVault
  * @description Dashboard section that surfaces a user’s saved workout programs, including loading, empty, and error states.
  * @dependsOn User context, subscribed program query hooks, program card presentation components, and PostHog analytics.
- * @usedBy Authenticated dashboards to act as a permanent vault for user-owned programs.
+ * @usedBy Authenticated profile page to act as a permanent vault for user-owned programs.
  */
 
 /**
@@ -28,13 +28,13 @@ export const MyProgramsVault = () => {
     const { data: programs, isError: errorFetchingPrograms, isLoading: loadingPrograms } = useSubscribedPrograms(user);
 
     useEffect(() => {
-        posthog.capture("page_view", { page: "/dashboard", user: user?.id ?? "user_id_unknown" });
+        posthog.capture("page_view", { page: "/profile", user: user?.id ?? "user_id_unknown" });
     }, [user]);
 
     if (userLoading || loadingPrograms) {
         return (
             <>
-                <div className="pt-10 pb-6">
+                <div className="pt-0 pb-6">
                     <Skeleton className="h-8 w-48 mb-2 bg-gray-100 dark:bg-darkGray" />
                     <Skeleton className="h-4 w-72 bg-gray-100 dark:bg-darkGray" />
                 </div>
@@ -62,7 +62,7 @@ export const MyProgramsVault = () => {
 
     if (!user) {
         return (
-            <div className="pt-10 min-h-[500px] flex flex-col items-center justify-center">
+            <div className="pt-0 min-h-[500px] flex flex-col items-center justify-center">
                 <Card className="p-8 bg-gray-100 dark:bg-darkGray max-w-md w-full text-center">
                     <Lock className="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600" />
                     <h2 className="text-2xl font-main mb-4 dark:text-white">Authentication Required</h2>
@@ -81,7 +81,7 @@ export const MyProgramsVault = () => {
 
     if (errorFetchingPrograms) {
         return (
-            <div className="pt-10 min-h-[500px] flex flex-col items-center justify-center">
+            <div className="pt-0 min-h-[500px] flex flex-col items-center justify-center">
                 <Card className="p-8 bg-gray-100 dark:bg-darkGray max-w-md w-full text-center">
                     <h2 className="text-2xl font-main mb-4 dark:text-white">Error Loading Programs</h2>
                     <p className="text-gray-600 dark:text-gray-400">
@@ -95,8 +95,8 @@ export const MyProgramsVault = () => {
     if (!programs || programs.length === 0) {
         return (
             <>
-                <div className="pt-10 pb-6">
-                    <div className="flex items-center justify-between mb-2">
+                <div className="pt-0 pb-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-2">
                         <h2 className="text-2xl font-main text-black dark:text-white flex items-center justify-start">
                             <BookOpenTextIcon className="mr-2" />
                             My Programs
@@ -129,8 +129,8 @@ export const MyProgramsVault = () => {
 
     return (
         <>
-            <div className="pt-10 pb-6">
-                <div className="flex items-center justify-between mb-6">
+            <div className="pt-0 pb-6 ">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-6">
                     <h2 className="text-2xl font-main text-black dark:text-white flex items-center justify-start">
                         <BookOpenTextIcon className="mr-2" />
                         My Programs ({programs.length})

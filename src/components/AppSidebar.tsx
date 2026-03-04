@@ -7,7 +7,7 @@
  * Depends on: UI Sidebar, UserContext, feature limits, authentication API, TestUserTierToggle.
  * Used by: app layout (sidebar slot).
  */
-import { Home, LogIn, LogOut, PersonStanding, Search, LayoutDashboard, CreditCard, Receipt, Crown } from "lucide-react";
+import { Home, LogIn, LogOut, PersonStanding, Search, Receipt, Crown, UserRound } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -75,16 +75,17 @@ export function AppSidebar() {
 
     // Menu items that depend on authentication state
     const authenticatedItems = user ? [
-        {
-            title: "My Dashboard",
-            url: "/dashboard",
-            icon: LayoutDashboard,
-        },
+
         {
             title: "Explore",
             url: "/programs",
             icon: Search,
         },
+        {
+            title: "Profile",
+            url: "/profile",
+            icon: UserRound,
+        }
     ] : [
         {
             title: "Explore",
@@ -158,7 +159,7 @@ export function AppSidebar() {
                                         <SidebarMenuItem>
                                             <SidebarMenuButton asChild>
                                                 <a href="/pricing">
-                                                    <CreditCard className="font-main" />
+                                                    <Crown className="font-main" />
                                                     <span className="font-main">{user ? "Upgrade" : "Pricing"}</span>
                                                 </a>
                                             </SidebarMenuButton>

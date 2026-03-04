@@ -147,7 +147,7 @@ export const HevyProgramsGrid: React.FC<HevyProgramsGridProps> = ({ hevyPrograms
 
     if (isLoadingHevy) {
         return (
-            <section className="pt-10 pb-12">
+            <section className="pt-0 pb-0">
                 <Skeleton className="h-8 w-48 mb-6" />
                 <Skeleton className="h-4 w-72 mb-6" />
                 <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 max-md:grid-cols-2 pb-8">
@@ -164,8 +164,8 @@ export const HevyProgramsGrid: React.FC<HevyProgramsGridProps> = ({ hevyPrograms
     }
 
     return (
-        <section className="pt-10 pb-12">
-            <div className="flex items-center justify-between mb-6">
+        <section className="pt-0 pb-0">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-6">
                 <h2 className="text-2xl font-main text-black dark:text-white flex items-center justify-start">
                     <NotepadTextIcon className="mr-2 size-7" />
                     My Hevy Programs
@@ -189,7 +189,7 @@ export const HevyProgramsGrid: React.FC<HevyProgramsGridProps> = ({ hevyPrograms
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                         align="start"
-                        className="min-w-[20rem] max-w-md p-4"
+                        className="min-w-0 max-w-[calc(100vw-2rem)] sm:min-w-[20rem] sm:max-w-md p-4"
                     >
                         <p className="text-sm text-popover-foreground">
                             Click &quot;Edit&quot; on a program to modify or ask

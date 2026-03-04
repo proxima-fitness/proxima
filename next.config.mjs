@@ -50,6 +50,11 @@ const nextConfig = {
         source: '/waitlist',
         destination: '/',
         permanent: true,
+      },
+      {
+        source: '/dashboard',
+        destination: '/profile',
+        permanent: true,
       }
     ]
   }

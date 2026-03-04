@@ -9,6 +9,7 @@
  * Depends on: ./index (supabase client)
  * Used by: hooks.ts, program detail pages, community leaderboards
  */
+import { User } from "@supabase/supabase-js";
 import { supabase } from ".";
 
 /**
@@ -136,6 +137,45 @@ export const getUserMetaData = async (id: string) => {
         }
     } catch (error) {
         console.error("Error fetching users metadata", error);
+    }
+};
+
+/**
+ * Updates a user's public profile metadata. Caller must be the authenticated user.
+ *
+ * @param user - Supabase User (must match the row being updated)
+ * @param firstName - First name
+ * @param lastName - Last name
+ * @param userName - Username
+ * @param bio - Bio text
+ * @param timezone - Optional timezone string (e.g. from Intl.DateTimeFormat().resolvedOptions().timeZone)
+ * @throws On Supabase error so caller can show toast
+ */
+export const updateUserMetadataPublic = async (
+    user: User,
+    firstName: string,
+    lastName: string,
+    userName: string,
+    bio: string,
+    timezone?: string
+) => {
+    const payload: Record<string, string> = {
+        first_name: firstName,
+        last_name: lastName,
+        username: userName,
+        bio: bio ?? "",
+    };
+    if (timezone !== undefined && timezone !== "") {
+        payload.timezone = timezone;
+    }
+    const { error } = await supabase
+        .from("users")
+        .update(payload)
+        .eq("id", user.id);
+
+    if (error) {
+        console.error("Error updating user metadata", error);
+        throw error;
     }
 };
 
