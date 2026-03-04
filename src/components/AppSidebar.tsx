@@ -187,7 +187,7 @@ export function AppSidebar() {
                                             <SidebarMenuItem>
                                                 <SidebarMenuButton className="flex items-center gap-2">
                                                     <Avatar className="h-6 w-6">
-                                                        <AvatarImage src={user?.user_metadata?.avatar_url} />
+                                                        <AvatarImage src={user?.user_metadata?.avatar_url} alt={userFullName ? `${userFullName} avatar` : "User avatar"} />
                                                         <AvatarFallback>
                                                             {userFullName?.charAt(0) || "U"}
                                                         </AvatarFallback>

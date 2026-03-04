@@ -56,7 +56,7 @@ const AvatarStack = ({
         <Tooltip key={`${name}-${image}-${index}`}>
           <TooltipTrigger asChild>
             <Avatar className="hover:z-20 z-10 max-sm:size-8">
-              <AvatarImage src={image} />
+              <AvatarImage src={image} alt={name ? `${name} avatar` : "User avatar"} />
               <AvatarFallback>
                 {name
                   ?.split(' ')

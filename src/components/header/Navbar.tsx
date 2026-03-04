@@ -139,7 +139,7 @@ const NavItems = (pathname: string) => {
                             <DropdownMenuTrigger asChild>
                                 <div className="cursor-pointer flex flex-row items-center">
                                     <Avatar>
-                                        <AvatarImage src={ user?.user_metadata?.avatar_url } />
+                                        <AvatarImage src={ user?.user_metadata?.avatar_url } alt={userFullName ? `${userFullName} avatar` : "User avatar"} />
                                         <AvatarFallback>
                                             { userFullName?.charAt(0) }
                                         </AvatarFallback>

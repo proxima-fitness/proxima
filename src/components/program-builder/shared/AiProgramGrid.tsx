@@ -90,7 +90,7 @@ const ProgramItem: React.FC<IProgramItemProps> = memo(({ item, userData }) => {
             </div>
             <div className="flex flex-row items-center justify-start gap-2">
             <Avatar className="w-10 h-10" >
-                <AvatarImage src={getProfilePicUrl()} />
+                <AvatarImage src={getProfilePicUrl()} alt="Creator avatar" />
                 <AvatarFallback className="bg-white" style={{ backgroundColor: randomColour }}>
                     {getInitial()}
                 </AvatarFallback>
