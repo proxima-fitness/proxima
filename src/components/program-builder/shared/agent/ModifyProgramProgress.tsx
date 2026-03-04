@@ -54,6 +54,7 @@ export const ModifyProgramProgress: React.FC<IProps> = ({
                                         type="button"
                                         onClick={() => toggleExpanded(routineIndex)}
                                         className="flex items-center gap-2 w-full text-left rounded-md hover:bg-muted/50 py-0.5 -mx-1 px-1"
+                                        aria-label={isExpanded ? "Collapse routine details" : "Expand routine details"}
                                     >
                                         <span
                                             className={cn(

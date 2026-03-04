@@ -137,6 +137,7 @@ export const ExportDialog: React.FC<IProps> = (props) => {
                             size="sm"
                             className="h-7 min-w-0 px-2 text-xs gap-1 -ml-2"
                             onClick={() => setSelectedExportId(null)}
+                            aria-label="Back to export options"
                         >
                             <ChevronLeft className="w-3 h-3 shrink-0" />
                             Back
@@ -165,6 +166,7 @@ export const ExportDialog: React.FC<IProps> = (props) => {
                             size="sm"
                             className="h-7 min-w-0 px-2 text-xs gap-1 -ml-2"
                             onClick={handleHevyBackClick}
+                            aria-label="Back to export options"
                         >
                             <ChevronLeft className="w-3 h-3 shrink-0" />
                             Back
@@ -181,6 +183,7 @@ export const ExportDialog: React.FC<IProps> = (props) => {
                             size="sm"
                             className="h-7 min-w-0 px-2 text-xs gap-1 -ml-2"
                             onClick={() => setSelectedExportId(null)}
+                            aria-label="Back to export options"
                         >
                             <ChevronLeft className="w-3 h-3 shrink-0" />
                             Back

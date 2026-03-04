@@ -609,6 +609,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                         variant="outline"
                                                                         size="sm"
                                                                         onClick={() => setEditingMessageId(null)}
+                                                                        aria-label="Cancel edit"
                                                                     >
                                                                         Cancel
                                                                     </Button>
@@ -621,6 +622,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                             setEditingMessageId(null);
                                                                         }}
                                                                         disabled={!editingText.trim()}
+                                                                        aria-label="Save and resend"
                                                                     >
                                                                         Save
                                                                     </Button>

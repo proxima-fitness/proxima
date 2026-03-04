@@ -217,6 +217,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                                     variant="ghost"
                                     size="icon"
                                     className={ `shrink-0 ${currentWeekIndex === 0 ? "opacity-50 cursor-not-allowed" : ""}` }
+                                    aria-label="Previous week"
                                 >
                                     <ChevronLeft className="h-5 w-5" />
                                 </Button>
@@ -229,6 +230,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                                     variant="ghost"
                                     size="icon"
                                     className={ `shrink-0 ${currentWeekIndex >= numberOfWeeks - 1 ? "opacity-50 cursor-not-allowed" : ""}` }
+                                    aria-label="Next week"
                                 >
                                     <ChevronRight className="h-5 w-5" />
                                 </Button>

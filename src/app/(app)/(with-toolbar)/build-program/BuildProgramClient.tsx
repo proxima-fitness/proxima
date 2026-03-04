@@ -915,6 +915,7 @@ export function BuildProgramClient() {
                                 size="sm"
                                 onClick={handleOpenChat}
                                 className="fixed top-31 z-40 max-sm:hidden gap-2 shadow-md bg-white dark:bg-extraDarkGray border-gray-300 dark:border-gray-600 rounded-none rounded-tr-md rounded-br-md"
+                                aria-label="Open chat"
                             >
                                 <MessageSquare className="h-4 w-4" />
 

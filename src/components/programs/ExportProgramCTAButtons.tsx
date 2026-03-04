@@ -62,6 +62,7 @@ export const ExportProgramCTAButtons: React.FC<IProps> = ({
             disabled={option.disabled ?? false}
             onClick={() => handleClick(option)}
             className="cursor-pointer flex flex-col items-start justify-between gap-3 px-4 py-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label={`Export as ${option.name}`}
         >
             <div className="flex flex-row gap-3">
                 <span className="">{option.icon}</span>

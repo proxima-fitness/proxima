@@ -110,6 +110,7 @@ function QuestionSelect({
                 "hover:bg-accent",
                 isSelected && "bg-accent"
               )}
+              aria-label={`Select ${option.label}`}
             >
               <span
                 className={cn(
@@ -135,6 +136,7 @@ function QuestionSelect({
                 "hover:bg-accent",
                 isOtherSelected && "bg-accent"
               )}
+              aria-label="Select other"
             >
               <span
                 className={cn(
@@ -247,6 +249,7 @@ function QuestionMultiSelect({
                 "hover:bg-accent focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 isSelected && "bg-accent"
               )}
+              aria-label={`Select ${option.label}`}
             >
               {useXIcon ? (
                 <CheckboxPrimitive.Root
@@ -304,6 +307,7 @@ function QuestionMultiSelect({
                   onOtherToggle(question.id)
                 }
               }}
+              aria-label="Select other"
               className={cn(
                 "flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm transition-colors cursor-pointer",
                 "hover:bg-accent focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
@@ -760,6 +764,7 @@ export function Questions({
                     size="sm"
                     onClick={onSkip}
                     disabled={isLoading || isBuilding || hasSelections}
+                    aria-label="Skip questionnaire"
                   >
                     Skip
                   </Button>
@@ -771,20 +776,22 @@ export function Questions({
             </Tooltip>
           </TooltipProvider>
         ) : (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onSkip}
-            disabled={isLoading || isBuilding}
-          >
-            Skip
-          </Button>
+<Button
+          variant="ghost"
+          size="sm"
+          onClick={onSkip}
+          disabled={isLoading || isBuilding}
+          aria-label="Skip questionnaire"
+        >
+          Skip
+        </Button>
         )}
         <Button
           size="sm"
           onClick={handleContinue}
           disabled={isLoading || isBuilding}
           className="bg-lightGold text-black hover:bg-lightGold/80 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Build program"
         >
           {isBuilding ? (
             <>

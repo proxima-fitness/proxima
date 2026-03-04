@@ -40,6 +40,7 @@ export const Navbar: React.FC<IProps> = (props) => {
                                         size="icon"
                                         className="text-black dark:text-white bg-white dark:bg-black hover:bg-gray-200 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600"
                                         onClick={onToggleHide}
+                                        aria-label="Hide chat"
                                     >
                                         <PanelLeftClose className="h-5 w-5" />
                                     </Button>
@@ -60,6 +61,7 @@ export const Navbar: React.FC<IProps> = (props) => {
                                     size="icon"
                                     className="text-black dark:text-white bg-white dark:bg-black hover:bg-gray-200 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600"
                                     onClick={onToggleExpand}
+                                    aria-label={isExpanded ? "Collapse chat" : "Expand chat"}
                                 >
                                     {isExpanded ? (
                                         <Minimize2 className="h-5 w-5" />
@@ -79,6 +81,7 @@ export const Navbar: React.FC<IProps> = (props) => {
                                     size="icon"
                                     className="text-black dark:text-white bg-white dark:bg-black hover:bg-gray-200 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600"
                                     onClick={onTogglePosition}
+                                    aria-label={sidebarPosition === "left" ? "Move sidebar to right" : "Move sidebar to left"}
                                 >
                                     {sidebarPosition === "left" ? (
                                         <PanelRight className="h-5 w-5" />

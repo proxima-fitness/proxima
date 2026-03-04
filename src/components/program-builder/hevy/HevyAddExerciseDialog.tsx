@@ -363,7 +363,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
     const dialogFooterButtons = (
         <>
             <span className="w-full flex items-center justify-center">
-                <Button onClick={ () => handleOpenAddExerciseDialog({folder_id: 0, dayOrder: 0, isOpen: false} ) } variant="ghost" className="w-full h-12">
+                <Button onClick={ () => handleOpenAddExerciseDialog({folder_id: 0, dayOrder: 0, isOpen: false} ) } variant="ghost" className="w-full h-12" aria-label="Cancel and close">
                     Cancel
                 </Button>
             </span>

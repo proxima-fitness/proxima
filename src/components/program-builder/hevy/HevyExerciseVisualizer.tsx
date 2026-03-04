@@ -148,6 +148,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                                 }}
                                                 className="text-black w-full pt-2 hover:text-red-500"
                                                 title="Remove from superset"
+                                                aria-label="Remove from superset"
                                             >
                                                 <span className="flex flex-row justify-between items-center w-full dark:text-white">
                                                     <XIcon className="w-4 h-4" />
@@ -326,6 +327,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             type="button"
                                             className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 text-sm"
                                             onClick={() => handleOpenAddExerciseNoteDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), exerciseIndex: i, isOpen: true})}
+                                            aria-label="Add note to exercise"
                                         >
                                             <NotebookTextIcon className="shrink-0 size-5" />
                                             <span>Add note</span>
@@ -336,6 +338,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             onClick={() => {
                                                 handleDeleteExercise(Number(folder_id), Number(day.order), i);
                                             }}
+                                            aria-label="Delete exercise"
                                         >
                                             <Trash2Icon className="shrink-0 size-5" />
                                             <span>Delete</span>

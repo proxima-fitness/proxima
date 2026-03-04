@@ -216,6 +216,7 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
                 type="button"
                 onClick={handlePaperclipClick}
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl hover:bg-extraLightGray dark:hover:bg-darkGray/80"
+                aria-label="Attach files"
               >
                 <Paperclip className="size-5" />
               </button>
@@ -260,6 +261,7 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
               type="button"
               onClick={handlePaperclipClick}
               className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white dark:bg-black text-black dark:text-white hover:bg-lightSecondary/90"
+              aria-label="Attach files"
             >
               <Paperclip className="size-4 text-black dark:text-white" />
             </button>

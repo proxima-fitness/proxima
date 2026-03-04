@@ -84,7 +84,7 @@ export const HevyDuplicateDay: React.FC<IProps> = (props) => {
                     </span>
                     <span className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4">
                         <span className="w-full flex items-center justify-center">
-                            <Button onClick={ () => setDuplicateDayOpen(false) } variant="ghost" className="w-full h-12">
+                            <Button onClick={ () => setDuplicateDayOpen(false) } variant="ghost" className="w-full h-12" aria-label="Cancel duplicate day">
                                 Cancel
                             </Button>
                         </span>
@@ -96,6 +96,7 @@ export const HevyDuplicateDay: React.FC<IProps> = (props) => {
                                 } }
                                 variant="ghost"
                                 className="bg-lightSecondary text-white hover:bg-lightSecondary w-full h-12"
+                                aria-label="Duplicate day to selected week"
                             >
                                 Duplicate
                             </Button>

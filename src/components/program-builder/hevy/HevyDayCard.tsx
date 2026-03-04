@@ -363,7 +363,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                         onClick={ () => {
                             handleOpenAddExerciseDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true});
                          } }>
-                        <Button variant="ghost" className="mt-1 w-full font-bold uppercase h-9 sm:h-12 text-sm sm:text-base hover:bg-gray-200 dark:hover:bg-darkGray text-black dark:text-white"><PlusIcon />Add Exercise</Button>
+                        <Button variant="ghost" className="mt-1 w-full font-bold uppercase h-9 sm:h-12 text-sm sm:text-base hover:bg-gray-200 dark:hover:bg-darkGray text-black dark:text-white" aria-label="Add exercise to this day"><PlusIcon />Add Exercise</Button>
                     </div>
                     <div className="flex flex-row justify-between items-center px-3">
                         {editMode ? (
@@ -385,6 +385,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                         disabled={selectedExercises.length < 2}
                                         className={`flex-1 py-1.5 sm:py-2 text-sm sm:text-base rounded-md font-medium
                                             ${selectedExercises.length < 2 ? 'bg-lightSecondary opacity-50 text-white' : 'bg-lightSecondary text-white hover:bg-black'}`}
+                                        aria-label="Create superset"
                                     >
                                         Create Superset
                                     </button>
@@ -394,6 +395,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                             setSelectedExercises([]);
                                         }}
                                         className="flex-1 py-1.5 sm:py-2 text-sm sm:text-base rounded-md font-medium border border-gray-300 hover:bg-gray-100"
+                                        aria-label="Cancel superset"
                                     >
                                         Cancel
                                     </button>
@@ -409,6 +411,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                         setEditMode(true);
                                     }
                                 }}
+                                aria-label="Create superset from selected exercises"
                             >
                                 <LinkIcon className="mr-2" />Create Superset
                             </Button>

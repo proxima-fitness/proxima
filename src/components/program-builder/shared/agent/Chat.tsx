@@ -180,6 +180,7 @@ const ChatInputBody = ({
                 type="button"
                 onClick={handlePaperclipClick}
                 className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white text-black dark:bg-black dark:text-white hover:bg-white/90"
+                aria-label="Attach files"
               >
                 <Paperclip className="size-4" />
               </button>
@@ -197,6 +198,7 @@ const ChatInputBody = ({
                     size="icon"
                     className="size-9 rounded-full bg-white text-black dark:bg-black dark:text-white hover:bg-white/90 hover:text-white [&_svg]:text-black dark:[&_svg]:text-white disabled:opacity-60"
                     disabled
+                    aria-label="Voice input (coming soon)"
                   >
                     <Mic size={18} />
                   </Button>
@@ -230,6 +232,7 @@ const ChatInputBody = ({
               type="button"
               onClick={handlePaperclipClick}
               className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white dark:bg-black text-black dark:text-white hover:bg-lightSecondary/90"
+              aria-label="Attach files"
             >
               <Paperclip className="size-4 text-black dark:text-white" />
             </button>
@@ -252,6 +255,7 @@ const ChatInputBody = ({
                   size="icon"
                   className="size-9 rounded-full bg-white text-black dark:bg-black dark:text-white hover:bg-white/90 hover:text-white [&_svg]:text-black dark:[&_svg]:text-white disabled:opacity-50"
                   disabled
+                  aria-label="Voice input (coming soon)"
                 >
                   <Mic size={18} />
                 </Button>

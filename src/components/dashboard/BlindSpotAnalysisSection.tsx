@@ -343,6 +343,7 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
                                                     type="button"
                                                     onClick={() => handleSelectProgram(program)}
                                                     className="w-full rounded-md border bg-card px-4 py-3 text-left text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                                    aria-label={`Select program: ${program.title}`}
                                                 >
                                                     {program.title}
                                                 </button>
@@ -361,6 +362,7 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
                                                     type="button"
                                                     onClick={() => handleSelectHevyProgram(program)}
                                                     className="w-full rounded-md border bg-card px-4 py-3 text-left text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                                    aria-label={`Select Hevy program: ${program.program_title}`}
                                                 >
                                                     {program.program_title}
                                                 </button>

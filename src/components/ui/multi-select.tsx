@@ -491,6 +491,7 @@ const MultiSelect = React.forwardRef<IMultipleSelectorRef, IMultipleSelectorProp
                       e.stopPropagation();
                     } }
                     onClick={ () => handleUnselect(option) }
+                    aria-label={ `Remove ${option.label}` }
                   >
                           <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
                       </button>
@@ -542,6 +543,7 @@ const MultiSelect = React.forwardRef<IMultipleSelectorRef, IMultipleSelectorProp
                   selected.filter((s) => s.fixed).length === selected.length) &&
                   'hidden',
               ) }
+              aria-label="Clear all selections"
             >
                         <X />
                     </button>

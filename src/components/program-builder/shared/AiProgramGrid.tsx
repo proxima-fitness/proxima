@@ -75,7 +75,7 @@ const ProgramItem: React.FC<IProgramItemProps> = memo(({ item, userData }) => {
                         className="w-[50%]"
                         target="_self"
                     >
-                        <button className="my-2 py-2 w-full hover:bg-black hover:text-white bg-white text-black rounded-lg shadow-sm flex flex-row items-center justify-center gap-2"><EditIcon />Edit</button>
+                        <button className="my-2 py-2 w-full hover:bg-black hover:text-white bg-white text-black rounded-lg shadow-sm flex flex-row items-center justify-center gap-2" aria-label="Edit this program"><EditIcon />Edit</button>
                     </Link>
                     <Link
                         href={ `/build-program?shareId=${item.id}&shared=true` }
@@ -83,7 +83,7 @@ const ProgramItem: React.FC<IProgramItemProps> = memo(({ item, userData }) => {
                         className="w-[50%]"
                         target="_self"
                     >
-                        <button className="my-2 py-2 w-full hover:bg-black hover:text-white bg-lightSecondary text-white rounded-lg shadow-sm flex flex-row items-center justify-center gap-2"><EyeIcon />View</button>
+                        <button className="my-2 py-2 w-full hover:bg-black hover:text-white bg-lightSecondary text-white rounded-lg shadow-sm flex flex-row items-center justify-center gap-2" aria-label="View this program"><EyeIcon />View</button>
                     </Link>
                 </div>
 
@@ -179,6 +179,7 @@ export const AiProgramGrid: React.FC = () => {
                             onClick={handleSeeMore}
                             disabled={isLoading}
                             className="bg-lightSecondary text-white hover:bg-black hover:text-white"
+                            aria-label="Load more community programs"
                         >
                             <ArrowDownIcon />
                             {isLoading ? "Loading..." : "See More"}

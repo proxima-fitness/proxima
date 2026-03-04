@@ -62,6 +62,7 @@ export const ShareDialog: React.FC<IProps> = (props) => {
                             <a href={ `https://www.facebook.com/sharer/sharer.php?u=https://proximafitness.com/build-program?shareId=${shareId || programId}&shared=true&title=Check+Out+My+Custom+Workout+Program+Built+By+Proxima+AI!` } target="_blank" rel="noopener noreferrer">
                                 <Button
                                     className="h-16 w-16 bg-lightSecondary"
+                                    aria-label="Share on Facebook"
                                 >
                                     <img src={ facebook.src } alt="Facebook" className="h-full w-full" />
                                 </Button>
@@ -70,6 +71,7 @@ export const ShareDialog: React.FC<IProps> = (props) => {
                                 <Button
                                     variant="outline"
                                     className="h-16 w-16"
+                                    aria-label="Share on Reddit"
                                 >
                                     <img src={ reddit.src } alt="Reddit" className="h-full w-full" />
                                 </Button>
@@ -84,6 +86,7 @@ export const ShareDialog: React.FC<IProps> = (props) => {
                                     variant="outline"
                                     className="h-16 w-16"
                                     onClick={ handleCopyShareId }
+                                    aria-label="Copy share link"
                                 >
                                     <CopyIcon className="h-full w-full text-lightSecondary" />
                                 </Button>

@@ -89,6 +89,7 @@ export const Breadcrumbs: React.FC = () => {
                 <button
                   onClick={bc.onClick}
                   className="text-sm"
+                  aria-label={`Go to ${bc.label}`}
                 >
                   {bc.label}
                 </button>
