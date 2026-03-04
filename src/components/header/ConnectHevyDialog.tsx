@@ -93,7 +93,7 @@ export const ConnectHevyDialog: React.FC<IProps> = (props) => {
                     <DialogDescription>
                         { hevyApiKey && hevyApiKey.length > 0 ?
                         "You are connected to your Hevy account" :
-                        <span>Sync your data with your Proxima account by finding and pasting your <a href="https://hevy.com/settings?developer" target="_blank" rel="noopener noreferrer" className="text-lightSecondary underline">API key</a> from yout Hevy account on Desktop.</span>
+                        <span>Sync your data with your Proxima account by pasting your <a href="https://hevy.com/settings?developer" target="_blank" rel="noopener noreferrer" className="text-lightSecondary underline">API key</a> from yout Hevy account.</span>
                         }
                     </DialogDescription>
                 </DialogHeader>
