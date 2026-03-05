@@ -20,7 +20,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { ConnectHevyDialog } from "./ConnectHevyDialog";
 import { useEffect, useState, useMemo } from "react";
 import { signOutUser } from "@/api/authentication";
-import { useHevySecret, useMyFeatureLimits, useUserFullName } from "@/api/hooks";
+import { useHevySecret, useMyFeatureLimits, useUserFullName, useProfilePictureByID } from "@/api/hooks";
 import { useProfilePictureContext } from "@/contexts/ProfilePictureContext";
 import { getInitials } from "@/utils/general/helpers";
 import { useQueryClient } from "@tanstack/react-query";
@@ -81,9 +81,11 @@ const NavItems = (pathname: string) => {
 
     const { data: featureLimits } = useMyFeatureLimits(user);
     const { profilePicture } = useProfilePictureContext();
+    const { data: profilePicBlob } = useProfilePictureByID(user?.id ?? "");
     const queryClient = useQueryClient();
     const isPro = featureLimits?.has_active_subscription === true;
-    const avatarSrc = useMemo(() => (profilePicture ? URL.createObjectURL(profilePicture) : null), [profilePicture]);
+    const effectiveProfilePic = profilePicture ?? profilePicBlob ?? null;
+    const avatarSrc = useMemo(() => (effectiveProfilePic ? URL.createObjectURL(effectiveProfilePic) : null), [effectiveProfilePic]);
     const stripePortalUrl = process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL?.trim() || "";
     const navLinksToShow = authenticatedNavLinks.filter(
         (nav) => !(nav.id === "pricing" && isPro)

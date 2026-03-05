@@ -22,7 +22,7 @@ import {
 import { useUserContext } from "@/contexts/UserContext";
 import { useProfilePictureContext } from "@/contexts/ProfilePictureContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useMyFeatureLimits, useUserFullName } from "@/api/hooks";
+import { useMyFeatureLimits, useUserFullName, useProfilePictureByID } from "@/api/hooks";
 import { signOutUser } from "@/api/authentication";
 import { TestUserTierToggle } from "@/components/TestUserTierToggle";
 import { isTestUser } from "@/api/featureLimits";
@@ -70,9 +70,11 @@ export function AppSidebar() {
     const { isInLbs, toggleModePreference } = usePoundsOrKgContext();
     const { data: userFullName } = useUserFullName(user?.id ? user.id : undefined, "user");
     const { data: featureLimits } = useMyFeatureLimits(user);
+    const { data: profilePicBlob } = useProfilePictureByID(user?.id ?? "");
     const isPro = featureLimits?.has_active_subscription === true;
     const stripePortalUrl = process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL?.trim() || "";
-    const avatarSrc = useMemo(() => (profilePicture ? URL.createObjectURL(profilePicture) : null), [profilePicture]);
+    const effectiveProfilePic = profilePicture ?? profilePicBlob ?? null;
+    const avatarSrc = useMemo(() => (effectiveProfilePic ? URL.createObjectURL(effectiveProfilePic) : null), [effectiveProfilePic]);
     const [openDeleteAccountDialog, setOpenDeleteAccountDialog] = useState(false);
 
     const handleLogout = async () => {
