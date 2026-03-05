@@ -142,3 +142,19 @@ interface IPoundsOrKgContextValue {
 	isInLbs: boolean;
 	toggleModePreference: () => void;
 }
+
+
+interface IFollowersRow {
+    follower_id: string | null;
+    users: { first_name: string | null; last_name: string | null; email: string | null } | null;
+}
+
+interface IFollowingRow {
+    following_id: string | null;
+    users: { first_name: string | null; last_name: string | null; email: string | null } | null;
+}
+
+/** Blocked users row from blocked_users table. */
+interface IBlockedUserRow {
+    blocked_id: string | null;
+}

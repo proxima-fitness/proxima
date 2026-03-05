@@ -13,7 +13,7 @@
 import { useUserContext } from "@/contexts/UserContext";
 import { useHevyPrograms, useHevySecret } from "@/api/hooks";
 import { MyProgramsVault } from "@/components/programs/MyProgramsVault";
-import { BlindSpotAnalysisSection } from "@/components/profile/BlindSpotAnalysisSection";
+// import { BlindSpotAnalysisSection } from "@/components/profile/BlindSpotAnalysisSection";
 import { ProfileHero } from "@/components/profile/ProfileHero";
 import { HevyProgramsGrid } from "@/components/program-builder/hevy/HevyProgramsGrid";
 import { ResumeDraftBanner } from "@/components/program-builder/ResumeDraftBanner";
@@ -37,7 +37,7 @@ export function ProfileContent() {
     const showHevyCard = (hevyPrograms?.length ?? 0) > 0 || isLoadingHevy;
 
     return (
-        <div className={`bg-white dark:bg-extraDarkGray ${styles.paddingX} ${styles.flexCenter} flex-col`}>
+        <div className={`bg-white dark:bg-extraDarkGray px-8 max-sm:px-3 ${styles.flexCenter} flex-col`}>
             <div className={`${styles.boxWidth} flex flex-col gap-6`}>
                 {user && (
                     <>
@@ -59,12 +59,12 @@ export function ProfileContent() {
                 <div className="flex items-center justify-center">
                     <ResumeDraftBanner />
                 </div>
-                <Card className="p-6 dark:border-none">
+                {/* <Card className="p-6 dark:border-none">
                     <BlindSpotAnalysisSection
                         hevyPrograms={hevyPrograms}
                         isLoadingHevy={isLoadingHevy}
                     />
-                </Card>
+                </Card> */}
                 {showHevyCard ? (
                     <Card className="p-6 dark:border-none">
                         <HevyProgramsGrid

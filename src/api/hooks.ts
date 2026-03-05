@@ -24,6 +24,7 @@ import { getOpUserId, getUserFullName, getUserMetaData, getUsersBatch } from "./
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getHevyApiKey, getHevyCustomExercises, getHevyExercises, getHevyPrograms, getHevyRoutines } from "../components/program-builder/api/hevy";
 import { getMyFeatureLimits } from "./featureLimits";
+import { getFollowers, getFollowing } from "./followers";
 import { User } from "@supabase/supabase-js";
 
 /* ================================
@@ -221,6 +222,34 @@ export const useUserMetadata = (id: string) => {
         queryKey: ['user-metadata', id],
         queryFn: () => getUserMetaData(id),
         enabled: !!id,
+    });
+};
+
+/**
+ * Fetches the follower list for the current user's profile (for count and list).
+ *
+ * @param id - The user's UUID
+ * @param user - The authenticated user (query disabled when null)
+ */
+export const useFollowersMyProfile = (id: string, user: User | undefined | null) => {
+    return useQuery({
+        queryKey: ['followers-my-profile', id],
+        queryFn: () => getFollowers(id),
+        enabled: !!user,
+    });
+};
+
+/**
+ * Fetches the following list for the current user's profile (for count and list).
+ *
+ * @param id - The user's UUID
+ * @param user - The authenticated user (query disabled when null)
+ */
+export const useFollowingMyProfile = (id: string, user: User | undefined | null) => {
+    return useQuery({
+        queryKey: ['following-my-profile', id],
+        queryFn: () => getFollowing(id),
+        enabled: !!user,
     });
 };
 

@@ -4,14 +4,15 @@
  * @module ProfileHero
  * Profile hero section: avatar, stats (lifts/followers/following), username as header with first/last name underneath, bio, and Edit Profile button.
  * Rendered at the top of the profile page when the user is logged in.
- * Depends on: UserContext, useUserMetadata, useProfilePictureByID, useUserFullName, Button, Avatar.
- * Used by: DashboardContent.
+ * Depends on: UserContext, useUserMetadata, useProfilePictureByID, useUserFullName, useFollowersMyProfile, useFollowingMyProfile, Button, Avatar, Skeleton.
+ * Used by: ProfileContent.
  */
 
 import { useUserContext } from "@/contexts/UserContext";
-import { useUserMetadata, useProfilePictureByID, useUserFullName } from "@/api/hooks";
+import { useUserMetadata, useProfilePictureByID, useUserFullName, useFollowersMyProfile, useFollowingMyProfile } from "@/api/hooks";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo } from "react";
 
 interface IProfileHeroProps {
@@ -23,6 +24,8 @@ export function ProfileHero({ onEditProfileClick }: IProfileHeroProps) {
     const { data: metaData } = useUserMetadata(user?.id ?? "");
     const { data: profilePicBlob } = useProfilePictureByID(user?.id ?? "");
     const { data: fullName } = useUserFullName(user?.id ?? undefined, "user");
+    const { data: followers, isLoading: loadingFollowers } = useFollowersMyProfile(user?.id ?? "", user);
+    const { data: following, isLoading: loadingFollowing } = useFollowingMyProfile(user?.id ?? "", user);
 
     const profilePicUrl = useMemo(() => {
         if (!profilePicBlob) return null;
@@ -63,11 +66,19 @@ export function ProfileHero({ onEditProfileClick }: IProfileHeroProps) {
                             <span className="text-[11px] text-muted-foreground whitespace-nowrap">lifts</span>
                         </div>
                         <div className="flex flex-col items-center">
-                            <span className="text-base font-medium tabular-nums">0</span>
+                            {loadingFollowers ? (
+                                <Skeleton className="h-4 w-6" />
+                            ) : (
+                                <span className="text-base font-medium tabular-nums">{followers?.length ?? 0}</span>
+                            )}
                             <span className="text-[11px] text-muted-foreground whitespace-nowrap">followers</span>
                         </div>
                         <div className="flex flex-col items-center">
-                            <span className="text-base font-medium tabular-nums">0</span>
+                            {loadingFollowing ? (
+                                <Skeleton className="h-4 w-6" />
+                            ) : (
+                                <span className="text-base font-medium tabular-nums">{following?.length ?? 0}</span>
+                            )}
                             <span className="text-[11px] text-muted-foreground whitespace-nowrap">following</span>
                         </div>
                     </div>
