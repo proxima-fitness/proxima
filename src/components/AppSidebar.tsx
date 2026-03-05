@@ -7,7 +7,7 @@
  * Depends on: UI Sidebar, UserContext, feature limits, authentication API, TestUserTierToggle.
  * Used by: app layout (sidebar slot).
  */
-import { Home, LogIn, LogOut, PersonStanding, Search, Receipt, Crown, UserRound } from "lucide-react";
+import { Home, LogIn, LogOut, PersonStanding, Search, Receipt, Crown, UserRound, Trash2 } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -28,7 +28,8 @@ import { TestUserTierToggle } from "@/components/TestUserTierToggle";
 import { isTestUser } from "@/api/featureLimits";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { getInitials } from "@/utils/general/helpers";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { DeleteAccountDialog } from "@/components/header/DeleteAccountDialog";
 
 // Client-side function to call the server-side sign out API
 const signOutServer = async () => {
@@ -72,6 +73,7 @@ export function AppSidebar() {
     const isPro = featureLimits?.has_active_subscription === true;
     const stripePortalUrl = process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL?.trim() || "";
     const avatarSrc = useMemo(() => (profilePicture ? URL.createObjectURL(profilePicture) : null), [profilePicture]);
+    const [openDeleteAccountDialog, setOpenDeleteAccountDialog] = useState(false);
 
     const handleLogout = async () => {
         await signOutUser();
@@ -100,6 +102,7 @@ export function AppSidebar() {
     ];
 
     return (
+        <>
         <Sidebar>
             <SidebarContent>
                 <SidebarGroup>
@@ -204,6 +207,12 @@ export function AppSidebar() {
                                                 </SidebarMenuButton>
                                             </SidebarMenuItem>
                                             <SidebarMenuItem>
+                                                <SidebarMenuButton onClick={() => setOpenDeleteAccountDialog(true)} className="text-destructive hover:text-destructive/90">
+                                                    <Trash2 className="font-main" />
+                                                    <span className="font-main">Delete my account</span>
+                                                </SidebarMenuButton>
+                                            </SidebarMenuItem>
+                                            <SidebarMenuItem>
                                                 <SidebarMenuButton onClick={handleLogout} className="text-red-500 hover:text-red-600">
                                                     <LogOut className="font-main" />
                                                     <span className="font-main">Log out</span>
@@ -237,5 +246,7 @@ export function AppSidebar() {
                 )}
             </SidebarContent>
         </Sidebar>
+        <DeleteAccountDialog open={openDeleteAccountDialog} onOpenChange={setOpenDeleteAccountDialog} />
+    </>
     );
 };

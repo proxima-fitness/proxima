@@ -30,7 +30,8 @@ import {
     setTestTierOverride,
     type TestTierOverride,
 } from "@/api/featureLimits";
-import { Crown, PersonStanding, LockIcon, LogIn, Search, UserRound } from "lucide-react";
+import { Crown, PersonStanding, LockIcon, LogIn, Search, UserRound, Trash2 } from "lucide-react";
+import { DeleteAccountDialog } from "./DeleteAccountDialog";
 import { authenticatedNavLinks, navLinks } from "@/assets/constants";
 import { useTheme } from "next-themes"
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
@@ -91,6 +92,7 @@ const NavItems = (pathname: string) => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [testTierOverride, setTestTierOverrideState] = useState<TestTierOverride | null>(() => getTestTierOverride());
     const [openConnectHevyDialog, setOpenConnectHevyDialog] = useState(false);
+    const [openDeleteAccountDialog, setOpenDeleteAccountDialog] = useState(false);
     // const { isHevy, setIsHevy } = useIsHevy();
 
     useEffect(() => {
@@ -98,6 +100,12 @@ const NavItems = (pathname: string) => {
           setDropdownOpen(false);
         }
     }, [openConnectHevyDialog]);
+
+    useEffect(() => {
+        if (openDeleteAccountDialog) {
+          setDropdownOpen(false);
+        }
+    }, [openDeleteAccountDialog]);
 
     if (pathname === "/auth/login" || pathname === "/auth/sign-up" || pathname === "/auth/forgot-password") {
         return <></>;
@@ -333,6 +341,17 @@ const NavItems = (pathname: string) => {
                                     </>
                                 )}
                                 <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    onSelect={(e) => {
+                                        e.preventDefault();
+                                        setOpenDeleteAccountDialog(true);
+                                    }}
+                                    className="cursor-pointer text-destructive focus:text-destructive"
+                                >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Delete my account
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={async () => {
                                     await signOutUser();
                                     await signOutServer();
@@ -341,6 +360,10 @@ const NavItems = (pathname: string) => {
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
+                        <DeleteAccountDialog
+                            open={openDeleteAccountDialog}
+                            onOpenChange={setOpenDeleteAccountDialog}
+                        />
                         <ConnectHevyDialog
                             openConnectHevyDialog={openConnectHevyDialog}
                             handleOpenConnectHevyDialog={(open) => {

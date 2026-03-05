@@ -1,25 +1,21 @@
 /**
  * @module (app)/delete-account/page
  *
- * Delete-account page route. Placeholder with a delete-account CTA. Sits at
- * src/app/(app)/delete-account/page.tsx; route "/delete-account".
+ * Delete-account page route. Renders a CTA that opens the shared DeleteAccountDialog.
+ * Sits at src/app/(app)/delete-account/page.tsx; route "/delete-account".
  *
- * Depends on: Button.
+ * Depends on: DeleteAccountPageContent (client).
  * Used by: Next.js (route "/delete-account").
  */
 
-import { Button } from "@/components/ui/button";
+import { DeleteAccountPageContent } from "./DeleteAccountPageContent";
 
 export const metadata = {
     title: "Delete Account | Proxima Fitness",
-    description: "Get in touch with us",
+    description: "Permanently delete your Proxima account and all associated data.",
 };
 
-/** Delete-account page; currently a placeholder with a single button. */
+/** Delete-account page; opens the same DeleteAccountDialog as the Navbar/Sidebar menu. */
 export default function DeleteAccount() {
-    return (
-        <div className='h-[900px] bg-white flex flex-col items-center justify-center'>
-            <Button>Delete Account</Button>
-        </div>
-    );
+    return <DeleteAccountPageContent />;
 }
