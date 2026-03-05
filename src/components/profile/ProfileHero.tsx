@@ -4,11 +4,12 @@
  * @module ProfileHero
  * Profile hero section: avatar, stats (lifts/followers/following), username as header with first/last name underneath, bio, and Edit Profile button.
  * Rendered at the top of the profile page when the user is logged in.
- * Depends on: UserContext, useUserMetadata, useProfilePictureByID, useUserFullName, useFollowersMyProfile, useFollowingMyProfile, Button, Avatar, Skeleton.
+ * Depends on: UserContext, ProfilePictureContext, useUserMetadata, useProfilePictureByID, useUserFullName, useFollowersMyProfile, useFollowingMyProfile, Button, Avatar, Skeleton.
  * Used by: ProfileContent.
  */
 
 import { useUserContext } from "@/contexts/UserContext";
+import { useProfilePictureContext } from "@/contexts/ProfilePictureContext";
 import { useUserMetadata, useProfilePictureByID, useUserFullName, useFollowersMyProfile, useFollowingMyProfile } from "@/api/hooks";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -21,16 +22,18 @@ interface IProfileHeroProps {
 
 export function ProfileHero({ onEditProfileClick }: IProfileHeroProps) {
     const { user } = useUserContext();
+    const { profilePicture: contextProfilePic } = useProfilePictureContext();
     const { data: metaData } = useUserMetadata(user?.id ?? "");
     const { data: profilePicBlob } = useProfilePictureByID(user?.id ?? "");
     const { data: fullName } = useUserFullName(user?.id ?? undefined, "user");
     const { data: followers, isLoading: loadingFollowers } = useFollowersMyProfile(user?.id ?? "", user);
     const { data: following, isLoading: loadingFollowing } = useFollowingMyProfile(user?.id ?? "", user);
 
+    const effectiveProfilePic = contextProfilePic ?? profilePicBlob;
     const profilePicUrl = useMemo(() => {
-        if (!profilePicBlob) return null;
-        return URL.createObjectURL(profilePicBlob);
-    }, [profilePicBlob]);
+        if (!effectiveProfilePic) return null;
+        return URL.createObjectURL(effectiveProfilePic);
+    }, [effectiveProfilePic]);
 
 
 

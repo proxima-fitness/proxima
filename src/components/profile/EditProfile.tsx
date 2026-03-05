@@ -3,16 +3,18 @@
 /**
  * @module components/dashboard/EditProfile
  * Edit profile form rendered inside the profile page Edit Profile dialog.
- * Fields: first name, last name, username, bio; profile picture display (no upload in minimal version).
- * Depends on: useUserMetadata, updateUserMetadataPublic, shadcn DialogHeader/Title/Footer, Input, Textarea, Label, Button, Avatar.
+ * Fields: first name, last name, username, bio; profile picture display and upload.
+ * Depends on: useUserMetadata, updateUserMetadataPublic, useProfilePictureContext, storage/edge-functions, shadcn DialogHeader/Title/Footer, Input, Textarea, Label, Button, Avatar.
  * Used by: DashboardContent (inside DialogContent).
  */
 
 import { User } from "@supabase/supabase-js";
 import { useUserMetadata, useProfilePictureByID } from "@/api/hooks";
 import { updateUserMetadataPublic } from "@/api/users";
+import { postTmpImage, getTmpPublicUrl, postProfilePic } from "@/api/storage";
+import { postNsfwImageDetection } from "@/api/edge-functions";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, type ChangeEvent } from "react";
 import { DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,7 +28,8 @@ import {
 	englishDataset,
 	englishRecommendedTransformers,
 } from 'obscenity';
-import { PROFANITY_ERROR_MESSAGE } from "@/assets/constants";
+import { PROFANITY_ERROR_MESSAGE, PROFILE_PICTURE_NSFW_THRESHOLD, PROFILE_PICTURE_NSFW_MESSAGE } from "@/assets/constants";
+import { useProfilePictureContext } from "@/contexts/ProfilePictureContext";
 import { cn } from "@/lib/utils";
 
 interface IEditProfileProps {
@@ -79,6 +82,8 @@ interface IEditProfileFormProps {
 
 function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditProfileFormProps) {
     const queryClient = useQueryClient();
+    const { setProfilePicture } = useProfilePictureContext();
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [form, setForm] = useState({
         firstName: metaData.first_name ?? "",
         lastName: metaData.last_name ?? "",
@@ -90,6 +95,7 @@ function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditPro
     const [usernameProfanity, setUsernameProfanity] = useState(false);
     const [bioProfanity, setBioProfanity] = useState(false);
     const [usernameTakenError, setUsernameTakenError] = useState(false);
+    const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
     const matcher = useMemo(
         () =>
@@ -160,6 +166,37 @@ function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditPro
         updateMutation.mutate();
     };
 
+    const handlePhotoChange = async (e: ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files?.length) return;
+        const file = files[0];
+        setUploadingPhoto(true);
+        try {
+            const name = crypto.randomUUID();
+            await postTmpImage(name, file);
+            const imageUrl = getTmpPublicUrl(name);
+
+            if (!imageUrl) {
+                toast.error("Could not process image");
+                return;
+            }
+            const nsfwResult = await postNsfwImageDetection(imageUrl);
+            if (Number(nsfwResult) >= PROFILE_PICTURE_NSFW_THRESHOLD) {
+                toast.error(PROFILE_PICTURE_NSFW_MESSAGE);
+                return;
+            }
+            const result = await postProfilePic(user, file, () => {
+                queryClient.invalidateQueries({ queryKey: ["profile-picture", user.id] });
+                setProfilePicture(file);
+                toast.success("Profile picture updated");
+            });
+            if (!result) toast.error("Failed to upload profile picture");
+        } finally {
+            setUploadingPhoto(false);
+            e.target.value = "";
+        }
+    };
+
     const displayName = [firstName, lastName].filter(Boolean).join(" ") || "User";
     const initials = displayName
         .split(" ")
@@ -175,14 +212,33 @@ function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditPro
             </DialogHeader>
             <div className="space-y-6 py-4">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                    <Avatar className="h-[90px] w-[90px] shrink-0 rounded-full border-2 border-border">
-                        {profilePicUrl ? (
-                            <AvatarImage src={profilePicUrl} alt="" className="object-cover" />
-                        ) : null}
-                        <AvatarFallback className="text-lg font-semibold bg-muted text-foreground">
-                            {initials}
-                        </AvatarFallback>
-                    </Avatar>
+                    <div className="flex flex-col items-start gap-2">
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            aria-hidden
+                            onChange={handlePhotoChange}
+                        />
+                        <Avatar className="h-[90px] w-[90px] shrink-0 rounded-full border-2 border-border">
+                            {profilePicUrl ? (
+                                <AvatarImage src={profilePicUrl} alt="" className="object-cover" />
+                            ) : null}
+                            <AvatarFallback className="text-lg font-semibold bg-muted text-foreground">
+                                {initials}
+                            </AvatarFallback>
+                        </Avatar>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={uploadingPhoto}
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            {uploadingPhoto ? "Uploading…" : profilePicBlob ? "Change photo" : "Add photo"}
+                        </Button>
+                    </div>
                     <div className="flex-1 space-y-4 w-full min-w-0">
                         <div className="space-y-2">
                             <Label htmlFor="edit-first-name">First name</Label>

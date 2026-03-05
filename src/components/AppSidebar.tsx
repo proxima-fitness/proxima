@@ -20,12 +20,15 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { useUserContext } from "@/contexts/UserContext";
+import { useProfilePictureContext } from "@/contexts/ProfilePictureContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useMyFeatureLimits, useUserFullName } from "@/api/hooks";
 import { signOutUser } from "@/api/authentication";
 import { TestUserTierToggle } from "@/components/TestUserTierToggle";
 import { isTestUser } from "@/api/featureLimits";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
+import { getInitials } from "@/utils/general/helpers";
+import { useMemo } from "react";
 
 // Client-side function to call the server-side sign out API
 const signOutServer = async () => {
@@ -62,11 +65,13 @@ const baseItems = [
 /** No props. Renders full sidebar with nav, units, auth and test-tier controls. */
 export function AppSidebar() {
     const { user, isLoading } = useUserContext();
+    const { profilePicture } = useProfilePictureContext();
     const { isInLbs, toggleModePreference } = usePoundsOrKgContext();
     const { data: userFullName } = useUserFullName(user?.id ? user.id : undefined, "user");
     const { data: featureLimits } = useMyFeatureLimits(user);
     const isPro = featureLimits?.has_active_subscription === true;
     const stripePortalUrl = process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL?.trim() || "";
+    const avatarSrc = useMemo(() => (profilePicture ? URL.createObjectURL(profilePicture) : null), [profilePicture]);
 
     const handleLogout = async () => {
         await signOutUser();
@@ -188,9 +193,9 @@ export function AppSidebar() {
                                             <SidebarMenuItem>
                                                 <SidebarMenuButton className="flex items-center gap-2">
                                                     <Avatar className="h-6 w-6">
-                                                        <AvatarImage src={user?.user_metadata?.avatar_url} alt={userFullName ? `${userFullName} avatar` : "User avatar"} />
+                                                        <AvatarImage src={avatarSrc ?? user?.user_metadata?.avatar_url ?? undefined} alt={userFullName ? `${userFullName} avatar` : "User avatar"} />
                                                         <AvatarFallback>
-                                                            {userFullName?.charAt(0) || "U"}
+                                                            {getInitials(userFullName ?? "") ?? userFullName?.charAt(0) ?? "U"}
                                                         </AvatarFallback>
                                                     </Avatar>
                                                     <span className="font-main">

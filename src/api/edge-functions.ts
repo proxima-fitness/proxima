@@ -228,7 +228,7 @@ export const postNsfwImageDetection = async (imageUrl: string) => {
         }
 
       const data = await response.json();
-      return data;
+      return data.nsfwScore as number;
 
     } catch (error) {
         console.error('Error posting data:', error);

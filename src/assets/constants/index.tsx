@@ -6082,6 +6082,12 @@ export const stats = [
 /** User-facing messages and error copy. */
 export const PROFANITY_ERROR_MESSAGE = "Content contains profanity that does not meet our community guidelines";
 
+/** NSFW detection threshold for profile pictures (score >= this value rejects the image). */
+export const PROFILE_PICTURE_NSFW_THRESHOLD = 0.97;
+
+/** Error message when profile picture fails NSFW check. */
+export const PROFILE_PICTURE_NSFW_MESSAGE = "Image does not meet our community guideline standards";
+
 /** Reason shown when an exercise is skipped during Hevy upload (not in library). */
 export const HEVY_OMIT_REASON = "Exercise not found in library and will be omitted from your saved program.";
 

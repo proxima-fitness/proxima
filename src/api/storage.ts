@@ -179,3 +179,91 @@ export const getTmpPublicUrl = (filePath: string) => {
         console.error("Error attempting to get the public url", error);
     }
 };
+
+/**
+ * POST AN IMAGE TO THE TMP STORAGE BUCKET
+ * @param fileName - The file name
+ * @param file - The file
+ * @returns The image
+ */
+export const postTmpImage = async (fileName: string, file: File) => {
+    try {
+        const { data, error } = await supabase.storage
+            .from('tmp')
+            .upload(fileName, file, {
+                cacheControl: '31536000',
+            });
+
+        if (error) {
+            console.error('Error uploading image to temporary storage:', error);
+            return null;
+        }
+        return data || null;
+    } catch (error) {
+        console.error('Error uploading image to temporary storage:', error);
+        return null;
+    }
+};
+
+/**
+ * DELETE EXISTING PROFILE PICTURES FROM USERS S3 STORAGE FOLDER
+ * @param user - The user
+ * @param folderPath - The folder path
+ */
+export const deleteProfilePictures = async (user: User,folderPath: string) => {
+    try {
+      if (user) {
+        //const folderPath = user.id.toString();
+        const { data, error } = await supabase.storage
+          .from('profile_pictures')
+          .list(folderPath);
+
+        if (error) {
+          console.error('Error listing profile pictures:', error);
+        } else {
+          const deletePromises = data?.map(async (file) => {
+            await supabase.storage.from('profile_pictures').remove([`${folderPath}/${file.name}`]);
+          });
+
+          if (deletePromises) {
+            await Promise.all(deletePromises);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting profile pictures:', error);
+    }
+};
+
+/**
+ * POST A PROFILE PICTURE TO USERS S3 STORAGE FOLDER
+ * @param user - The user
+ * @param file - The file
+ * @param handleRefetch - The function to handle the refetch
+ * @returns The profile picture
+ */
+export const postProfilePic = async (user: User, file: File, handleRefetch: () => void) => {
+    try {
+      if (user) {
+        const folderPath = user.id.toString();
+        await deleteProfilePictures(user, folderPath);
+        const { data, error } = await supabase.storage
+          .from('profile_pictures')
+          .upload(`${folderPath}/profile.${file.name.split('.').pop()}`, file, {
+            cacheControl: '31536000',
+          });
+        if (error) {
+          console.error('Error uploading profile picture:', error);
+          return null;
+        } else {
+            handleRefetch();
+            return data || null;
+        }
+      }
+    } catch (error) {
+      console.error('Error uploading profile picture:', error);
+      return null;
+    }
+  };
+
+

@@ -25,6 +25,7 @@ import NextTopLoader from 'nextjs-toploader';
 import { PostHogClientProvider } from "@/utils/PostHogClientProvider";
 import { PreviewProvider } from "@/contexts/PreviewContext";
 import { UserProvider } from "@/contexts/UserContext";
+import { ProfilePictureProvider } from "@/contexts/ProfilePictureContext";
 import { ConditionalFooter } from "@/components/footer/ConditionalFooter";
 import { ThemeProvider } from "@/components/theme-provider"
 import { PoundsOrKgProvider } from "@/contexts/PoundsOrKgContext";
@@ -85,6 +86,7 @@ export default function RootLayout({
                 >
                 <QueryProvider>
                     <UserProvider>
+                        <ProfilePictureProvider>
                         <IsHevyProvider>
                             <PreviewProvider>
                                 <SidebarProvider>
@@ -116,6 +118,7 @@ export default function RootLayout({
                                 </SidebarProvider>
                             </PreviewProvider>
                         </IsHevyProvider>
+                        </ProfilePictureProvider>
                     </UserProvider>
                 </QueryProvider>
                 </ThemeProvider>

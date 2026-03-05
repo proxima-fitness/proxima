@@ -158,3 +158,8 @@ interface IFollowingRow {
 interface IBlockedUserRow {
     blocked_id: string | null;
 }
+
+interface IProfilePictureContextValue {
+	profilePicture: Blob | null;
+	setProfilePicture: (newPicture: Blob | null) => void;
+}

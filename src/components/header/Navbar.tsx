@@ -18,9 +18,11 @@ import { useUserContext } from "@/contexts/UserContext";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { ConnectHevyDialog } from "./ConnectHevyDialog";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { signOutUser } from "@/api/authentication";
 import { useHevySecret, useMyFeatureLimits, useUserFullName } from "@/api/hooks";
+import { useProfilePictureContext } from "@/contexts/ProfilePictureContext";
+import { getInitials } from "@/utils/general/helpers";
 import { useQueryClient } from "@tanstack/react-query";
 import {
     getTestTierOverride,
@@ -77,8 +79,10 @@ const NavItems = (pathname: string) => {
     const { data: hevyApiKey } = useHevySecret(user);
 
     const { data: featureLimits } = useMyFeatureLimits(user);
+    const { profilePicture } = useProfilePictureContext();
     const queryClient = useQueryClient();
     const isPro = featureLimits?.has_active_subscription === true;
+    const avatarSrc = useMemo(() => (profilePicture ? URL.createObjectURL(profilePicture) : null), [profilePicture]);
     const stripePortalUrl = process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL?.trim() || "";
     const navLinksToShow = authenticatedNavLinks.filter(
         (nav) => !(nav.id === "pricing" && isPro)
@@ -155,9 +159,9 @@ const NavItems = (pathname: string) => {
                             <DropdownMenuTrigger asChild>
                                 <div className="cursor-pointer flex flex-row items-center">
                                     <Avatar>
-                                        <AvatarImage src={ user?.user_metadata?.avatar_url } alt={userFullName ? `${userFullName} avatar` : "User avatar"} />
+                                        <AvatarImage src={avatarSrc ?? user?.user_metadata?.avatar_url ?? undefined} alt={userFullName ? `${userFullName} avatar` : "User avatar"} />
                                         <AvatarFallback>
-                                            { userFullName?.charAt(0) }
+                                            {getInitials(userFullName ?? "") ?? userFullName?.charAt(0) ?? "?"}
                                         </AvatarFallback>
                                     </Avatar>
                                 </div>
