@@ -27,6 +27,7 @@ import {
 	englishRecommendedTransformers,
 } from 'obscenity';
 import { PROFANITY_ERROR_MESSAGE } from "@/assets/constants";
+import { cn } from "@/lib/utils";
 
 interface IEditProfileProps {
     user: User;
@@ -88,6 +89,7 @@ function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditPro
     const [lastNameProfanity, setLastNameProfanity] = useState(false);
     const [usernameProfanity, setUsernameProfanity] = useState(false);
     const [bioProfanity, setBioProfanity] = useState(false);
+    const [usernameTakenError, setUsernameTakenError] = useState(false);
 
     const matcher = useMemo(
         () =>
@@ -136,9 +138,15 @@ function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditPro
         onError: (error) => {
             if (error instanceof Error && error.message === "Content contains profanity") {
                 toast.error(PROFANITY_ERROR_MESSAGE);
-            } else {
-                toast.error(error instanceof Error ? error.message : "Failed to update profile");
+                return;
             }
+            const code = (error as { code?: string }).code;
+            if (code === "23505") {
+                setUsernameTakenError(true);
+                toast.error("This username is already taken.");
+                return;
+            }
+            toast.error(error instanceof Error ? error.message : "Failed to update profile");
         },
     });
 
@@ -213,10 +221,20 @@ function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditPro
                                     const value = e.target.value.toLowerCase();
                                     setForm((p) => ({ ...p, userName: value }));
                                     setUsernameProfanity(matcher.getAllMatches(value).length > 0);
+                                    setUsernameTakenError(false);
                                 }}
                                 placeholder="Username"
-                                className="w-full lowercase"
+                                className={cn(
+                                    "w-full lowercase",
+                                    usernameTakenError && "border-destructive focus-visible:ring-destructive"
+                                )}
+                                aria-invalid={usernameTakenError}
                             />
+                            {usernameTakenError && (
+                                <p className="text-sm text-destructive font-medium">
+                                    This username is already taken.
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>
