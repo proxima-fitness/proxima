@@ -234,6 +234,8 @@ interface IProps {
     setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
     daysPerWeek: string;
     programLength: string;
+    excludeEquipment: IOption[];
+    healthIssues: IOption[];
     sendMessage: (message?: (Omit<UIMessage<unknown, UIDataTypes, UITools>, "id" | "role"> & {
         id?: string;
         role?: "system" | "user" | "assistant";
@@ -290,6 +292,8 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         isBuilding,
         programLength,
         daysPerWeek,
+        excludeEquipment,
+        healthIssues,
         isLoading,
         status,
         error,
@@ -832,6 +836,11 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                             const toolState = (part as { state?: ToolPart["state"] }).state ?? "output-available";
 
                                             if (toolOutput?.questions && Array.isArray(toolOutput.questions)) {
+                                                const initialAnswers: Record<string, string | string[]> = {};
+                                                if (programLength) initialAnswers["program-length"] = programLength;
+                                                if (daysPerWeek) initialAnswers["days-per-week"] = daysPerWeek;
+                                                if (excludeEquipment?.length) initialAnswers["exclude-equipment"] = excludeEquipment.map((o) => o.value);
+                                                if (healthIssues?.length) initialAnswers["health-issues"] = healthIssues.map((o) => o.label).join(", ");
                                                 return (
                                                     <Tool key={`${message.id}-${index}-questions`} defaultOpen className="mx-auto w-full max-w-3xl px-2 md:px-4 pt-2">
                                                         <ToolHeader type="tool-getMoreInfoQuestions" state={toolState} title="Survey" />
@@ -839,6 +848,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                 <Questions
                                                                     className="w-full min-w-full"
                                                                     questions={toolOutput.questions}
+                                                                    initialAnswers={Object.keys(initialAnswers).length > 0 ? initialAnswers : undefined}
                                                                     onComplete={handleComplete}
                                                                     onSkip={handleSkip}
                                                                     isBuilding={isBuilding}

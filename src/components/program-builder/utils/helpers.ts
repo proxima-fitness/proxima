@@ -25,6 +25,7 @@ import nlp from "compromise";
 import { applyPatch, compare, validate as validatePatch, type Operation } from "fast-json-patch";
 import Fuse from "fuse.js";
 import { toast } from "sonner";
+import type { IOption } from "@/components/ui/multi-select";
 
 
 
@@ -186,6 +187,125 @@ export const inferProgramLength = (text: string) => {
 
     return "";
 };
+
+/**
+ * Returns options whose label or value appears in the normalized text (substring match).
+ * Used internally by infer functions that need to match options to free text.
+ */
+function matchOptionsInText(text: string, options: IOption[]): IOption[] {
+    if (!text || !options.length) return [];
+    const normalized = text.toLowerCase().replace(/[\u2010\u2011\u2012\u2013\u2014\u2015]/g, "-");
+    return options.filter((opt) => {
+        const label = (opt.label ?? "").toLowerCase();
+        const value = (opt.value ?? "").toLowerCase();
+        return (label && normalized.includes(label)) || (value && normalized.includes(value));
+    });
+}
+
+/**
+ * Attempts to extract body areas to exclude from free-text user input (e.g. "exclude shoulders",
+ * "no legs", "avoid lower back"). Looks for exclusion phrases followed by body-part names that
+ * match the given options (e.g. focusAreasOptions).
+ *
+ * @param text - Raw user message text
+ * @param options - Body-part options (same set as focus areas: back, arms, shoulders, etc.)
+ * @returns Matching IOption[] for areas to exclude
+ */
+export function inferExcludeAreas(text: string, options: IOption[]): IOption[] {
+    if (!text || !options.length) return [];
+    const normalized = text.toLowerCase().replace(/[\u2010\u2011\u2012\u2013\u2014\u2015]/g, "-");
+    const exclusionRegex = /(?:exclude|no|avoid|skip|without|don't\s+train)\s+/gi;
+    const parts = normalized.split(exclusionRegex);
+    parts.shift(); // drop segment before first keyword
+    const matched = new Map<string, IOption>();
+    for (const part of parts) {
+        const segment = part.replace(/\s*(?:,|and|&)\s*/g, " ").trim();
+        for (const opt of options) {
+            const label = (opt.label ?? "").toLowerCase();
+            const value = (opt.value ?? "").toLowerCase();
+            const re = new RegExp(`\\b${escapeRegexForWord(value)}\\b|\\b${escapeRegexForWord(label)}\\b`);
+            if (re.test(segment) && !matched.has(opt.value)) {
+                matched.set(opt.value, opt);
+            }
+        }
+    }
+    return Array.from(matched.values());
+}
+
+/**
+ * Attempts to extract equipment to exclude from free-text user input (e.g. "no dumbbells",
+ * "without machines", "bodyweight only"). Uses the same split-by-exclusion-keyword approach
+ * as inferExcludeAreas, then matches remaining text to equipment options.
+ *
+ * @param text - Raw user message text
+ * @param options - Equipment options (e.g. equipmentOptions or exclude-equipment subset)
+ * @returns Matching IOption[] for equipment to exclude
+ */
+export function inferExcludeEquipment(text: string, options: IOption[]): IOption[] {
+    if (!text || !options.length) return [];
+    const normalized = text.toLowerCase().replace(/[\u2010\u2011\u2012\u2013\u2014\u2015]/g, "-");
+    if (/bodyweight\s+only|no\s+equipment|only\s+bodyweight/.test(normalized)) {
+        return options.filter((opt) => (opt.value ?? "").toLowerCase() !== "bodyweight");
+    }
+    const exclusionRegex = /(?:no|without|don't\s+use|exclude)\s+/gi;
+    const parts = normalized.split(exclusionRegex);
+    parts.shift();
+    const matched = new Map<string, IOption>();
+    for (const part of parts) {
+        const segment = part.replace(/\s*(?:,|and|&)\s*/g, " ").trim();
+        for (const opt of options) {
+            const label = (opt.label ?? "").toLowerCase();
+            const value = (opt.value ?? "").toLowerCase();
+            const re = new RegExp(`\\b${escapeRegexForWord(value)}\\b|\\b${escapeRegexForWord(label)}\\b`);
+            if (re.test(segment) && !matched.has(opt.value)) {
+                matched.set(opt.value, opt);
+            }
+        }
+    }
+    return Array.from(matched.values());
+}
+
+/** Escapes a string for use inside a RegExp word-boundary pattern (handles spaces in multi-word values). */
+function escapeRegexForWord(s: string): string {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+");
+}
+
+/** Phrase synonyms that map user wording to healthIssuesOptions values. */
+const HEALTH_ISSUE_SYNONYMS: Array<{ pattern: RegExp; value: string }> = [
+    { pattern: /(?:bad|lower|hurt|injured|pain)\s+back|back\s+(?:pain|issue|problem)|hernia/gi, value: "back or hernia" },
+    { pattern: /(?:can't|cannot)\s+jump|no\s+jump/gi, value: "cannot jump" },
+    { pattern: /post[- ]?covid|covid\s+recovery/gi, value: "post-covid recovery" },
+    { pattern: /(?:arm|shoulder)s?\s+(?:and|&|or)\s+(?:arm|shoulder)|arms\s+and\s+shoulders/gi, value: "arms and shoulders" },
+    { pattern: /hip\s+(?:joint|problem|issue|pain)/gi, value: "hip joints" },
+    { pattern: /knee\s+(?:injur|problem|issue|pain)/gi, value: "knee injuries" },
+];
+
+/**
+ * Attempts to extract health issues from free-text user input (e.g. "bad back", "knee issues",
+ * "can't jump", "post covid"). Uses a generic matcher plus phrase synonyms that map to
+ * healthIssuesOptions values.
+ *
+ * @param text - Raw user message text
+ * @param options - Health issue options (healthIssuesOptions)
+ * @returns Matching IOption[] for health issues to consider
+ */
+export function inferHealthIssues(text: string, options: IOption[]): IOption[] {
+    if (!text || !options.length) return [];
+    const normalized = text.toLowerCase().replace(/[\u2010\u2011\u2012\u2013\u2014\u2015]/g, "-");
+    const matched = new Map<string, IOption>();
+    const valueToOption = new Map(options.map((o) => [(o.value ?? "").toLowerCase(), o]));
+    for (const { pattern, value } of HEALTH_ISSUE_SYNONYMS) {
+        if (pattern.test(normalized)) {
+            const opt = valueToOption.get(value);
+            if (opt && !matched.has(opt.value)) matched.set(opt.value, opt);
+        }
+    }
+    const fromGeneric = matchOptionsInText(normalized, options);
+    for (const opt of fromGeneric) {
+        if (!matched.has(opt.value)) matched.set(opt.value, opt);
+    }
+    return Array.from(matched.values());
+}
 
 /**
  * Safely extracts and normalizes text from a chat message payload.

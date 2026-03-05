@@ -122,6 +122,8 @@ export const Agent: React.FC<IProps> = (props) => {
         addToUndoStack,
         daysPerWeek,
         programLength,
+        excludeEquipment,
+        healthIssues,
         handleDaysPerWeek,
         handleProgramLength,
         handleExcludeEquipment,
@@ -194,6 +196,8 @@ export const Agent: React.FC<IProps> = (props) => {
                             addToUndoStack={addToUndoStack}
                             daysPerWeek={daysPerWeek}
                             programLength={programLength}
+                            excludeEquipment={excludeEquipment}
+                            healthIssues={healthIssues}
                             sendMessage={sendMessageWithContext}
                             handleProgramLength={handleProgramLength}
                             handleDaysPerWeek={handleDaysPerWeek}

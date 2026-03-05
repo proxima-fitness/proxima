@@ -42,9 +42,9 @@ import { HevyRoutine } from "@/components/program-builder/hevy/HevyRoutine";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getSharedProgram } from "@/api/programs";
-import { emptyHevyRoutineProgram } from "@/assets/constants";
+import { emptyHevyRoutineProgram, focusAreasOptions, equipmentOptions, healthIssuesOptions } from "@/assets/constants";
 import { IOption } from "@/components/ui/multi-select";
-import { inferDaysPerWeek, inferProgramLength } from "@/components/program-builder/utils/helpers";
+import { inferDaysPerWeek, inferProgramLength, inferExcludeAreas, inferExcludeEquipment, inferHealthIssues } from "@/components/program-builder/utils/helpers";
 import { toast } from "sonner";
 import { getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy, sortHevyByOrder } from "@/components/program-builder/utils";
 import { applyPatch, type Operation } from "fast-json-patch";
@@ -886,8 +886,26 @@ export function BuildProgramClient() {
                     setProgramLength(inferredLength);
                 }
             }
+            if (excludeAreas.length === 0) {
+                const inferred = inferExcludeAreas(search, focusAreasOptions);
+                if (inferred.length > 0) {
+                    setExcludeAreas(inferred);
+                }
+            }
+            if (excludeEquipment.length === 0) {
+                const inferred = inferExcludeEquipment(search, equipmentOptions);
+                if (inferred.length > 0) {
+                    setExcludeEquipment(inferred);
+                }
+            }
+            if (healthIssues.length === 0) {
+                const inferred = inferHealthIssues(search, healthIssuesOptions);
+                if (inferred.length > 0) {
+                    setHealthIssues(inferred);
+                }
+            }
         }
-    }, [daysPerWeek, programLength, search]); // Only run when search changes, not when daysPerWeek/programLength change
+    }, [daysPerWeek, programLength, search, excludeAreas.length, excludeEquipment.length, healthIssues.length]);
 
     const undoButton = portalTarget && createPortal(
         undoStack.length > 0 ? (

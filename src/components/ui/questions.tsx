@@ -40,6 +40,7 @@ export interface IQuestion {
  * Props for the Questions flow.
  * @property onComplete - Called with answers map (questionId -> value or array for multi).
  * @property isBuilding / isLoading - Disable actions and show loading on primary button.
+ * @property initialAnswers - Optional pre-selected answers (e.g. inferred from initial prompt) keyed by question id.
  */
 interface IQuestionsProps {
   questions: IQuestion[]
@@ -48,6 +49,7 @@ interface IQuestionsProps {
   className?: string
   isBuilding?: boolean
   isLoading?: boolean
+  initialAnswers?: Record<string, string | string[]>
 }
 
 /** Props for single-select (radio) question renderer. */
@@ -429,8 +431,9 @@ export function Questions({
   isBuilding,
   isLoading,
   className,
+  initialAnswers,
 }: IQuestionsProps) {
-  const [answers, setAnswers] = React.useState<Record<string, string | string[]>>({})
+  const [answers, setAnswers] = React.useState<Record<string, string | string[]>>(initialAnswers ?? {})
   const [otherTexts, setOtherTexts] = React.useState<Record<string, string>>({})
   const [visibleIndex, setVisibleIndex] = React.useState(0)
   const [isLargeScreen, setIsLargeScreen] = React.useState(false)
