@@ -8,7 +8,7 @@
  * Used by: Auth-sensitive pages and components that need access to the current user.
  */
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/api';
@@ -97,8 +97,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return () => subscription.unsubscribe();
     }, [queryClient]);
 
+    const value = useMemo(() => ({ user, setUser, isLoading }), [user, isLoading]);
+
     return (
-        <UserContext.Provider value={ { user, setUser, isLoading } }>
+        <UserContext.Provider value={value}>
             {children}
         </UserContext.Provider>
     );

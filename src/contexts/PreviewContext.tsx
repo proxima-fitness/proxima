@@ -8,7 +8,7 @@
  * Used by: Components that need to switch between edit and preview modes.
  */
 
-import { createContext, useContext, ReactNode, useState } from 'react';
+import { createContext, useContext, ReactNode, useState, useMemo } from 'react';
 
 const PreviewContext = createContext<IPreviewContextType | undefined>(undefined);
 
@@ -19,9 +19,10 @@ const PreviewContext = createContext<IPreviewContextType | undefined>(undefined)
  */
 export const PreviewProvider = ({ children }: { children: ReactNode }) => {
     const [isPreview, setIsPreview] = useState(false);
+    const value = useMemo(() => ({ isPreview, setIsPreview }), [isPreview]);
 
     return (
-        <PreviewContext.Provider value={ { isPreview, setIsPreview } }>
+        <PreviewContext.Provider value={value}>
             {children}
         </PreviewContext.Provider>
     );

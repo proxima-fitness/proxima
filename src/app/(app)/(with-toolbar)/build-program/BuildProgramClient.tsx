@@ -56,6 +56,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUserContext } from "@/contexts/UserContext";
 import { recordLlmRequest } from "@/api/featureLimits";
 
+const chatTransport = new DefaultChatTransport({ api: "/api/chat" });
 
 /**
  * Program builder client: chat sidebar, program state (hevyProgram), filters,
@@ -91,6 +92,10 @@ export function BuildProgramClient() {
     /*** STATE FOR THE PROGRAM BUILDER ***/
     const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>([]);
     const [undoStack, setUndoStack] = useState<Operation[][]>([]);
+    const orderedProgram = useMemo(
+        () => appendOrderToHevyRoutines(hevyProgram) as THevyRoutine[],
+        [hevyProgram]
+    );
     /*************************************************************************************/
 
     const empty = searchParams.get('empty') ?? '';
@@ -145,9 +150,7 @@ export function BuildProgramClient() {
 
 
     const { messages, sendMessage, setMessages, status, stop, error } = useChat({
-        transport: new DefaultChatTransport({
-          api: '/api/chat',
-        }),
+        transport: chatTransport,
         onError: (err) => {
           console.error('Chat error:', err);
           setGenerationError(err);
@@ -997,7 +1000,7 @@ export function BuildProgramClient() {
                             { hevyProgram.length > 0 ? (
                             <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
                                 <HevyRoutine
-                                    hevyProgram={appendOrderToHevyRoutines(hevyProgram) as THevyRoutine[]}
+                                    hevyProgram={orderedProgram}
                                     setHevyProgram={setHevyProgram}
                                     isMobile={isMobile}
                                     addExerciseDialog={addExerciseDialog}
@@ -1044,7 +1047,7 @@ export function BuildProgramClient() {
                             { hevyProgram.length > 0 ? (
                             <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
                                 <HevyRoutine
-                                    hevyProgram={appendOrderToHevyRoutines(hevyProgram) as THevyRoutine[]}
+                                    hevyProgram={orderedProgram}
                                     setHevyProgram={setHevyProgram}
                                     isMobile={isMobile}
                                     addExerciseDialog={addExerciseDialog}
@@ -1240,7 +1243,7 @@ export function BuildProgramClient() {
                         { hevyProgram.length > 0 ? (
                             <div className="w-full max-w-full overflow-x-hidden">
                                 <HevyRoutine
-                                    hevyProgram={appendOrderToHevyRoutines(hevyProgram) as THevyRoutine[]}
+                                    hevyProgram={orderedProgram}
                                     setHevyProgram={setHevyProgram}
                                     isMobile={isMobile}
                                     addExerciseDialog={addExerciseDialog}

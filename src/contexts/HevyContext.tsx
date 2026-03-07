@@ -8,7 +8,7 @@
  * Used by: Hevy program builder components that need to read or update the `isHevy` flag.
  */
 
-import { createContext, useContext, ReactNode, useState } from 'react';
+import { createContext, useContext, ReactNode, useState, useMemo } from 'react';
 
 const IsHevyContext = createContext<IIsHevyContextType | undefined>(undefined);
 
@@ -19,9 +19,10 @@ const IsHevyContext = createContext<IIsHevyContextType | undefined>(undefined);
  */
 export const IsHevyProvider = ({ children }: { children: ReactNode }) => {
     const [isHevy, setIsHevy] = useState(true);
+    const value = useMemo(() => ({ isHevy, setIsHevy }), [isHevy]);
 
     return (
-        <IsHevyContext.Provider value={ { isHevy, setIsHevy } }>
+        <IsHevyContext.Provider value={value}>
             {children}
         </IsHevyContext.Provider>
     );
