@@ -435,7 +435,7 @@ export const Navbar: React.FC = () => {
 
     return (
         <nav className="w-full flex py-2 justify-between items-center bg-white dark:bg-darkGray relative z-50">
-            <Link href={ "/" } >
+            <Link href={ "/" } aria-label="Proxima home">
                 <img src={ (proxima_logo as any).src } alt="Proxima Logo" className="dark:sm:block hidden max-sm:hidden h-[40px] w-auto" />
                 <img src={ (proxima_logo_white_full_text as any).src } alt="Proxima Logo" className="dark:hidden block max-sm:hidden h-[40px] w-auto" />
             </Link>
@@ -451,7 +451,7 @@ export const Navbar: React.FC = () => {
                 <div className="flex-1 flex justify-start items-center min-w-0">
                     <NavDrawer />
                 </div>
-                <Link href={ "/" } className="absolute left-1/2 -translate-x-1/2">
+                <Link href={ "/" } className="absolute left-1/2 -translate-x-1/2" aria-label="Proxima home">
                     <img src={ (proxima_logo_black as any).src } alt="Proxima Logo" className="h-10 w-auto sm:hidden hidden dark:block" />
                     <img src={ (proxima_logo_white as any).src } alt="Proxima Logo" className="h-10 w-auto sm:hidden dark:hidden" />
                 </Link>

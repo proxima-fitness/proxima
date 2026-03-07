@@ -6152,21 +6152,25 @@ export const footerLinks = [
 export const socialMedia = [
   {
     id: "social-media-1",
+    label: "Proxima Fitness on Instagram",
     icon: instagram.src,
     link: "https://www.instagram.com/proximafitnessapp/",
   },
   {
     id: "social-media-2",
+    label: "Proxima Fitness on Twitter",
     icon: twitter.src,
     link: "https://www.twitter.com/jacklhanlon",
   },
   {
     id: "social-media-3",
+    label: "Proxima Fitness on LinkedIn",
     icon: linkedin.src,
     link: "https://www.linkedin.com/company/proxima-fitness/",
   },
   {
     id: "social-media-4",
+    label: "Proxima Fitness on Reddit",
     icon: reddit.src,
     link: "https://www.reddit.com/r/ProximaFitness/",
   },

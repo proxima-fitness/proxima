@@ -38,19 +38,17 @@ export const Footer: React.FC = () => {
                             </h4>
                             <ul className="list-none mt-4">
                                 {footerlink.links.map((link, index) => (
-                                    <Link
-                                        href={ link.link }
+                                    <li
                                         key={ link.name }
-                                    >
-                                        <li
-                                        className={ `font-main font-normal text-[16px] leading-[24px] text-dimWhite hover:text-secondary cursor-pointer ${
+                                        className={ `font-main font-normal text-[16px] leading-[24px] text-dimWhite hover:text-secondary ${
                                             index !== footerlink.links.length - 1 ? "mb-4" : "mb-0"
                                         }` }
-                                        >
+                                    >
+                                        <Link href={ link.link } className="cursor-pointer block">
                                             {link.name}
-                                        </li>
-                                    </Link>
-                ))}
+                                        </Link>
+                                    </li>
+                                ))}
                             </ul>
                         </div>
             ))}
@@ -65,18 +63,21 @@ export const Footer: React.FC = () => {
                 <div className="flex flex-row md:mt-0 mt-6">
                     {socialMedia.map((social, index) => (
                         <Link
-                href={ social.link }
-                key={ social.id }
-            >
+                            href={ social.link }
+                            key={ social.id }
+                            aria-label={ social.label }
+                            className={ `min-w-[48px] min-h-[48px] flex items-center justify-center cursor-pointer ${
+                                index !== socialMedia.length - 1 ? "mr-6" : "mr-0"
+                            }` }
+                        >
                             <img
-                src={ social.icon }
-                alt={ social.id }
-                className={ `w-[21px] h-[21px] object-contain cursor-pointer ${
-                index !== socialMedia.length - 1 ? "mr-6" : "mr-0"
-                }` }
-            />
+                                src={ social.icon }
+                                alt=""
+                                role="presentation"
+                                className="w-[21px] h-[21px] object-contain"
+                            />
                         </Link>
-            ))}
+                    ))}
                 </div>
             </div>
         </section>
