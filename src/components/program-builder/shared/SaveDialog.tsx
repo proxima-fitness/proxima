@@ -134,7 +134,7 @@ export const SaveDialog: React.FC<IProps> = (props) => {
                                     disabled={ savingRoutine }
                                     className="max-sm:text-2xl max-sm:w-[30vh] max-sm:h-24 sm:w-92 h-12 uppercase bg-lightSecondary hover:text-white hover:bg-lightSecondary text-white"
                                 >
-                                    { savingRoutine ? "Saving routine..." :
+                                    { savingRoutine ? "Saving routine…" :
                                         <div className="flex flex-row gap-4">
                                             Save Program
                                             <LogInIcon />

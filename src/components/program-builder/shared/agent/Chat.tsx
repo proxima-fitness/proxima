@@ -170,7 +170,7 @@ const ChatInputBody = ({
       {/* Desktop: original stacked layout (textarea above footer) */}
       <div data-align="block-end" className="hidden md:block w-full">
         <PromptInputTextarea
-          placeholder="Ask anything..."
+          placeholder="Ask anything…"
           className="dark:text-white pl-4 text-base leading-[1.3] sm:text-base md:text-base"
         />
         <PromptInputFooter className="mt-5 flex w-full shrink-0 items-end justify-between gap-2 px-3 pb-3">
@@ -242,7 +242,7 @@ const ChatInputBody = ({
           </TooltipContent>
         </Tooltip>
         <PromptInputTextarea
-          placeholder="Ask anything..."
+          placeholder="Ask anything…"
           className="dark:text-white min-h-9 flex-1 min-w-0 py-2 text-base leading-[1.3] max-sm:min-h-8 max-sm:h-auto max-sm:py-1.5 [&::placeholder]:text-sm"
           onChange={(e) => checkMultiline(e.currentTarget)}
         />

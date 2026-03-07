@@ -149,7 +149,7 @@ export const Agent: React.FC<IProps> = (props) => {
 
     // const [isFilters, setIsFilters] = useState(false)
 
-    /** "Running a step…" | "Generating..." | "Thinking…" from last message part and chatStatus. */
+    /** "Running a step…" | "Generating…" | "Thinking…" from last message part and chatStatus. */
     const statusLabel = useMemo(() => {
         if (!isLoading) return null
         const lastMessage = messages[messages.length - 1]
@@ -165,7 +165,7 @@ export const Agent: React.FC<IProps> = (props) => {
             ((lastPart as { type?: string }).type === "text" ||
                 (lastPart as { type?: string }).type === "reasoning")
         if (isToolInProgress) return "Running a step…"
-        if (chatStatus === "streaming" && isStreamingContent) return "Generating..."
+        if (chatStatus === "streaming" && isStreamingContent) return "Generating…"
         return "Thinking…"
     }, [isLoading, messages, chatStatus])
 

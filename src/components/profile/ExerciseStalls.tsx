@@ -53,12 +53,12 @@ export interface IExercise {
     }>;
 }
 
-/** Build page entries for pagination (numbers and "..." for ellipsis). */
-function getPaginationPages(currentPage: number, totalPages: number): (number | "...")[] {
+/** Build page entries for pagination (numbers and "…" for ellipsis). */
+function getPaginationPages(currentPage: number, totalPages: number): (number | "…")[] {
     if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
-    if (currentPage <= 3) return [1, 2, 3, "...", totalPages];
-    if (currentPage >= totalPages - 2) return [1, "...", totalPages - 2, totalPages - 1, totalPages];
-    return [1, "...", currentPage, "...", totalPages];
+    if (currentPage <= 3) return [1, 2, 3, "…", totalPages];
+    if (currentPage >= totalPages - 2) return [1, "…", totalPages - 2, totalPages - 1, totalPages];
+    return [1, "…", currentPage, "…", totalPages];
 }
 
 /**
@@ -351,14 +351,14 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                             }}
                         />
                         {getPaginationPages(currentPage, totalPages).map((page, index) =>
-                            page === "..." ? (
+                            page === "…" ? (
                                 <PaginationLink
                                     key={index}
                                     className="h-[45px] text-lg"
                                     href="#"
                                     onClick={(e) => e.preventDefault()}
                                 >
-                                    ...
+                                    …
                                 </PaginationLink>
                             ) : (
                                 <PaginationLink

@@ -110,7 +110,9 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
                 <Input
                     id="email"
                     type="email"
-                    placeholder="lifter@proximafitness.com"
+                    name="email"
+                    autoComplete="email"
+                    placeholder="lifter@proximafitness.com…"
                     required
                     value={ watchEmail }
                     onInput={ (e) => {
@@ -131,6 +133,8 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
                 <Input
                   id="password"
                   type="password"
+                  name="password"
+                  autoComplete="new-password"
                   required
                   value={ watchPassword }
                   onInput={ (e) => {
@@ -149,8 +153,10 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
                   <Label htmlFor="confirm-password">{(formState?.errors?.confirmPassword?.message && formState?.errors?.confirmPassword?.message.length > 0)  ? formState.errors.confirmPassword.message : "Confirm Password"}</Label>
                 </div>
                 <Input
-                    id="repeat-password"
+                    id="confirm-password"
                     type="password"
+                    name="confirmPassword"
+                    autoComplete="new-password"
                     required
                     value={ watchConfirmPassword }
                     onInput={ (e) => {
@@ -171,6 +177,8 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
                 <Input
                   id="username"
                   type="text"
+                  name="username"
+                  autoComplete="username"
                   required
                   value={ watchUserName }
                   onInput={ (e) => {
@@ -191,6 +199,8 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
                 <Input
                     id="first-name"
                     type="text"
+                    name="firstName"
+                    autoComplete="given-name"
                     required
                     value={ watchFirstName }
                     onInput={(e) => {
@@ -211,6 +221,8 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
                 <Input
                     id="last-name"
                     type="text"
+                    name="lastName"
+                    autoComplete="family-name"
                     required
                     value={ watchLastName }
                     onInput={ (e) => {
@@ -225,7 +237,7 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
                 />
               </div>
               <Button type="submit" className="w-full bg-lightSecondary text-white" disabled={isLoading}>
-                {isLoading ? 'Creating an account...' : 'Sign up'}
+                {isLoading ? 'Creating an account…' : 'Sign up'}
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">

@@ -64,7 +64,7 @@ export const TurnstileSignIn: React.FC<IProps> = (props) => {
                 } }
             />
             { signingIn &&
-                <span className="text-sm text-lightSecondary">Veryifying you&apos;re not a bot...</span>
+                <span className="text-sm text-lightSecondary">Verifying you&apos;re not a bot…</span>
             }
         </>
     );

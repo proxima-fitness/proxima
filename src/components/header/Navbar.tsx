@@ -208,7 +208,7 @@ const NavItems = (pathname: string) => {
                                 >
                                     <div className="flex flex-col">
                                         <span className="font-medium">Proxima Format</span>
-                                        <span className="text-xs text-gray-500 text-wrap max-w-[200px]">700+ exercises, rep ranges, rpe ranges, amrap ...</span>
+                                        <span className="text-xs text-gray-500 text-wrap max-w-[200px]">700+ exercises, rep ranges, rpe ranges, amrap …</span>
                                     </div>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
@@ -221,7 +221,7 @@ const NavItems = (pathname: string) => {
                                 >
                                     <div className="flex flex-col">
                                         <span className="font-medium">Hevy Format</span>
-                                        <span className="text-xs text-gray-500 text-wrap max-w-[200px]">400+ exercises, custom exercises,routines ...</span>
+                                        <span className="text-xs text-gray-500 text-wrap max-w-[200px]">400+ exercises, custom exercises,routines …</span>
                                     </div>
                                 </DropdownMenuItem> */}
                                 <DropdownMenuLabel className="text-xs text-gray-500 font-normal">

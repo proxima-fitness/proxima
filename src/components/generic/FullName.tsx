@@ -27,7 +27,7 @@ export const FullName: React.FC<IProps> = (props) => {
 
     if (loadingFullName) {
         return (
-            <>Loading...</>
+            <>Loading…</>
         );
     }
 

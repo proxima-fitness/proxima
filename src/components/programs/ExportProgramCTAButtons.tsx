@@ -77,7 +77,7 @@ export const ExportProgramCTAButtons: React.FC<IProps> = ({
             {enabledOptions.map(renderOption)}
             {showComingSoonLabel && disabledOptions.length > 0 ? (
                 <>
-                    <p className="text-sm text-gray-400 pt-2">Coming soon...</p>
+                    <p className="text-sm text-gray-400 pt-2">Coming soon…</p>
                     {disabledOptions.map(renderOption)}
                 </>
             ) : (

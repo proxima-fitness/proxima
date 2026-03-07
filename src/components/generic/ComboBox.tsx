@@ -58,14 +58,14 @@ export const ComboBox: React.FC<IProps> = (props) => {
                         { title === "Workout Duration" &&
                     (
                         <>
-                            { value ? `${options.find((option) => option === value)} Mins` : "Select duration..."}
+                            { value ? `${options.find((option) => option === value)} Mins` : "Select duration…"}
                         </>
                     )
                 }
                         { title === "Program Length" &&
                     (
                         <>
-                            { value ? `${options.find((option) => option === value)} Weeks` : "Select length..."}
+                            { value ? `${options.find((option) => option === value)} Weeks` : "Select length…"}
                         </>
                     )
                 }
@@ -74,7 +74,7 @@ export const ComboBox: React.FC<IProps> = (props) => {
                 </PopoverTrigger>
                 <PopoverContent className="w-[200px] p-0">
                     <Command>
-                        <CommandInput placeholder="Quick search..." />
+                        <CommandInput placeholder="Quick search…" />
                         <CommandList>
                             <CommandEmpty>No framework found.</CommandEmpty>
                             <CommandGroup>

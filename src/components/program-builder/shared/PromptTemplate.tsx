@@ -36,6 +36,7 @@ import { cn } from "@/lib/utils";
 import type { FileUIPart } from "ai";
 import { memo, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const PENDING_ATTACHMENTS_KEY = "pending-attachments";
 const PENDING_INITIAL_PROMPT_KEY = "pending-initial-prompt";
@@ -415,15 +416,18 @@ export const PromptTemplate: React.FC = () => {
                     {suggestionGroups.map((suggestion) => {
                         if (suggestion.label === "Start from scratch") {
                             return (
-                                <Suggestion
+                                <Button
                                     key={suggestion.label}
-                                    suggestion={suggestion.label}
-                                    onClick={() => router.push(BUILD_PROGRAM_EMPTY_URL)}
-                                    className="capitalize h-8 p-4 text-xs dark:bg-darkGray dark:border-none z-10"
+                                    asChild
+                                    variant="outline"
+                                    size="sm"
+                                    className="capitalize h-8 p-4 text-xs dark:bg-darkGray dark:border-none z-10 cursor-pointer rounded-full px-4"
                                 >
-                                    {suggestion.icon}
-                                    {suggestion.label}
-                                </Suggestion>
+                                    <Link href={BUILD_PROGRAM_EMPTY_URL}>
+                                        {suggestion.icon}
+                                        {suggestion.label}
+                                    </Link>
+                                </Button>
                             );
                         }
 
