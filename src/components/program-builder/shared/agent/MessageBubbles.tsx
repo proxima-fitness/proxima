@@ -273,6 +273,7 @@ interface IProps {
     onTimeoutError: () => void;
     hevyProgram: THevyRoutine[];
     addToUndoStack: (inversePatch: Operation[]) => void;
+    onBuildComplete?: () => void;
 }
 
 /** Renders message list, build/modify progress, applies tool results to hevyProgram, and handles timeout/retry. */
@@ -302,7 +303,8 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         maxRetries,
         onTimeoutError,
         hevyProgram,
-        addToUndoStack
+        addToUndoStack,
+        onBuildComplete
     } = props;
 
     const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
@@ -433,13 +435,14 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
 
             setHevyProgram(fullProgram);
             handleIsBuilding(false);
+            onBuildComplete?.();
             posthog.capture("generated_a_program", {
                 user: user?.id ?? "user_id_unknown",
                 daysPerWeek: allRoutines.length,
                 programLength: weeks,
             });
         }
-    }, [completedDays.length, totalDays, allRoutines, programLength, setHevyProgram, handleIsBuilding, user]);
+    }, [completedDays.length, totalDays, allRoutines, programLength, setHevyProgram, handleIsBuilding, onBuildComplete, user]);
 
     const appliedModifyProgramKeysRef = useRef<Set<string>>(new Set());
 

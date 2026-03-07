@@ -60,9 +60,7 @@ import { recordLlmRequest } from "@/api/featureLimits";
 /**
  * Program builder client: chat sidebar, program state (hevyProgram), filters,
  * URL params (shareId, edit, resume, shared, empty, search). No props; reads
- * searchParams and context. Uses hevyProgramRef so sendMessage/API see latest
- * program without effect dependencies; sendMessageRef for stable callback in
- * one-time search effect.
+ * searchParams and context. No props; reads searchParams and context.
  */
 export function BuildProgramClient() {
     const { isHevy } = useIsHevy();
@@ -92,8 +90,6 @@ export function BuildProgramClient() {
     /*************************************************************************************/
     /*** STATE FOR THE PROGRAM BUILDER ***/
     const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>([]);
-    const hevyProgramRef = useRef<THevyRoutine[]>(hevyProgram);
-    hevyProgramRef.current = hevyProgram; // Ref so sendMessageWithContext/API see current program without effect deps
     const [undoStack, setUndoStack] = useState<Operation[][]>([]);
     /*************************************************************************************/
 
@@ -167,7 +163,6 @@ export function BuildProgramClient() {
 
     const [retryCount, setRetryCount] = useState(0);
     const [isBuilding, setIsBuilding] = useState(false);
-    const prevIsBuildingRef = useRef(isBuilding);
     const MAX_RETRIES = 2;
 
             // Wrapper that sends current program and filter context with every chat request so the API
@@ -178,7 +173,7 @@ export function BuildProgramClient() {
             const text = getTextFromChatMessage(message);
             const includeProgram = isMessageAboutProgram(text);
             const contextBody = {
-                hevyProgram: includeProgram ? (hevyProgramRef?.current ?? hevyProgram) : [],
+                hevyProgram: includeProgram ? hevyProgram : [],
                 daysPerWeek: daysPerWeek ? Number(daysPerWeek) : undefined,
                 programLength: programLength ? Number(programLength) : undefined,
                 excludeAreas: excludeAreas?.length ? excludeAreas.map((o) => o.value).join(", ") : "",
@@ -187,10 +182,9 @@ export function BuildProgramClient() {
             };
             return sendMessage(message, { ...options, body: { ...contextBody, ...options?.body } });
         },
-        [sendMessage, hevyProgram, hevyProgramRef, daysPerWeek, programLength, excludeAreas, excludeEquipment, healthIssues, incrementLlmRequests]
+        [sendMessage, hevyProgram, daysPerWeek, programLength, excludeAreas, excludeEquipment, healthIssues, incrementLlmRequests]
     );
 
-    const sendMessageRef = useRef(sendMessageWithContext); // Stable ref for one-time search effect so effect doesn't re-run on sendMessageWithContext identity change
     const prevErrorRef = useRef<Error | null>(null);
 
     useEffect(() => {
@@ -211,18 +205,12 @@ export function BuildProgramClient() {
     }, [activeError, user]);
 
     useEffect(() => {
-        sendMessageRef.current = sendMessageWithContext;
-    }, [sendMessageWithContext]);
-
-
-
-    useEffect(() => {
         const isLongPromptPlaceholder = search === LONG_PROMPT_PLACEHOLDER;
         // Long prompts: URL uses placeholder; real text in sessionStorage to avoid URL length limits
         const messageText = isLongPromptPlaceholder
             ? (typeof sessionStorage !== "undefined" ? sessionStorage.getItem(PENDING_INITIAL_PROMPT_KEY) : null) ?? ""
             : search;
-        if (!messageText?.trim() || initialSearchOccurred.current || !sendMessageRef.current) return;
+        if (!messageText?.trim() || initialSearchOccurred.current) return;
         if (shared === 'true' && shareId && hevyProgram.length === 0 && !sharedProgramLoadAttemptedRef.current) return;
         if (resume === 'true' && hevyProgram.length === 0) return;
         initialSearchOccurred.current = true;
@@ -245,9 +233,32 @@ export function BuildProgramClient() {
         } catch {
             // ignore parse errors or missing key
         }
-        sendMessageRef.current(files?.length ? { text: messageText, files } : { text: messageText });
+        // Infer filters from the search prompt once before sending the first message
+        if (!daysPerWeek) {
+            const inferredDays = inferDaysPerWeek(messageText);
+            if (inferredDays) setDaysPerWeek(inferredDays);
+        }
+        if (!programLength) {
+            const inferredLength = inferProgramLength(messageText);
+            if (inferredLength) setProgramLength(inferredLength);
+        }
+        if (excludeAreas.length === 0) {
+            const inferred = inferExcludeAreas(messageText, focusAreasOptions);
+            if (inferred.length > 0) setExcludeAreas(inferred);
+        }
+        if (excludeEquipment.length === 0) {
+            const inferred = inferExcludeEquipment(messageText, equipmentOptions);
+            if (inferred.length > 0) setExcludeEquipment(inferred);
+        }
+        if (healthIssues.length === 0) {
+            const inferred = inferHealthIssues(messageText, healthIssuesOptions);
+            if (inferred.length > 0) setHealthIssues(inferred);
+        }
+
+        sendMessageWithContext(files?.length ? { text: messageText, files } : { text: messageText });
         posthog.capture('sent_first_prompt_to_ai', { search: messageText.slice(0, 200), user: user?.id ?? "user_id_unknown" });
-    }, [search, user, hevyProgram, shared, shareId, resume]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [search, user, hevyProgram, shared, shareId, resume, sendMessageWithContext]);
 
     const handleSubmit = (text: string, files?: FileUIPart[]) => {
         if (!text.trim() && (!files || files.length === 0)) return;
@@ -658,16 +669,9 @@ export function BuildProgramClient() {
     const numberOfWeeks = useMemo(() => getNumberRoutineFolders(hevyProgram), [hevyProgram]);
     const numberOfWeeksArr = useMemo(() => Array.from({ length: numberOfWeeks }, (_, i) => i), [numberOfWeeks]);
 
-    // On mobile, auto-switch to My Program tab when build completes
-    useEffect(() => {
-        if (!isMobile) return;
-        const wasBuilding = prevIsBuildingRef.current;
-        const hasProgram = hevyProgram.some((r) => r.exercises.length > 0);
-        if (wasBuilding && !isBuilding && hasProgram) {
-            setMobileTab("program");
-        }
-        prevIsBuildingRef.current = isBuilding;
-    }, [isBuilding, isMobile, hevyProgram, setMobileTab]);
+    const onBuildComplete = useCallback(() => {
+        if (isMobile) setMobileTab("program");
+    }, [isMobile]);
 
     const addToUndoStack = useCallback((inversePatch: Operation[]) => {
         setUndoStack((prev) => [...prev, inversePatch]);
@@ -685,7 +689,6 @@ export function BuildProgramClient() {
                 false
             ) as { newDocument: THevyRoutine[] };
             const newDocument = result.newDocument as THevyRoutine[];
-            hevyProgramRef.current = newDocument;
             setHevyProgram(newDocument);
             setUndoStack((prev) => prev.slice(0, -1));
         } catch (e) {
@@ -798,22 +801,14 @@ export function BuildProgramClient() {
     ]);
 
     useEffect(() => {
-        if (typeof window !== "undefined") {
-            // Don't overwrite localStorage with empty program when resuming
-            if (hevyProgram.length === 0 && resume === 'true') {
-                return;
-            }
+        if (typeof window === "undefined") return;
+        // Don't overwrite localStorage with empty program when resuming
+        if (!(hevyProgram.length === 0 && resume === 'true')) {
             localStorage.setItem("hevy-program-in-progress", JSON.stringify(hevyProgram));
             localStorage.setItem("hevy-request", JSON.stringify(request));
         }
-    }, [hevyProgram, request, resume]);
-
-    // Save the prompt to local storage so that it can be saved to the database
-    useEffect(() => {
-        if (typeof window !== "undefined") {
-            localStorage.setItem("prompt", JSON.stringify(search));
-        }
-    }, [search]);
+        localStorage.setItem("prompt", JSON.stringify(search));
+    }, [hevyProgram, request, resume, search]);
 
     const toggleSidebarPosition = () => {
         setSidebarPosition((prev) => {
@@ -869,43 +864,6 @@ export function BuildProgramClient() {
     const handleHealthIssues = useCallback((value: IOption[]) => { setHealthIssues(value); }, []);
     const handleProgramTitle = useCallback((value: string) => { setProgramTitle(value); }, []);
     const handleExplore = useCallback(() => { toggleExplore(); }, []);
-
-    // Auto-set filters from search prompt on initial load
-    useEffect(() => {
-        if (search && search.trim().length > 0) {
-            // Only set if current filter value is empty (don't override user-set values)
-            if (!daysPerWeek) {
-                const inferredDays = inferDaysPerWeek(search);
-                if (inferredDays) {
-                    setDaysPerWeek(inferredDays);
-                }
-            }
-            if (!programLength) {
-                const inferredLength = inferProgramLength(search);
-                if (inferredLength) {
-                    setProgramLength(inferredLength);
-                }
-            }
-            if (excludeAreas.length === 0) {
-                const inferred = inferExcludeAreas(search, focusAreasOptions);
-                if (inferred.length > 0) {
-                    setExcludeAreas(inferred);
-                }
-            }
-            if (excludeEquipment.length === 0) {
-                const inferred = inferExcludeEquipment(search, equipmentOptions);
-                if (inferred.length > 0) {
-                    setExcludeEquipment(inferred);
-                }
-            }
-            if (healthIssues.length === 0) {
-                const inferred = inferHealthIssues(search, healthIssuesOptions);
-                if (inferred.length > 0) {
-                    setHealthIssues(inferred);
-                }
-            }
-        }
-    }, [daysPerWeek, programLength, search, excludeAreas.length, excludeEquipment.length, healthIssues.length]);
 
     const undoButton = portalTarget && createPortal(
         undoStack.length > 0 ? (
@@ -976,7 +934,6 @@ export function BuildProgramClient() {
                                 isExpanded={isExpanded}
                                 setHevyProgram={setHevyProgram}
                                 hevyProgram={hevyProgram}
-                                hevyProgramRef={hevyProgramRef}
                                 addToUndoStack={addToUndoStack}
                                 sex={sex}
                                 age={age}
@@ -1029,6 +986,7 @@ export function BuildProgramClient() {
                                 status={status}
                                 handleSubmit={handleSubmit}
                                 handleStop={handleStop}
+                                onBuildComplete={onBuildComplete}
                             />
                         </ResizablePanel>
                         {!isChatHidden && <ResizableHandle withHandle className="" />}
@@ -1149,7 +1107,6 @@ export function BuildProgramClient() {
                                 isExpanded={isExpanded}
                                 setHevyProgram={setHevyProgram}
                                 hevyProgram={hevyProgram}
-                                hevyProgramRef={hevyProgramRef}
                                 addToUndoStack={addToUndoStack}
                                 sex={sex}
                                 age={age}
@@ -1202,6 +1159,7 @@ export function BuildProgramClient() {
                                 status={status}
                                 handleSubmit={handleSubmit}
                                 handleStop={handleStop}
+                                onBuildComplete={onBuildComplete}
                             />
                         </ResizablePanel>
                     </>
@@ -1225,7 +1183,6 @@ export function BuildProgramClient() {
                             isExpanded={false}
                             setHevyProgram={setHevyProgram}
                             hevyProgram={hevyProgram}
-                            hevyProgramRef={hevyProgramRef}
                             addToUndoStack={addToUndoStack}
                             sex={sex}
                             age={age}
@@ -1278,6 +1235,7 @@ export function BuildProgramClient() {
                             status={status}
                             handleSubmit={handleSubmit}
                             handleStop={handleStop}
+                            onBuildComplete={onBuildComplete}
                         />
                     </TabsContent>
                     <TabsContent value="program" className="flex-1 overflow-y-auto m-0 mt-0 px-4 pb-20 bg-white dark:bg-darkGray">

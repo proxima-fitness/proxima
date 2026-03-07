@@ -51,7 +51,6 @@ interface IProps {
     isExpanded: boolean;
     setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
     hevyProgram: THevyRoutine[];
-    hevyProgramRef?: React.MutableRefObject<THevyRoutine[]>;
     addToUndoStack: (inversePatch: import("fast-json-patch").Operation[]) => void;
     sex: string;
     age: string;
@@ -106,6 +105,7 @@ interface IProps {
     status?: ChatStatus;
     handleSubmit: (text: string, files?: FileUIPart[]) => void;
     handleStop: () => void;
+    onBuildComplete?: () => void;
 }
 
 /** Renders Navbar, conversation area (empty state or MessageBubbles), loading status, and Chat. */
@@ -143,6 +143,7 @@ export const Agent: React.FC<IProps> = (props) => {
         status: chatStatus,
         handleSubmit,
         handleStop,
+        onBuildComplete,
     } = props;
 
 
@@ -213,6 +214,7 @@ export const Agent: React.FC<IProps> = (props) => {
                             retryCount={retryCount}
                             maxRetries={maxRetries}
                             onTimeoutError={onTimeoutError}
+                            onBuildComplete={onBuildComplete}
                             />
                         )}
                         {isLoading && statusLabel && (
