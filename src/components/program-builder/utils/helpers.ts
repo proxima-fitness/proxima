@@ -585,10 +585,32 @@ const SET_PROP_DESCRIPTIONS: Record<string, SetPropConfig> = {
 };
 
 /**
+ * Returns the value at a JSON Pointer path (RFC 6901) in the document.
+ * Used to read the "old" value when describing a replace operation.
+ *
+ * @param doc - Root document (e.g. THevyRoutine[] for program)
+ * @param path - JSON Pointer string (e.g. /0/exercises/1/sets/2/reps)
+ * @returns The value at path, or undefined if path is invalid or missing
+ */
+function getValueAtPath(doc: unknown, path: string): unknown {
+    if (typeof path !== "string" || !path.startsWith("/")) return undefined;
+    const segments = path.slice(1).split("/").filter(Boolean);
+    let current: unknown = doc;
+    for (const seg of segments) {
+        if (current === undefined || current === null) return undefined;
+        const key = /^\d+$/.test(seg) ? parseInt(seg, 10) : seg;
+        current = Array.isArray(current) || typeof current === "object"
+            ? (current as Record<string, unknown>)[key as string]
+            : undefined;
+    }
+    return current;
+}
+
+/**
  * Returns a short human-readable description of a single JSON Patch operation
  * (e.g. "Set title to 'Push Day'", "Exercise 2, Set 1: Set reps to 10").
  */
-export function describePatchOperation(op: PatchOperationForDescribe): string {
+export function describePatchOperation(op: PatchOperationForDescribe, hevyProgram?: THevyRoutine[]): string {
     const { op: opType, path, value } = op;
     if (typeof path !== "string" || !path.startsWith("/")) return "Updated program";
     const segments = path.slice(1).split("/").filter(Boolean);
@@ -604,20 +626,29 @@ export function describePatchOperation(op: PatchOperationForDescribe): string {
 
     if (withinRoutine[0] !== "exercises" || withinRoutine.length < 2) return "Updated program";
 
+    const routineIndex = parseInt(segments[0], 10);
     const exerciseNum = parseSegmentNum(withinRoutine[1]);
+    const exerciseLabel = ((): string => {
+        if (!hevyProgram?.length || Number.isNaN(routineIndex)) return `Exercise ${exerciseNum}`;
+        const exerciseIndex = parseInt(withinRoutine[1], 10);
+        if (Number.isNaN(exerciseIndex)) return `Exercise ${exerciseNum}`;
+        const title = hevyProgram[routineIndex]?.exercises?.[exerciseIndex]?.title;
+        return (typeof title === "string" && title) ? title : `Exercise ${exerciseNum}`;
+    })();
+
     if (withinRoutine.length === 2) {
         if (opType === "add") return `Add exercise ${exerciseNum}`;
         if (opType === "remove") return `Remove exercise ${exerciseNum}`;
         return `${opType} exercise ${exerciseNum}`;
     }
-    if (withinRoutine[2] === "name") {
+    if (withinRoutine[2] === "name" || withinRoutine[2] === "title") {
         const v = formatOpValue(value);
         return opType === "replace"
-            ? `Exercise ${exerciseNum}: Set name to ${v}`
+            ? `${exerciseLabel}: Set name to ${v}`
             : `${opType} exercise ${exerciseNum} name`;
     }
     if (withinRoutine[2] !== "sets" || withinRoutine.length < 4) {
-        return `Exercise ${exerciseNum}: Updated`;
+        return `${exerciseLabel}: Updated`;
     }
 
     const setNum = parseSegmentNum(withinRoutine[3]);
@@ -628,18 +659,24 @@ export function describePatchOperation(op: PatchOperationForDescribe): string {
     if (config) {
         if ("replaceText" in config) {
             return opType === "replace"
-                ? `Exercise ${exerciseNum}, Set ${setNum}: ${config.replaceText}`
+                ? `${exerciseLabel}, Set ${setNum}: ${config.replaceText}`
                 : `${opType} ${config.fallback}`;
         }
-        return opType === "replace"
-            ? `Exercise ${exerciseNum}, Set ${setNum}: Set ${config.label} to ${v}${config.suffix ?? ""}`
-            : `${opType} ${config.fallback}`;
+        if (opType === "replace") {
+            const oldVal = hevyProgram ? getValueAtPath(hevyProgram, path) : undefined;
+            const oldStr = oldVal === undefined || oldVal === null ? "—" : String(oldVal);
+            return `${exerciseLabel}, Set ${setNum}: ${config.label} ${oldStr} → ${v}${config.suffix ?? ""}`;
+        }
+        return `${opType} ${config.fallback}`;
     }
 
     const propLabel = (setProp ?? "").replace(/_/g, " ");
-    return opType === "replace" && v
-        ? `Exercise ${exerciseNum}, Set ${setNum}: Set ${propLabel} to ${v}`
-        : `Exercise ${exerciseNum}, Set ${setNum}: Updated`;
+    if (opType === "replace" && v) {
+        const oldVal = hevyProgram ? getValueAtPath(hevyProgram, path) : undefined;
+        const oldStr = oldVal === undefined || oldVal === null ? "—" : String(oldVal);
+        return `${exerciseLabel}, Set ${setNum}: ${propLabel} ${oldStr} → ${v}`;
+    }
+    return `${exerciseLabel}, Set ${setNum}: Updated`;
 }
 
 export type TModifyProgramRoutineObjective = {
@@ -674,7 +711,7 @@ export function getModifyProgramObjectivesByRoutine(
         const routineIndex = segments.length > 0 ? parseInt(segments[0], 10) : 0;
         if (Number.isNaN(routineIndex)) continue;
         const list = byRoutine.get(routineIndex) ?? [];
-        list.push(describePatchOperation(op));
+        list.push(describePatchOperation(op, hevyProgram));
         byRoutine.set(routineIndex, list);
     }
 
