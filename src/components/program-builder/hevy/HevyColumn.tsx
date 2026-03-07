@@ -64,6 +64,8 @@ interface IProps {
     customExercises?: THevyExerciseTemplate[];
     /** Global Hevy exercise library (for edit in day cards). */
     hevyExercises?: THevyExerciseTemplate[];
+    /** When true (mobile), day cards use fade-in instead of layout animation. */
+    isMobile?: boolean;
 }
 
 /**
@@ -94,6 +96,7 @@ export const HevyColumn: React.FC<IProps> = (props) => {
         handleAddRoutineAsDay,
         customExercises,
         hevyExercises,
+        isMobile = false,
     } = props;
 
     const [active, setActive] = useState(false);
@@ -278,6 +281,7 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                             handleRemoveFromSuperset={ handleRemoveFromSuperset }
                             customExercises={ customExercises }
                             hevyExercises={ hevyExercises }
+                            isMobile={ isMobile }
                         />
                     );
                 })}

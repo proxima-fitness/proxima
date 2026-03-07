@@ -69,6 +69,8 @@ interface IProps {
     customExercises?: THevyExerciseTemplate[];
     /** Global Hevy exercise library (lifted from HevyRoutine to avoid duplicate subscriptions). */
     hevyExercises?: THevyExerciseTemplate[];
+    /** When true (mobile), use fade-in instead of layout animation to avoid slide-from-top-left. */
+    isMobile?: boolean;
 }
 
 /**
@@ -96,6 +98,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         handleRemoveFromSuperset,
         customExercises,
         hevyExercises,
+        isMobile = false,
     } = props;
 
     const { resolvedTheme } = useTheme();
@@ -175,12 +178,15 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         <>
             <DropIndicator beforeId={ day.id } weekOrder={ String(folder_id) } />
             <motion.div
-                layout
-                layoutId={ `${day.id}-${folder_id}` }
+                layout={ !isMobile }
+                layoutId={ isMobile ? undefined : `${day.id}-${folder_id}` }
+                initial={ isMobile ? { opacity: 0 } : false }
+                animate={ isMobile ? { opacity: 1 } : undefined }
+                transition={ isMobile ? { duration: 0.2 } : undefined }
                 draggable="true"
                 onDragStart={ (e: DragEvent) => handleDragStart(e, cardVal) }
                 className="cursor-grab rounded active:cursor-grabbing gap-4 w-full max-w-full"
-                style={{ opacity: 1, visibility: 'visible' }}
+                style={ isMobile ? undefined : { opacity: 1, visibility: 'visible' } }
             >
                 <Card
                     tabIndex={ 0 }

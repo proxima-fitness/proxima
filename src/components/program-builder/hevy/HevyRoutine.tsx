@@ -263,6 +263,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                                         handleAddRoutineAsDay={ handleAddRoutineAsDay }
                                         customExercises={ customExercises }
                                         hevyExercises={ hevyExercises }
+                                        isMobile={ true }
                                     />
                                 ) }
                             </div>
@@ -298,6 +299,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                                         handleAddRoutineAsDay={ handleAddRoutineAsDay }
                                         customExercises={ customExercises }
                                         hevyExercises={ hevyExercises }
+                                        isMobile={ false }
                                     />
                                 ) ) }
                             </div>
