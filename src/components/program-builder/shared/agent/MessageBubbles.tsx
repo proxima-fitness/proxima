@@ -227,7 +227,7 @@ export const generateEmptyHevyProgram = (weeksValue: string, daysValue: string):
     return routines;
 };
 
-/** Props: messages/setMessages, program state (hevyProgram, setHevyProgram, addToUndoStack), filter handlers (programLength, daysPerWeek, exclude, health), sendMessage, isBuilding, loading/error/retry, status. */
+/** Props: messages/setMessages, program state (hevyProgram, setHevyProgram, applyPatchWithUndo), filter handlers (programLength, daysPerWeek, exclude, health), sendMessage, isBuilding, loading/error/retry, status. */
 interface IProps {
     messages: UIMessage<unknown, UIDataTypes, UITools>[];
     setMessages: (messages: UIMessage<unknown, UIDataTypes, UITools>[] | ((messages: UIMessage<unknown, UIDataTypes, UITools>[]) => UIMessage<unknown, UIDataTypes, UITools>[])) => void;
@@ -272,7 +272,7 @@ interface IProps {
     maxRetries: number;
     onTimeoutError: () => void;
     hevyProgram: THevyRoutine[];
-    addToUndoStack: (inversePatch: Operation[]) => void;
+    applyPatchWithUndo: (newDocument: THevyRoutine[], inversePatch: Operation[]) => void;
     onBuildComplete?: () => void;
 }
 
@@ -303,7 +303,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         maxRetries,
         onTimeoutError,
         hevyProgram,
-        addToUndoStack,
+        applyPatchWithUndo,
         onBuildComplete
     } = props;
 
@@ -447,18 +447,17 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     const appliedModifyProgramKeysRef = useRef<Set<string>>(new Set());
 
     useEffect(() => {
-        // Apply modifyProgram patches from messages; skip already-applied; push inverse ops to addToUndoStack
+        // Apply modifyProgram patches from messages; skip already-applied; commit via applyPatchWithUndo (atomic)
         const modified = applyModifyProgramPatchesFromMessages(
             messages,
             hevyProgram,
             appliedModifyProgramKeysRef,
-            setHevyProgram,
-            addToUndoStack
+            applyPatchWithUndo
         );
         if (modified) {
             posthog.capture("modified_a_program", { user: user?.id ?? "user_id_unknown" });
         }
-    }, [messages, hevyProgram, setHevyProgram, addToUndoStack, user]);
+    }, [messages, hevyProgram, applyPatchWithUndo, user]);
 
     const convertStringArrayToOptions = useCallback((
         values: string[],

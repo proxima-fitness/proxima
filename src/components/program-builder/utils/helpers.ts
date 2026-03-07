@@ -705,11 +705,15 @@ export function getModifyProgramObjectivesByRoutine(
  * @param messages - Chat message history containing tool-modifyProgram parts
  * @param hevyProgram - Current program state to apply patches against
  * @param appliedKeysRef - Mutable set of already-applied patch keys (prevents double-apply)
- * @param setHevyProgram - State setter to commit the patched program
- * @param addToUndoStack - Callback to record inverse patches for undo support
+ * @param applyPatchWithUndo - Callback to commit patched program and record inverse for undo (atomic)
  * @returns true if at least one patch was successfully applied, false otherwise
  */
-export const applyModifyProgramPatchesFromMessages = (messages: UIMessage[], hevyProgram: THevyRoutine[], appliedKeysRef: React.MutableRefObject<Set<string>>, setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>, addToUndoStack: (inversePatch: Operation[]) => void): boolean => {
+export const applyModifyProgramPatchesFromMessages = (
+    messages: UIMessage[],
+    hevyProgram: THevyRoutine[],
+    appliedKeysRef: React.MutableRefObject<Set<string>>,
+    applyPatchWithUndo: (newDocument: THevyRoutine[], inversePatch: Operation[]) => void
+): boolean => {
 
     if (!hevyProgram || hevyProgram.length === 0) return false;
 
@@ -754,7 +758,7 @@ export const applyModifyProgramPatchesFromMessages = (messages: UIMessage[], hev
             ) as { newDocument: THevyRoutine[] };
             const newDocument = result.newDocument as THevyRoutine[];
             const inversePatch = compare(newDocument as object, currentDoc as object);
-            addToUndoStack(inversePatch);
+            applyPatchWithUndo(newDocument, inversePatch);
             currentDoc = newDocument;
             appliedKeysRef.current.add(key);
             appliedAny = true;
@@ -765,8 +769,5 @@ export const applyModifyProgramPatchesFromMessages = (messages: UIMessage[], hev
         }
     }
 
-    if (appliedAny && currentDoc !== hevyProgram) {
-        setHevyProgram(currentDoc);
-    }
     return appliedAny;
 }

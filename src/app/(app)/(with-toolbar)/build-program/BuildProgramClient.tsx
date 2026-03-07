@@ -48,6 +48,54 @@ import { inferDaysPerWeek, inferProgramLength, inferExcludeAreas, inferExcludeEq
 import { toast } from "sonner";
 import { getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy, sortHevyByOrder } from "@/components/program-builder/utils";
 import { applyPatch, type Operation } from "fast-json-patch";
+
+/** Editor state: program + undo stack for atomic transitions and stable handleUndo */
+type EditorState = {
+    hevyProgram: THevyRoutine[];
+    undoStack: Operation[][];
+};
+
+type EditorAction =
+    | { type: "APPLY_PATCH"; newDocument: THevyRoutine[]; inversePatch: Operation[] }
+    | { type: "UNDO" }
+    | { type: "REPLACE_PROGRAM"; program: THevyRoutine[] }
+    | { type: "UPDATE_PROGRAM"; updater: (prev: THevyRoutine[]) => THevyRoutine[] };
+
+function editorReducer(state: EditorState, action: EditorAction): EditorState {
+    switch (action.type) {
+        case "APPLY_PATCH":
+            return {
+                hevyProgram: action.newDocument,
+                undoStack: [...state.undoStack, action.inversePatch],
+            };
+        case "UNDO": {
+            if (state.undoStack.length === 0) return state;
+            const inversePatch = state.undoStack[state.undoStack.length - 1];
+            try {
+                const result = applyPatch(
+                    state.hevyProgram as object,
+                    inversePatch,
+                    true,
+                    false
+                ) as { newDocument: THevyRoutine[] };
+                return {
+                    hevyProgram: result.newDocument as THevyRoutine[],
+                    undoStack: state.undoStack.slice(0, -1),
+                };
+            } catch (e) {
+                toast.error("Undo failed.");
+                console.error("Undo failed.", e);
+                return state;
+            }
+        }
+        case "REPLACE_PROGRAM":
+            return { ...state, hevyProgram: action.program };
+        case "UPDATE_PROGRAM":
+            return { ...state, hevyProgram: action.updater(state.hevyProgram) };
+        default:
+            return state;
+    }
+}
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type FileUIPart } from "ai";
 import { getTextFromChatMessage, isMessageAboutProgram } from "@/components/program-builder/utils/helpers"
@@ -89,9 +137,27 @@ export function BuildProgramClient() {
     const [mobileTab, setMobileTab] = useState<string>("chat");
 
     /*************************************************************************************/
-    /*** STATE FOR THE PROGRAM BUILDER ***/
-    const [hevyProgram, setHevyProgram] = useState<THevyRoutine[]>([]);
-    const [undoStack, setUndoStack] = useState<Operation[][]>([]);
+    /*** STATE FOR THE PROGRAM BUILDER (reducer for atomic undo + stable handleUndo) ***/
+    const [{ hevyProgram, undoStack }, dispatchEditor] = useReducer(editorReducer, {
+        hevyProgram: [],
+        undoStack: [],
+    });
+    const setHevyProgram = useCallback(
+        (value: THevyRoutine[] | ((prev: THevyRoutine[]) => THevyRoutine[])) => {
+            if (typeof value === "function") {
+                dispatchEditor({ type: "UPDATE_PROGRAM", updater: value });
+            } else {
+                dispatchEditor({ type: "REPLACE_PROGRAM", program: value });
+            }
+        },
+        []
+    );
+    const applyPatchWithUndo = useCallback(
+        (newDocument: THevyRoutine[], inversePatch: Operation[]) => {
+            dispatchEditor({ type: "APPLY_PATCH", newDocument, inversePatch });
+        },
+        []
+    );
     const orderedProgram = useMemo(
         () => appendOrderToHevyRoutines(hevyProgram) as THevyRoutine[],
         [hevyProgram]
@@ -265,15 +331,15 @@ export function BuildProgramClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search, user, hevyProgram, shared, shareId, resume, sendMessageWithContext]);
 
-    const handleSubmit = (text: string, files?: FileUIPart[]) => {
+    const handleSubmit = useCallback((text: string, files?: FileUIPart[]) => {
         if (!text.trim() && (!files || files.length === 0)) return;
         sendMessageWithContext({ text, files });
-    }
+    }, [sendMessageWithContext]);
 
-    const handleStop = () => {
+    const handleStop = useCallback(() => {
         stop();
         setIsBuilding(false);
-    }
+    }, [stop]);
 
     const handleIsBuilding = useCallback((isBuilding: boolean) => {
         setIsBuilding(isBuilding);
@@ -304,21 +370,16 @@ export function BuildProgramClient() {
         stop(); // Stop the current request
     }, [stop]);
 
-    const handleIsEditExercise = (isEditExercise: boolean) => {
+    const handleIsEditExercise = useCallback((isEditExercise: boolean) => {
         setIsEditExercise(isEditExercise);
-    };
+    }, []);
 
     // // Duplicates the selected week to other selected weeks
-    const handleDuplicateWeek = (fromWeekIndex: number, toWeekIndexes: number[]) => {
-
+    const handleDuplicateWeek = useCallback((fromWeekIndex: number, toWeekIndexes: number[]) => {
         setHevyProgram((prev) => {
-
             const filteredPrev = prev.filter((day) => !toWeekIndexes.includes(day.folder_id));
-
             const daysToCopy = prev.filter((day) => day.folder_id === fromWeekIndex);
-
             let maxId = Math.max(...prev.map((d) => Number(d.id)));
-
             const newDays = toWeekIndexes.flatMap((week) =>
                 daysToCopy.map((day) => ({
                     ...day,
@@ -326,16 +387,13 @@ export function BuildProgramClient() {
                     folder_id: week,
                 })),
             );
-
             return reorderHevy([...filteredPrev, ...newDays]);
         });
-    };
+    }, [setHevyProgram]);
 
     // Duplicates the selected day to other days in the program on the selected week
-    const handleDuplicateDay = (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayOrderArray: IOption[]) => {
-
+    const handleDuplicateDay = useCallback((fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayOrderArray: IOption[]) => {
         const toDayOrders = toDayOrderArray.map((day) => Number(day.value)).sort((a, b) => a - b);
-
         setHevyProgram((prev) => {
             const dayToCopy = prev.find((day) => Number(day.folder_id) === fromWeekOrder && Number(day.order) === fromDayOrder);
 
@@ -380,30 +438,25 @@ export function BuildProgramClient() {
 
             return sortHevyByOrder([...newDays,...updatedDays]);
         });
-    };
+    }, [setHevyProgram]);
 
     // State for opening the Add Exercise Dialog with the correct week and day
-    const handleOpenAddExerciseDialog = (addExerciseDialog: THevyDialog) => {
+    const handleOpenAddExerciseDialog = useCallback((addExerciseDialog: THevyDialog) => {
         if (addExerciseDialog.isOpen === false) {
             setIsEditExercise(false);
         }
         setAddExerciseDialog(addExerciseDialog);
-    };
-
-    // State for opening the Generate Day Dialog with the correct week and day
-    // const handleOpenGenerateDayDialog = (generateDayDialog: THevyDialog) => {
-    //     setGenerateDayDialog(generateDayDialog);
-    // };
+    }, []);
 
     // State for opening the Add Note Dialog with the correct week and day
-    const handleOpenAddNoteDialog = (addNoteDialog: THevyDialog) => {
+    const handleOpenAddNoteDialog = useCallback((addNoteDialog: THevyDialog) => {
         setAddNoteDialog(addNoteDialog);
-    };
+    }, []);
 
     // State for opening the Add Exercise Note Dialog with the correct week and day
-    const handleOpenAddExerciseNoteDialog = (addExerciseNoteDialog: THevyDialog) => {
+    const handleOpenAddExerciseNoteDialog = useCallback((addExerciseNoteDialog: THevyDialog) => {
         setAddExerciseNoteDialog(addExerciseNoteDialog);
-    };
+    }, []);
 
     // // Will re-generate the currently selected day based on a prompt
     // const handleGenerateDay = async (folder_id: number, dayOrder:number, prompt: string) => {
@@ -428,20 +481,15 @@ export function BuildProgramClient() {
 
 
     // Adds an empty day to the selected week
-    const handleAddDay = (folder_id: number) => {
-
-        const daysInFolder = hevyProgram.filter((day) => day.folder_id === folder_id);
-
-        if (daysInFolder.length >= 7) {
-            toast.error("Maximum 7 days per week");
-            return;
-        }
-
+    const handleAddDay = useCallback((folder_id: number) => {
         setHevyProgram((prev) => {
-            const nthDayOrder = prev.filter((day) => day.folder_id === folder_id).length + 1;
-
+            const daysInFolder = prev.filter((day) => day.folder_id === folder_id);
+            if (daysInFolder.length >= 7) {
+                toast.error("Maximum 7 days per week");
+                return prev;
+            }
+            const nthDayOrder = daysInFolder.length + 1;
             const maxId = Math.max(...prev.map((d) => Number(d.id)));
-
             const newEmptyDay: THevyRoutine = {
                 id: String(maxId + 1),
                 folder_id,
@@ -450,33 +498,27 @@ export function BuildProgramClient() {
                 title: "",
                 notes: "",
             };
-
             return [...prev, newEmptyDay];
         });
-    };
+    }, [setHevyProgram]);
 
-    // // Deletes selected day from selected week by id
-    const handleDeleteDay = (id: string) => {
+    const handleDeleteDay = useCallback((id: string) => {
         setHevyProgram((prev) => {
             let newDays = prev.filter((day) => day.id !== id);
             newDays = reorderHevy(newDays);
             return newDays;
         });
-    };
+    }, [setHevyProgram]);
 
-
-    const handleEditTitle = (id: string, title: string) => {
+    const handleEditTitle = useCallback((id: string, title: string) => {
         setHevyProgram((prev) =>
-            prev.map((day) =>
-                day.id === id ? { ...day, title: title} : day,
-            ),
+            prev.map((day) => (day.id === id ? { ...day, title } : day))
         );
-    };
+    }, [setHevyProgram]);
 
-    // // Deletes an exercise from a workout day
-    const handleDeleteExercise = (folder_id: number, dayOrder: number, exerciseIndex: number) => {
-        setHevyProgram((prev) => {
-            return prev.map((day) => {
+    const handleDeleteExercise = useCallback((folder_id: number, dayOrder: number, exerciseIndex: number) => {
+        setHevyProgram((prev) =>
+            prev.map((day) => {
                 if (Number(day.folder_id) === folder_id && Number(day.order) === dayOrder) {
                     return {
                         ...day,
@@ -484,53 +526,45 @@ export function BuildProgramClient() {
                     };
                 }
                 return day;
-            });
-        });
-    };
+            })
+        );
+    }, [setHevyProgram]);
 
-    // Adds an exercise to the workout day
-    const handleAddExercise = async (folder_id: number, dayOrder: number, exercise: THevyAddExercise) => {
-
+    const handleAddExercise = useCallback(async (folder_id: number, dayOrder: number, exercise: THevyAddExercise) => {
         const sets = hevyAddExerciseToHevySetsConverter(exercise);
-
-        setHevyProgram((prev) => {
-            return prev.map((day) => {
+        setHevyProgram((prev) =>
+            prev.map((day) => {
                 if (Number(day.folder_id) === folder_id && Number(day.order) === dayOrder) {
                     return {
                         ...day,
-                        exercises: [...day.exercises,
+                        exercises: [
+                            ...day.exercises,
                             {
                                 index: day.exercises.length + 1,
                                 title: exercise?.selectedExercise?.title ?? "",
                                 notes: "",
                                 exercise_template_id: exercise?.selectedExercise?.id ?? "",
                                 supersets_id: null,
-                                sets: sets,
+                                sets,
                                 rest_seconds: exercise?.restSeconds ?? null,
                             },
-                            ],
+                        ],
                     };
                 }
                 return day;
-            });
-        });
-    };
+            })
+        );
+    }, [setHevyProgram]);
 
-    // Adds a routine as a day to the selected week
-    const handleAddRoutineAsDay = (routine: THevyRoutine, folder_id: number) => {
-
-        const daysInFolder = hevyProgram.filter((day) => day.folder_id === folder_id);
-
-        if (daysInFolder.length >= 7) {
-            toast.error("Maximum 7 days per week");
-            return;
-        }
-
+    const handleAddRoutineAsDay = useCallback((routine: THevyRoutine, folder_id: number) => {
         setHevyProgram((prev) => {
-            const nthDayOrder = prev.filter((day) => day.folder_id === folder_id).length + 1;
-
+            const daysInFolder = prev.filter((day) => day.folder_id === folder_id);
+            if (daysInFolder.length >= 7) {
+                toast.error("Maximum 7 days per week");
+                return prev;
+            }
+            const nthDayOrder = daysInFolder.length + 1;
             const maxId = Math.max(...prev.map((d) => Number(d.id)));
-
             const newEmptyDay: THevyRoutine = {
                 id: String(maxId + 1),
                 folder_id,
@@ -539,135 +573,112 @@ export function BuildProgramClient() {
                 title: routine.title ?? "",
                 notes: routine.notes ?? "",
             };
-
             return [...prev, newEmptyDay];
         });
-    };
+    }, [setHevyProgram]);
 
-    // Adds a note to the selected day (routine)
-    const handleAddRoutineNote = (folder_id: number, dayOrder: number, prompt: string) => {
-        setHevyProgram((prev) => {
-            return prev.map((day) => {
+    const handleAddRoutineNote = useCallback((folder_id: number, dayOrder: number, prompt: string) => {
+        setHevyProgram((prev) =>
+            prev.map((day) => {
                 if (Number(day.folder_id) === folder_id && Number(day.order) === dayOrder) {
                     return { ...day, notes: prompt };
                 }
                 return day;
-            });
-        });
-    };
+            })
+        );
+    }, [setHevyProgram]);
 
-    // Adds a note to an exercise on a workout day
-    const handleAddExerciseNote = (folder_id: number, dayOrder: number, exerciseIndex: number, prompt: string) => {
-        setHevyProgram((prev) => {
-            return prev.map((day) => {
+    const handleAddExerciseNote = useCallback((folder_id: number, dayOrder: number, exerciseIndex: number, prompt: string) => {
+        setHevyProgram((prev) =>
+            prev.map((day) => {
                 if (Number(day.folder_id) === folder_id && Number(day.order) === dayOrder) {
                     return {
                         ...day,
-                        exercises: day.exercises.map((exercise, index) => index === exerciseIndex ? { ...exercise, notes: prompt } : exercise),
+                        exercises: day.exercises.map((exercise, index) =>
+                            index === exerciseIndex ? { ...exercise, notes: prompt } : exercise
+                        ),
                     };
-                } else {
-                    return day;
                 }
-            });
-        });
-    };
+                return day;
+            })
+        );
+    }, [setHevyProgram]);
 
-    const getNextSupersetId = (day: THevyRoutine) => {
+    const getNextSupersetId = useCallback((day: THevyRoutine) => {
         const currentSupersetIds = Array.from(new Set(
             day.exercises
                 .filter((e) => e.supersets_id !== null)
                 .map((e) => e.supersets_id)
         )).sort((a, b) => (a || 0) - (b || 0));
-
         let nextId = 0;
         for (const currentId of currentSupersetIds) {
-            if (currentId !== nextId) {
-                return nextId;
-            }
+            if (currentId !== nextId) return nextId;
             nextId++;
         }
         return nextId;
-    };
+    }, []);
 
-    const handleCreateSuperset = (dayId: string, selectedExercises: number[]) => {
-        if (selectedExercises.length < 2) {
-            return;
-        }
-        setHevyProgram((prev) => {
-            return prev.map((routine) => {
-                if (routine.id === dayId) {
-                    const nextSupersetId = getNextSupersetId(routine);
-                    return {
-                        ...routine,
-                        exercises: routine.exercises.map((exercise, index) => {
-                            if (selectedExercises.includes(index)) {
-                                return {
-                                    ...exercise,
-                                    supersets_id: nextSupersetId,
-                                };
-                            }
-                            return exercise;
-                        }),
-                    };
-                }
-                return routine;
-            });
-        });
-    };
+    const handleCreateSuperset = useCallback((dayId: string, selectedExercises: number[]) => {
+        if (selectedExercises.length < 2) return;
+        setHevyProgram((prev) =>
+            prev.map((routine) => {
+                if (routine.id !== dayId) return routine;
+                const nextSupersetId = getNextSupersetId(routine);
+                return {
+                    ...routine,
+                    exercises: routine.exercises.map((exercise, index) =>
+                        selectedExercises.includes(index) ? { ...exercise, supersets_id: nextSupersetId } : exercise
+                    ),
+                };
+            })
+        );
+    }, [getNextSupersetId, setHevyProgram]);
 
-    const handleRemoveFromSuperset = (dayId: string, exerciseIndex: number) => {
-        setHevyProgram((prev) => {
-            return prev.map((routine) => {
-                if (routine.id === dayId) {
-                    return {
-                        ...routine,
-                        exercises: routine.exercises.map((exercise, index) => {
-                            if (index === exerciseIndex) {
-                                return {
-                                    ...exercise,
-                                    supersets_id: null,
-                                };
-                            }
-                            return exercise;
-                        }),
-                    };
-                }
-                return routine;
-            });
-        });
-    };
+    const handleRemoveFromSuperset = useCallback((dayId: string, exerciseIndex: number) => {
+        setHevyProgram((prev) =>
+            prev.map((routine) => {
+                if (routine.id !== dayId) return routine;
+                return {
+                    ...routine,
+                    exercises: routine.exercises.map((exercise, index) =>
+                        index === exerciseIndex ? { ...exercise, supersets_id: null } : exercise
+                    ),
+                };
+            })
+        );
+    }, [setHevyProgram]);
 
-    // // Edits an exercise on a workout day
-    const handleEditExercise = async (editExercise: THevyDialog) => {
-
+    const handleEditExercise = useCallback((editExercise: THevyDialog) => {
         if (editExercise.editExercise) {
             const sets = hevyAddExerciseToHevySetsConverter(editExercise.editExercise);
-
-            setHevyProgram((prev) => {
-                return prev.map((day) => {
-                    if (Number(day.folder_id) === editExercise.folder_id && Number(day.order) === editExercise.dayOrder) {
-                        return {
-                            ...day,
-                            exercises: day.exercises.map((exercise, index) => index === editExercise.exerciseIndex ? {
-                                ...exercise,
-                                index: day.exercises.length + 1,
-                                title: editExercise?.editExercise?.selectedExercise?.title ?? "",
-                                notes: exercise?.notes ?? "",
-                                reason: exercise?.reason ?? "",
-                                exercise_template_id: editExercise?.editExercise?.selectedExercise?.id ?? "",
-                                supersets_id: exercise?.supersets_id ?? null,
-                                sets: sets,
-                                rest_seconds: editExercise?.editExercise?.restSeconds ?? null,
-                            } : exercise),
-                        };
+            setHevyProgram((prev) =>
+                prev.map((day) => {
+                    if (Number(day.folder_id) !== editExercise.folder_id || Number(day.order) !== editExercise.dayOrder) {
+                        return day;
                     }
-                    return day;
-                });
-            });
+                    return {
+                        ...day,
+                        exercises: day.exercises.map((exercise, index) =>
+                            index === editExercise.exerciseIndex
+                                ? {
+                                      ...exercise,
+                                      index: day.exercises.length + 1,
+                                      title: editExercise?.editExercise?.selectedExercise?.title ?? "",
+                                      notes: exercise?.notes ?? "",
+                                      reason: exercise?.reason ?? "",
+                                      exercise_template_id: editExercise?.editExercise?.selectedExercise?.id ?? "",
+                                      supersets_id: exercise?.supersets_id ?? null,
+                                      sets,
+                                      rest_seconds: editExercise?.editExercise?.restSeconds ?? null,
+                                  }
+                                : exercise
+                        ),
+                    };
+                })
+            );
         }
-
         setIsEditExercise(false);
-    };
+    }, [setHevyProgram]);
 
     const [focusedCardId, setFocusedCardId] = useState<string>("");
     const isMobile = useIsMobile();
@@ -678,29 +689,9 @@ export function BuildProgramClient() {
         if (isMobile) setMobileTab("program");
     }, [isMobile]);
 
-    const addToUndoStack = useCallback((inversePatch: Operation[]) => {
-        setUndoStack((prev) => [...prev, inversePatch]);
-    }, []);
-
     const handleUndo = useCallback(() => {
-
-        if (undoStack.length === 0) return;
-        const inversePatch: Operation[] = undoStack[undoStack.length - 1];
-        try {
-            const result = applyPatch(
-                hevyProgram as object,
-                inversePatch,
-                true,
-                false
-            ) as { newDocument: THevyRoutine[] };
-            const newDocument = result.newDocument as THevyRoutine[];
-            setHevyProgram(newDocument);
-            setUndoStack((prev) => prev.slice(0, -1));
-        } catch (e) {
-            toast.error("Undo failed.");
-            console.error("Undo failed.", e);
-        }
-    }, [hevyProgram, undoStack]);
+        dispatchEditor({ type: "UNDO" });
+    }, []);
 
     const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
 
@@ -754,7 +745,7 @@ export function BuildProgramClient() {
         }
 
 
-    }, [edit, setIsPreview, resume, isHevy, shared, shareId, empty]);
+    }, [edit, setIsPreview, resume, isHevy, shared, shareId, empty, setHevyProgram]);
 
 
     const request = useMemo(() => ({
@@ -811,13 +802,13 @@ export function BuildProgramClient() {
         localStorage.setItem("prompt", JSON.stringify(search));
     }, [hevyProgram, request, resume, search]);
 
-    const toggleSidebarPosition = () => {
+    const toggleSidebarPosition = useCallback(() => {
         setSidebarPosition((prev) => {
             const newPosition = prev === "left" ? "right" : "left";
             localStorage.setItem(SIDEBAR_POSITION_KEY, newPosition);
             return newPosition;
         });
-    };
+    }, []);
 
     const onToggleExpand = useCallback(() => {
         const panel = sidebarPanelRef.current;
@@ -865,6 +856,189 @@ export function BuildProgramClient() {
     const handleHealthIssues = useCallback((value: IOption[]) => { setHealthIssues(value); }, []);
     const handleProgramTitle = useCallback((value: string) => { setProgramTitle(value); }, []);
     const handleExplore = useCallback(() => { toggleExplore(); }, []);
+
+    // Single props objects for Agent and HevyRoutine to avoid 3x duplication (plan item 4)
+    const agentPropsCommon = useMemo(() => ({
+        search,
+        setHevyProgram,
+        hevyProgram,
+        applyPatchWithUndo,
+        sex,
+        age,
+        daysPerWeek,
+        specificDays,
+        programLength,
+        workoutDuration,
+        activityLevel,
+        goals,
+        specialization,
+        equipment,
+        focusAreas,
+        difficultyLevel,
+        excludeAreas,
+        excludeEquipment,
+        excludeSpecializations,
+        healthIssues,
+        programTitle,
+        explore,
+        handleSex,
+        handleAge,
+        handleDaysPerWeek,
+        handleSpecificDays,
+        handleProgramLength,
+        handleWorkoutDuration,
+        handleActivityLevel,
+        handleGoals,
+        handleSpecialization,
+        handleEquipment,
+        handleFocusAreas,
+        handleDifficultyLevel,
+        handleExcludeAreas,
+        handleExcludeEquipment,
+        handleExcludeSpecializations,
+        handleHealthIssues,
+        handleProgramTitle,
+        handleExplore,
+        messages,
+        setMessages,
+        sendMessageWithContext,
+        isBuilding,
+        handleIsBuilding,
+        isLoading,
+        error: activeError,
+        onRetry: handleRetry,
+        onClearError: handleClearError,
+        retryCount,
+        maxRetries: MAX_RETRIES,
+        onTimeoutError: handleTimeoutError,
+        status,
+        handleSubmit,
+        handleStop,
+        onBuildComplete,
+    }), [
+        search,
+        setHevyProgram,
+        hevyProgram,
+        applyPatchWithUndo,
+        sex,
+        age,
+        daysPerWeek,
+        specificDays,
+        programLength,
+        workoutDuration,
+        activityLevel,
+        goals,
+        specialization,
+        equipment,
+        focusAreas,
+        difficultyLevel,
+        excludeAreas,
+        excludeEquipment,
+        excludeSpecializations,
+        healthIssues,
+        programTitle,
+        explore,
+        handleSex,
+        handleAge,
+        handleDaysPerWeek,
+        handleSpecificDays,
+        handleProgramLength,
+        handleWorkoutDuration,
+        handleActivityLevel,
+        handleGoals,
+        handleSpecialization,
+        handleEquipment,
+        handleFocusAreas,
+        handleDifficultyLevel,
+        handleExcludeAreas,
+        handleExcludeEquipment,
+        handleExcludeSpecializations,
+        handleHealthIssues,
+        handleProgramTitle,
+        handleExplore,
+        messages,
+        setMessages,
+        sendMessageWithContext,
+        isBuilding,
+        handleIsBuilding,
+        isLoading,
+        activeError,
+        handleRetry,
+        handleClearError,
+        retryCount,
+        handleTimeoutError,
+        status,
+        handleSubmit,
+        handleStop,
+        onBuildComplete,
+    ]);
+
+    const routineProps = useMemo(() => ({
+        hevyProgram: orderedProgram,
+        setHevyProgram,
+        isMobile,
+        addExerciseDialog,
+        addNoteDialog,
+        addExerciseNoteDialog,
+        isEditExercise,
+        handleIsEditExercise,
+        handleDuplicateWeek,
+        handleDuplicateDay,
+        handleOpenAddExerciseDialog,
+        handleOpenAddNoteDialog,
+        handleOpenAddExerciseNoteDialog,
+        handleAddDay,
+        handleDeleteDay,
+        handleEditTitle,
+        handleDeleteExercise,
+        handleAddExercise,
+        handleAddRoutineAsDay,
+        handleAddRoutineNote,
+        handleAddExerciseNote,
+        getNextSupersetId,
+        handleCreateSuperset,
+        handleRemoveFromSuperset,
+        handleEditExercise,
+        focusedCardId,
+        setFocusedCardId,
+        numberOfWeeks,
+        numberOfWeeksArr,
+    }), [
+        orderedProgram,
+        setHevyProgram,
+        isMobile,
+        addExerciseDialog,
+        addNoteDialog,
+        addExerciseNoteDialog,
+        isEditExercise,
+        handleIsEditExercise,
+        handleDuplicateWeek,
+        handleDuplicateDay,
+        handleOpenAddExerciseDialog,
+        handleOpenAddNoteDialog,
+        handleOpenAddExerciseNoteDialog,
+        handleAddDay,
+        handleDeleteDay,
+        handleEditTitle,
+        handleDeleteExercise,
+        handleAddExercise,
+        handleAddRoutineAsDay,
+        handleAddRoutineNote,
+        handleAddExerciseNote,
+        getNextSupersetId,
+        handleCreateSuperset,
+        handleRemoveFromSuperset,
+        handleEditExercise,
+        focusedCardId,
+        numberOfWeeks,
+        numberOfWeeksArr,
+    ]);
+
+    const routineContent = hevyProgram.length > 0 ? (
+        <HevyRoutine {...routineProps} />
+    ) : (
+        <BuildProgramSkeleton />
+    );
 
     const undoButton = portalTarget && createPortal(
         undoStack.length > 0 ? (
@@ -927,67 +1101,12 @@ export function BuildProgramClient() {
                             className="border-extraLightGray bg-white sm:bg-extraLightGray dark:bg-extraDarkGray dark:text-white overflow-hidden"
                         >
                             <Agent
-                                search={search}
+                                {...agentPropsCommon}
                                 sidebarPosition={sidebarPosition}
                                 onTogglePosition={toggleSidebarPosition}
                                 onToggleExpand={onToggleExpand}
                                 onToggleHide={handleToggleHide}
                                 isExpanded={isExpanded}
-                                setHevyProgram={setHevyProgram}
-                                hevyProgram={hevyProgram}
-                                addToUndoStack={addToUndoStack}
-                                sex={sex}
-                                age={age}
-                                daysPerWeek={daysPerWeek}
-                                specificDays={specificDays}
-                                programLength={programLength}
-                                workoutDuration={workoutDuration}
-                                activityLevel={activityLevel}
-                                goals={goals}
-                                specialization={specialization}
-                                equipment={equipment}
-                                focusAreas={focusAreas}
-                                difficultyLevel={difficultyLevel}
-                                excludeAreas={excludeAreas}
-                                excludeEquipment={excludeEquipment}
-                                excludeSpecializations={excludeSpecializations}
-                                healthIssues={healthIssues}
-                                programTitle={programTitle}
-                                explore={explore}
-                                handleSex={handleSex}
-                                handleAge={handleAge}
-                                handleDaysPerWeek={handleDaysPerWeek}
-                                handleSpecificDays={handleSpecificDays}
-                                handleProgramLength={handleProgramLength}
-                                handleWorkoutDuration={handleWorkoutDuration}
-                                handleActivityLevel={handleActivityLevel}
-                                handleGoals={handleGoals}
-                                handleSpecialization={handleSpecialization}
-                                handleEquipment={handleEquipment}
-                                handleFocusAreas={handleFocusAreas}
-                                handleDifficultyLevel={handleDifficultyLevel}
-                                handleExcludeAreas={handleExcludeAreas}
-                                handleExcludeEquipment={handleExcludeEquipment}
-                                handleExcludeSpecializations={handleExcludeSpecializations}
-                                handleHealthIssues={handleHealthIssues}
-                                handleProgramTitle={handleProgramTitle}
-                                handleExplore={handleExplore}
-                                messages={messages}
-                                setMessages={setMessages}
-                                sendMessageWithContext={sendMessageWithContext}
-                                isBuilding={isBuilding}
-                                handleIsBuilding={handleIsBuilding}
-                                isLoading={isLoading}
-                                error={activeError}
-                                onRetry={handleRetry}
-                                onClearError={handleClearError}
-                                retryCount={retryCount}
-                                maxRetries={MAX_RETRIES}
-                                onTimeoutError={handleTimeoutError}
-                                status={status}
-                                handleSubmit={handleSubmit}
-                                handleStop={handleStop}
-                                onBuildComplete={onBuildComplete}
                             />
                         </ResizablePanel>
                         {!isChatHidden && <ResizableHandle withHandle className="" />}
@@ -997,43 +1116,9 @@ export function BuildProgramClient() {
                             minSize={30}
                             className="bg-white dark:bg-darkGray"
                         >
-                            { hevyProgram.length > 0 ? (
                             <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
-                                <HevyRoutine
-                                    hevyProgram={orderedProgram}
-                                    setHevyProgram={setHevyProgram}
-                                    isMobile={isMobile}
-                                    addExerciseDialog={addExerciseDialog}
-                                    addNoteDialog={addNoteDialog}
-                                    addExerciseNoteDialog={addExerciseNoteDialog}
-                                    isEditExercise={isEditExercise}
-                                    handleIsEditExercise={handleIsEditExercise}
-                                    handleDuplicateWeek={handleDuplicateWeek}
-                                    handleDuplicateDay={handleDuplicateDay}
-                                    handleOpenAddExerciseDialog={handleOpenAddExerciseDialog}
-                                    handleOpenAddNoteDialog={handleOpenAddNoteDialog}
-                                    handleOpenAddExerciseNoteDialog={handleOpenAddExerciseNoteDialog}
-                                    handleAddDay={handleAddDay}
-                                    handleDeleteDay={handleDeleteDay}
-                                    handleEditTitle={handleEditTitle}
-                                    handleDeleteExercise={handleDeleteExercise}
-                                    handleAddExercise={handleAddExercise}
-                                    handleAddRoutineAsDay={handleAddRoutineAsDay}
-                                    handleAddRoutineNote={handleAddRoutineNote}
-                                    handleAddExerciseNote={handleAddExerciseNote}
-                                    getNextSupersetId={getNextSupersetId}
-                                    handleCreateSuperset={handleCreateSuperset}
-                                    handleRemoveFromSuperset={handleRemoveFromSuperset}
-                                    handleEditExercise={handleEditExercise}
-                                    focusedCardId={focusedCardId}
-                                    setFocusedCardId={setFocusedCardId}
-                                    numberOfWeeks={numberOfWeeks}
-                                    numberOfWeeksArr={numberOfWeeksArr}
-                                />
+                                {routineContent}
                             </div>
-                            ) : (
-                                <BuildProgramSkeleton />
-                            )}
                         </ResizablePanel>
                     </>
                 ) : (
@@ -1044,43 +1129,9 @@ export function BuildProgramClient() {
                             minSize={30}
                             className="bg-white dark:bg-darkGray"
                         >
-                            { hevyProgram.length > 0 ? (
                             <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
-                                <HevyRoutine
-                                    hevyProgram={orderedProgram}
-                                    setHevyProgram={setHevyProgram}
-                                    isMobile={isMobile}
-                                    addExerciseDialog={addExerciseDialog}
-                                    addNoteDialog={addNoteDialog}
-                                    addExerciseNoteDialog={addExerciseNoteDialog}
-                                    isEditExercise={isEditExercise}
-                                    handleIsEditExercise={handleIsEditExercise}
-                                    handleDuplicateWeek={handleDuplicateWeek}
-                                    handleDuplicateDay={handleDuplicateDay}
-                                    handleOpenAddExerciseDialog={handleOpenAddExerciseDialog}
-                                    handleOpenAddNoteDialog={handleOpenAddNoteDialog}
-                                    handleOpenAddExerciseNoteDialog={handleOpenAddExerciseNoteDialog}
-                                    handleAddDay={handleAddDay}
-                                    handleDeleteDay={handleDeleteDay}
-                                    handleEditTitle={handleEditTitle}
-                                    handleDeleteExercise={handleDeleteExercise}
-                                    handleAddExercise={handleAddExercise}
-                                    handleAddRoutineAsDay={handleAddRoutineAsDay}
-                                    handleAddRoutineNote={handleAddRoutineNote}
-                                    handleAddExerciseNote={handleAddExerciseNote}
-                                    getNextSupersetId={getNextSupersetId}
-                                    handleCreateSuperset={handleCreateSuperset}
-                                    handleRemoveFromSuperset={handleRemoveFromSuperset}
-                                    handleEditExercise={handleEditExercise}
-                                    focusedCardId={focusedCardId}
-                                    setFocusedCardId={setFocusedCardId}
-                                    numberOfWeeks={numberOfWeeks}
-                                    numberOfWeeksArr={numberOfWeeksArr}
-                                />
+                                {routineContent}
                             </div>
-                            ) : (
-                                <BuildProgramSkeleton />
-                            )}
                         </ResizablePanel>
                         {!isChatHidden && <ResizableHandle withHandle className="" />}
                         <ResizablePanel
@@ -1100,67 +1151,12 @@ export function BuildProgramClient() {
                             className="border-extraLightGray bg-white sm:bg-extraLightGray dark:bg-extraDarkGray dark:text-white overflow-hidden"
                         >
                             <Agent
-                                search={search}
+                                {...agentPropsCommon}
                                 sidebarPosition={sidebarPosition}
                                 onTogglePosition={toggleSidebarPosition}
                                 onToggleExpand={onToggleExpand}
                                 onToggleHide={handleToggleHide}
                                 isExpanded={isExpanded}
-                                setHevyProgram={setHevyProgram}
-                                hevyProgram={hevyProgram}
-                                addToUndoStack={addToUndoStack}
-                                sex={sex}
-                                age={age}
-                                daysPerWeek={daysPerWeek}
-                                specificDays={specificDays}
-                                programLength={programLength}
-                                workoutDuration={workoutDuration}
-                                activityLevel={activityLevel}
-                                goals={goals}
-                                specialization={specialization}
-                                equipment={equipment}
-                                focusAreas={focusAreas}
-                                difficultyLevel={difficultyLevel}
-                                excludeAreas={excludeAreas}
-                                excludeEquipment={excludeEquipment}
-                                excludeSpecializations={excludeSpecializations}
-                                healthIssues={healthIssues}
-                                programTitle={programTitle}
-                                explore={explore}
-                                handleSex={handleSex}
-                                handleAge={handleAge}
-                                handleDaysPerWeek={handleDaysPerWeek}
-                                handleSpecificDays={handleSpecificDays}
-                                handleProgramLength={handleProgramLength}
-                                handleWorkoutDuration={handleWorkoutDuration}
-                                handleActivityLevel={handleActivityLevel}
-                                handleGoals={handleGoals}
-                                handleSpecialization={handleSpecialization}
-                                handleEquipment={handleEquipment}
-                                handleFocusAreas={handleFocusAreas}
-                                handleDifficultyLevel={handleDifficultyLevel}
-                                handleExcludeAreas={handleExcludeAreas}
-                                handleExcludeEquipment={handleExcludeEquipment}
-                                handleExcludeSpecializations={handleExcludeSpecializations}
-                                handleHealthIssues={handleHealthIssues}
-                                handleProgramTitle={handleProgramTitle}
-                                handleExplore={handleExplore}
-                                messages={messages}
-                                setMessages={setMessages}
-                                sendMessageWithContext={sendMessageWithContext}
-                                isBuilding={isBuilding}
-                                handleIsBuilding={handleIsBuilding}
-                                isLoading={isLoading}
-                                error={activeError}
-                                onRetry={handleRetry}
-                                onClearError={handleClearError}
-                                retryCount={retryCount}
-                                maxRetries={MAX_RETRIES}
-                                onTimeoutError={handleTimeoutError}
-                                status={status}
-                                handleSubmit={handleSubmit}
-                                handleStop={handleStop}
-                                onBuildComplete={onBuildComplete}
                             />
                         </ResizablePanel>
                     </>
@@ -1177,106 +1173,18 @@ export function BuildProgramClient() {
                 }} className="flex flex-col h-full">
                     <TabsContent value="chat" className="flex-1 m-0 mt-0 px-4 pb-20">
                         <Agent
-                            search={search}
+                            {...agentPropsCommon}
                             sidebarPosition="left"
                             onTogglePosition={() => {}}
                             onToggleExpand={() => {}}
+                            onToggleHide={handleToggleHide}
                             isExpanded={false}
-                            setHevyProgram={setHevyProgram}
-                            hevyProgram={hevyProgram}
-                            addToUndoStack={addToUndoStack}
-                            sex={sex}
-                            age={age}
-                            daysPerWeek={daysPerWeek}
-                            specificDays={specificDays}
-                            programLength={programLength}
-                            workoutDuration={workoutDuration}
-                            activityLevel={activityLevel}
-                            goals={goals}
-                            specialization={specialization}
-                            equipment={equipment}
-                            focusAreas={focusAreas}
-                            difficultyLevel={difficultyLevel}
-                            excludeAreas={excludeAreas}
-                            excludeEquipment={excludeEquipment}
-                            excludeSpecializations={excludeSpecializations}
-                            healthIssues={healthIssues}
-                            programTitle={programTitle}
-                            explore={explore}
-                            handleSex={handleSex}
-                            handleAge={handleAge}
-                            handleDaysPerWeek={handleDaysPerWeek}
-                            handleSpecificDays={handleSpecificDays}
-                            handleProgramLength={handleProgramLength}
-                            handleWorkoutDuration={handleWorkoutDuration}
-                            handleActivityLevel={handleActivityLevel}
-                            handleGoals={handleGoals}
-                            handleSpecialization={handleSpecialization}
-                            handleEquipment={handleEquipment}
-                            handleFocusAreas={handleFocusAreas}
-                            handleDifficultyLevel={handleDifficultyLevel}
-                            handleExcludeAreas={handleExcludeAreas}
-                            handleExcludeEquipment={handleExcludeEquipment}
-                            handleExcludeSpecializations={handleExcludeSpecializations}
-                            handleHealthIssues={handleHealthIssues}
-                            handleProgramTitle={handleProgramTitle}
-                            handleExplore={handleExplore}
-                            messages={messages}
-                            setMessages={setMessages}
-                            sendMessageWithContext={sendMessageWithContext}
-                            isBuilding={isBuilding}
-                            handleIsBuilding={handleIsBuilding}
-                            isLoading={isLoading}
-                            error={activeError}
-                            onRetry={handleRetry}
-                            onClearError={handleClearError}
-                            retryCount={retryCount}
-                            maxRetries={MAX_RETRIES}
-                            onTimeoutError={handleTimeoutError}
-                            status={status}
-                            handleSubmit={handleSubmit}
-                            handleStop={handleStop}
-                            onBuildComplete={onBuildComplete}
                         />
                     </TabsContent>
                     <TabsContent value="program" className="flex-1 overflow-y-auto m-0 mt-0 px-4 pb-20 bg-white dark:bg-darkGray">
-                        { hevyProgram.length > 0 ? (
-                            <div className="w-full max-w-full overflow-x-hidden">
-                                <HevyRoutine
-                                    hevyProgram={orderedProgram}
-                                    setHevyProgram={setHevyProgram}
-                                    isMobile={isMobile}
-                                    addExerciseDialog={addExerciseDialog}
-                                    addNoteDialog={addNoteDialog}
-                                    addExerciseNoteDialog={addExerciseNoteDialog}
-                                    isEditExercise={isEditExercise}
-                                    handleIsEditExercise={handleIsEditExercise}
-                                    handleDuplicateWeek={handleDuplicateWeek}
-                                    handleDuplicateDay={handleDuplicateDay}
-                                    handleOpenAddExerciseDialog={handleOpenAddExerciseDialog}
-                                    handleOpenAddNoteDialog={handleOpenAddNoteDialog}
-                                    handleOpenAddExerciseNoteDialog={handleOpenAddExerciseNoteDialog}
-                                    handleAddDay={handleAddDay}
-                                    handleDeleteDay={handleDeleteDay}
-                                    handleEditTitle={handleEditTitle}
-                                    handleDeleteExercise={handleDeleteExercise}
-                                    handleAddExercise={handleAddExercise}
-                                    handleAddRoutineAsDay={handleAddRoutineAsDay}
-                                    handleAddRoutineNote={handleAddRoutineNote}
-                                    handleAddExerciseNote={handleAddExerciseNote}
-                                    getNextSupersetId={getNextSupersetId}
-                                    handleCreateSuperset={handleCreateSuperset}
-                                    handleRemoveFromSuperset={handleRemoveFromSuperset}
-                                    handleEditExercise={handleEditExercise}
-                                    focusedCardId={focusedCardId}
-                                    setFocusedCardId={setFocusedCardId}
-                                    numberOfWeeks={numberOfWeeks}
-                                    numberOfWeeksArr={numberOfWeeksArr}
-                                />
-                            </div>
-                        ) : (
-                            <BuildProgramSkeleton />
-                        )}
+                        <div className="w-full max-w-full overflow-x-hidden">
+                            {routineContent}
+                        </div>
                     </TabsContent>
                     <TabsList className="fixed bottom-0 left-0 right-0 w-full justify-around rounded-none border-t bg-background shadow-lg px-4 py-3 h-[70px] z-50">
                         <TabsTrigger

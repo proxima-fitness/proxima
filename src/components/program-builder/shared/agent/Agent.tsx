@@ -51,7 +51,7 @@ interface IProps {
     isExpanded: boolean;
     setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
     hevyProgram: THevyRoutine[];
-    addToUndoStack: (inversePatch: import("fast-json-patch").Operation[]) => void;
+    applyPatchWithUndo: (newDocument: THevyRoutine[], inversePatch: import("fast-json-patch").Operation[]) => void;
     sex: string;
     age: string;
     daysPerWeek: string;
@@ -119,7 +119,7 @@ export const Agent: React.FC<IProps> = (props) => {
         isExpanded,
         setHevyProgram,
         hevyProgram,
-        addToUndoStack,
+        applyPatchWithUndo,
         daysPerWeek,
         programLength,
         excludeEquipment,
@@ -194,7 +194,7 @@ export const Agent: React.FC<IProps> = (props) => {
                             setMessages={setMessages}
                             setHevyProgram={setHevyProgram}
                             hevyProgram={hevyProgram}
-                            addToUndoStack={addToUndoStack}
+                            applyPatchWithUndo={applyPatchWithUndo}
                             daysPerWeek={daysPerWeek}
                             programLength={programLength}
                             excludeEquipment={excludeEquipment}
