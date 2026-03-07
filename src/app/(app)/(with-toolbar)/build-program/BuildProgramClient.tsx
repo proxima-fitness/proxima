@@ -186,15 +186,17 @@ export function BuildProgramClient() {
     );
 
     const prevErrorRef = useRef<Error | null>(null);
+    const pageViewSentRef = useRef(false);
 
     useEffect(() => {
-        posthog.capture('page_view', { page: '/build-program', user: user?.id ?? "user_id_unknown" });
-    }, [user]);
-
-    useEffect(() => {
+        const userId = user?.id ?? "user_id_unknown";
+        if (user && !pageViewSentRef.current) {
+            posthog.capture('page_view', { page: '/build-program', user: userId });
+            pageViewSentRef.current = true;
+        }
         if (activeError && prevErrorRef.current === null) {
             posthog.capture("ai_agent_error", {
-                user: user?.id ?? "user_id_unknown",
+                user: userId,
                 errorMessage: activeError?.message ?? "unknown",
             });
             prevErrorRef.current = activeError;
@@ -698,13 +700,23 @@ export function BuildProgramClient() {
     }, [hevyProgram, undoStack]);
 
     const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+
     useEffect(() => {
         setPortalTarget(document.getElementById("toolbar-undo-portal"));
+        const savedPosition = localStorage.getItem(SIDEBAR_POSITION_KEY) as "left" | "right" | null;
+        if (savedPosition === "left" || savedPosition === "right") {
+            setSidebarPosition(savedPosition);
+        }
+        const savedSize = localStorage.getItem(SIDEBAR_SIZE_KEY);
+        if (savedSize) {
+            const size = parseFloat(savedSize);
+            if (size >= 20 && size <= EXPANDED_SIZE) {
+                setSidebarSize(size);
+            }
+        }
     }, []);
 
     useEffect(() => {
-        const emptyParam = searchParams.get('empty') ?? '';
-
         const fetchSharedProgram = async () => {
             try {
                 const sharedProgram = await getSharedProgram(Number(shareId));
@@ -734,26 +746,12 @@ export function BuildProgramClient() {
             fetchSharedProgram();
         }
 
-        if (emptyParam === 'true') {
+        if (empty === 'true') {
             setHevyProgram(appendOrderToHevyRoutines(emptyHevyRoutineProgram));
         }
 
 
-    }, [edit, setIsPreview, resume, isHevy, shared, shareId, searchParams]);
-
-    useEffect(() => {
-        const savedPosition = localStorage.getItem(SIDEBAR_POSITION_KEY) as "left" | "right" | null;
-        if (savedPosition === "left" || savedPosition === "right") {
-            setSidebarPosition(savedPosition);
-        }
-        const savedSize = localStorage.getItem(SIDEBAR_SIZE_KEY);
-        if (savedSize) {
-            const size = parseFloat(savedSize);
-            if (size >= 20 && size <= EXPANDED_SIZE) {
-                setSidebarSize(size);
-            }
-        }
-    }, []);
+    }, [edit, setIsPreview, resume, isHevy, shared, shareId, empty]);
 
 
     const request = useMemo(() => ({
