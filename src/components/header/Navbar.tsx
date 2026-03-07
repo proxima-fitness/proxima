@@ -116,50 +116,38 @@ const NavItems = (pathname: string) => {
     // Don't render authentication-dependent content while loading
     if (isLoading) {
         return navLinks.map((nav, index) => {
-            return (
-                <div key={ index }>
-                    { nav.id === "cta" ?
-                        // Temporarily deprecated - mobile app download
-                        // <Link href="/download">
-                        //     <Button text={ "Download App" } styles={ `py-2 dark:bg-darkGray dark:text-white` } />
-                        // </Link>
-                        null
-                    : nav.id === "log-in" ?
-                        <li
-                        key={ nav.id }
+            if (nav.id === "cta") return null;
+            if (nav.id === "log-in") {
+                return (
+                    <li
+                        key={nav.id}
                         className={ `font-main font-normal cursor-pointer text-[16px] text-black ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
                     >
-                            <div className="w-8 h-8 bg-gray-300 rounded-full animate-pulse"></div>
-                        </li>
-                    :
-                        <li
-                            key={ nav.id }
-                            className={ `font-main font-normal cursor-pointer text-[16px] text-black ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
-                        >
-                            <Link href={ `/${nav.id}` } className="flex items-center gap-2">
-                                <NavLinkIcon navId={nav.id} />
-                                {nav.title}
-                            </Link>
-                        </li>
-                    }
-                </div>
+                        <div className="w-8 h-8 bg-gray-300 rounded-full animate-pulse"></div>
+                    </li>
+                );
+            }
+            return (
+                <li
+                    key={nav.id}
+                    className={ `font-main font-normal cursor-pointer text-[16px] text-black ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
+                >
+                    <Link href={ `/${nav.id}` } className="flex items-center gap-2">
+                        <NavLinkIcon navId={nav.id} />
+                        {nav.title}
+                    </Link>
+                </li>
             );
-        })
+        });
     }
 
     if (user) {
         return navLinksToShow.map((nav, index) => {
-            return (
-                <div key={ index }>
-                    { nav.id === "cta" ?
-                        // Temporarily deprecated - mobile app download
-                        // <Link href="/download">
-                        //     <Button text={ "Download App" } styles={ `py-2 dark:bg-offWhite dark:text-black` } />
-                        // </Link>
-                        null
-                    : nav.id === "log-in" ?
-                        <li
-                        key={ nav.id }
+            if (nav.id === "cta") return null;
+            if (nav.id === "log-in") {
+                return (
+                    <li
+                        key={nav.id}
                         className={ `font-main font-normal cursor-pointer text-[16px] text-black ${index === navLinksToShow.length - 1 ? "mr-0" : "mr-10"}` }
                     >
                         <DropdownMenu open={dropdownOpen} onOpenChange={(open) => {
@@ -375,55 +363,49 @@ const NavItems = (pathname: string) => {
                                 }
                               }}
                             />
-                        </li>
-                    :
-                        <li
-                            key={ nav.id }
-                            className={ `font-main font-normal cursor-pointer text-[16px] text-black dark:text-white ${index === navLinksToShow.length - 1 ? "mr-0" : "mr-10"}` }
-                        >
-                            <Link href={ `/${nav.id}` } className="flex items-center gap-2">
-                                <NavLinkIcon navId={nav.id} />
-                                {nav.title}
-                            </Link>
-                        </li>
-                    }
-                </div>
+                    </li>
+                );
+            }
+            return (
+                <li
+                    key={nav.id}
+                    className={ `font-main font-normal cursor-pointer text-[16px] text-black dark:text-white ${index === navLinksToShow.length - 1 ? "mr-0" : "mr-10"}` }
+                >
+                    <Link href={ `/${nav.id}` } className="flex items-center gap-2">
+                        <NavLinkIcon navId={nav.id} />
+                        {nav.title}
+                    </Link>
+                </li>
             );
-        })
+        });
     } else {
         return navLinks.map((nav, index) => {
+            if (nav.id === "cta") return null;
+            if (nav.id === "log-in") {
+                return (
+                    <li
+                        key={nav.id}
+                        className={ `font-main font-normal cursor-pointer text-[16px] text-black dark:text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
+                    >
+                        <Link href={ `/auth/login` } className="flex items-center gap-2">
+                            <NavLinkIcon navId={nav.id} />
+                            {nav.title}
+                        </Link>
+                    </li>
+                );
+            }
             return (
-                <div key={ index }>
-                    { nav.id === "cta" ?
-                        // Temporarily deprecated - mobile app download
-                        // <Link href="/download">
-                        //     <Button text={ "Download App" } styles={ `py-2` } />
-                        // </Link>
-                        null
-                    : nav.id === "log-in" ?
-                        <li
-                            key={ nav.id }
-                            className={ `font-main font-normal cursor-pointer text-[16px] text-black dark:text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
-                        >
-                            <Link href={ `/auth/login` } className="flex items-center gap-2">
-                                <NavLinkIcon navId={nav.id} />
-                                {nav.title}
-                            </Link>
-                            </li>
-                    :
-                        <li
-                            key={ nav.id }
-                            className={ `font-main font-normal cursor-pointer text-[16px] text-black dark:text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
-                        >
-                            <Link href={ `/${nav.id}` } className="flex items-center gap-2">
-                                <NavLinkIcon navId={nav.id} />
-                                {nav.title}
-                            </Link>
-                        </li>
-                    }
-                </div>
+                <li
+                    key={nav.id}
+                    className={ `font-main font-normal cursor-pointer text-[16px] text-black dark:text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
+                >
+                    <Link href={ `/${nav.id}` } className="flex items-center gap-2">
+                        <NavLinkIcon navId={nav.id} />
+                        {nav.title}
+                    </Link>
+                </li>
             );
-        })
+        });
     }
 };
 
