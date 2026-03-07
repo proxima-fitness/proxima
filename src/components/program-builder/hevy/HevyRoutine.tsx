@@ -8,7 +8,7 @@
  * Used by: BuildProgramClient.
  */
 
-import {  useHevyExercises } from "@/api/hooks";
+import { useHevyCustomExercises, useHevyExercises, useHevySecret } from "@/api/hooks";
 import { HevyColumn } from "./HevyColumn";
 import { HevyAddExerciseDialog } from "./HevyAddExerciseDialog";
 import { deFlattenHevyRoutine } from "../utils";
@@ -123,10 +123,12 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
         numberOfWeeksArr,
     } = props;
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { data: exercises }  = useHevyExercises(); // Pre-populating the HevyAddExerciseDialog
-    const { isPreview } = usePreview();
     const { user } = useUserContext();
+    const { data: hevyApiKey } = useHevySecret(user);
+    const { data: customExercises } = useHevyCustomExercises(user, hevyApiKey ?? "");
+    const { data: hevyExercises } = useHevyExercises();
+
+    const { isPreview } = usePreview();
 
 
     const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
@@ -259,6 +261,8 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                                         handleCreateSuperset={ handleCreateSuperset }
                                         handleRemoveFromSuperset={ handleRemoveFromSuperset }
                                         handleAddRoutineAsDay={ handleAddRoutineAsDay }
+                                        customExercises={ customExercises }
+                                        hevyExercises={ hevyExercises }
                                     />
                                 ) }
                             </div>
@@ -292,6 +296,8 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                                         handleCreateSuperset={ handleCreateSuperset }
                                         handleRemoveFromSuperset={ handleRemoveFromSuperset }
                                         handleAddRoutineAsDay={ handleAddRoutineAsDay }
+                                        customExercises={ customExercises }
+                                        hevyExercises={ hevyExercises }
                                     />
                                 ) ) }
                             </div>

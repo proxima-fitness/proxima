@@ -792,14 +792,33 @@ export function BuildProgramClient() {
         explore,
     ]);
 
+    const localStorageDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const DEBOUNCE_MS = 500;
+
     useEffect(() => {
         if (typeof window === "undefined") return;
-        // Don't overwrite localStorage with empty program when resuming
-        if (!(hevyProgram.length === 0 && resume === 'true')) {
-            localStorage.setItem("hevy-program-in-progress", JSON.stringify(hevyProgram));
-            localStorage.setItem("hevy-request", JSON.stringify(request));
+
+        if (localStorageDebounceRef.current) {
+            clearTimeout(localStorageDebounceRef.current);
+            localStorageDebounceRef.current = null;
         }
-        localStorage.setItem("prompt", JSON.stringify(search));
+
+        localStorageDebounceRef.current = setTimeout(() => {
+            localStorageDebounceRef.current = null;
+            // Don't overwrite localStorage with empty program when resuming
+            if (!(hevyProgram.length === 0 && resume === "true")) {
+                localStorage.setItem("hevy-program-in-progress", JSON.stringify(hevyProgram));
+                localStorage.setItem("hevy-request", JSON.stringify(request));
+            }
+            localStorage.setItem("prompt", JSON.stringify(search));
+        }, DEBOUNCE_MS);
+
+        return () => {
+            if (localStorageDebounceRef.current) {
+                clearTimeout(localStorageDebounceRef.current);
+                localStorageDebounceRef.current = null;
+            }
+        };
     }, [hevyProgram, request, resume, search]);
 
     const toggleSidebarPosition = useCallback(() => {

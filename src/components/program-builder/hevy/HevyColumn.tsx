@@ -60,6 +60,10 @@ interface IProps {
     handleRemoveFromSuperset: (dayId: string, exerciseIndex: number) => void;
     /** Adds a Hevy routine as a new day in this week. */
     handleAddRoutineAsDay: (routine: THevyRoutine, folder_id: number) => void;
+    /** Custom exercises from Hevy (for edit in day cards). */
+    customExercises?: THevyExerciseTemplate[];
+    /** Global Hevy exercise library (for edit in day cards). */
+    hevyExercises?: THevyExerciseTemplate[];
 }
 
 /**
@@ -88,6 +92,8 @@ export const HevyColumn: React.FC<IProps> = (props) => {
         handleCreateSuperset,
         handleRemoveFromSuperset,
         handleAddRoutineAsDay,
+        customExercises,
+        hevyExercises,
     } = props;
 
     const [active, setActive] = useState(false);
@@ -270,6 +276,8 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                             setFocusedCardId={ setFocusedCardId }
                             handleCreateSuperset={ handleCreateSuperset }
                             handleRemoveFromSuperset={ handleRemoveFromSuperset }
+                            customExercises={ customExercises }
+                            hevyExercises={ hevyExercises }
                         />
                     );
                 })}

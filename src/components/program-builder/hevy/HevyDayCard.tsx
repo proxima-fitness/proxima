@@ -27,8 +27,6 @@ import { HevyExerciseVisualizer } from "./HevyExerciseVisualizer";
 import { HevyDuplicateDay } from "./HevyDuplicateDay";
 import { IOption } from "@/components/ui/multi-select";
 import { convertHevyExerciseIntoHevyAddExercise } from "../utils";
-import { useHevyCustomExercises, useHevyExercises, useHevySecret } from "@/api/hooks";
-import { useUserContext } from "@/contexts/UserContext";
 import { useTheme } from "next-themes";
 
 /** Props for a single day card within a week column. */
@@ -67,6 +65,10 @@ interface IProps {
     handleCreateSuperset: (dayId: string, selectedExercises: number[]) => void;
     /** Removes an exercise from its superset in this day. */
     handleRemoveFromSuperset: (dayId: string, exerciseIndex: number) => void;
+    /** Custom exercises from Hevy (lifted from HevyRoutine to avoid duplicate subscriptions). */
+    customExercises?: THevyExerciseTemplate[];
+    /** Global Hevy exercise library (lifted from HevyRoutine to avoid duplicate subscriptions). */
+    hevyExercises?: THevyExerciseTemplate[];
 }
 
 /**
@@ -92,6 +94,8 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         setFocusedCardId,
         handleCreateSuperset,
         handleRemoveFromSuperset,
+        customExercises,
+        hevyExercises,
     } = props;
 
     const { resolvedTheme } = useTheme();
@@ -101,11 +105,6 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [selectedExercises, setSelectedExercises] = useState<number[]>([]);
-    const { user } = useUserContext();
-    const { data: hevyApiKey } = useHevySecret(user);
-
-    const { data: customExercises } = useHevyCustomExercises(user, hevyApiKey);
-    const { data: hevyExercises } = useHevyExercises();
 
     const handleEdit = async (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: THevyExercise ) => {
             handleIsEditExercise(true);
@@ -128,70 +127,27 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
-            if (focusedCardId === day.id) {
-                if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "e") {
-                    event.preventDefault();
-                    setEditTitleOpen(true);
-                } else if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "d") {
-                    event.preventDefault();
-                    handleDeleteDay(day.id);
-                }
+            if (focusedCardId !== day.id) return;
+            if (!(event.metaKey || event.ctrlKey)) return;
+            const key = event.key.toLowerCase();
+            if (key === "e") {
+                event.preventDefault();
+                setEditTitleOpen(true);
+            } else if (key === "d") {
+                event.preventDefault();
+                handleDeleteDay(day.id);
+            } else if (key === "p") {
+                event.preventDefault();
+                handleOpenAddNoteDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true });
+            } else if (key === "y") {
+                event.preventDefault();
+                setDuplicateDayOpen(true);
             }
         };
 
         document.addEventListener("keydown", handleKeyDown);
-        return () => {
-            document.removeEventListener("keydown", handleKeyDown);
-        };
+        return () => document.removeEventListener("keydown", handleKeyDown);
     }, [day.id, day.order, focusedCardId, folder_id, handleDeleteDay, handleOpenAddNoteDialog]);
-
-    useEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (focusedCardId === day.id) {
-                if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "g") {
-                    event.preventDefault();
-                    // handleOpenGenerateDayDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true });
-                }
-            }
-        };
-
-        document.addEventListener("keydown", handleKeyDown);
-        return () => {
-            document.removeEventListener("keydown", handleKeyDown);
-        };
-    }, [day.id, day.order, focusedCardId, folder_id, handleDeleteDay]);
-
-    useEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (focusedCardId === day.id) {
-                if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "p") {
-                    event.preventDefault();
-                    handleOpenAddNoteDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true });
-                }
-            }
-        };
-
-        document.addEventListener("keydown", handleKeyDown);
-        return () => {
-            document.removeEventListener("keydown", handleKeyDown);
-        };
-    }, [day.id, day.order, focusedCardId, folder_id, handleDeleteDay, handleOpenAddNoteDialog]);
-
-    useEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (focusedCardId === day.id) {
-                if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "y") {
-                    event.preventDefault();
-                    setDuplicateDayOpen(true);
-                }
-            }
-        };
-
-        document.addEventListener("keydown", handleKeyDown);
-        return () => {
-            document.removeEventListener("keydown", handleKeyDown);
-        };
-    }, [day.id, focusedCardId, setDuplicateDayOpen]);
 
     const toggleExerciseSelection = (exerciseIndex: number) => {
         if (selectedExercises.includes(exerciseIndex)) {
