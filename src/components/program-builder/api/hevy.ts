@@ -1042,7 +1042,6 @@ export const postRoutineProgramToHevyOneFolder = async (
 };
 
 /**
- * @deprecated Use {@link postRoutineProgramToHevyOneFolder} instead.
  *
  * Uploads a full multi-week program to Hevy, creating one folder per week.
  *

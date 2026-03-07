@@ -80,6 +80,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
     const [expandedStep, setExpandedStep] = useState<string>(hevyApiKey ? "step2" : "step1");
     const [inputValue, setInputValue] = useState("");
     const [exportToOneFolder, setExportToOneFolder] = useState(true);
+    const [exportFirstWeekOnly, setExportFirstWeekOnly] = useState(true);
     const [isEditingApiKey, setIsEditingApiKey] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [showThankYouBanner, setShowThankYouBanner] = useState(false);
@@ -248,7 +249,15 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                 ? [{ id: String(programId), title: request.programTitle }]
                 : undefined;
 
-            setUploadProgress({ uploaded: 0, total: hevyRoutines.length, status: "uploading" });
+            const folderIds = hevyRoutines
+                .map((r) => r.folder_id)
+                .filter((id): id is number => typeof id === "number");
+            const firstWeekId = folderIds.length ? Math.min(...folderIds) : 0;
+            const routinesToUpload = exportFirstWeekOnly
+                ? hevyRoutines.filter((r) => r.folder_id === firstWeekId)
+                : hevyRoutines;
+
+            setUploadProgress({ uploaded: 0, total: routinesToUpload.length, status: "uploading" });
             const onProgress = (
                 uploaded: number,
                 total: number,
@@ -260,7 +269,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
 
             if (exportToOneFolderMode) {
                 const hevyResult = await postRoutineProgramToHevyOneFolder(
-                    hevyRoutines,
+                    routinesToUpload,
                     1,
                     hevyApiKey,
                     programTitle,
@@ -278,7 +287,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                     return;
                 }
             } else {
-                const hevyResult = await postRoutineProgramToHevy(hevyRoutines, hevyApiKey, onProgress);
+                const hevyResult = await postRoutineProgramToHevy(routinesToUpload, hevyApiKey, onProgress);
                 if (hevyResult?.success !== true) {
                     const message =
                         hevyResult?.data instanceof Error &&
@@ -483,6 +492,25 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                                     {exportToOneFolder
                                         ? "All weeks will be added to a single folder in Hevy."
                                         : "Each week will be in a separate folder in Hevy."}
+                                </p>
+                                <div className="flex items-center gap-3">
+                                    <Checkbox
+                                        id="export-first-week-only"
+                                        checked={exportFirstWeekOnly}
+                                        onCheckedChange={(checked) =>
+                                            setExportFirstWeekOnly(checked === true)
+                                        }
+                                        className="data-[state=checked]:bg-lightSecondary data-[state=checked]:text-white"
+                                    />
+                                    <Label
+                                        htmlFor="export-first-week-only"
+                                        className="text-sm font-normal cursor-pointer"
+                                    >
+                                        Export first week only
+                                    </Label>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    Your full program is saved to your proxima account.
                                 </p>
                                 {isUploading && uploadProgress && (
                                     <div className="flex flex-col gap-3 w-full">
