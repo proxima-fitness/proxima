@@ -391,14 +391,16 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
 
             setHevyProgram(fullProgram);
             handleIsBuilding(false);
-            onBuildComplete?.();
+            if (isBuilding) {
+                onBuildComplete?.();
+            }
             posthog.capture("generated_a_program", {
                 user: user?.id ?? "user_id_unknown",
                 daysPerWeek: allRoutines.length,
                 programLength: weeks,
             });
         }
-    }, [completedDays.length, totalDays, allRoutines, programLength, setHevyProgram, handleIsBuilding, onBuildComplete, user]);
+    }, [completedDays.length, totalDays, allRoutines, programLength, setHevyProgram, handleIsBuilding, onBuildComplete, user, isBuilding]);
 
     const appliedModifyProgramKeysRef = useRef<Set<string>>(new Set());
 
