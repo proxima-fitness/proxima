@@ -11,6 +11,7 @@
 import posthog from 'posthog-js';
 import { PropsWithChildren, useEffect } from 'react'
 import { PostHogProvider } from 'posthog-js/react';
+import { PostHogIdentify } from '@/utils/PostHogIdentify';
 
 /**
  * Initializes the PostHog client and provides it to descendant components.
@@ -35,6 +36,7 @@ export function PostHogClientProvider({ children }: PropsWithChildren) {
 
     return (
         <PostHogProvider client={posthog}>
+            <PostHogIdentify />
             {children}
         </PostHogProvider>
   )
