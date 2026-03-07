@@ -40,6 +40,15 @@ import { useUserContext } from "@/contexts/UserContext";
 import { quickTriggerSuggestionChips } from "@/assets/constants";
 import type { FileUIPart } from "ai";
 import { memo, useCallback, useState } from "react";
+import { Questions } from "@/components/ui/questions";
+import type { IQuestion } from "@/components/ui/questions";
+
+/** Payload when questions are shown in place of the prompt input (e.g. after getMoreInfoQuestions tool). */
+export interface IQuestionsPayload {
+  questions: IQuestion[];
+  userRequest?: string;
+  initialAnswers?: Record<string, string | string[]>;
+}
 
 /** Props for the chat input container. */
 interface IProps {
@@ -48,6 +57,13 @@ interface IProps {
   handleStop: () => void;
   /** Whether to show quick-trigger suggestion chips (e.g. when no messages). */
   showSuggestions?: boolean;
+  /** When set, show Questions in place of PromptInput until user completes or skips. */
+  questionsPayload?: IQuestionsPayload | null;
+  onQuestionsComplete?: (answers: Record<string, string | string[]>) => void;
+  onQuestionsSkip?: () => void;
+  /** Called when user dismisses the questions without building (e.g. close button). */
+  onQuestionsDismiss?: () => void;
+  isBuilding?: boolean;
 }
 
 interface IAttachmentItemProps {
@@ -277,17 +293,28 @@ const ChatInputBody = ({
   );
 };
 
-/** Chat footer: suggestions, upgrade banner when not pro, and PromptInput with attachments. */
+/** Chat footer: suggestions, upgrade banner when not pro, and PromptInput or Questions. */
 export const Chat: React.FC<IProps> = (props) => {
-  const { isLoading, handleSubmit, handleStop, showSuggestions = true } = props;
+  const {
+    isLoading,
+    handleSubmit,
+    handleStop,
+    showSuggestions = true,
+    questionsPayload,
+    onQuestionsComplete,
+    onQuestionsSkip,
+    onQuestionsDismiss,
+    isBuilding = false,
+  } = props;
   const { user } = useUserContext();
   const { data: featureLimits } = useMyFeatureLimits(user);
   const outOfCredits = featureLimits != null && featureLimits.remaining_llm_requests === 0;
   const isPro = featureLimits?.has_active_subscription === true;
+  const showQuestions = questionsPayload != null && questionsPayload.questions?.length > 0;
 
   return (
     <div className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl shrink-0 px-3 pb-3 md:px-5 md:pb-5 max-sm:fixed max-sm:bottom-[70px] max-sm:left-0 max-sm:right-0 max-sm:px-4 max-sm:bg-background max-sm:dark:bg-extraDarkGray pt-4 max-sm:pt-2">
-      {showSuggestions && (
+      {showSuggestions && !showQuestions && (
         <Suggestions className="mb-3">
           {quickTriggerSuggestionChips.map((label) => (
             <Suggestion
@@ -303,18 +330,33 @@ export const Chat: React.FC<IProps> = (props) => {
         <UpgradeBanner remainingRequests={featureLimits.remaining_llm_requests} totalRequests={featureLimits.max_monthly_llm_requests} user={user} />
       )}
       <div className="flex w-full">
-        <PromptInputProvider>
-          <PromptInput
-            onSubmit={({ text, files }) => handleSubmit(text, files)}
-            className="min-w-0 flex-1 sm:bg-white bg-extraLightGray dark:bg-darkGray relative z-10 rounded-3xl p-0 pt-1 max-sm:pt-0 shadow-2xs"
-          >
-            <ChatInputBody
-            isLoading={isLoading}
-            outOfCredits={outOfCredits}
-            handleStop={handleStop}
-          />
-        </PromptInput>
-        </PromptInputProvider>
+        {showQuestions ? (
+          <div className="min-w-0 flex-1 sm:bg-white bg-extraLightGray dark:bg-darkGray relative z-10 p-0 rounded-md max-sm:pt-0 shadow-2xs overflow-hidden">
+            <Questions
+              className="w-full min-w-full"
+              questions={questionsPayload.questions}
+              initialAnswers={questionsPayload.initialAnswers}
+              onComplete={onQuestionsComplete}
+              onSkip={onQuestionsSkip}
+              onDismiss={onQuestionsDismiss}
+              isBuilding={isBuilding}
+              isLoading={isLoading}
+            />
+          </div>
+        ) : (
+          <PromptInputProvider>
+            <PromptInput
+              onSubmit={({ text, files }) => handleSubmit(text, files)}
+              className="min-w-0 flex-1 sm:bg-white bg-extraLightGray dark:bg-darkGray relative z-10 rounded-3xl p-0 pt-1 max-sm:pt-0 shadow-2xs"
+            >
+              <ChatInputBody
+                isLoading={isLoading}
+                outOfCredits={outOfCredits}
+                handleStop={handleStop}
+              />
+            </PromptInput>
+          </PromptInputProvider>
+        )}
       </div>
     </div>
   );

@@ -12,9 +12,12 @@ import {
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation"
 import { MessageSquare } from "lucide-react"
-import { useMemo } from "react"
+import { useMemo, useCallback, useState } from "react"
 import { IOption } from "@/components/ui/multi-select"
 import { type ChatStatus, FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai"
+import type { IQuestion } from "@/components/ui/questions"
+import { equipmentOptions, healthIssuesOptions } from "@/assets/constants"
+import { generateEmptyHevyProgram, inferDaysPerWeek, inferProgramLength } from "@/components/program-builder/utils/helpers"
 
 import { Shimmer } from "@/components/ai-elements/shimmer"
 import { Chat } from "./Chat"
@@ -169,6 +172,105 @@ export const Agent: React.FC<IProps> = (props) => {
         return "Thinking…"
     }, [isLoading, messages, chatStatus])
 
+    /** When the last message is assistant with getMoreInfoQuestions tool output, show questions in footer instead of input. */
+    const activeQuestionsPayload = useMemo(() => {
+        const lastMessage = messages[messages.length - 1]
+        if (!lastMessage || lastMessage.role !== "assistant" || !lastMessage.parts?.length) return null
+        const part = lastMessage.parts.find(
+            (p) => typeof p === "object" && p !== null && "type" in p && (p as { type: string }).type === "tool-getMoreInfoQuestions"
+        )
+        const toolOutput = part && "output" in part ? (part as { output?: { questions?: IQuestion[]; userRequest?: string } }).output : undefined
+        if (!toolOutput?.questions || !Array.isArray(toolOutput.questions)) return null
+        const initialAnswers: Record<string, string | string[]> = {}
+        if (programLength) initialAnswers["program-length"] = programLength
+        if (daysPerWeek) initialAnswers["days-per-week"] = daysPerWeek
+        if (excludeEquipment?.length) initialAnswers["exclude-equipment"] = excludeEquipment.map((o) => o.value)
+        if (healthIssues?.length) initialAnswers["health-issues"] = healthIssues.map((o) => o.label).join(", ")
+        return {
+            questions: toolOutput.questions,
+            userRequest: toolOutput.userRequest ?? "",
+            initialAnswers: Object.keys(initialAnswers).length > 0 ? initialAnswers : undefined,
+        }
+    }, [messages, programLength, daysPerWeek, excludeEquipment, healthIssues])
+
+    const [dismissedForMessageId, setDismissedForMessageId] = useState<string | null>(null)
+    const lastMessage = messages[messages.length - 1]
+    const showQuestionsPayload =
+        activeQuestionsPayload && dismissedForMessageId !== lastMessage?.id ? activeQuestionsPayload : null
+
+    const convertStringArrayToOptions = useCallback((values: string[], options: IOption[]): IOption[] => {
+        return values
+            .map((value) => options.find((opt) => opt.value === value))
+            .filter((opt): opt is IOption => opt !== undefined)
+    }, [])
+
+    const handleQuestionsComplete = useCallback(
+        (answers: Record<string, string | string[]>) => {
+            const userRequest = (activeQuestionsPayload?.userRequest ?? answers["userRequest"] ?? "") as string
+            let programLengthValue: "" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "11" | "12" = ""
+            let daysPerWeekValue = ""
+            let excludeEquipmentValue: IOption[] = []
+            let healthIssuesValue: IOption[] = []
+
+            if (answers["days-per-week"] && (answers["days-per-week"] as string).length > 0) {
+                daysPerWeekValue = answers["days-per-week"] as string
+            } else {
+                daysPerWeekValue = daysPerWeek || inferDaysPerWeek(userRequest) || "6"
+            }
+            if (answers["exclude-equipment"] && Array.isArray(answers["exclude-equipment"])) {
+                excludeEquipmentValue = convertStringArrayToOptions(answers["exclude-equipment"], equipmentOptions)
+            }
+            const healthIssuesAnswer = answers["health-issues"]
+            if (typeof healthIssuesAnswer === "string") {
+                const trimmed = (healthIssuesAnswer as string).trim()
+                if (trimmed) healthIssuesValue = [{ value: trimmed, label: trimmed }]
+            } else if (healthIssuesAnswer && Array.isArray(healthIssuesAnswer)) {
+                healthIssuesValue = convertStringArrayToOptions(healthIssuesAnswer, healthIssuesOptions)
+            }
+            if (answers["program-length"] && (answers["program-length"] as string).length > 0) {
+                programLengthValue = answers["program-length"] as "" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "11" | "12"
+            } else {
+                programLengthValue = programLength || inferProgramLength(userRequest) || "12"
+            }
+
+            sendMessageWithContext(
+                { text: "Build my program" },
+                {
+                    body: {
+                        daysPerWeek: daysPerWeekValue ? Number(daysPerWeekValue) : undefined,
+                        programLength: programLengthValue ? Number(programLengthValue) : undefined,
+                        excludeEquipment: excludeEquipmentValue?.length ? excludeEquipmentValue.map((eq) => eq.value).join(", ") : undefined,
+                        healthIssues: healthIssuesValue?.length ? healthIssuesValue.map((issue) => issue.value).join(", ") : undefined,
+                    },
+                }
+            )
+            handleIsBuilding(true)
+            handleDaysPerWeek(daysPerWeekValue)
+            handleProgramLength(programLengthValue)
+            if (excludeEquipmentValue.length > 0) handleExcludeEquipment(excludeEquipmentValue)
+            if (healthIssuesValue.length > 0) handleHealthIssues(healthIssuesValue)
+            setHevyProgram(generateEmptyHevyProgram(programLengthValue, daysPerWeekValue))
+        },
+        [
+            activeQuestionsPayload?.userRequest,
+            sendMessageWithContext,
+            handleIsBuilding,
+            handleDaysPerWeek,
+            handleProgramLength,
+            handleExcludeEquipment,
+            handleHealthIssues,
+            setHevyProgram,
+            convertStringArrayToOptions,
+            daysPerWeek,
+            programLength,
+        ]
+    )
+
+    const handleQuestionsSkip = useCallback(() => {
+        sendMessageWithContext({ text: "Build my program" })
+        handleIsBuilding(true)
+    }, [sendMessageWithContext, handleIsBuilding])
+
     return (
         <div className="flex flex-col h-[85vh] max-h-full min-h-0">
             { /* The agent's navbar for toggling between chat and filters view */ }
@@ -231,7 +333,12 @@ export const Agent: React.FC<IProps> = (props) => {
                 isLoading={isLoading}
                 handleSubmit={handleSubmit}
                 handleStop={handleStop}
-                showSuggestions={messages.length === 0}
+                showSuggestions={messages.length === 0 && !showQuestionsPayload}
+                questionsPayload={showQuestionsPayload}
+                onQuestionsComplete={handleQuestionsComplete}
+                onQuestionsSkip={handleQuestionsSkip}
+                onQuestionsDismiss={() => lastMessage?.id && setDismissedForMessageId(lastMessage.id)}
+                isBuilding={isBuilding}
             />
         </div>
     )

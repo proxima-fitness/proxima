@@ -46,6 +46,8 @@ interface IQuestionsProps {
   questions: IQuestion[]
   onComplete?: (answers: Record<string, string | string[]>) => void
   onSkip?: () => void
+  /** When provided, shows a close (X) button in the header instead of the help icon; called when user dismisses without completing. */
+  onDismiss?: () => void
   className?: string
   isBuilding?: boolean
   isLoading?: boolean
@@ -428,6 +430,7 @@ export function Questions({
   questions,
   onComplete,
   onSkip,
+  onDismiss,
   isBuilding,
   isLoading,
   className,
@@ -676,7 +679,18 @@ export function Questions({
       {/* Header */}
       <div className="flex items-center justify-between border-b px-4 py-3">
         <div className="flex items-center gap-2 text-sm font-medium">
-          <CircleHelp className="size-4 text-muted-foreground" />
+          {onDismiss ? (
+            <button
+              type="button"
+              onClick={onDismiss}
+              className="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              aria-label="Close survey"
+            >
+              <X className="size-4" />
+            </button>
+          ) : (
+            <CircleHelp className="size-4 text-muted-foreground" />
+          )}
           <span>Questions</span>
         </div>
         <div className="flex items-center gap-1 text-sm text-muted-foreground">

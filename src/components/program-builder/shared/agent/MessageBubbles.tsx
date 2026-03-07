@@ -4,7 +4,7 @@
  * Depends on: message, tool, reasoning, attachments, ModifyProgramProgress, applyModifyProgramPatchesFromMessages, helpers. Used by: Agent.
  */
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, useRef, useMemo, useCallback, useState } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import {
     Message,
     MessageAction,
@@ -17,9 +17,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { Copy, ThumbsUp, ThumbsDown, Pencil, Trash, AlertCircle, RefreshCw, FileText } from "lucide-react"
 import { type ChatStatus, FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai";
-import { Questions, IQuestion } from "@/components/ui/questions";
+import type { IQuestion } from "@/components/ui/questions";
 import { IOption } from "@/components/ui/multi-select";
-import { applyModifyProgramPatchesFromMessages, getModifyProgramObjectivesByRoutine, inferDaysPerWeek, inferProgramLength } from "@/components/program-builder/utils/helpers";
+import { applyModifyProgramPatchesFromMessages, getModifyProgramObjectivesByRoutine } from "@/components/program-builder/utils/helpers";
 import {
     Reasoning,
     ReasoningContent,
@@ -28,7 +28,6 @@ import {
 import { Tool, ToolContent, ToolHeader } from "@/components/ai-elements/tool";
 import type { ToolPart } from "@/components/ai-elements/tool";
 import { ModifyProgramProgress } from "./ModifyProgramProgress";
-import { equipmentOptions, healthIssuesOptions } from "@/assets/constants";
 import { toast } from "sonner";
 import Link from "next/link";
 import { type Operation } from "fast-json-patch";
@@ -191,42 +190,6 @@ const GenerationError: React.FC<{
     );
 };
 
-/**
- * Builds empty THevyRoutine[] with one routine per week/day; folder_id = week index, order = day. Used to initialize program before buildRoutine fills it.
- */
-export const generateEmptyHevyProgram = (weeksValue: string, daysValue: string): THevyRoutine[] => {
-    const weeks = weeksValue ? Number(weeksValue) : 0;
-    const days = daysValue ? Number(daysValue) : 0;
-
-    if (!weeks || !days || weeks <= 0 || days <= 0) {
-        return [];
-    }
-
-    const now = new Date().toISOString();
-    const routines: THevyRoutine[] = [];
-    let routineIndex = 0;
-
-    // For each week (0-indexed folder_id)
-    for (let weekIndex = 0; weekIndex < weeks; weekIndex++) {
-        // For each day in the week (1-indexed order)
-        for (let dayIndex = 1; dayIndex <= days; dayIndex++) {
-            routines.push({
-                id: String(routineIndex + 1),
-                title: "",
-                folder_id: weekIndex,
-                order: String(dayIndex),
-                exercises: [],
-                notes: "",
-                created_at: now,
-                updated_at: now,
-            });
-            routineIndex++;
-        }
-    }
-
-    return routines;
-};
-
 /** Props: messages/setMessages, program state (hevyProgram, setHevyProgram, applyPatchWithUndo), filter handlers (programLength, daysPerWeek, exclude, health), sendMessage, isBuilding, loading/error/retry, status. */
 interface IProps {
     messages: UIMessage<unknown, UIDataTypes, UITools>[];
@@ -284,18 +247,11 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         messages,
         setMessages,
         setHevyProgram,
-        handleIsBuilding,
         sendMessage,
-        handleProgramLength,
-        handleDaysPerWeek,
-        handleExcludeEquipment,
-        handleHealthIssues,
+        handleIsBuilding,
         isBuilding,
         programLength,
         daysPerWeek,
-        excludeEquipment,
-        healthIssues,
-        isLoading,
         status,
         error,
         onRetry,
@@ -304,7 +260,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         onTimeoutError,
         hevyProgram,
         applyPatchWithUndo,
-        onBuildComplete
+        onBuildComplete,
     } = props;
 
     const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
@@ -458,108 +414,6 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
             posthog.capture("modified_a_program", { user: user?.id ?? "user_id_unknown" });
         }
     }, [messages, hevyProgram, applyPatchWithUndo, user]);
-
-    const convertStringArrayToOptions = useCallback((
-        values: string[],
-        options: IOption[]
-    ): IOption[] => {
-        return values
-            .map((value) => options.find(opt => opt.value === value))
-            .filter((opt): opt is IOption => opt !== undefined);
-    }, []);
-
-    const handleComplete = useCallback((answers: Record<string, string | string[]>) => {
-        // Compute all values for sendMessage first, then batch state updates, then send
-        let programLengthValue: ""|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12" = "";
-        let daysPerWeekValue = "";
-        let excludeEquipmentValue: IOption[] = [];
-        let healthIssuesValue: IOption[] = [];
-
-        // Compute daysPerWeek value
-        if (answers['days-per-week'] && answers['days-per-week'].length > 0) {
-            daysPerWeekValue = answers['days-per-week'] as string;
-        } else {
-            const inferredDays = inferDaysPerWeek(answers['userRequest'] as string);
-            daysPerWeekValue = daysPerWeek || inferredDays || "6";
-        }
-
-        // Compute excludeEquipment value
-        if (answers['exclude-equipment'] && Array.isArray(answers['exclude-equipment'])) {
-            excludeEquipmentValue = convertStringArrayToOptions(
-                answers['exclude-equipment'],
-                equipmentOptions
-            );
-        }
-
-        // Compute healthIssues value (string from text-with-quickfill, or array from legacy multi-select)
-        const healthIssuesAnswer = answers['health-issues'];
-        if (typeof healthIssuesAnswer === 'string') {
-            const trimmed = healthIssuesAnswer.trim();
-            if (trimmed) {
-                healthIssuesValue = [{ value: trimmed, label: trimmed }];
-            }
-        } else if (healthIssuesAnswer && Array.isArray(healthIssuesAnswer)) {
-            healthIssuesValue = convertStringArrayToOptions(
-                healthIssuesAnswer,
-                healthIssuesOptions
-            );
-        }
-
-        // Compute programLength value
-        if (answers['program-length'] && answers['program-length'].length > 0) {
-            programLengthValue = answers['program-length'] as ""|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12";
-        } else {
-            const inferredLength = inferProgramLength(answers['userRequest'] as string);
-            programLengthValue = programLength || inferredLength || "12";
-        }
-
-        // 2. MAKE THE API CALL with computed values (before state updates)
-        sendMessage(
-            { text: "Build my program" },
-            {
-                body: {
-                    daysPerWeek: daysPerWeekValue ? Number(daysPerWeekValue) : undefined,
-                    programLength: programLengthValue ? Number(programLengthValue) : undefined,
-                    excludeEquipment: excludeEquipmentValue?.length > 0 ? excludeEquipmentValue?.map(eq => eq.value).join(', ') : undefined,
-                    healthIssues: healthIssuesValue?.length > 0 ? healthIssuesValue.map(issue => issue.value).join(', ') : undefined,
-                }
-            }
-        );
-
-        // 3. UPDATE UI STATE AFTER (these don't affect the API call)
-        handleIsBuilding(true);
-        handleDaysPerWeek(daysPerWeekValue);
-        handleProgramLength(programLengthValue);
-        if (excludeEquipmentValue.length > 0) {
-            handleExcludeEquipment(excludeEquipmentValue);
-        }
-        if (healthIssuesValue.length > 0) {
-            handleHealthIssues(healthIssuesValue);
-        }
-
-        const emptyProgram = generateEmptyHevyProgram(programLengthValue, daysPerWeekValue);
-        setHevyProgram(emptyProgram);
-    }, [
-        sendMessage,
-        handleIsBuilding,
-        handleDaysPerWeek,
-        handleProgramLength,
-        handleExcludeEquipment,
-        handleHealthIssues,
-        setHevyProgram,
-        convertStringArrayToOptions,
-        daysPerWeek,
-        programLength
-    ]);
-
-    // Memoized handleSkip - calls API first, then updates state
-    const handleSkip = useCallback(() => {
-        // 1. Make the API call first
-        sendMessage({ text: "Build my program" });
-
-        // 2. Update UI state after
-        handleIsBuilding(true);
-    }, [sendMessage, handleIsBuilding]);
 
     return (
 
@@ -831,37 +685,23 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                         }
                                         case "tool-getMoreInfoQuestions": {
                                             const toolOutput = part.output as {
-                                                questions?: IQuestion[],
-                                                userRequest?: string,
-                                                message?: string
+                                                questions?: IQuestion[];
+                                                userRequest?: string;
+                                                message?: string;
                                             };
                                             const toolState = (part as { state?: ToolPart["state"] }).state ?? "output-available";
-
-                                            if (toolOutput?.questions && Array.isArray(toolOutput.questions)) {
-                                                const initialAnswers: Record<string, string | string[]> = {};
-                                                if (programLength) initialAnswers["program-length"] = programLength;
-                                                if (daysPerWeek) initialAnswers["days-per-week"] = daysPerWeek;
-                                                if (excludeEquipment?.length) initialAnswers["exclude-equipment"] = excludeEquipment.map((o) => o.value);
-                                                if (healthIssues?.length) initialAnswers["health-issues"] = healthIssues.map((o) => o.label).join(", ");
-                                                return (
-                                                    <Tool key={`${message.id}-${index}-questions`} defaultOpen className="mx-auto w-full max-w-3xl px-2 md:px-4 pt-2">
-                                                        <ToolHeader type="tool-getMoreInfoQuestions" state={toolState} title="Survey" />
-                                                        <ToolContent className=" w-full">
-                                                                <Questions
-                                                                    className="w-full min-w-full"
-                                                                    questions={toolOutput.questions}
-                                                                    initialAnswers={Object.keys(initialAnswers).length > 0 ? initialAnswers : undefined}
-                                                                    onComplete={handleComplete}
-                                                                    onSkip={handleSkip}
-                                                                    isBuilding={isBuilding}
-                                                                    isLoading={isLoading}
-                                                                />
-                                                        </ToolContent>
-                                                    </Tool>
-                                                );
-                                            }
-
-                                            return null;
+                                            if (!toolOutput?.questions || !Array.isArray(toolOutput.questions)) return null;
+                                            const isActiveSurvey = isLastMessage;
+                                            return (
+                                                <Tool key={`${message.id}-${index}-questions`} defaultOpen className="mx-auto w-full max-w-3xl px-2 md:px-4 pt-2">
+                                                    <ToolHeader type="tool-getMoreInfoQuestions" state={toolState} title="Survey" />
+                                                    <ToolContent className="w-full">
+                                                        <p className="text-sm text-muted-foreground py-2">
+                                                            {isActiveSurvey ? "Complete the survey below." : "Survey completed."}
+                                                        </p>
+                                                    </ToolContent>
+                                                </Tool>
+                                            );
                                         }
                                         case "tool-buildRoutine": {
                                             // Show progress UI for buildRoutine calls

@@ -45,6 +45,39 @@ export const getMaxFolderId = (routines: THevyRoutine[]): number => {
         }, routines[0].folder_id);
 };
 
+/**
+ * Builds empty THevyRoutine[] with one routine per week/day; folder_id = week index, order = day. Used to initialize program before buildRoutine fills it.
+ */
+export const generateEmptyHevyProgram = (weeksValue: string, daysValue: string): THevyRoutine[] => {
+    const weeks = weeksValue ? Number(weeksValue) : 0;
+    const days = daysValue ? Number(daysValue) : 0;
+
+    if (!weeks || !days || weeks <= 0 || days <= 0) {
+        return [];
+    }
+
+    const now = new Date().toISOString();
+    const routines: THevyRoutine[] = [];
+    let routineIndex = 0;
+
+    for (let weekIndex = 0; weekIndex < weeks; weekIndex++) {
+        for (let dayIndex = 1; dayIndex <= days; dayIndex++) {
+            routines.push({
+                id: String(routineIndex + 1),
+                title: "",
+                folder_id: weekIndex,
+                order: String(dayIndex),
+                exercises: [],
+                notes: "",
+                created_at: now,
+                updated_at: now,
+            });
+            routineIndex++;
+        }
+    }
+
+    return routines;
+};
 
 /**
  * Attempts to extract the number of training days per week (1–7) from
