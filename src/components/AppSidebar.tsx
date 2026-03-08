@@ -4,14 +4,13 @@
 /**
  * @module AppSidebar
  * Main app sidebar: collapsible icon/full layout on desktop, sheet on mobile.
- * Nav links, units, theme, Connect Hevy, pricing/upgrade, user avatar, logout,
- * and test-user tier toggle.
+ * Nav links, footer avatar (opens settings: theme, units, subscription, Connect Hevy,
+ * delete account, log out), and test-user tier toggle.
  * Depends on: UI Sidebar, UserContext, feature limits, authentication API, TestUserTierToggle.
  * Used by: app layout (sidebar slot).
  */
 import {
     Home,
-    LogIn,
     LogOut,
     PersonStanding,
     Search,
@@ -25,6 +24,7 @@ import {
     Moon,
     Monitor,
     PanelLeft,
+    LogIn,
 } from "lucide-react";
 import {
     Sidebar,
@@ -40,6 +40,14 @@ import {
     SidebarSeparator,
     useSidebar,
 } from "@/components/ui/sidebar";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useUserContext } from "@/contexts/UserContext";
 import { useProfilePictureContext } from "@/contexts/ProfilePictureContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -152,192 +160,14 @@ export function AppSidebar() {
                         </SidebarGroupContent>
                     </SidebarGroup>
 
-                    <SidebarSeparator />
-
-                    {/* Theme */}
-                    <SidebarGroup>
-                        <SidebarGroupLabel>Theme</SidebarGroupLabel>
-                        <SidebarGroupContent>
-                            <SidebarMenu>
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton
-                                        isActive={theme === "light"}
-                                        onClick={() => setTheme("light")}
-                                        tooltip="Light theme"
-                                    >
-                                        <Sun className="shrink-0" />
-                                        <span className="font-main">Light</span>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton
-                                        isActive={theme === "dark"}
-                                        onClick={() => setTheme("dark")}
-                                        tooltip="Dark theme"
-                                    >
-                                        <Moon className="shrink-0" />
-                                        <span className="font-main">Dark</span>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton
-                                        isActive={theme === "system"}
-                                        onClick={() => setTheme("system")}
-                                        tooltip="System theme"
-                                    >
-                                        <Monitor className="shrink-0" />
-                                        <span className="font-main">System</span>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            </SidebarMenu>
-                        </SidebarGroupContent>
-                    </SidebarGroup>
-
-                    {/* Units */}
-                    <SidebarGroup>
-                        <SidebarGroupLabel>Units</SidebarGroupLabel>
-                        <SidebarGroupContent>
-                            <SidebarMenu>
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton
-                                        isActive={isInLbs}
-                                        onClick={() => { if (!isInLbs) toggleModePreference(); }}
-                                        tooltip="Pounds (lbs)"
-                                    >
-                                        lbs
-                                        <span className="font-main">Pounds (lbs)</span>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton
-                                        isActive={!isInLbs}
-                                        onClick={() => { if (isInLbs) toggleModePreference(); }}
-                                        tooltip="Kilograms (kg)"
-                                    >
-                                        kg
-                                        <span className="font-main">Kilograms (kg)</span>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            </SidebarMenu>
-                        </SidebarGroupContent>
-                    </SidebarGroup>
-
-                    {!isLoading && (
+                    {!isLoading && user && isTestUser(user) && state !== "collapsed" && (
                         <>
                             <SidebarSeparator />
                             <SidebarGroup>
                                 <SidebarGroupContent>
-                                    <SidebarMenu>
-                                        {!(user && isPro) && (
-                                            <SidebarMenuItem>
-                                                <SidebarMenuButton asChild tooltip={user ? "Upgrade" : "Pricing"}>
-                                                    <a href="/pricing">
-                                                        <Crown className="shrink-0" />
-                                                        <span className="font-main">
-                                                            {user ? "Upgrade" : "Pricing"}
-                                                        </span>
-                                                    </a>
-                                                </SidebarMenuButton>
-                                            </SidebarMenuItem>
-                                        )}
-                                        {user && isPro && stripePortalUrl && (
-                                            <>
-                                                <SidebarMenuItem>
-                                                    <div className="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-sidebar-foreground/70">
-                                                        <Crown className="size-4 shrink-0" />
-                                                        <span className="group-data-[collapsible=icon]:hidden">
-                                                            Pro account
-                                                        </span>
-                                                    </div>
-                                                </SidebarMenuItem>
-                                                <SidebarMenuItem>
-                                                    <SidebarMenuButton asChild tooltip="Manage Subscription">
-                                                        <a href={stripePortalUrl}>
-                                                            <Receipt className="shrink-0" />
-                                                            <span className="font-main">
-                                                                Manage Subscription
-                                                            </span>
-                                                        </a>
-                                                    </SidebarMenuButton>
-                                                </SidebarMenuItem>
-                                            </>
-                                        )}
-                                        {user && (
-                                            <SidebarMenuItem>
-                                                <SidebarMenuButton
-                                                    onClick={() => setOpenConnectHevyDialog(true)}
-                                                    tooltip={
-                                                        hevyApiKey && hevyApiKey.length > 0
-                                                            ? "Connected to Hevy"
-                                                            : "Connect Hevy App"
-                                                    }
-                                                >
-                                                    {hevyApiKey && hevyApiKey.length > 0 ? (
-                                                        <>
-                                                            <LockIcon className="shrink-0 text-green-500" />
-                                                            <span className="font-main text-green-500">
-                                                                Connected to Hevy
-                                                            </span>
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <Link2 className="shrink-0" />
-                                                            <span className="font-main">
-                                                                Connect Hevy App
-                                                            </span>
-                                                        </>
-                                                    )}
-                                                </SidebarMenuButton>
-                                            </SidebarMenuItem>
-                                        )}
-                                        {user ? (
-                                            <>
-                                                <SidebarMenuItem>
-                                                    <SidebarMenuButton
-                                                        onClick={() => setOpenDeleteAccountDialog(true)}
-                                                        className="text-destructive hover:text-destructive/90"
-                                                        tooltip="Delete my account"
-                                                    >
-                                                        <Trash2 className="shrink-0" />
-                                                        <span className="font-main">
-                                                            Delete my account
-                                                        </span>
-                                                    </SidebarMenuButton>
-                                                </SidebarMenuItem>
-                                                <SidebarMenuItem>
-                                                    <SidebarMenuButton
-                                                        onClick={handleLogout}
-                                                        className="text-red-500 hover:text-red-600"
-                                                        tooltip="Log out"
-                                                    >
-                                                        <LogOut className="shrink-0" />
-                                                        <span className="font-main">Log out</span>
-                                                    </SidebarMenuButton>
-                                                </SidebarMenuItem>
-                                            </>
-                                        ) : (
-                                            <SidebarMenuItem>
-                                                <SidebarMenuButton asChild tooltip="Log in">
-                                                    <a href="/auth/login">
-                                                        <LogIn className="shrink-0" />
-                                                        <span className="font-main">Log in</span>
-                                                    </a>
-                                                </SidebarMenuButton>
-                                            </SidebarMenuItem>
-                                        )}
-                                    </SidebarMenu>
+                                    <TestUserTierToggle />
                                 </SidebarGroupContent>
                             </SidebarGroup>
-                            {user && isTestUser(user) && state !== "collapsed" && (
-                                <>
-                                    <SidebarSeparator />
-                                    <SidebarGroup>
-                                        <SidebarGroupContent>
-                                            <TestUserTierToggle />
-                                        </SidebarGroupContent>
-                                    </SidebarGroup>
-                                </>
-                            )}
                         </>
                     )}
                 </SidebarContent>
@@ -346,27 +176,167 @@ export function AppSidebar() {
                     <SidebarMenu>
                         <SidebarMenuItem>
                             {user ? (
-                                <SidebarMenuButton asChild tooltip={userFullName || "Profile"}>
-                                    <a href="/profile" className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
-                                        <Avatar className="h-6 w-6 shrink-0">
-                                            <AvatarImage
-                                                src={avatarSrc ?? user?.user_metadata?.avatar_url ?? undefined}
-                                                alt={userFullName ? `${userFullName} avatar` : "User avatar"}
-                                            />
-                                            <AvatarFallback className="text-xs">
-                                                {getInitials(userFullName ?? "") ?? userFullName?.charAt(0) ?? "U"}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <span className="font-main truncate group-data-[collapsible=icon]:hidden">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <SidebarMenuButton
+                                            tooltip="Settings"
+                                            className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center"
+                                        >
+                                            <Avatar className="h-6 w-6 shrink-0">
+                                                <AvatarImage
+                                                    src={avatarSrc ?? user?.user_metadata?.avatar_url ?? undefined}
+                                                    alt={userFullName ? `${userFullName} avatar` : "User avatar"}
+                                                />
+                                                <AvatarFallback className="text-xs">
+                                                    {getInitials(userFullName ?? "") ?? userFullName?.charAt(0) ?? "U"}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <span className="font-main truncate group-data-[collapsible=icon]:hidden">
+                                                {userFullName || "User"}
+                                            </span>
+                                        </SidebarMenuButton>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent side="top" align="end" className="min-w-48">
+                                        <DropdownMenuLabel className="font-normal">
                                             {userFullName || "User"}
-                                        </span>
-                                    </a>
-                                </SidebarMenuButton>
+                                        </DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem asChild>
+                                            <a href="/profile" className="cursor-pointer flex items-center gap-2">
+                                                <UserRound className="h-4 w-4" />
+                                                Profile
+                                            </a>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
+                                            Theme
+                                        </DropdownMenuLabel>
+                                        <DropdownMenuItem
+                                            onSelect={(e) => {
+                                                e.preventDefault();
+                                                setTheme("light");
+                                            }}
+                                            className={`cursor-pointer ${theme === "light" ? "bg-accent" : ""}`}
+                                        >
+                                            <Sun className="h-4 w-4 mr-2" />
+                                            Light
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onSelect={(e) => {
+                                                e.preventDefault();
+                                                setTheme("dark");
+                                            }}
+                                            className={`cursor-pointer ${theme === "dark" ? "bg-accent" : ""}`}
+                                        >
+                                            <Moon className="h-4 w-4 mr-2" />
+                                            Dark
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onSelect={(e) => {
+                                                e.preventDefault();
+                                                setTheme("system");
+                                            }}
+                                            className={`cursor-pointer ${theme === "system" ? "bg-accent" : ""}`}
+                                        >
+                                            <Monitor className="h-4 w-4 mr-2" />
+                                            System
+                                        </DropdownMenuItem>
+                                        <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
+                                            Units
+                                        </DropdownMenuLabel>
+                                        <DropdownMenuItem
+                                            onSelect={(e) => {
+                                                e.preventDefault();
+                                                if (!isInLbs) toggleModePreference();
+                                            }}
+                                            className={`cursor-pointer ${isInLbs ? "bg-accent" : ""}`}
+                                        >
+                                            Pounds (lbs)
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onSelect={(e) => {
+                                                e.preventDefault();
+                                                if (isInLbs) toggleModePreference();
+                                            }}
+                                            className={`cursor-pointer ${!isInLbs ? "bg-accent" : ""}`}
+                                        >
+                                            Kilograms (kg)
+                                        </DropdownMenuItem>
+                                        {!(user && isPro) && (
+                                            <>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem asChild>
+                                                    <a href="/pricing" className="cursor-pointer flex items-center gap-2">
+                                                        <Crown className="h-4 w-4" />
+                                                        Upgrade
+                                                    </a>
+                                                </DropdownMenuItem>
+                                            </>
+                                        )}
+                                        {user && isPro && stripePortalUrl && (
+                                            <>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuLabel className="text-xs text-muted-foreground font-normal flex items-center gap-1.5">
+                                                    <Crown className="h-4 w-4" />
+                                                    Pro account
+                                                </DropdownMenuLabel>
+                                                <DropdownMenuItem asChild>
+                                                    <a href={stripePortalUrl} className="cursor-pointer flex items-center gap-2">
+                                                        <Receipt className="h-4 w-4" />
+                                                        Manage Subscription
+                                                    </a>
+                                                </DropdownMenuItem>
+                                            </>
+                                        )}
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem
+                                            onSelect={(e) => {
+                                                e.preventDefault();
+                                                setOpenConnectHevyDialog(true);
+                                            }}
+                                            className="cursor-pointer"
+                                        >
+                                            {hevyApiKey && hevyApiKey.length > 0 ? (
+                                                <span className="flex items-center gap-2 text-green-600 dark:text-green-500">
+                                                    <LockIcon className="h-4 w-4" />
+                                                    Connected to Hevy
+                                                </span>
+                                            ) : (
+                                                <>
+                                                    <Link2 className="h-4 w-4 mr-2" />
+                                                    Connect Hevy App
+                                                </>
+                                            )}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem
+                                            onSelect={(e) => {
+                                                e.preventDefault();
+                                                setOpenDeleteAccountDialog(true);
+                                            }}
+                                            className="cursor-pointer text-destructive focus:text-destructive"
+                                        >
+                                            <Trash2 className="h-4 w-4 mr-2" />
+                                            Delete account
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem
+                                            onSelect={(e) => {
+                                                e.preventDefault();
+                                                void handleLogout();
+                                            }}
+                                            className="cursor-pointer bg-red-500/10 text-red-600 hover:bg-red-500/20 focus:bg-red-500/20 dark:text-red-400"
+                                        >
+                                            <LogOut className="h-4 w-4 mr-2" />
+                                            Log out
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             ) : (
                                 <SidebarMenuButton asChild tooltip="Log in">
                                     <a href="/auth/login" className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
                                         <Avatar className="h-6 w-6 shrink-0">
-                                            <AvatarFallback className="text-xs">?</AvatarFallback>
+                                            <AvatarFallback className="text-xs"><LogIn className="h-4 w-4" /></AvatarFallback>
                                         </Avatar>
                                         <span className="font-main group-data-[collapsible=icon]:hidden">Log in</span>
                                     </a>
