@@ -91,7 +91,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                                         maxAvatarsAmount={5}
                                     />
                                     <p className="font-secondary text-[10px] sm:text-xs font-semibold tracking-[0.12em] uppercase text-black dark:text-white">
-                                        17,000+ athletes
+                                        18,000+ athletes
                                     </p>
                                 </div>
 

@@ -57,6 +57,7 @@ import { TestUserTierToggle } from "@/components/TestUserTierToggle";
 import { isTestUser } from "@/api/featureLimits";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { getInitials } from "@/utils/general/helpers";
+import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";
 import { DeleteAccountDialog } from "@/components/header/DeleteAccountDialog";
 import { ConnectHevyDialog } from "@/components/header/ConnectHevyDialog";
@@ -99,7 +100,7 @@ export function AppSidebar() {
     const [openDeleteAccountDialog, setOpenDeleteAccountDialog] = useState(false);
     const [openConnectHevyDialog, setOpenConnectHevyDialog] = useState(false);
 
-    const { toggleSidebar, state } = useSidebar();
+    const { toggleSidebar, state, isMobile, openMobile } = useSidebar();
 
     const handleLogout = async () => {
         await signOutUser();
@@ -196,7 +197,15 @@ export function AppSidebar() {
                                             </span>
                                         </SidebarMenuButton>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent side="top" align="end" className="min-w-48">
+                                    <DropdownMenuContent
+                                    side="top"
+                                    align="end"
+                                    className={cn(
+                                        "min-w-48",
+                                        isMobile && openMobile && "w-[18rem]",
+                                        !isMobile && state === "expanded" && "w-[16rem]",
+                                    )}
+                                >
                                         <DropdownMenuLabel className="font-normal">
                                             {userFullName || "User"}
                                         </DropdownMenuLabel>
