@@ -18,7 +18,7 @@
  * - Navigation and layout including `Navbar`, authenticated nav, sidebars, and footer.
  * - Landing and marketing pages throughout the app.
  */
-import { people03, people02, people01, people04, people05, people06, instagram, linkedin, star, reddit, twitter, hevy_logo, google_sheets_logo_icon } from "public";
+import { people03, people02, people04, people05, people06, instagram, linkedin, star, reddit, twitter, hevy_logo, google_sheets_logo_icon } from "public";
 import humanizeDuration from "humanize-duration";
 import { IOption } from '@/components/ui/multi-select';
 import { BicepsFlexedIcon, BookOpenIcon, Calculator, FileText, FootprintsIcon, SquarePowerIcon, Table } from "lucide-react";
@@ -6025,14 +6025,6 @@ export const feedback = [
         name: "Marco Zanotto",
         title: "Proxima Member · 2024.04.12",
         img: people02.src,
-      },
-      {
-        id: "feedback-3",
-        content:
-        "Best free gym app I've found. So many programs I can just click and train. Crazy amount of features for a Free app",
-        name: "Sina Banki",
-        title: "Proxima Member · 2024.05.25",
-        img: people01.src,
       },
       {
         id: "feedback-4",
