@@ -609,6 +609,8 @@ const SidebarMenuButton = React.forwardRef<
       }
     }
 
+    const { className: tooltipClassName, ...restTooltip } = tooltip
+
     return (
       <Tooltip>
         <TooltipTrigger asChild>{button}</TooltipTrigger>
@@ -616,7 +618,11 @@ const SidebarMenuButton = React.forwardRef<
           side="right"
           align="center"
           hidden={state !== "collapsed" || isMobile}
-          {...tooltip}
+          className={cn(
+            "bg-lightSecondary text-white dark:bg-primary dark:text-primary-foreground",
+            tooltipClassName
+          )}
+          {...restTooltip}
         />
       </Tooltip>
     )

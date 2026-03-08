@@ -95,31 +95,30 @@ export default function RootLayout({
                         <ProfilePictureProvider>
                         <IsHevyProvider>
                             <PreviewProvider>
-                                <SidebarProvider>
+                                <SidebarProvider defaultOpen={false}>
                                     <PoundsOrKgProvider>
-                                    <div className="max-sm:block hidden">
                                         <AppSidebarDynamic />
-                                    </div>
-                                    <div className="w-full bg-primary">
-                                        <div className={ `${styles.flexCenter}` }>
-                                            <div className="w-full">
-                                                    <Navbar />
+                                        <div className="flex-1 min-w-0 bg-primary">
+                                            <div className="md:hidden">
+                                                <div className={ `${styles.flexCenter}` }>
+                                                    <div className="w-full">
+                                                        <Navbar />
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <main id="main">
-                                            <LazyPostHogWrapper>
-                                                <Analytics />
-                                                <NextTopLoader
-                                                    showSpinner={ false }
-                                                    color="#33bbcf"
-                                                />
-
+                                            <main id="main">
+                                                <LazyPostHogWrapper>
+                                                    <Analytics />
+                                                    <NextTopLoader
+                                                        showSpinner={ false }
+                                                        color="#33bbcf"
+                                                    />
                                                     {children}
                                                     <Toaster richColors />
                                                 </LazyPostHogWrapper>
-                                        </main>
-                                        <ConditionalFooterDynamic />
-                                    </div>
+                                            </main>
+                                            <ConditionalFooterDynamic />
+                                        </div>
                                     </PoundsOrKgProvider>
                                 </SidebarProvider>
                             </PreviewProvider>
