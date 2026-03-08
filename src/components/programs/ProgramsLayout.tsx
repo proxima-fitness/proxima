@@ -19,7 +19,7 @@ export default function ProgramsLayout() {
 
     const { user } = useUserContext();
     useEffect(() => {
-        posthog.capture('page_view', { page: '/programs', user: user?.id ?? "user_id_unknown" });
+        posthog?.capture?.('page_view', { page: '/programs', user: user?.id ?? "user_id_unknown" });
     }, [user]);
 
     return (

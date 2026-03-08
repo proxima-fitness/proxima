@@ -260,11 +260,11 @@ export function BuildProgramClient() {
     useEffect(() => {
         const userId = user?.id ?? "user_id_unknown";
         if (user && !pageViewSentRef.current) {
-            posthog.capture('page_view', { page: '/build-program', user: userId });
+            posthog?.capture?.('page_view', { page: '/build-program', user: userId });
             pageViewSentRef.current = true;
         }
         if (activeError && prevErrorRef.current === null) {
-            posthog.capture("ai_agent_error", {
+            posthog?.capture?.("ai_agent_error", {
                 user: userId,
                 errorMessage: activeError?.message ?? "unknown",
             });
@@ -327,7 +327,7 @@ export function BuildProgramClient() {
         }
 
         sendMessageWithContext(files?.length ? { text: messageText, files } : { text: messageText });
-        posthog.capture('sent_first_prompt_to_ai', { search: messageText.slice(0, 200), user: user?.id ?? "user_id_unknown" });
+        posthog?.capture?.('sent_first_prompt_to_ai', { search: messageText.slice(0, 200), user: user?.id ?? "user_id_unknown" });
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search, user, hevyProgram, shared, shareId, resume, sendMessageWithContext]);
 

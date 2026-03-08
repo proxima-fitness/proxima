@@ -19,14 +19,14 @@ import type { Metadata } from 'next';
 import { Toaster } from "@/components/ui/sonner";
 import { IsHevyProvider } from "@/contexts/HevyContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
+import { AppSidebarDynamic } from "@/components/AppSidebarDynamic";
+import { ConditionalFooterDynamic } from "@/components/footer/ConditionalFooterDynamic";
 import { Analytics } from "@vercel/analytics/react";
 import NextTopLoader from 'nextjs-toploader';
-import { PostHogClientProvider } from "@/utils/PostHogClientProvider";
+import { LazyPostHogWrapper } from "@/utils/LazyPostHogWrapper";
 import { PreviewProvider } from "@/contexts/PreviewContext";
 import { UserProvider } from "@/contexts/UserContext";
 import { ProfilePictureProvider } from "@/contexts/ProfilePictureContext";
-import { ConditionalFooter } from "@/components/footer/ConditionalFooter";
 import { ThemeProvider } from "@/components/theme-provider"
 import { PoundsOrKgProvider } from "@/contexts/PoundsOrKgContext";
 
@@ -98,7 +98,7 @@ export default function RootLayout({
                                 <SidebarProvider>
                                     <PoundsOrKgProvider>
                                     <div className="max-sm:block hidden">
-                                        <AppSidebar />
+                                        <AppSidebarDynamic />
                                     </div>
                                     <div className="w-full bg-primary">
                                         <div className={ `${styles.flexCenter}` }>
@@ -107,7 +107,7 @@ export default function RootLayout({
                                             </div>
                                         </div>
                                         <main id="main">
-                                            <PostHogClientProvider>
+                                            <LazyPostHogWrapper>
                                                 <Analytics />
                                                 <NextTopLoader
                                                     showSpinner={ false }
@@ -116,9 +116,9 @@ export default function RootLayout({
 
                                                     {children}
                                                     <Toaster richColors />
-                                                </PostHogClientProvider>
+                                                </LazyPostHogWrapper>
                                         </main>
-                                        <ConditionalFooter />
+                                        <ConditionalFooterDynamic />
                                     </div>
                                     </PoundsOrKgProvider>
                                 </SidebarProvider>

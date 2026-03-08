@@ -16,9 +16,9 @@ export function PostHogIdentify() {
 
     useEffect(() => {
         if (user) {
-            posthog.identify(user.id);
+            posthog?.identify?.(user.id);
         } else {
-            posthog.reset();
+            posthog?.reset?.();
         }
     }, [user]);
 

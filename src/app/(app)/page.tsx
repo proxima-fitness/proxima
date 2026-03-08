@@ -8,7 +8,6 @@
  * Used by: Next.js (route "/").
  */
 
-import "../../styles/global.css";
 import { Prompt } from '@/components/program-builder/shared/Prompt';
 import { createClient } from "@/utils/supabase/server";
 // import { CallToAction } from "@/components/call-to-action/CallToAction";

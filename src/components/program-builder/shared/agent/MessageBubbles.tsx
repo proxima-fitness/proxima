@@ -394,7 +394,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
             if (isBuilding) {
                 onBuildComplete?.();
             }
-            posthog.capture("generated_a_program", {
+            posthog?.capture?.("generated_a_program", {
                 user: user?.id ?? "user_id_unknown",
                 daysPerWeek: allRoutines.length,
                 programLength: weeks,
@@ -413,7 +413,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
             applyPatchWithUndo
         );
         if (modified) {
-            posthog.capture("modified_a_program", { user: user?.id ?? "user_id_unknown" });
+            posthog?.capture?.("modified_a_program", { user: user?.id ?? "user_id_unknown" });
         }
     }, [messages, hevyProgram, applyPatchWithUndo, user]);
 

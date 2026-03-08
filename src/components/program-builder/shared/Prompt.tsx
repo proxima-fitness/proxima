@@ -41,7 +41,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
             setUser(userData);
         }
 
-        posthog.capture('page_view', { page: '/', user: userData?.id ?? "user_id_unknown" });
+        posthog?.capture?.('page_view', { page: '/', user: userData?.id ?? "user_id_unknown" });
 
     }, [userData, setUser]);
 

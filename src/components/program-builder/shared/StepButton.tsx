@@ -105,7 +105,7 @@ export const StepButton: React.FC = () => {
                 variant="default"
                 className="text-white bg-lightSecondary hover:bg-lightSecondary/80"
                 onClick={() => {
-                posthog.capture("opened_export_dialog", { user: user?.id ?? "user_id_unknown" });
+                posthog?.capture?.("opened_export_dialog", { user: user?.id ?? "user_id_unknown" });
                 setOpenExportDialog(true);
             }}
             >

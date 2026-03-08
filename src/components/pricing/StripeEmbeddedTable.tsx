@@ -28,7 +28,7 @@ export const StripeEmbeddedTable: React.FC = () => {
 
     useEffect(() => {
         if (user) {
-            posthog.capture('page_view', { page: '/pricing', user: user?.id ?? "user_id_unknown" });
+            posthog?.capture?.('page_view', { page: '/pricing', user: user?.id ?? "user_id_unknown" });
         }
     }, [user]);
 

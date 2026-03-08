@@ -28,7 +28,7 @@ export const MyProgramsVault = () => {
     const { data: programs, isError: errorFetchingPrograms, isLoading: loadingPrograms } = useSubscribedPrograms(user);
 
     useEffect(() => {
-        posthog.capture("page_view", { page: "/profile", user: user?.id ?? "user_id_unknown" });
+        posthog?.capture?.("page_view", { page: "/profile", user: user?.id ?? "user_id_unknown" });
     }, [user]);
 
     if (userLoading || loadingPrograms) {

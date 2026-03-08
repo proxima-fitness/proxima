@@ -214,14 +214,14 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
             const errorMessage = "You must be signed in to upload.";
             toast.error(errorMessage);
             console.error(errorMessage);
-            posthog.capture("export_failed", { user: "user_id_unknown", destination: "hevy", error: errorMessage });
+            posthog?.capture?.("export_failed", { user: "user_id_unknown", destination: "hevy", error: errorMessage });
             return;
         }
         if (!hevyApiKey || hevyApiKey.length === 0) {
             const errorMessage = "Connect your Hevy API key first.";
             toast.error(errorMessage);
             console.error(errorMessage);
-            posthog.capture("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: errorMessage });
+            posthog?.capture?.("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: errorMessage });
             return;
         }
 
@@ -235,7 +235,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                 const errorMessage = "Failed to save program to My Programs.";
                 toast.error(errorMessage);
                 console.error(errorMessage, supabaseResult);
-                posthog.capture("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: errorMessage });
+                posthog?.capture?.("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: errorMessage });
                 return;
             }
 
@@ -283,7 +283,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                             : "Failed to upload program to Hevy.";
                     toast.error(message);
                     console.error("Failed to upload program to Hevy.", hevyResult);
-                    posthog.capture("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: message });
+                    posthog?.capture?.("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: message });
                     return;
                 }
             } else {
@@ -296,7 +296,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                             : "Failed to upload program to Hevy.";
                     toast.error(message);
                     console.error("Failed to upload program to Hevy.", hevyResult);
-                    posthog.capture("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: message });
+                    posthog?.capture?.("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: message });
                     return;
                 }
             }
@@ -306,11 +306,11 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                 const errorMessage = "Program saved but failed to add to My Programs.";
                 toast.error(errorMessage);
                 console.error(errorMessage, subscriberError);
-                posthog.capture("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: errorMessage });
+                posthog?.capture?.("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: errorMessage });
             } else {
                 queryClient.invalidateQueries({ queryKey: ["subscribed-programs", user.id] });
                 toast.success("Program uploaded to Hevy and saved to your Profile");
-                posthog.capture("exported_program", { user: user?.id ?? "user_id_unknown", destination: "hevy" });
+                posthog?.capture?.("exported_program", { user: user?.id ?? "user_id_unknown", destination: "hevy" });
                 if (isFree) {
                     setShowThankYouBanner(true);
                 }
@@ -322,7 +322,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
             const errorMessage = err instanceof Error ? err.message : "Upload failed.";
             console.error("Upload error:", err);
             toast.error(errorMessage);
-            posthog.capture("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: errorMessage });
+            posthog?.capture?.("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: errorMessage });
         } finally {
             setUploadProgress(null);
             setIsUploading(false);

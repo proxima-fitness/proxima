@@ -40,7 +40,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
             duration: 1000,
             once: true,
         });
-        posthog.capture('page_view', { page: '/about', user: user?.id ?? "user_id_unknown" });
+        posthog?.capture?.('page_view', { page: '/about', user: user?.id ?? "user_id_unknown" });
     }, [user]);
 
     return (
