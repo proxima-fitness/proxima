@@ -28,6 +28,7 @@ import instagram from "./instagram.svg";
 import intermediate_ppl from "./intermediate-ppl.jpg";
 import jack_jacked from "./jack-jacked.jpg";
 import jack from "./jack.jpg";
+import jack_small from "./jack-small.webp";
 import linkedin from "./linkedin.svg";
 import logo_white from "./logo_white.png";
 import menu from "./menu.svg";
@@ -111,4 +112,5 @@ export {
     macrofactor_logo,
     google_sheets_logo_icon,
     proxima_logo_white,
+    jack_small,
 }

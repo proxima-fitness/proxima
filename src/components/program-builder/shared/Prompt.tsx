@@ -12,7 +12,7 @@ import { User } from "@supabase/supabase-js";
 import {
     hevy_logo,
     hevy_logo_black,
-    jack,
+    jack_small,
     league_of_innovators_logo,
     people02,
     people03,
@@ -72,7 +72,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                                 <div className="flex flex-col items-center md:items-start gap-2 max-sm:text-sm">
                                     <AvatarStack
                                         avatars={[
-                                            { name: "jack.hanlon", image: jack.src },
+                                            { name: "jack.hanlon", image: jack_small.src },
                                             { name: "scottlhanlon", image: people03.src },
                                             { name: "jordan.vandesande", image: people04.src },
                                             { name: "robroyjr", image: people05.src },
