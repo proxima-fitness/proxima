@@ -23,7 +23,7 @@ import { AppSidebarDynamic } from "@/components/AppSidebarDynamic";
 import { ConditionalFooterDynamic } from "@/components/footer/ConditionalFooterDynamic";
 import { Analytics } from "@vercel/analytics/react";
 import NextTopLoader from 'nextjs-toploader';
-import { LazyPostHogWrapper } from "@/utils/LazyPostHogWrapper";
+import { PostHogClientProvider } from "@/utils/PostHogClientProvider";
 import { PreviewProvider } from "@/contexts/PreviewContext";
 import { UserProvider } from "@/contexts/UserContext";
 import { ProfilePictureProvider } from "@/contexts/ProfilePictureContext";
@@ -107,7 +107,7 @@ export default function RootLayout({
                                                 </div>
                                             </div>
                                             <main id="main">
-                                                <LazyPostHogWrapper>
+                                                <PostHogClientProvider>
                                                     <Analytics />
                                                     <NextTopLoader
                                                         showSpinner={ false }
@@ -115,7 +115,7 @@ export default function RootLayout({
                                                     />
                                                     {children}
                                                     <Toaster richColors />
-                                                </LazyPostHogWrapper>
+                                                </PostHogClientProvider>
                                             </main>
                                             <ConditionalFooterDynamic />
                                         </div>
