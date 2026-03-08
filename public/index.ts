@@ -44,7 +44,7 @@ import reddit from "./reddit.svg";
 import qr_code from "./qr-code.svg";
 import quotes from "./quotes.svg";
 import proxima_logo_black from "./proxima_logo_black.svg";
-import ai_program_builder from "./ai-program-builder.png";
+import ai_program_builder from "./ai-program-builder.webp";
 import thumbnail from "./thumbnail.svg";
 import completed_sets from "./completed-sets.png";
 import hevy_logo from "./hevy-logo.svg";
