@@ -12,6 +12,7 @@
 import {
     Home,
     LogOut,
+    MessageSquarePlus,
     PersonStanding,
     Search,
     Receipt,
@@ -134,6 +135,20 @@ export function AppSidebar() {
 
                 <SidebarContent>
                     <SidebarGroup>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild tooltip="New Chat">
+                                        <a href="/build-program">
+                                            <MessageSquarePlus className="shrink-0" />
+                                            <span className="font-main">New Chat</span>
+                                        </a>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
+                    <SidebarGroup>
                         <SidebarGroupLabel>Navigation</SidebarGroupLabel>
                         <SidebarGroupContent>
                             <SidebarMenu>
@@ -157,6 +172,19 @@ export function AppSidebar() {
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
                                 ))}
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
+
+                    <SidebarGroup>
+                        <SidebarGroupLabel>Recents</SidebarGroupLabel>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                <SidebarMenuItem>
+                                    <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
+                                    No recent chats
+                                    </span>
+                                </SidebarMenuItem>
                             </SidebarMenu>
                         </SidebarGroupContent>
                     </SidebarGroup>
