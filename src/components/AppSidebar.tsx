@@ -13,7 +13,6 @@ import {
     Home,
     LogOut,
     MessageSquarePlus,
-    PersonStanding,
     Search,
     Receipt,
     Crown,
@@ -26,6 +25,7 @@ import {
     Monitor,
     PanelLeft,
     LogIn,
+    Info,
 } from "lucide-react";
 import {
     Sidebar,
@@ -79,7 +79,7 @@ const signOutServer = async () => {
 
 const baseItems = [
     { title: "Home", url: "/", icon: Home },
-    { title: "About us", url: "/about", icon: PersonStanding },
+    { title: "About", url: "/about", icon: Info },
 ];
 
 export function AppSidebar() {
@@ -149,7 +149,7 @@ export function AppSidebar() {
                         </SidebarGroupContent>
                     </SidebarGroup>
                     <SidebarGroup>
-                        <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+                        <SidebarGroupLabel>Navigate</SidebarGroupLabel>
                         <SidebarGroupContent>
                             <SidebarMenu>
                                 {baseItems.map((item) => (
