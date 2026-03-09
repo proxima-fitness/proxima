@@ -152,6 +152,7 @@ export const ExportDialog: React.FC<IProps> = (props) => {
                         programId={programId}
                         exportOptions={exportOptions}
                         onSelectExport={handleSelectExport}
+                        hideHevyCrown={isPro}
                     />
                 )}
                 {selectedExportId === "pdf" && (

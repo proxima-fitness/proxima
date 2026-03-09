@@ -6,6 +6,7 @@
  */
 
 import { JSX } from "react";
+import { hevy_logo } from "public";
 
 /**
  * Props for `ExportProgramCTAButtons`.
@@ -13,10 +14,11 @@ import { JSX } from "react";
  * @property exportOptions List of export options including metadata such as id, label, icon, and disabled state.
  * @property onSelectExport Optional callback fired when a user selects a non-disabled export option.
  * @property showComingSoonLabel Whether to show a "Coming soon" label above disabled options.
+ * @property hideHevyCrown When true, render the Hevy option without the Crown icon.
  */
 interface IProps {
     programId: number;
-    exportOptions:{
+    exportOptions: {
         id: string;
         name: string;
         icon: JSX.Element;
@@ -26,6 +28,7 @@ interface IProps {
     }[];
     onSelectExport?: (id: string) => void;
     showComingSoonLabel?: boolean;
+    hideHevyCrown?: boolean;
 }
 
 /**
@@ -36,6 +39,7 @@ export const ExportProgramCTAButtons: React.FC<IProps> = ({
     exportOptions,
     onSelectExport,
     showComingSoonLabel = true,
+    hideHevyCrown = false,
 }) => {
 
     console.log("programId", programId);
@@ -56,7 +60,23 @@ export const ExportProgramCTAButtons: React.FC<IProps> = ({
     const enabledOptions = exportOptions.filter((o) => !o.disabled);
     const disabledOptions = exportOptions.filter((o) => o.disabled);
 
-    const renderOption = (option: (typeof exportOptions)[number]) => (
+    const renderOption = (option: (typeof exportOptions)[number]) => {
+        const isHevy = option.id === "hevy";
+        const effectiveIcon =
+            hideHevyCrown && isHevy ? (
+                <div className="flex items-center gap-2">
+                    <img
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        src={(hevy_logo as any).src}
+                        alt="Hevy"
+                        className="w-full h-6 object-contain"
+                    />
+                </div>
+            ) : (
+                option.icon
+            );
+
+        return (
         <button
             key={option.id}
             disabled={option.disabled ?? false}
@@ -65,12 +85,13 @@ export const ExportProgramCTAButtons: React.FC<IProps> = ({
             aria-label={`Export as ${option.name}`}
         >
             <div className="flex flex-row gap-3">
-                <span className="">{option.icon}</span>
+                <span className="">{effectiveIcon}</span>
                 {!option.brand ? <span className="font-main text-lg">{option.name}</span> : null}
             </div>
             {option.subtitle ? <span className="text-sm  text-left text-gray-400">{option.subtitle}</span> : null}
         </button>
-    );
+        );
+    };
 
     return (
         <div className="flex flex-col gap-3">
