@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useUserContext } from "@/contexts/UserContext";
 import { useHevySecret, useMyFeatureLimits } from "@/api/hooks";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { incrementMonthlyExportsUsed } from "@/api/featureLimits";
+import { incrementMonthlyExportsUsed } from "@/api/feature-limits";
 import {
     postHevyApikey,
     postHevyRoutineProgram,

@@ -29,7 +29,7 @@ import {
     isTestUser,
     setTestTierOverride,
     type TestTierOverride,
-} from "@/api/featureLimits";
+} from "@/api/feature-limits";
 import { Crown, PersonStanding, LockIcon, LogIn, Search, UserRound, Trash2 } from "lucide-react";
 import { DeleteAccountDialog } from "./DeleteAccountDialog";
 import { authenticatedNavLinks, navLinks } from "@/assets/constants";

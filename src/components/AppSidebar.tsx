@@ -52,10 +52,10 @@ import {
 import { useUserContext } from "@/contexts/UserContext";
 import { useProfilePictureContext } from "@/contexts/ProfilePictureContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useMyFeatureLimits, useUserFullName, useProfilePictureByID, useHevySecret } from "@/api/hooks";
+import { useMyFeatureLimits, useUserFullName, useProfilePictureByID, useHevySecret, useChatIds } from "@/api/hooks";
 import { signOutUser } from "@/api/authentication";
 import { TestUserTierToggle } from "@/components/TestUserTierToggle";
-import { isTestUser } from "@/api/featureLimits";
+import { isTestUser } from "@/api/feature-limits";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { getInitials } from "@/utils/general/helpers";
 import { cn } from "@/lib/utils";
@@ -82,6 +82,8 @@ const baseItems = [
     { title: "About", url: "/about", icon: Info },
 ];
 
+const RECENTS_LIMIT = 10;
+
 export function AppSidebar() {
     const { user, isLoading } = useUserContext();
     const { profilePicture } = useProfilePictureContext();
@@ -102,6 +104,8 @@ export function AppSidebar() {
     const [openConnectHevyDialog, setOpenConnectHevyDialog] = useState(false);
 
     const { toggleSidebar, state, isMobile, openMobile } = useSidebar();
+    const { data: chatIds, isLoading: chatIdsLoading, isError: chatIdsError } = useChatIds(user);
+    const recentChats = (chatIds ?? []).slice(0, RECENTS_LIMIT);
 
     const handleLogout = async () => {
         await signOutUser();
@@ -190,11 +194,51 @@ export function AppSidebar() {
                         <SidebarGroupLabel>Recents</SidebarGroupLabel>
                         <SidebarGroupContent>
                             <SidebarMenu>
-                                <SidebarMenuItem>
-                                    <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
-                                    No recent chats
-                                    </span>
-                                </SidebarMenuItem>
+                                {!user ? (
+                                    <SidebarMenuItem>
+                                        <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
+                                            No recent chats
+                                        </span>
+                                    </SidebarMenuItem>
+                                ) : chatIdsLoading ? (
+                                    <SidebarMenuItem>
+                                        <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
+                                            Loading…
+                                        </span>
+                                    </SidebarMenuItem>
+                                ) : chatIdsError ? (
+                                    <SidebarMenuItem>
+                                        <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
+                                            Couldn&apos;t load chats
+                                        </span>
+                                    </SidebarMenuItem>
+                                ) : recentChats.length === 0 ? (
+                                    <SidebarMenuItem>
+                                        <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
+                                            No recent chats
+                                        </span>
+                                    </SidebarMenuItem>
+                                ) : state === "collapsed" ? (
+                                    null
+                                ) : (
+                                    recentChats.map((chat) => {
+                                        const displayTitle = chat.title?.trim() || "Untitled chat";
+                                        return (
+                                            <SidebarMenuItem key={chat.id}>
+                                                <SidebarMenuButton asChild tooltip={displayTitle}>
+                                                    <a
+                                                        href={`/build-program?chat=${encodeURIComponent(chat.id)}`}
+                                                        className="flex min-w-0 flex-1 items-center gap-2"
+                                                    >
+                                                        <span className="min-w-0 flex-1 truncate font-main">
+                                                            {displayTitle}
+                                                        </span>
+                                                    </a>
+                                                </SidebarMenuButton>
+                                            </SidebarMenuItem>
+                                        );
+                                    })
+                                )}
                             </SidebarMenu>
                         </SidebarGroupContent>
                     </SidebarGroup>

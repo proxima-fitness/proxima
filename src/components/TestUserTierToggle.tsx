@@ -21,7 +21,7 @@ import {
     isTestUser,
     setTestTierOverride,
     type TestTierOverride,
-} from "@/api/featureLimits";
+} from "@/api/feature-limits";
 import { useState, useEffect } from "react";
 
 type TierSelectValue = "real" | TestTierOverride;

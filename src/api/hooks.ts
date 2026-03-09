@@ -23,9 +23,10 @@ import { getCommunityAiPrograms, getCommunityAiProgramsPaginated, getExplorePage
 import { getOpUserId, getUserFullName, getUserMetaData, getUsersBatch } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getHevyApiKey, getHevyCustomExercises, getHevyExercises, getHevyPrograms, getHevyRoutines } from "../components/program-builder/api/hevy";
-import { getMyFeatureLimits } from "./featureLimits";
+import { getMyFeatureLimits } from "./feature-limits";
 import { getFollowers, getFollowing } from "./followers";
 import { User } from "@supabase/supabase-js";
+import { getChatHistoryById, getChatIds } from "./chat-history";
 
 /* ================================
    CLIENT-SIDE RENDERED HOOKS
@@ -249,6 +250,33 @@ export const useFollowingMyProfile = (id: string, user: User | undefined | null)
     return useQuery({
         queryKey: ['following-my-profile', id],
         queryFn: () => getFollowing(id),
+        enabled: !!user,
+    });
+};
+
+/**
+ * Fetches a chat history by chat ID.
+ *
+ * @param user - The authenticated user
+ * @param chatId - The chat ID
+ */
+export const useChatHistory = (user: User | undefined | null, chatId: string) => {
+    return useQuery({
+        queryKey: ['chat-history', user?.id, chatId],
+        queryFn: () => getChatHistoryById(user, chatId),
+        enabled: !!user && !!chatId,
+    });
+};
+
+/**
+ * Fetches the chat IDs for the authenticated user.
+ *
+ * @param user - The authenticated user
+ */
+export const useChatIds = (user: User | undefined | null) => {
+    return useQuery({
+        queryKey: ['chat-ids', user?.id],
+        queryFn: () => getChatIds(user),
         enabled: !!user,
     });
 };

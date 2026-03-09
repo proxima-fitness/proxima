@@ -102,7 +102,7 @@ import { getTextFromChatMessage, isMessageAboutProgram } from "@/components/prog
 import posthog from "posthog-js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUserContext } from "@/contexts/UserContext";
-import { recordLlmRequest } from "@/api/featureLimits";
+import { recordLlmRequest } from "@/api/feature-limits";
 
 const chatTransport = new DefaultChatTransport({ api: "/api/chat" });
 
