@@ -21,7 +21,7 @@
 import { people03, people02, people04, people05, people06, instagram, linkedin, star, reddit, twitter, hevy_logo, google_sheets_logo_icon } from "public";
 import humanizeDuration from "humanize-duration";
 import { IOption } from '@/components/ui/multi-select';
-import { BicepsFlexedIcon, BookOpenIcon, Calculator, FileText, FootprintsIcon, SquarePowerIcon, Table } from "lucide-react";
+import { BicepsFlexedIcon, BookOpenIcon, Calculator, Crown, FileText, FootprintsIcon, SquarePowerIcon, Table } from "lucide-react";
 import { IQuestion } from "@/components/ui/questions";
 
 /** Suggestion groups for common program builder starting points. */
@@ -98,12 +98,15 @@ export const exportOptions = [
         id: "hevy",
         name: "Hevy",
         icon: (
-            <img
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                src={(hevy_logo as any).src}
-                alt="Hevy"
-                className="w-full h-6 object-contain"
-            />
+            <div className="flex items-center gap-2">
+                <Crown className="w-6 h-6 text-lightGold" />
+                <img
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    src={(hevy_logo as any).src}
+                    alt="Hevy"
+                    className="w-full h-6 object-contain"
+                />
+            </div>
         ),
         subtitle: "Upload your program to Hevy so you can train from the app",
         brand: true,

@@ -23,6 +23,12 @@ import { deFlattenHevyRoutine, hevyRoutinesToCsvWithWeekAndDayTitles } from "../
 import { ChevronLeft } from "lucide-react";
 import { ExportToHevySetup } from "./ExportToHevySetup";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
+import { useUserContext } from "@/contexts/UserContext";
+import { useMyFeatureLimits } from "@/api/hooks";
+import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
+
+const PRO_ONLY_EXPORTS = new Set<string>(["hevy"]);
 
 /** Props for the export destination modal. */
 interface IProps {
@@ -38,9 +44,15 @@ interface IProps {
 export const ExportDialog: React.FC<IProps> = (props) => {
     const { open, onOpenChange, programId } = props;
     const { isInLbs } = usePoundsOrKgContext();
+    const { user } = useUserContext();
+    const { data: featureLimits } = useMyFeatureLimits(user);
+    const router = useRouter();
+
     const [selectedExportId, setSelectedExportId] = useState<string | null>(null);
     const [hevyUploading, setHevyUploading] = useState(false);
     const [showBackConfirm, setShowBackConfirm] = useState(false);
+
+    const isPro = featureLimits?.has_active_subscription === true;
 
     const handleOpenChange = (nextOpen: boolean) => {
         if (!nextOpen) {
@@ -48,6 +60,18 @@ export const ExportDialog: React.FC<IProps> = (props) => {
             setShowBackConfirm(false);
         }
         onOpenChange(nextOpen);
+    };
+
+    const handleSelectExport = (id: string) => {
+        if (PRO_ONLY_EXPORTS.has(id) && !isPro) {
+            handleOpenChange(false);
+            posthog?.capture?.("hevy_export_paywall_hit", {
+                user: user?.id ?? "user_id_unknown",
+            });
+            router.push("/pricing?source=hevy-export");
+            return;
+        }
+        setSelectedExportId(id);
     };
 
     const hevyProgramFromStorage = (): THevyRoutine[][] | null => {
@@ -127,7 +151,7 @@ export const ExportDialog: React.FC<IProps> = (props) => {
                     <ExportProgramCTAButtons
                         programId={programId}
                         exportOptions={exportOptions}
-                        onSelectExport={setSelectedExportId}
+                        onSelectExport={handleSelectExport}
                     />
                 )}
                 {selectedExportId === "pdf" && (

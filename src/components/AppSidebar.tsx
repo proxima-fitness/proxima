@@ -172,14 +172,16 @@ export function AppSidebar() {
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
                                 ))}
-                                <SidebarMenuItem key="pricing">
-                                    <SidebarMenuButton asChild tooltip={user ? "Upgrade" : "Pricing"}>
-                                        <a href="/pricing">
-                                            <Crown className="shrink-0" />
-                                            <span className="font-main">{user ? "Upgrade" : "Pricing"}</span>
-                                        </a>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
+                                {!isPro && (
+                                    <SidebarMenuItem key="pricing">
+                                        <SidebarMenuButton asChild tooltip={user ? "Upgrade" : "Pricing"}>
+                                            <a href="/pricing">
+                                                <Crown className="shrink-0 text-lightGold" />
+                                                <span className={`font-main ${user ? "dark:text-lightGold" : ""}`}>{user ? "Upgrade" : "Pricing"}</span>
+                                            </a>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                )}
                             </SidebarMenu>
                         </SidebarGroupContent>
                     </SidebarGroup>

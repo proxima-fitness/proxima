@@ -93,7 +93,7 @@ export const ResumeDraftBanner: React.FC = () => {
             <div className="hidden sm:flex flex-1 flex-row items-center justify-between gap-4">
                 <div className="flex flex-row items-center gap-4">
                     <span className="text-base font-medium text-black dark:text-white">
-                        You have a program in progress. Pick up where you left off.
+                        Pick up where you left off.
                     </span>
                     <Link
                         href={"/build-program?resume=true&edit=true"}
