@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /*
  * @module ExportProgramCTAButtons
  * @description Button list for selecting how to export a program (e.g., to partner apps or file formats).
