@@ -12,7 +12,7 @@
 import {
     Home,
     LogOut,
-    // MessageSquarePlus,
+    MessageSquarePlus,
     Search,
     Receipt,
     Crown,
@@ -134,7 +134,7 @@ export function AppSidebar() {
                 </SidebarHeader>
 
                 <SidebarContent>
-                    {/* <SidebarGroup>
+                    <SidebarGroup>
                         <SidebarGroupContent>
                             <SidebarMenu>
                                 <SidebarMenuItem>
@@ -147,7 +147,7 @@ export function AppSidebar() {
                                 </SidebarMenuItem>
                             </SidebarMenu>
                         </SidebarGroupContent>
-                    </SidebarGroup> */}
+                    </SidebarGroup>
                     <SidebarGroup>
                         <SidebarGroupLabel>Navigate</SidebarGroupLabel>
                         <SidebarGroupContent>
@@ -186,7 +186,7 @@ export function AppSidebar() {
                         </SidebarGroupContent>
                     </SidebarGroup>
 
-                    {/* <SidebarGroup>
+                    <SidebarGroup>
                         <SidebarGroupLabel>Recents</SidebarGroupLabel>
                         <SidebarGroupContent>
                             <SidebarMenu>
@@ -197,7 +197,7 @@ export function AppSidebar() {
                                 </SidebarMenuItem>
                             </SidebarMenu>
                         </SidebarGroupContent>
-                    </SidebarGroup> */}
+                    </SidebarGroup>
 
                     {!isLoading && user && isTestUser(user) && state !== "collapsed" && (
                         <>
