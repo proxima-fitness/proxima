@@ -5,14 +5,21 @@
  * @module MobileSidebarHeader
  * Minimal header shown only at max-sm: sidebar trigger and logo. Lets users open
  * the sidebar sheet on small viewports when the persistent sidebar is hidden.
- * Depends on: CustomSidebarTrigger, SidebarProvider (useSidebar), public logo assets.
+ * On build-program route, shows Export (StepButton) in the top navbar.
+ * Depends on: CustomSidebarTrigger, SidebarProvider (useSidebar), public logo assets, StepButton.
  * Used by: (app) layout.
  */
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 import { CustomTrigger } from "@/components/CustomSidebarTrigger";
+import { StepButton } from "@/components/program-builder/shared/StepButton";
 import { proxima_logo_black, proxima_logo_white } from "public";
 
 export function MobileSidebarHeader() {
+  const pathname = usePathname();
+  const isBuildProgram = pathname?.startsWith("/build-program") ?? false;
+
   return (
     <header
       className="sm:hidden w-full flex py-2 justify-between items-center bg-white dark:bg-darkGray relative z-50 px-2"
@@ -31,7 +38,13 @@ export function MobileSidebarHeader() {
           className="h-10 w-auto dark:hidden block"
         />
       </Link>
-      <div className="w-10" aria-hidden />
+      {isBuildProgram ? (
+        <Suspense fallback={<div className="w-10" aria-hidden />}>
+          <StepButton />
+        </Suspense>
+      ) : (
+        <div className="w-10" aria-hidden />
+      )}
     </header>
   );
 }
