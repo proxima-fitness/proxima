@@ -43,7 +43,10 @@ export const Conversation = ({ className, ...props }: ConversationProps) => {
   const isMobile = useIsMobile();
   return (
     <StickToBottom
-      className={cn("relative flex-1 overflow-y-hidden", className)}
+      className={cn(
+        "relative flex-1 overflow-y-hidden max-sm:overflow-y-hidden",
+        className
+      )}
       role="log"
       {...props}
       initial={isMobile ? "instant" : (props.initial ?? "smooth")}
