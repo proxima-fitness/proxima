@@ -224,9 +224,9 @@ export function BuildProgramClient() {
         },
       });
 
-    useEffect(() => {
-        console.log("Chat message history:", messages);
-    }, [messages]);
+    // useEffect(() => {
+    //     console.log("Chat message history:", messages);
+    // }, [messages]);
 
       const activeError = generationError || error || null;
 
