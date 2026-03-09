@@ -11,22 +11,23 @@ import * as React from "react";
 const MOBILE_BREAKPOINT = 768;
 
 /**
- * Returns whether the current viewport width is below the mobile breakpoint.
+ * Returns whether the current viewport width is below the given breakpoint.
  *
- * @returns `true` when the viewport is narrower than `MOBILE_BREAKPOINT`, otherwise `false`.
+ * @param breakpoint - Width in px; viewport narrower than this is considered mobile (default 768).
+ * @returns `true` when the viewport is narrower than the breakpoint, otherwise `false`.
  */
-export function useIsMobile() {
+export function useIsMobile(breakpoint: number = MOBILE_BREAKPOINT) {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined);
 
   React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
+    const mql = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
     const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+      setIsMobile(window.innerWidth < breakpoint);
     };
     mql.addEventListener("change", onChange);
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    setIsMobile(window.innerWidth < breakpoint);
     return () => mql.removeEventListener("change", onChange);
-  }, []);
+  }, [breakpoint]);
 
   return !!isMobile;
 }

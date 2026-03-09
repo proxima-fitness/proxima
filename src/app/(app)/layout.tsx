@@ -2,25 +2,26 @@
  * @module (app)/layout
  *
  * Root layout for the main app segment. Wraps all (app) routes with fonts,
- * theme, providers (user, Hevy, preview, sidebar, etc.), navbar, and main
- * content area. Sits at src/app/(app)/layout.tsx; wraps every page under (app).
+ * theme, providers (user, Hevy, preview, sidebar, etc.), and main content area.
+ * Navigation is sidebar-only at sm and up; at max-sm a minimal mobile header
+ * (sidebar trigger + logo) is shown so the sidebar can be opened as a sheet.
+ * Sits at src/app/(app)/layout.tsx; wraps every page under (app).
  *
- * Depends on: global.css, Navbar, QueryProvider, theme/sidebar/context providers, Analytics, Toaster.
+ * Depends on: global.css, QueryProvider, theme/sidebar/context providers, Analytics, Toaster, MobileSidebarHeader, AppSidebar.
  * Used by: All (app) routes as parent layout.
  */
 
 import "@/styles/global.css";
 
 import { Russo_One, Exo, Inter } from "next/font/google";
-import { Navbar } from '@/components/header/Navbar';
 import QueryProvider from '@/utils/QueryProvider';
-import styles from '@/style';
 import type { Metadata } from 'next';
 import { Toaster } from "@/components/ui/sonner";
 import { IsHevyProvider } from "@/contexts/HevyContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebarDynamic } from "@/components/AppSidebarDynamic";
 import { ConditionalFooterDynamic } from "@/components/footer/ConditionalFooterDynamic";
+import { MobileSidebarHeader } from "@/components/header/MobileSidebarHeader";
 import { Analytics } from "@vercel/analytics/react";
 import NextTopLoader from 'nextjs-toploader';
 import { PostHogClientProvider } from "@/utils/PostHogClientProvider";
@@ -99,13 +100,7 @@ export default function RootLayout({
                                     <PoundsOrKgProvider>
                                         <AppSidebarDynamic />
                                         <div className="flex-1 min-w-0 bg-primary">
-                                            <div className="md:hidden">
-                                                <div className={ `${styles.flexCenter}` }>
-                                                    <div className="w-full">
-                                                        <Navbar />
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <MobileSidebarHeader />
                                             <main id="main">
                                                 <PostHogClientProvider>
                                                     <Analytics />
