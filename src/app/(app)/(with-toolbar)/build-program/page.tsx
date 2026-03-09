@@ -20,7 +20,7 @@ export const metadata = {
 /** Build-program page; client builder with skeleton fallback. */
 export default function BuildProgram() {
     return (
-        <div className={ `bg-white sm:bg-extraLightGray dark:bg-extraDarkGray h-screen overflow-hidden` }>
+        <div className={ `bg-white sm:bg-extraLightGray dark:bg-extraDarkGray flex flex-col flex-1 min-h-0 overflow-hidden` }>
             <Suspense fallback={ <BuildProgramSkeletonSSR /> }>
                 <BuildProgramClient />
             </Suspense>

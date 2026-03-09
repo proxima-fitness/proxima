@@ -1101,7 +1101,7 @@ export function BuildProgramClient() {
                     </Tooltip>
                 </TooltipProvider>
             )}
-            <div className="max-sm:hidden sm:block">
+            <div className="max-sm:hidden sm:block flex-1 min-h-0">
                 <ResizablePanelGroup
                     direction="horizontal"
                 >
@@ -1139,7 +1139,7 @@ export function BuildProgramClient() {
                             minSize={30}
                             className="bg-white dark:bg-darkGray"
                         >
-                            <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
+                            <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden h-full flex flex-col">
                                 {routineContent}
                             </div>
                         </ResizablePanel>
@@ -1152,7 +1152,7 @@ export function BuildProgramClient() {
                             minSize={30}
                             className="bg-white dark:bg-darkGray"
                         >
-                            <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden">
+                            <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden h-full flex flex-col">
                                 {routineContent}
                             </div>
                         </ResizablePanel>
