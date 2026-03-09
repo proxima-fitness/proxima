@@ -172,6 +172,14 @@ export function AppSidebar() {
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
                                 ))}
+                                <SidebarMenuItem key="pricing">
+                                    <SidebarMenuButton asChild tooltip={user ? "Upgrade" : "Pricing"}>
+                                        <a href="/pricing">
+                                            <Crown className="shrink-0" />
+                                            <span className="font-main">{user ? "Upgrade" : "Pricing"}</span>
+                                        </a>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
                             </SidebarMenu>
                         </SidebarGroupContent>
                     </SidebarGroup>
@@ -299,17 +307,6 @@ export function AppSidebar() {
                                         >
                                             Kilograms (kg)
                                         </DropdownMenuItem>
-                                        {!(user && isPro) && (
-                                            <>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem asChild>
-                                                    <a href="/pricing" className="cursor-pointer flex items-center gap-2">
-                                                        <Crown className="h-4 w-4" />
-                                                        Upgrade
-                                                    </a>
-                                                </DropdownMenuItem>
-                                            </>
-                                        )}
                                         {user && isPro && stripePortalUrl && (
                                             <>
                                                 <DropdownMenuSeparator />
