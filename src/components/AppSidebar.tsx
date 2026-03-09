@@ -115,6 +115,12 @@ export function AppSidebar() {
           ]
         : [{ title: "Explore", url: "/programs", icon: Search }];
 
+    const shouldShowTestUserToggle =
+        !isLoading &&
+        user &&
+        isTestUser(user) &&
+        ((!isMobile && state !== "collapsed") || (isMobile && openMobile));
+
     return (
         <>
             <Sidebar collapsible="icon">
@@ -199,7 +205,7 @@ export function AppSidebar() {
                         </SidebarGroupContent>
                     </SidebarGroup> */}
 
-                    {!isLoading && user && isTestUser(user) && state !== "collapsed" && (
+                    {shouldShowTestUserToggle && (
                         <>
                             <SidebarSeparator />
                             <SidebarGroup>
