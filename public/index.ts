@@ -47,7 +47,6 @@ import quotes from "./quotes.svg";
 import proxima_logo_black from "./proxima_logo_black.svg";
 import ai_program_builder from "./ai-program-builder.webp";
 import thumbnail from "./thumbnail.svg";
-import completed_sets from "./completed-sets.png";
 import hevy_logo from "./hevy-logo.svg";
 import strava_logo from "./strava.svg";
 import oura_logo from "./oura.svg";
@@ -97,7 +96,6 @@ export {
     people05,
     people06,
     league_of_innovators_logo,
-    completed_sets,
     twitter,
     reddit,
     proxima_logo_small,

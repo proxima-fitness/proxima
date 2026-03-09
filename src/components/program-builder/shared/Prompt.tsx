@@ -18,6 +18,8 @@ import {
     people03,
     people04,
     people05,
+    proxima_logo_black,
+    proxima_logo_white,
 } from "public";
 import { AvatarStack } from "@/components/avatar-stack";
 import { PromptTemplate } from "./PromptTemplate";
@@ -51,7 +53,11 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
         <>
             <div className="h-screen flex flex-col items-center justify-center gap-10 relative">
                 <div className="flex flex-col items-center justify-center gap-12 w-full relative z-10">
-                    <div className="text-center">
+                    <div className="text-center flex flex-col items-center gap-3">
+                        <div className="hidden sm:block">
+                            <img src={(proxima_logo_black as any).src} alt="Proxima" className="h-14 w-auto hidden dark:block" />
+                            <img src={(proxima_logo_white as any).src} alt="Proxima" className="h-14 w-auto dark:hidden block" />
+                        </div>
                         <div className="font-main text-4xl max-sm:text-2xl max-sm:px-2 font-bold uppercase dark:text-white">The Fitness Plan that finally gets you.</div>
                         <div className="text-lg font-normal px-12 max-sm:text-sm max-sm:px-2 dark:text-white">Create a workout program by chatting with an expert-trained AI</div>
                     </div>
@@ -91,7 +97,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                                         maxAvatarsAmount={5}
                                     />
                                     <p className="font-secondary text-[10px] sm:text-xs font-semibold tracking-[0.12em] uppercase text-black dark:text-white">
-                                        17,000+ athletes
+                                        18,000+ athletes
                                     </p>
                                 </div>
 

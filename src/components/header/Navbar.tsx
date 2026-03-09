@@ -416,7 +416,7 @@ export const Navbar: React.FC = () => {
     const pathname = usePathname();
 
     return (
-        <nav className="w-full flex py-2 justify-between items-center bg-white dark:bg-darkGray relative z-50">
+        <nav className="w-full flex py-2 justify-between items-center bg-white dark:bg-darkGray relative z-50 md:hidden">
             <Link href={ "/" } aria-label="Proxima home">
                 <img src={ (proxima_logo as any).src } alt="Proxima Logo" className="dark:sm:block hidden max-sm:hidden h-[40px] w-auto" />
                 <img src={ (proxima_logo_white_full_text as any).src } alt="Proxima Logo" className="dark:hidden block max-sm:hidden h-[40px] w-auto" />
