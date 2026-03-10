@@ -49,6 +49,7 @@ import { inferDaysPerWeek, inferProgramLength, inferExcludeAreas, inferExcludeEq
 import { toast } from "sonner";
 import { getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy, sortHevyByOrder } from "@/components/program-builder/utils";
 import { applyPatch, type Operation } from "fast-json-patch";
+import { useDebouncedCallback } from "use-debounce";
 
 /** Editor state: program + undo stack for atomic transitions and stable handleUndo */
 type EditorState = {
@@ -134,6 +135,9 @@ export function BuildProgramClient() {
     const [sidebarSize, setSidebarSize] = useState(28);
     const sidebarPanelRef = useRef<ImperativePanelHandle>(null);
     const lastSidebarSizeRef = useRef(28);
+    const saveSidebarSize = useDebouncedCallback((size: number) => {
+        localStorage.setItem(SIDEBAR_SIZE_KEY, size.toString());
+    }, 200);
     const [isChatHidden, setIsChatHidden] = useState(false);
     const [mobileTab, setMobileTab] = useState<string>("chat");
 
@@ -1143,7 +1147,7 @@ export function BuildProgramClient() {
                             defaultSize={sidebarSize}
                             onResize={(size) => {
                                 setSidebarSize(size);
-                                localStorage.setItem(SIDEBAR_SIZE_KEY, size.toString());
+                                saveSidebarSize(size);
                                 setIsChatHidden(size < 1);
                                 if (size >= 1) lastSidebarSizeRef.current = size;
                             }}
@@ -1193,7 +1197,7 @@ export function BuildProgramClient() {
                             defaultSize={sidebarSize}
                             onResize={(size) => {
                                 setSidebarSize(size);
-                                localStorage.setItem(SIDEBAR_SIZE_KEY, size.toString());
+                                saveSidebarSize(size);
                                 setIsChatHidden(size < 1);
                                 if (size >= 1) lastSidebarSizeRef.current = size;
                             }}
