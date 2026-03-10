@@ -71,16 +71,22 @@ export const getChatIds = async (user: User | undefined | null) => {
  * @param conversation - The conversation
  * @param title - The title
  */
-export const postChatHistory = async (user: User | undefined | null, chatId: string, conversation: UIMessage<unknown, UIDataTypes, UITools>[], title: string, programId: string | null) => {
-    if (!user || !chatId || !conversation || !title) {
+export const postChatHistory = async (user: User | undefined | null, conversation: UIMessage<unknown, UIDataTypes, UITools>[], title: string, programId: string | null) => {
+    if (!user || !conversation || !title) {
         return { error: "Missing required fields" };
     }
 
     try {
-        await supabase
+        const { data, error } = await supabase
             .from("chat_history")
-            .insert({ user_id: user.id, id: chatId, conversation: conversation, title: title, program_id: programId ?? null });
-        return { success: true };
+            .insert({ user_id: user.id, conversation: conversation, title: title, program_id: programId ?? null })
+            .select()
+            .single();
+        if (error) {
+            console.error("Error posting chat history:", error);
+            return { success: false, error: "Error posting chat history" };
+        }
+        return { success: true, id: data?.id ?? null };
     } catch (error) {
         console.error("Error posting chat history:", error);
         return { success: false, error: "Error posting chat history" };

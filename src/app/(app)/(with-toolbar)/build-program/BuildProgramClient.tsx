@@ -100,13 +100,28 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
 }
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type FileUIPart } from "ai";
-import { getTextFromChatMessage, isMessageAboutProgram } from "@/components/program-builder/utils/helpers"
+import { getMessageText, getTextFromChatMessage, isMessageAboutProgram } from "@/components/program-builder/utils/helpers"
 import posthog from "posthog-js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useChatHistory } from "@/api/hooks";
 import { useUserContext } from "@/contexts/UserContext";
 import { recordLlmRequest } from "@/api/feature-limits";
+import { postHevyRoutineProgram, type PostHevyRoutineProgramSuccess } from "@/components/program-builder/api/hevy";
+import { postChatHistory } from "@/api/chat-history";
+import { ToolbarSaveButton } from "@/components/program-builder/shared/ToolbarSaveButton";
 
 const chatTransport = new DefaultChatTransport({ api: "/api/chat" });
+
+function isPostHevyRoutineProgramSuccess(r: unknown): r is PostHevyRoutineProgramSuccess {
+    return (
+        typeof r === "object" &&
+        r !== null &&
+        "status" in r &&
+        (r as { status: string }).status === "success" &&
+        "id" in r &&
+        typeof (r as { id: unknown }).id === "number"
+    );
+}
 
 /**
  * Program builder client: chat sidebar, program state (hevyProgram), filters,
@@ -131,6 +146,7 @@ export function BuildProgramClient() {
     const edit = searchParams.get('edit') ?? '';
     const resume = searchParams.get('resume') ?? '';
     const shared = searchParams.get('shared') ?? '';
+    const chatId = searchParams.get('chat') ?? '';
 
     const [sidebarPosition, setSidebarPosition] = useState<"left" | "right">("left");
     const [sidebarSize, setSidebarSize] = useState(28);
@@ -230,6 +246,7 @@ export function BuildProgramClient() {
           setIsBuilding(false);
         },
       });
+    const { data: chatHistoryData } = useChatHistory(user, chatId);
 
     useEffect(() => {
         console.log("Chat message history:", messages);
@@ -314,7 +331,15 @@ export function BuildProgramClient() {
         router.replace('/build-program');
     }, [newChat, setMessages, router]);
 
+    // When opening a chat from the sidebar (?chat=id), load that chat's conversation into messages.
     useEffect(() => {
+        if (!chatId || chatHistoryData == null) return;
+        const conversation = Array.isArray(chatHistoryData?.[0]) ? chatHistoryData[0] : [];
+        setMessages(conversation);
+    }, [chatId, chatHistoryData, setMessages]);
+
+    useEffect(() => {
+        if (chatId) return;
         const isLongPromptPlaceholder = search === LONG_PROMPT_PLACEHOLDER;
         // Long prompts: URL uses placeholder; real text in sessionStorage to avoid URL length limits
         const messageText = isLongPromptPlaceholder
@@ -368,7 +393,7 @@ export function BuildProgramClient() {
         sendMessageWithContext(files?.length ? { text: messageText, files } : { text: messageText });
         posthog?.capture?.('sent_first_prompt_to_ai', { search: messageText.slice(0, 200), user: user?.id ?? "user_id_unknown" });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [search, user, hevyProgram, shared, shareId, resume, sendMessageWithContext]);
+    }, [chatId, search, user, hevyProgram, shared, shareId, resume, sendMessageWithContext]);
 
     const handleSubmit = useCallback((text: string, files?: FileUIPart[]) => {
         if (!text.trim() && (!files || files.length === 0)) return;
@@ -732,10 +757,27 @@ export function BuildProgramClient() {
         dispatchEditor({ type: "UNDO" });
     }, []);
 
+    const deriveChatTitle = useCallback(() => {
+        if (typeof window === "undefined") return "Untitled";
+        try {
+            const promptRaw = localStorage.getItem("prompt");
+            const parsed = promptRaw ? (JSON.parse(promptRaw) as string) : "";
+            if (parsed && parsed !== LONG_PROMPT_PLACEHOLDER) {
+                return parsed.trim().slice(0, 200);
+            }
+        } catch {
+            // ignore
+        }
+        return "Untitled";
+    }, []);
+
     const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+    const [savePortalTarget, setSavePortalTarget] = useState<HTMLElement | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
         setPortalTarget(document.getElementById("toolbar-undo-portal"));
+        setSavePortalTarget(document.getElementById("toolbar-save-portal"));
         const savedPosition = localStorage.getItem(SIDEBAR_POSITION_KEY) as "left" | "right" | null;
         if (savedPosition === "left" || savedPosition === "right") {
             setSidebarPosition(savedPosition);
@@ -833,6 +875,65 @@ export function BuildProgramClient() {
         explore,
     ]);
 
+    const handleSave = useCallback(async () => {
+        if (!user) {
+            toast.error("Sign in to save.");
+            return;
+        }
+        if (hevyProgram.length === 0) {
+            toast.error("Add a program first.");
+            return;
+        }
+        if (messages.length === 0) {
+            toast.error("Add a chat first.");
+            return;
+        }
+
+        const title = deriveChatTitle();
+        setIsSaving(true);
+
+        try {
+            const prompt = title !== "Untitled" ? title : search || "";
+            const supabaseResult = await postHevyRoutineProgram(orderedProgram, prompt, request);
+
+            if (!isPostHevyRoutineProgramSuccess(supabaseResult)) {
+                toast.error("Failed to save program.");
+                console.error("Failed to save program.", supabaseResult);
+                return;
+            }
+
+            const programId = supabaseResult.id;
+            if (supabaseResult.skippedExercises?.length) {
+                for (const skipped of supabaseResult.skippedExercises) {
+                    toast.warning(`${skipped.exerciseName}: ${skipped.reason}`);
+                }
+            }
+
+            const chatResult = await postChatHistory(user, messages, title, String(programId));
+            if (chatResult.success !== true) {
+                toast.error("Program saved but chat history could not be saved.");
+                console.error("Chat history save failed.", chatResult.error);
+            } else {
+                toast.success("Program and chat saved.");
+                queryClient.invalidateQueries({ queryKey: ["chat-ids", user.id] });
+            }
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Save failed.");
+            console.error("Save error:", err);
+        } finally {
+            setIsSaving(false);
+        }
+    }, [
+        user,
+        hevyProgram.length,
+        messages,
+        orderedProgram,
+        request,
+        search,
+        deriveChatTitle,
+        queryClient,
+    ]);
+
     const localStorageDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const DEBOUNCE_MS = 500;
 
@@ -854,7 +955,9 @@ export function BuildProgramClient() {
                 localStorage.setItem("hevy-program-in-progress", JSON.stringify(hevyProgram));
                 localStorage.setItem("hevy-request", JSON.stringify(request));
             }
-            localStorage.setItem("prompt", JSON.stringify(search));
+            const firstUser = messages.find((m) => m.role === "user");
+            const promptToStore = (search && search.trim()) || (firstUser ? getMessageText(firstUser) : "");
+            localStorage.setItem("prompt", JSON.stringify(promptToStore));
 
             // Persist anonymous chat history so non-logged-in users don't lose it on refresh.
             if (!user && messages.length > 0) {
@@ -1122,9 +1225,19 @@ export function BuildProgramClient() {
         portalTarget
     );
 
+    const saveButton = savePortalTarget && createPortal(
+        <ToolbarSaveButton
+            onClick={handleSave}
+            disabled={!user || hevyProgram.length === 0 || messages.length === 0}
+            isSaving={isSaving}
+        />,
+        savePortalTarget
+    );
+
     return (
         <>
             {undoButton}
+            {saveButton}
             {isChatHidden && (
                 <TooltipProvider delayDuration={0}>
                     <Tooltip>
