@@ -64,6 +64,7 @@ import { DeleteAccountDialog } from "@/components/header/DeleteAccountDialog";
 import { ConnectHevyDialog } from "@/components/header/ConnectHevyDialog";
 import { useTheme } from "next-themes";
 import { proxima_logo, proxima_logo_white_full_text } from "public";
+import Link from "next/link";
 
 const signOutServer = async () => {
     try {
@@ -143,10 +144,10 @@ export function AppSidebar() {
                             <SidebarMenu>
                                 <SidebarMenuItem>
                                     <SidebarMenuButton asChild tooltip="New Chat">
-                                        <a href="/build-program">
+                                        <Link href="/build-program">
                                             <MessageSquarePlus className="shrink-0" />
                                             <span className="font-main">New Chat</span>
-                                        </a>
+                                        </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             </SidebarMenu>
@@ -159,30 +160,30 @@ export function AppSidebar() {
                                 {baseItems.map((item) => (
                                     <SidebarMenuItem key={item.title}>
                                         <SidebarMenuButton asChild tooltip={item.title}>
-                                            <a href={item.url}>
+                                            <Link href={item.url}>
                                                 <item.icon className="shrink-0" />
                                                 <span className="font-main">{item.title}</span>
-                                            </a>
+                                            </Link>
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
                                 ))}
                                 {authenticatedItems.map((item) => (
                                     <SidebarMenuItem key={item.title}>
                                         <SidebarMenuButton asChild tooltip={item.title}>
-                                            <a href={item.url}>
+                                            <Link href={item.url}>
                                                 <item.icon className="shrink-0" />
                                                 <span className="font-main">{item.title}</span>
-                                            </a>
+                                            </Link>
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
                                 ))}
                                 {!isPro && (
                                     <SidebarMenuItem key="pricing">
                                         <SidebarMenuButton asChild tooltip={user ? "Upgrade" : "Pricing"}>
-                                            <a href="/pricing">
+                                            <Link href="/pricing">
                                                 <Crown className="shrink-0 text-lightGold" />
                                                 <span className={`font-main ${user ? "dark:text-lightGold" : ""}`}>{user ? "Upgrade" : "Pricing"}</span>
-                                            </a>
+                                            </Link>
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
                                 )}
@@ -223,17 +224,22 @@ export function AppSidebar() {
                                 ) : (
                                     recentChats.map((chat) => {
                                         const displayTitle = chat.title?.trim() || "Untitled chat";
+                                        const href = `/build-program?chat=${encodeURIComponent(chat.id)}&edit=true${
+                                            chat.program_id
+                                                ? `&shareId=${encodeURIComponent(chat.program_id)}&shared=true`
+                                                : ""
+                                        }`;
                                         return (
                                             <SidebarMenuItem key={chat.id}>
                                                 <SidebarMenuButton asChild tooltip={displayTitle}>
-                                                    <a
-                                                        href={`/build-program?chat=${encodeURIComponent(chat.id)}`}
+                                                    <Link
+                                                        href={href}
                                                         className="flex min-w-0 flex-1 items-center gap-2"
                                                     >
                                                         <span className="min-w-0 flex-1 truncate font-main">
                                                             {displayTitle}
                                                         </span>
-                                                    </a>
+                                                    </Link>
                                                 </SidebarMenuButton>
                                             </SidebarMenuItem>
                                         );

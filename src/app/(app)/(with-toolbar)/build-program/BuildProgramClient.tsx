@@ -715,6 +715,8 @@ export function BuildProgramClient() {
     }, []);
 
     useEffect(() => {
+        setHevyProgram([]);
+
         const fetchSharedProgram = async () => {
             try {
                 const sharedProgram = await getSharedProgram(Number(shareId));
