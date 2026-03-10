@@ -299,10 +299,10 @@ export function AppSidebar() {
                                         </DropdownMenuLabel>
                                         <DropdownMenuSeparator />
                                         <DropdownMenuItem asChild>
-                                            <a href="/profile" className="cursor-pointer flex items-center gap-2">
+                                            <Link href="/profile" className="cursor-pointer flex items-center gap-2">
                                                 <UserRound className="h-4 w-4" />
                                                 Profile
-                                            </a>
+                                            </Link>
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator />
                                         <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
@@ -367,7 +367,10 @@ export function AppSidebar() {
                                                     Pro account
                                                 </DropdownMenuLabel>
                                                 <DropdownMenuItem asChild>
-                                                    <a href={stripePortalUrl} className="cursor-pointer flex items-center gap-2">
+                                                    <a
+                                                        href={stripePortalUrl}
+                                                        className="cursor-pointer flex items-center gap-2"
+                                                    >
                                                         <Receipt className="h-4 w-4" />
                                                         Manage Subscription
                                                     </a>
@@ -420,12 +423,17 @@ export function AppSidebar() {
                                 </DropdownMenu>
                             ) : (
                                 <SidebarMenuButton asChild tooltip="Log in">
-                                    <a href="/auth/login" className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
+                                    <Link
+                                        href="/auth/login"
+                                        className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center"
+                                    >
                                         <Avatar className="h-6 w-6 shrink-0">
-                                            <AvatarFallback className="text-xs"><LogIn className="h-4 w-4" /></AvatarFallback>
+                                            <AvatarFallback className="text-xs">
+                                                <LogIn className="h-4 w-4" />
+                                            </AvatarFallback>
                                         </Avatar>
                                         <span className="font-main group-data-[collapsible=icon]:hidden">Log in</span>
-                                    </a>
+                                    </Link>
                                 </SidebarMenuButton>
                             )}
                         </SidebarMenuItem>
