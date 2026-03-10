@@ -169,4 +169,6 @@ type TChatHistory = {
     conversation?: UIMessage<unknown, UIDataTypes, UITools>[]; // optional because we don't want to fetch the conversation on initial load
     created_at: string;
     title: string;
+    user_id?: string;
+    program_id: string | null;
 };

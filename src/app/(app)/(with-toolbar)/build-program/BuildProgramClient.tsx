@@ -1230,7 +1230,7 @@ export function BuildProgramClient() {
                             )}
                         >
                             <Calendar className="h-5 w-5" />
-                            <span>My Program</span>
+                            <span>Program</span>
                         </TabsTrigger>
                     </TabsList>
                 </Tabs>

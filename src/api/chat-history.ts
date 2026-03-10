@@ -46,7 +46,7 @@ export const getChatIds = async (user: User | undefined | null) => {
     try {
     const { data: chatId, error: chatIdError } = await supabase
         .from("chat_history")
-        .select("id, created_at, title")
+        .select("id, created_at, title, program_id")
         .order("created_at", { ascending: false })
         .eq("user_id", user.id);
 
@@ -55,7 +55,7 @@ export const getChatIds = async (user: User | undefined | null) => {
         return null;
     }
 
-    return chatId?.map((chat) =>  ({id: chat.id, created_at: chat.created_at, title: chat.title} )) as TChatHistory[] ?? [];
+    return chatId?.map((chat) =>  ({id: chat.id, created_at: chat.created_at, title: chat.title, program_id: chat.program_id} )) as {id: string, created_at: string, title: string, program_id: string | null}[] ?? [];
     } catch (error) {
         console.error("Error getting chat ids:", error);
         return null;
@@ -71,7 +71,7 @@ export const getChatIds = async (user: User | undefined | null) => {
  * @param conversation - The conversation
  * @param title - The title
  */
-export const postChatHistory = async (user: User | undefined | null, chatId: string, conversation: UIMessage<unknown, UIDataTypes, UITools>[], title: string) => {
+export const postChatHistory = async (user: User | undefined | null, chatId: string, conversation: UIMessage<unknown, UIDataTypes, UITools>[], title: string, programId: string | null) => {
     if (!user || !chatId || !conversation || !title) {
         return { error: "Missing required fields" };
     }
@@ -79,7 +79,7 @@ export const postChatHistory = async (user: User | undefined | null, chatId: str
     try {
         await supabase
             .from("chat_history")
-            .insert({ user_id: user.id, id: chatId, conversation: conversation, title: title });
+            .insert({ user_id: user.id, id: chatId, conversation: conversation, title: title, program_id: programId ?? null });
         return { success: true };
     } catch (error) {
         console.error("Error posting chat history:", error);
