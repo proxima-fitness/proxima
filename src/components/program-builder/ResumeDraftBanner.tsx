@@ -13,7 +13,6 @@
  * Used by: program-builder/shared/Prompt.tsx, profile/ProfileContent.tsx.
  */
 
-import { useIsHevy } from "@/contexts/HevyContext";
 import {
     Dialog,
     DialogContent,
@@ -32,36 +31,29 @@ import { useEffect, useState } from "react";
  * (key depends on Hevy vs Proxima mode) and renders resume/clear UI or null.
  */
 export const ResumeDraftBanner: React.FC = () => {
-    const { isHevy } = useIsHevy();
     const [hevyRoutine, setHevyRoutine] = useState<THevyRoutine[]>();
-    const [program, setProgram] = useState<TProgramCreatorDay[][]>();
     const [clearDialogOpen, setClearDialogOpen] = useState(false);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
-            const key = isHevy ? "hevy-program-in-progress" : "program-in-progress";
+            const key = "hevy-program-in-progress";
             const localStorageProgram = localStorage.getItem(key);
             if (localStorageProgram) {
-                if (isHevy) {
-                    setHevyRoutine(JSON.parse(localStorageProgram));
-                } else {
-                    setProgram(JSON.parse(localStorageProgram));
-                }
+                setHevyRoutine(JSON.parse(localStorageProgram));
             }
         }
-    }, [isHevy]);
+    }, []);
 
     const handleClearProgram = () => {
-        const key = isHevy ? "hevy-program-in-progress" : "program-in-progress";
+        const key = "hevy-program-in-progress";
         if (typeof window !== "undefined") {
             localStorage.removeItem(key);
         }
         setHevyRoutine(undefined);
-        setProgram(undefined);
         setClearDialogOpen(false);
     };
 
-    if (!hevyRoutine && !program) {
+    if (!hevyRoutine) {
         return <></>;
     }
 
