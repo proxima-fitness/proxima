@@ -65,6 +65,7 @@ import { ConnectHevyDialog } from "@/components/header/ConnectHevyDialog";
 import { useTheme } from "next-themes";
 import { proxima_logo, proxima_logo_white_full_text } from "public";
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 
 const signOutServer = async () => {
     try {
@@ -107,6 +108,10 @@ export function AppSidebar() {
     const { toggleSidebar, state, isMobile, openMobile } = useSidebar();
     const { data: chatIds, isLoading: chatIdsLoading, isError: chatIdsError } = useChatIds(user);
     const recentChats = (chatIds ?? []).slice(0, RECENTS_LIMIT);
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const selectedChatId =
+        pathname?.startsWith("/build-program") === true ? searchParams.get("chat") : null;
 
     const handleLogout = async () => {
         await signOutUser();
@@ -229,9 +234,16 @@ export function AppSidebar() {
                                                 ? `&shareId=${encodeURIComponent(chat.program_id)}&shared=true`
                                                 : ""
                                         }`;
+                                        const isActive = chat.id === selectedChatId;
                                         return (
                                             <SidebarMenuItem key={chat.id}>
-                                                <SidebarMenuButton asChild tooltip={displayTitle}>
+                                                <SidebarMenuButton
+                                                    asChild
+                                                    tooltip={displayTitle}
+                                                    className={cn(
+                                                        isActive && "bg-accent text-accent-foreground"
+                                                    )}
+                                                >
                                                     <Link
                                                         href={href}
                                                         className="flex min-w-0 flex-1 items-center gap-2"
