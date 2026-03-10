@@ -33,6 +33,7 @@ const PENDING_INITIAL_PROMPT_KEY = "pending-initial-prompt";
 const LONG_PROMPT_PLACEHOLDER = "__long_prompt__";
 const COLLAPSED_SIZE = 30;
 const EXPANDED_SIZE = 70;
+const CHAT_MESSAGES_KEY = "messages";
 import { useSearchParams } from "next/navigation";
 import { usePreview } from "@/contexts/PreviewContext";
 import { useIsHevy } from "@/contexts/HevyContext";
@@ -278,6 +279,27 @@ export function BuildProgramClient() {
             prevErrorRef.current = null;
         }
     }, [activeError, user]);
+
+    // Restore anonymous chat messages from localStorage when not logged in.
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        if (user) {
+            // Clear any anonymous chat history once the user is logged in.
+            localStorage.removeItem(CHAT_MESSAGES_KEY);
+            return;
+        }
+
+        try {
+            const stored = localStorage.getItem(CHAT_MESSAGES_KEY);
+            if (!stored) return;
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                setMessages(parsed);
+            }
+        } catch {
+            // ignore parse errors
+        }
+    }, [user, setMessages]);
 
     useEffect(() => {
         const isLongPromptPlaceholder = search === LONG_PROMPT_PLACEHOLDER;
@@ -817,6 +839,11 @@ export function BuildProgramClient() {
                 localStorage.setItem("hevy-request", JSON.stringify(request));
             }
             localStorage.setItem("prompt", JSON.stringify(search));
+
+            // Persist anonymous chat history so non-logged-in users don't lose it on refresh.
+            if (!user && messages.length > 0) {
+                localStorage.setItem(CHAT_MESSAGES_KEY, JSON.stringify(messages));
+            }
         }, DEBOUNCE_MS);
 
         return () => {
@@ -825,7 +852,7 @@ export function BuildProgramClient() {
                 localStorageDebounceRef.current = null;
             }
         };
-    }, [hevyProgram, request, resume, search]);
+    }, [hevyProgram, request, resume, search, user, messages]);
 
     const toggleSidebarPosition = useCallback(() => {
         setSidebarPosition((prev) => {
