@@ -34,7 +34,7 @@ const LONG_PROMPT_PLACEHOLDER = "__long_prompt__";
 const COLLAPSED_SIZE = 30;
 const EXPANDED_SIZE = 70;
 const CHAT_MESSAGES_KEY = "messages";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { usePreview } from "@/contexts/PreviewContext";
 import { useIsHevy } from "@/contexts/HevyContext";
 import { BuildProgramSkeleton } from "@/components/program-builder/shared/BuildProgramSkeleton";
@@ -125,6 +125,7 @@ export function BuildProgramClient() {
     });
     const { setIsPreview } = usePreview();
     const searchParams = useSearchParams();
+    const router = useRouter();
 
     const shareId = searchParams.get('shareId') ?? '';
     const edit = searchParams.get('edit') ?? '';
@@ -171,6 +172,7 @@ export function BuildProgramClient() {
 
     const empty = searchParams.get('empty') ?? '';
     const search = searchParams.get('search') ?? '';
+    const newChat = searchParams.get('new') ?? '';
 
     // TODO: These will be short term memory for now but eventually we will want some long term memory for the user
     const [sex, setSex] = useState<string>("");
@@ -304,6 +306,13 @@ export function BuildProgramClient() {
             // ignore parse errors
         }
     }, [user, setMessages]);
+
+    // When sidebar navigates with ?new=true (Continue on new-chat confirm), clear messages and clean URL.
+    useEffect(() => {
+        if (newChat !== 'true') return;
+        setMessages([]);
+        router.replace('/build-program');
+    }, [newChat, setMessages, router]);
 
     useEffect(() => {
         const isLongPromptPlaceholder = search === LONG_PROMPT_PLACEHOLDER;
@@ -837,8 +846,11 @@ export function BuildProgramClient() {
 
         localStorageDebounceRef.current = setTimeout(() => {
             localStorageDebounceRef.current = null;
-            // Don't overwrite localStorage with empty program when resuming
-            if (!(hevyProgram.length === 0 && resume === "true")) {
+            if (hevyProgram.length === 0 && resume === "true") {
+                // Don't overwrite on resume
+            } else if (hevyProgram.length === 0) {
+                localStorage.removeItem("hevy-program-in-progress");
+            } else {
                 localStorage.setItem("hevy-program-in-progress", JSON.stringify(hevyProgram));
                 localStorage.setItem("hevy-request", JSON.stringify(request));
             }

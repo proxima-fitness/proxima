@@ -65,7 +65,11 @@ import { ConnectHevyDialog } from "@/components/header/ConnectHevyDialog";
 import { useTheme } from "next-themes";
 import { proxima_logo, proxima_logo_white_full_text } from "public";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
+import { NewChatConfirmDialog } from "@/components/NewChatConfirmDialog";
+
+const CHAT_MESSAGES_KEY = "messages";
+const HEVY_PROGRAM_IN_PROGRESS_KEY = "hevy-program-in-progress";
 
 const signOutServer = async () => {
     try {
@@ -104,6 +108,8 @@ export function AppSidebar() {
     );
     const [openDeleteAccountDialog, setOpenDeleteAccountDialog] = useState(false);
     const [openConnectHevyDialog, setOpenConnectHevyDialog] = useState(false);
+    const [showNewChatConfirm, setShowNewChatConfirm] = useState(false);
+    const router = useRouter();
 
     const { toggleSidebar, state, isMobile, openMobile } = useSidebar();
     const { data: chatIds, isLoading: chatIdsLoading, isError: chatIdsError } = useChatIds(user);
@@ -116,6 +122,27 @@ export function AppSidebar() {
     const handleLogout = async () => {
         await signOutUser();
         await signOutServer();
+    };
+
+    const handleNewChatClick = () => {
+        if (user) return; // Logged in: do nothing
+        const hasProgress =
+            typeof window !== "undefined" &&
+            (!!localStorage.getItem(CHAT_MESSAGES_KEY) ||
+                !!localStorage.getItem(HEVY_PROGRAM_IN_PROGRESS_KEY));
+        if (hasProgress) {
+            setShowNewChatConfirm(true);
+        } else {
+            router.push("/build-program");
+        }
+    };
+
+    const handleNewChatContinue = () => {
+        if (typeof window !== "undefined") {
+            localStorage.removeItem(CHAT_MESSAGES_KEY);
+            localStorage.removeItem(HEVY_PROGRAM_IN_PROGRESS_KEY);
+        }
+        router.push("/build-program?new=true");
     };
 
     const authenticatedItems = user
@@ -148,11 +175,12 @@ export function AppSidebar() {
                         <SidebarGroupContent>
                             <SidebarMenu>
                                 <SidebarMenuItem>
-                                    <SidebarMenuButton asChild tooltip="New Chat">
-                                        <Link href="/build-program">
-                                            <MessageSquarePlus className="shrink-0" />
-                                            <span className="font-main">New Chat</span>
-                                        </Link>
+                                    <SidebarMenuButton
+                                        tooltip="New Chat"
+                                        onClick={handleNewChatClick}
+                                    >
+                                        <MessageSquarePlus className="shrink-0" />
+                                        <span className="font-main">New Chat</span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             </SidebarMenu>
@@ -457,6 +485,11 @@ export function AppSidebar() {
             <ConnectHevyDialog
                 openConnectHevyDialog={openConnectHevyDialog}
                 handleOpenConnectHevyDialog={setOpenConnectHevyDialog}
+            />
+            <NewChatConfirmDialog
+                open={showNewChatConfirm}
+                onOpenChange={setShowNewChatConfirm}
+                onContinue={handleNewChatContinue}
             />
         </>
     );
