@@ -1,6 +1,5 @@
 "use client";
 
-import type { ComponentProps } from "react";
 import { memo } from "react";
 import type { ImperativePanelHandle } from "react-resizable-panels";
 import {
@@ -8,12 +7,6 @@ import {
     ResizablePanel,
     ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { Agent } from "@/components/program-builder/shared/agent/Agent";
-
-export type TBuildProgramDesktopLayoutAgentProps = Omit<
-    ComponentProps<typeof Agent>,
-    "sidebarPosition" | "onTogglePosition" | "onToggleExpand" | "onToggleHide" | "isExpanded"
->;
 
 export interface IProps {
     sidebarPosition: "left" | "right";
@@ -21,12 +14,8 @@ export interface IProps {
     sidebarSize: number;
     onSidebarResize: (size: number) => void;
     isChatHidden: boolean;
-    agentProps: TBuildProgramDesktopLayoutAgentProps;
+    chatPanel: React.ReactNode;
     routineContent: React.ReactNode;
-    onTogglePosition: () => void;
-    onToggleExpand: () => void;
-    onToggleHide: () => void;
-    isExpanded: boolean;
     maxSidebarSize: number;
 }
 
@@ -40,12 +29,8 @@ function BuildProgramDesktopLayoutInner({
     sidebarSize,
     onSidebarResize,
     isChatHidden,
-    agentProps,
+    chatPanel,
     routineContent,
-    onTogglePosition,
-    onToggleExpand,
-    onToggleHide,
-    isExpanded,
     maxSidebarSize,
 }: IProps) {
     const sidebarPanel = (
@@ -60,14 +45,7 @@ function BuildProgramDesktopLayoutInner({
             collapsible
             className={SIDEBAR_PANEL_CLASS}
         >
-            <Agent
-                {...agentProps}
-                sidebarPosition={sidebarPosition}
-                onTogglePosition={onTogglePosition}
-                onToggleExpand={onToggleExpand}
-                onToggleHide={onToggleHide}
-                isExpanded={isExpanded}
-            />
+            {chatPanel}
         </ResizablePanel>
     );
 

@@ -1,19 +1,16 @@
 "use client";
 
 import { memo, useCallback } from "react";
-import { Agent } from "@/components/program-builder/shared/agent/Agent";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Calendar, MessageSquare } from "lucide-react";
-import type { TBuildProgramDesktopLayoutAgentProps } from "./BuildProgramDesktopLayout";
 
 export interface IProps {
     mobileTab: string;
     onMobileTabChange: (value: string) => void;
     hasProgramContent: boolean;
-    agentProps: TBuildProgramDesktopLayoutAgentProps;
+    chatPanel: React.ReactNode;
     routineContent: React.ReactNode;
-    onToggleHide: () => void;
 }
 
 const CHAT_TRIGGER_CLASS =
@@ -26,9 +23,8 @@ function BuildProgramMobileLayoutInner({
     mobileTab,
     onMobileTabChange,
     hasProgramContent,
-    agentProps,
+    chatPanel,
     routineContent,
-    onToggleHide,
 }: IProps) {
     const handleValueChange = useCallback(
         (value: string) => {
@@ -42,14 +38,7 @@ function BuildProgramMobileLayoutInner({
         <div className="max-sm:block sm:hidden h-[calc(100vh-4rem)] flex flex-col relative">
             <Tabs value={mobileTab} onValueChange={handleValueChange} className="flex flex-col h-full">
                 <TabsContent value="chat" className="flex-1 m-0 mt-0 px-4 pb-20">
-                    <Agent
-                        {...agentProps}
-                        sidebarPosition="left"
-                        onTogglePosition={() => {}}
-                        onToggleExpand={() => {}}
-                        onToggleHide={onToggleHide}
-                        isExpanded={false}
-                    />
+                    {chatPanel}
                 </TabsContent>
                 <TabsContent value="program" className="flex-1 overflow-y-auto m-0 mt-0 px-4 pb-20 bg-white dark:bg-darkGray">
                     <div className="w-full max-w-full overflow-x-hidden">

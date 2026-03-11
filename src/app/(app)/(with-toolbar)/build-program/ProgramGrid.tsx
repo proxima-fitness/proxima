@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Program routine view: builds props for HevyRoutine and conditionally renders
+ * Program grid: builds props for HevyRoutine and conditionally renders
  * HevyRoutine or BuildProgramSkeleton. Extracted from BuildProgram to own
  * routine view wiring and limit re-renders via memo.
  */

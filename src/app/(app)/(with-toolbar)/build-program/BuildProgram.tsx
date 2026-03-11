@@ -18,6 +18,7 @@ import type { ImperativePanelHandle } from "react-resizable-panels";
 
 import { BuildProgramDesktopLayout } from "./BuildProgramDesktopLayout";
 import { BuildProgramMobileLayout } from "./BuildProgramMobileLayout";
+import { BuildProgramChatPanel } from "./BuildProgramChatPanel";
 import { MessageSquare } from "lucide-react";
 
 import { useSearchParams, useRouter } from "next/navigation";
@@ -562,48 +563,12 @@ export function BuildProgram() {
 
     const isExpanded = sidebarSize >= EXPANDED_SIZE - 5;
 
-    // Single props object for Agent; ProgramRoutineView receives its own props below.
-    const agentPropsCommon = useMemo(() => ({
+    const chatPanelStateProps = {
         search,
-        setHevyProgram,
         hevyProgram,
+        setHevyProgram,
         applyPatchWithUndo,
-        sex: programRequest.sex,
-        age: programRequest.age,
-        daysPerWeek: programRequest.daysPerWeek,
-        specificDays: programRequest.specificDays,
-        programLength: programRequest.programLength,
-        workoutDuration: programRequest.workoutDuration,
-        activityLevel: programRequest.activityLevel,
-        goals: programRequest.goals,
-        specialization: programRequest.specialization,
-        equipment: programRequest.equipment,
-        focusAreas: programRequest.focusAreas,
-        difficultyLevel: programRequest.difficultyLevel,
-        excludeAreas: programRequest.excludeAreas,
-        excludeEquipment: programRequest.excludeEquipment,
-        excludeSpecializations: programRequest.excludeSpecializations,
-        healthIssues: programRequest.healthIssues,
-        programTitle: programRequest.programTitle,
-        explore: programRequest.explore,
-        handleSex: programRequest.handleSex,
-        handleAge: programRequest.handleAge,
-        handleDaysPerWeek: programRequest.handleDaysPerWeek,
-        handleSpecificDays: programRequest.handleSpecificDays,
-        handleProgramLength: programRequest.handleProgramLength,
-        handleWorkoutDuration: programRequest.handleWorkoutDuration,
-        handleActivityLevel: programRequest.handleActivityLevel,
-        handleGoals: programRequest.handleGoals,
-        handleSpecialization: programRequest.handleSpecialization,
-        handleEquipment: programRequest.handleEquipment,
-        handleFocusAreas: programRequest.handleFocusAreas,
-        handleDifficultyLevel: programRequest.handleDifficultyLevel,
-        handleExcludeAreas: programRequest.handleExcludeAreas,
-        handleExcludeEquipment: programRequest.handleExcludeEquipment,
-        handleExcludeSpecializations: programRequest.handleExcludeSpecializations,
-        handleHealthIssues: programRequest.handleHealthIssues,
-        handleProgramTitle: programRequest.handleProgramTitle,
-        handleExplore: programRequest.handleExplore,
+        programRequest,
         messages,
         setMessages,
         sendMessageWithContext,
@@ -620,28 +585,29 @@ export function BuildProgram() {
         handleSubmit,
         handleStop,
         onBuildComplete,
-    }), [
-        search,
-        setHevyProgram,
-        hevyProgram,
-        applyPatchWithUndo,
-        programRequest,
-        messages,
-        setMessages,
-        sendMessageWithContext,
-        isBuilding,
-        handleIsBuilding,
-        isLoading,
-        activeError,
-        handleRetry,
-        handleClearError,
-        retryCount,
-        handleTimeoutError,
-        status,
-        handleSubmit,
-        handleStop,
-        onBuildComplete,
-    ]);
+    } as const;
+
+    const desktopChatPanel = (
+        <BuildProgramChatPanel
+            {...chatPanelStateProps}
+            sidebarPosition={sidebarPosition}
+            onTogglePosition={toggleSidebarPosition}
+            onToggleExpand={onToggleExpand}
+            onToggleHide={handleToggleHide}
+            isExpanded={isExpanded}
+        />
+    );
+
+    const mobileChatPanel = (
+        <BuildProgramChatPanel
+            {...chatPanelStateProps}
+            sidebarPosition="left"
+            onTogglePosition={() => {}}
+            onToggleExpand={() => {}}
+            onToggleHide={handleToggleHide}
+            isExpanded={false}
+        />
+    );
 
     const routineContent = (
         <ProgramEditor
@@ -689,21 +655,16 @@ export function BuildProgram() {
                 sidebarSize={sidebarSize}
                 onSidebarResize={onSidebarResize}
                 isChatHidden={isChatHidden}
-                agentProps={agentPropsCommon}
+                chatPanel={desktopChatPanel}
                 routineContent={routineContent}
-                onTogglePosition={toggleSidebarPosition}
-                onToggleExpand={onToggleExpand}
-                onToggleHide={handleToggleHide}
-                isExpanded={isExpanded}
                 maxSidebarSize={EXPANDED_SIZE}
             />
             <BuildProgramMobileLayout
                 mobileTab={mobileTab}
                 onMobileTabChange={setMobileTab}
                 hasProgramContent={hasProgramContent}
-                agentProps={agentPropsCommon}
+                chatPanel={mobileChatPanel}
                 routineContent={routineContent}
-                onToggleHide={handleToggleHide}
             />
         </>
     );
