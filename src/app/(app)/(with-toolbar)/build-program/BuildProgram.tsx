@@ -13,7 +13,6 @@
  */
 
 import { useState, useEffect, useMemo, useReducer, useCallback, useRef } from "react";
-import { createPortal } from "react-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { ImperativePanelHandle } from "react-resizable-panels";
 import {
@@ -25,7 +24,7 @@ import {
 import { Agent } from "@/components/program-builder/shared/agent/Agent";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { MessageSquare, Calendar, Undo2 } from "lucide-react";
+import { MessageSquare, Calendar } from "lucide-react";
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { usePreview } from "@/contexts/PreviewContext";
@@ -53,7 +52,7 @@ import { useUserContext } from "@/contexts/UserContext";
 import { recordLlmRequest } from "@/api/feature-limits";
 import { postHevyRoutineProgram, type PostHevyRoutineProgramSuccess } from "@/components/program-builder/api/hevy";
 import { postChatHistory } from "@/api/chat-history";
-import { ToolbarSaveButton } from "@/components/program-builder/shared/ToolbarSaveButton";
+import { ToolbarPortalButtons } from "@/components/program-builder/shared/ToolbarPortalButtons";
 import { editorReducer } from "./editor-reducer";
 import { Operation } from "fast-json-patch";
 
@@ -212,7 +211,7 @@ export function BuildProgram() {
     const [isBuilding, setIsBuilding] = useState(false);
     const MAX_RETRIES = 2;
 
-            // Wrapper that sends current program and filter context with every chat request so the API
+    // Wrapper that sends current program and filter context with every chat request so the API
     // (and getCurrentProgram tool) see the actual state (e.g. when program was loaded via shareId).
     const sendMessageWithContext = useCallback(
         (message: Parameters<typeof sendMessage>[0], options?: Parameters<typeof sendMessage>[1]) => {
@@ -721,13 +720,9 @@ export function BuildProgram() {
         return "Untitled";
     }, []);
 
-    const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
-    const [savePortalTarget, setSavePortalTarget] = useState<HTMLElement | null>(null);
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
-        setPortalTarget(document.getElementById("toolbar-undo-portal"));
-        setSavePortalTarget(document.getElementById("toolbar-save-portal"));
         const savedPosition = localStorage.getItem(SIDEBAR_POSITION_KEY) as "left" | "right" | null;
         if (savedPosition === "left" || savedPosition === "right") {
             setSidebarPosition(savedPosition);
@@ -1161,33 +1156,15 @@ export function BuildProgram() {
         <BuildProgramSkeleton />
     );
 
-    const undoButton = portalTarget && createPortal(
-        undoStack.length > 0 ? (
-            <Button
-                size="sm"
-                onClick={handleUndo}
-                className="gap-2 bg-lightGold hover:bg-lightGold/80 text-black h-9"
-            >
-                <Undo2 className="h-4 w-4" />
-                Undo
-            </Button>
-        ) : null,
-        portalTarget
-    );
-
-    const saveButton = savePortalTarget && createPortal(
-        <ToolbarSaveButton
-            onClick={handleSave}
-            disabled={!user || hevyProgram.length === 0 || messages.length === 0}
-            isSaving={isSaving}
-        />,
-        savePortalTarget
-    );
-
     return (
         <>
-            {undoButton}
-            {saveButton}
+            <ToolbarPortalButtons
+                canUndo={undoStack.length > 0}
+                onUndo={handleUndo}
+                onSave={handleSave}
+                saveDisabled={!user || hevyProgram.length === 0 || messages.length === 0}
+                isSaving={isSaving}
+            />
             {isChatHidden && (
                 <TooltipProvider delayDuration={0}>
                     <Tooltip>
