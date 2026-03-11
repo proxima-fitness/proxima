@@ -26,78 +26,23 @@ import { Agent } from "@/components/program-builder/shared/agent/Agent";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { MessageSquare, Calendar, Undo2 } from "lucide-react";
-const SIDEBAR_POSITION_KEY = "andy-sidebar-position";
-const SIDEBAR_SIZE_KEY = "andy-sidebar-size";
-const PENDING_ATTACHMENTS_KEY = "pending-attachments";
-const PENDING_INITIAL_PROMPT_KEY = "pending-initial-prompt";
-const LONG_PROMPT_PLACEHOLDER = "__long_prompt__";
-const COLLAPSED_SIZE = 30;
-const EXPANDED_SIZE = 70;
-const CHAT_MESSAGES_KEY = "messages";
+
 import { useSearchParams, useRouter } from "next/navigation";
 import { usePreview } from "@/contexts/PreviewContext";
-import { useIsHevy } from "@/contexts/HevyContext";
 import { BuildProgramSkeleton } from "@/components/program-builder/shared/BuildProgramSkeleton";
 import { appendOrderToHevyRoutines } from "@/components/program-builder/utils/format-responses";
 import { HevyRoutine } from "@/components/program-builder/hevy/HevyRoutine";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getSharedProgram } from "@/api/programs";
-import { emptyHevyRoutineProgram, focusAreasOptions, equipmentOptions, healthIssuesOptions } from "@/assets/constants";
+import { emptyHevyRoutineProgram, focusAreasOptions, equipmentOptions, healthIssuesOptions, CHAT_MESSAGES_KEY, COLLAPSED_SIZE, EXPANDED_SIZE, LONG_PROMPT_PLACEHOLDER, PENDING_ATTACHMENTS_KEY, PENDING_INITIAL_PROMPT_KEY, SIDEBAR_POSITION_KEY, SIDEBAR_SIZE_KEY } from "@/assets/constants";
 import { IOption } from "@/components/ui/multi-select";
 import { inferDaysPerWeek, inferProgramLength, inferExcludeAreas, inferExcludeEquipment, inferHealthIssues } from "@/components/program-builder/utils/helpers";
 import { toast } from "sonner";
 import { getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy, sortHevyByOrder } from "@/components/program-builder/utils";
-import { applyPatch, type Operation } from "fast-json-patch";
 import { useDebouncedCallback } from "use-debounce";
 
-/** Editor state: program + undo stack for atomic transitions and stable handleUndo */
-type EditorState = {
-    hevyProgram: THevyRoutine[];
-    undoStack: Operation[][];
-};
 
-type EditorAction =
-    | { type: "APPLY_PATCH"; newDocument: THevyRoutine[]; inversePatch: Operation[] }
-    | { type: "UNDO" }
-    | { type: "REPLACE_PROGRAM"; program: THevyRoutine[] }
-    | { type: "UPDATE_PROGRAM"; updater: (prev: THevyRoutine[]) => THevyRoutine[] };
-
-function editorReducer(state: EditorState, action: EditorAction): EditorState {
-    switch (action.type) {
-        case "APPLY_PATCH":
-            return {
-                hevyProgram: action.newDocument,
-                undoStack: [...state.undoStack, action.inversePatch],
-            };
-        case "UNDO": {
-            if (state.undoStack.length === 0) return state;
-            const inversePatch = state.undoStack[state.undoStack.length - 1];
-            try {
-                const result = applyPatch(
-                    state.hevyProgram as object,
-                    inversePatch,
-                    true,
-                    false
-                ) as { newDocument: THevyRoutine[] };
-                return {
-                    hevyProgram: result.newDocument as THevyRoutine[],
-                    undoStack: state.undoStack.slice(0, -1),
-                };
-            } catch (e) {
-                toast.error("Undo failed.");
-                console.error("Undo failed.", e);
-                return state;
-            }
-        }
-        case "REPLACE_PROGRAM":
-            return { ...state, hevyProgram: action.program };
-        case "UPDATE_PROGRAM":
-            return { ...state, hevyProgram: action.updater(state.hevyProgram) };
-        default:
-            return state;
-    }
-}
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type FileUIPart } from "ai";
 import { getMessageText, getTextFromChatMessage, isMessageAboutProgram } from "@/components/program-builder/utils/helpers"
@@ -109,6 +54,8 @@ import { recordLlmRequest } from "@/api/feature-limits";
 import { postHevyRoutineProgram, type PostHevyRoutineProgramSuccess } from "@/components/program-builder/api/hevy";
 import { postChatHistory } from "@/api/chat-history";
 import { ToolbarSaveButton } from "@/components/program-builder/shared/ToolbarSaveButton";
+import { editorReducer } from "./editor-reducer";
+import { Operation } from "fast-json-patch";
 
 const chatTransport = new DefaultChatTransport({ api: "/api/chat" });
 
@@ -128,10 +75,12 @@ function isPostHevyRoutineProgramSuccess(r: unknown): r is PostHevyRoutineProgra
  * URL params (shareId, edit, resume, shared, empty, search). No props; reads
  * searchParams and context. No props; reads searchParams and context.
  */
-export function BuildProgramClient() {
-    const { isHevy } = useIsHevy();
+export function BuildProgram() {
+
+
     const { user } = useUserContext();
     const queryClient = useQueryClient();
+
     const { mutate: incrementLlmRequests } = useMutation({
         mutationFn: () => recordLlmRequest(user),
         onSuccess: () => {
@@ -164,6 +113,7 @@ export function BuildProgramClient() {
         hevyProgram: [],
         undoStack: [],
     });
+
     const setHevyProgram = useCallback(
         (value: THevyRoutine[] | ((prev: THevyRoutine[]) => THevyRoutine[])) => {
             if (typeof value === "function") {
@@ -828,7 +778,7 @@ export function BuildProgramClient() {
         }
 
 
-    }, [edit, setIsPreview, resume, isHevy, shared, shareId, empty, setHevyProgram]);
+    }, [edit, setIsPreview, resume, shared, shareId, empty, setHevyProgram]);
 
 
     const request = useMemo(() => ({

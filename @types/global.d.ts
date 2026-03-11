@@ -2,6 +2,7 @@
 
 // Generic Types
 
+
 type TGenericCard = TCard | THevyCard;
 type TGenericDialog = TDialog | THevyDialog;
 type TGenericAddExercise = TAddExercise | THevyAddExercise;

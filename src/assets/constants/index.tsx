@@ -92,6 +92,8 @@ export const quickTriggerSuggestionChips = [
   "Body Recomp",
 ];
 
+
+
 /** Export destinations available for generated programs. */
 export const exportOptions = [
     {
@@ -6424,3 +6426,12 @@ export const sampleQuestions: IQuestion[] = [
       allowOther: false,
     },
   ];
+
+export const SIDEBAR_POSITION_KEY = "andy-sidebar-position";
+export const SIDEBAR_SIZE_KEY = "andy-sidebar-size";
+export const PENDING_ATTACHMENTS_KEY = "pending-attachments";
+export const PENDING_INITIAL_PROMPT_KEY = "pending-initial-prompt";
+export const LONG_PROMPT_PLACEHOLDER = "__long_prompt__";
+export const COLLAPSED_SIZE = 30;
+export const EXPANDED_SIZE = 70;
+export const CHAT_MESSAGES_KEY = "messages";
