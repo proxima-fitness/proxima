@@ -8,7 +8,7 @@
  * layout; drives useChat, program state, and tool calls.
  *
  * Depends on: useChat, UserContext, PreviewContext, HevyContext, resizable panels,
- * Agent, HevyRoutine, program-builder utils, API (getSharedProgram, recordLlmRequest).
+ * Agent, ProgramRoutineView, program-builder utils, API (getSharedProgram, recordLlmRequest).
  * Used by: build-program/page.tsx.
  */
 
@@ -22,9 +22,8 @@ import { MessageSquare } from "lucide-react";
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { usePreview } from "@/contexts/PreviewContext";
-import { BuildProgramSkeleton } from "@/components/program-builder/shared/BuildProgramSkeleton";
 import { appendOrderToHevyRoutines } from "@/components/program-builder/utils/format-responses";
-import { HevyRoutine } from "@/components/program-builder/hevy/HevyRoutine";
+import { ProgramGrid } from "./ProgramGrid";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getSharedProgram } from "@/api/programs";
@@ -32,7 +31,7 @@ import { emptyHevyRoutineProgram, focusAreasOptions, equipmentOptions, healthIss
 import { IOption } from "@/components/ui/multi-select";
 import { inferDaysPerWeek, inferProgramLength, inferExcludeAreas, inferExcludeEquipment, inferHealthIssues } from "@/components/program-builder/utils/helpers";
 import { toast } from "sonner";
-import { getNumberRoutineFolders, hevyAddExerciseToHevySetsConverter, reorderHevy, sortHevyByOrder } from "@/components/program-builder/utils";
+import { hevyAddExerciseToHevySetsConverter, reorderHevy, sortHevyByOrder } from "@/components/program-builder/utils";
 import { useDebouncedCallback } from "use-debounce";
 
 
@@ -659,8 +658,6 @@ export function BuildProgram() {
 
     const [focusedCardId, setFocusedCardId] = useState<string>("");
     const isMobile = useIsMobile();
-    const numberOfWeeks = useMemo(() => getNumberRoutineFolders(hevyProgram), [hevyProgram]);
-    const numberOfWeeksArr = useMemo(() => Array.from({ length: numberOfWeeks }, (_, i) => i), [numberOfWeeks]);
 
     const onBuildComplete = useCallback(() => {
         if (isMobile) setMobileTab("program");
@@ -883,7 +880,7 @@ export function BuildProgram() {
 
     const isExpanded = sidebarSize >= EXPANDED_SIZE - 5;
 
-    // Single props objects for Agent and HevyRoutine to avoid 3x duplication (plan item 4)
+    // Single props object for Agent; ProgramRoutineView receives its own props below.
     const agentPropsCommon = useMemo(() => ({
         search,
         setHevyProgram,
@@ -964,71 +961,36 @@ export function BuildProgram() {
         onBuildComplete,
     ]);
 
-    const routineProps = useMemo(() => ({
-        hevyProgram: orderedProgram,
-        setHevyProgram,
-        isMobile,
-        addExerciseDialog,
-        addNoteDialog,
-        addExerciseNoteDialog,
-        isEditExercise,
-        handleIsEditExercise,
-        handleDuplicateWeek,
-        handleDuplicateDay,
-        handleOpenAddExerciseDialog,
-        handleOpenAddNoteDialog,
-        handleOpenAddExerciseNoteDialog,
-        handleAddDay,
-        handleDeleteDay,
-        handleEditTitle,
-        handleDeleteExercise,
-        handleAddExercise,
-        handleAddRoutineAsDay,
-        handleAddRoutineNote,
-        handleAddExerciseNote,
-        getNextSupersetId,
-        handleCreateSuperset,
-        handleRemoveFromSuperset,
-        handleEditExercise,
-        focusedCardId,
-        setFocusedCardId,
-        numberOfWeeks,
-        numberOfWeeksArr,
-    }), [
-        orderedProgram,
-        setHevyProgram,
-        isMobile,
-        addExerciseDialog,
-        addNoteDialog,
-        addExerciseNoteDialog,
-        isEditExercise,
-        handleIsEditExercise,
-        handleDuplicateWeek,
-        handleDuplicateDay,
-        handleOpenAddExerciseDialog,
-        handleOpenAddNoteDialog,
-        handleOpenAddExerciseNoteDialog,
-        handleAddDay,
-        handleDeleteDay,
-        handleEditTitle,
-        handleDeleteExercise,
-        handleAddExercise,
-        handleAddRoutineAsDay,
-        handleAddRoutineNote,
-        handleAddExerciseNote,
-        getNextSupersetId,
-        handleCreateSuperset,
-        handleRemoveFromSuperset,
-        handleEditExercise,
-        focusedCardId,
-        numberOfWeeks,
-        numberOfWeeksArr,
-    ]);
-
-    const routineContent = hevyProgram.length > 0 ? (
-        <HevyRoutine {...routineProps} />
-    ) : (
-        <BuildProgramSkeleton />
+    const routineContent = (
+        <ProgramGrid
+            orderedProgram={orderedProgram}
+            setHevyProgram={setHevyProgram}
+            isMobile={isMobile}
+            addExerciseDialog={addExerciseDialog}
+            addNoteDialog={addNoteDialog}
+            addExerciseNoteDialog={addExerciseNoteDialog}
+            isEditExercise={isEditExercise}
+            handleIsEditExercise={handleIsEditExercise}
+            handleDuplicateWeek={handleDuplicateWeek}
+            handleDuplicateDay={handleDuplicateDay}
+            handleOpenAddExerciseDialog={handleOpenAddExerciseDialog}
+            handleOpenAddNoteDialog={handleOpenAddNoteDialog}
+            handleOpenAddExerciseNoteDialog={handleOpenAddExerciseNoteDialog}
+            handleAddDay={handleAddDay}
+            handleDeleteDay={handleDeleteDay}
+            handleEditTitle={handleEditTitle}
+            handleDeleteExercise={handleDeleteExercise}
+            handleAddExercise={handleAddExercise}
+            handleAddRoutineAsDay={handleAddRoutineAsDay}
+            handleAddRoutineNote={handleAddRoutineNote}
+            handleAddExerciseNote={handleAddExerciseNote}
+            getNextSupersetId={getNextSupersetId}
+            handleCreateSuperset={handleCreateSuperset}
+            handleRemoveFromSuperset={handleRemoveFromSuperset}
+            handleEditExercise={handleEditExercise}
+            focusedCardId={focusedCardId}
+            setFocusedCardId={setFocusedCardId}
+        />
     );
 
     const hasProgramContent = hevyProgram.some((r) => r.exercises.length > 0);
