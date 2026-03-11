@@ -21,35 +21,26 @@ import { BuildProgramMobileLayout } from "./BuildProgramMobileLayout";
 import { BuildProgramChatPanel } from "./BuildProgramChatPanel";
 import { MessageSquare } from "lucide-react";
 
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { usePreview } from "@/contexts/PreviewContext";
 import { appendOrderToHevyRoutines } from "@/components/program-builder/utils/format-responses";
 import { ProgramEditor } from "./ProgramEditor";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getSharedProgram } from "@/api/programs";
-import { emptyHevyRoutineProgram, focusAreasOptions, equipmentOptions, healthIssuesOptions, CHAT_MESSAGES_KEY, COLLAPSED_SIZE, EXPANDED_SIZE, LONG_PROMPT_PLACEHOLDER, PENDING_ATTACHMENTS_KEY, PENDING_INITIAL_PROMPT_KEY, SIDEBAR_POSITION_KEY, SIDEBAR_SIZE_KEY } from "@/assets/constants";
-import { inferDaysPerWeek, inferProgramLength, inferExcludeAreas, inferExcludeEquipment, inferHealthIssues } from "@/components/program-builder/utils/helpers";
+import { emptyHevyRoutineProgram, CHAT_MESSAGES_KEY, COLLAPSED_SIZE, EXPANDED_SIZE, LONG_PROMPT_PLACEHOLDER, SIDEBAR_POSITION_KEY, SIDEBAR_SIZE_KEY } from "@/assets/constants";
+import { getMessageText } from "@/components/program-builder/utils/helpers";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
-
-
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, type FileUIPart } from "ai";
-import { getMessageText, getTextFromChatMessage, isMessageAboutProgram } from "@/components/program-builder/utils/helpers"
-import posthog from "posthog-js";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useChatHistory } from "@/api/hooks";
+import { useQueryClient } from "@tanstack/react-query";
 import { useUserContext } from "@/contexts/UserContext";
-import { recordLlmRequest } from "@/api/feature-limits";
 import { postHevyRoutineProgram, type PostHevyRoutineProgramSuccess } from "@/components/program-builder/api/hevy";
 import { postChatHistory } from "@/api/chat-history";
 import { ToolbarPortalButtons } from "@/components/program-builder/shared/ToolbarPortalButtons";
 import { editorReducer } from "./editor-reducer";
 import { useProgramRequestState } from "./use-program-request-state";
+import { useBuildProgramChat } from "./use-build-program-chat";
 import { Operation } from "fast-json-patch";
-
-const chatTransport = new DefaultChatTransport({ api: "/api/chat" });
 
 function isPostHevyRoutineProgramSuccess(r: unknown): r is PostHevyRoutineProgramSuccess {
     return (
@@ -72,22 +63,15 @@ export function BuildProgram() {
 
     const { user } = useUserContext();
     const queryClient = useQueryClient();
-
-    const { mutate: incrementLlmRequests } = useMutation({
-        mutationFn: () => recordLlmRequest(user),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["feature-limits"] });
-        },
-    });
     const { setIsPreview } = usePreview();
     const searchParams = useSearchParams();
-    const router = useRouter();
 
     const shareId = searchParams.get('shareId') ?? '';
     const edit = searchParams.get('edit') ?? '';
     const resume = searchParams.get('resume') ?? '';
     const shared = searchParams.get('shared') ?? '';
-    const chatId = searchParams.get('chat') ?? '';
+    const empty = searchParams.get('empty') ?? '';
+    const search = searchParams.get('search') ?? '';
 
     const [sidebarPosition, setSidebarPosition] = useState<"left" | "right">("left");
     const [sidebarSize, setSidebarSize] = useState(28);
@@ -128,223 +112,36 @@ export function BuildProgram() {
     );
     /*************************************************************************************/
 
-    const empty = searchParams.get('empty') ?? '';
-    const search = searchParams.get('search') ?? '';
-    const newChat = searchParams.get('new') ?? '';
-
     const programRequest = useProgramRequestState({ empty, search });
-
-    const [generationError, setGenerationError] = useState<Error | null>(null);
-    // Derive error state from useChat error - no need for effect, just use the error directly
-    // The onError callback already handles setting generationError, but we also
-    // check useChat's error for cases where the error comes through the hook
-
-
-    const initialSearchOccurred = useRef<boolean>(false);
-    const sharedProgramLoadAttemptedRef = useRef<boolean>(false);
-    const resumeLoadAttemptedRef = useRef<boolean>(false);
-
-
-    const { messages, sendMessage, setMessages, status, stop, error } = useChat({
-        transport: chatTransport,
-        onError: (err) => {
-          console.error('Chat error:', err);
-          setGenerationError(err);
-          setIsBuilding(false);
-        },
-      });
-    const { data: chatHistoryData } = useChatHistory(user, chatId);
-
-    useEffect(() => {
-        console.log("Chat message history:", messages);
-    }, [messages]);
-
-      const activeError = generationError || error || null;
-
-      const isSubmitted = status === 'submitted';
-      const isStreaming = status === 'streaming';
-      const isLoading = isSubmitted || isStreaming;
-
-    const [retryCount, setRetryCount] = useState(0);
-    const [isBuilding, setIsBuilding] = useState(false);
-    const MAX_RETRIES = 2;
-
-    // Wrapper that sends current program and filter context with every chat request so the API
-    // (and getCurrentProgram tool) see the actual state (e.g. when program was loaded via shareId).
-    const sendMessageWithContext = useCallback(
-        (message: Parameters<typeof sendMessage>[0], options?: Parameters<typeof sendMessage>[1]) => {
-            incrementLlmRequests(undefined, { onError: (err) => console.error("Failed to record LLM usage", err) });
-            const text = getTextFromChatMessage(message);
-            const includeProgram = isMessageAboutProgram(text);
-            const contextBody = {
-                hevyProgram: includeProgram ? hevyProgram : [],
-                daysPerWeek: programRequest.daysPerWeek ? Number(programRequest.daysPerWeek) : undefined,
-                programLength: programRequest.programLength ? Number(programRequest.programLength) : undefined,
-                excludeAreas: programRequest.excludeAreas?.length ? programRequest.excludeAreas.map((o) => o.value).join(", ") : "",
-                excludeEquipment: programRequest.excludeEquipment?.length ? programRequest.excludeEquipment.map((o) => o.value).join(", ") : "",
-                healthIssues: programRequest.healthIssues?.length ? programRequest.healthIssues.map((o) => o.value).join(", ") : "",
-            };
-            return sendMessage(message, { ...options, body: { ...contextBody, ...options?.body } });
-        },
-        [sendMessage, hevyProgram, programRequest.daysPerWeek, programRequest.programLength, programRequest.excludeAreas, programRequest.excludeEquipment, programRequest.healthIssues, incrementLlmRequests]
-    );
-
-    const prevErrorRef = useRef<Error | null>(null);
-    const pageViewSentRef = useRef(false);
-
-    useEffect(() => {
-        const userId = user?.id ?? "user_id_unknown";
-        if (user && !pageViewSentRef.current) {
-            posthog?.capture?.('page_view', { page: '/build-program', user: userId });
-            pageViewSentRef.current = true;
-        }
-        if (activeError && prevErrorRef.current === null) {
-            posthog?.capture?.("ai_agent_error", {
-                user: userId,
-                errorMessage: activeError?.message ?? "unknown",
-            });
-            prevErrorRef.current = activeError;
-        }
-        if (activeError === null) {
-            prevErrorRef.current = null;
-        }
-    }, [activeError, user]);
-
-    // Restore anonymous chat messages from localStorage when not logged in.
-    useEffect(() => {
-        if (typeof window === "undefined") return;
-        if (user) {
-            // Clear any anonymous chat history once the user is logged in.
-            localStorage.removeItem(CHAT_MESSAGES_KEY);
-            return;
-        }
-
-        try {
-            const stored = localStorage.getItem(CHAT_MESSAGES_KEY);
-            if (!stored) return;
-            const parsed = JSON.parse(stored);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-                setMessages(parsed);
-            }
-        } catch {
-            // ignore parse errors
-        }
-    }, [user, setMessages]);
-
-    // When sidebar navigates with ?new=true (Continue on new-chat confirm), clear messages and clean URL.
-    useEffect(() => {
-        if (newChat !== 'true') return;
-        setMessages([]);
-        router.replace('/build-program');
-    }, [newChat, setMessages, router]);
-
-    // When opening a chat from the sidebar (?chat=id), load that chat's conversation into messages.
-    useEffect(() => {
-        if (!chatId || chatHistoryData == null) return;
-        const conversation = Array.isArray(chatHistoryData?.[0]) ? chatHistoryData[0] : [];
-        setMessages(conversation);
-    }, [chatId, chatHistoryData, setMessages]);
-
-    useEffect(() => {
-        if (chatId) return;
-        const isLongPromptPlaceholder = search === LONG_PROMPT_PLACEHOLDER;
-        // Long prompts: URL uses placeholder; real text in sessionStorage to avoid URL length limits
-        const messageText = isLongPromptPlaceholder
-            ? (typeof sessionStorage !== "undefined" ? sessionStorage.getItem(PENDING_INITIAL_PROMPT_KEY) : null) ?? ""
-            : search;
-        if (!messageText?.trim() || initialSearchOccurred.current) return;
-        if (shared === 'true' && shareId && hevyProgram.length === 0 && !sharedProgramLoadAttemptedRef.current) return;
-        if (resume === 'true' && hevyProgram.length === 0) return;
-        initialSearchOccurred.current = true;
-        if (isLongPromptPlaceholder && typeof sessionStorage !== "undefined") {
-            sessionStorage.removeItem(PENDING_INITIAL_PROMPT_KEY);
-        }
-        let files: FileUIPart[] | undefined;
-        try {
-            const stored = sessionStorage.getItem(PENDING_ATTACHMENTS_KEY);
-            if (stored) {
-                const parsed = JSON.parse(stored);
-                if (Array.isArray(parsed)) {
-                    files = parsed.filter(
-                        (p): p is FileUIPart =>
-                            p != null && typeof p === "object" && p.type === "file" && typeof (p as FileUIPart).url === "string"
-                    );
-                }
-                sessionStorage.removeItem(PENDING_ATTACHMENTS_KEY);
-            }
-        } catch {
-            // ignore parse errors or missing key
-        }
-        // Infer filters from the search prompt once before sending the first message
-        if (!programRequest.daysPerWeek) {
-            const inferredDays = inferDaysPerWeek(messageText);
-            if (inferredDays) programRequest.setDaysPerWeek(inferredDays);
-        }
-        if (!programRequest.programLength) {
-            const inferredLength = inferProgramLength(messageText);
-            if (inferredLength) programRequest.setProgramLength(inferredLength);
-        }
-        if (programRequest.excludeAreas.length === 0) {
-            const inferred = inferExcludeAreas(messageText, focusAreasOptions);
-            if (inferred.length > 0) programRequest.setExcludeAreas(inferred);
-        }
-        if (programRequest.excludeEquipment.length === 0) {
-            const inferred = inferExcludeEquipment(messageText, equipmentOptions);
-            if (inferred.length > 0) programRequest.setExcludeEquipment(inferred);
-        }
-        if (programRequest.healthIssues.length === 0) {
-            const inferred = inferHealthIssues(messageText, healthIssuesOptions);
-            if (inferred.length > 0) programRequest.setHealthIssues(inferred);
-        }
-
-        sendMessageWithContext(files?.length ? { text: messageText, files } : { text: messageText });
-        posthog?.capture?.('sent_first_prompt_to_ai', { search: messageText.slice(0, 200), user: user?.id ?? "user_id_unknown" });
-    }, [chatId, search, user, hevyProgram, shared, shareId, resume, sendMessageWithContext, programRequest]);
-
-    const handleSubmit = useCallback((text: string, files?: FileUIPart[]) => {
-        if (!text.trim() && (!files || files.length === 0)) return;
-        sendMessageWithContext({ text, files });
-    }, [sendMessageWithContext]);
-
-    const handleStop = useCallback(() => {
-        stop();
-        setIsBuilding(false);
-    }, [stop]);
-
-    const handleIsBuilding = useCallback((isBuilding: boolean) => {
-        setIsBuilding(isBuilding);
-    }, []);
-
-    // Handle retry when generation fails
-    const handleRetry = useCallback(() => {
-        if (retryCount < MAX_RETRIES) {
-            setGenerationError(null);
-            setRetryCount(prev => prev + 1);
-            setIsBuilding(true);
-            sendMessageWithContext({ text: "Build my program" });
-        }
-    }, [retryCount, sendMessageWithContext]);
-
-    // Clear error state (used when user wants to start fresh or use fallback)
-    const handleClearError = useCallback(() => {
-        setGenerationError(null);
-        setRetryCount(0);
-        setIsBuilding(false);
-    }, []);
-
-    // Handle timeout error - called when no progress is made for 45 seconds
-    const handleTimeoutError = useCallback(() => {
-        console.error('Workout generation timed out - no progress for 45 seconds');
-        setGenerationError(new Error('Generation timed out. The AI took too long to respond.'));
-        setIsBuilding(false);
-        stop(); // Stop the current request
-    }, [stop]);
-
     const isMobile = useIsMobile();
 
-    const onBuildComplete = useCallback(() => {
-        if (isMobile) setMobileTab("program");
-    }, [isMobile]);
+    const chat = useBuildProgramChat({
+        user,
+        hevyProgram,
+        programRequest,
+        isMobile,
+        setMobileTab,
+    });
+    const {
+        messages,
+        setMessages,
+        sendMessageWithContext,
+        handleSubmit,
+        handleStop,
+        isBuilding,
+        handleIsBuilding,
+        isLoading,
+        status,
+        activeError,
+        onRetry: handleRetry,
+        onClearError: handleClearError,
+        retryCount,
+        maxRetries: MAX_RETRIES,
+        onTimeoutError: handleTimeoutError,
+        onBuildComplete,
+        sharedProgramLoadAttemptedRef,
+        resumeLoadAttemptedRef,
+    } = chat;
 
     const handleUndo = useCallback(() => {
         dispatchEditor({ type: "UNDO" });
@@ -394,7 +191,7 @@ export function BuildProgram() {
             }
         };
 
-        if (edit === 'true') {
+        if (edit === "true") {
             setIsPreview(false);
         } else {
             setIsPreview(true);
@@ -417,7 +214,7 @@ export function BuildProgram() {
         }
 
 
-    }, [edit, setIsPreview, resume, shared, shareId, empty, setHevyProgram]);
+    }, [edit, setIsPreview, resume, shared, shareId, empty, setHevyProgram, sharedProgramLoadAttemptedRef, resumeLoadAttemptedRef]);
 
 
     const handleSave = useCallback(async () => {

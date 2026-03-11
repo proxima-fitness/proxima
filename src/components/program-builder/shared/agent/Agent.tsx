@@ -24,7 +24,7 @@ import { Chat } from "./Chat"
 import { Navbar } from "./Navbar"
 import { MessageBubbles } from "./MessageBubbles"
 
-type SendMessageWithContext = (message?: (Omit<UIMessage<unknown, UIDataTypes, UITools>, "id" | "role"> & {
+export type SendMessageWithContext = (message?: (Omit<UIMessage<unknown, UIDataTypes, UITools>, "id" | "role"> & {
     id?: string;
     role?: "system" | "user" | "assistant";
 } & {
