@@ -15,13 +15,9 @@
 import { useState, useEffect, useMemo, useReducer, useCallback, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { ImperativePanelHandle } from "react-resizable-panels";
-import {
-    ResizableHandle,
-    ResizablePanel,
-    ResizablePanelGroup,
-  } from "@/components/ui/resizable";
 
 import { Agent } from "@/components/program-builder/shared/agent/Agent";
+import { BuildProgramDesktopLayout } from "./BuildProgramDesktopLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { MessageSquare, Calendar } from "lucide-react";
@@ -951,6 +947,16 @@ export function BuildProgram() {
         setIsChatHidden(false);
     }, []);
 
+    const onSidebarResize = useCallback(
+        (size: number) => {
+            setSidebarSize(size);
+            saveSidebarSize(size);
+            setIsChatHidden(size < 1);
+            if (size >= 1) lastSidebarSizeRef.current = size;
+        },
+        [saveSidebarSize]
+    );
+
     const isExpanded = sidebarSize >= EXPANDED_SIZE - 5;
 
     // Handler functions memoized to prevent unnecessary re-renders
@@ -1186,91 +1192,20 @@ export function BuildProgram() {
                     </Tooltip>
                 </TooltipProvider>
             )}
-            <div className="max-sm:hidden sm:block flex-1 min-h-0">
-                <ResizablePanelGroup
-                    direction="horizontal"
-                >
-                {sidebarPosition === "left" ? (
-                    <>
-                        <ResizablePanel
-                            ref={sidebarPanelRef}
-                            id="sidebar"
-                            order={1}
-                            defaultSize={sidebarSize}
-                            onResize={(size) => {
-                                setSidebarSize(size);
-                                saveSidebarSize(size);
-                                setIsChatHidden(size < 1);
-                                if (size >= 1) lastSidebarSizeRef.current = size;
-                            }}
-                            minSize={0}
-                            maxSize={EXPANDED_SIZE}
-                            collapsible
-                            className="border-extraLightGray bg-white sm:bg-extraLightGray dark:bg-extraDarkGray dark:text-white overflow-hidden"
-                        >
-                            <Agent
-                                {...agentPropsCommon}
-                                sidebarPosition={sidebarPosition}
-                                onTogglePosition={toggleSidebarPosition}
-                                onToggleExpand={onToggleExpand}
-                                onToggleHide={handleToggleHide}
-                                isExpanded={isExpanded}
-                            />
-                        </ResizablePanel>
-                        {!isChatHidden && <ResizableHandle withHandle className="" />}
-                        <ResizablePanel
-                            id="main-content"
-                            order={2}
-                            minSize={30}
-                            className="bg-white dark:bg-darkGray"
-                        >
-                            <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden h-full flex flex-col">
-                                {routineContent}
-                            </div>
-                        </ResizablePanel>
-                    </>
-                ) : (
-                    <>
-                        <ResizablePanel
-                            id="main-content"
-                            order={1}
-                            minSize={30}
-                            className="bg-white dark:bg-darkGray"
-                        >
-                            <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden h-full flex flex-col">
-                                {routineContent}
-                            </div>
-                        </ResizablePanel>
-                        {!isChatHidden && <ResizableHandle withHandle className="" />}
-                        <ResizablePanel
-                            ref={sidebarPanelRef}
-                            id="sidebar"
-                            order={2}
-                            defaultSize={sidebarSize}
-                            onResize={(size) => {
-                                setSidebarSize(size);
-                                saveSidebarSize(size);
-                                setIsChatHidden(size < 1);
-                                if (size >= 1) lastSidebarSizeRef.current = size;
-                            }}
-                            minSize={0}
-                            maxSize={EXPANDED_SIZE}
-                            collapsible
-                            className="border-extraLightGray bg-white sm:bg-extraLightGray dark:bg-extraDarkGray dark:text-white overflow-hidden"
-                        >
-                            <Agent
-                                {...agentPropsCommon}
-                                sidebarPosition={sidebarPosition}
-                                onTogglePosition={toggleSidebarPosition}
-                                onToggleExpand={onToggleExpand}
-                                onToggleHide={handleToggleHide}
-                                isExpanded={isExpanded}
-                            />
-                        </ResizablePanel>
-                    </>
-                )}
-                </ResizablePanelGroup>
-            </div>
+            <BuildProgramDesktopLayout
+                sidebarPosition={sidebarPosition}
+                sidebarPanelRef={sidebarPanelRef}
+                sidebarSize={sidebarSize}
+                onSidebarResize={onSidebarResize}
+                isChatHidden={isChatHidden}
+                agentProps={agentPropsCommon}
+                routineContent={routineContent}
+                onTogglePosition={toggleSidebarPosition}
+                onToggleExpand={onToggleExpand}
+                onToggleHide={handleToggleHide}
+                isExpanded={isExpanded}
+                maxSidebarSize={EXPANDED_SIZE}
+            />
             <div className="max-sm:block sm:hidden h-[calc(100vh-4rem)] flex flex-col relative">
                 <Tabs value={mobileTab} onValueChange={(value) => {
                     // Prevent switching to Program tab if program has no exercises
