@@ -281,7 +281,7 @@ export const Agent: React.FC<IProps> = (props) => {
                 isExpanded={isExpanded}
                 sidebarPosition={sidebarPosition}
             />
-            <Conversation className={`flex-1 min-h-0 relative max-sm:h-full overflow-hidden`}>
+            <Conversation className="flex-1 min-h-0 max-sm:h-full sm:overflow-hidden">
                 <ConversationContent className="min-h-full max-sm:pb-[220px]">
                     <>
                         {messages.length === 0 ? (

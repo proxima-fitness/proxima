@@ -51,7 +51,8 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
 
     return (
         <>
-            <div className="h-screen flex flex-col items-center justify-center gap-10 relative">
+            {/* min-h-screen + safe-area padding (not h-screen/100vh) to avoid hero text shifting on mobile PWAs and in-app browsers when chrome resizes */}
+            <div className="min-h-screen flex flex-col items-center justify-center gap-10 relative pt-[max(2rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))]">
                 <div className="flex flex-col items-center justify-center gap-12 w-full relative z-10">
                     <div className="text-center flex flex-col items-center gap-3">
                         <div className="hidden sm:block">
