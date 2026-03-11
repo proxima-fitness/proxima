@@ -59,7 +59,7 @@ import { isTestUser } from "@/api/feature-limits";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { getInitials } from "@/utils/general/helpers";
 import { cn } from "@/lib/utils";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { DeleteAccountDialog } from "@/components/header/DeleteAccountDialog";
 import { ConnectHevyDialog } from "@/components/header/ConnectHevyDialog";
 import { useTheme } from "next-themes";
@@ -111,7 +111,10 @@ export function AppSidebar() {
     const [showNewChatConfirm, setShowNewChatConfirm] = useState(false);
     const router = useRouter();
 
-    const { toggleSidebar, state, isMobile, openMobile } = useSidebar();
+    const { toggleSidebar, state, isMobile, openMobile, setOpenMobile } = useSidebar();
+    const closeMobileSidebar = useCallback(() => {
+        if (isMobile) setOpenMobile(false);
+    }, [isMobile, setOpenMobile]);
     const { data: chatIds, isLoading: chatIdsLoading, isError: chatIdsError } = useChatIds(user);
     const recentChats = (chatIds ?? []).slice(0, RECENTS_LIMIT);
     const pathname = usePathname();
@@ -193,7 +196,7 @@ export function AppSidebar() {
                                 {baseItems.map((item) => (
                                     <SidebarMenuItem key={item.title}>
                                         <SidebarMenuButton asChild tooltip={item.title}>
-                                            <Link href={item.url}>
+                                            <Link href={item.url} onClick={closeMobileSidebar}>
                                                 <item.icon className="shrink-0" />
                                                 <span className="font-main">{item.title}</span>
                                             </Link>
@@ -203,7 +206,7 @@ export function AppSidebar() {
                                 {authenticatedItems.map((item) => (
                                     <SidebarMenuItem key={item.title}>
                                         <SidebarMenuButton asChild tooltip={item.title}>
-                                            <Link href={item.url}>
+                                            <Link href={item.url} onClick={closeMobileSidebar}>
                                                 <item.icon className="shrink-0" />
                                                 <span className="font-main">{item.title}</span>
                                             </Link>
@@ -213,7 +216,7 @@ export function AppSidebar() {
                                 {!isPro && (
                                     <SidebarMenuItem key="pricing">
                                         <SidebarMenuButton asChild tooltip={user ? "Upgrade" : "Pricing"}>
-                                            <Link href="/pricing">
+                                            <Link href="/pricing" onClick={closeMobileSidebar}>
                                                 <Crown className="shrink-0 text-lightGold" />
                                                 <span className={`font-main ${user ? "dark:text-lightGold" : ""}`}>{user ? "Upgrade" : "Pricing"}</span>
                                             </Link>
@@ -275,6 +278,7 @@ export function AppSidebar() {
                                                     <Link
                                                         href={href}
                                                         className="flex min-w-0 flex-1 items-center gap-2"
+                                                        onClick={closeMobileSidebar}
                                                     >
                                                         <span className="min-w-0 flex-1 truncate font-main">
                                                             {displayTitle}
@@ -339,7 +343,7 @@ export function AppSidebar() {
                                         </DropdownMenuLabel>
                                         <DropdownMenuSeparator />
                                         <DropdownMenuItem asChild>
-                                            <Link href="/profile" className="cursor-pointer flex items-center gap-2">
+                                            <Link href="/profile" className="cursor-pointer flex items-center gap-2" onClick={closeMobileSidebar}>
                                                 <UserRound className="h-4 w-4" />
                                                 Profile
                                             </Link>
@@ -466,6 +470,7 @@ export function AppSidebar() {
                                     <Link
                                         href="/auth/login"
                                         className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center"
+                                        onClick={closeMobileSidebar}
                                     >
                                         <Avatar className="h-6 w-6 shrink-0">
                                             <AvatarFallback className="text-xs">

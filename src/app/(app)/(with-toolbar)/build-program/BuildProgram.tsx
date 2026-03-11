@@ -16,11 +16,9 @@ import { useState, useEffect, useMemo, useReducer, useCallback, useRef } from "r
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { ImperativePanelHandle } from "react-resizable-panels";
 
-import { Agent } from "@/components/program-builder/shared/agent/Agent";
 import { BuildProgramDesktopLayout } from "./BuildProgramDesktopLayout";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
-import { MessageSquare, Calendar } from "lucide-react";
+import { BuildProgramMobileLayout } from "./BuildProgramMobileLayout";
+import { MessageSquare } from "lucide-react";
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { usePreview } from "@/contexts/PreviewContext";
@@ -1162,6 +1160,8 @@ export function BuildProgram() {
         <BuildProgramSkeleton />
     );
 
+    const hasProgramContent = hevyProgram.some((r) => r.exercises.length > 0);
+
     return (
         <>
             <ToolbarPortalButtons
@@ -1206,55 +1206,14 @@ export function BuildProgram() {
                 isExpanded={isExpanded}
                 maxSidebarSize={EXPANDED_SIZE}
             />
-            <div className="max-sm:block sm:hidden h-[calc(100vh-4rem)] flex flex-col relative">
-                <Tabs value={mobileTab} onValueChange={(value) => {
-                    // Prevent switching to Program tab if program has no exercises
-                    if (value === "program" && !hevyProgram.some(r => r.exercises.length > 0)) {
-                        return;
-                    }
-                    setMobileTab(value);
-                }} className="flex flex-col h-full">
-                    <TabsContent value="chat" className="flex-1 m-0 mt-0 px-4 pb-20">
-                        <Agent
-                            {...agentPropsCommon}
-                            sidebarPosition="left"
-                            onTogglePosition={() => {}}
-                            onToggleExpand={() => {}}
-                            onToggleHide={handleToggleHide}
-                            isExpanded={false}
-                        />
-                    </TabsContent>
-                    <TabsContent value="program" className="flex-1 overflow-y-auto m-0 mt-0 px-4 pb-20 bg-white dark:bg-darkGray">
-                        <div className="w-full max-w-full overflow-x-hidden">
-                            {routineContent}
-                        </div>
-                    </TabsContent>
-                    <TabsList className="fixed bottom-0 left-0 right-0 w-full justify-around rounded-none border-t bg-background shadow-lg px-4 py-3 h-[70px] z-50">
-                        <TabsTrigger
-                            value="chat"
-                            className={cn(
-                                "flex-1 data-[state=active]:font-semibold data-[state=active]:text-lightSecondary data-[state=active]:bg-gray-100 dark:data-[state=active]:bg-gray-800 rounded-lg py-2 flex flex-row items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
-                            )}
-                        >
-                            <MessageSquare className="h-5 w-5" />
-                            <span>Chat</span>
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="program"
-                            disabled={!hevyProgram.some(r => r.exercises.length > 0)}
-                            className={cn(
-                                "flex-1 rounded-lg py-2 flex flex-row items-center justify-center gap-2 transition-colors",
-                                hevyProgram.some(r => r.exercises.length > 0)
-                                    ? "data-[state=active]:font-semibold data-[state=active]:text-lightSecondary data-[state=active]:bg-gray-100 dark:data-[state=active]:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900"
-                                    : "opacity-50 cursor-not-allowed"
-                            )}
-                        >
-                            <Calendar className="h-5 w-5" />
-                            <span>Program</span>
-                        </TabsTrigger>
-                    </TabsList>
-                </Tabs>
-            </div>
+            <BuildProgramMobileLayout
+                mobileTab={mobileTab}
+                onMobileTabChange={setMobileTab}
+                hasProgramContent={hasProgramContent}
+                agentProps={agentPropsCommon}
+                routineContent={routineContent}
+                onToggleHide={handleToggleHide}
+            />
         </>
     );
 }
