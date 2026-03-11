@@ -48,6 +48,7 @@ import { postHevyRoutineProgram, type PostHevyRoutineProgramSuccess } from "@/co
 import { postChatHistory } from "@/api/chat-history";
 import { ToolbarPortalButtons } from "@/components/program-builder/shared/ToolbarPortalButtons";
 import { editorReducer } from "./editor-reducer";
+import { useProgramRequestState } from "./use-program-request-state";
 import { Operation } from "fast-json-patch";
 
 const chatTransport = new DefaultChatTransport({ api: "/api/chat" });
@@ -133,38 +134,8 @@ export function BuildProgram() {
     const search = searchParams.get('search') ?? '';
     const newChat = searchParams.get('new') ?? '';
 
-    // TODO: These will be short term memory for now but eventually we will want some long term memory for the user
-    const [sex, setSex] = useState<string>("");
-    const [age, setAge] = useState<string>("");
-    const [daysPerWeek, setDaysPerWeek] = useState<string>("");
-    const [specificDays, setSpecificDays] = useState<IOption[]>([]);
-    const [programLength, setProgramLength] = useState<""|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12">("");
-    const [workoutDuration, setWorkoutDuration] = useState<string>("");
-    const [activityLevel, setActivityLevel] = useState<string>("");
-    const [goals, setGoals] = useState<IOption[]>([]);
-    const [specialization, setSpecialization] = useState<IOption[]>([]);
-    const [equipment, setEquipment] = useState<IOption[]>([]);
-    const [focusAreas, setFocusAreas] = useState<IOption[]>([]);
-    const [difficultyLevel, setDifficultyLevel] = useState<IOption[]>([]);
-    const [excludeAreas, setExcludeAreas] = useState<IOption[]>([]);
-    const [excludeEquipment, setExcludeEquipment] = useState<IOption[]>(
-        [
-            { label: "Bodyweight", value: "bodyweight" },
-            { label: "Band", value: "band" },
-            { label: "Suspension", value: "suspension" },
-            { label: "Resistance band", value: "resistance_band" },
-            { label: "Plate", value: "plate" },
-            { label: "Other", value: "other" },
-            { label: "None", value: "none" },
-        ]
-    );
+    const programRequest = useProgramRequestState({ empty, search });
 
-
-    const [excludeSpecializations, setExcludeSpecializations] = useState<IOption[]>([]);
-    const [healthIssues, setHealthIssues] = useState<IOption[]>([]);
-
-    const [explore, toggleExplore] = useReducer(prev => !prev, true);
-    const [programTitle, setProgramTitle] = useState("My Proxima Program");
     const [addExerciseDialog, setAddExerciseDialog] = useState<THevyDialog>({folder_id: 0, dayOrder: 0, isOpen: false});
     // const [generateDayDialog, setGenerateDayDialog] = useState<THevyDialog>({folder_id: 0, dayOrder: 0, isOpen: false});
     const [addNoteDialog, setAddNoteDialog] = useState<THevyDialog>({folder_id: 0, dayOrder: 0, isOpen: false});
@@ -214,15 +185,15 @@ export function BuildProgram() {
             const includeProgram = isMessageAboutProgram(text);
             const contextBody = {
                 hevyProgram: includeProgram ? hevyProgram : [],
-                daysPerWeek: daysPerWeek ? Number(daysPerWeek) : undefined,
-                programLength: programLength ? Number(programLength) : undefined,
-                excludeAreas: excludeAreas?.length ? excludeAreas.map((o) => o.value).join(", ") : "",
-                excludeEquipment: excludeEquipment?.length ? excludeEquipment.map((o) => o.value).join(", ") : "",
-                healthIssues: healthIssues?.length ? healthIssues.map((o) => o.value).join(", ") : "",
+                daysPerWeek: programRequest.daysPerWeek ? Number(programRequest.daysPerWeek) : undefined,
+                programLength: programRequest.programLength ? Number(programRequest.programLength) : undefined,
+                excludeAreas: programRequest.excludeAreas?.length ? programRequest.excludeAreas.map((o) => o.value).join(", ") : "",
+                excludeEquipment: programRequest.excludeEquipment?.length ? programRequest.excludeEquipment.map((o) => o.value).join(", ") : "",
+                healthIssues: programRequest.healthIssues?.length ? programRequest.healthIssues.map((o) => o.value).join(", ") : "",
             };
             return sendMessage(message, { ...options, body: { ...contextBody, ...options?.body } });
         },
-        [sendMessage, hevyProgram, daysPerWeek, programLength, excludeAreas, excludeEquipment, healthIssues, incrementLlmRequests]
+        [sendMessage, hevyProgram, programRequest.daysPerWeek, programRequest.programLength, programRequest.excludeAreas, programRequest.excludeEquipment, programRequest.healthIssues, incrementLlmRequests]
     );
 
     const prevErrorRef = useRef<Error | null>(null);
@@ -312,31 +283,30 @@ export function BuildProgram() {
             // ignore parse errors or missing key
         }
         // Infer filters from the search prompt once before sending the first message
-        if (!daysPerWeek) {
+        if (!programRequest.daysPerWeek) {
             const inferredDays = inferDaysPerWeek(messageText);
-            if (inferredDays) setDaysPerWeek(inferredDays);
+            if (inferredDays) programRequest.setDaysPerWeek(inferredDays);
         }
-        if (!programLength) {
+        if (!programRequest.programLength) {
             const inferredLength = inferProgramLength(messageText);
-            if (inferredLength) setProgramLength(inferredLength);
+            if (inferredLength) programRequest.setProgramLength(inferredLength);
         }
-        if (excludeAreas.length === 0) {
+        if (programRequest.excludeAreas.length === 0) {
             const inferred = inferExcludeAreas(messageText, focusAreasOptions);
-            if (inferred.length > 0) setExcludeAreas(inferred);
+            if (inferred.length > 0) programRequest.setExcludeAreas(inferred);
         }
-        if (excludeEquipment.length === 0) {
+        if (programRequest.excludeEquipment.length === 0) {
             const inferred = inferExcludeEquipment(messageText, equipmentOptions);
-            if (inferred.length > 0) setExcludeEquipment(inferred);
+            if (inferred.length > 0) programRequest.setExcludeEquipment(inferred);
         }
-        if (healthIssues.length === 0) {
+        if (programRequest.healthIssues.length === 0) {
             const inferred = inferHealthIssues(messageText, healthIssuesOptions);
-            if (inferred.length > 0) setHealthIssues(inferred);
+            if (inferred.length > 0) programRequest.setHealthIssues(inferred);
         }
 
         sendMessageWithContext(files?.length ? { text: messageText, files } : { text: messageText });
         posthog?.capture?.('sent_first_prompt_to_ai', { search: messageText.slice(0, 200), user: user?.id ?? "user_id_unknown" });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [chatId, search, user, hevyProgram, shared, shareId, resume, sendMessageWithContext]);
+    }, [chatId, search, user, hevyProgram, shared, shareId, resume, sendMessageWithContext, programRequest]);
 
     const handleSubmit = useCallback((text: string, files?: FileUIPart[]) => {
         if (!text.trim() && (!files || files.length === 0)) return;
@@ -770,50 +740,6 @@ export function BuildProgram() {
     }, [edit, setIsPreview, resume, shared, shareId, empty, setHevyProgram]);
 
 
-    const request = useMemo(() => ({
-        empty,
-        search,
-        sex,
-        age,
-        daysPerWeek,
-        specificDays: specificDays.map(opt => opt.value).join(', '),
-        programLength,
-        workoutDuration,
-        activityLevel,
-        goals: goals.map(opt => opt.value).join(', '),
-        specialization: specialization.map(opt => opt.value).join(', '),
-        equipment: equipment.map(opt => opt.value).join(', '),
-        focusAreas: focusAreas.map(opt => opt.value).join(', '),
-        difficultyLevel: difficultyLevel.map(opt => opt.value).join(', '),
-        excludeAreas: excludeAreas.map(opt => opt.value).join(', '),
-        excludeEquipment: excludeEquipment.map(opt => opt.value).join(', '),
-        excludeSpecializations: excludeSpecializations.map(opt => opt.value).join(', '),
-        healthIssues: healthIssues.map(opt => opt.value).join(', '),
-        programTitle,
-        explore: explore ? "true" : "false",
-      } as TTextToJsonRequest), [
-        empty,
-        search,
-        sex,
-        age,
-        daysPerWeek,
-        specificDays,
-        programLength,
-        workoutDuration,
-        activityLevel,
-        goals,
-        specialization,
-        equipment,
-        focusAreas,
-        difficultyLevel,
-        excludeAreas,
-        excludeEquipment,
-        excludeSpecializations,
-        healthIssues,
-        programTitle,
-        explore,
-    ]);
-
     const handleSave = useCallback(async () => {
         if (!user) {
             toast.error("Sign in to save.");
@@ -833,7 +759,7 @@ export function BuildProgram() {
 
         try {
             const prompt = title !== "Untitled" ? title : search || "";
-            const supabaseResult = await postHevyRoutineProgram(orderedProgram, prompt, request);
+            const supabaseResult = await postHevyRoutineProgram(orderedProgram, prompt, programRequest.request);
 
             if (!isPostHevyRoutineProgramSuccess(supabaseResult)) {
                 toast.error("Failed to save program.");
@@ -867,7 +793,7 @@ export function BuildProgram() {
         hevyProgram.length,
         messages,
         orderedProgram,
-        request,
+        programRequest.request,
         search,
         deriveChatTitle,
         queryClient,
@@ -892,7 +818,7 @@ export function BuildProgram() {
                 localStorage.removeItem("hevy-program-in-progress");
             } else {
                 localStorage.setItem("hevy-program-in-progress", JSON.stringify(hevyProgram));
-                localStorage.setItem("hevy-request", JSON.stringify(request));
+                localStorage.setItem("hevy-request", JSON.stringify(programRequest.request));
             }
             const firstUser = messages.find((m) => m.role === "user");
             const promptToStore = (search && search.trim()) || (firstUser ? getMessageText(firstUser) : "");
@@ -910,7 +836,7 @@ export function BuildProgram() {
                 localStorageDebounceRef.current = null;
             }
         };
-    }, [hevyProgram, request, resume, search, user, messages]);
+    }, [hevyProgram, programRequest.request, resume, search, user, messages]);
 
     const toggleSidebarPosition = useCallback(() => {
         setSidebarPosition((prev) => {
@@ -957,68 +883,48 @@ export function BuildProgram() {
 
     const isExpanded = sidebarSize >= EXPANDED_SIZE - 5;
 
-    // Handler functions memoized to prevent unnecessary re-renders
-    const handleSex = useCallback((value: string) => { setSex(value); }, []);
-    const handleAge = useCallback((value: string) => { setAge(value); }, []);
-    const handleDaysPerWeek = useCallback((value: string) => { setDaysPerWeek(value); }, []);
-    const handleSpecificDays = useCallback((value: IOption[]) => { setSpecificDays(value); }, []);
-    const handleProgramLength = useCallback((value: ""|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12") => { setProgramLength(value); }, []);
-    const handleWorkoutDuration = useCallback((value: string) => { setWorkoutDuration(value); }, []);
-    const handleActivityLevel = useCallback((value: string) => { setActivityLevel(value); }, []);
-    const handleGoals = useCallback((value: IOption[]) => { setGoals(value); }, []);
-    const handleSpecialization = useCallback((value: IOption[]) => { setSpecialization(value); }, []);
-    const handleEquipment = useCallback((value: IOption[]) => { setEquipment(value); }, []);
-    const handleFocusAreas = useCallback((value: IOption[]) => { setFocusAreas(value); }, []);
-    const handleDifficultyLevel = useCallback((value: IOption[]) => { setDifficultyLevel(value); }, []);
-    const handleExcludeAreas = useCallback((value: IOption[]) => { setExcludeAreas(value); }, []);
-    const handleExcludeEquipment = useCallback((value: IOption[]) => { setExcludeEquipment(value); }, []);
-    const handleExcludeSpecializations = useCallback((value: IOption[]) => { setExcludeSpecializations(value); }, []);
-    const handleHealthIssues = useCallback((value: IOption[]) => { setHealthIssues(value); }, []);
-    const handleProgramTitle = useCallback((value: string) => { setProgramTitle(value); }, []);
-    const handleExplore = useCallback(() => { toggleExplore(); }, []);
-
     // Single props objects for Agent and HevyRoutine to avoid 3x duplication (plan item 4)
     const agentPropsCommon = useMemo(() => ({
         search,
         setHevyProgram,
         hevyProgram,
         applyPatchWithUndo,
-        sex,
-        age,
-        daysPerWeek,
-        specificDays,
-        programLength,
-        workoutDuration,
-        activityLevel,
-        goals,
-        specialization,
-        equipment,
-        focusAreas,
-        difficultyLevel,
-        excludeAreas,
-        excludeEquipment,
-        excludeSpecializations,
-        healthIssues,
-        programTitle,
-        explore,
-        handleSex,
-        handleAge,
-        handleDaysPerWeek,
-        handleSpecificDays,
-        handleProgramLength,
-        handleWorkoutDuration,
-        handleActivityLevel,
-        handleGoals,
-        handleSpecialization,
-        handleEquipment,
-        handleFocusAreas,
-        handleDifficultyLevel,
-        handleExcludeAreas,
-        handleExcludeEquipment,
-        handleExcludeSpecializations,
-        handleHealthIssues,
-        handleProgramTitle,
-        handleExplore,
+        sex: programRequest.sex,
+        age: programRequest.age,
+        daysPerWeek: programRequest.daysPerWeek,
+        specificDays: programRequest.specificDays,
+        programLength: programRequest.programLength,
+        workoutDuration: programRequest.workoutDuration,
+        activityLevel: programRequest.activityLevel,
+        goals: programRequest.goals,
+        specialization: programRequest.specialization,
+        equipment: programRequest.equipment,
+        focusAreas: programRequest.focusAreas,
+        difficultyLevel: programRequest.difficultyLevel,
+        excludeAreas: programRequest.excludeAreas,
+        excludeEquipment: programRequest.excludeEquipment,
+        excludeSpecializations: programRequest.excludeSpecializations,
+        healthIssues: programRequest.healthIssues,
+        programTitle: programRequest.programTitle,
+        explore: programRequest.explore,
+        handleSex: programRequest.handleSex,
+        handleAge: programRequest.handleAge,
+        handleDaysPerWeek: programRequest.handleDaysPerWeek,
+        handleSpecificDays: programRequest.handleSpecificDays,
+        handleProgramLength: programRequest.handleProgramLength,
+        handleWorkoutDuration: programRequest.handleWorkoutDuration,
+        handleActivityLevel: programRequest.handleActivityLevel,
+        handleGoals: programRequest.handleGoals,
+        handleSpecialization: programRequest.handleSpecialization,
+        handleEquipment: programRequest.handleEquipment,
+        handleFocusAreas: programRequest.handleFocusAreas,
+        handleDifficultyLevel: programRequest.handleDifficultyLevel,
+        handleExcludeAreas: programRequest.handleExcludeAreas,
+        handleExcludeEquipment: programRequest.handleExcludeEquipment,
+        handleExcludeSpecializations: programRequest.handleExcludeSpecializations,
+        handleHealthIssues: programRequest.handleHealthIssues,
+        handleProgramTitle: programRequest.handleProgramTitle,
+        handleExplore: programRequest.handleExplore,
         messages,
         setMessages,
         sendMessageWithContext,
@@ -1040,42 +946,7 @@ export function BuildProgram() {
         setHevyProgram,
         hevyProgram,
         applyPatchWithUndo,
-        sex,
-        age,
-        daysPerWeek,
-        specificDays,
-        programLength,
-        workoutDuration,
-        activityLevel,
-        goals,
-        specialization,
-        equipment,
-        focusAreas,
-        difficultyLevel,
-        excludeAreas,
-        excludeEquipment,
-        excludeSpecializations,
-        healthIssues,
-        programTitle,
-        explore,
-        handleSex,
-        handleAge,
-        handleDaysPerWeek,
-        handleSpecificDays,
-        handleProgramLength,
-        handleWorkoutDuration,
-        handleActivityLevel,
-        handleGoals,
-        handleSpecialization,
-        handleEquipment,
-        handleFocusAreas,
-        handleDifficultyLevel,
-        handleExcludeAreas,
-        handleExcludeEquipment,
-        handleExcludeSpecializations,
-        handleHealthIssues,
-        handleProgramTitle,
-        handleExplore,
+        programRequest,
         messages,
         setMessages,
         sendMessageWithContext,
