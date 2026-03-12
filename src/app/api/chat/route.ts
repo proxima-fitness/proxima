@@ -30,6 +30,35 @@ const sdk = new NodeSDK({
 sdk.start();
 
 /**
+ * Sanitizes the incoming UI message history by dropping a trailing assistant
+ * message that contains unresolved tool calls (e.g. after an aborted stream).
+ * This prevents AI_MissingToolResultsError when the next turn is started.
+ */
+function sanitizeMessagesWithUnresolvedToolCalls(messages: unknown[]): unknown[] {
+  if (!Array.isArray(messages) || messages.length === 0) return messages;
+
+  const last = messages[messages.length - 1] as {
+    role?: string;
+    parts?: Array<{ type?: string; state?: string }>;
+  };
+
+  if (last?.role !== 'assistant' || !Array.isArray(last.parts)) return messages;
+
+  const hasUnresolvedToolCall = last.parts.some((part) => {
+    if (!part || typeof part !== 'object') return false;
+    const type = part.type;
+    const state = part.state;
+    if (typeof type !== 'string') return false;
+    if (!type.startsWith('tool-')) return false;
+    return state === 'input-streaming' || state === 'input-available';
+  });
+
+  if (!hasUnresolvedToolCall) return messages;
+
+  return messages.slice(0, -1);
+}
+
+/**
  * Handles a chat turn: builds the system prompt and tool set from the request
  * payload, runs the ToolLoopAgent, and returns a streaming UI response.
  *
@@ -43,6 +72,8 @@ export async function POST(req: Request) {
     try {
         const { messages, hevyProgram = [], daysPerWeek, programLength, excludeAreas = "", excludeEquipment = "", healthIssues = "" } = await req.json();
 
+        const sanitizedMessages = sanitizeMessagesWithUnresolvedToolCalls(messages);
+
         const systemPrompt = instructions({ hevyProgram, daysPerWeek, programLength });
         const tools = getTools({ excludeAreas, excludeEquipment, healthIssues, hevyProgram });
 
@@ -54,15 +85,15 @@ export async function POST(req: Request) {
             instructions: systemPrompt,
             tools: tools,
             // Explicit step limit to prevent infinite loops
-            // Typical flow: getMoreInfoQuestions (1) + getExerciseList (1) + buildRoutine x N (max 7 days)
-            // = ~10 steps max, but allowing 25 for safety with retries
-            stopWhen: stepCountIs(25),
+            // Typical flow: getMoreInfoQuestions (1) + getExerciseList (1) + buildWeek (1)
+            // = ~3–5 steps in practice, but allowing 15 for safety with retries
+            stopWhen: stepCountIs(15),
             experimental_telemetry: { isEnabled: true },
           });
 
         return createAgentUIStreamResponse({
             agent: andy,
-            uiMessages: messages,
+            uiMessages: sanitizedMessages,
         });
 
     } catch (error) {

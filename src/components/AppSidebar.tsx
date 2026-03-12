@@ -55,15 +55,21 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useMyFeatureLimits, useUserFullName, useProfilePictureByID, useHevySecret } from "@/api/hooks";
 import { signOutUser } from "@/api/authentication";
 import { TestUserTierToggle } from "@/components/TestUserTierToggle";
-import { isTestUser } from "@/api/featureLimits";
+import { isTestUser } from "@/api/feature-limits";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { getInitials } from "@/utils/general/helpers";
 import { cn } from "@/lib/utils";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { DeleteAccountDialog } from "@/components/header/DeleteAccountDialog";
 import { ConnectHevyDialog } from "@/components/header/ConnectHevyDialog";
 import { useTheme } from "next-themes";
 import { proxima_logo, proxima_logo_white_full_text } from "public";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { NewChatConfirmDialog } from "@/components/NewChatConfirmDialog";
+
+const CHAT_MESSAGES_KEY = "messages";
+const HEVY_PROGRAM_IN_PROGRESS_KEY = "hevy-program-in-progress";
 
 const signOutServer = async () => {
     try {
@@ -81,6 +87,8 @@ const baseItems = [
     { title: "Home", url: "/", icon: Home },
     { title: "About", url: "/about", icon: Info },
 ];
+
+// const RECENTS_LIMIT = 10;
 
 export function AppSidebar() {
     const { user, isLoading } = useUserContext();
@@ -100,12 +108,44 @@ export function AppSidebar() {
     );
     const [openDeleteAccountDialog, setOpenDeleteAccountDialog] = useState(false);
     const [openConnectHevyDialog, setOpenConnectHevyDialog] = useState(false);
+    const [showNewChatConfirm, setShowNewChatConfirm] = useState(false);
+    const router = useRouter();
 
-    const { toggleSidebar, state, isMobile, openMobile } = useSidebar();
+    const { toggleSidebar, state, isMobile, openMobile, setOpenMobile } = useSidebar();
+    const closeMobileSidebar = useCallback(() => {
+        if (isMobile) setOpenMobile(false);
+    }, [isMobile, setOpenMobile]);
+    // const { data: chatIds, isLoading: chatIdsLoading, isError: chatIdsError } = useChatIds(user);
+    // const recentChats = (chatIds ?? []).slice(0, RECENTS_LIMIT);
+    // const pathname = usePathname();
+    // const searchParams = useSearchParams();
+    // const selectedChatId =
+    //     pathname?.startsWith("/build-program") === true ? searchParams.get("chat") : null;
 
     const handleLogout = async () => {
         await signOutUser();
         await signOutServer();
+    };
+
+    // const handleNewChatClick = () => {
+    //     if (user) return; // Logged in: do nothing
+    //     const hasProgress =
+    //         typeof window !== "undefined" &&
+    //         (!!localStorage.getItem(CHAT_MESSAGES_KEY) ||
+    //             !!localStorage.getItem(HEVY_PROGRAM_IN_PROGRESS_KEY));
+    //     if (hasProgress) {
+    //         setShowNewChatConfirm(true);
+    //     } else {
+    //         router.push("/build-program");
+    //     }
+    // };
+
+    const handleNewChatContinue = () => {
+        if (typeof window !== "undefined") {
+            localStorage.removeItem(CHAT_MESSAGES_KEY);
+            localStorage.removeItem(HEVY_PROGRAM_IN_PROGRESS_KEY);
+        }
+        router.push("/build-program?new=true");
     };
 
     const authenticatedItems = user
@@ -144,11 +184,12 @@ export function AppSidebar() {
                         <SidebarGroupContent>
                             <SidebarMenu>
                                 <SidebarMenuItem>
-                                    <SidebarMenuButton asChild tooltip="New Chat">
-                                        <a href="/build-program">
-                                            <MessageSquarePlus className="shrink-0" />
-                                            <span className="font-main">New Chat</span>
-                                        </a>
+                                    <SidebarMenuButton
+                                        tooltip="New Chat"
+                                        onClick={handleNewChatClick}
+                                    >
+                                        <MessageSquarePlus className="shrink-0" />
+                                        <span className="font-main">New Chat</span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             </SidebarMenu>
@@ -161,30 +202,30 @@ export function AppSidebar() {
                                 {baseItems.map((item) => (
                                     <SidebarMenuItem key={item.title}>
                                         <SidebarMenuButton asChild tooltip={item.title}>
-                                            <a href={item.url}>
+                                            <Link href={item.url} onClick={closeMobileSidebar}>
                                                 <item.icon className="shrink-0" />
                                                 <span className="font-main">{item.title}</span>
-                                            </a>
+                                            </Link>
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
                                 ))}
                                 {authenticatedItems.map((item) => (
                                     <SidebarMenuItem key={item.title}>
                                         <SidebarMenuButton asChild tooltip={item.title}>
-                                            <a href={item.url}>
+                                            <Link href={item.url} onClick={closeMobileSidebar}>
                                                 <item.icon className="shrink-0" />
                                                 <span className="font-main">{item.title}</span>
-                                            </a>
+                                            </Link>
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
                                 ))}
                                 {!isPro && (
                                     <SidebarMenuItem key="pricing">
                                         <SidebarMenuButton asChild tooltip={user ? "Upgrade" : "Pricing"}>
-                                            <a href="/pricing">
+                                            <Link href="/pricing" onClick={closeMobileSidebar}>
                                                 <Crown className="shrink-0 text-lightGold" />
                                                 <span className={`font-main ${user ? "dark:text-lightGold" : ""}`}>{user ? "Upgrade" : "Pricing"}</span>
-                                            </a>
+                                            </Link>
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
                                 )}
@@ -196,11 +237,64 @@ export function AppSidebar() {
                         <SidebarGroupLabel>Recents</SidebarGroupLabel>
                         <SidebarGroupContent>
                             <SidebarMenu>
-                                <SidebarMenuItem>
-                                    <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
-                                    No recent chats
-                                    </span>
-                                </SidebarMenuItem>
+                                {!user ? (
+                                    <SidebarMenuItem>
+                                        <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
+                                            No recent chats
+                                        </span>
+                                    </SidebarMenuItem>
+                                ) : chatIdsLoading ? (
+                                    <SidebarMenuItem>
+                                        <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
+                                            Loading…
+                                        </span>
+                                    </SidebarMenuItem>
+                                ) : chatIdsError ? (
+                                    <SidebarMenuItem>
+                                        <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
+                                            Couldn&apos;t load chats
+                                        </span>
+                                    </SidebarMenuItem>
+                                ) : recentChats.length === 0 ? (
+                                    <SidebarMenuItem>
+                                        <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
+                                            No recent chats
+                                        </span>
+                                    </SidebarMenuItem>
+                                ) : state === "collapsed" ? (
+                                    null
+                                ) : (
+                                    recentChats.map((chat) => {
+                                        const displayTitle = chat.title?.trim() || "Untitled chat";
+                                        const href = `/build-program?chat=${encodeURIComponent(chat.id)}&edit=true${
+                                            chat.program_id
+                                                ? `&shareId=${encodeURIComponent(chat.program_id)}&shared=true`
+                                                : ""
+                                        }`;
+                                        const isActive = chat.id === selectedChatId;
+                                        return (
+                                            <SidebarMenuItem key={chat.id}>
+                                                <SidebarMenuButton
+                                                    asChild
+                                                    tooltip={displayTitle}
+                                                    className={cn(
+                                                        isActive && "bg-accent text-accent-foreground"
+                                                    )}
+                                                >
+                                                    <Link
+                                                        href={href}
+                                                        className="flex min-w-0 flex-1 items-center gap-2"
+                                                        onClick={closeMobileSidebar}
+                                                    >
+                                                        <span className="min-w-0 flex-1 truncate font-main">
+                                                            {displayTitle}
+                                                        </span>
+                                                    </Link>
+                                                </SidebarMenuButton>
+                                            </SidebarMenuItem>
+                                        );
+                                    })
+                                )}
                             </SidebarMenu>
                         </SidebarGroupContent>
                     </SidebarGroup> */}
@@ -255,10 +349,10 @@ export function AppSidebar() {
                                         </DropdownMenuLabel>
                                         <DropdownMenuSeparator />
                                         <DropdownMenuItem asChild>
-                                            <a href="/profile" className="cursor-pointer flex items-center gap-2">
+                                            <Link href="/profile" className="cursor-pointer flex items-center gap-2" onClick={closeMobileSidebar}>
                                                 <UserRound className="h-4 w-4" />
                                                 Profile
-                                            </a>
+                                            </Link>
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator />
                                         <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
@@ -323,7 +417,10 @@ export function AppSidebar() {
                                                     Pro account
                                                 </DropdownMenuLabel>
                                                 <DropdownMenuItem asChild>
-                                                    <a href={stripePortalUrl} className="cursor-pointer flex items-center gap-2">
+                                                    <a
+                                                        href={stripePortalUrl}
+                                                        className="cursor-pointer flex items-center gap-2"
+                                                    >
                                                         <Receipt className="h-4 w-4" />
                                                         Manage Subscription
                                                     </a>
@@ -376,12 +473,18 @@ export function AppSidebar() {
                                 </DropdownMenu>
                             ) : (
                                 <SidebarMenuButton asChild tooltip="Log in">
-                                    <a href="/auth/login" className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
+                                    <Link
+                                        href="/auth/login"
+                                        className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center"
+                                        onClick={closeMobileSidebar}
+                                    >
                                         <Avatar className="h-6 w-6 shrink-0">
-                                            <AvatarFallback className="text-xs"><LogIn className="h-4 w-4" /></AvatarFallback>
+                                            <AvatarFallback className="text-xs">
+                                                <LogIn className="h-4 w-4" />
+                                            </AvatarFallback>
                                         </Avatar>
                                         <span className="font-main group-data-[collapsible=icon]:hidden">Log in</span>
-                                    </a>
+                                    </Link>
                                 </SidebarMenuButton>
                             )}
                         </SidebarMenuItem>
@@ -393,6 +496,11 @@ export function AppSidebar() {
             <ConnectHevyDialog
                 openConnectHevyDialog={openConnectHevyDialog}
                 handleOpenConnectHevyDialog={setOpenConnectHevyDialog}
+            />
+            <NewChatConfirmDialog
+                open={showNewChatConfirm}
+                onOpenChange={setShowNewChatConfirm}
+                onContinue={handleNewChatContinue}
             />
         </>
     );

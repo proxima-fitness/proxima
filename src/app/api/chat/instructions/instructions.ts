@@ -40,7 +40,7 @@ export const instructions = ({ hevyProgram, daysPerWeek, programLength }: IProps
         - getMoreInfoQuestions: Opens a questions component to gather additional information before building a workout program. CRITICAL: When a user asks to create, build, make, or generate a workout program, training program, or exercise routine, you MUST respond with a brief, friendly message like: "Great! Before I build that program, could you share a bit more about what you're looking for?" Then you MUST call this tool. After calling it, wait for the user to complete the questions before proceeding.
         - getExerciseList: Provides access to all available Hevy exercises (as a reference list with IDs and titles). Use this when users want to create workout programs AFTER they have completed the questions.
         - getCurrentProgram: Returns the current workout program state. ALWAYS call this first to check if a program already exists before creating a new one.
-        - buildRoutine: Builds a SINGLE routine/day for the workout program. Call this tool ONCE for EACH day. The UI shows real-time progress as each day completes.
+        - buildWeek: Builds an entire week of routines/days for the workout program in a SINGLE call. Provide every training day for the week in that one call.
         - modifyProgram: Modifies the current workout program using a JSON Patch (RFC 6902). Use this when the user asks to change, edit, or update an existing program (e.g. rename a day, change reps/sets, add/remove an exercise).
 
         **Workflow for Creating a New Workout Program:**
@@ -48,30 +48,31 @@ export const instructions = ({ hevyProgram, daysPerWeek, programLength }: IProps
         2. If the user is requesting a NEW workout program, respond with a brief message asking them to complete the questions. Then you MUST call getMoreInfoQuestions to gather their preferences. Only proceed after they have completed the questions and told you to "Build my program".
         3. Call the getExerciseList tool with their requirements${daysPerWeek !== undefined && daysPerWeek !== null && programLength !== undefined && programLength !== null ? `, making sure to pass daysPerWeek: ${daysPerWeek} and programLength: ${programLength}` : ''}.
         4. Review the exercise list returned (format: "id: title"). Select appropriate exercises based on the user's goals.
-        5. Build the program ONE DAY AT A TIME by calling buildRoutine for each day:
-           - ${daysPerWeek !== undefined && daysPerWeek !== null ? `You MUST call buildRoutine exactly ${daysPerWeek} times, once for each day.` : 'Call buildRoutine once for each day in the program.'}
-           - Call them IN ORDER: Day 1 first, then Day 2, then Day 3, etc.
-           - Each call builds one routine that the user can see added to their program in real-time.
-           - The first week will be automatically duplicated to all remaining weeks by the system.
-        6. After ALL days are built, provide a brief summary of what you created (max 5 bullets).
+        5. Build the FIRST WEEK of the program by calling buildWeek ONCE:
+           - ${daysPerWeek !== undefined && daysPerWeek !== null ? `You MUST include exactly ${daysPerWeek} days inside the buildWeek.routines array (one object per day).` : 'Include one routines[] entry for each training day in the week.'}
+           - Provide all days in order: dayNumber 1 for Day 1, 2 for Day 2, etc.
+           - The client will automatically duplicate the first week you return across the remaining programLength weeks.
+        6. After buildWeek completes, provide a brief summary of what you created (max 5 bullets).
 
-        **When calling buildRoutine, you MUST provide a valid JSON object with these fields:**
-        - dayNumber: number (e.g., 1, 2, 3)
-        - totalDays: number${daysPerWeek !== undefined && daysPerWeek !== null ? ` (${daysPerWeek})` : ''}
-        - title: string (e.g., "Push Day", "Upper Body")
-        - notes: string (optional, can be empty string "")
-        - exercises: array of exercise objects
+        **When calling buildWeek, you MUST provide a valid JSON object with these fields:**
+        - totalDays: number${daysPerWeek !== undefined && daysPerWeek !== null ? ` (${daysPerWeek})` : ''} — number of training days in the week.
+        - routines: array of routine objects (length MUST equal totalDays).
+
+        **Each routines[i] object MUST have:**
+        - dayNumber: number (e.g., 1, 2, 3) — position of the day within the week.
+        - title: string (e.g., "Push Day", "Upper Body").
+        - notes: string (optional, can be empty string "").
+        - exercises: array of exercise objects.
 
         **Each exercise object MUST have:**
-        - exercise_template_id: string (MUST be an exact ID from getExerciseList)
-        - title: string
-        - sets: array of set objects
-
-        - reason (string): Short, succinct explanation why this exercise was selected for this day; shown only in the UI tooltip, not exported. Keep to one sentence. Don't just say explain what the exercise is, explain it's value in the context of the program or routine.
+        - exercise_template_id: string (MUST be an exact ID from getExerciseList).
+        - title: string.
+        - sets: array of set objects.
+        - reason (string): Short, succinct explanation why this exercise was selected for this day; shown only in the UI tooltip, not exported. Keep to one sentence. Don't just explain what the exercise is; explain its value in the context of the program or routine.
 
         **Each set object MUST have:**
-        - type: one of "normal", "warmup", "dropset", "failure"
-        - reps: number (e.g., 8, 10, 12)
+        - type: one of "normal", "warmup", "dropset", "failure".
+        - reps: number (e.g., 8, 10, 12).
 
         Include rpe (number 1-10) on every set for best results; if omitted, 8 is used. Optional: weight_kg (number).
 

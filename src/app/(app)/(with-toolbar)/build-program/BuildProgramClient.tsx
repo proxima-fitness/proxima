@@ -102,7 +102,7 @@ import { getTextFromChatMessage, isMessageAboutProgram } from "@/components/prog
 import posthog from "posthog-js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUserContext } from "@/contexts/UserContext";
-import { recordLlmRequest } from "@/api/featureLimits";
+import { recordLlmRequest } from "@/api/feature-limits";
 
 const chatTransport = new DefaultChatTransport({ api: "/api/chat" });
 
@@ -221,6 +221,29 @@ export function BuildProgramClient() {
           console.error('Chat error:', err);
           setGenerationError(err);
           setIsBuilding(false);
+        },
+        onFinish: ({ messages: finishedMessages, isAbort }) => {
+          if (!isAbort || !finishedMessages?.length) return;
+
+          const last = finishedMessages[finishedMessages.length - 1] as {
+            role?: string;
+            parts?: Array<{ type?: string; state?: string }>;
+          } | undefined;
+
+          if (last?.role !== "assistant" || !Array.isArray(last.parts)) return;
+
+          const hasUnresolvedToolCall = last.parts.some((part) => {
+            if (!part || typeof part !== "object") return false;
+            const type = (part as { type?: string }).type;
+            const state = (part as { state?: string }).state;
+            if (typeof type !== "string") return false;
+            if (!type.startsWith("tool-")) return false;
+            return state === "input-streaming" || state === "input-available";
+          });
+
+          if (!hasUnresolvedToolCall) return;
+
+          setMessages(finishedMessages.slice(0, -1));
         },
       });
 

@@ -10,7 +10,7 @@
 
 import { BuildProgramSkeletonSSR } from "@/components/program-builder/shared/BuildProgramSkeletonSSR";
 import { Suspense } from "react";
-import { BuildProgramClient } from "./BuildProgramClient";
+import { BuildProgram } from "./BuildProgram";
 
 export const metadata = {
     title: "Build Program | AI Program Builder",
@@ -18,11 +18,11 @@ export const metadata = {
 };
 
 /** Build-program page; client builder with skeleton fallback. */
-export default function BuildProgram() {
+export default function BuildProgramPage() {
     return (
         <div className={ `bg-white sm:bg-extraLightGray dark:bg-extraDarkGray flex flex-col flex-1 min-h-0 overflow-hidden` }>
             <Suspense fallback={ <BuildProgramSkeletonSSR /> }>
-                <BuildProgramClient />
+                <BuildProgram />
             </Suspense>
         </div>
     );

@@ -46,7 +46,7 @@ export const getMaxFolderId = (routines: THevyRoutine[]): number => {
 };
 
 /**
- * Builds empty THevyRoutine[] with one routine per week/day; folder_id = week index, order = day. Used to initialize program before buildRoutine fills it.
+ * Builds empty THevyRoutine[] with one routine per week/day; folder_id = week index, order = day. Used to initialize program before buildWeek fills it.
  */
 export const generateEmptyHevyProgram = (weeksValue: string, daysValue: string): THevyRoutine[] => {
     const weeks = weeksValue ? Number(weeksValue) : 0;
@@ -351,6 +351,23 @@ export function getTextFromChatMessage(message: unknown): string {
     if (message == null || typeof message !== "object" || !("text" in message)) return "";
     const t = (message as { text: unknown }).text;
     return typeof t === "string" ? t.trim().toLowerCase() : "";
+}
+
+/**
+ * Returns trimmed text from a message, supporting both top-level `text` and `parts[].text` (UIMessage shape).
+ * Use for prompt/title extraction where original casing is desired.
+ */
+export function getMessageText(message: unknown): string {
+    if (message == null || typeof message !== "object") return "";
+    const m = message as { text?: string; parts?: { text?: string }[] };
+    if (typeof m.text === "string") return m.text.trim();
+    if (Array.isArray(m.parts)) {
+        return m.parts
+            .map((p) => (typeof p?.text === "string" ? p.text : ""))
+            .join(" ")
+            .trim();
+    }
+    return "";
 }
 
 /** Short acknowledgements that should NOT be classified as program-related. */

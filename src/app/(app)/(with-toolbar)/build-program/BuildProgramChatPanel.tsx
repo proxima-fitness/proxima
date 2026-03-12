@@ -1,0 +1,140 @@
+"use client";
+
+import { memo } from "react";
+import type { ChatStatus, FileUIPart, UIDataTypes, UIMessage, UITools } from "ai";
+import type { Operation } from "fast-json-patch";
+import { Agent } from "@/components/program-builder/shared/agent/Agent";
+import type { useProgramRequestState } from "./use-program-request-state";
+
+type ProgramRequest = ReturnType<typeof useProgramRequestState>;
+
+export interface IProps {
+    search: string;
+    hevyProgram: THevyRoutine[];
+    setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
+    applyPatchWithUndo: (newDocument: THevyRoutine[], inversePatch: Operation[]) => void;
+    programRequest: ProgramRequest;
+    messages: UIMessage<unknown, UIDataTypes, UITools>[];
+    setMessages: (
+        messages:
+            | UIMessage<unknown, UIDataTypes, UITools>[]
+            | ((msgs: UIMessage<unknown, UIDataTypes, UITools>[]) => UIMessage<unknown, UIDataTypes, UITools>[]),
+    ) => void;
+    sendMessageWithContext: Parameters<typeof Agent>[0]["sendMessageWithContext"];
+    isBuilding: boolean;
+    handleIsBuilding: (isBuilding: boolean) => void;
+    isLoading: boolean;
+    error: Error | null;
+    onRetry: () => void;
+    onClearError: () => void;
+    retryCount: number;
+    maxRetries: number;
+    onTimeoutError: () => void;
+    status?: ChatStatus;
+    handleSubmit: (text: string, files?: FileUIPart[]) => void;
+    handleStop: () => void;
+    onBuildComplete?: () => void;
+
+    sidebarPosition: "left" | "right";
+    onTogglePosition: () => void;
+    onToggleExpand: () => void;
+    onToggleHide?: () => void;
+    isExpanded: boolean;
+}
+
+function BuildProgramChatPanelInner({
+    search,
+    hevyProgram,
+    setHevyProgram,
+    applyPatchWithUndo,
+    programRequest,
+    messages,
+    setMessages,
+    sendMessageWithContext,
+    isBuilding,
+    handleIsBuilding,
+    isLoading,
+    error,
+    onRetry,
+    onClearError,
+    retryCount,
+    maxRetries,
+    onTimeoutError,
+    status,
+    handleSubmit,
+    handleStop,
+    onBuildComplete,
+    sidebarPosition,
+    onTogglePosition,
+    onToggleExpand,
+    onToggleHide,
+    isExpanded,
+}: IProps) {
+    return (
+        <Agent
+            search={search}
+            hevyProgram={hevyProgram}
+            setHevyProgram={setHevyProgram}
+            applyPatchWithUndo={applyPatchWithUndo}
+            sex={programRequest.sex}
+            age={programRequest.age}
+            daysPerWeek={programRequest.daysPerWeek}
+            specificDays={programRequest.specificDays}
+            programLength={programRequest.programLength}
+            workoutDuration={programRequest.workoutDuration}
+            activityLevel={programRequest.activityLevel}
+            goals={programRequest.goals}
+            specialization={programRequest.specialization}
+            equipment={programRequest.equipment}
+            focusAreas={programRequest.focusAreas}
+            difficultyLevel={programRequest.difficultyLevel}
+            excludeAreas={programRequest.excludeAreas}
+            excludeEquipment={programRequest.excludeEquipment}
+            excludeSpecializations={programRequest.excludeSpecializations}
+            healthIssues={programRequest.healthIssues}
+            programTitle={programRequest.programTitle}
+            explore={programRequest.explore}
+            handleSex={programRequest.handleSex}
+            handleAge={programRequest.handleAge}
+            handleDaysPerWeek={programRequest.handleDaysPerWeek}
+            handleSpecificDays={programRequest.handleSpecificDays}
+            handleProgramLength={programRequest.handleProgramLength}
+            handleWorkoutDuration={programRequest.handleWorkoutDuration}
+            handleActivityLevel={programRequest.handleActivityLevel}
+            handleGoals={programRequest.handleGoals}
+            handleSpecialization={programRequest.handleSpecialization}
+            handleEquipment={programRequest.handleEquipment}
+            handleFocusAreas={programRequest.handleFocusAreas}
+            handleDifficultyLevel={programRequest.handleDifficultyLevel}
+            handleExcludeAreas={programRequest.handleExcludeAreas}
+            handleExcludeEquipment={programRequest.handleExcludeEquipment}
+            handleExcludeSpecializations={programRequest.handleExcludeSpecializations}
+            handleHealthIssues={programRequest.handleHealthIssues}
+            handleProgramTitle={programRequest.handleProgramTitle}
+            handleExplore={programRequest.handleExplore}
+            messages={messages}
+            setMessages={setMessages}
+            sendMessageWithContext={sendMessageWithContext}
+            isBuilding={isBuilding}
+            handleIsBuilding={handleIsBuilding}
+            isLoading={isLoading}
+            error={error}
+            onRetry={onRetry}
+            onClearError={onClearError}
+            retryCount={retryCount}
+            maxRetries={maxRetries}
+            onTimeoutError={onTimeoutError}
+            status={status}
+            handleSubmit={handleSubmit}
+            handleStop={handleStop}
+            onBuildComplete={onBuildComplete}
+            sidebarPosition={sidebarPosition}
+            onTogglePosition={onTogglePosition}
+            onToggleExpand={onToggleExpand}
+            onToggleHide={onToggleHide}
+            isExpanded={isExpanded}
+        />
+    );
+}
+
+export const BuildProgramChatPanel = memo(BuildProgramChatPanelInner);

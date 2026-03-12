@@ -7,12 +7,9 @@ import { coolQuotes } from "@/assets/constants";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FC, memo } from "react";
 
-const RandomQuote = memo(() => {
-    // eslint-disable-next-line react-hooks/purity
-    const getRandomNumber = () => Math.floor(Math.random() * (coolQuotes.length - 1)) + 1;
-    const randomNumber = getRandomNumber();
-
-    return <span className="px-8">&quot;{coolQuotes[randomNumber].quote}&quot; - {coolQuotes[randomNumber].author}</span>;
+const RandomQuote = memo(({ index }: { index: number }) => {
+    const quote = coolQuotes[index % coolQuotes.length];
+    return <span className="px-8">&quot;{quote.quote}&quot; - {quote.author}</span>;
 });
 
 RandomQuote.displayName = "RandomQuote";
@@ -66,64 +63,64 @@ export const BuildProgramSkeleton: FC = () => {
             <div className=" pb-4 flex flex-row flex-nowrap gap-2">
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
                     <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
-                        <RandomQuote />
+                        <RandomQuote index={0} />
                     </Skeleton>
                 </div>
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
                     <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
-                        <RandomQuote />
+                        <RandomQuote index={1} />
                     </Skeleton>
                 </div>
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
                     <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
-                        <RandomQuote />
+                        <RandomQuote index={2} />
                     </Skeleton>
                 </div>
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
                     <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
-                        <RandomQuote />
+                        <RandomQuote index={3} />
                     </Skeleton>
                 </div>
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
                     <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
-                        <RandomQuote />
+                        <RandomQuote index={4} />
                     </Skeleton>
                 </div>
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
                     <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
-                        <RandomQuote />
+                        <RandomQuote index={5} />
                     </Skeleton>
                 </div>
             </div>
             <div className=" pb-4 flex flex-row flex-nowrap gap-2">
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
                     <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
-                        <RandomQuote />
+                        <RandomQuote index={6} />
                     </Skeleton>
                 </div>
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
                     <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
-                        <RandomQuote />
+                        <RandomQuote index={7} />
                     </Skeleton>
                 </div>
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
                     <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
-                        <RandomQuote />
+                        <RandomQuote index={8} />
                     </Skeleton>
                 </div>
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
                     <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
-                        <RandomQuote />
+                        <RandomQuote index={9} />
                     </Skeleton>
                 </div>
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
                     <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
-                        <RandomQuote />
+                        <RandomQuote index={10} />
                     </Skeleton>
                 </div>
                 <div className="min-w-[440px] max-w-[440px] h-[400px]">
                     <Skeleton className="italic w-full h-full rounded-xl text-center flex items-center justify-center" >
-                        <RandomQuote />
+                        <RandomQuote index={11} />
                     </Skeleton>
                 </div>
             </div>

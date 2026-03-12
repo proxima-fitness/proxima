@@ -91,6 +91,7 @@ export default function ProgramBuilderLayout({ children }: { children: ReactNode
                     {/* <ToolsTabs /> */}
                     <div className="flex items-center gap-2">
                         <div id="toolbar-undo-portal" />
+                        <div id="toolbar-save-portal" />
                         <Suspense fallback={null}>
                             <StepButton />
                         </Suspense>

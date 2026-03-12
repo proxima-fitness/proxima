@@ -10,7 +10,7 @@
  *  - getExerciseList – fetches and filters available Hevy exercises
  *  - getMoreInfoQuestions – opens the pre-build questionnaire UI
  *  - getCurrentProgram – returns the live program state
- *  - buildRoutine – constructs a single THevyRoutine day
+ *  - buildWeek – constructs a full week of THevyRoutine days in one call
  *  - modifyProgram – applies RFC 6902 JSON Patch edits to the program
  *
  * Depends on: ai, zod, @/components/program-builder/api/hevy, @/assets/constants
@@ -197,63 +197,122 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
     });
 
     /**
-     * Title: buildRoutineTool
-     * Description: Tool to build a single routine/day for the workout program.
+     * Title: buildWeekTool
+     * Description: Tool to build a full week of routines/days for the workout program in a single call.
      * @returns { Tool }
      */
-    const buildRoutineTool = tool({
-        description: 'Builds a single routine/day for the workout program. Call this tool ONCE for each day in the program. For example, for a 4-day program, call this tool 4 times (Day 1, Day 2, Day 3, Day 4). The UI will show progress as each day completes. IMPORTANT: Always provide a valid JSON object with the required fields.',
+    const buildWeekTool = tool({
+        description:
+            'Builds an entire week of routines/days for the workout program in a SINGLE call. ' +
+            'Provide all days in order (Day 1, Day 2, …) so the UI can duplicate the first week across the remaining weeks. ' +
+            'IMPORTANT: Always provide a valid JSON object with the required fields.',
         inputSchema: z.object({
-            dayNumber: z.number().describe('The day number (1, 2, 3, etc.) - must be called in order'),
-            totalDays: z.number().describe('Total number of days in the program'),
-            title: z.string().describe('The routine/day title (e.g., "Push Day", "Upper Body")'),
-            notes: z.string().default('').describe('Notes for the routine (optional)'),
-            exercises: z.array(z.object({
-                exercise_template_id: z.string().describe('The exercise ID from the getExerciseList results - MUST be an exact match'),
-                title: z.string().describe('The exercise title'),
-                notes: z.string().default('').describe('Notes for the exercise (optional)'),
-                rest_seconds: z.string().default('90').describe('Rest time in seconds between sets'),
-                supersets_id: z.number().nullable().default(null).describe('0-indexed superset group: use the same number for all exercises in one superset (0 = first superset, 1 = second, etc.); null or omit = not in a superset'),
-                reason: z.string().max(200).optional().describe('Short reason why this exercise was selected (1 sentence; shown in UI tooltip only, not exported).'),
-                sets: z.array(z.object({
-                    type: z.enum(['normal', 'warmup', 'dropset', 'failure']).describe('The type of set'),
-                    reps: z.number().describe('Number of reps'),
-                    rpe: z.number().min(1).max(10).default(8).describe('RPE (Rate of Perceived Exertion) 1-10; default 8 if omitted'),
-                    weight_kg: z.number().optional().describe('Weight in kg'),
-                })).min(1).describe('Array of sets for this exercise - at least 1 set required'),
-            })).min(1).describe('Array of exercises for this routine - at least 1 exercise required'),
+            totalDays: z.number().min(1).max(7).describe('Total number of days in the program week (1–7).'),
+            routines: z
+                .array(
+                    z.object({
+                        dayNumber: z
+                            .number()
+                            .min(1)
+                            .describe('The day number within the week (1, 2, 3, etc.) - must be unique per routine'),
+                        title: z
+                            .string()
+                            .describe('The routine/day title (e.g., "Push Day", "Upper Body")'),
+                        notes: z.string().default('').describe('Notes for the routine (optional)'),
+                        exercises: z
+                            .array(
+                                z.object({
+                                    exercise_template_id: z
+                                        .string()
+                                        .describe(
+                                            'The exercise ID from the getExerciseList results - MUST be an exact match',
+                                        ),
+                                    title: z.string().describe('The exercise title'),
+                                    notes: z.string().default('').describe('Notes for the exercise (optional)'),
+                                    rest_seconds: z
+                                        .string()
+                                        .default('90')
+                                        .describe('Rest time in seconds between sets'),
+                                    supersets_id: z
+                                        .number()
+                                        .nullable()
+                                        .default(null)
+                                        .describe(
+                                            '0-indexed superset group: use the same number for all exercises in one superset (0 = first superset, 1 = second, etc.); null or omit = not in a superset',
+                                        ),
+                                    reason: z
+                                        .string()
+                                        .max(200)
+                                        .optional()
+                                        .describe(
+                                            'Short reason why this exercise was selected (1 sentence; shown in UI tooltip only, not exported).',
+                                        ),
+                                    sets: z
+                                        .array(
+                                            z.object({
+                                                type: z
+                                                    .enum(['normal', 'warmup', 'dropset', 'failure'])
+                                                    .describe('The type of set'),
+                                                reps: z.number().describe('Number of reps'),
+                                                rpe: z
+                                                    .number()
+                                                    .min(1)
+                                                    .max(10)
+                                                    .default(8)
+                                                    .describe(
+                                                        'RPE (Rate of Perceived Exertion) 1-10; default 8 if omitted',
+                                                    ),
+                                                weight_kg: z.number().optional().describe('Weight in kg'),
+                                            }),
+                                        )
+                                        .min(1)
+                                        .describe('Array of sets for this exercise - at least 1 set required'),
+                                }),
+                            )
+                            .min(1)
+                            .describe('Array of exercises for this routine - at least 1 exercise required'),
+                    }),
+                )
+                .min(1)
+                .describe(
+                    'Array of routine definitions for the week. Provide one entry per training day (length should equal totalDays).',
+                ),
         }),
 
-        execute: async ({ dayNumber, totalDays, title, notes, exercises }) => {
+        execute: async ({ totalDays, routines }) => {
             try {
                 const timestamp = new Date().toISOString();
 
-                // Validate inputs
-                if (!Array.isArray(exercises) || exercises.length === 0) {
+                if (!Array.isArray(routines) || routines.length === 0) {
                     return {
-                        error: 'Invalid exercises',
-                        message: 'At least one exercise is required',
+                        error: 'Invalid routines',
+                        message: 'At least one routine is required',
                     };
                 }
 
-                // Build a single THevyRoutine
-                const routine: THevyRoutine = {
-                    id: String(dayNumber),
-                    title: title || `Day ${dayNumber}`,
-                    folder_id: 0, // Week 1 = folder_id 0
-                    order: String(dayNumber),
-                    notes: notes || '',
-                    created_at: timestamp,
-                    updated_at: timestamp,
-                    exercises: exercises.map((exercise, exerciseIndex) => ({
-                        index: exerciseIndex,
-                        title: exercise.title || 'Unknown Exercise',
-                        notes: exercise.notes || '',
-                        rest_seconds: exercise.rest_seconds || '90',
-                        exercise_template_id: exercise.exercise_template_id || '',
-                        supersets_id: exercise.supersets_id ?? null,
-                        reason: exercise.reason?.trim() || undefined,
-                        sets: (exercise.sets || []).map((set, setIndex) => ({
+                if (routines.length !== totalDays) {
+                    return {
+                        error: 'Invalid routines',
+                        message: 'The number of routines must match totalDays',
+                    };
+                }
+
+                const builtRoutines: THevyRoutine[] = [];
+                let totalExercises = 0;
+                let totalSets = 0;
+
+                for (const routineInput of routines) {
+                    const dayNumber = routineInput.dayNumber;
+
+                    if (!Array.isArray(routineInput.exercises) || routineInput.exercises.length === 0) {
+                        return {
+                            error: 'Invalid exercises',
+                            message: `At least one exercise is required for day ${dayNumber}`,
+                        };
+                    }
+
+                    const routineExercises = routineInput.exercises.map((exercise, exerciseIndex) => {
+                        const sets = (exercise.sets || []).map((set, setIndex) => ({
                             index: setIndex,
                             type: set.type || 'normal',
                             reps: set.reps ?? 10,
@@ -262,22 +321,52 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
                             distance_meters: null,
                             duration_seconds: null,
                             custom_metric: null,
-                        })),
-                    })),
-                };
+                        }));
+
+                        totalSets += sets.length;
+
+                        return {
+                            index: exerciseIndex,
+                            title: exercise.title || 'Unknown Exercise',
+                            notes: exercise.notes || '',
+                            rest_seconds: exercise.rest_seconds || '90',
+                            exercise_template_id: exercise.exercise_template_id || '',
+                            supersets_id: exercise.supersets_id ?? null,
+                            reason: exercise.reason?.trim() || undefined,
+                            sets,
+                        };
+                    });
+
+                    totalExercises += routineExercises.length;
+
+                    const routine: THevyRoutine = {
+                        id: String(dayNumber),
+                        title: routineInput.title || `Day ${dayNumber}`,
+                        folder_id: 0, // Week 1 = folder_id 0; client duplicates across weeks
+                        order: String(dayNumber),
+                        notes: routineInput.notes || '',
+                        created_at: timestamp,
+                        updated_at: timestamp,
+                        exercises: routineExercises,
+                    };
+
+                    builtRoutines.push(routine);
+                }
+
+                // Ensure routines are ordered by day
+                builtRoutines.sort((a, b) => Number(a.order) - Number(b.order));
 
                 return {
-                    routine,
-                    dayNumber,
+                    routines: builtRoutines,
                     totalDays,
-                    exerciseCount: exercises.length,
-                    setCount: exercises.reduce((sum, e) => sum + (e.sets?.length || 0), 0),
+                    routineCount: builtRoutines.length,
+                    exerciseCount: totalExercises,
+                    setCount: totalSets,
                 };
-
             } catch (error) {
-                console.error('Error in buildRoutineTool:', error);
+                console.error('Error in buildWeekTool:', error);
                 return {
-                    error: 'Failed to build routine',
+                    error: 'Failed to build week',
                     message: error instanceof Error ? error.message : 'Unknown error',
                 };
             }
@@ -287,14 +376,17 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
             if (output.error) {
                 return {
                     type: 'text' as const,
-                    value: `Error: ${output.message || 'Failed to build routine'}`,
+                    value: `Error: ${output.message || 'Failed to build week'}`,
                 };
             }
 
-            // Return minimal summary - UI extracts routine data from part.output
+            const titles = Array.isArray(output.routines)
+                ? output.routines.map((r: THevyRoutine) => r.title).join(', ')
+                : '';
+
             return {
                 type: 'text' as const,
-                value: `Day ${output.dayNumber}/${output.totalDays} complete: ${output?.routine?.title ? output.routine.title : 'No routine title'} (${output.exerciseCount} exercises, ${output.setCount} sets)`,
+                value: `Week complete (${output.totalDays} days): ${titles || 'No routine titles'} (${output.exerciseCount} exercises, ${output.setCount} sets).`,
             };
         },
     });
@@ -349,7 +441,7 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
         getExerciseList: getExerciseListTool,
         getMoreInfoQuestions: getMoreInfoQuestionsTool,
         getCurrentProgram: getCurrentProgramTool,
-        buildRoutine: buildRoutineTool,
+        buildWeek: buildWeekTool,
         modifyProgram: modifyProgramTool,
     };
 }
