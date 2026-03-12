@@ -4,7 +4,7 @@ import { memo, useState, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import { Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ToolbarSaveButton } from "@/components/program-builder/shared/ToolbarSaveButton";
+// import { ToolbarSaveButton } from "@/components/program-builder/shared/ToolbarSaveButton";
 
 interface IToolbarPortalButtonsProps {
     canUndo: boolean;
@@ -21,9 +21,9 @@ interface IToolbarPortalButtonsProps {
 function ToolbarPortalButtonsInner({
     canUndo,
     onUndo,
-    onSave,
-    saveDisabled,
-    isSaving,
+    // onSave,
+    // saveDisabled,
+    // isSaving,
 }: IToolbarPortalButtonsProps) {
     const [targets, setTargets] = useState<{ undo: HTMLElement; save: HTMLElement } | null>(null);
 
@@ -51,19 +51,20 @@ function ToolbarPortalButtonsInner({
         targets.undo
     );
 
-    const savePortal = createPortal(
-        <ToolbarSaveButton
-            onClick={onSave}
-            disabled={saveDisabled}
-            isSaving={isSaving}
-        />,
-        targets.save
-    );
+    // const savePortal = createPortal(
+    //     <ToolbarSaveButton
+    //         onClick={onSave}
+    //         disabled={saveDisabled}
+    //         isSaving={isSaving}
+    //     />,
+    //     targets.save
+    // );
 
     return (
         <>
             {undoPortal}
-            {savePortal}
+            { /* temporarily disabled save button */ }
+            {/* {savePortal} */}
         </>
     );
 }
