@@ -141,9 +141,9 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                         </div>
                     </div>
                 </div>
-                <div className="absolute z-0 w-[40%] h-[35%] top-0 pink__gradient hidden dark:block" />
-                <div className="absolute z-0 w-[60%] h-[80%] rounded-full white__gradient bottom-40 hidden dark:block" />
-                <div className="absolute z-0 top-40 w-[60%] h-[50%] blue__gradient hidden dark:block" />
+                <div className="absolute z-0 w-[40%] h-[35%] top-0 pink__gradient_dark hidden dark:block" />
+                <div className="absolute z-0 w-[60%] h-[80%] rounded-full white__gradient_dark bottom-40 hidden dark:block" />
+                <div className="absolute z-0 top-40 w-[60%] h-[50%] blue__gradient_dark hidden dark:block" />
                 <div className="absolute z-0 w-[40%] h-[35%] top-0 pink__gradient_light block dark:hidden" />
                 <div className="absolute z-0 w-[60%] h-[80%] rounded-full white__gradient_light bottom-40 block dark:hidden" />
                 <div className="absolute z-0 top-40 w-[60%] h-[50%] blue__gradient_light block dark:hidden" />
