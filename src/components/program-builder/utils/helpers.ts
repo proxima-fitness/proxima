@@ -46,7 +46,7 @@ export const getMaxFolderId = (routines: THevyRoutine[]): number => {
 };
 
 /**
- * Builds empty THevyRoutine[] with one routine per week/day; folder_id = week index, order = day. Used to initialize program before buildRoutine fills it.
+ * Builds empty THevyRoutine[] with one routine per week/day; folder_id = week index, order = day. Used to initialize program before buildWeek fills it.
  */
 export const generateEmptyHevyProgram = (weeksValue: string, daysValue: string): THevyRoutine[] => {
     const weeks = weeksValue ? Number(weeksValue) : 0;

@@ -307,6 +307,19 @@
     filter: blur(160px);
   }
 
+  .blue__gradient_dark {
+    background: radial-gradient(
+      circle at center,
+      rgba(179, 229, 252, 0.6) 0%,
+      rgba(129, 212, 250, 0.5) 25%,
+      rgba(159, 168, 218, 0.45) 50%,
+      rgba(159, 168, 218, 0.2) 75%,
+      rgba(159, 168, 218, 0) 100%
+    );
+    filter: blur(160px);
+  }
+
+
   .pink__gradient_light {
     background: radial-gradient(
       circle at center,
@@ -344,24 +357,25 @@
 
   .pink__gradient_dark {
     background: radial-gradient(
-      circle at center,
-      rgba(180, 120, 140, 0.14) 0%,
-      rgba(140, 80, 120, 0.1) 40%,
-      rgba(100, 50, 80, 0.05) 70%,
-      transparent 100%
+        circle at 50% 50%,
+        rgba(180, 120, 140, 0.08) 0%,
+      rgba(140, 80, 120, 0.05) 30%,
+      rgba(100, 50, 80, 0.02) 55%,
+      transparent 85%
     );
-    filter: blur(280px);
+    filter: blur(600px);
   }
 
   .white__gradient_dark {
     background: radial-gradient(
-      circle at center,
-      rgba(200, 200, 220, 0.12) 0%,
-      rgba(140, 140, 180, 0.08) 40%,
-      rgba(80, 80, 120, 0.04) 70%,
+      circle at 50% 50%,
+      rgba(200, 200, 220, 0.08) 0%,
+      rgba(160, 160, 200, 0.05) 20%,
+      rgba(120, 120, 160, 0.03) 45%,
+      rgba(80, 80, 120, 0.01) 70%,
       transparent 100%
     );
-    filter: blur(320px);
+    filter: blur(550px);
   }
 }
 

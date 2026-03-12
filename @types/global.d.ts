@@ -74,9 +74,9 @@ type TTextToJsonRequest = {
     search: string; // goes into AI Prompt
     sex: string; // goes into AI Prompt
     age: string; // goes into AI Prompt
-    daysPerWeek: string; // used in the buildRoutine function
+    daysPerWeek: string; // used in the buildWeek function
     specificDays: string; // Ignore for now
-    programLength: string; // used in the buildRoutine function
+    programLength: string; // used in the buildWeek function
     workoutDuration: string; // Ignore for now
     activityLevel: string;  // goes into AI Prompt
     goals: string; // goes into AI Prompt

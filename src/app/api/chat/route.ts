@@ -54,9 +54,9 @@ export async function POST(req: Request) {
             instructions: systemPrompt,
             tools: tools,
             // Explicit step limit to prevent infinite loops
-            // Typical flow: getMoreInfoQuestions (1) + getExerciseList (1) + buildRoutine x N (max 7 days)
-            // = ~10 steps max, but allowing 25 for safety with retries
-            stopWhen: stepCountIs(25),
+            // Typical flow: getMoreInfoQuestions (1) + getExerciseList (1) + buildWeek (1)
+            // = ~3–5 steps in practice, but allowing 15 for safety with retries
+            stopWhen: stepCountIs(15),
             experimental_telemetry: { isEnabled: true },
           });
 

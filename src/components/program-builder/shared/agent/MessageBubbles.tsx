@@ -1,6 +1,6 @@
 /**
  * @module MessageBubbles
- * Renders chat messages (user + assistant), tool outputs (buildRoutine, modifyProgram), build progress, error/retry UI, and applies program updates from tool results. Drives hevyProgram state and timeout/retry logic.
+ * Renders chat messages (user + assistant), tool outputs (buildWeek, modifyProgram), build progress, error/retry UI, and applies program updates from tool results. Drives hevyProgram state and timeout/retry logic.
  * Depends on: message, tool, reasoning, attachments, ModifyProgramProgress, applyModifyProgramPatchesFromMessages, helpers. Used by: Agent.
  */
 /* eslint-disable @next/next/no-img-element */
@@ -67,62 +67,33 @@ function truncateFilename(filename: string, maxBaseLength = 24): string {
     return base.slice(0, maxBaseLength) + "..." + ext;
 }
 
-/** buildRoutine tool result shape: routine, day/total counts, optional error. */
-interface IBuildRoutineOutput {
-    routine?: THevyRoutine;
-    dayNumber?: number;
+/** buildWeek tool result shape: full week of routines plus aggregate counts, optional error. */
+interface IBuildWeekOutput {
+    routines?: THevyRoutine[];
     totalDays?: number;
+    routineCount?: number;
     exerciseCount?: number;
     setCount?: number;
     error?: string;
     message?: string;
 }
 
-/** Inline progress list for buildRoutine: completed days + "Building..." for current. */
+/** Simple progress indicator for buildWeek: single \"building\" → \"complete\" state. */
 const BuildProgress: React.FC<{
-    completedDays: Array<{ dayNumber: number; title: string }>;
     totalDays: number;
     isBuilding: boolean;
-}> = ({ completedDays, totalDays, isBuilding }) => {
+}> = ({ totalDays, isBuilding }) => {
     if (totalDays <= 0) return null;
 
     return (
         <div className="w-full pb-4">
             <div className="flex flex-col gap-2 p-4 bg-muted/50 rounded-lg border border-border">
                 <p className="font-medium text-sm text-foreground">
-                    {completedDays.length === totalDays
-                        ? "Program built successfully!"
-                        : "Building your program..."}
+                    {isBuilding ? "Building your program..." : "Program built successfully!"}
                 </p>
-                <div className="flex flex-col gap-1.5">
-                    {Array.from({ length: totalDays }, (_, i) => {
-                        const dayNum = i + 1;
-                        const completed = completedDays.find(d => d.dayNumber === dayNum);
-                        const isCurrentlyBuilding = isBuilding && !completed &&
-                            dayNum === completedDays.length + 1;
-
-                        return (
-                            <div key={dayNum} className="flex items-center gap-2">
-                                <span className={cn(
-                                    "w-2.5 h-2.5 rounded-full shrink-0 transition-colors duration-300",
-                                    completed ? "bg-green-500" :
-                                    isCurrentlyBuilding ? "bg-yellow-500 animate-pulse" :
-                                    "bg-gray-300 dark:bg-gray-600"
-                                )} />
-                                <span className={cn(
-                                    "text-sm transition-colors duration-300",
-                                    completed ? "text-foreground" : "text-muted-foreground"
-                                )}>
-                                    {completed
-                                        ? `Day ${dayNum}: ${completed.title}`
-                                        : isCurrentlyBuilding
-                                            ? `Day ${dayNum}: Building...`
-                                            : `Day ${dayNum}`}
-                                </span>
-                            </div>
-                        );
-                    })}
-                </div>
+                <p className="text-sm text-muted-foreground">
+                    {`Week includes ${totalDays} training day${totalDays === 1 ? "" : "s"}.`}
+                </p>
             </div>
         </div>
     );
@@ -270,30 +241,21 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     const lastProgressTimestampRef = useRef<number>(0);
     const timeoutCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Track the last count of completed routines to know when to finalize
+    // Track whether we've already finalized a successful buildWeek
     const lastCompletedCountRef = useRef<number>(0);
 
-    // Collect all completed buildRoutine outputs from messages
-    const { completedDays, totalDays, allRoutines } = useMemo(() => {
-        const days: Array<{ dayNumber: number; title: string }> = [];
-        const routines: THevyRoutine[] = [];
+    // Collect buildWeek output from messages (single call expected)
+    const { totalDays, allRoutines } = useMemo(() => {
+        let routines: THevyRoutine[] = [];
         let maxTotalDays = 0;
 
         for (const message of messages) {
             for (const part of message.parts) {
-                if (part.type === "tool-buildRoutine") {
-                    const toolOutput = (part as { output?: IBuildRoutineOutput }).output;
+                if (part.type === "tool-buildWeek") {
+                    const toolOutput = (part as { output?: IBuildWeekOutput }).output;
 
-                    if (toolOutput?.routine && toolOutput?.dayNumber && !toolOutput?.error) {
-                        // Check if we already have this day (avoid duplicates)
-                        if (!days.find(d => d.dayNumber === toolOutput.dayNumber)) {
-                            days.push({
-                                dayNumber: toolOutput.dayNumber,
-                                title: toolOutput.routine.title,
-                            });
-                            routines.push(toolOutput.routine);
-                        }
-
+                    if (toolOutput?.routines && !toolOutput?.error) {
+                        routines = toolOutput.routines;
                         if (toolOutput.totalDays && toolOutput.totalDays > maxTotalDays) {
                             maxTotalDays = toolOutput.totalDays;
                         }
@@ -302,36 +264,34 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
             }
         }
 
-        // Sort by day number
-        days.sort((a, b) => a.dayNumber - b.dayNumber);
-        routines.sort((a, b) => Number(a.order) - Number(b.order));
-
         // Use daysPerWeek as fallback for totalDays if not yet known from tool calls
         const finalTotalDays = maxTotalDays || (daysPerWeek ? Number(daysPerWeek) : 0);
 
+        // Sort routines by order/day if present
+        routines.sort((a, b) => Number(a.order) - Number(b.order));
+
         return {
-            completedDays: days,
             totalDays: finalTotalDays,
             allRoutines: routines
         };
     }, [messages, daysPerWeek]);
 
-    // Update progress timestamp when completed days change
+    // Update progress timestamp when we first receive routines
     useEffect(() => {
-        if (completedDays.length > 0) {
+        if (allRoutines.length > 0) {
             lastProgressTimestampRef.current = Date.now();
         }
-    }, [completedDays.length]);
+    }, [allRoutines.length]);
 
     useEffect(() => {
-        // Timeout: every 5s while building, if no progress for TIMEOUT_MS then onTimeoutError
+        // Timeout: every 5s while building, if no progress (no routines) for TIMEOUT_MS then onTimeoutError
         if (timeoutCheckIntervalRef.current) {
             clearInterval(timeoutCheckIntervalRef.current);
             timeoutCheckIntervalRef.current = null;
         }
 
         // Only start timeout checking when building and not already errored
-        if (isBuilding && !error && totalDays > 0 && completedDays.length < totalDays) {
+        if (isBuilding && !error && totalDays > 0 && allRoutines.length === 0) {
             // Initialize the timestamp if not already set
             if (lastProgressTimestampRef.current === 0) {
                 lastProgressTimestampRef.current = Date.now();
@@ -356,7 +316,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                 timeoutCheckIntervalRef.current = null;
             }
         };
-    }, [isBuilding, error, totalDays, completedDays.length, onTimeoutError]);
+    }, [isBuilding, error, totalDays, allRoutines.length, onTimeoutError]);
 
     // Reset timeout timestamp when building starts
     useEffect(() => {
@@ -366,14 +326,14 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     }, [isBuilding]);
 
     useEffect(() => {
-        // When all buildRoutine days are done: duplicate routines across weeks and setHevyProgram
+        // When buildWeek completes (we have all routines): duplicate routines across weeks and setHevyProgram
         if (
             totalDays > 0 &&
-            completedDays.length === totalDays &&
-            completedDays.length !== lastCompletedCountRef.current &&
+            allRoutines.length === totalDays &&
+            allRoutines.length !== lastCompletedCountRef.current &&
             allRoutines.length > 0
         ) {
-            lastCompletedCountRef.current = completedDays.length;
+            lastCompletedCountRef.current = allRoutines.length;
 
             const weeks = programLength ? Number(programLength) : 1;
             const fullProgram: THevyRoutine[] = [];
@@ -400,7 +360,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                 programLength: weeks,
             });
         }
-    }, [completedDays.length, totalDays, allRoutines, programLength, setHevyProgram, handleIsBuilding, onBuildComplete, user, isBuilding]);
+    }, [totalDays, allRoutines, programLength, setHevyProgram, handleIsBuilding, onBuildComplete, user, isBuilding]);
 
     const appliedModifyProgramKeysRef = useRef<Set<string>>(new Set());
 
@@ -705,35 +665,28 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 </Tool>
                                             );
                                         }
-                                        case "tool-buildRoutine": {
-                                            // Show progress UI for buildRoutine calls
-                                            // Only render the progress component once (on the first buildRoutine tool call)
-                                            const buildPart = part as { output?: IBuildRoutineOutput; state?: ToolPart["state"] };
+                                        case "tool-buildWeek": {
+                                            // Show progress UI for buildWeek calls
+                                            const buildPart = part as { output?: IBuildWeekOutput; state?: ToolPart["state"] };
                                             const toolOutput = buildPart.output;
                                             const toolState: ToolPart["state"] =
-                                                toolOutput?.routine && !toolOutput?.error
+                                                toolOutput?.routines && !toolOutput?.error
                                                     ? "output-available"
                                                     : isBuilding
                                                         ? "input-available"
                                                         : "input-streaming";
 
-                                            // Only render progress on day 1 to avoid duplicates
-                                            if (toolOutput?.dayNumber === 1 && totalDays > 0) {
-                                                return (
-                                                    <Tool key={`${message.id}-${index}-build`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
-                                                        <ToolHeader type="tool-buildRoutine" state={toolState} title="Build routine" />
-                                                        <ToolContent>
-                                                            <BuildProgress
-                                                                completedDays={completedDays}
-                                                                totalDays={totalDays}
-                                                                isBuilding={isBuilding}
-                                                            />
-                                                        </ToolContent>
-                                                    </Tool>
-                                                );
-                                            }
-
-                                            return null;
+                                            return (
+                                                <Tool key={`${message.id}-${index}-build`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
+                                                    <ToolHeader type="tool-buildWeek" state={toolState} title="Build week" />
+                                                    <ToolContent>
+                                                        <BuildProgress
+                                                            totalDays={totalDays}
+                                                            isBuilding={isBuilding}
+                                                        />
+                                                    </ToolContent>
+                                                </Tool>
+                                            );
                                         }
                                         case "tool-modifyProgram": {
                                             type ModifyProgramPart = {
@@ -800,7 +753,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                     onRetry={onRetry}
                     retryCount={retryCount}
                     maxRetries={maxRetries}
-                    completedDays={completedDays.length}
+                    completedDays={allRoutines.length}
                     totalDays={totalDays}
                 />
              )}
