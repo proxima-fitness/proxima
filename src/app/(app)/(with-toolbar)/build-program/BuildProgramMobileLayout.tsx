@@ -37,7 +37,7 @@ function BuildProgramMobileLayoutInner({
     return (
         <div className="max-sm:block sm:hidden h-[calc(100vh-4rem)] flex flex-col relative">
             <Tabs value={mobileTab} onValueChange={handleValueChange} className="flex flex-col h-full">
-                <TabsContent value="chat" className="flex-1 m-0 mt-0 px-4 pb-20">
+                <TabsContent value="chat" className="flex-1 flex flex-col min-h-0 overflow-hidden m-0 mt-0 ">
                     {chatPanel}
                 </TabsContent>
                 <TabsContent value="program" className="flex-1 overflow-hidden m-0 mt-0 px-4 pb-20 bg-white dark:bg-darkGray">
