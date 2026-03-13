@@ -10,7 +10,8 @@
     "format": "prettier --write .",
     "prepare": "husky",
     "start": "next start",
-    "test": "vitest"
+    "test": "vitest",
+    "test:ci": "vitest run"
   },
   "lint-staged": {
     "*.{ts,tsx,js}": [
