@@ -35,7 +35,8 @@ export default function DownloadPage() {
                             </div>
                             <div style={ { display: "flex", flexDirection: "column", justifyContent: "flex-start", gap: "10px", zIndex: "5" } }>
 
-                                <a href="https://testflight.apple.com/join/dG4SXTTm"
+                                {/* Temporarily deprecated - mobile app download */}
+                                {/* <a href="https://testflight.apple.com/join/dG4SXTTm"
                                     >
                                     <img src={ (apple as any).src } alt="apple"
                                         style={ {
