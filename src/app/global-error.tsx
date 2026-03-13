@@ -8,11 +8,8 @@
  * Sits at src/app/global-error.tsx; Next.js mounts it in place of the normal
  * layout when a critical error is thrown.
  *
- * Depends on: next/error.
  * Used by: Next.js App Router (automatic).
  */
-
-import NextError from "next/error";
 
 /**
  * Renders the global error UI. Must return a full <html><body> shell because
@@ -20,15 +17,22 @@ import NextError from "next/error";
  *
  * @param props.error - The thrown Error instance (logged to console).
  */
-export default function GlobalError({ error }: { error: Error }) {
-  console.error(error);
 
-  return (
-    <html>
-      <body>
-        {/* NextError requires statusCode; App Router doesn't expose status codes, so we pass 0 for a generic message. */}
-        <NextError statusCode={0} />
-      </body>
-    </html>
-  );
-}
+export default function GlobalError({
+    error,
+    reset,
+  }: {
+    error: Error & { digest?: string }
+    reset: () => void
+  }) {
+    console.error("global-error:", error);
+    return (
+      // global-error must include html and body tags
+      <html>
+        <body>
+          <h2>Something went wrong!</h2>
+          <button onClick={() => reset()}>Try again</button>
+        </body>
+      </html>
+    )
+  }
