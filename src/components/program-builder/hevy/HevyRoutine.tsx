@@ -211,7 +211,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                         </div>
                     }
                     { isMobile ? (
-                        <div className="flex flex-col max-h-screen w-full max-w-full overflow-hidden">
+                        <div className="flex flex-col h-full w-full max-w-full overflow-hidden">
                             <div className="flex flex-row items-center justify-between px-4 py-1 h-9 border-b shrink-0 w-full max-w-full">
                                 <Button
                                     onClick={ handlePreviousWeek }

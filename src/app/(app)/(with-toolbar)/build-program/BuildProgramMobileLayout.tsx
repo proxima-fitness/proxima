@@ -40,8 +40,8 @@ function BuildProgramMobileLayoutInner({
                 <TabsContent value="chat" className="flex-1 m-0 mt-0 px-4 pb-20">
                     {chatPanel}
                 </TabsContent>
-                <TabsContent value="program" className="flex-1 overflow-y-auto m-0 mt-0 px-4 pb-20 bg-white dark:bg-darkGray">
-                    <div className="w-full max-w-full overflow-x-hidden">
+                <TabsContent value="program" className="flex-1 overflow-hidden m-0 mt-0 px-4 pb-20 bg-white dark:bg-darkGray">
+                    <div className="w-full max-w-full overflow-x-hidden h-full">
                         {routineContent}
                     </div>
                 </TabsContent>
