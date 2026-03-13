@@ -108,10 +108,6 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     });
     const { data: chatHistoryData } = useChatHistory(user, chatId);
 
-    useEffect(() => {
-        console.log("Chat message history:", messages);
-    }, [messages]);
-
     const activeError = generationError || error || null;
     const isSubmitted = status === "submitted";
     const isStreaming = status === "streaming";

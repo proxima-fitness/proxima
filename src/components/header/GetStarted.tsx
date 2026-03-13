@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
@@ -56,9 +57,10 @@ export const GetStarted: React.FC<IProps> = (props) => {
                         } }
                         />
                         </a>
-                    </motion.div>
+                    </motion.div> */}
 
-                    <motion.div
+                    {/* Temporarily deprecated - mobile app download */}
+                    {/* <motion.div
                         whileHover={ { scale: 1.2 } }
                         whileTap={ { scale: 0.9 } }
                         onHoverStart={ e => {} }

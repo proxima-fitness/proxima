@@ -247,10 +247,6 @@ export function BuildProgramClient() {
         },
       });
 
-    // useEffect(() => {
-    //     console.log("Chat message history:", messages);
-    // }, [messages]);
-
       const activeError = generationError || error || null;
 
       const isSubmitted = status === 'submitted';
@@ -261,7 +257,7 @@ export function BuildProgramClient() {
     const [isBuilding, setIsBuilding] = useState(false);
     const MAX_RETRIES = 2;
 
-            // Wrapper that sends current program and filter context with every chat request so the API
+    // Wrapper that sends current program and filter context with every chat request so the API
     // (and getCurrentProgram tool) see the actual state (e.g. when program was loaded via shareId).
     const sendMessageWithContext = useCallback(
         (message: Parameters<typeof sendMessage>[0], options?: Parameters<typeof sendMessage>[1]) => {
