@@ -15,7 +15,7 @@ import "@/styles/global.css";
 
 import { Russo_One, Exo, Inter } from "next/font/google";
 import QueryProvider from '@/utils/QueryProvider';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Toaster } from "@/components/ui/sonner";
 import { IsHevyProvider } from "@/contexts/HevyContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -30,6 +30,14 @@ import { UserProvider } from "@/contexts/UserContext";
 import { ProfilePictureProvider } from "@/contexts/ProfilePictureContext";
 import { ThemeProvider } from "@/components/theme-provider"
 import { PoundsOrKgProvider } from "@/contexts/PoundsOrKgContext";
+import { ThemeColorMeta } from "@/components/ThemeColorMeta";
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
+};
 
 export const metadata: Metadata = {
     title: 'Proxima Fitness | Agentic Workout Builder',
@@ -76,7 +84,6 @@ export default function RootLayout({
         <html lang="en" className={ `${exo.className} ${russo_one.className} ${inter.className}` } suppressHydrationWarning>
             <head>
                 <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-                <meta name="theme-color" content="#000000" />
             </head>
             <body>
                 <a
@@ -91,6 +98,7 @@ export default function RootLayout({
                     enableSystem
                     disableTransitionOnChange
                 >
+                <ThemeColorMeta />
                 <QueryProvider>
                     <UserProvider>
                         <ProfilePictureProvider>
