@@ -40,12 +40,12 @@ function BuildProgramMobileLayoutInner({
                 <TabsContent value="chat" className="flex-1 flex flex-col min-h-0 overflow-hidden m-0 mt-0 ">
                     {chatPanel}
                 </TabsContent>
-                <TabsContent value="program" className="flex-1 overflow-hidden m-0 mt-0 px-2 pb-20 bg-white dark:bg-darkGray">
+                <TabsContent value="program" className="flex-1 overflow-hidden m-0 mt-0 px-2 pb-12 bg-white dark:bg-darkGray">
                     <div className="w-full max-w-full overflow-x-hidden h-full">
                         {routineContent}
                     </div>
                 </TabsContent>
-                <TabsList className="fixed bottom-0 left-0 right-0 w-full justify-around rounded-none border-t bg-background shadow-lg px-4 py-3 h-[70px] z-50">
+                <TabsList className="fixed bottom-[max(0.5rem,env(safe-area-inset-bottom))] left-0 right-0 w-full justify-around rounded-none border-t bg-background shadow-lg px-4 py-3 h-[70px] z-50">
                     <TabsTrigger value="chat" className={CHAT_TRIGGER_CLASS}>
                         <MessageSquare className="h-5 w-5" />
                         <span>Chat</span>
