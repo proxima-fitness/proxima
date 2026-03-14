@@ -45,7 +45,7 @@ function BuildProgramMobileLayoutInner({
                         {routineContent}
                     </div>
                 </TabsContent>
-                <TabsList className="fixed bottom-[max(0.5rem,env(safe-area-inset-bottom))] left-0 right-0 w-full justify-around rounded-none border-t bg-background shadow-lg px-4 py-3 h-[70px] z-50">
+                <TabsList className="fixed bottom-0 left-0 right-0 w-full justify-around rounded-none border-t bg-background shadow-lg px-4 py-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] h-[calc(70px+max(0.5rem,env(safe-area-inset-bottom)))] z-50">
                     <TabsTrigger value="chat" className={CHAT_TRIGGER_CLASS}>
                         <MessageSquare className="h-5 w-5" />
                         <span>Chat</span>
