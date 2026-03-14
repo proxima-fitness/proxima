@@ -30,14 +30,15 @@ import {
     setTestTierOverride,
     type TestTierOverride,
 } from "@/api/feature-limits";
-import { Crown, PersonStanding, LockIcon, LogIn, Search, UserRound, Trash2 } from "lucide-react";
+import { Crown, Home, PersonStanding, LockIcon, LogIn, Search, UserRound, Trash2 } from "lucide-react";
 import { DeleteAccountDialog } from "./DeleteAccountDialog";
-import { authenticatedNavLinks, navLinks } from "@/assets/constants";
+import { authenticatedNavLinks, navLinks, navIdToUrl } from "@/assets/constants";
 import { useTheme } from "next-themes"
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 // import { BuyMeCoffee } from "../ui/buy-me-coffee";
 
 const navIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+    home: Home,
     programs: Search,
     about: PersonStanding,
     profile: UserRound,
@@ -132,7 +133,7 @@ const NavItems = (pathname: string) => {
                     key={nav.id}
                     className={ `font-main font-normal cursor-pointer text-[16px] text-black ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
                 >
-                    <Link href={ `/${nav.id}` } className="flex items-center gap-2">
+                    <Link href={navIdToUrl[nav.id] ?? `/${nav.id}`} className="flex items-center gap-2">
                         <NavLinkIcon navId={nav.id} />
                         {nav.title}
                     </Link>
@@ -371,7 +372,7 @@ const NavItems = (pathname: string) => {
                     key={nav.id}
                     className={ `font-main font-normal cursor-pointer text-[16px] text-black dark:text-white ${index === navLinksToShow.length - 1 ? "mr-0" : "mr-10"}` }
                 >
-                    <Link href={ `/${nav.id}` } className="flex items-center gap-2">
+                    <Link href={navIdToUrl[nav.id] ?? `/${nav.id}`} className="flex items-center gap-2">
                         <NavLinkIcon navId={nav.id} />
                         {nav.title}
                     </Link>
@@ -399,7 +400,7 @@ const NavItems = (pathname: string) => {
                     key={nav.id}
                     className={ `font-main font-normal cursor-pointer text-[16px] text-black dark:text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
                 >
-                    <Link href={ `/${nav.id}` } className="flex items-center gap-2">
+                    <Link href={navIdToUrl[nav.id] ?? `/${nav.id}`} className="flex items-center gap-2">
                         <NavLinkIcon navId={nav.id} />
                         {nav.title}
                     </Link>

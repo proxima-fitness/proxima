@@ -5930,19 +5930,15 @@ export const filterGroupOptions: TFilterGroupOption[] = [
 
 /** Navigation links shown to authenticated users. */
 export const authenticatedNavLinks = [
-    // {
-    //     id: "exercises",
-    //     title: "Exercises",
-    // },
-
+    {
+        id: "home",
+        title: "Home",
+    },
     {
         id: "programs",
         title: "Explore"
     },
-    {
-        id: "pricing",
-        title: "Upgrade",
-    },
+
     // {
     //     id: "program-builder",
     //     title: "AI Program Builder",
@@ -5952,8 +5948,8 @@ export const authenticatedNavLinks = [
         title: "Profile"
     },
     {
-        id: "log-in",
-        title: "Log in",
+        id: "pricing",
+        title: "Upgrade",
     },
     // {
     //     id: "cta",
@@ -5963,6 +5959,10 @@ export const authenticatedNavLinks = [
 
 /** Public landing page navigation links. */
 export const navLinks = [
+    {
+        id: "home",
+        title: "Home",
+    },
     {
         id: "programs",
         title: "Explore",
@@ -5979,15 +5979,21 @@ export const navLinks = [
     //     id: "program-builder",
     //     title: "AI Program Builder",
     // },
-    {
-        id: "log-in",
-        title: "Log in",
-    },
     // {
     //     id: "cta",
     //     title: "Download App",
     // },
 ];
+
+/** Nav link id to URL. Used by Navbar and AppSidebar for consistent routing. */
+export const navIdToUrl: Record<string, string> = {
+    home: "/",
+    programs: "/programs",
+    about: "/about",
+    pricing: "/pricing",
+    profile: "/profile",
+    "log-in": "/auth/login",
+};
 
 /** Marketing feature descriptions displayed on the landing page. */
 export const features = [

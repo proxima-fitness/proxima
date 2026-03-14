@@ -67,6 +67,7 @@ import { proxima_logo, proxima_logo_white_full_text } from "public";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { NewChatConfirmDialog } from "@/components/NewChatConfirmDialog";
+import { authenticatedNavLinks, navLinks, navIdToUrl } from "@/assets/constants";
 
 const CHAT_MESSAGES_KEY = "messages";
 const HEVY_PROGRAM_IN_PROGRESS_KEY = "hevy-program-in-progress";
@@ -83,12 +84,15 @@ const signOutServer = async () => {
     }
 };
 
-const baseItems = [
-    { title: "Home", url: "/", icon: Home },
-    { title: "About", url: "/about", icon: Info },
-];
-
 // const RECENTS_LIMIT = 10;
+const navIdToIcon: Record<string, React.ComponentType<{ className?: string }>> = {
+    home: Home,
+    programs: Search,
+    about: Info,
+    pricing: Crown,
+    profile: UserRound,
+    "log-in": LogIn,
+};
 
 export function AppSidebar() {
     const { user, isLoading } = useUserContext();
@@ -148,12 +152,10 @@ export function AppSidebar() {
         router.push("/build-program?new=true");
     };
 
-    const authenticatedItems = user
-        ? [
-              { title: "Explore", url: "/programs", icon: Search },
-              { title: "Profile", url: "/profile", icon: UserRound },
-          ]
-        : [{ title: "Explore", url: "/programs", icon: Search }];
+    const sidebarNavLinks = user ? authenticatedNavLinks : navLinks;
+    const sidebarItemsToShow = sidebarNavLinks.filter(
+        (nav) => !(nav.id === "pricing" && isPro) && !(nav.id === "log-in" && user),
+    );
 
     const shouldShowTestUserToggle =
         !isLoading &&
@@ -199,36 +201,27 @@ export function AppSidebar() {
                         <SidebarGroupLabel>Navigate</SidebarGroupLabel>
                         <SidebarGroupContent>
                             <SidebarMenu>
-                                {baseItems.map((item) => (
-                                    <SidebarMenuItem key={item.title}>
-                                        <SidebarMenuButton asChild tooltip={item.title}>
-                                            <Link href={item.url} onClick={closeMobileSidebar}>
-                                                <item.icon className="shrink-0" />
-                                                <span className="font-main">{item.title}</span>
-                                            </Link>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                ))}
-                                {authenticatedItems.map((item) => (
-                                    <SidebarMenuItem key={item.title}>
-                                        <SidebarMenuButton asChild tooltip={item.title}>
-                                            <Link href={item.url} onClick={closeMobileSidebar}>
-                                                <item.icon className="shrink-0" />
-                                                <span className="font-main">{item.title}</span>
-                                            </Link>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                ))}
-                                {!isPro && (
-                                    <SidebarMenuItem key="pricing">
-                                        <SidebarMenuButton asChild tooltip={user ? "Upgrade" : "Pricing"}>
-                                            <Link href="/pricing" onClick={closeMobileSidebar}>
-                                                <Crown className="shrink-0 text-lightGold" />
-                                                <span className={`font-main ${user ? "dark:text-lightGold" : ""}`}>{user ? "Upgrade" : "Pricing"}</span>
-                                            </Link>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                )}
+                                {sidebarItemsToShow.map((nav) => {
+                                    const Icon = navIdToIcon[nav.id];
+                                    const url = navIdToUrl[nav.id] ?? `/${nav.id}`;
+                                    const isPricing = nav.id === "pricing";
+                                    return (
+                                        <SidebarMenuItem key={nav.id}>
+                                            <SidebarMenuButton asChild tooltip={nav.title}>
+                                                <Link href={url} onClick={closeMobileSidebar}>
+                                                    {Icon && (
+                                                        <Icon
+                                                            className={cn("shrink-0", isPricing && "text-lightGold")}
+                                                        />
+                                                    )}
+                                                    <span className={cn("font-main", isPricing && "dark:text-lightGold")}>
+                                                        {nav.title}
+                                                    </span>
+                                                </Link>
+                                            </SidebarMenuButton>
+                                        </SidebarMenuItem>
+                                    );
+                                })}
                             </SidebarMenu>
                         </SidebarGroupContent>
                     </SidebarGroup>
