@@ -30,7 +30,6 @@ import { UserProvider } from "@/contexts/UserContext";
 import { ProfilePictureProvider } from "@/contexts/ProfilePictureContext";
 import { ThemeProvider } from "@/components/theme-provider"
 import { PoundsOrKgProvider } from "@/contexts/PoundsOrKgContext";
-import { ThemeColorMeta } from "@/components/ThemeColorMeta";
 
 export const viewport: Viewport = {
   themeColor: [
@@ -84,6 +83,25 @@ export default function RootLayout({
         <html lang="en" className={ `${exo.className} ${russo_one.className} ${inter.className}` } suppressHydrationWarning>
             <head>
                 <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+                <script
+                    dangerouslySetInnerHTML={{
+                        __html: `
+(function() {
+  try {
+    var stored = typeof localStorage !== 'undefined' && localStorage.getItem('theme');
+    var dark = stored === 'dark' || (stored !== 'light' && typeof matchMedia !== 'undefined' && matchMedia('(prefers-color-scheme: dark)').matches);
+    var color = dark ? '#000000' : '#ffffff';
+    var list = document.querySelectorAll('meta[name="theme-color"]');
+    for (var i = 0; i < list.length; i++) list[i].remove();
+    var meta = document.createElement('meta');
+    meta.name = 'theme-color';
+    meta.content = color;
+    document.head.appendChild(meta);
+  } catch (e) {}
+})();
+                        `.trim(),
+                    }}
+                />
             </head>
             <body>
                 <a
@@ -98,7 +116,6 @@ export default function RootLayout({
                     enableSystem
                     disableTransitionOnChange
                 >
-                <ThemeColorMeta />
                 <QueryProvider>
                     <UserProvider>
                         <ProfilePictureProvider>
