@@ -89,6 +89,14 @@ export async function POST(req: Request) {
             // = ~3–5 steps in practice, but allowing 15 for safety with retries
             stopWhen: stepCountIs(15),
             experimental_telemetry: { isEnabled: true },
+            // providerOptions: {
+            //     google: {
+            //         thinkingConfig: {
+            //             thinkingLevel: 'low',
+            //             includeThoughts: true,
+            //         },
+            //     },
+            // },
           });
 
         return createAgentUIStreamResponse({

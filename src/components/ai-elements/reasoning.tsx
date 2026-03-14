@@ -1,25 +1,5 @@
 "use client";
 
-/**
- * @module Reasoning
- *
- * Collapsible UI for showing an assistant's intermediate reasoning traces.
- * This module tracks streaming state and elapsed time, auto-opens while
- * the model is thinking, and gently auto-closes when reasoning completes.
- *
- * Depends on:
- * - Radix `useControllableState` for controlled/uncontrolled open state
- * - Design system `Collapsible` components
- * - `Streamdown` and plugins for rendering markdown reasoning content
- *
- * Used by:
- * - `MessageBubbles` when displaying optional "thinking" sections beneath
- *   assistant messages
- * - Any surface that wants a reusable, streaming-aware reasoning panel
- */
-
-import type { ComponentProps, ReactNode } from "react";
-
 import { useControllableState } from "@radix-ui/react-use-controllable-state";
 import {
   Collapsible,
@@ -32,6 +12,7 @@ import { code } from "@streamdown/code";
 import { math } from "@streamdown/math";
 import { mermaid } from "@streamdown/mermaid";
 import { BrainIcon, ChevronDownIcon } from "lucide-react";
+import type { ComponentProps, ReactNode } from "react";
 import {
   createContext,
   memo,
@@ -55,11 +36,6 @@ interface IReasoningContextValue {
 
 const ReasoningContext = createContext<IReasoningContextValue | null>(null);
 
-/**
- * Hook for accessing the current reasoning context, including whether
- * content is streaming, whether the panel is open, and the elapsed
- * reasoning duration (when known).
- */
 export const useReasoning = () => {
   const context = useContext(ReasoningContext);
   if (!context) {
@@ -68,15 +44,6 @@ export const useReasoning = () => {
   return context;
 };
 
-/**
- * Props for the root `Reasoning` container.
- *
- * - `isStreaming` indicates whether reasoning content is still arriving.
- * - `open` / `defaultOpen` / `onOpenChange` expose a controllable
- *   collapsible state.
- * - `duration` can be provided externally or will be computed from
- *   streaming start/stop times.
- */
 export type ReasoningProps = ComponentProps<typeof Collapsible> & {
   isStreaming?: boolean;
   open?: boolean;
@@ -189,11 +156,7 @@ export type ReasoningTriggerProps = ComponentProps<
 
 const defaultGetThinkingMessage = (isStreaming: boolean, duration?: number) => {
   if (isStreaming || duration === 0) {
-    return (
-      <span className="flex items-center gap-2">
-        <Shimmer duration={1}>Thinking...</Shimmer>
-      </span>
-    );
+    return <Shimmer duration={1}>Thinking...</Shimmer>;
   }
   if (duration === undefined) {
     return <p>Thought for a few seconds</p>;
@@ -253,9 +216,7 @@ export const ReasoningContent = memo(
       )}
       {...props}
     >
-      <Streamdown plugins={streamdownPlugins} {...props}>
-        {children}
-      </Streamdown>
+      <Streamdown plugins={streamdownPlugins}>{children}</Streamdown>
     </CollapsibleContent>
   )
 );
