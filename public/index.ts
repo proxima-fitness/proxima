@@ -59,6 +59,11 @@ import google_sheets_logo_icon from "./google-sheets-logo-icon.svg";
 import proxima_logo_white from "./proxima_logo_white.svg";
 import league_of_innovators_logo from "./league-of-innovators-logo.webp";
 import hevy_logo_black from "./hevy-logo-black.svg";
+import pwa_flow_1 from "./pwa-flow-1.png";
+import pwa_flow_2 from "./pwa-flow-2.png";
+import pwa_flow_3 from "./pwa-flow-3.png";
+import pwa_flow_4 from "./pwa-flow-4.png";
+
 
 export {
     qr_code,
@@ -88,6 +93,10 @@ export {
     jack_jacked,
     linkedin,
     logo_white,
+    pwa_flow_1,
+    pwa_flow_2,
+    pwa_flow_3,
+    pwa_flow_4,
     menu,
     minus,
     people02,
