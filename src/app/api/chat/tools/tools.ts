@@ -29,6 +29,11 @@ interface IProps {
     hevyProgram?: THevyRoutine[];
 }
 
+function stripFrontmatter(content: string): string {
+    const match = content.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/);
+    return match ? content.slice(match[0].length).trim() : content.trim();
+}
+
 /**
  * Factory that creates the complete tool set for the chat agent. Captures
  * user-specific exclusion filters and the current program in a closure so
@@ -41,6 +46,67 @@ interface IProps {
  * @returns An object mapping tool names to Vercel AI SDK tool descriptors.
  */
 export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyProgram }: IProps = {}) {
+
+    /**
+     * Title: loadSkillTool
+     * Description: Tool to load a skill to get specialized instructions
+     * @returns { Tool }
+     */
+    const loadSkillTool = tool({
+        description: 'Load a skill to get specialized instructions',
+        inputSchema: z.object({
+            name: z.string().describe('The skill name to load'),
+        }),
+        execute: async ({ name }, { experimental_context }) => {
+            const { sandbox, skills } = experimental_context as {
+                sandbox: ISandbox;
+                skills: ISkillMetadata[];
+            };
+
+            const skill = skills.find(s => s.name.toLowerCase() === name.toLowerCase());
+            if (!skill) {
+                return { error: `Skill '${name}' not found` };
+            }
+
+            const skillFile = `${skill.path}/SKILL.md`;
+            const content = await sandbox.readFile(skillFile, 'utf-8');
+            const body = stripFrontmatter(content);
+
+            return {
+                skillDirectory: skill.path,
+                content: body,
+            };
+        },
+    });
+
+    /**
+     * Title: readFileTool
+     * Description: Tool to read a file from the filesystem
+     * @returns { Tool }
+     */
+    const readFileTool = tool({
+        description: 'Read a file from the filesystem',
+        inputSchema: z.object({ path: z.string() }),
+        execute: async ({ path }, { experimental_context }) => {
+            const { sandbox } = experimental_context as { sandbox: ISandbox };
+            return sandbox.readFile(path, 'utf-8');
+        },
+    });
+
+    /**
+     * Title: bashTool
+     * Description: Tool to execute a bash command
+     * @returns { Tool }
+     */
+    const bashTool = tool({
+        description: 'Execute a bash command',
+        inputSchema: z.object({ command: z.string() }),
+        execute: async ({ command }, { experimental_context }) => {
+            const { sandbox } = experimental_context as { sandbox: ISandbox };
+            return sandbox.exec(command);
+        },
+    });
+
     /**
      * Title: getExerciseListTool
      * Description: Tool that creates first week of workout Program in JSON format.
@@ -443,5 +509,8 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
         getCurrentProgram: getCurrentProgramTool,
         buildWeek: buildWeekTool,
         modifyProgram: modifyProgramTool,
+        loadSkill: loadSkillTool,
+        readFile: readFileTool,
+        bash: bashTool,
     };
 }

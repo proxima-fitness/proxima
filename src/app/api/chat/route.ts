@@ -22,6 +22,7 @@ import { NodeSDK } from "@opentelemetry/sdk-node";
 import { LangfuseSpanProcessor } from "@langfuse/otel";
 import { instructions } from './instructions/instructions';
 import { getTools } from './tools/tools';
+import z from 'zod';
 
 const sdk = new NodeSDK({
   spanProcessors: [new LangfuseSpanProcessor()],
@@ -58,6 +59,34 @@ export function sanitizeMessagesWithUnresolvedToolCalls(messages: unknown[]): un
   return messages.slice(0, -1);
 }
 
+function buildSkillsPrompt(skills: ISkillMetadata[]): string {
+    const skillsList = skills
+      .map(s => `- ${s.name}: ${s.description}`)
+      .join('\n');
+
+    return `
+        ## Skills
+
+        Use the \`loadSkill\` tool to load a skill when the user's request
+        would benefit from specialized instructions.
+
+        Available skills:
+        ${skillsList}
+    `;
+}
+
+const callOptionsSchema = z.object({
+    sandbox: z.custom<ISandbox>(),
+    skills: z.array(
+        z.object({
+            name: z.string(),
+            description: z.string(),
+            path: z.string(),
+        }),
+    ),
+});
+
+
 /**
  * Handles a chat turn: builds the system prompt and tool set from the request
  * payload, runs the ToolLoopAgent, and returns a streaming UI response.
@@ -79,16 +108,22 @@ export async function POST(req: Request) {
 
         const andy = new ToolLoopAgent({
             model: gateway(
-                //'moonshotai/kimi-k2'),
                 'google/gemini-3-flash'),
                 // 'anthropic/claude-sonnet-4.5'
             instructions: systemPrompt,
             tools: tools,
-            // Explicit step limit to prevent infinite loops
-            // Typical flow: getMoreInfoQuestions (1) + getExerciseList (1) + buildWeek (1)
-            // = ~3–5 steps in practice, but allowing 15 for safety with retries
+            callOptionsSchema: callOptionsSchema,
             stopWhen: stepCountIs(15),
             experimental_telemetry: { isEnabled: true },
+            prepareCall: ({ options, ...settings }) => ({
+                ...settings,
+                instructions: `${settings.instructions}\n\n${buildSkillsPrompt(options.skills)}`,
+                experimental_context: {
+                  sandbox: options.sandbox,
+                  skills: options.skills,
+                },
+              }),
+
             // providerOptions: {
             //     google: {
             //         thinkingConfig: {

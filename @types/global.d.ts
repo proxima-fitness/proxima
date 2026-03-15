@@ -173,3 +173,19 @@ type TChatHistory = {
     user_id?: string;
     program_id: string | null;
 };
+
+
+interface ISkillMetadata {
+    name: string;
+    description: string;
+    path: string;
+}
+
+interface ISandbox {
+    readFile(path: string, encoding: 'utf-8'): Promise<string>;
+    readdir(
+        path: string,
+        opts: { withFileTypes: true },
+    ): Promise<{ name: string; isDirectory(): boolean }[]>;
+    exec(command: string): Promise<{ stdout: string; stderr: string }>;
+}
