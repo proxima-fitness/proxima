@@ -53,32 +53,32 @@ export const Faq = () => {
             <h2 className={ styles.heading2 } style={ { textAlign: "center" } }>Frequently Asked Questions</h2>
             <div className="mt-10 flex flex-col justify-center items-center w-full md:px-72">
                 <FAQItem
-            question="I don't have much time. How can this app fit into my busy schedule?"
-            answer="Our app is designed for flexibility. You can choose from various workout durations and intensity levels to match your available time and energy."
+            question="I don't have much time. How can Proxima fit into my schedule?"
+            answer="You can generate a program in seconds with the AI builder and export it to Hevy. When you build, you choose program length and session duration so it fits your available time."
             />
                 <FAQItem
-                question="How can I be sure this app is reliable?"
-                answer="While we embrace technology, we understand concerns. Our app undergoes rigorous testing to ensure reliability, and our support team is available to address any issues you may encounter."
+                question="How reliable is the program builder?"
+                answer="The builder is built for lifters and tested with real programs. We're a small team and respond to support and feedback directly."
             />
                 <FAQItem
-                question="I can't afford to pay. Is the app still accessible for me?"
-                answer="Absolutely! We offer a range of features for free, and our premium options are designed to enhance your experience but are not necessary for a fulfilling fitness journey. We believe in inclusivity."
+                question="Is there a free tier?"
+                answer="Yes. The free tier lets you build and export programs, follow community programs, and track PRs. Pro adds more exports and premium features."
             />
                 <FAQItem
-                question="Can I use this app with my existing fitness routine?"
-                answer="Certainly! Our app is adaptable to various fitness levels and routines. You can integrate it seamlessly with your current workout plan or use it as a standalone solution."
+                question="Can I use Proxima with my existing routine or Hevy?"
+                answer="Yes. Build a program and export it to Hevy, PDF, or spreadsheet. Use it alongside your current training or as your main plan."
             />
                 <FAQItem
-                question="How can I involve friends in my fitness journey through this app?"
-                answer="Our app supports social connectivity! You can invite friends to join challenges, share achievements, and motivate each other. Fitness is more fun when shared."
+                question="How do I share or follow other lifters?"
+                answer="Share your programs on the feed and follow other members. From your profile you can share PRs and see who you follow."
             />
                 <FAQItem
-                question="Are the workouts customizable to my fitness level?"
-                answer="Yes, indeed! We offer personalized workout recommendations based on your fitness level and goals. You can also customize workouts to match your preferences and requirements."
+                question="Are programs customizable to my level and goals?"
+                answer="Yes. When you build a program you set goals, duration, equipment, and more. The AI tailors the program to your inputs."
             />
                 <FAQItem
-                question="Can I use the app without revealing personal information?"
-                answer="Absolutely! While some information is helpful for personalized recommendations, you can control the amount of personal data you share. We prioritize user comfort and consent."
+                question="Do I need to sign up to try the program builder?"
+                answer="You can try the program builder without signing in. An account is required to save and export programs. We don't sell your data."
             />
             </div>
         </section>

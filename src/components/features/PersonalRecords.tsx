@@ -21,7 +21,7 @@ export const PersonalRecords: React.FC = () => {
                     Share Personal Records <span style={ { color: "#33bbcf" } }>with <br className="sm:block hidden" /> Friends</span>
                 </h2>
                 <p className={ `text-black dark:text-offWhite ${styles.paragraphWhiteSection} max-w-[470px] mt-5` }>
-                    On your Proxima Fitness profile, you can easily track your lifting progress and connect with other members. View your total lifts, followers, and who you&apos;re following all in one place. See your exercises with visuals, including your 1-rep max, and share your personal bests.
+                    Track your lifting progress and connect with other members on your profile. See total lifts, followers, and who you follow in one place. View exercises with visuals and 1-rep maxes, and share your personal bests.
                 </p>
             </div>
             <div className={ layout.sectionImg }>

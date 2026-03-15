@@ -53,7 +53,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                             <span className="text-black dark:text-white">About Us</span>
                         </h1>
                         <p className={`${styles.paragraph} font-third max-w-[600px] text-center mt-4 text-gray-700 dark:text-offWhite`}>
-                            Learn more about the journey behind Proxima Fitness and our mission to empower fitness enthusiasts.
+                            The story behind Proxima and how we help lifters push through plateaus and stay consistent.
                         </p>
                     </section>
 
@@ -196,7 +196,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                                         </div>
                                         <div className="flex-1">
                                             <p className={`${styles.paragraph} font-third leading-relaxed text-gray-700 dark:text-offWhite`}>
-                                                Looking ahead to 2026, <span className="text-black dark:text-white">Proxima is focused on making the program builder the best in the world</span>. We&apos;re committed to creating an unparalleled experience that helps fitness enthusiasts design, customize, and optimize their training programs with ease. Additionally, we&apos;re expanding our integration capabilities by <span className=" italic text-black dark:text-white">enabling exports to various fitness apps</span>, making it easier than ever for users to seamlessly transfer their programs to their preferred platforms and continue their fitness journey wherever they train.
+                                                In 2026, <span className="text-black dark:text-white">Proxima is focused on making the program builder the best tool for designing and running your training</span>. We&apos;re adding exports to more fitness apps so you can take your program to your preferred platform and keep training wherever you are.
                                             </p>
                                         </div>
                                     </div>

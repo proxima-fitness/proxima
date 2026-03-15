@@ -59,8 +59,8 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                             <img src={(proxima_logo_black as any).src} alt="Proxima" className="h-14 w-auto hidden dark:block" />
                             <img src={(proxima_logo_white as any).src} alt="Proxima" className="h-14 w-auto dark:hidden block" />
                         </div>
-                        <div className="font-main text-4xl max-sm:text-2xl max-sm:px-2 font-bold uppercase dark:text-white">The Fitness Plan that finally gets you.</div>
-                        <div className="text-lg font-normal px-12 max-sm:text-sm max-sm:px-2 dark:text-white">Create a workout program by chatting with an expert-trained AI</div>
+                        <div className="font-main text-4xl max-sm:text-2xl max-sm:px-2 font-bold uppercase dark:text-white">The fitness plan that gets you</div>
+                        <div className="text-lg font-normal px-12 max-sm:text-sm max-sm:px-2 dark:text-white">Chat with an expert-trained AI to build your workout plan</div>
                     </div>
                     <div className="w-full max-w-3xl max-sm:px-2 ">
                         <div className="pt-8">

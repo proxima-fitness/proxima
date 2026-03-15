@@ -34,7 +34,7 @@ export const Hero: React.FC = () => {
                     </h1>
                 </div>
                 <p className={ `text-sm text-offWhite font-secondary max-w-[600px] mt-5 pb-4 text-center ss:text-left` }>
-                    Seamlessly integrate this <span className="text-lightSecondary">AI Coach</span> into your favourite fitness app and let it coach you with a <span className="text-lightSecondary">personalised plan</span>. Plans evolve based on your workout history, or follow a plan made by an expert.
+                    Get a <span className="text-lightSecondary">personalized training plan</span> inside your favorite fitness app. Plans adapt to your workout history, or follow <span className="text-lightSecondary">expert-made programs</span>.
                 </p>
                 {/* Temporarily deprecated - mobile app download */}
                 {/* <GetStarted /> */}

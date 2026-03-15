@@ -6000,23 +6000,23 @@ export const features = [
   {
     id: "feature-1",
     icon: star.src,
-    title: "Think your program is killing your gains ?",
+    title: "Follow programs shared by other lifters",
     content:
-      "Your fellow Gym-goers can share their workouts for free, allowing you to follow along. Learn from the expertise of your peers!",
+      "Members share their workouts for free. Follow along and learn from real lifters and coaches.",
   },
   {
     id: "feature-2",
     icon: star.src,
-    title: "Want to run a program to beat your current plateau ?",
+    title: "Break through plateaus with proven programs",
     content:
-      "Follow proven programs that are open sourced on reddit and other locations.",
+      "Run proven programs from Reddit and the community—no guesswork.",
   },
-{
-    id: "feature-2",
+  {
+    id: "feature-3",
     icon: star.src,
-    title: "You're a coach and you want to grow your following ?",
+    title: "Share your programs and grow your following",
     content:
-      "You can post your own programs to Proxima, and help other lifters with your expertise",
+      "Post your programs on Proxima and help other lifters. Build your audience with your expertise.",
   },
 ];
 
