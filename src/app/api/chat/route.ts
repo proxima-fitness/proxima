@@ -112,6 +112,7 @@ export async function POST(req: Request) {
 
         const sandbox = createSandbox({ workingDirectory: process.cwd() });
         const skills = await discoverSkills(sandbox, ['.agents/skills']);
+        console.info('[skills] cwd=', process.cwd(), 'count=', skills.length, 'names=', skills.map(s => s.name));
 
         const andy = new ToolLoopAgent({
             model: gateway(
