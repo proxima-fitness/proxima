@@ -22,6 +22,8 @@ import { NodeSDK } from "@opentelemetry/sdk-node";
 import { LangfuseSpanProcessor } from "@langfuse/otel";
 import { instructions } from './instructions/instructions';
 import { getTools } from './tools/tools';
+import { createSandbox } from './skills/sandbox';
+import { discoverSkills } from './skills/index';
 import z from 'zod';
 
 const sdk = new NodeSDK({
@@ -60,19 +62,21 @@ export function sanitizeMessagesWithUnresolvedToolCalls(messages: unknown[]): un
 }
 
 function buildSkillsPrompt(skills: ISkillMetadata[]): string {
+    if (skills.length === 0) return '';
+
     const skillsList = skills
       .map(s => `- ${s.name}: ${s.description}`)
       .join('\n');
 
     return `
-        ## Skills
+## Skills
 
-        Use the \`loadSkill\` tool to load a skill when the user's request
-        would benefit from specialized instructions.
+Use the \`loadSkill\` tool to load a skill when the user's request
+would benefit from specialized instructions.
 
-        Available skills:
-        ${skillsList}
-    `;
+Available skills:
+${skillsList}
+`;
 }
 
 const callOptionsSchema = z.object({
@@ -106,6 +110,9 @@ export async function POST(req: Request) {
         const systemPrompt = instructions({ hevyProgram, daysPerWeek, programLength });
         const tools = getTools({ excludeAreas, excludeEquipment, healthIssues, hevyProgram });
 
+        const sandbox = createSandbox({ workingDirectory: process.cwd() });
+        const skills = await discoverSkills(sandbox, ['.agents/skills']);
+
         const andy = new ToolLoopAgent({
             model: gateway(
                 'google/gemini-3-flash'),
@@ -137,6 +144,7 @@ export async function POST(req: Request) {
         return createAgentUIStreamResponse({
             agent: andy,
             uiMessages: sanitizedMessages,
+            options: { sandbox, skills },
         });
 
     } catch (error) {
