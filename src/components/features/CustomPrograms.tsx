@@ -26,12 +26,12 @@ export const CustomPrograms: React.FC = () => {
 
             <div className={ layout.sectionInfoCentered }>
                 <h2 className={ styles.heading2Centered }>
-                    Create A Tailored <br className="sm:block hidden" />Program in Seconds
+                    Create a tailored <br className="sm:block hidden" />program in seconds
                 </h2>
                 <p className={ `${styles.paragraph} max-w-[470px] mt-5` }>
-                    Through our Agentic Workout Builder, you can easily generate your own workout program based on your preferences. Plus, once your program is ready, you can share it on the feed page, inspiring others and building a stronger fitness community!
+                    Generate a workout program that fits your goals with the AI program builder. When it&apos;s ready, share it on the feed and help other lifters find their next program.
                 </p>
-                <Link href="/"><Button text={ "Build Program" } styles={ `py-2 mt-10` } /></Link>
+                <Link href="/"><Button text={ "Build program" } styles={ `py-2 mt-10` } /></Link>
             </div>
         </section>
     );

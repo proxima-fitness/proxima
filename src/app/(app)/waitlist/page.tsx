@@ -59,8 +59,7 @@ export default function WaitlistPage() {
               Your Agentic Workout Builder for Hevy
             </p>
             <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mt-4">
-              Give your Hevy subscription superpowers with Andy. He reads your Hevy data to recommend personalized programs, schedule your workouts, and takes away the headache of planning your training.
-              Get expert guidance, accountability, and intelligent program management all in one AI-powered trainer.
+              Andy uses your Hevy data to recommend personalized programs, schedule your workouts, and take the planning off your plate. Get expert guidance, accountability, and program management in one AI trainer.
             </p>
           </div>
 
@@ -103,10 +102,11 @@ export default function WaitlistPage() {
             </video>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                Better than ChatGPT
+                Fitness expert with access to your Hevy data
               </h3>
               <p className="text-gray-600 dark:text-gray-400 text-sm">
-              Andy is a fitness-expert AI agent with full access to your Hevy data. He can answer your training questions and take actions on your behalf.              </p>
+                Andy is a fitness-expert AI that answers your training questions and takes action in Hevy on your behalf.
+              </p>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-xs border border-gray-200 dark:border-gray-700 text-center">
               <div className="w-full rounded-lg overflow-hidden mb-4 mx-auto">
@@ -126,7 +126,8 @@ export default function WaitlistPage() {
                 Schedule Workouts
               </h3>
               <p className="text-gray-600 dark:text-gray-400 text-sm">
-              Andy can schedule your workouts for you, change them when you get busy, and hold you accountable to your goals.          </p>
+                Andy schedules your workouts, adjusts them when you get busy, and holds you accountable to your goals.
+              </p>
             </div>
 
           </div>
@@ -138,7 +139,7 @@ export default function WaitlistPage() {
                 Join the Waitlist
               </h2>
               <p className="text-gray-600 dark:text-gray-400">
-                Be the first to know when Andy launches. Early access members get priority and exclusive benefits.
+                Be the first to know when Andy launches. Early access members get priority.
               </p>
             </div>
             <AndyWaitlistForm />

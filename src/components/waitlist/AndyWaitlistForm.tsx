@@ -41,7 +41,7 @@ export function AndyWaitlistForm() {
       if (insertError) {
         // Check if it's a duplicate email error
         if (insertError.code === '23505') {
-          setError('This email is already on the waitlist!')
+          setError('This email is already on the waitlist.')
         } else {
           setError(insertError.message || 'Something went wrong. Please try again.')
         }
@@ -77,10 +77,10 @@ export function AndyWaitlistForm() {
           </svg>
         </div>
         <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-          You&apos;re on the list! 🎉
+          You&apos;re on the list
         </h3>
         <p className="text-gray-600 dark:text-gray-400">
-          We&apos;ll notify you as soon as Andy is ready. Thanks for your interest!
+          We&apos;ll notify you as soon as Andy is ready. Thanks for your interest.
         </p>
         <Button
           onClick={() => setSuccess(false)}
