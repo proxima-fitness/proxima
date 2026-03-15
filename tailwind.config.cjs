@@ -13,9 +13,11 @@ module.exports = {
   	extend: {
   		colors: {
   			primary: '#00040f',
-  			secondary: '#00f6ff',
+  			// secondary: '#00f6ff',
   			offWhite: 'oklch(70.8% 0 0)',
   			lightSecondary: '#33bbcf',
+  			// Slightly darker for light mode (e.g. text-lightSecondaryDark dark:text-lightSecondary)
+  			secondary: '#2a9ba8',
   			lightGold: '#fbbf24',
   			extraLightGray: '#fafafa',
   			lightGray: '#f5f5f5',
