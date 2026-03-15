@@ -34,7 +34,7 @@ sdk.start();
  * message that contains unresolved tool calls (e.g. after an aborted stream).
  * This prevents AI_MissingToolResultsError when the next turn is started.
  */
-function sanitizeMessagesWithUnresolvedToolCalls(messages: unknown[]): unknown[] {
+export function sanitizeMessagesWithUnresolvedToolCalls(messages: unknown[]): unknown[] {
   if (!Array.isArray(messages) || messages.length === 0) return messages;
 
   const last = messages[messages.length - 1] as {
