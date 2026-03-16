@@ -179,6 +179,7 @@ interface ISkillMetadata {
     name: string;
     description: string;
     path: string;
+    allowedTools?: string[];
 }
 
 interface ISandbox {

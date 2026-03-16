@@ -86,8 +86,12 @@ const callOptionsSchema = z.object({
             name: z.string(),
             description: z.string(),
             path: z.string(),
+            allowedTools: z.array(z.string()).optional(),
         }),
     ),
+    activeToolScope: z.object({
+        allowedTools: z.array(z.string()).nullable(),
+    }),
 });
 
 
@@ -112,6 +116,7 @@ export async function POST(req: Request) {
 
         const sandbox = createSandbox({ workingDirectory: process.cwd() });
         const skills = await discoverSkills(sandbox, ['.agents/skills']);
+        const activeToolScope: { allowedTools: string[] | null } = { allowedTools: null };
 
         const andy = new ToolLoopAgent({
             model: gateway(
@@ -122,14 +127,31 @@ export async function POST(req: Request) {
             callOptionsSchema: callOptionsSchema,
             stopWhen: stepCountIs(15),
             experimental_telemetry: { isEnabled: true },
-            prepareCall: ({ options, ...settings }) => ({
-                ...settings,
-                instructions: `${settings.instructions}\n\n${buildSkillsPrompt(options.skills)}`,
-                experimental_context: {
-                  sandbox: options.sandbox,
-                  skills: options.skills,
-                },
-              }),
+            prepareCall: ({ options, ...settings }) => {
+                const CORE_TOOLS = ['loadSkill', 'readFile', 'bash'];
+                let filteredTools = settings.tools;
+                if (options.activeToolScope.allowedTools?.length) {
+                    const allowed = new Set([
+                        ...options.activeToolScope.allowedTools,
+                        ...CORE_TOOLS,
+                    ]);
+                    filteredTools = Object.fromEntries(
+                        Object.entries(settings.tools as Record<string, unknown>).filter(
+                            ([name]) => allowed.has(name)
+                        )
+                    ) as typeof settings.tools;
+                }
+                return {
+                    ...settings,
+                    tools: filteredTools,
+                    instructions: `${settings.instructions}\n\n${buildSkillsPrompt(options.skills)}`,
+                    experimental_context: {
+                        sandbox: options.sandbox,
+                        skills: options.skills,
+                        activeToolScope: options.activeToolScope,
+                    },
+                };
+            },
 
             // providerOptions: {
             //     google: {
@@ -144,7 +166,7 @@ export async function POST(req: Request) {
         return createAgentUIStreamResponse({
             agent: andy,
             uiMessages: sanitizedMessages,
-            options: { sandbox, skills },
+            options: { sandbox, skills, activeToolScope },
         });
 
     } catch (error) {

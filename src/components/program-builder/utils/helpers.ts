@@ -795,6 +795,46 @@ export function getModifyProgramObjectivesByRoutine(
  * @param applyPatchWithUndo - Callback to commit patched program and record inverse for undo (atomic)
  * @returns true if at least one patch was successfully applied, false otherwise
  */
+
+const VALID_PATCH_OPS = new Set<string>(["add", "remove", "replace", "move", "copy", "test"]);
+
+/** Coerce invalid op (e.g. "replace_seconds") to a valid JSON Patch op so fast-json-patch does not throw. */
+const normalizePatchOps = (ops: Operation[]): Operation[] => {
+    return ops.map(op => {
+        const opStr = typeof op.op === "string" ? op.op : "replace";
+        const canonical = VALID_PATCH_OPS.has(opStr) ? opStr : "replace";
+        return { ...op, op: canonical } as Operation;
+    });
+};
+
+/**
+ * Strips spurious `:value` suffixes from the last segment of each operation's
+ * `path` (and `from`). LLMs occasionally emit paths like
+ * `/0/exercises/3/sets/1/rpe:7` instead of `/0/exercises/3/sets/1/rpe`.
+ */
+const normalizePatchPaths = (ops: Operation[]): Operation[] => {
+    const COLON_SUFFIX = /^([a-zA-Z_][a-zA-Z0-9_]*):(.+)$/;
+
+    const fixPath = (p: string): string => {
+        const segments = p.split("/");
+        const last = segments[segments.length - 1];
+        const match = last.match(COLON_SUFFIX);
+        if (match) {
+            segments[segments.length - 1] = match[1];
+            return segments.join("/");
+        }
+        return p;
+    };
+
+    return ops.map(op => {
+        const fixed = { ...op, path: fixPath(op.path) };
+        if ("from" in fixed && typeof fixed.from === "string") {
+            fixed.from = fixPath(fixed.from);
+        }
+        return fixed;
+    });
+};
+
 export const applyModifyProgramPatchesFromMessages = (
     messages: UIMessage[],
     hevyProgram: THevyRoutine[],
@@ -827,7 +867,7 @@ export const applyModifyProgramPatchesFromMessages = (
     let appliedAny = false;
 
     for (const { key, patch } of toApply) {
-        const patchOps = patch as Operation[];
+        const patchOps = normalizePatchOps(normalizePatchPaths(patch as Operation[]));
         const err = validatePatch(patchOps, currentDoc as object);
         if (err) {
             toast.error("Program modification failed: patch is invalid for current program.");

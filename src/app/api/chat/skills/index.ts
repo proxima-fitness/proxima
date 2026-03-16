@@ -31,6 +31,7 @@ export async function discoverSkills(sandbox: ISandbox, directories: string[]): 
                     name: frontmatter.name,
                     description: frontmatter.description,
                     path: skillDir,
+                    allowedTools: frontmatter.allowedTools,
                 });
             } catch {
             continue; // Skip skills without valid SKILL.md

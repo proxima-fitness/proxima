@@ -58,14 +58,19 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
             name: z.string().describe('The skill name to load'),
         }),
         execute: async ({ name }, { experimental_context }) => {
-            const { sandbox, skills } = experimental_context as {
+            const { sandbox, skills, activeToolScope } = experimental_context as {
                 sandbox: ISandbox;
                 skills: ISkillMetadata[];
+                activeToolScope: { allowedTools: string[] | null };
             };
 
             const skill = skills.find(s => s.name.toLowerCase() === name.toLowerCase());
             if (!skill) {
                 return { error: `Skill '${name}' not found` };
+            }
+
+            if (skill.allowedTools?.length) {
+                activeToolScope.allowedTools = skill.allowedTools;
             }
 
             const skillFile = `${skill.path}/SKILL.md`;
@@ -457,12 +462,28 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
         },
     });
 
+    const VALID_PATCH_OPS = ['add', 'remove', 'replace', 'move', 'copy', 'test'] as const;
+    type ValidPatchOp = (typeof VALID_PATCH_OPS)[number];
+    /** Coerce LLM typos/hallucinations (e.g. "replace_seconds") to a valid JSON Patch op. */
+    const canonicalizePatchOp = (val: unknown): ValidPatchOp => {
+        const s = typeof val === 'string' ? val.toLowerCase().trim() : '';
+        if (VALID_PATCH_OPS.includes(s as ValidPatchOp)) return s as ValidPatchOp;
+        if (s.startsWith('replace')) return 'replace';
+        if (s.startsWith('add')) return 'add';
+        if (s.startsWith('remove') || s.startsWith('remov')) return 'remove';
+        if (s.startsWith('move')) return 'move';
+        if (s.startsWith('copy')) return 'copy';
+        if (s.startsWith('test')) return 'test';
+        return 'replace';
+    };
+
     /**
      * JSON Patch operation schema (RFC 6902). Paths are JSON Pointers; document root is the THevyRoutine[] array.
+     * op is coerced so typos like "replace_seconds" become "replace".
      */
     const jsonPatchOperationSchema = z.object({
-        op: z.enum(['add', 'remove', 'replace', 'move', 'copy', 'test']).describe('Operation type'),
-        path: z.string().describe('JSON Pointer to the target (e.g. /0/title, /0/exercises/1/sets/0/reps)'),
+        op: z.string().transform(canonicalizePatchOp).describe('Operation type: add, remove, replace, move, copy, or test (typos like replace_seconds are coerced to replace).'),
+        path: z.string().describe('JSON Pointer to the target property (e.g. /0/title, /0/exercises/1/sets/0/reps). Must contain only property names and array indices — never append the value to the path (e.g. /0/.../rpe:7 is WRONG; use /0/.../rpe and put 7 in value).'),
         value: z.unknown().optional().describe('Value for add, replace, test'),
         from: z.string().optional().describe('JSON Pointer for move/copy source'),
     });
@@ -473,7 +494,7 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
      * @returns { Tool }
      */
     const modifyProgramTool = tool({
-        description: 'Modifies the current workout program using a JSON Patch. Call getCurrentProgram first to get the current program state. The document root is the **full routines array** (length = daysPerWeek × weeks, e.g. 48 for 6 days × 8 weeks). Paths use **zero-based indices**: /0 through /N-1 for all routines. The patch array can contain **any number of operations** (e.g. 160 or 1296); for program-wide edits (e.g. convert all to dumbbell), include one operation per routine (or per routine per exercise) so that every index that needs changing is targeted. Use when the user asks to change, edit, or update an existing program (e.g. rename a day, change reps/sets, add/remove an exercise). Path examples: /0 = first routine, /0/title = first routine title, /0/exercises/1 = second exercise of first routine, /0/exercises/0/sets/2/reps = reps of third set of first exercise.',
+        description: 'Modifies the current workout program using a JSON Patch. Call getCurrentProgram first to get the current program state. The document root is the **full routines array** (length = daysPerWeek × weeks, e.g. 48 for 6 days × 8 weeks). Paths use **zero-based indices**: /0 through /N-1 for all routines. IMPORTANT: each path must end with the property name only (e.g. /0/exercises/0/sets/0/rpe) — put the new value in the "value" field, never in the path (e.g. .../rpe:7 is WRONG). The patch array can contain **any number of operations** (e.g. 160 or 1296); for program-wide edits (e.g. convert all to dumbbell), include one operation per routine (or per routine per exercise) so that every index that needs changing is targeted. Use when the user asks to change, edit, or update an existing program (e.g. rename a day, change reps/sets, add/remove an exercise). Path examples: /0 = first routine, /0/title = first routine title, /0/exercises/1 = second exercise of first routine, /0/exercises/0/sets/2/reps = reps of third set of first exercise.',
         inputSchema: z.object({
             patch: z.array(jsonPatchOperationSchema).min(1).describe('Array of JSON Patch operations (add, remove, replace, move, copy, test). At least one operation required.'),
         }),

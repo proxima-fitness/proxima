@@ -1,0 +1,56 @@
+---
+name: modify-program
+description: >-
+  Workflow for modifying an existing workout program. Load this skill when the
+  user wants to change, edit, update, swap, rename, or remove exercises, sets,
+  reps, or days in their existing program.
+allowedTools:
+  - getExerciseList
+  - getCurrentProgram
+  - modifyProgram
+---
+
+# Modify Program
+
+## Checklist
+
+- [ ] getCurrentProgram to get current state and length (N = total routines).
+- [ ] Build one patch array with all operations for the requested change.
+- [ ] For edits affecting every routine: include one op per index /0 through /N-1 as needed.
+- [ ] Call modifyProgram once with the full patch array.
+
+## Gotchas
+
+- **Document root**: The program is a single array of all routines (all weeks). Length = daysPerWeek × programLength (e.g. 6×8 = 48). Paths are into this array: /0 … /N-1.
+- **Program-wide changes**: To change every occurrence (e.g. rename all "Push" to "Chest"), include one operation per routine index (/0/..., /1/..., …, /N-1/...). Do not patch only the first week.
+- **One patch, one call**: Pass a single patch array with all operations to modifyProgram. Do not split by week or make multiple modifyProgram calls for one logical edit.
+- **Zero-based indices**: /0 is the first routine, /0/exercises/1 is the second exercise of the first routine.
+- **Path = property name only**: Never put the new value inside the path string. The path must end with the property name (e.g. `/0/exercises/0/sets/0/rpe`), and the new value goes in the `value` field. Paths like `/0/exercises/0/sets/0/rpe:7` are **invalid** and will fail.
+
+## Operations
+
+- **op must be exactly one of**: `add`, `remove`, `replace`, `move`, `copy`, `test`. Do not use variants like `replace_seconds` — use `replace` for any value update (e.g. rest_seconds, reps, rpe).
+- **replace**: Update an existing value. `{ "op": "replace", "path": "<path>", "value": <new value> }`. Path must already exist.
+- **add**: Insert a value. `{ "op": "add", "path": "<path>", "value": <value> }`. Use `/-` to append to an array (e.g. /0/exercises/-).
+- **remove**: Delete a value. `{ "op": "remove", "path": "<path>" }`. No `value` needed.
+- **move**: Relocate a value. `{ "op": "move", "from": "<source path>", "path": "<target path>" }`. Use to reorder exercises or routines.
+- **copy**: Duplicate a value. `{ "op": "copy", "from": "<source path>", "path": "<target path>" }`. Use to duplicate an exercise to another routine.
+
+## Path examples
+
+- /0 = first routine, /1 = second routine, /47 = 48th routine
+- /0/title = first routine's title
+- /0/exercises/0/title = first exercise's title
+- /0/exercises/0/sets/0/reps = reps of first set of first exercise
+- /0/exercises/- = append position (for "add")
+
+## Patch template
+
+```json
+[
+  { "op": "replace", "path": "/0/title", "value": "Push Day" },
+  { "op": "replace", "path": "/0/exercises/0/sets/0/reps", "value": 10 }
+]
+```
+
+For program-wide edits (e.g. change reps in first exercise of every routine), include one operation per routine index: /0/..., /1/..., /2/..., etc.
