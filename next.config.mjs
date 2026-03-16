@@ -16,7 +16,12 @@ const nextConfig = {
   images: { unoptimized: true },
   pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
   // Inline critical CSS to reduce render-blocking; trade-off: repeat visits lose stylesheet caching.
-  experimental: { inlineCss: true },
+  experimental: {
+    inlineCss: true,
+    outputFileTracingIncludes: {
+      '/api/chat': ['./.agents/**/*'],
+    },
+  },
   env: { 
     NEXT_PUBLIC_REACT_APP_SUPABASE_KEY: process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_KEY,
     NEXT_PUBLIC_REACT_APP_SUPABASE_URL: process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_URL,
