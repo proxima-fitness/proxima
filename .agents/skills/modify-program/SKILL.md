@@ -23,6 +23,8 @@ allowedTools:
 
 When the user's program or requested changes are **powerlifting-focused** (squat, bench, deadlift, or "like" a known powerlifting program such as Starting Strength, 5/3/1, Texas Method, GZCL, Sheiko, etc.), use `readFile` to load `.agents/skills/modify-program/resources/powerlifting.md` and apply that knowledge when building the patch (e.g. preserve SBD emphasis, recovery, and style).
 
+When the user's program or requested changes are **bodybuilding- or hypertrophy-focused** (aesthetic focus, muscle building, PPL, upper/lower, bro split, or training by muscle group), use `readFile` to load `.agents/skills/modify-program/resources/bodybuilding.md` and apply that knowledge when building the patch (e.g. preserve volume landmarks, exercise categories per muscle, rep ranges, and session structure as in the resource).
+
 ## Gotchas
 
 - **Document root**: The program is a single array of all routines (all weeks). Length = daysPerWeek × programLength (e.g. 6×8 = 48). Paths are into this array: /0 … /N-1.
