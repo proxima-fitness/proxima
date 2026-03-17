@@ -40,7 +40,7 @@ export const PwaSection: React.FC = () => {
       id="pwa"
       className={`${layout.sectionTop} pt-10 pb-12`}
     >
-      <div className={layout.sectionInfoCentered}>
+      <div className={`${layout.sectionInfoCentered} px-6 sm:px-0`}>
         <h2 className="font-main font-semibold xs:text-[48px] text-[28px] text-black dark:text-white xs:leading-[76.8px] leading-[66.8px] text-center w-full">
            Proxima <span style={{ color: "#33bbcf" }}>App </span>on the go{" "}
         </h2>
