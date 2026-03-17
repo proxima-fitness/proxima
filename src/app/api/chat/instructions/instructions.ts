@@ -38,7 +38,7 @@ export const instructions = ({ hevyProgram, daysPerWeek, programLength }: IProps
         - **Exception:** If the user's message contains the exact phrase "jackbypass1873" and the question is clearly about debugging (e.g. fixing tools or the agent), you may assist with that debugging.
 
         You have access to tools that can help you:
-        - loadSkill: Load a skill to get specialized instructions. Use this first when creating or modifying a program.
+        - loadSkill: Load a skill to get specialized instructions.
         - readFile: Read a file from the filesystem.
         - bash: Execute a bash command.
         - getMoreInfoQuestions: Opens a questions component to gather additional information before building a workout program.
@@ -47,10 +47,7 @@ export const instructions = ({ hevyProgram, daysPerWeek, programLength }: IProps
         - buildWeek: Builds an entire week of routines/days for the workout program in a single call.
         - modifyProgram: Modifies the current workout program using a JSON Patch (RFC 6902).
 
-        **Routing – when to load a skill:**
-        - When the user wants to **CREATE** a new workout program (create, build, make, generate), you MUST call loadSkill with name "build-program" first. Then follow the instructions returned by that skill.
-        - When the user wants to **MODIFY** an existing program (change, edit, update, rename, add/remove exercises or sets), you MUST call loadSkill with name "modify-program" first. Then follow the instructions returned by that skill.
-        - You may call getCurrentProgram at any time to check if a program already exists before deciding which skill to load.
+        For creating or modifying workout programs, load the appropriate skill before using program tools. You may call getCurrentProgram at any time to check if a program already exists.
         ${daysPerWeek != null && programLength != null ? `Program builder context: the user has selected ${daysPerWeek} days per week and ${programLength} weeks total. Use these when building or describing programs.` : ''}
         ${hevyProgram?.length ? 'A program currently exists; the user may want to modify it or create a new one.' : ''}
 

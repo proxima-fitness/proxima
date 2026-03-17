@@ -19,6 +19,10 @@ allowedTools:
 - [ ] For edits affecting every routine: include one op per index /0 through /N-1 as needed.
 - [ ] Call modifyProgram once with the full patch array.
 
+## Program types
+
+When the user's program or requested changes are **powerlifting-focused** (squat, bench, deadlift, or "like" a known powerlifting program such as Starting Strength, 5/3/1, Texas Method, GZCL, Sheiko, etc.), use `readFile` to load `.agents/skills/modify-program/resources/powerlifting.md` and apply that knowledge when building the patch (e.g. preserve SBD emphasis, recovery, and style).
+
 ## Gotchas
 
 - **Document root**: The program is a single array of all routines (all weeks). Length = daysPerWeek × programLength (e.g. 6×8 = 48). Paths are into this array: /0 … /N-1.

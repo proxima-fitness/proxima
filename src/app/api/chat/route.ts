@@ -71,8 +71,7 @@ function buildSkillsPrompt(skills: ISkillMetadata[]): string {
     return `
 ## Skills
 
-Use the \`loadSkill\` tool to load a skill when the user's request
-would benefit from specialized instructions.
+Use the \`loadSkill\` tool when the user's request would benefit from specialized instructions. Choose the skill whose description best matches the request.
 
 Available skills:
 ${skillsList}

@@ -20,6 +20,10 @@ allowedTools:
 - [ ] buildWeek once: one week only, routines.length = totalDays, dayNumber 1..N in order.
 - [ ] After success: brief summary (max 5 bullets).
 
+## Program types
+
+When the user wants a **powerlifting** program (squat, bench, deadlift), a program "like" or "similar to" a known one (e.g. Starting Strength, 5/3/1, Texas Method, GZCL, Sheiko, Candito, Smolov, nSuns, Bullmastiff, Calgary Barbell), or mentions periodisation, peaking, or meet prep, use `readFile` to load `.agents/skills/build-program/resources/powerlifting.md` and apply that knowledge when selecting exercises and building the week.
+
 ## Gotchas
 
 - **exercise_template_id**: Must be an exact ID from the getExerciseList result. Do not invent IDs or use titles; the client validates against the list and will fail otherwise.
