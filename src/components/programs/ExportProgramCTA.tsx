@@ -12,10 +12,15 @@ import { convertToHevyRoutine, deFlattenHevyRoutine } from "@/components/program
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { useQuery } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const PdfPreviewSkeleton = () => (
+    <Skeleton className="w-full max-sm:h-[50vh] h-[60vh] rounded-lg" />
+);
 
 const PdfPreviewPane = dynamic(
     () => import("./PdfPreviewPane").then((mod) => mod.PdfPreviewPane),
-    { ssr: false },
+    { ssr: false, loading: PdfPreviewSkeleton },
 );
 
 interface IProps {
@@ -69,9 +74,7 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
                     {hevyRoutine && hevyRoutine.length > 0 ? (
                         <PdfPreviewPane hevyRoutine={hevyRoutine} isInLbs={isInLbs} />
                     ) : (
-                        <p className="text-sm text-muted-foreground py-4 text-center">
-                            Loading PDF preview…
-                        </p>
+                        <PdfPreviewSkeleton />
                     )}
                 </DialogContent>
             </Dialog>
