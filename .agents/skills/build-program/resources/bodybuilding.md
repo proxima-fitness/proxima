@@ -1,6 +1,6 @@
 # Bodybuilding Program Principles
 
-Use this file when the user wants a **bodybuilding** or **hypertrophy** program: aesthetic focus, muscle building, PPL, upper/lower, bro split, or training by muscle group. Apply these principles when selecting exercises (match names to getExerciseList results) and building the week. Do not load the full guides in `bodybuilding/` for program building.
+Use this file when the user wants a **bodybuilding** or **hypertrophy** program: aesthetic focus, muscle building, PPL, upper/lower, bro split, or training by muscle group. Apply these principles when selecting exercises (match names to getExerciseList results) and building the week.
 
 ## Shared principles
 
@@ -18,7 +18,7 @@ Use this file when the user wants a **bodybuilding** or **hypertrophy** program:
 - **Principle:** Include horizontal pressing, incline pressing, and isolation each week for complete development.
 - **Horizontal pressing:** Medium Grip Bench Press, Wide Grip Bench Press, Flat Dumbbell Bench Press, Machine Chest Press, Smith Machine Bench Press
 - **Incline pressing:** Incline Dumbbell Press, Incline Barbell Press Medium Grip, Incline Barbell Press Wide Grip, Incline Machine Chest Press, Smith Machine Incline Press
-- **Isolation:** Flat Dumbbell Flye, Incline Dumbbell Flye, Cable Flye, Machine Flye, Pec Deck Flye
+- **Isolation:** Flat Dumbbell Fly, Incline Dumbbell Fly, Cable Fly, Machine Fly, Pec Deck Fly
 
 ---
 
