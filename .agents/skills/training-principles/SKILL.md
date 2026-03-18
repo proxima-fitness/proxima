@@ -1,6 +1,5 @@
 ---
-
-## name: training-principles
+name: training-principles
 description: >-
   Advice on training and programming principles such as volume, frequency,
   exercise selection, rep ranges, recovery, periodization, or how to train a
@@ -8,6 +7,7 @@ description: >-
   "best exercises for," "how often should I train," "what rep range," "MEV vs
   MRV," or similar educational questions. For creating or building a full
   program, use the build-program skill instead.
+---
 
 # Training Principles
 
