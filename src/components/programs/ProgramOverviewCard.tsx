@@ -1,4 +1,5 @@
 import { Card } from "../ui/card";
+import { ExpandableText } from "../ui/ExpandableText";
 
 /*
  * @module ProgramOverviewCard
@@ -46,7 +47,9 @@ export const ProgramOverviewCard: React.FC<IProps> = (props) => {
                         Program Description
                     </div>
                     <div className="w-[75%]">
-                        { (program?.program?.[0]?.details && program.program[0].details.length > 0) ? program.program[0].details : "n/a" }
+                        { (program?.program?.[0]?.details && program.program[0].details.length > 0)
+                            ? <ExpandableText text={program.program[0].details} maxLines={3} />
+                            : "n/a" }
                     </div>
                 </div>
                 <div className="border-b-2 border-gray-200 flex flex-row justify-start items-center">
