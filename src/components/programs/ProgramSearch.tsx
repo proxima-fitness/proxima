@@ -20,7 +20,7 @@ import {
     CommandInput,
 } from "@/components/ui/command";
 import { ProgramFilterGroup } from "./ProgramFilterGroup";
-import { filterGroupOptions } from "@/assets/constants";
+import { filterGroupOptions } from "@/assets/constants/nav-links";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import { getProgramsSearchResultsWithThumbnail } from "@/api/search";

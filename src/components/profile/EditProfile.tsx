@@ -28,7 +28,7 @@ import {
 	englishDataset,
 	englishRecommendedTransformers,
 } from 'obscenity';
-import { PROFANITY_ERROR_MESSAGE, PROFILE_PICTURE_NSFW_THRESHOLD, PROFILE_PICTURE_NSFW_MESSAGE } from "@/assets/constants";
+import { PROFANITY_ERROR_MESSAGE, PROFILE_PICTURE_NSFW_THRESHOLD, PROFILE_PICTURE_NSFW_MESSAGE } from "@/assets/constants/ui-constants";
 import { useProfilePictureContext } from "@/contexts/ProfilePictureContext";
 import { cn } from "@/lib/utils";
 

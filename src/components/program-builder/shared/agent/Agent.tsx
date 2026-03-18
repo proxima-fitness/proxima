@@ -16,7 +16,7 @@ import { useMemo, useCallback, useState } from "react"
 import { IOption } from "@/components/ui/multi-select"
 import { type ChatStatus, FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai"
 import type { IQuestion } from "@/components/ui/questions"
-import { equipmentOptions, healthIssuesOptions } from "@/assets/constants"
+import { equipmentOptions, healthIssuesOptions } from "@/assets/constants/form-options"
 import { generateEmptyHevyProgram, inferDaysPerWeek, inferProgramLength } from "@/components/program-builder/utils/helpers"
 
 import { Shimmer } from "@/components/ai-elements/shimmer"

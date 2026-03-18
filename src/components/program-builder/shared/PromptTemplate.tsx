@@ -43,7 +43,7 @@ const PENDING_INITIAL_PROMPT_KEY = "pending-initial-prompt";
 const LONG_PROMPT_PLACEHOLDER = "__long_prompt__";
 /** Max chars for search in URL; above this, prompt is stored in sessionStorage to avoid 431. */
 const MAX_SEARCH_URL_LENGTH = 1800;
-import { suggestionGroups, quickTriggerSuggestionChips } from "@/assets/constants";
+import { suggestionGroups, quickTriggerSuggestionChips } from "@/assets/constants/suggestions";
 import { BUILD_PROGRAM_EMPTY_URL } from "@/components/program-builder/utils";
 import { useTypewriterPlaceholder } from "@/hooks/useTypewriterPlaceholder";
 import { useIsMobile } from "@/hooks/use-mobile";

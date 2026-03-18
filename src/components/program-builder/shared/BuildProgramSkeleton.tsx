@@ -3,7 +3,7 @@
  * Client-side loading skeleton for the program builder (steps + quote placeholders). Shown while build-program content loads.
  * Depends on: Skeleton, coolQuotes. Used by: build-program page (client).
  */
-import { coolQuotes } from "@/assets/constants";
+import { coolQuotes } from "@/assets/constants/nav-links";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FC, memo } from "react";
 

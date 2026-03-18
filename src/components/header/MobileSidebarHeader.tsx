@@ -10,11 +10,16 @@
  * Used by: (app) layout.
  */
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { Suspense } from "react";
 import { CustomTrigger } from "@/components/CustomSidebarTrigger";
-import { StepButton } from "@/components/program-builder/shared/StepButton";
 import { proxima_logo_black, proxima_logo_white } from "public";
+
+const StepButton = dynamic(
+  () => import("@/components/program-builder/shared/StepButton").then(m => ({ default: m.StepButton })),
+  { ssr: false, loading: () => <div className="w-10" aria-hidden /> }
+);
 
 export function MobileSidebarHeader() {
   const pathname = usePathname();

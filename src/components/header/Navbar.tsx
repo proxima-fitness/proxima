@@ -32,7 +32,7 @@ import {
 } from "@/api/feature-limits";
 import { Crown, Home, PersonStanding, LockIcon, LogIn, Search, UserRound, Trash2 } from "lucide-react";
 import { DeleteAccountDialog } from "./DeleteAccountDialog";
-import { authenticatedNavLinks, navLinks, navIdToUrl } from "@/assets/constants";
+import { authenticatedNavLinks, navLinks, navIdToUrl } from "@/assets/constants/nav-links";
 import { useTheme } from "next-themes"
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 // import { BuyMeCoffee } from "../ui/buy-me-coffee";

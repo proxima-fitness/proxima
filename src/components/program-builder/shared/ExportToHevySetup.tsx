@@ -20,7 +20,7 @@ import {
     updateHevyApiKey,
     deleteHevyApiKey,
 } from "../api/hevy";
-import { RATE_LIMIT_EXHAUSTED_MESSAGE } from "@/assets/constants";
+import { RATE_LIMIT_EXHAUSTED_MESSAGE } from "@/assets/constants/ui-constants";
 import { postNewProgramSubscriber } from "@/api/programs";
 import { toast } from "sonner";
 import { validate } from "uuid";

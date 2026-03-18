@@ -16,7 +16,7 @@ import {
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ExportProgramCTAButtons } from "@/components/programs/ExportProgramCTAButtons";
-import { exportOptions } from "@/assets/constants";
+import { exportOptions } from "@/assets/constants/export-options";
 import { PDFViewer } from "@react-pdf/renderer";
 import { HevyPdfRenderer } from "../hevy/HevyPdfRenderer";
 import { deFlattenHevyRoutine, hevyRoutinesToCsvWithWeekAndDayTitles } from "../utils";

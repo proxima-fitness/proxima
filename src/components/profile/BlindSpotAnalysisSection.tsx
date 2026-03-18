@@ -27,7 +27,7 @@ import {
     DialogTitle,
     DialogDescription,
 } from "@/components/ui/dialog";
-import { STALL_PROMPT } from "@/assets/constants";
+import { STALL_PROMPT } from "@/assets/constants/ui-constants";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
 import { ExerciseStalls, type IExercise } from "./ExerciseStalls";

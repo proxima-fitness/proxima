@@ -14,10 +14,12 @@ import {
     LONG_PROMPT_PLACEHOLDER,
     PENDING_ATTACHMENTS_KEY,
     PENDING_INITIAL_PROMPT_KEY,
+} from "@/assets/constants/ui-constants";
+import {
     focusAreasOptions,
     equipmentOptions,
     healthIssuesOptions,
-} from "@/assets/constants";
+} from "@/assets/constants/form-options";
 import {
     inferDaysPerWeek,
     inferProgramLength,

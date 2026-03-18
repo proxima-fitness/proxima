@@ -12,7 +12,7 @@
  * @property programId Identifier of the program whose data should be exported.
  */
 import { ExportProgramCTAButtons } from "./ExportProgramCTAButtons";
-import { exportOptions } from "@/assets/constants";
+import { exportOptions } from "@/assets/constants/export-options";
 
 interface IProps {
     programId: number;

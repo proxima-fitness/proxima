@@ -37,7 +37,7 @@ import { cn } from "@/lib/utils";
 import { UpgradeBanner } from "@/components/ui/upgrade-banner";
 import { useMyFeatureLimits } from "@/api/hooks";
 import { useUserContext } from "@/contexts/UserContext";
-import { quickTriggerSuggestionChips } from "@/assets/constants";
+import { quickTriggerSuggestionChips } from "@/assets/constants/suggestions";
 import type { FileUIPart } from "ai";
 import { memo, useCallback, useState } from "react";
 import { Questions } from "@/components/ui/questions";

@@ -67,7 +67,7 @@ import { proxima_logo, proxima_logo_white_full_text } from "public";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { NewChatConfirmDialog } from "@/components/NewChatConfirmDialog";
-import { authenticatedNavLinks, navLinks, navIdToUrl } from "@/assets/constants";
+import { authenticatedNavLinks, navLinks, navIdToUrl } from "@/assets/constants/nav-links";
 
 const CHAT_MESSAGES_KEY = "messages";
 const HEVY_PROGRAM_IN_PROGRESS_KEY = "hevy-program-in-progress";

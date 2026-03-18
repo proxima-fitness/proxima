@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /*
@@ -10,7 +11,7 @@
 import styles from "../../style";
 import { proxima_logo } from "public";
 import Link from "next/link";
-import { footerLinks, socialMedia } from "@/assets/constants";
+import { footerLinks, socialMedia } from "@/assets/constants/nav-links";
 
 /**
  * Footer renders the bottom-of-page navigation and branding section.

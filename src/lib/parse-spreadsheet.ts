@@ -13,7 +13,10 @@
 "use client";
 
 import * as Papa from "papaparse";
-import * as XLSX from "xlsx";
+
+async function getXLSX() {
+  return import("xlsx");
+}
 
 /** MIME types recognised as spreadsheet formats. */
 const SPREADSHEET_MIMES = new Set([
@@ -81,7 +84,8 @@ export async function parseSpreadsheetToText(
     }
   }
 
-  // Excel / ODS: use SheetJS
+  // Excel / ODS: use SheetJS (lazy-loaded to keep it out of the initial bundle)
+  const XLSX = await getXLSX();
   const arrayBuffer = await blob.arrayBuffer();
   const workbook = XLSX.read(arrayBuffer, { type: "array" });
   const parts: string[] = [];

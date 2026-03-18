@@ -23,7 +23,7 @@ import { getMaxFolderId } from "@/components/program-builder/utils";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/api/index";
 import { convertHevyOutputIntoInput } from "./hevy_export";
-import { HEVY_OMIT_REASON, RATE_LIMIT_EXHAUSTED_MESSAGE } from "@/assets/constants";
+import { HEVY_OMIT_REASON, RATE_LIMIT_EXHAUSTED_MESSAGE } from "@/assets/constants/ui-constants";
 
 /**
  * Generic authenticated GET request against the Hevy public API.
