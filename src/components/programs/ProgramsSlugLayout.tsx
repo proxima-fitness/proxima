@@ -81,10 +81,10 @@ export const ProgramsSlugLayout: FC<IProps> =  async (props) => {
                             <div className="text-3xl font-main ">
                                 { program.program[0].title }
                             </div>
-                            <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+                            <div className="mt-3 flex items-center gap-2 text-sm text-secondary dark:text-lightSecondary">
                                 <User className="h-4 w-4" aria-hidden="true" />
                                 <span>
-                                    {program.subscriberCount} {program.subscriberCount === 1 ? "person has" : "people have"} subscribed
+                                    {program.program[0].saves} {program.program[0].saves === 1 ? "lifter has" : "lifters have"} joined
                                 </span>
                             </div>
                         </Card>

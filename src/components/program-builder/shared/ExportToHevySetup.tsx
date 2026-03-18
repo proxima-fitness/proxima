@@ -58,10 +58,12 @@ function isPostHevyRoutineProgramSuccess(r: unknown): r is PostHevyRoutineProgra
 interface IExportToHevySetupProps {
     /** Notifies parent when upload is in progress (e.g. to block dialog close). */
     onUploadStateChange?: (uploading: boolean) => void;
+    /** When provided, used instead of reading from localStorage. Allows callers (e.g. program slug page) to pass routines directly without touching the build-program localStorage key. */
+    hevyRoutines?: THevyRoutine[];
 }
 
 /** Step 1: API key connect/edit. Step 2: upload program from localStorage with one-folder vs per-week option. */
-export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadStateChange }) => {
+export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadStateChange, hevyRoutines: hevyRoutinesProp }) => {
     const { user } = useUserContext();
     const queryClient = useQueryClient();
     const { data: hevyApiKey } = useHevySecret(user);
@@ -158,8 +160,8 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
         }
     };
 
-    /** Reads localStorage for hevy-program-in-progress; used to enable/disable upload step. */
     const hasProgramInProgress = (): boolean => {
+        if (hevyRoutinesProp && hevyRoutinesProp.length > 0) return true;
         if (typeof window === "undefined") return false;
         const raw = localStorage.getItem("hevy-program-in-progress");
         if (!raw) return false;
@@ -175,40 +177,45 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
     const handleUploadProgram = async (exportToOneFolderMode: boolean) => {
 
         if (typeof window === "undefined") return;
-        const rawProgram = localStorage.getItem("hevy-program-in-progress");
-        const promptRaw = localStorage.getItem("prompt");
-
-        if (!rawProgram) {
-            toast.error("Missing program. Build a program first.");
-            console.error("Missing program. Build a program first.");
-            return;
-        }
 
         let hevyRoutines: THevyRoutine[];
         let request: TTextToJsonRequest | undefined;
-        try {
-            hevyRoutines = JSON.parse(rawProgram) as THevyRoutine[];
-        } catch (error) {
-            toast.error("Invalid program data.");
-            console.error("Invalid program data.", error);
-            return;
-        }
-        try {
-            const requestRaw = localStorage.getItem("hevy-request");
-            request = requestRaw ? (JSON.parse(requestRaw) as TTextToJsonRequest) : undefined;
-        } catch {
-            request = undefined;
-        }
+        let prompt = "";
 
-        const prompt = promptRaw
-            ? (() => {
-                try {
-                    return JSON.parse(promptRaw) as string;
-                } catch {
-                    return promptRaw;
-                }
-            })()
-            : "";
+        if (hevyRoutinesProp && hevyRoutinesProp.length > 0) {
+            hevyRoutines = hevyRoutinesProp;
+        } else {
+            const rawProgram = localStorage.getItem("hevy-program-in-progress");
+            if (!rawProgram) {
+                toast.error("Missing program. Build a program first.");
+                console.error("Missing program. Build a program first.");
+                return;
+            }
+            try {
+                hevyRoutines = JSON.parse(rawProgram) as THevyRoutine[];
+            } catch (error) {
+                toast.error("Invalid program data.");
+                console.error("Invalid program data.", error);
+                return;
+            }
+
+            const promptRaw = localStorage.getItem("prompt");
+            prompt = promptRaw
+                ? (() => {
+                    try {
+                        return JSON.parse(promptRaw) as string;
+                    } catch {
+                        return promptRaw;
+                    }
+                })()
+                : "";
+            try {
+                const requestRaw = localStorage.getItem("hevy-request");
+                request = requestRaw ? (JSON.parse(requestRaw) as TTextToJsonRequest) : undefined;
+            } catch {
+                request = undefined;
+            }
+        }
 
         if (!user) {
             const errorMessage = "You must be signed in to upload.";

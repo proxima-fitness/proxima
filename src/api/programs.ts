@@ -279,32 +279,6 @@ export const getProgramByID = async (program_id: number) => {
 };
 
 /**
- * Fetches the number of users subscribed to a program.
- *
- * @param program_id - The program's primary key
- * @returns Exact subscriber count, or 0 on error
- */
-export const getProgramSubscriberCount = async (program_id: number): Promise<number> => {
-    try {
-        const { count, error } = await supabase
-            .from('program_subscribers')
-            .select('*', { count: 'exact', head: true })
-            .eq('program_id', program_id);
-
-        if (error) {
-            console.error('Error fetching program subscriber count:', error);
-            return 0;
-        }
-
-        return count ?? 0;
-    } catch (error: unknown) {
-        console.error(`Error fetching program subscriber count: ${error}`);
-        return 0;
-    }
-};
-
-
-/**
  * Groups schedule workouts by week number and sorts each group by day,
  * producing a 2D array where the outer index is the week.
  *
