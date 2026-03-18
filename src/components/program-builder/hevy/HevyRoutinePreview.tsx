@@ -40,7 +40,7 @@ export const HevyRoutinePreview: React.FC<IProps> = (props) => {
                             <div className="border-b-2 border-gray-200">
                                 <div>
                                     <h3 className="font-main text-lg">{ "Day" } { day.order } { day?.title ? <> &middot; { day.title }</> : "" }</h3>
-                                    <p className="font-extralight">{ day.exercises.length } {day.exercises.length === 1 ? "Exercise" : `Exercises`}</p>
+                                    <p className="font-light">{ day.exercises.length } {day.exercises.length === 1 ? "Exercise" : `Exercises`}</p>
                                 </div>
                             </div>
                             <div className="flex flex-row justify-between gap-4 border-b-2 py-2 border-gray-200 text-sm dark:text-offWhite">
@@ -69,7 +69,7 @@ export const HevyRoutinePreview: React.FC<IProps> = (props) => {
                             >
                                 { day?.exercises?.map((exercise: THevyExercise, exerciseIndex: number) => (
                                     <div key={ exerciseIndex }>
-                                        <div className="border-b-2 text-sm border-gray-200 flex flex-row justify-between font-extralight items-center py-2 dark:border-offWhite dark:text-offWhite">
+                                        <div className="border-b-2 text-sm border-gray-200 flex flex-row justify-between font-light items-center py-2 dark:border-offWhite dark:text-offWhite">
                                             <div className="flex flex-row gap-4 max-w-[50%]">
                                                 <div className="text-[#33bbcf] dark:white">{exerciseIndex + 1}</div>
                                                 <div>

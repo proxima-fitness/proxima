@@ -28,7 +28,7 @@ const PROMPT_OPTIONS = [
 ];
 
 /** Current phase of the typewriter animation cycle. */
-type AnimationState = "typing" | "pausing" | "deleting"
+type AnimationState = "waiting" | "typing" | "pausing" | "deleting"
 
 /** Tuning knobs for the typewriter animation timing and behaviour. */
 interface IUseTypewriterPlaceholderOptions {
@@ -66,22 +66,33 @@ export function useTypewriterPlaceholder({
 }: IUseTypewriterPlaceholderOptions = {}) {
   const [currentOptionIndex, setCurrentOptionIndex] = useState(0)
   const [displayedText, setDisplayedText] = useState("")
-  const [animationState, setAnimationState] = useState<AnimationState>("typing")
+  const [animationState, setAnimationState] = useState<AnimationState>("waiting")
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     if (!enabled) {
-      // Reset to first option when disabled
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentOptionIndex(0)
       setDisplayedText("")
-      setAnimationState("typing")
+      setAnimationState("waiting")
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
         timeoutRef.current = null
       }
       return
+    }
+
+    if (animationState === "waiting") {
+      timeoutRef.current = setTimeout(() => {
+        setAnimationState("typing")
+      }, 2000)
+      return () => {
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current)
+          timeoutRef.current = null
+        }
+      }
     }
 
     const currentOption = PROMPT_OPTIONS[currentOptionIndex]
@@ -130,6 +141,8 @@ export function useTypewriterPlaceholder({
     pauseAfterDeleting,
     enabled,
   ])
+
+  if (animationState === "waiting") return "Loading..."
 
   const prefix = showPrefix ? STATIC_PREFIX : ""
   const placeholder = enabled ? `${prefix}${displayedText}` : `${prefix}build...`

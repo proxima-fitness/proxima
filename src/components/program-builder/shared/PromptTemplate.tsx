@@ -34,7 +34,7 @@ import { Button } from "@/components/ui/button";
 import { Suggestions, Suggestion } from "@/components/ai-elements/suggestion";
 import { cn } from "@/lib/utils";
 import type { FileUIPart } from "ai";
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -139,6 +139,10 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
   const attachments = usePromptInputAttachments();
   const [isMultiline, setIsMultiline] = useState(false);
 
+  useEffect(() => {
+    return () => { roRef.current?.disconnect(); };
+  }, []);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -161,27 +165,33 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
     [attachments]
   );
 
-    /** Detect multi-line textarea to align footer (items-end vs items-center). */
-    const checkMultiline = useCallback((ta: HTMLTextAreaElement) => {
-    const style = getComputedStyle(ta);
-    const lineHeight = parseFloat(style.lineHeight) || 20;
-    const paddingY =
-      (parseFloat(style.paddingTop) || 0) +
-      (parseFloat(style.paddingBottom) || 0) || 24;
-    const singleLineHeight = lineHeight + paddingY;
-    setIsMultiline(ta.scrollHeight > singleLineHeight);
-  }, []);
+  const roRef = useRef<ResizeObserver | null>(null);
 
   const setRowRef = useCallback(
     (el: HTMLDivElement | null) => {
-      if (el) {
-        queueMicrotask(() => {
-          const ta = el.querySelector("textarea");
-          if (ta) checkMultiline(ta);
-        });
+      if (roRef.current) {
+        roRef.current.disconnect();
+        // eslint-disable-next-line react-hooks/immutability
+        roRef.current = null;
       }
+      if (!el) return;
+      const ta = el.querySelector("textarea");
+      if (!ta) return;
+
+      const style = getComputedStyle(ta);
+      const lineHeight = parseFloat(style.lineHeight) || 20;
+      const paddingY =
+        (parseFloat(style.paddingTop) || 0) +
+        (parseFloat(style.paddingBottom) || 0) || 24;
+      const singleLineHeight = lineHeight + paddingY;
+
+      const ro = new ResizeObserver(() => {
+        setIsMultiline(ta.scrollHeight > singleLineHeight);
+      });
+      ro.observe(ta);
+      roRef.current = ro;
     },
-    [checkMultiline]
+    []
   );
 
   const alignClass = isMultiline ? "items-end" : "items-center";
@@ -278,7 +288,6 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
           placeholder={animatedPlaceholder}
           className="z-10 dark:text-white min-h-9 flex-1 min-w-0 py-2 text-base leading-[1.3] max-sm:min-h-8 max-sm:h-auto max-sm:py-1.5 [&::placeholder]:text-sm"
           onKeyDown={handleKeyDown}
-          onChange={(e) => checkMultiline(e.currentTarget)}
         />
         <div className={cn("flex shrink-0 flex-row gap-2", alignClass)}>
           <TooltipProvider delayDuration={0}>

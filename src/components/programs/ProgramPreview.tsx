@@ -80,7 +80,7 @@ export const ProgramPreview: React.FC<IProps> = (props) => {
                                 <div className="border-b-2 border-gray-200">
                                     <div>
                                         <h3 className="font-main text-lg">{ "Day" } { day.nthDay } { day?.day_title ? <> &middot; { day.day_title }</> : "" }</h3>
-                                        <p className="font-extralight dark:text-offWhite">{ day.program_workout_exercises.length } {day.program_workout_exercises.length === 1 ? "Exercise" : `Exercises`}</p>
+                                        <p className="font-light dark:text-offWhite">{ day.program_workout_exercises.length } {day.program_workout_exercises.length === 1 ? "Exercise" : `Exercises`}</p>
                                     </div>
                                 </div>
                                 <div className="flex flex-row justify-between gap-4 border-b-2 py-2 border-gray-200 text-sm dark:text-offWhite">

@@ -29,17 +29,27 @@ export function PostHogClientProvider({ children }: PropsWithChildren) {
             return;
         }
 
-        posthog.init(token, {
-            api_host: host,
-            disable_session_recording: true,
-            loaded: (ph) => {
-                if ('requestIdleCallback' in window) {
-                    requestIdleCallback(() => ph.startSessionRecording());
-                } else {
-                    setTimeout(() => ph.startSessionRecording(), 3000);
-                }
-            },
-        });
+        const init = () => {
+            posthog.init(token, {
+                api_host: host,
+                disable_session_recording: true,
+                loaded: (ph) => {
+                    if ('requestIdleCallback' in window) {
+                        requestIdleCallback(() => ph.startSessionRecording());
+                    } else {
+                        setTimeout(() => ph.startSessionRecording(), 3000);
+                    }
+                },
+            });
+        };
+
+        if ('requestIdleCallback' in window) {
+            const id = requestIdleCallback(init, { timeout: 4000 });
+            return () => cancelIdleCallback(id);
+        } else {
+            const id = setTimeout(init, 3000);
+            return () => clearTimeout(id);
+        }
     }, []);
 
     return (

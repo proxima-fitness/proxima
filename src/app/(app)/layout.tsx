@@ -56,13 +56,13 @@ const russo_one = Russo_One({
 });
 
 const exo = Exo({
-    weight: ["200", "300", "400", "500", "600", "700"],
+    weight: ["300", "400", "500", "600", "700"],
     subsets: ['latin'],
     display: 'swap',
 });
 
 const inter = Inter({
-    weight: ["300", "400", "500", "600", "700"],
+    weight: ["400", "500", "600", "700"],
     subsets: ['latin'],
     display: 'swap',
 });

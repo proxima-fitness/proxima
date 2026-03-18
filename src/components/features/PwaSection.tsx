@@ -1,23 +1,15 @@
-"use client";
-
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /*
  * @module PwaSection
  * @description Feature section that explains users can install the site as a PWA and use it like an app, with a 4-step visual flow.
- * @dependsOn Shared layout and typography styles, pwa-flow-1–4 image assets from public, react-slick for mobile carousel.
+ * @dependsOn Shared layout and typography styles, pwa-flow-1–4 image assets from public.
  * @usedBy Home page below the Prompt to surface "install as app" without a separate route.
  */
 
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
-
-import dynamic from "next/dynamic";
 import { pwa_flow_1, pwa_flow_2, pwa_flow_3, pwa_flow_4 } from "public";
 import { layout } from "../../style";
-
-const Slider = dynamic(() => import("react-slick"), { ssr: false });
 
 const pwaSteps = [
   { src: (pwa_flow_1 as any).src, alt: "PWA install step 1", label: "Step 1" },
@@ -25,16 +17,6 @@ const pwaSteps = [
   { src: (pwa_flow_3 as any).src, alt: "PWA install step 3", label: "Step 3" },
   { src: (pwa_flow_4 as any).src, alt: "PWA install step 4", label: "Step 4" },
 ];
-
-const mobileSliderSettings = {
-  speed: 500,
-  draggable: true,
-  slidesToShow: 1,
-  slidesToScroll: 1,
-  dots: true,
-  infinite: false,
-  arrows: false,
-};
 
 export const PwaSection: React.FC = () => {
   return (
@@ -51,24 +33,20 @@ export const PwaSection: React.FC = () => {
         </p>
       </div>
 
-      {/* Mobile: swipeable carousel */}
-      <div className="sm:hidden mt-8 px-6">
-        <Slider {...mobileSliderSettings}>
-          {pwaSteps.map((step, i) => (
-            <div key={i} className="px-2">
-              <figure className="flex flex-col items-center gap-2">
-                <img
-                  src={step.src}
-                  alt={step.alt}
-                  className="rounded-lg shadow-md max-w-[220px] mx-auto h-auto object-contain"
-                />
-                <figcaption className="text-sm font-medium text-black dark:text-white text-center">
-                  {step.label}
-                </figcaption>
-              </figure>
-            </div>
-          ))}
-        </Slider>
+      {/* Mobile: scroll-snap carousel */}
+      <div className="sm:hidden mt-8 overflow-x-auto snap-x snap-mandatory flex gap-4 px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {pwaSteps.map((step, i) => (
+          <figure key={i} className="snap-center shrink-0 w-[75%] flex flex-col items-center gap-2">
+            <img
+              src={step.src}
+              alt={step.alt}
+              className="rounded-lg shadow-md max-w-[220px] mx-auto h-auto object-contain"
+            />
+            <figcaption className="text-sm font-medium text-black dark:text-white text-center">
+              {step.label}
+            </figcaption>
+          </figure>
+        ))}
       </div>
 
       {/* Desktop: flex grid */}
