@@ -9,5 +9,16 @@ export default defineConfig({
     test: {
         environment: "jsdom",
         globals: false,
+        coverage: {
+            provider: "v8",
+            reporter: ["text", "html"],
+            reportsDirectory: "./coverage",
+            include: ["src/**/*.{ts,tsx}"],
+            exclude: [
+                "**/__tests__/**",
+                "**/*.test.{ts,tsx}",
+                "**/*.d.ts",
+            ],
+        },
     },
 });
