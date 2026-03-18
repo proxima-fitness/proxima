@@ -163,8 +163,11 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
 
     /** Detect multi-line textarea to align footer (items-end vs items-center). */
     const checkMultiline = useCallback((ta: HTMLTextAreaElement) => {
-    const lineHeight = parseFloat(getComputedStyle(ta).lineHeight) || 20;
-    const paddingY = parseFloat(getComputedStyle(ta).paddingTop) + parseFloat(getComputedStyle(ta).paddingBottom) || 24;
+    const style = getComputedStyle(ta);
+    const lineHeight = parseFloat(style.lineHeight) || 20;
+    const paddingY =
+      (parseFloat(style.paddingTop) || 0) +
+      (parseFloat(style.paddingBottom) || 0) || 24;
     const singleLineHeight = lineHeight + paddingY;
     setIsMultiline(ta.scrollHeight > singleLineHeight);
   }, []);

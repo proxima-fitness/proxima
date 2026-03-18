@@ -13,9 +13,11 @@
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
-import Slider from "react-slick";
+import dynamic from "next/dynamic";
 import { pwa_flow_1, pwa_flow_2, pwa_flow_3, pwa_flow_4 } from "public";
 import { layout } from "../../style";
+
+const Slider = dynamic(() => import("react-slick"), { ssr: false });
 
 const pwaSteps = [
   { src: (pwa_flow_1 as any).src, alt: "PWA install step 1", label: "Step 1" },

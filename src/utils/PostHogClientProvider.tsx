@@ -31,6 +31,14 @@ export function PostHogClientProvider({ children }: PropsWithChildren) {
 
         posthog.init(token, {
             api_host: host,
+            disable_session_recording: true,
+            loaded: (ph) => {
+                if ('requestIdleCallback' in window) {
+                    requestIdleCallback(() => ph.startSessionRecording());
+                } else {
+                    setTimeout(() => ph.startSessionRecording(), 3000);
+                }
+            },
         });
     }, []);
 
