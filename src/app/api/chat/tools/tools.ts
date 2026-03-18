@@ -329,9 +329,8 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
                                                     .number()
                                                     .min(1)
                                                     .max(10)
-                                                    .default(8)
                                                     .describe(
-                                                        'RPE (Rate of Perceived Exertion) 1-10; default 8 if omitted',
+                                                        'RPE (Rate of Perceived Exertion) 1-10; required',
                                                     ),
                                                 weight_kg: z.number().optional().describe('Weight in kg'),
                                             }),
