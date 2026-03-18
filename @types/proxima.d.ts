@@ -40,6 +40,7 @@ type TRepsTypes = {
 type TProgramPage = {
     program: TProgram[];
     schedule: TProgramDetails[];
+    subscriberCount: number;
 }
 
 type TProgram = {

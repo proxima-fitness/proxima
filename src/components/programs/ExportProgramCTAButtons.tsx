@@ -36,20 +36,11 @@ interface IProps {
  * ExportProgramCTAButtons renders actionable and disabled export options, optionally grouping disabled ones under a "coming soon" label.
  */
 export const ExportProgramCTAButtons: React.FC<IProps> = ({
-    programId,
     exportOptions,
     onSelectExport,
     showComingSoonLabel = true,
     hideHevyCrown = false,
 }) => {
-
-    console.log("programId", programId);
-
-    // const handleExport = (exportType: string) => {
-    //     // Placeholder for export functionality
-    //     //console.log(`Export to ${exportType} for program ${programId}`);
-    //     // TODO: Implement export functionality
-    // };
 
     const handleClick = (option: { id: string; disabled?: boolean }) => {
         if (option.disabled) return;

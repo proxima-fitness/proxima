@@ -19,7 +19,7 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import { getBlogById, getBlogs } from "./blog";
-import { getCommunityAiPrograms, getCommunityAiProgramsPaginated, getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID, getSubscribedPrograms } from "./programs";
+import { getCommunityAiPrograms, getCommunityAiProgramsPaginated, getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getProgramSubscriberCount, getPrograms, getProgramThumbnailByID, getSubscribedPrograms } from "./programs";
 import { getOpUserId, getUserFullName, getUserMetaData, getUsersBatch } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getHevyApiKey, getHevyCustomExercises, getHevyExercises, getHevyPrograms, getHevyRoutines } from "../components/program-builder/api/hevy";
@@ -406,15 +406,20 @@ export const useMyFeatureLimits = (user: User | undefined | null) => {
  * @returns A combined program + schedule object, or undefined if not found
  */
 export const useProgramByIdSSR = async (program_id: number) => {
+    const [program, schedule, subscriberCount] = await Promise.all([
+        getProgramByID(program_id),
+        getExplorePageProgramDetails(program_id),
+        getProgramSubscriberCount(program_id),
+    ]);
 
-    const program = await getProgramByID(program_id) ?? [];
-    const schedule = await getExplorePageProgramDetails(program_id);
     if (!schedule) {
         return undefined;
     }
+
     const programOverview: TProgramPage = {
-        program: program,
+        program: program ?? [],
         schedule: schedule,
+        subscriberCount,
     };
     return programOverview;
 };

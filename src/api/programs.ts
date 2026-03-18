@@ -267,7 +267,7 @@ export const getProgramByID = async (program_id: number) => {
     try {
         const { data, error } = await supabase
         .from('programs')
-        .select('id,title,details,program_length,workout_duration,equipment,specialization,difficulty,user_id').eq("id", program_id);
+        .select('id,title,details,program_length,workout_duration,equipment,specialization,difficulty,user_id,saves,is_coach').eq("id", program_id);
         if (error) {
             console.error('Error fetching program by ID:', error);
         } else if (data && data.length > 0 ) {
@@ -275,6 +275,31 @@ export const getProgramByID = async (program_id: number) => {
         }
     } catch (error: unknown) {
         console.error(`Error fetching program by ID: ${error}`);
+    }
+};
+
+/**
+ * Fetches the number of users subscribed to a program.
+ *
+ * @param program_id - The program's primary key
+ * @returns Exact subscriber count, or 0 on error
+ */
+export const getProgramSubscriberCount = async (program_id: number): Promise<number> => {
+    try {
+        const { count, error } = await supabase
+            .from('program_subscribers')
+            .select('*', { count: 'exact', head: true })
+            .eq('program_id', program_id);
+
+        if (error) {
+            console.error('Error fetching program subscriber count:', error);
+            return 0;
+        }
+
+        return count ?? 0;
+    } catch (error: unknown) {
+        console.error(`Error fetching program subscriber count: ${error}`);
+        return 0;
     }
 };
 

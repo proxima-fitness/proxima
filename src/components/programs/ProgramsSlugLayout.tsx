@@ -19,7 +19,7 @@ import {
     HoverCardContent,
     HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, User } from "lucide-react";
 import { convertSupabaseDateToReadable } from "@/utils/general/helpers";
 
 interface IProps {
@@ -81,12 +81,18 @@ export const ProgramsSlugLayout: FC<IProps> =  async (props) => {
                             <div className="text-3xl font-main ">
                                 { program.program[0].title }
                             </div>
+                            <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+                                <User className="h-4 w-4" aria-hidden="true" />
+                                <span>
+                                    {program.subscriberCount} {program.subscriberCount === 1 ? "person has" : "people have"} subscribed
+                                </span>
+                            </div>
                         </Card>
                         <div className="col-span-2 row-start-3 max-sm:col-span-1">
                             <ProgramOverviewCard program={ program } />
                         </div>
                         <div className="row-span-2 row-start-1 flex items-start h-full max-sm:row-span-1 max-sm:row-start-auto">
-                            <ExportProgramCTA programId={id} />
+                            <ExportProgramCTA programId={id} sortedWorkoutsByWeek={sortedWorkoutsByWeek} />
                         </div>
                         <div className="row-start-3 h-full max-sm:row-start-auto">
                             <EditProgramCTA programId={id} />
