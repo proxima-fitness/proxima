@@ -36,7 +36,7 @@ export const ExpandableText: React.FC<IExpandableTextProps> = ({
                 <button
                     type="button"
                     onClick={() => setIsExpanded((prev) => !prev)}
-                    className="mt-1 text-sm text-muted-foreground hover:underline"
+                    className="mt-1 text-sm text-secondary dark:text-lightSecondary hover:underline"
                 >
                     {isExpanded ? "See less" : "See more..."}
                 </button>
