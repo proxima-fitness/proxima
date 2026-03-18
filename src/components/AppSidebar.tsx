@@ -470,6 +470,7 @@ export function AppSidebar() {
                                         href="/auth/login"
                                         className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center"
                                         onClick={closeMobileSidebar}
+                                        aria-label="Log in"
                                     >
                                         <Avatar className="h-6 w-6 shrink-0">
                                             <AvatarFallback className="text-xs">
