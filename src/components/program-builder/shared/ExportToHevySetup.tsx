@@ -60,10 +60,14 @@ interface IExportToHevySetupProps {
     onUploadStateChange?: (uploading: boolean) => void;
     /** When provided, used instead of reading from localStorage. Allows callers (e.g. program slug page) to pass routines directly without touching the build-program localStorage key. */
     hevyRoutines?: THevyRoutine[];
+    /** When true, skips monthly export limit checks and usage increment (used for free pre-made program exports). */
+    skipUsageTracking?: boolean;
+    /** Called after a successful Hevy upload (e.g. to increment program saves). */
+    onExportSuccess?: () => void;
 }
 
 /** Step 1: API key connect/edit. Step 2: upload program from localStorage with one-folder vs per-week option. */
-export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadStateChange, hevyRoutines: hevyRoutinesProp }) => {
+export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadStateChange, hevyRoutines: hevyRoutinesProp, skipUsageTracking = false, onExportSuccess }) => {
     const { user } = useUserContext();
     const queryClient = useQueryClient();
     const { data: hevyApiKey } = useHevySecret(user);
@@ -76,8 +80,9 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
     });
 
     const isFree = featureLimits?.has_active_subscription !== true;
-    const atExportLimit =
-        featureLimits != null && (featureLimits.remaining_exports ?? 0) === 0;
+    const atExportLimit = skipUsageTracking
+        ? false
+        : featureLimits != null && (featureLimits.remaining_exports ?? 0) === 0;
 
     const [expandedStep, setExpandedStep] = useState<string>(hevyApiKey ? "step2" : "step1");
     const [inputValue, setInputValue] = useState("");
@@ -321,9 +326,12 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                 if (isFree) {
                     setShowThankYouBanner(true);
                 }
-                incrementExportsUsed(undefined, {
-                    onError: (err) => console.error("Failed to record export usage", err),
-                });
+                if (!skipUsageTracking) {
+                    incrementExportsUsed(undefined, {
+                        onError: (err) => console.error("Failed to record export usage", err),
+                    });
+                }
+                onExportSuccess?.();
             }
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "Upload failed.";

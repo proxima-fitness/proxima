@@ -13,15 +13,12 @@ import {
 } from "@/components/ui/dialog";
 import { convertToHevyRoutine, deFlattenHevyRoutine } from "@/components/program-builder/utils";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
-import { useUserContext } from "@/contexts/UserContext";
-import { useMyFeatureLimits } from "@/api/hooks";
-import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { ExportToHevySetup } from "@/components/program-builder/shared/ExportToHevySetup";
+import { incrementProgramSaves } from "@/api/programs";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
-import posthog from "posthog-js";
 
 const PdfPreviewSkeleton = () => (
     <Skeleton className="w-full max-sm:h-[50vh] h-[60vh] rounded-lg" />
@@ -39,16 +36,11 @@ interface IProps {
 
 export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsByWeek }) => {
     const { isInLbs } = usePoundsOrKgContext();
-    const { user } = useUserContext();
-    const { data: featureLimits } = useMyFeatureLimits(user);
-    const router = useRouter();
 
     const [pdfOpen, setPdfOpen] = useState(false);
     const [hevyOpen, setHevyOpen] = useState(false);
     const [hevyUploading, setHevyUploading] = useState(false);
     const [showBackConfirm, setShowBackConfirm] = useState(false);
-
-    const isPro = featureLimits?.has_active_subscription === true;
 
     const { data: flatHevyRoutines } = useQuery({
         queryKey: ["export-hevy-routines", programId],
@@ -62,13 +54,6 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
         if (id === "pdf") {
             setPdfOpen(true);
         } else if (id === "hevy") {
-            if (!isPro) {
-                posthog?.capture?.("hevy_export_paywall_hit", {
-                    user: user?.id ?? "user_id_unknown",
-                });
-                router.push("/pricing?source=hevy-export");
-                return;
-            }
             setHevyOpen(true);
         }
     };
@@ -98,7 +83,7 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
                         exportOptions={visibleExportOptions}
                         onSelectExport={handleSelectExport}
                         showComingSoonLabel={false}
-                        hideHevyCrown={isPro}
+                        hideHevyCrown
                     />
                 </div>
             </div>
@@ -128,7 +113,12 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
                     </DialogTitle>
                     <div className="w-full px-4 py-4 sm:px-6 sm:py-5 md:px-8 md:py-6 lg:px-10 lg:py-6">
                         {flatHevyRoutines ? (
-                            <ExportToHevySetup onUploadStateChange={setHevyUploading} hevyRoutines={flatHevyRoutines} />
+                            <ExportToHevySetup
+                                onUploadStateChange={setHevyUploading}
+                                hevyRoutines={flatHevyRoutines}
+                                skipUsageTracking
+                                onExportSuccess={() => incrementProgramSaves(programId)}
+                            />
                         ) : (
                             <p className="text-sm text-muted-foreground py-4 text-center">
                                 Preparing program data…

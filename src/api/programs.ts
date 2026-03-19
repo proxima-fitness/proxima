@@ -567,6 +567,18 @@ export const postNewProgramSubscriber = async (user: User, program_id: string) =
 };
 
 /**
+ * Atomically increments the `saves` counter on a program row by 1
+ * via the `increment_program_saves` Supabase RPC.
+ */
+export const incrementProgramSaves = async (programId: number): Promise<{ error: unknown }> => {
+    const { error } = await supabase.rpc("increment_program_saves", {
+        p_program_id: programId,
+    });
+    if (error) console.error("Error incrementing program saves", error);
+    return { error: error ?? null };
+};
+
+/**
  * Unsubscribes a user from a program by deleting the matching row in the
  * `program_subscribers` table.
  *

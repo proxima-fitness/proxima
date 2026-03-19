@@ -1,7 +1,7 @@
 {
   "name": "Proxima Fitness",
   "short_name": "Proxima",
-  "start_url": "/",
+  "start_url": "/build-program",
   "display": "standalone",
   "icons": [
     {
