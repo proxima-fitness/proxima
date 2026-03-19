@@ -17,7 +17,7 @@ import { IOption } from "@/components/ui/multi-select"
 import { type ChatStatus, FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai"
 import type { IQuestion } from "@/components/ui/questions"
 import { equipmentOptions, healthIssuesOptions } from "@/assets/constants/form-options"
-import { generateEmptyHevyProgram, inferDaysPerWeek, inferProgramLength } from "@/components/program-builder/utils/helpers"
+import { inferDaysPerWeek, inferProgramLength } from "@/components/program-builder/utils/helpers"
 
 import { Shimmer } from "@/components/ai-elements/shimmer"
 import { Chat } from "./Chat"
@@ -249,7 +249,6 @@ export const Agent: React.FC<IProps> = (props) => {
             handleProgramLength(programLengthValue)
             if (excludeEquipmentValue.length > 0) handleExcludeEquipment(excludeEquipmentValue)
             if (healthIssuesValue.length > 0) handleHealthIssues(healthIssuesValue)
-            setHevyProgram(generateEmptyHevyProgram(programLengthValue, daysPerWeekValue))
         },
         [
             activeQuestionsPayload?.userRequest,
@@ -259,7 +258,6 @@ export const Agent: React.FC<IProps> = (props) => {
             handleProgramLength,
             handleExcludeEquipment,
             handleHealthIssues,
-            setHevyProgram,
             convertStringArrayToOptions,
             daysPerWeek,
             programLength,
