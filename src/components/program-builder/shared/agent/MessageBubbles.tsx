@@ -144,7 +144,7 @@ const GenerationError: React.FC<{
                         <Button
                             size="sm"
                             onClick={onRetry}
-                            className="w-[50%] sm:w-auto bg-red-600 hover:bg-red-700 text-white border-0"
+                            className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white border-0"
                         >
                             <RefreshCw className="w-4 h-4 mr-2" />
                             Try Again
@@ -154,7 +154,7 @@ const GenerationError: React.FC<{
                         <Button
                             variant="outline"
                             size="sm"
-                            className="w-[50%] sm:w-auto border-border text-muted-foreground hover:bg-muted/50"
+                            className="w-full sm:w-auto border-border text-muted-foreground hover:bg-muted/50"
                         >
                             Explore Programs
                         </Button>
