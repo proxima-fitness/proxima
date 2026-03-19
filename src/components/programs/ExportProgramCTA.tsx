@@ -13,9 +13,10 @@ import {
 } from "@/components/ui/dialog";
 import { convertToHevyRoutine, deFlattenHevyRoutine } from "@/components/program-builder/utils";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
+import { useUserContext } from "@/contexts/UserContext";
 import { useQuery } from "@tanstack/react-query";
 import { ExportToHevySetup } from "@/components/program-builder/shared/ExportToHevySetup";
-import { incrementProgramSaves } from "@/api/programs";
+import { postNewProgramSubscriber } from "@/api/programs";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -36,6 +37,7 @@ interface IProps {
 
 export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsByWeek }) => {
     const { isInLbs } = usePoundsOrKgContext();
+    const { user } = useUserContext();
 
     const [pdfOpen, setPdfOpen] = useState(false);
     const [hevyOpen, setHevyOpen] = useState(false);
@@ -117,7 +119,11 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
                                 onUploadStateChange={setHevyUploading}
                                 hevyRoutines={flatHevyRoutines}
                                 skipUsageTracking
-                                onExportSuccess={() => incrementProgramSaves(programId)}
+                                onExportSuccess={() => {
+                                    // Trigger function increments `programs.saves` when we subscribe the user.
+                                    if (!user) return;
+                                    void postNewProgramSubscriber(user, String(programId));
+                                }}
                             />
                         ) : (
                             <p className="text-sm text-muted-foreground py-4 text-center">
