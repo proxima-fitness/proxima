@@ -37,7 +37,12 @@ function BuildProgramMobileLayoutInner({
     return (
         <div className="max-sm:block sm:hidden h-[calc(100vh-4rem)] flex flex-col relative">
             <Tabs value={mobileTab} onValueChange={handleValueChange} className="flex flex-col h-full">
-                <TabsContent value="chat" className="flex-1 flex flex-col min-h-0 overflow-hidden m-0 mt-0 ">
+                {/* forceMount: keep chat mounted when Program tab is active so MessageBubbles refs survive tab switches */}
+                <TabsContent
+                    value="chat"
+                    forceMount
+                    className="flex-1 flex flex-col min-h-0 overflow-hidden m-0 mt-0 data-[state=inactive]:hidden"
+                >
                     {chatPanel}
                 </TabsContent>
                 <TabsContent value="program" className="flex-1 overflow-hidden m-0 mt-0 px-2 pb-12 bg-white dark:bg-darkGray">
