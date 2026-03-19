@@ -1,6 +1,6 @@
 /**
  * @module MessageBubbles
- * Renders chat messages (user + assistant), tool outputs (buildWeek, modifyProgram), build progress, error/retry UI, and applies program updates from tool results. Drives hevyProgram state and timeout/retry logic.
+ * Renders chat messages (user + assistant), tool outputs (buildWeek, modifyProgram), build progress, error/retry UI, and applies program updates from tool results. After the stream finishes, duplicates week 1 across all weeks and merges modifyProgram patches into one apply (atomic commit via applyPatchWithUndo). Drives timeout/retry logic.
  * Depends on: message, tool, reasoning, attachments, ModifyProgramProgress, applyModifyProgramPatchesFromMessages, helpers. Used by: Agent.
  */
 /* eslint-disable @next/next/no-img-element */
@@ -19,7 +19,11 @@ import { Copy, ThumbsUp, ThumbsDown, Pencil, Trash, AlertCircle, RefreshCw, File
 import { type ChatStatus, FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai";
 import type { IQuestion } from "@/components/ui/questions";
 import { IOption } from "@/components/ui/multi-select";
-import { applyModifyProgramPatchesFromMessages, getModifyProgramObjectivesByRoutine } from "@/components/program-builder/utils/helpers";
+import {
+    applyModifyProgramPatchesFromMessages,
+    getModifyProgramObjectivesByRoutine,
+    tryCommitAtomicBuildWeekAndMergedPatches,
+} from "@/components/program-builder/utils/helpers";
 import {
     Reasoning,
     ReasoningContent,
@@ -92,7 +96,7 @@ const BuildProgress: React.FC<{
                     {isBuilding ? "Building your program..." : "Program built successfully!"}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                    {`Week includes ${totalDays} training day${totalDays === 1 ? "" : "s"}.`}
+                    {`Weeks includes ${totalDays} training day${totalDays === 1 ? "" : "s"}.`}
                 </p>
             </div>
         </div>
@@ -161,11 +165,10 @@ const GenerationError: React.FC<{
     );
 };
 
-/** Props: messages/setMessages, program state (hevyProgram, setHevyProgram, applyPatchWithUndo), filter handlers (programLength, daysPerWeek, exclude, health), sendMessage, isBuilding, loading/error/retry, status. */
+/** Props: messages/setMessages, program state (hevyProgram, applyPatchWithUndo), filter handlers (programLength, daysPerWeek, exclude, health), sendMessage, isBuilding, loading/error/retry, status. */
 interface IProps {
     messages: UIMessage<unknown, UIDataTypes, UITools>[];
     setMessages: (messages: UIMessage<unknown, UIDataTypes, UITools>[] | ((messages: UIMessage<unknown, UIDataTypes, UITools>[]) => UIMessage<unknown, UIDataTypes, UITools>[])) => void;
-    setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
     daysPerWeek: string;
     programLength: string;
     excludeEquipment: IOption[];
@@ -206,7 +209,7 @@ interface IProps {
     maxRetries: number;
     onTimeoutError: () => void;
     hevyProgram: THevyRoutine[];
-    applyPatchWithUndo: (newDocument: THevyRoutine[], inversePatch: Operation[]) => void;
+    applyPatchWithUndo: (newDocument: THevyRoutine[], inversePatch: Operation[], recordUndo?: boolean) => void;
     onBuildComplete?: () => void;
 }
 
@@ -217,7 +220,6 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     const {
         messages,
         setMessages,
-        setHevyProgram,
         sendMessage,
         handleIsBuilding,
         isBuilding,
@@ -241,8 +243,9 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     const lastProgressTimestampRef = useRef<number>(0);
     const timeoutCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Track whether we've already finalized a successful buildWeek
-    const lastCompletedCountRef = useRef<number>(0);
+    /** Prevents duplicate atomic commit for the same assistant turn (Strict Mode / re-renders). */
+    const lastAtomicBuildCommitKeyRef = useRef<string | null>(null);
+    const appliedModifyProgramKeysRef = useRef<Set<string>>(new Set());
 
     // Collect buildWeek output from messages (single call expected)
     const { totalDays, allRoutines } = useMemo(() => {
@@ -326,43 +329,38 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     }, [isBuilding]);
 
     useEffect(() => {
-        // When buildWeek completes (we have all routines): duplicate routines across weeks and setHevyProgram
-        if (
-            totalDays > 0 &&
-            allRoutines.length === totalDays &&
-            allRoutines.length !== lastCompletedCountRef.current &&
-            allRoutines.length > 0
-        ) {
-            lastCompletedCountRef.current = allRoutines.length;
-
-            const weeks = programLength ? Number(programLength) : 1;
-            const fullProgram: THevyRoutine[] = [];
-            let routineId = 1;
-
-            for (let weekIndex = 0; weekIndex < weeks; weekIndex++) {
-                for (const routine of allRoutines) {
-                    fullProgram.push({
-                        ...routine,
-                        id: String(routineId++),
-                        folder_id: weekIndex,
-                    });
-                }
-            }
-
-            setHevyProgram(fullProgram);
+        // After stream finishes: duplicate week 1 across all weeks, merge modifyProgram patches after buildWeek, one commit
+        const weeks = programLength ? Number(programLength) : 1;
+        const committed = tryCommitAtomicBuildWeekAndMergedPatches(
+            messages,
+            status,
+            weeks,
+            hevyProgram,
+            appliedModifyProgramKeysRef,
+            lastAtomicBuildCommitKeyRef,
+            applyPatchWithUndo
+        );
+        if (committed) {
             handleIsBuilding(false);
-            if (isBuilding) {
-                onBuildComplete?.();
-            }
+            onBuildComplete?.();
             posthog?.capture?.("generated_a_program", {
                 user: user?.id ?? "user_id_unknown",
-                daysPerWeek: allRoutines.length,
+                daysPerWeek: totalDays || allRoutines.length,
                 programLength: weeks,
             });
         }
-    }, [totalDays, allRoutines, programLength, setHevyProgram, handleIsBuilding, onBuildComplete, user, isBuilding]);
-
-    const appliedModifyProgramKeysRef = useRef<Set<string>>(new Set());
+    }, [
+        messages,
+        status,
+        programLength,
+        hevyProgram,
+        applyPatchWithUndo,
+        handleIsBuilding,
+        onBuildComplete,
+        user,
+        totalDays,
+        allRoutines.length,
+    ]);
 
     useEffect(() => {
         // Apply modifyProgram patches from messages; skip already-applied; commit via applyPatchWithUndo (atomic)

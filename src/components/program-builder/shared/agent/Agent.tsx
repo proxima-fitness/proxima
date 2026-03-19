@@ -52,9 +52,12 @@ interface IProps {
     onToggleExpand: () => void;
     onToggleHide?: () => void;
     isExpanded: boolean;
-    setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
     hevyProgram: THevyRoutine[];
-    applyPatchWithUndo: (newDocument: THevyRoutine[], inversePatch: import("fast-json-patch").Operation[]) => void;
+    applyPatchWithUndo: (
+        newDocument: THevyRoutine[],
+        inversePatch: import("fast-json-patch").Operation[],
+        recordUndo?: boolean
+    ) => void;
     sex: string;
     age: string;
     daysPerWeek: string;
@@ -120,7 +123,6 @@ export const Agent: React.FC<IProps> = (props) => {
         onToggleExpand,
         onToggleHide,
         isExpanded,
-        setHevyProgram,
         hevyProgram,
         applyPatchWithUndo,
         daysPerWeek,
@@ -292,7 +294,6 @@ export const Agent: React.FC<IProps> = (props) => {
                         <MessageBubbles
                             messages={messages}
                             setMessages={setMessages}
-                            setHevyProgram={setHevyProgram}
                             hevyProgram={hevyProgram}
                             applyPatchWithUndo={applyPatchWithUndo}
                             daysPerWeek={daysPerWeek}

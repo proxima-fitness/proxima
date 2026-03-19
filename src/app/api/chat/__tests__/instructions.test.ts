@@ -13,6 +13,7 @@ describe("chat instructions.ts", () => {
 
             expect(prompt).toContain("4");
             expect(prompt).toContain("8");
+            expect(prompt).toContain("planProgram");
             expect(prompt).toContain("getCurrentProgram");
             expect(prompt).toContain("buildWeek");
             expect(prompt).toContain("getMoreInfoQuestions");
@@ -27,6 +28,7 @@ describe("chat instructions.ts", () => {
                 programLength: 4,
             });
 
+            expect(prompt).toContain("planProgram");
             expect(prompt).toContain("getCurrentProgram");
             expect(prompt).toContain("buildWeek");
             expect(prompt).toContain("3");

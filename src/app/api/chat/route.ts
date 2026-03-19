@@ -124,7 +124,7 @@ export async function POST(req: Request) {
             instructions: systemPrompt,
             tools: tools,
             callOptionsSchema: callOptionsSchema,
-            stopWhen: stepCountIs(15),
+            stopWhen: stepCountIs(28),
             experimental_telemetry: { isEnabled: true },
             prepareCall: ({ options, ...settings }) => {
                 const CORE_TOOLS = ['loadSkill', 'readFile', 'bash'];

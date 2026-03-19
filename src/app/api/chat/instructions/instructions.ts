@@ -43,6 +43,7 @@ export const instructions = ({ hevyProgram, daysPerWeek, programLength }: IProps
         - bash: Execute a bash command.
         - getMoreInfoQuestions: Opens a questions component to gather additional information before building a workout program.
         - getExerciseList: Provides access to all available Hevy exercises (reference list with IDs and titles).
+        - planProgram: Submits a structured multi-week plan (duration, blocks, optional week-by-week progression) before building the first week.
         - getCurrentProgram: Returns the current workout program state. You may call this at any time to check if a program exists.
         - buildWeek: Builds an entire week of routines/days for the workout program in a single call.
         - modifyProgram: Modifies the current workout program using a JSON Patch (RFC 6902).

@@ -4,7 +4,7 @@ vi.mock("@/components/program-builder/api/hevy", () => ({
     getHevyExercises: vi.fn(async () => []),
 }));
 
-import { getTools } from "@/app/api/chat/tools/tools";
+import { getTools, planProgramInputSchema } from "@/app/api/chat/tools/tools";
 
 describe("chat tools.ts", () => {
     describe("buildWeek tool execute", () => {
@@ -59,6 +59,54 @@ describe("chat tools.ts", () => {
 
             expect(output.error).toBe("Invalid routines");
             expect(output.message).toContain("match totalDays");
+        });
+    });
+
+    describe("planProgram tool execute", () => {
+        const validPlan = {
+            durationWeeks: 8,
+            goal: "Powerlifting strength with hypertrophy base",
+            daysPerWeek: 4,
+            blocks: [
+                { name: "Accumulation", weeks: [1, 2, 3], intent: "Volume, RPE 6–8" },
+                { name: "Intensification", weeks: [4, 5, 6], intent: "Heavier" },
+                { name: "Peak", weeks: [7, 8], intent: "Taper" },
+            ],
+            weekProgression: {
+                squat: {
+                    topSetRpe: [7, 7.5, 8, 8, 8.5, 9, 8, 7],
+                    backoffVolumeMultiplier: [1, 1.05, 1.1, 0.95, 1, 1.05, 0.7, 0.5],
+                },
+            },
+            notes: ["Keep exercise selection stable within blocks"],
+        };
+
+        it("returns plan and summary for valid input", async () => {
+            const tools = getTools({});
+            const planProgram = tools.planProgram as {
+                execute: (args: typeof validPlan) => Promise<unknown>;
+            };
+
+            const output = (await planProgram.execute(validPlan)) as {
+                plan?: unknown;
+                summary?: string;
+                error?: string;
+            };
+
+            expect(output.error).toBeUndefined();
+            expect(output.plan).toBeDefined();
+            expect(output.summary).toContain("8 wk");
+            expect(output.summary).toContain("Accumulation");
+        });
+
+        it("rejects weekProgression arrays whose length does not match durationWeeks", () => {
+            const parsed = planProgramInputSchema.safeParse({
+                ...validPlan,
+                weekProgression: {
+                    squat: { topSetRpe: [1, 2, 3] },
+                },
+            });
+            expect(parsed.success).toBe(false);
         });
     });
 });

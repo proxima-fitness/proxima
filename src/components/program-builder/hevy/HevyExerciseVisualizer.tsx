@@ -103,6 +103,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                 const supersetColor = getSupersetColor(exercise.supersets_id);
                 const isEvenRow = i % 2 === 0;
                 const isLastRow = i === (day?.exercises?.length ?? 0) - 1;
+                const sets = (exercise.sets ?? []).filter((s): s is THevySets => s != null);
 
                 // Build dynamic styles for superset border
                 const borderStyle = supersetColor && !isSelected ? {
@@ -195,49 +196,49 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                     </div>
                                     <div className={`text-center flex flex-row items-center justify-end max-w-[50%] w-[50%] ${isSelected ? 'text-white' : 'dark:text-offWhite'}`}>
                                         <div className="min-w-[33%] flex flex-col justify-center items-center">
-                                            {exercise.sets.length}
+                                            {sets.length}
                                         </div>
                                         <div className="min-w-[33%] flex flex-col justify-center items-center">
-                                            {exercise.sets[0] && exercise.sets[0].reps !== null && exercise.sets[0].reps > 0 && (
-                                                (exercise.sets.every((reps, i, arr) => reps.reps === arr[0].reps) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type)) ? (
+                                            {sets[0] && sets[0].reps !== null && sets[0].reps > 0 && (
+                                                (sets.every((reps, i, arr) => reps.reps === arr[0].reps) && sets.every((reps, i, arr) => reps.type === arr[0].type)) ? (
                                                     <div className="flex flex-row">
-                                                        {exercise.sets[0].reps}
+                                                        {sets[0].reps}
                                                     </div>
                                                 ) : (
-                                                    exercise.sets.map((set, index) => (
+                                                    sets.map((set, index) => (
                                                         <div key={index} className={`flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
                                                             {set.reps}
                                                         </div>
                                                     ))
                                                 )
                                             )}
-                                            {exercise.sets[0] && exercise.sets[0].distance_meters !== null && exercise.sets[0].distance_meters > 0 && (
-                                                (exercise.sets.every((reps, i, arr) => reps.distance_meters === arr[0].distance_meters) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type)) ? (
-                                                    <div className="flex flex-row">{exercise.sets[0].distance_meters} m</div>
+                                            {sets[0] && sets[0].distance_meters !== null && sets[0].distance_meters > 0 && (
+                                                (sets.every((reps, i, arr) => reps.distance_meters === arr[0].distance_meters) && sets.every((reps, i, arr) => reps.type === arr[0].type)) ? (
+                                                    <div className="flex flex-row">{sets[0].distance_meters} m</div>
                                                 ) : (
-                                                    exercise.sets.map((set, index) => (
+                                                    sets.map((set, index) => (
                                                         <div key={index} className={`flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
                                                             {set.distance_meters} m
                                                         </div>
                                                     ))
                                                 )
                                             )}
-                                            {exercise.sets[0] && exercise.sets[0].duration_seconds !== null && exercise.sets[0].duration_seconds > 0 && (
-                                                (exercise.sets.every((reps, i, arr) => reps.duration_seconds === arr[0].duration_seconds) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type)) ? (
-                                                    <div className="flex flex-row">{exercise.sets[0].duration_seconds} s</div>
+                                            {sets[0] && sets[0].duration_seconds !== null && sets[0].duration_seconds > 0 && (
+                                                (sets.every((reps, i, arr) => reps.duration_seconds === arr[0].duration_seconds) && sets.every((reps, i, arr) => reps.type === arr[0].type)) ? (
+                                                    <div className="flex flex-row">{sets[0].duration_seconds} s</div>
                                                 ) : (
-                                                    exercise.sets.map((set, index) => (
+                                                    sets.map((set, index) => (
                                                         <div key={index} className={`flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
                                                             {set.duration_seconds} s
                                                         </div>
                                                     ))
                                                 )
                                             )}
-                                            {exercise.sets[0] && exercise.sets[0].custom_metric !== null && exercise.sets[0].custom_metric > 0 && (
-                                                (exercise.sets.every((reps, i, arr) => reps.custom_metric === arr[0].custom_metric) && exercise.sets.every((reps, i, arr) => reps.type === arr[0].type)) ? (
-                                                    <div className="flex flex-row">{exercise.sets[0].custom_metric}</div>
+                                            {sets[0] && sets[0].custom_metric !== null && sets[0].custom_metric > 0 && (
+                                                (sets.every((reps, i, arr) => reps.custom_metric === arr[0].custom_metric) && sets.every((reps, i, arr) => reps.type === arr[0].type)) ? (
+                                                    <div className="flex flex-row">{sets[0].custom_metric}</div>
                                                 ) : (
-                                                    exercise.sets.map((set, index) => (
+                                                    sets.map((set, index) => (
                                                         <div key={index} className={`flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
                                                             {set.custom_metric}
                                                         </div>
@@ -246,25 +247,25 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             )}
                                         </div>
                                         <div className="min-w-[33%] flex flex-col justify-center items-center h-full">
-                                            {exercise.sets[0] && exercise.sets[0].weight_kg !== null && exercise.sets[0].weight_kg > 0 && (
-                                                exercise.sets.every((intensity, i, arr) => intensity.weight_kg === arr[0].weight_kg) ? (
-                                                    <div>{ formatWeight(exercise.sets[0].weight_kg, isInLbs, "kg") } {getWeightUnit(isInLbs)}</div>
+                                            {sets[0] && sets[0].weight_kg !== null && sets[0].weight_kg > 0 && (
+                                                sets.every((intensity, i, arr) => intensity.weight_kg === arr[0].weight_kg) ? (
+                                                    <div>{ formatWeight(sets[0].weight_kg, isInLbs, "kg") } {getWeightUnit(isInLbs)}</div>
                                                 ) : (
-                                                    exercise.sets.map((set, index) => (
+                                                    sets.map((set, index) => (
                                                         <div key={index} className={`${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
                                                             { formatWeight(set.weight_kg ?? 0, isInLbs, "kg") } {getWeightUnit(isInLbs)}
                                                         </div>
                                                     ))
                                                 )
                                             )}
-                                            {exercise.sets.some((set) => set.rpe != null && set.rpe > 0) && (
+                                            {sets.some((set) => set.rpe != null && set.rpe > 0) && (
                                                 (() => {
-                                                    const rpeValues = exercise.sets.map((s) => s.rpe).filter((r): r is number => r != null && r > 0);
+                                                    const rpeValues = sets.map((s) => s.rpe).filter((r): r is number => r != null && r > 0);
                                                     const allSameRpe = rpeValues.length > 0 && rpeValues.every((v) => v === rpeValues[0]);
                                                     return allSameRpe ? (
                                                         <div>{rpeValues[0]} RPE</div>
                                                     ) : (
-                                                        exercise.sets.map((set, index) => (
+                                                        sets.map((set, index) => (
                                                             <div key={index} className={`${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
                                                                 {set.rpe != null && set.rpe > 0 ? `${set.rpe} RPE` : ""}
                                                             </div>

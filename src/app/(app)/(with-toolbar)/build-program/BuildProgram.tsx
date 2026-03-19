@@ -102,7 +102,15 @@ export function BuildProgram() {
         []
     );
     const applyPatchWithUndo = useCallback(
-        (newDocument: THevyRoutine[], inversePatch: Operation[]) => {
+        (newDocument: THevyRoutine[], inversePatch: Operation[], recordUndo = true) => {
+            if (!recordUndo) {
+                dispatchEditor({ type: "REPLACE_PROGRAM", program: newDocument });
+                return;
+            }
+            if (inversePatch.length === 0) {
+                dispatchEditor({ type: "REPLACE_PROGRAM", program: newDocument });
+                return;
+            }
             dispatchEditor({ type: "APPLY_PATCH", newDocument, inversePatch });
         },
         []

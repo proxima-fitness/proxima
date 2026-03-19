@@ -11,8 +11,7 @@ type ProgramRequest = ReturnType<typeof useProgramRequestState>;
 export interface IProps {
     search: string;
     hevyProgram: THevyRoutine[];
-    setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
-    applyPatchWithUndo: (newDocument: THevyRoutine[], inversePatch: Operation[]) => void;
+    applyPatchWithUndo: (newDocument: THevyRoutine[], inversePatch: Operation[], recordUndo?: boolean) => void;
     programRequest: ProgramRequest;
     messages: UIMessage<unknown, UIDataTypes, UITools>[];
     setMessages: (
@@ -45,7 +44,6 @@ export interface IProps {
 function BuildProgramChatPanelInner({
     search,
     hevyProgram,
-    setHevyProgram,
     applyPatchWithUndo,
     programRequest,
     messages,
@@ -74,7 +72,6 @@ function BuildProgramChatPanelInner({
         <Agent
             search={search}
             hevyProgram={hevyProgram}
-            setHevyProgram={setHevyProgram}
             applyPatchWithUndo={applyPatchWithUndo}
             sex={programRequest.sex}
             age={programRequest.age}

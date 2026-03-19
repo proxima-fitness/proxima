@@ -785,14 +785,14 @@ export function getModifyProgramObjectivesByRoutine(
 
 /**
  * Collects unapplied modifyProgram tool results from messages, validates and applies
- * patches to the current program, pushes inverse patches to undo, and updates
- * the applied-keys set. Intended to be called from a useEffect when messages or
- * hevyProgram change.
+ * all pending patches in sequence in memory, then commits once with a single inverse
+ * (one undo step even if the model emitted multiple modifyProgram tool calls).
+ * Intended to be called from a useEffect when messages or hevyProgram change.
  *
  * @param messages - Chat message history containing tool-modifyProgram parts
  * @param hevyProgram - Current program state to apply patches against
  * @param appliedKeysRef - Mutable set of already-applied patch keys (prevents double-apply)
- * @param applyPatchWithUndo - Callback to commit patched program and record inverse for undo (atomic)
+ * @param applyPatchWithUndo - Callback to commit patched program; pass `recordUndo: false` for initial chat generation from an empty program (no undo stack entry).
  * @returns true if at least one patch was successfully applied, false otherwise
  */
 
@@ -835,11 +835,200 @@ const normalizePatchPaths = (ops: Operation[]): Operation[] => {
     });
 };
 
+/** Normalizes LLM JSON Patch ops before validate/apply (op coercion + path cleanup). */
+export const prepareModifyPatchOperations = (ops: Operation[]): Operation[] =>
+    normalizePatchOps(normalizePatchPaths(ops));
+
+/**
+ * Assistant messages in the current user turn (everything after the last user message).
+ */
+export const getAssistantMessagesSinceLastUser = (messages: UIMessage[]): UIMessage[] => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+        if (messages[i].role === "user") {
+            return messages.slice(i + 1);
+        }
+    }
+    return messages;
+};
+
+type TFlatPart = { messageId: string; partIndex: number; part: NonNullable<UIMessage["parts"]>[number] };
+
+const flattenAssistantParts = (segment: UIMessage[]): TFlatPart[] => {
+    const out: TFlatPart[] = [];
+    for (const message of segment) {
+        if (message.role !== "assistant") continue;
+        const messageId = message.id ?? "";
+        (message.parts ?? []).forEach((part, partIndex) => {
+            out.push({ messageId, partIndex, part });
+        });
+    }
+    return out;
+};
+
+/** Snapshot of the last successful buildWeek in the current turn plus merged modifyProgram patches after it. */
+export interface IMergedBuildModifySnapshot {
+    baseWeekRoutines: THevyRoutine[];
+    totalDays: number;
+    mergedPatch: Operation[];
+    modifyKeys: string[];
+}
+
+/**
+ * Finds the last successful buildWeek in the current assistant turn and concatenates
+ * all modifyProgram patches that appear after it (mega-patch for periodization).
+ */
+export const getMergedBuildAndModifySnapshot = (messages: UIMessage[]): IMergedBuildModifySnapshot | null => {
+    const segment = getAssistantMessagesSinceLastUser(messages);
+    const flat = flattenAssistantParts(segment);
+    let lastBwIdx = -1;
+    let routines: THevyRoutine[] | null = null;
+    let totalDays = 0;
+
+    for (let i = 0; i < flat.length; i++) {
+        const { part } = flat[i];
+        if (part.type !== "tool-buildWeek") continue;
+        const out = (part as { output?: { routines?: THevyRoutine[]; totalDays?: number; error?: string } }).output;
+        if (out?.routines && !out?.error) {
+            lastBwIdx = i;
+            routines = out.routines;
+            totalDays = out.totalDays ?? out.routines.length;
+        }
+    }
+
+    if (lastBwIdx < 0 || !routines?.length) return null;
+
+    const mergedPatch: Operation[] = [];
+    const modifyKeys: string[] = [];
+
+    for (let i = lastBwIdx + 1; i < flat.length; i++) {
+        const { messageId, partIndex, part } = flat[i];
+        if (part.type !== "tool-modifyProgram") continue;
+        const toolOutput = (part as { output?: IModifyProgramOutput }).output;
+        const patch = toolOutput?.patch;
+        if (!patch || !Array.isArray(patch) || toolOutput?.error) continue;
+        mergedPatch.push(...prepareModifyPatchOperations(patch as Operation[]));
+        modifyKeys.push(`${messageId}-${partIndex}`);
+    }
+
+    return {
+        baseWeekRoutines: routines,
+        totalDays,
+        mergedPatch,
+        modifyKeys,
+    };
+};
+
+/**
+ * Duplicates the first week across programLength weeks (same rules as MessageBubbles buildWeek effect).
+ */
+export const buildFullProgramFromFirstWeek = (
+    weekRoutines: THevyRoutine[],
+    totalDays: number,
+    programLength: number
+): THevyRoutine[] => {
+    const sorted = [...weekRoutines].sort((a, b) => Number(a.order) - Number(b.order));
+    if (sorted.length !== totalDays) {
+        console.warn("buildFullProgramFromFirstWeek: routine count does not match totalDays");
+    }
+    const weeks = Math.max(1, programLength || 1);
+    const fullProgram: THevyRoutine[] = [];
+    let routineId = 1;
+    for (let weekIndex = 0; weekIndex < weeks; weekIndex++) {
+        for (const routine of sorted) {
+            fullProgram.push({
+                ...routine,
+                id: String(routineId++),
+                folder_id: weekIndex,
+            });
+        }
+    }
+    return fullProgram;
+};
+
+/**
+ * Stable key for idempotent atomic commit of a build+modify turn (avoids duplicate setState in Strict Mode).
+ */
+export const getAtomicBuildCommitKey = (
+    snapshot: IMergedBuildModifySnapshot,
+    messages: UIMessage[]
+): string => {
+    let lastUserIdx = -1;
+    for (let i = messages.length - 1; i >= 0; i--) {
+        if (messages[i].role === "user") {
+            lastUserIdx = i;
+            break;
+        }
+    }
+    const tailIds = messages.slice(lastUserIdx + 1).map((m) => m.id ?? "");
+    return `${tailIds.join("|")}|${snapshot.baseWeekRoutines.length}|${snapshot.mergedPatch.length}|${snapshot.modifyKeys.join(",")}`;
+};
+
+export type ChatStatusForAtomic = "streaming" | "ready" | (string & {});
+
+/**
+ * When the assistant turn includes a successful buildWeek, duplicates week 1 across all weeks,
+ * applies all modifyProgram patches after that buildWeek in one shot, and commits via applyPatchWithUndo.
+ * Returns true if a new program was committed. Only runs when status is ready (stream finished).
+ * When the program was empty, commits with `recordUndo: false` so the user cannot undo back to an empty grid.
+ */
+export const tryCommitAtomicBuildWeekAndMergedPatches = (
+    messages: UIMessage[],
+    status: ChatStatusForAtomic | undefined,
+    programLength: number,
+    hevyProgram: THevyRoutine[],
+    appliedModifyProgramKeysRef: React.MutableRefObject<Set<string>>,
+    lastAtomicCommitKeyRef: React.MutableRefObject<string | null>,
+    applyPatchWithUndo: (
+        newDocument: THevyRoutine[],
+        inversePatch: Operation[],
+        recordUndo?: boolean
+    ) => void
+): boolean => {
+    if (status === "streaming") return false;
+
+    const snap = getMergedBuildAndModifySnapshot(messages);
+    if (!snap) return false;
+
+    const commitKey = getAtomicBuildCommitKey(snap, messages);
+    if (lastAtomicCommitKeyRef.current === commitKey) return false;
+
+    const base = buildFullProgramFromFirstWeek(snap.baseWeekRoutines, snap.totalDays, programLength);
+    let doc = base;
+
+    if (snap.mergedPatch.length > 0) {
+        const err = validatePatch(snap.mergedPatch, doc as object);
+        if (err) {
+            toast.error("Program modification failed: patch is invalid for duplicated program.");
+            console.error("Atomic build patch validation failed", err);
+            return false;
+        }
+        try {
+            const result = applyPatch(doc as object, snap.mergedPatch, true, false) as { newDocument: THevyRoutine[] };
+            doc = result.newDocument as THevyRoutine[];
+        } catch (e) {
+            toast.error("Program modification failed: could not apply patch.");
+            console.error(e);
+            return false;
+        }
+    }
+
+    const inversePatch = compare(doc as object, hevyProgram as object);
+    const recordUndo = hevyProgram.length > 0;
+    applyPatchWithUndo(doc, inversePatch, recordUndo);
+    snap.modifyKeys.forEach((k) => appliedModifyProgramKeysRef.current.add(k));
+    lastAtomicCommitKeyRef.current = commitKey;
+    return true;
+};
+
 export const applyModifyProgramPatchesFromMessages = (
     messages: UIMessage[],
     hevyProgram: THevyRoutine[],
     appliedKeysRef: React.MutableRefObject<Set<string>>,
-    applyPatchWithUndo: (newDocument: THevyRoutine[], inversePatch: Operation[]) => void
+    applyPatchWithUndo: (
+        newDocument: THevyRoutine[],
+        inversePatch: Operation[],
+        recordUndo?: boolean
+    ) => void
 ): boolean => {
 
     if (!hevyProgram || hevyProgram.length === 0) return false;
@@ -863,32 +1052,28 @@ export const applyModifyProgramPatchesFromMessages = (
         }
     }
 
-    let currentDoc: THevyRoutine[] = hevyProgram;
-    let appliedAny = false;
+    let simulation: THevyRoutine[] = hevyProgram;
+    const keysSucceeded: string[] = [];
 
     for (const { key, patch } of toApply) {
-        const patchOps = normalizePatchOps(normalizePatchPaths(patch as Operation[]));
-        const err = validatePatch(patchOps, currentDoc as object);
+        const patchOps = prepareModifyPatchOperations(patch as Operation[]);
+        const err = validatePatch(patchOps, simulation as object);
         if (err) {
             toast.error("Program modification failed: patch is invalid for current program.");
-            console.error("Program modification failed: patch is invalid for current program",err);
+            console.error("Program modification failed: patch is invalid for current program", err);
             appliedKeysRef.current.add(key);
             break;
         }
 
         try {
             const result = applyPatch(
-                currentDoc as object,
+                simulation as object,
                 patchOps,
                 true,
                 false
             ) as { newDocument: THevyRoutine[] };
-            const newDocument = result.newDocument as THevyRoutine[];
-            const inversePatch = compare(newDocument as object, currentDoc as object);
-            applyPatchWithUndo(newDocument, inversePatch);
-            currentDoc = newDocument;
-            appliedKeysRef.current.add(key);
-            appliedAny = true;
+            simulation = result.newDocument as THevyRoutine[];
+            keysSucceeded.push(key);
         } catch {
             toast.error("Program modification failed: could not apply patch.");
             appliedKeysRef.current.add(key);
@@ -896,5 +1081,10 @@ export const applyModifyProgramPatchesFromMessages = (
         }
     }
 
-    return appliedAny;
+    if (keysSucceeded.length === 0) return false;
+
+    const inversePatch = compare(simulation as object, hevyProgram as object);
+    applyPatchWithUndo(simulation, inversePatch, true);
+    keysSucceeded.forEach((k) => appliedKeysRef.current.add(k));
+    return true;
 }

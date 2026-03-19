@@ -9,6 +9,7 @@
  * Tools provided:
  *  - getExerciseList – fetches and filters available Hevy exercises
  *  - getMoreInfoQuestions – opens the pre-build questionnaire UI
+ *  - planProgram – structured multi-week plan (duration, blocks, progression) before buildWeek
  *  - getCurrentProgram – returns the live program state
  *  - buildWeek – constructs a full week of THevyRoutine days in one call
  *  - modifyProgram – applies RFC 6902 JSON Patch edits to the program
@@ -33,6 +34,48 @@ function stripFrontmatter(content: string): string {
     const match = content.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/);
     return match ? content.slice(match[0].length).trim() : content.trim();
 }
+
+const planBlockSchema = z.object({
+    name: z.string().min(1).describe('Block label (e.g. Accumulation, Intensification).'),
+    weeks: z.array(z.number().int().min(1)).min(1).describe('1-based week indices included in this block.'),
+    intent: z.string().describe('Training focus for this block (volume, intensity, taper, etc.).'),
+});
+
+/** Per-lift or pattern progression: parallel arrays keyed by metric name, length must match durationWeeks when numeric arrays. */
+const weekProgressionEntrySchema = z.record(
+    z.string(),
+    z.union([z.array(z.number()), z.string()]),
+);
+
+/** Exported for tests — same schema as planProgram tool input. */
+export const planProgramInputSchema = z
+    .object({
+        durationWeeks: z.number().int().min(1).max(52).describe('Total program length in weeks.'),
+        goal: z.string().min(1).max(500).describe('Primary goal in plain language.'),
+        daysPerWeek: z.number().int().min(1).max(7).describe('Training days per week.'),
+        blocks: z.array(planBlockSchema).min(1).describe('Mesocycle blocks covering the program.'),
+        weekProgression: z
+            .record(z.string(), weekProgressionEntrySchema)
+            .optional()
+            .describe(
+                'Optional progression table (e.g. squat/bench/deadlift keys) with parallel numeric arrays per metric; each array length must equal durationWeeks.',
+            ),
+        notes: z.array(z.string()).optional().describe('Programming rules (e.g. swap variations only at block boundaries).'),
+    })
+    .superRefine((data, ctx) => {
+        const w = data.durationWeeks;
+        for (const [lift, attrs] of Object.entries(data.weekProgression ?? {})) {
+            for (const [metric, val] of Object.entries(attrs)) {
+                if (Array.isArray(val) && val.length !== w) {
+                    ctx.addIssue({
+                        code: 'custom',
+                        message: `weekProgression.${lift}.${metric} must have length ${w} (durationWeeks)`,
+                        path: ['weekProgression', lift, metric],
+                    });
+                }
+            }
+        }
+    });
 
 /**
  * Factory that creates the complete tool set for the chat agent. Captures
@@ -241,6 +284,38 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
             return {
                 type: 'text' as const,
                 value: 'Questions component has been opened. Please wait for the user to complete the questions before proceeding with program generation.',
+            };
+        },
+    });
+
+    /**
+     * Title: planProgramTool
+     * Description: Records a structured multi-week plan before buildWeek (mesocycles, progression table).
+     * @returns { Tool }
+     */
+    const planProgramTool = tool({
+        description:
+            'Submit a structured multi-week training plan before calling buildWeek. Use questionnaire answers, program builder context (days/week, length), and your judgment. ' +
+            'This does not create routines; it anchors periodization for later modifyProgram patches. Call once per new program.',
+        inputSchema: planProgramInputSchema,
+        execute: async (input) => {
+            const plan = input;
+            const blockNames = plan.blocks.map((b) => b.name).join(', ');
+            const summary = `${plan.durationWeeks} wk · ${plan.daysPerWeek} d/wk · blocks: ${blockNames} · ${plan.goal.slice(0, 80)}${plan.goal.length > 80 ? '…' : ''}`;
+            return { plan, summary };
+        },
+        toModelOutput: async ({ output }) => {
+            if (output && typeof output === 'object' && 'error' in output && output.error) {
+                const o = output as { message?: string };
+                return {
+                    type: 'text' as const,
+                    value: `Error: ${o.message ?? 'Invalid plan'}`,
+                };
+            }
+            const o = output as { summary?: string };
+            return {
+                type: 'text' as const,
+                value: `Plan recorded: ${o.summary ?? 'OK'}. Proceed with getExerciseList and buildWeek, then apply periodization with modifyProgram.`,
             };
         },
     });
@@ -526,6 +601,7 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
     return {
         getExerciseList: getExerciseListTool,
         getMoreInfoQuestions: getMoreInfoQuestionsTool,
+        planProgram: planProgramTool,
         getCurrentProgram: getCurrentProgramTool,
         buildWeek: buildWeekTool,
         modifyProgram: modifyProgramTool,
