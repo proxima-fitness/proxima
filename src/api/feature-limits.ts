@@ -31,9 +31,9 @@ export const TEST_TIER_OVERRIDE_KEY = "proxima_test_tier_override";
 
 export type TestTierOverride = "free" | "pro";
 
-/** Align with public.product_usage_limits: Free 0 exports, 20 LLM; Pro 5 exports, 1000 LLM */
+/** Align with public.product_usage_limits: Free 1 export, 20 LLM; Pro 10 exports, 1000 LLM (test override only) */
 const TIER_LIMITS: Record<TestTierOverride, { tier: string; has_active_subscription: boolean; max_monthly_exports: number; max_monthly_llm_requests: number }> = {
-    free: { tier: "Free", has_active_subscription: false, max_monthly_exports: 0, max_monthly_llm_requests: 20 },
+    free: { tier: "Free", has_active_subscription: false, max_monthly_exports: 1, max_monthly_llm_requests: 20 },
     pro: { tier: "Pro", has_active_subscription: true, max_monthly_exports: 10, max_monthly_llm_requests: 1000 },
 };
 
