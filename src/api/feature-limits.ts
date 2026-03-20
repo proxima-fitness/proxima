@@ -34,7 +34,7 @@ export type TestTierOverride = "free" | "pro";
 /** Align with public.product_usage_limits: Free 0 exports, 20 LLM; Pro 5 exports, 1000 LLM */
 const TIER_LIMITS: Record<TestTierOverride, { tier: string; has_active_subscription: boolean; max_monthly_exports: number; max_monthly_llm_requests: number }> = {
     free: { tier: "Free", has_active_subscription: false, max_monthly_exports: 0, max_monthly_llm_requests: 20 },
-    pro: { tier: "Pro", has_active_subscription: true, max_monthly_exports: 5, max_monthly_llm_requests: 1000 },
+    pro: { tier: "Pro", has_active_subscription: true, max_monthly_exports: 10, max_monthly_llm_requests: 1000 },
 };
 
 /**
