@@ -13,6 +13,8 @@
  * Used by: hevy.ts (postRoutineProgramToHevyOneFolder, postRoutineProgramToHevy)
  */
 
+import { routineNotesForExport } from "@/lib/proximaExportAttribution";
+
 /**
  * Converts Proxima schedule workouts into Hevy routine format.
  *
@@ -89,7 +91,7 @@ export const convertHevyOutputIntoInput = (routine: THevyRoutine, folderId: numb
     return {
         title: routine?.title?.length > 0 ? routine.title : "Proxima AI Routine",
         folder_id: folderId,
-        notes: routine?.notes?.length > 0 ? routine.notes : "Built with Proxima AI",
+        notes: routineNotesForExport(routine?.notes),
         exercises: uniqueExercises.map((exercise) => ({
             exercise_template_id: exercise?.exercise_template_id,
             superset_id: exercise?.supersets_id,

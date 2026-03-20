@@ -18,6 +18,7 @@
  */
 
 import { getHevyExercises } from "@/components/program-builder/api/hevy";
+import { routineNotesForExport } from "@/lib/proximaExportAttribution";
 import { amrapAsNumber } from "@/utils/general/helpers";
 import * as Papa from "papaparse";
 
@@ -369,7 +370,7 @@ export const hevyRoutinesToCsvRows = (routines: THevyRoutine[]): HevyCsvRow[] =>
         const week = routine.folder_id + 1;
         const day = routine.order ?? "";
         const routineTitle = routine.title ?? "";
-        const routineNotes = routine.notes ?? "";
+        const routineNotes = routineNotesForExport(routine.notes);
         for (const exercise of routine.exercises ?? []) {
             const exerciseTitle = exercise.title ?? "";
             const exerciseNotes = exercise.notes ?? "";

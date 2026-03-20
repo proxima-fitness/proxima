@@ -10,6 +10,7 @@
 
 import { shortEnglishHumanizer } from "@/assets/constants";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
+import { routineNotesForExport } from "@/lib/proximaExportAttribution";
 import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
 import { Page, Text, View, Document} from "@react-pdf/renderer";
 import { Font } from '@react-pdf/renderer';
@@ -94,6 +95,16 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                     </Text>
                                     <Text style={ { fontWeight: "200", fontSize: "8px", paddingVertical: "4px" } }>
                                         { day.exercises.length } {day.exercises.length === 1 ? "Exercise" : `Exercises`}
+                                    </Text>
+                                    <Text
+                                        style={ {
+                                            fontWeight: "200",
+                                            fontSize: "7px",
+                                            paddingBottom: "4px",
+                                            color: "#6B7280",
+                                        } }
+                                    >
+                                        {routineNotesForExport(day.notes ?? "")}
                                     </Text>
                                 </View>
                                 <View style={ {
