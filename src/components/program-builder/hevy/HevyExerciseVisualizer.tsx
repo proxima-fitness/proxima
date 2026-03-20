@@ -4,7 +4,7 @@
  * @module HevyExerciseVisualizer
  * Renders the list of exercises for one day: each row shows thumbnail, title, sets/reps/intensity, superset styling,
  * and tooltip/actions (reason, notes, rest, add note, delete). Supports edit mode for superset selection (checkboxes).
- * Depends on: HevyExerciseGif, useHevyExercises, formatWeight/getWeightUnit, Tooltip.
+ * Depends on: HevyExerciseGif, formatWeight/getWeightUnit, Tooltip.
  * Used by: HevyDayCard.
  */
 
@@ -13,7 +13,6 @@ import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
 import { LinkIcon, NotebookTextIcon, TimerIcon, Trash2Icon, XIcon } from "lucide-react";
 import { HevyExerciseGif } from "./HevyExerciseGif";
-import { useHevyExercises } from "@/api/hooks";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
 /** Props for the exercise list within a day card. */
@@ -36,6 +35,8 @@ interface IProps {
     toggleExerciseSelection: (exerciseIndex: number) => void;
     /** Removes an exercise from its superset. */
     removeFromSuperset: (exerciseIndex: number) => void;
+    /** Global Hevy exercise library from parent (for thumbnails); undefined while loading. */
+    hevyExercises?: THevyExerciseTemplate[];
 }
 
 // Color palette for supersets - distinct colors that work in both light and dark modes
@@ -76,10 +77,10 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
         selectedExercises,
         toggleExerciseSelection,
         removeFromSuperset,
+        hevyExercises,
     } = props;
 
     const { isInLbs } = usePoundsOrKgContext();
-    const { data: hevyExercises, isLoading } = useHevyExercises();
     const isSm = useMediaQuery("(min-width: 640px)");
 
     const editHandler = (e: React.MouseEvent<HTMLButtonElement>, folder_id: number, dayOrder: number, i: number, exercise: THevyExercise) => {
@@ -89,11 +90,6 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
         } else {
             handleEdit(folder_id, Number(day.order), i, exercise);
         }
-    }
-
-    // Wait for hevyExercises to load before rendering to ensure images display
-    if (isLoading || !hevyExercises) {
-        return <div></div>;
     }
 
     return (

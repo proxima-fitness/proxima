@@ -318,6 +318,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                             selectedExercises={selectedExercises}
                             toggleExerciseSelection={toggleExerciseSelection}
                             removeFromSuperset={removeFromSuperset}
+                            hevyExercises={ hevyExercises }
                         />
                     </div>
                     <div
