@@ -11,7 +11,11 @@ import {
     DialogHeader,
     DialogDescription,
 } from "@/components/ui/dialog";
-import { convertToHevyRoutine, deFlattenHevyRoutine } from "@/components/program-builder/utils";
+import {
+    convertToHevyRoutine,
+    deFlattenHevyRoutine,
+    hevyRoutinesToCsvWithWeekAndDayTitles,
+} from "@/components/program-builder/utils";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { useUserContext } from "@/contexts/UserContext";
 import { useQuery } from "@tanstack/react-query";
@@ -41,13 +45,14 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
 
     const [pdfOpen, setPdfOpen] = useState(false);
     const [hevyOpen, setHevyOpen] = useState(false);
+    const [spreadsheetOpen, setSpreadsheetOpen] = useState(false);
     const [hevyUploading, setHevyUploading] = useState(false);
     const [showBackConfirm, setShowBackConfirm] = useState(false);
 
-    const { data: flatHevyRoutines } = useQuery({
+    const { data: flatHevyRoutines, isPending: exportRoutinesPending } = useQuery({
         queryKey: ["export-hevy-routines", programId],
         queryFn: () => convertToHevyRoutine(sortedWorkoutsByWeek),
-        enabled: (pdfOpen || hevyOpen) && sortedWorkoutsByWeek.length > 0,
+        enabled: (pdfOpen || hevyOpen || spreadsheetOpen) && sortedWorkoutsByWeek.length > 0,
     });
 
     const hevyRoutine = flatHevyRoutines ? deFlattenHevyRoutine(flatHevyRoutines) : undefined;
@@ -57,7 +62,22 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
             setPdfOpen(true);
         } else if (id === "hevy") {
             setHevyOpen(true);
+        } else if (id === "spreadsheet") {
+            setSpreadsheetOpen(true);
         }
+    };
+
+    const handleDownloadCsv = () => {
+        if (!flatHevyRoutines || flatHevyRoutines.length === 0) return;
+        const csv = hevyRoutinesToCsvWithWeekAndDayTitles(flatHevyRoutines);
+        const bom = "\uFEFF";
+        const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "my-proxima-program.csv";
+        a.click();
+        URL.revokeObjectURL(url);
     };
 
     const handleHevyOpenChange = (nextOpen: boolean) => {
@@ -73,18 +93,15 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
         setHevyOpen(false);
     };
 
-    const visibleExportOptions = exportOptions.filter((o) => o.id === "hevy" || o.id === "pdf");
-
     return (
         <>
             <div className="rounded-xl dark:bg-darkGray bg-extraLightGray text-black dark:text-white shadow-md flex flex-col text-center justify-start items-center px-8 w-full h-full max-sm:h-auto max-sm:pb-4">
                 <div className="flex flex-col w-full">
-                    <h2 className="font-main text-5xl max-sm:text-3xl pt-4 font-bold pb-8">Export Program</h2>
+                    <h2 className="font-main text-2xl max-sm:text-3xl pt-4 font-bold pb-4">Export Program</h2>
                     <ExportProgramCTAButtons
                         programId={programId}
-                        exportOptions={visibleExportOptions}
+                        exportOptions={exportOptions}
                         onSelectExport={handleSelectExport}
-                        showComingSoonLabel={false}
                         hideHevyCrown
                     />
                 </div>
@@ -131,6 +148,39 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
                             </p>
                         )}
                     </div>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={spreadsheetOpen} onOpenChange={setSpreadsheetOpen}>
+                <DialogContent className="sm:max-w-lg max-sm:w-[95vw]">
+                    <DialogTitle className="font-bold font-main text-xl sm:text-2xl text-center">
+                        Spreadsheet
+                    </DialogTitle>
+                    {sortedWorkoutsByWeek.length === 0 ? (
+                        <p className="text-sm text-muted-foreground py-4 text-center">
+                            This program has no workouts to export as CSV.
+                        </p>
+                    ) : exportRoutinesPending ? (
+                        <p className="text-sm text-muted-foreground py-4 text-center">
+                            Preparing program data…
+                        </p>
+                    ) : flatHevyRoutines && flatHevyRoutines.length > 0 ? (
+                        <div className="w-full flex flex-col items-center justify-center text-center gap-3 py-6">
+                            <p className="text-sm text-muted-foreground">
+                                Open in Excel, Google Sheets, or any spreadsheet app.
+                            </p>
+                            <Button
+                                className="bg-lightSecondary hover:bg-lightSecondary/80 text-white"
+                                onClick={handleDownloadCsv}
+                            >
+                                Download CSV
+                            </Button>
+                        </div>
+                    ) : (
+                        <p className="text-sm text-muted-foreground py-4 text-center">
+                            This program has no workouts to export as CSV.
+                        </p>
+                    )}
                 </DialogContent>
             </Dialog>
 
