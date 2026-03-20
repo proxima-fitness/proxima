@@ -15,6 +15,10 @@ allowedTools:
 
 # Build Program
 
+## Program generation (buildWeek and modifyProgram)
+
+After **getExerciseList**, call **buildWeek exactly once** per user request to generate the new program week template (all training days in that single tool call). Do **not** call buildWeek again after it succeeds. Use **modifyProgram** for every post-build change—reps, RPE, rest, titles, notes, and multi-week periodization—never a second buildWeek to fix or tweak the week.
+
 ## Checklist
 
 - [ ] If user requested a new program: brief message + getMoreInfoQuestions; wait for the user to complete. (Stop generating until they continue.) When they send something like "Build my program", continue.

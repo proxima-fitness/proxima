@@ -23,11 +23,17 @@ import { getHevyExercises } from '@/components/program-builder/api/hevy';
 import { sampleQuestions } from '@/assets/constants';
 import { tool } from 'ai';
 
+/** Request-scoped flag: set after first successful buildWeek so the agent cannot call buildWeek twice in one chat turn. */
+export interface IBuildWeekOnceGuard {
+    locked: boolean;
+}
+
 interface IProps {
     excludeAreas?: string;
     excludeEquipment?: string;
     healthIssues?: string;
     hevyProgram?: THevyRoutine[];
+    buildWeekOnceGuard?: IBuildWeekOnceGuard;
 }
 
 function stripFrontmatter(content: string): string {
@@ -88,7 +94,13 @@ export const planProgramInputSchema = z
  * @param props.hevyProgram - The user's current Hevy routines (used by getCurrentProgram).
  * @returns An object mapping tool names to Vercel AI SDK tool descriptors.
  */
-export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyProgram }: IProps = {}) {
+export function getTools({
+    excludeAreas,
+    excludeEquipment,
+    healthIssues,
+    hevyProgram,
+    buildWeekOnceGuard,
+}: IProps = {}) {
 
     /**
      * Title: loadSkillTool
@@ -315,7 +327,7 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
             const o = output as { summary?: string };
             return {
                 type: 'text' as const,
-                value: `Plan recorded: ${o.summary ?? 'OK'}. Proceed with getExerciseList and buildWeek, then apply periodization with modifyProgram.`,
+                value: `Plan recorded: ${o.summary ?? 'OK'}. Proceed with getExerciseList, then call buildWeek exactly once (all days in that call), then apply periodization with modifyProgram only—do not call buildWeek again after it succeeds.`,
             };
         },
     });
@@ -349,7 +361,8 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
      */
     const buildWeekTool = tool({
         description:
-            'Builds an entire week of routines/days for the workout program in a SINGLE call. ' +
+            'Builds an entire week of routines/days for the workout program in a SINGLE tool invocation (all training days in one payload). ' +
+            'Call **buildWeek at most once** per user request to generate that week—after it succeeds, use **modifyProgram** only for any changes (never a second buildWeek to fix or tweak). ' +
             'Provide all days in order (Day 1, Day 2, …) so the UI can duplicate the first week across the remaining weeks. ' +
             'IMPORTANT: Always provide a valid JSON object with the required fields.',
         inputSchema: z.object({
@@ -426,6 +439,14 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
 
         execute: async ({ totalDays, routines }) => {
             try {
+                if (buildWeekOnceGuard?.locked) {
+                    return {
+                        error: 'buildWeek already completed',
+                        message:
+                            'Week already built in this turn. Use modifyProgram for all edits (reps, RPE, rest, titles, periodization). Do not call buildWeek again.',
+                    };
+                }
+
                 const timestamp = new Date().toISOString();
 
                 if (!Array.isArray(routines) || routines.length === 0) {
@@ -501,6 +522,10 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
                 // Ensure routines are ordered by day
                 builtRoutines.sort((a, b) => Number(a.order) - Number(b.order));
 
+                if (buildWeekOnceGuard) {
+                    buildWeekOnceGuard.locked = true;
+                }
+
                 return {
                     routines: builtRoutines,
                     totalDays,
@@ -531,7 +556,7 @@ export function getTools({ excludeAreas, excludeEquipment, healthIssues, hevyPro
 
             return {
                 type: 'text' as const,
-                value: `Week complete (${output.totalDays} days): ${titles || 'No routine titles'} (${output.exerciseCount} exercises, ${output.setCount} sets).`,
+                value: `Week complete (${output.totalDays} days): ${titles || 'No routine titles'} (${output.exerciseCount} exercises, ${output.setCount} sets). Do not call buildWeek again; use modifyProgram for any changes.`,
             };
         },
     });

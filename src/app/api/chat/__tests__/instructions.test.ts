@@ -16,6 +16,7 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("planProgram");
             expect(prompt).toContain("getCurrentProgram");
             expect(prompt).toContain("buildWeek");
+            expect(prompt).toContain("modifyProgram");
             expect(prompt).toContain("getMoreInfoQuestions");
         });
 

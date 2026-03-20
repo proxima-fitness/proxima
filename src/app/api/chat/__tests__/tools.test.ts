@@ -60,6 +60,50 @@ describe("chat tools.ts", () => {
             expect(output.error).toBe("Invalid routines");
             expect(output.message).toContain("match totalDays");
         });
+
+        it("rejects a second buildWeek in the same request when buildWeekOnceGuard is set", async () => {
+            const buildWeekOnceGuard = { locked: false };
+            const tools = getTools({ buildWeekOnceGuard });
+            const buildWeek = tools.buildWeek as {
+                execute: (args: { totalDays: number; routines: typeof minimalRoutine[] }) => Promise<unknown>;
+            };
+
+            const first = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [minimalRoutine],
+            })) as { error?: string; message?: string };
+            expect(first.error).toBeUndefined();
+            expect(buildWeekOnceGuard.locked).toBe(true);
+
+            const second = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [minimalRoutine],
+            })) as { error?: string; message?: string };
+            expect(second.error).toBe("buildWeek already completed");
+            expect(second.message).toContain("modifyProgram");
+        });
+
+        it("does not lock the guard when the first buildWeek fails", async () => {
+            const buildWeekOnceGuard = { locked: false };
+            const tools = getTools({ buildWeekOnceGuard });
+            const buildWeek = tools.buildWeek as {
+                execute: (args: { totalDays: number; routines: typeof minimalRoutine[] }) => Promise<unknown>;
+            };
+
+            const failed = (await buildWeek.execute({
+                totalDays: 2,
+                routines: [minimalRoutine],
+            })) as { error?: string };
+            expect(failed.error).toBe("Invalid routines");
+            expect(buildWeekOnceGuard.locked).toBe(false);
+
+            const ok = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [minimalRoutine],
+            })) as { error?: string };
+            expect(ok.error).toBeUndefined();
+            expect(buildWeekOnceGuard.locked).toBe(true);
+        });
     });
 
     describe("planProgram tool execute", () => {

@@ -21,7 +21,7 @@ export const maxDuration = 120;
 import { NodeSDK } from "@opentelemetry/sdk-node";
 import { LangfuseSpanProcessor } from "@langfuse/otel";
 import { instructions } from './instructions/instructions';
-import { getTools } from './tools/tools';
+import { getTools, type IBuildWeekOnceGuard } from './tools/tools';
 import { createSandbox } from './skills/sandbox';
 import { discoverSkills } from './skills/index';
 import z from 'zod';
@@ -111,7 +111,14 @@ export async function POST(req: Request) {
         const sanitizedMessages = sanitizeMessagesWithUnresolvedToolCalls(messages);
 
         const systemPrompt = instructions({ hevyProgram, daysPerWeek, programLength });
-        const tools = getTools({ excludeAreas, excludeEquipment, healthIssues, hevyProgram });
+        const buildWeekOnceGuard: IBuildWeekOnceGuard = { locked: false };
+        const tools = getTools({
+            excludeAreas,
+            excludeEquipment,
+            healthIssues,
+            hevyProgram,
+            buildWeekOnceGuard,
+        });
 
         const sandbox = createSandbox({ workingDirectory: process.cwd() });
         const skills = await discoverSkills(sandbox, ['.agents/skills']);
