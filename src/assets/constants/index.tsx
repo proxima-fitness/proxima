@@ -18,7 +18,7 @@
  * - Navigation and layout including `Navbar`, authenticated nav, sidebars, and footer.
  * - Landing and marketing pages throughout the app.
  */
-import { people03, people02, people04, people05, people06, instagram, linkedin, star, reddit, twitter, hevy_logo, google_sheets_logo_icon } from "public";
+import { people03, people02, people04, people05, people06, discord, instagram, linkedin, star, reddit, twitter, hevy_logo, google_sheets_logo_icon } from "public";
 import humanizeDuration from "humanize-duration";
 import { IOption } from '@/components/ui/multi-select';
 import { BicepsFlexedIcon, BookOpenIcon, Calculator, Crown, FileText, FootprintsIcon, SquarePowerIcon, Table } from "lucide-react";
@@ -6161,18 +6161,24 @@ export const socialMedia = [
   },
   {
     id: "social-media-2",
+    label: "Proxima Fitness on Discord",
+    icon: discord.src,
+    link: "https://discord.com/invite/4AhEd3eZpb",
+  },
+  {
+    id: "social-media-3",
     label: "Proxima Fitness on Twitter",
     icon: twitter.src,
     link: "https://www.twitter.com/jacklhanlon",
   },
   {
-    id: "social-media-3",
+    id: "social-media-4",
     label: "Proxima Fitness on LinkedIn",
     icon: linkedin.src,
     link: "https://www.linkedin.com/company/proxima-fitness/",
   },
   {
-    id: "social-media-4",
+    id: "social-media-5",
     label: "Proxima Fitness on Reddit",
     icon: reddit.src,
     link: "https://www.reddit.com/r/ProximaFitness/",

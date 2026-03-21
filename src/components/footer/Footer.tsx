@@ -11,7 +11,8 @@
 import styles from "../../style";
 import { proxima_logo } from "public";
 import Link from "next/link";
-import { footerLinks, socialMedia } from "@/assets/constants/nav-links";
+import { socialMedia } from "@/assets/constants";
+import { footerLinks } from "@/assets/constants/nav-links";
 
 /**
  * Footer renders the bottom-of-page navigation and branding section.

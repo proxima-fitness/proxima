@@ -18,6 +18,7 @@ import arnold from "./arnold.jpg";
 import google from "./google.svg";
 import arrow_up from "./arrow-up.svg";
 import close from "./close.svg";
+import discord from "./discord.svg";
 import core_strength from "./core-stength.jpg";
 import deadlift from "./deadlift.jpg";
 import Discount from "./Discount.svg";
@@ -83,6 +84,7 @@ export {
     ai_program_builder,
     core_strength,
     deadlift,
+    discord,
     Discount,
     facebook,
     glutes_and_hams,
