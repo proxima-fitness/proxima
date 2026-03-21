@@ -28,7 +28,16 @@ Only introduce as much periodisation as fits the user's level and goals; keep be
 
 - **Main lifts:** Squat, bench press, deadlift (and close variations: pause squats, block pulls, floor press, etc.).
 - **Deadlift vs Romanian deadlift:** Always prioritise **Deadlift (Barbell)** (conventional or sumo) over **Romanian Deadlift** for competition-specific hinge work. **Do not** program **Romanian Deadlift** as the **secondary compound** on a day (and do not use it in place of barbell deadlift when a deadlift-pattern compound is appropriate) **unless the user explicitly asks for RDL.** Romanian deadlift may still appear as **assistance** after the two compounds if the user wants hamstring emphasis or has asked for it.
-- **Assistance / accessories:** For weak points and support (e.g. block pulls, glute bridges, tricep work, rows). Use moderate rep ranges (e.g. 8–12) for these; don't program them as max-effort singles.
+- **Assistance / accessories:** For **identified** needs—weak points, joint/tissue tolerance, positioning/stability (e.g. block pulls, rows, tricep work)—not generic hypertrophy filler. **Undulate** volume and exercise choice across weeks/blocks (see **Accessory work** below). Moderate rep ranges (e.g. 8–12) are common for true accessories but should **not** be identical every session; don't program accessories as max-effort singles.
+
+---
+
+## Accessory work (powerlifting)
+
+- **Undulating accessory volume:** Vary **sets and/or exercise choice** across **weeks** or **mesocycles** (e.g. fewer accessory sets in heavier or intensity-focused weeks or blocks; more in volume blocks **only when** it serves the plan). Avoid repeating the **same** accessory prescription every training day or week (no “fixed 4×12 on everything” forever).
+- **Align with main-lift phases:** In **peaking** or **high-intensity** SBD phases, **reduce** accessory volume and favour **minimal, targeted** work. In base/volume phases, accessories can be somewhat higher but still **not** maximal generic hypertrophy.
+- **Purpose-first selection:** Choose accessories for **identified** reasons—weak points, **joint/tissue tolerance** (e.g. triceps work to support elbows under heavy bench), stability/positioning, unilateral balance—not to max out “pump” volume. Prefer **fewer** movements with clear **rationale**; use exercise **`reason`** (and **`notes`** if needed) to state that rationale.
+- **Not a hypertrophy split:** Do **not** program accessories like a bodybuilding split (high, uniform session accessory load) when the goal is **powerlifting** performance on the main lifts.
 
 ---
 
@@ -51,14 +60,14 @@ Space the same lift type on non-consecutive days. Adjust if the user explicitly 
 ### Days per week (4 vs 6)
 
 - **4 days/week:** Fits the **two compounds per day** rule cleanly: each session is main + secondary compound + accessories without stacking three competition lifts in one day.
-- **6 days/week:** Do **not** make every day two heavy compounds—total stress will be too high. Include **accessory- or volume-only days** (e.g. arms, upper back, calves, light pump work) and/or **lighter technique days** with reduced load or fewer hard sets. A workable pattern is **four** “heavy” days (each with main + secondary compound + accessories) plus **two** easier days; adjust to the athlete’s recovery.
+- **6 days/week:** Do **not** make every day two heavy compounds—total stress will be too high. Include **accessory- or volume-only days** (e.g. arms, upper back, calves, light pump work) and/or **lighter technique days** with reduced load or fewer hard sets. A workable pattern is **four** “heavy” days (each with main + secondary compound + accessories) plus **two** easier days; adjust to the athlete’s recovery. Keep those easier/accessory days **low-fatigue and targeted**, not a standing slot for **high, steady** isolation volume every week.
 
 ---
 
 ## Sets, reps and loading
 
 - **Heavy / specificity:** Include heavy work, e.g. singles @ 90%+, doubles/triples @ 80%+, sets of 5 @ 70–85%.
-- **Variation / volume:** Include some 5s, and optionally 8–10 @ 60–75%. Assistance often 8–12 reps.
+- **Variation / volume:** Include some 5s, and optionally 8–10 @ 60–75%. Assistance often falls in bands like 8–12 reps, but **undulate** set counts and rep ranges by week or block—don’t use the same assistance prescription every session.
 - **Structuring:** Either (a) mix rep ranges in the week (concurrent), or (b) use blocks (e.g. 4 weeks hypertrophy, 4 weeks strength, 2–3 weeks peaking). Match to user's level and goals.
 
 ---
@@ -80,3 +89,4 @@ Space the same lift type on non-consecutive days. Adjust if the user explicitly 
 - Keep squat/bench/deadlift emphasis and recovery (frequency/placement) in mind.
 - Match day names to the split (e.g. "Squat", "Bench", "Lower", "Upper").
 - If the user says "like 5/3/1" or "like Starting Strength", mirror that style while still satisfying **two compounds per day** where those templates use a main lift plus a second barbell compound or clearly prescribed secondary work (e.g. FSL, supplemental lift). Use only exercise IDs from the exercise list; don't invent IDs.
+- In **buildWeek** and **modifyProgram** output, reflect **undulating** accessory load and **purpose** in **`reason`** / **notes** where useful; **avoid** inflating accessory volume **uniformly** across all weeks unless the user asks for that.
