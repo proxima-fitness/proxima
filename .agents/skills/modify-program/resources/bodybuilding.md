@@ -7,6 +7,8 @@ Use this file when the user wants a **bodybuilding** or **hypertrophy** program:
 - **Volume landmarks:** MEV = minimum for growth, MAV = best long-term gains, MRV = recoverable max. Values below are weekly sets for intermediate lifters; beginners use less.
 - **Per session:** 1–3 exercises per muscle, 8–12 sets per muscle per session max (beyond that, systemic fatigue reduces efficiency).
 - **Per week:** 2–5 different exercises per muscle. Match exercise IDs from getExerciseList; use titles below to find the right IDs.
+- **Compound RPE (bodybuilding default):** For heavy **compound** lifts—especially barbell patterns such as bench press, squat, and deadlift, and similarly demanding compounds—**do not** prescribe sets above **~8.5 RPE** in typical hypertrophy blocks. Prefer leaving **1–2 reps in reserve**; avoid grinders and true failure on these movements (injury risk).
+- **Exception:** Slightly higher RPE on compounds is acceptable **only** when the user’s program explicitly includes **some strength emphasis** and **1RM testing** (e.g. a peaking or test week). Outside that context, keep compounds at or below ~8.5 RPE.
 
 ---
 
