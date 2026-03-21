@@ -13,6 +13,7 @@ import {
 } from "@/components/ai-elements/conversation"
 import { MessageSquare } from "lucide-react"
 import { useMemo, useCallback, useState } from "react"
+import type { RefObject } from "react"
 import { IOption } from "@/components/ui/multi-select"
 import { type ChatStatus, FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai"
 import type { IQuestion } from "@/components/ui/questions"
@@ -112,6 +113,8 @@ interface IProps {
     handleSubmit: (text: string, files?: FileUIPart[]) => void;
     handleStop: () => void;
     onBuildComplete?: () => void;
+    lastAtomicBuildCommitKeyRef: RefObject<string | null>;
+    appliedModifyProgramKeysRef: RefObject<Set<string>>;
 }
 
 /** Renders Navbar, conversation area (empty state or MessageBubbles), loading status, and Chat. */
@@ -149,6 +152,8 @@ export const Agent: React.FC<IProps> = (props) => {
         handleSubmit,
         handleStop,
         onBuildComplete,
+        lastAtomicBuildCommitKeyRef,
+        appliedModifyProgramKeysRef,
     } = props;
 
 
@@ -316,6 +321,8 @@ export const Agent: React.FC<IProps> = (props) => {
                             maxRetries={maxRetries}
                             onTimeoutError={onTimeoutError}
                             onBuildComplete={onBuildComplete}
+                            lastAtomicBuildCommitKeyRef={lastAtomicBuildCommitKeyRef}
+                            appliedModifyProgramKeysRef={appliedModifyProgramKeysRef}
                             />
                         )}
                         {isLoading && statusLabel && (

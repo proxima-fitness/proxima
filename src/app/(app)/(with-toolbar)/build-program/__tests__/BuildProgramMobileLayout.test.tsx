@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 
 import { BuildProgramMobileLayout } from "@/app/(app)/(with-toolbar)/build-program/BuildProgramMobileLayout";
@@ -35,15 +35,7 @@ describe("build-program BuildProgramMobileLayout.tsx", () => {
         expect(scrollableClass).toContain("overflow-hidden");
     });
 
-    it("keeps chat panel mounted when switching tabs (avoids MessageBubbles ref reset / program tab snap-back)", () => {
-        const mountCounts = { n: 0 };
-        function MountSpy() {
-            useEffect(() => {
-                mountCounts.n += 1;
-            }, []);
-            return null;
-        }
-
+    it("updates controlled tab state when switching Chat and Program (no forceMount; Radix may defer unmount until exit animation)", () => {
         function ControlledLayout() {
             const [mobileTab, setMobileTab] = useState("chat");
             return (
@@ -51,20 +43,24 @@ describe("build-program BuildProgramMobileLayout.tsx", () => {
                     mobileTab={mobileTab}
                     onMobileTabChange={setMobileTab}
                     hasProgramContent={true}
-                    chatPanel={<MountSpy />}
+                    chatPanel={<span data-testid="chat-panel-marker">chat</span>}
                     routineContent={null}
                 />
             );
         }
 
         render(<ControlledLayout />);
-        expect(mountCounts.n).toBe(1);
+        expect(screen.getByRole("tab", { name: "Chat" }).getAttribute("data-state")).toBe("active");
+        expect(screen.getByRole("tab", { name: "Program" }).getAttribute("data-state")).toBe("inactive");
 
-        fireEvent.click(screen.getByRole("tab", { name: "Program" }));
-        expect(mountCounts.n).toBe(1);
+        // Radix TabsTrigger commits selection on primary-button mousedown (not click alone in all environments).
+        fireEvent.mouseDown(screen.getByRole("tab", { name: "Program" }), { button: 0 });
+        expect(screen.getByRole("tab", { name: "Program" }).getAttribute("data-state")).toBe("active");
+        expect(screen.getByRole("tab", { name: "Chat" }).getAttribute("data-state")).toBe("inactive");
 
-        fireEvent.click(screen.getByRole("tab", { name: "Chat" }));
-        expect(mountCounts.n).toBe(1);
+        fireEvent.mouseDown(screen.getByRole("tab", { name: "Chat" }), { button: 0 });
+        expect(screen.getByRole("tab", { name: "Chat" }).getAttribute("data-state")).toBe("active");
+        expect(screen.getByTestId("chat-panel-marker")).toBeTruthy();
     });
 });
 

@@ -4,7 +4,7 @@
  * Depends on: message, tool, reasoning, attachments, ModifyProgramProgress, applyModifyProgramPatchesFromMessages, helpers. Used by: Agent.
  */
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, useRef, useMemo, useState } from "react";
+import { useEffect, useRef, useMemo, useState, type RefObject } from "react";
 import {
     Message,
     MessageAction,
@@ -211,6 +211,8 @@ interface IProps {
     hevyProgram: THevyRoutine[];
     applyPatchWithUndo: (newDocument: THevyRoutine[], inversePatch: Operation[], recordUndo?: boolean) => void;
     onBuildComplete?: () => void;
+    lastAtomicBuildCommitKeyRef: RefObject<string | null>;
+    appliedModifyProgramKeysRef: RefObject<Set<string>>;
 }
 
 /** Renders message list, build/modify progress, applies tool results to hevyProgram, and handles timeout/retry. */
@@ -234,6 +236,8 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         hevyProgram,
         applyPatchWithUndo,
         onBuildComplete,
+        lastAtomicBuildCommitKeyRef,
+        appliedModifyProgramKeysRef,
     } = props;
 
     const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
@@ -242,10 +246,6 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     const TIMEOUT_MS = 45000; // No progress for this long during build triggers onTimeoutError
     const lastProgressTimestampRef = useRef<number>(0);
     const timeoutCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-    /** Prevents duplicate atomic commit for the same assistant turn (Strict Mode / re-renders). */
-    const lastAtomicBuildCommitKeyRef = useRef<string | null>(null);
-    const appliedModifyProgramKeysRef = useRef<Set<string>>(new Set());
 
     // Collect buildWeek output from messages (single call expected)
     const { totalDays, allRoutines } = useMemo(() => {
@@ -360,6 +360,8 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         user,
         totalDays,
         allRoutines.length,
+        appliedModifyProgramKeysRef,
+        lastAtomicBuildCommitKeyRef,
     ]);
 
     useEffect(() => {
@@ -373,7 +375,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         if (modified) {
             posthog?.capture?.("modified_a_program", { user: user?.id ?? "user_id_unknown" });
         }
-    }, [messages, hevyProgram, applyPatchWithUndo, user]);
+    }, [messages, hevyProgram, applyPatchWithUndo, user, appliedModifyProgramKeysRef]);
 
     return (
 

@@ -5,7 +5,8 @@
  *
  * Banner shown when the user has an in-progress program (Proxima or Hevy format)
  * stored in localStorage. Renders "Resume program" and "Clear" actions; on clear,
- * opens a confirmation dialog and removes the draft from localStorage.
+ * opens a confirmation dialog and removes the draft, persisted chat (anonymous),
+ * and related build-program keys from localStorage.
  *
  * Depends on: Dialog/Button (ui), Link (next/link), lucide-react (Redo2Icon, X).
  * Uses global types THevyRoutine. Used by: program-builder/shared/Prompt.tsx, profile/ProfileContent.tsx.
@@ -23,8 +24,13 @@ import { Button } from "@/components/ui/button";
 import { Redo2Icon, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { CHAT_MESSAGES_KEY } from "@/assets/constants/ui-constants";
 
 const DRAFT_STORAGE_KEY = "hevy-program-in-progress";
+/** Persisted program request filters; see BuildProgram debounced localStorage write. */
+const HEVY_REQUEST_KEY = "hevy-request";
+/** Persisted prompt title; see BuildProgram debounced localStorage write. */
+const PROMPT_KEY = "prompt";
 
 function readDraftFromStorage(): THevyRoutine[] | undefined {
     if (typeof window === "undefined") return undefined;
@@ -48,6 +54,9 @@ export const ResumeDraftBanner: React.FC = () => {
     const handleClearProgram = () => {
         if (typeof window !== "undefined") {
             localStorage.removeItem(DRAFT_STORAGE_KEY);
+            localStorage.removeItem(CHAT_MESSAGES_KEY);
+            localStorage.removeItem(HEVY_REQUEST_KEY);
+            localStorage.removeItem(PROMPT_KEY);
         }
         setHevyRoutine(undefined);
         setClearDialogOpen(false);
@@ -82,8 +91,8 @@ export const ResumeDraftBanner: React.FC = () => {
                         variant="ghost"
                         onClick={() => setClearDialogOpen(true)}
                         className="h-9 px-3 text-muted-foreground hover:text-foreground sm:h-10 sm:w-10 sm:p-0 shrink-0"
-                        title="Clear program in progress"
-                        aria-label="Clear program in progress"
+                        title="Clear program and chat"
+                        aria-label="Clear program and chat"
                     >
                         <span className="sm:hidden">Clear</span>
                         <X className="hidden sm:block size-4" aria-hidden />
@@ -93,9 +102,9 @@ export const ResumeDraftBanner: React.FC = () => {
             <Dialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
                 <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
                     <DialogHeader className="pb-2">
-                        <DialogTitle>Clear program in progress?</DialogTitle>
+                        <DialogTitle>Clear program and chat?</DialogTitle>
                         <DialogDescription>
-                            This will permanently remove your program in progress.
+                            This will permanently remove your program draft and your current chat. Sign in first if you want to save your work.
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="flex flex-row gap-2 justify-end">

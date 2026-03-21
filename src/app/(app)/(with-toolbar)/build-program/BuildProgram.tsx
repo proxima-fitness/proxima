@@ -148,6 +148,8 @@ export function BuildProgram() {
         maxRetries: MAX_RETRIES,
         onTimeoutError: handleTimeoutError,
         onBuildComplete,
+        lastAtomicBuildCommitKeyRef,
+        appliedModifyProgramKeysRef,
         sharedProgramLoadAttemptedRef,
         resumeLoadAttemptedRef,
     } = chat;
@@ -391,6 +393,8 @@ export function BuildProgram() {
         handleSubmit,
         handleStop,
         onBuildComplete,
+        lastAtomicBuildCommitKeyRef,
+        appliedModifyProgramKeysRef,
     } as const;
 
     const desktopChatPanel = (

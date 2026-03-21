@@ -66,8 +66,10 @@ export interface IProps {
     maxRetries: number;
     onTimeoutError: () => void;
     onBuildComplete: () => void;
-    sharedProgramLoadAttemptedRef: React.MutableRefObject<boolean>;
-    resumeLoadAttemptedRef: React.MutableRefObject<boolean>;
+    lastAtomicBuildCommitKeyRef: React.RefObject<string | null>;
+    appliedModifyProgramKeysRef: React.RefObject<Set<string>>;
+    sharedProgramLoadAttemptedRef: React.RefObject<boolean>;
+    resumeLoadAttemptedRef: React.RefObject<boolean>;
 }
 
 export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProps {
@@ -99,6 +101,11 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     const resumeLoadAttemptedRef = useRef<boolean>(false);
     const prevErrorRef = useRef<Error | null>(null);
     const pageViewSentRef = useRef(false);
+
+    /** Survives MessageBubbles unmount when switching mobile tabs (Radix Tabs). */
+    const lastAtomicBuildCommitKeyRef = useRef<string | null>(null);
+    const appliedModifyProgramKeysRef = useRef<Set<string>>(new Set());
+    const hasAutoSwitchedToProgramAfterFirstBuildRef = useRef(false);
 
     const { messages, sendMessage, setMessages, status, stop, error } = useChat({
         transport: chatTransport,
@@ -160,6 +167,13 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             prevErrorRef.current = null;
         }
     }, [activeError, user]);
+
+    useEffect(() => {
+        if (messages.length > 0) return;
+        lastAtomicBuildCommitKeyRef.current = null;
+        appliedModifyProgramKeysRef.current.clear();
+        hasAutoSwitchedToProgramAfterFirstBuildRef.current = false;
+    }, [messages.length]);
 
     useEffect(() => {
         if (typeof window === "undefined") return;
@@ -284,7 +298,9 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     }, [stop]);
 
     const onBuildComplete = useCallback(() => {
-        if (isMobile) setMobileTab("program");
+        if (!isMobile || hasAutoSwitchedToProgramAfterFirstBuildRef.current) return;
+        hasAutoSwitchedToProgramAfterFirstBuildRef.current = true;
+        setMobileTab("program");
     }, [isMobile, setMobileTab]);
 
     return {
@@ -304,6 +320,8 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         maxRetries: MAX_RETRIES,
         onTimeoutError: handleTimeoutError,
         onBuildComplete,
+        lastAtomicBuildCommitKeyRef,
+        appliedModifyProgramKeysRef,
         sharedProgramLoadAttemptedRef,
         resumeLoadAttemptedRef,
     };

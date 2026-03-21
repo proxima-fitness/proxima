@@ -976,8 +976,8 @@ export const tryCommitAtomicBuildWeekAndMergedPatches = (
     status: ChatStatusForAtomic | undefined,
     programLength: number,
     hevyProgram: THevyRoutine[],
-    appliedModifyProgramKeysRef: React.MutableRefObject<Set<string>>,
-    lastAtomicCommitKeyRef: React.MutableRefObject<string | null>,
+    appliedModifyProgramKeysRef: React.RefObject<Set<string>>,
+    lastAtomicCommitKeyRef: React.RefObject<string | null>,
     applyPatchWithUndo: (
         newDocument: THevyRoutine[],
         inversePatch: Operation[],
@@ -1023,7 +1023,7 @@ export const tryCommitAtomicBuildWeekAndMergedPatches = (
 export const applyModifyProgramPatchesFromMessages = (
     messages: UIMessage[],
     hevyProgram: THevyRoutine[],
-    appliedKeysRef: React.MutableRefObject<Set<string>>,
+    appliedKeysRef: React.RefObject<Set<string>>,
     applyPatchWithUndo: (
         newDocument: THevyRoutine[],
         inversePatch: Operation[],

@@ -1,6 +1,7 @@
 "use client";
 
 import { memo } from "react";
+import type { RefObject } from "react";
 import type { ChatStatus, FileUIPart, UIDataTypes, UIMessage, UITools } from "ai";
 import type { Operation } from "fast-json-patch";
 import { Agent } from "@/components/program-builder/shared/agent/Agent";
@@ -33,6 +34,8 @@ export interface IProps {
     handleSubmit: (text: string, files?: FileUIPart[]) => void;
     handleStop: () => void;
     onBuildComplete?: () => void;
+    lastAtomicBuildCommitKeyRef: RefObject<string | null>;
+    appliedModifyProgramKeysRef: RefObject<Set<string>>;
 
     sidebarPosition: "left" | "right";
     onTogglePosition: () => void;
@@ -62,6 +65,8 @@ function BuildProgramChatPanelInner({
     handleSubmit,
     handleStop,
     onBuildComplete,
+    lastAtomicBuildCommitKeyRef,
+    appliedModifyProgramKeysRef,
     sidebarPosition,
     onTogglePosition,
     onToggleExpand,
@@ -125,6 +130,8 @@ function BuildProgramChatPanelInner({
             handleSubmit={handleSubmit}
             handleStop={handleStop}
             onBuildComplete={onBuildComplete}
+            lastAtomicBuildCommitKeyRef={lastAtomicBuildCommitKeyRef}
+            appliedModifyProgramKeysRef={appliedModifyProgramKeysRef}
             sidebarPosition={sidebarPosition}
             onTogglePosition={onTogglePosition}
             onToggleExpand={onToggleExpand}

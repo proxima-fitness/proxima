@@ -27,7 +27,16 @@ Only introduce as much periodisation as fits the user's level and goals; keep be
 ## Exercise selection
 
 - **Main lifts:** Squat, bench press, deadlift (and close variations: pause squats, block pulls, floor press, etc.).
+- **Deadlift vs Romanian deadlift:** Always prioritise **Deadlift (Barbell)** (conventional or sumo) over **Romanian Deadlift** for competition-specific hinge work. **Do not** program **Romanian Deadlift** as the **secondary compound** on a day (and do not use it in place of barbell deadlift when a deadlift-pattern compound is appropriate) **unless the user explicitly asks for RDL.** Romanian deadlift may still appear as **assistance** after the two compounds if the user wants hamstring emphasis or has asked for it.
 - **Assistance / accessories:** For weak points and support (e.g. block pulls, glute bridges, tricep work, rows). Use moderate rep ranges (e.g. 8–12) for these; don't program them as max-effort singles.
+
+---
+
+## Daily session structure (required)
+
+- **Every training day** includes **two compound movements**: one **main** (primary SBD or closest competition variation for that day’s focus) and one **secondary** compound (another SBD pattern, variation, or closely related multi-joint lift—e.g. pause squat, barbell row, close-grip bench, front squat; for hinge days prefer **Deadlift (Barbell)**, block pulls, or deficit pulls—not Romanian deadlift unless the user asked for RDL).
+- **Order:** Main compound first (heaviest / most specific), then secondary compound, then assistance and accessories.
+- **Tempo:** Use different eccentric and pause prescriptions between main and secondary, or across weeks, to vary stimulus and manage fatigue. The build tools do not have a dedicated tempo field—write tempo in **routine `notes`**, exercise **`notes`**, and/or exercise **`reason`** so it is visible to the athlete.
 
 ---
 
@@ -38,6 +47,11 @@ Only introduce as much periodisation as fits the user's level and goals; keep be
 - **Bench:** Often 2–3×/week.
 
 Space the same lift type on non-consecutive days. Adjust if the user explicitly wants more or less frequency (then adjust volume per session accordingly).
+
+### Days per week (4 vs 6)
+
+- **4 days/week:** Fits the **two compounds per day** rule cleanly: each session is main + secondary compound + accessories without stacking three competition lifts in one day.
+- **6 days/week:** Do **not** make every day two heavy compounds—total stress will be too high. Include **accessory- or volume-only days** (e.g. arms, upper back, calves, light pump work) and/or **lighter technique days** with reduced load or fewer hard sets. A workable pattern is **four** “heavy” days (each with main + secondary compound + accessories) plus **two** easier days; adjust to the athlete’s recovery.
 
 ---
 
@@ -51,16 +65,18 @@ Space the same lift type on non-consecutive days. Adjust if the user explicitly 
 
 ## Example structures (reference only)
 
-**Beginner:** 3 non-consecutive days. Each day: Squat 3×5, Bench 3×5, Deadlift 1×5. Progress linearly; optional light day for squat/deadlift as needed.
+**Beginner:** 3 non-consecutive days (or 4 if the user prefers). **Each day:** one main compound + one secondary compound + optional accessories—never all three SBD competition lifts in one session. Example 3-day: Day 1 Squat + Bench + accessories; Day 2 Deadlift + row or light squat variation + accessories; Day 3 Bench or squat emphasis + second compound + accessories. Progress linearly.
 
-**Intermediate:** 4 days, e.g. upper/lower. Lower: Squat 5×5, Deadlift 1×5 one day; Squat heavy 5, Deadlift 3×5 lighter another. Upper: Bench 5×5 + tricep/back work; second bench day heavy 5 + pull-ups. Add variation (e.g. 3s, 8s, pause squats) when progress stalls.
+**Intermediate:** 4 days, e.g. upper/lower. Each day: main + secondary compound (e.g. lower: Squat + barbell row or light deadlift variation; other lower: **Deadlift (Barbell)** + front squat or pause squat; upper: Bench + close-grip or incline; second upper: bench variation + row). Add variation (e.g. 3s, 8s, pause work) when progress stalls.
 
-**Advanced:** 5–6 days, lift-focused. Dedicated days for squat, bench, deadlift; optional extra bench day. Example blocks: 4 weeks 8–10 reps, 4 weeks 4–6 reps, 2–3 weeks 1–3 reps (peaking). Re-test 1RMs and use for next cycle.
+**Advanced:** 5–6 days. If **6 days**, use **heavy** days with two compounds plus **lighter / accessory-only** days as in “Days per week (6)” above—not six consecutive double-compound smash sessions. Example blocks: 4 weeks 8–10 reps, 4 weeks 4–6 reps, 2–3 weeks 1–3 reps (peaking). Re-test 1RMs and use for next cycle.
 
 ---
 
 ## When applying
 
+- Before **buildWeek** or when building **modifyProgram** patches: ensure **each powerlifting training routine** has **at least two compound exercises** that fit the main + secondary definition (unless the user explicitly asked for something different). **Do not** use Romanian Deadlift as a secondary compound unless the user explicitly requested RDL; prefer **Deadlift (Barbell)** for hinge compounds.
+- Do **not** reduce a day to a single compound in a powerlifting program without clear user intent.
 - Keep squat/bench/deadlift emphasis and recovery (frequency/placement) in mind.
 - Match day names to the split (e.g. "Squat", "Bench", "Lower", "Upper").
-- If the user says "like 5/3/1" or "like Starting Strength", mirror that style (e.g. 5/3/1: main work + FSL/joker; SS: 3×5 full body). Use only exercise IDs from the exercise list; don't invent IDs.
+- If the user says "like 5/3/1" or "like Starting Strength", mirror that style while still satisfying **two compounds per day** where those templates use a main lift plus a second barbell compound or clearly prescribed secondary work (e.g. FSL, supplemental lift). Use only exercise IDs from the exercise list; don't invent IDs.
