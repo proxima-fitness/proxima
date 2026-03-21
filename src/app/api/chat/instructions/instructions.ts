@@ -44,11 +44,13 @@ export const instructions = ({ hevyProgram, daysPerWeek, programLength }: IProps
         - getMoreInfoQuestions: Opens a questions component to gather additional information before building a workout program.
         - getExerciseList: Provides access to all available Hevy exercises (reference list with IDs and titles).
         - planProgram: Submits a structured multi-week plan (duration, blocks, optional week-by-week progression) before building the first week.
-        - getCurrentProgram: Returns the current workout program state. You may call this at any time to check if a program exists.
+        - getCurrentProgram: Returns the program snapshot from the **start of this request** (what was already on the builder). It does **not** refresh after **buildWeek** in the same turn.
         - buildWeek: Builds an entire week of routines/days for the workout program in a single call.
-        - modifyProgram: Modifies the current workout program using a JSON Patch (RFC 6902).
+        - modifyProgram: Applies a JSON Patch (RFC 6902) to the program—see tool description for the two use cases (edit existing vs. periodization after buildWeek).
 
-        For creating or modifying workout programs, load the appropriate skill before using program tools. You may call getCurrentProgram at any time to check if a program already exists.
+        **Program tools — two flows:** (1) **Editing the live grid:** **getCurrentProgram** first—paths must match real order/exercises. (2) **Periodization after buildWeek:** do not use **getCurrentProgram** for paths (**hasProgram** may stay false post–**buildWeek**). Use builder context, **planProgram**, **buildWeek**, and the build-program skill index formula; **one merged** **modifyProgram** on the full duplicated doc (**totalDays × programLength** routines).
+
+        For creating or modifying workout programs, load the appropriate skill before using program tools.
         ${daysPerWeek != null && programLength != null ? `Program builder context: the user has selected ${daysPerWeek} days per week and ${programLength} weeks total. Use these when building or describing programs.` : ''}
         ${hevyProgram?.length ? 'A program currently exists; the user may want to modify it or create a new one.' : ''}
 

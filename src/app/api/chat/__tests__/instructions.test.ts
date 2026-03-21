@@ -18,6 +18,8 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("buildWeek");
             expect(prompt).toContain("modifyProgram");
             expect(prompt).toContain("getMoreInfoQuestions");
+            expect(prompt).toContain("two flows");
+            expect(prompt).toContain("periodization");
         });
 
         it("includes workflow when program is non-empty", () => {

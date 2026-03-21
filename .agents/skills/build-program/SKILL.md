@@ -26,7 +26,7 @@ After **getExerciseList**, call **buildWeek exactly once** per user request to g
 - [ ] getExerciseList with user requirements (respect program builder context for days per week / program length if available).
 - [ ] Select exercises from the returned list (id: title). Use only IDs that appear in the list.
 - [ ] **buildWeek** once: one week only — week 1 template. `routines.length` = totalDays; `dayNumber` 1..N in order. Align structure with **planProgram** (stable exercise choices within blocks when the plan says so).
-- [ ] **getCurrentProgram** after the client has duplicated week 1 (recommended) if you need to confirm layout or routine count before patching. Document root is the **full** routines array: length = `daysPerWeek × programLength`.
+- [ ] **Periodization (modifyProgram) after buildWeek:** Do **not** rely on **getCurrentProgram** for patch paths—the request snapshot may still be empty even though **buildWeek** succeeded. Compute paths for the **full** duplicated program: `totalDays × programLength` routines (see **Routine index math** below), using **planProgram**, **buildWeek** output, and program builder context.
 - [ ] **modifyProgram**: Prefer **one** call with a **single patch array** that applies all periodization (per-week RPE, reps, rest, notes, block-boundary exercise swaps). If you draft edits per week mentally, **concatenate** all operations into one patch list in **ascending path order** (see below) before calling the tool once.
 - [ ] After success: brief summary (max 5 bullets).
 
@@ -52,6 +52,7 @@ When the user wants a **bodybuilding** or **hypertrophy** program (aesthetic foc
 - **Tool input**: buildWeek expects a JSON object, not a string. Pass the structured object to the tool, not a stringified JSON.
 - **routines.length**: Must exactly equal totalDays; mismatches return a validation error from the tool.
 - **First week only**: The client duplicates the first week across all weeks. Build only one week in a single buildWeek call; do not emit multiple weeks in buildWeek.
+- **getCurrentProgram vs periodization**: After **buildWeek**, **getCurrentProgram** may still report no program—it reflects the request-time snapshot, not the new week. For multi-week patches, use the index formula and **modifyProgram** anyway; do not wait on **hasProgram**.
 - **Patch safety**: Prefer **`replace`** for periodization (RPE, reps, rest, titles). Avoid **`add` / `remove` / `move`** in bulk-generated patches unless you order operations carefully — they shift indices and break later paths.
 - **Merged patch vs modify-program skill**: The modify-program skill tells end users "one patch, one call." For **this** multi-week generation flow, you may think in per-week terms, but you must deliver **one merged patch** to the client in a single modifyProgram call when possible.
 

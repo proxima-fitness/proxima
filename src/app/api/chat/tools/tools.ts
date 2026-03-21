@@ -10,7 +10,7 @@
  *  - getExerciseList – fetches and filters available Hevy exercises
  *  - getMoreInfoQuestions – opens the pre-build questionnaire UI
  *  - planProgram – structured multi-week plan (duration, blocks, progression) before buildWeek
- *  - getCurrentProgram – returns the live program state
+ *  - getCurrentProgram – returns the program snapshot from the request (may be stale mid-turn)
  *  - buildWeek – constructs a full week of THevyRoutine days in one call
  *  - modifyProgram – applies RFC 6902 JSON Patch edits to the program
  *
@@ -91,7 +91,7 @@ export const planProgramInputSchema = z
  * @param props.excludeAreas - Comma-separated muscle groups to exclude from exercise selection.
  * @param props.excludeEquipment - Comma-separated equipment types to exclude.
  * @param props.healthIssues - Comma-separated health considerations for exercise filtering.
- * @param props.hevyProgram - The user's current Hevy routines (used by getCurrentProgram).
+ * @param props.hevyProgram - The user's current Hevy routines (request-body snapshot for getCurrentProgram).
  * @returns An object mapping tool names to Vercel AI SDK tool descriptors.
  */
 export function getTools({
@@ -338,7 +338,10 @@ export function getTools({
      * @returns { Tool }
      */
     const getCurrentProgramTool = tool({
-        description: 'Returns the current workout program state in JSON format. Use this tool to check what program currently exists before creating a new one or modifying an existing one.',
+        description:
+            'Program JSON **as of request start** (does not refresh after **buildWeek** in the same turn—may stay empty right after a new build). ' +
+            'Use for **editing** an existing grid (accurate paths/order). ' +
+            'For **post–buildWeek periodization**, do not use this for paths; use builder context, **planProgram**, **buildWeek** output, and the build-program skill index formula.',
         inputSchema: z.object({
             reason: z.string().optional().describe('Optional reason for checking the current program state'),
         }),
@@ -589,11 +592,13 @@ export function getTools({
 
     /**
      * Title: modifyProgramTool
-     * Description: Modifies the current workout program by applying a JSON Patch (RFC 6902). Call getCurrentProgram first to see the current state.
+     * Description: JSON Patch (RFC 6902). Two use cases—see tool description.
      * @returns { Tool }
      */
     const modifyProgramTool = tool({
-        description: 'Modifies the current workout program using a JSON Patch. Call getCurrentProgram first to get the current program state. The document root is the **full routines array** (length = daysPerWeek × weeks, e.g. 48 for 6 days × 8 weeks). Paths use **zero-based indices**: /0 through /N-1 for all routines. IMPORTANT: each path must end with the property name only (e.g. /0/exercises/0/sets/0/rpe) — put the new value in the "value" field, never in the path (e.g. .../rpe:7 is WRONG). The patch array can contain **any number of operations** (e.g. 160 or 1296); for program-wide edits (e.g. convert all to dumbbell), include one operation per routine (or per routine per exercise) so that every index that needs changing is targeted. Use when the user asks to change, edit, or update an existing program (e.g. rename a day, change reps/sets, add/remove an exercise). Path examples: /0 = first routine, /0/title = first routine title, /0/exercises/1 = second exercise of first routine, /0/exercises/0/sets/2/reps = reps of third set of first exercise.',
+        description:
+            'JSON Patch on the program. **(1) Edit existing grid:** **getCurrentProgram** first (paths match real order). **(2) After buildWeek:** do not rely on **getCurrentProgram**; patch the **full** routines doc (**totalDays × programLength**) via **planProgram**, **buildWeek**, and **routineIndex = (w - 1) × totalDays + (d - 1)** (build-program skill). Prefer **one** merged patch, paths ascending. ' +
+            'Root = **THevyRoutine[]**; indices **/0…/N-1** (e.g. 6×8 weeks → 48). End paths on a property name; put scalars in **value** (not in the path). Many ops OK. Examples: /0/title, /0/exercises/1, /0/exercises/0/sets/2/reps.',
         inputSchema: z.object({
             patch: z.array(jsonPatchOperationSchema).min(1).describe('Array of JSON Patch operations (add, remove, replace, move, copy, test). At least one operation required.'),
         }),
