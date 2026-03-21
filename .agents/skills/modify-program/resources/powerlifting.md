@@ -22,6 +22,25 @@ Apply these guidelines when designing or editing a powerlifting program (squat, 
 
 Only introduce as much periodisation as fits the user's level and goals; keep beginner programs simple.
 
+### RPE progression (8-week example)
+
+Use this as a default **week-level** intensity guide for **~8-week** powerlifting macrocycles (meet prep, peaking blocks). Adjust if the user specifies different constraints.
+
+| Week | Role | Main-lift RPE guidance |
+|------|------|-------------------------|
+| 1 | Base | **Max RPE 6** on hardest competition-style work |
+| 2 | Build | **~6.5** |
+| 3 | Build | **~7** |
+| 4 | Build | **~7.5** |
+| 5 | Reset / fatigue management | **~6 or ~6.5** (not a full deload unless the user asks) |
+| 6 | Bridge to peak | **~6–7** (cap hardest sets around **7** unless user wants otherwise) |
+| 7 | **Peak week** | Highest intensities / competition-specific work for the block |
+| 8 | **Deload** | Reduced load and/or volume; easy technique and recovery |
+
+- **Scope:** These RPE ceilings apply to **main SBD / primary variation** work for that week; accessories stay sub-max and purpose-driven (see **Accessory work (powerlifting)** below).
+- **Other program lengths:** For blocks that are **not** ~8 weeks, **scale or interpolate** (e.g. longer blocks: longer base or repeat a wave); for shorter blocks, **compress** the pattern—do **not** jump to peak RPE in week 1.
+- **Consistency with % and rep bands:** In **Sets, reps and loading** below, example **%** ranges are generic; for powerlifting blocks, **week-level RPE caps take precedence** when both appear. **Singles @ 90%+** and similar work belong in **late accumulation / peak**, not week 1.
+
 ---
 
 ## Exercise selection
