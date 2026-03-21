@@ -26,6 +26,14 @@ Only introduce as much periodisation as fits the user's level and goals; keep be
 
 Use this as a default **week-level** intensity guide for **~8-week** powerlifting macrocycles (meet prep, peaking blocks). Adjust if the user specifies different constraints.
 
+#### Peak week placement
+
+- **Default:** Use **one** week as the **peak** week: the **week immediately before the final week** of the program, when that final week is **deload / taper / recovery** (the usual case). Do **not** label multiple weeks as “peak” unless the user explicitly wants that.
+- **User override:** If the user specifies **which** week should be peak (e.g. meet week, test week, or no deload after), **do not** keep the fixed week numbers from the example table—**remap** week roles and RPE ceilings so intensity still progresses sensibly (base → build → optional reset/bridge → **peak** → easier final week if a deload/taper still exists).
+- **Remapping:** Preserve the **relative order** of phases (peak stays highest RPE; weeks before peak ramp up; the week after peak drops unless the program ends on peak). Compress or stretch **earlier** weeks for shorter or longer programs; **never** assign peak-level RPE to week 1 without user intent.
+
+For an **8-week** program with **week 8** as **deload**, peak is **week 7** (second-to-last). The table below is an instance of that default.
+
 | Week | Role | Main-lift RPE guidance |
 |------|------|-------------------------|
 | 1 | Base | **Max RPE 6** on hardest competition-style work |
@@ -38,7 +46,7 @@ Use this as a default **week-level** intensity guide for **~8-week** powerliftin
 | 8 | **Deload** | Reduced load and/or volume; easy technique and recovery |
 
 - **Scope:** These RPE ceilings apply to **main SBD / primary variation** work for that week; accessories stay sub-max and purpose-driven (see **Accessory work (powerlifting)** below).
-- **Other program lengths:** For blocks that are **not** ~8 weeks, **scale or interpolate** (e.g. longer blocks: longer base or repeat a wave); for shorter blocks, **compress** the pattern—do **not** jump to peak RPE in week 1.
+- **Other program lengths:** For **any** total week count **W** (1-based), when the **final** week is deload/taper, **peak week = week W − 1**. For blocks that are **not** ~8 weeks, **scale or interpolate** (e.g. longer blocks: longer base or repeat a wave); for shorter blocks, **compress** the pattern—do **not** jump to peak RPE in week 1. Do **not** place peak on the **last** week unless the user defines the last week as peak and adjusts deload/taper expectations accordingly.
 - **Consistency with % and rep bands:** In **Sets, reps and loading** below, example **%** ranges are generic; for powerlifting blocks, **week-level RPE caps take precedence** when both appear. **Singles @ 90%+** and similar work belong in **late accumulation / peak**, not week 1.
 
 ---
@@ -87,7 +95,7 @@ Space the same lift type on non-consecutive days. Adjust if the user explicitly 
 
 - **Heavy / specificity:** Include heavy work, e.g. singles @ 90%+, doubles/triples @ 80%+, sets of 5 @ 70–85%.
 - **Variation / volume:** Include some 5s, and optionally 8–10 @ 60–75%. Assistance often falls in bands like 8–12 reps, but **undulate** set counts and rep ranges by week or block—don’t use the same assistance prescription every session.
-- **Structuring:** Either (a) mix rep ranges in the week (concurrent), or (b) use blocks (e.g. 4 weeks hypertrophy, 4 weeks strength, 2–3 weeks peaking). Match to user's level and goals.
+- **Structuring:** Either (a) mix rep ranges in the week (concurrent), or (b) use blocks (e.g. 4 weeks hypertrophy, 4 weeks strength, 2–3 weeks of low-rep strength work). A **strength / low-rep block** can span multiple weeks, but the **week-level RPE “peak”** in the table above is still **one** designated week unless the user asks for multiple peak-style weeks. Match to user's level and goals.
 
 ---
 
