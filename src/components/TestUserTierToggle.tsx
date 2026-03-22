@@ -2,7 +2,7 @@
 
 /**
  * @module TestUserTierToggle
- * For test users only: dropdown to override tier (Real/Free/Pro) for feature limits. Writes to
+ * For test users only: dropdown to override tier (Real/Free/Pro/Pro+) for feature limits. Writes to
  * getTestTierOverride/setTestTierOverride and invalidates feature-limits queries.
  * Depends on: UserContext, featureLimits API, UI Select.
  * Used by: AppSidebar (when user is test user).
@@ -59,6 +59,7 @@ export function TestUserTierToggle() {
                     <SelectItem value="real">Real</SelectItem>
                     <SelectItem value="free">Free</SelectItem>
                     <SelectItem value="pro">Pro</SelectItem>
+                    <SelectItem value="pro_plus">Pro+</SelectItem>
                 </SelectContent>
             </Select>
         </div>

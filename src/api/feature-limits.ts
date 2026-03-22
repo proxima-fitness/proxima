@@ -5,10 +5,10 @@
  * exports and LLM requests. Supports three user states:
  *
  * 1. **Anonymous** — tracked entirely in localStorage (no account needed).
- * 2. **Free / Pro** — limits fetched from the `get_my_feature_limits` Supabase
- *    RPC, with usage incremented via `increment_feature_usage`.
- * 3. **Test users** — allowlisted emails that can override their tier via
- *    localStorage for QA purposes.
+ * 2. **Free / Pro / Pro+** — limits from `get_my_feature_limits` (backed by
+ *    `product_usage_limits`), with usage incremented via `increment_feature_usage`.
+ * 3. **Test users** — allowlisted emails that can override tier (Free, Pro, Pro+)
+ *    via localStorage for QA.
  *
  * Depends on: ./index (supabase client), @supabase/supabase-js (User type)
  * Used by: hooks.ts (useMyFeatureLimits), program-builder (recordLlmRequest),
@@ -29,12 +29,13 @@ const TEST_USER_EMAILS = (
 
 export const TEST_TIER_OVERRIDE_KEY = "proxima_test_tier_override";
 
-export type TestTierOverride = "free" | "pro";
+export type TestTierOverride = "free" | "pro" | "pro_plus";
 
-/** Align with public.product_usage_limits: Free 1 export, 20 LLM; Pro 10 exports, 1000 LLM (test override only) */
+/** Test overrides only — mirrors `public.product_usage_limits` (product_title): Free 1/20; Pro 2/100; Pro+ 10/1000 */
 const TIER_LIMITS: Record<TestTierOverride, { tier: string; has_active_subscription: boolean; max_monthly_exports: number; max_monthly_llm_requests: number }> = {
     free: { tier: "Free", has_active_subscription: false, max_monthly_exports: 1, max_monthly_llm_requests: 20 },
-    pro: { tier: "Pro", has_active_subscription: true, max_monthly_exports: 10, max_monthly_llm_requests: 1000 },
+    pro: { tier: "Pro", has_active_subscription: true, max_monthly_exports: 2, max_monthly_llm_requests: 100 },
+    pro_plus: { tier: "Pro+", has_active_subscription: true, max_monthly_exports: 10, max_monthly_llm_requests: 1000 },
 };
 
 /**
@@ -51,12 +52,14 @@ export function isTestUser(user: User | null | undefined): boolean {
 /**
  * Reads the current test-tier override from localStorage.
  *
- * @returns `"free"` or `"pro"` if an override is set, otherwise `null`
+ * @returns A `TestTierOverride` if set and valid, otherwise `null`
  */
 export function getTestTierOverride(): TestTierOverride | null {
     if (typeof window === "undefined") return null;
     const raw = localStorage.getItem(TEST_TIER_OVERRIDE_KEY);
-    if (raw === "free" || raw === "pro") return raw;
+    if (raw !== null && raw in TIER_LIMITS) {
+        return raw as TestTierOverride;
+    }
     return null;
 }
 

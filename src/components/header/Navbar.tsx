@@ -329,6 +329,17 @@ const NavItems = (pathname: string) => {
                                         >
                                             <span className="font-medium">Pro</span>
                                         </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onSelect={(e) => {
+                                                e.preventDefault();
+                                                setTestTierOverride("pro_plus");
+                                                setTestTierOverrideState("pro_plus");
+                                                queryClient.invalidateQueries({ queryKey: ["feature-limits", user.id] });
+                                            }}
+                                            className={`cursor-pointer ${testTierOverride === "pro_plus" ? 'bg-lightGray text-black focus:bg-lightGray hover:text-black' : 'bg-white dark:bg-darkGray dark:text-white text-black'}`}
+                                        >
+                                            <span className="font-medium">Pro+</span>
+                                        </DropdownMenuItem>
                                     </>
                                 )}
                                 <DropdownMenuSeparator />

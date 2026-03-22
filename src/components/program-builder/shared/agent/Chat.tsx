@@ -1,6 +1,7 @@
 /**
  * @module Chat
  * Chat input for program builder: suggestions, upgrade banner, PromptInput with attachments and submit/stop. Used inside Agent.
+ * Upgrade banner: shown for Free users always; for subscribed Pro only when LLM credits are 0 (CTA to Pro+); hidden for Pro+.
  * Depends on: prompt-input, attachments, suggestion, UpgradeBanner, useMyFeatureLimits. Used by: Agent.
  */
 /* eslint-disable @next/next/no-img-element */
@@ -309,7 +310,11 @@ export const Chat: React.FC<IProps> = (props) => {
   const { user } = useUserContext();
   const { data: featureLimits } = useMyFeatureLimits(user);
   const outOfCredits = featureLimits != null && featureLimits.remaining_llm_requests === 0;
-  const isPro = featureLimits?.has_active_subscription === true;
+  const isProOnlyTier =
+    featureLimits?.has_active_subscription === true && featureLimits.tier === "Pro";
+  const showUpgradeBanner =
+    featureLimits != null &&
+    (!featureLimits.has_active_subscription || (isProOnlyTier && outOfCredits));
   const showQuestions = questionsPayload != null && questionsPayload.questions?.length > 0;
 
   return (
@@ -326,8 +331,20 @@ export const Chat: React.FC<IProps> = (props) => {
           ))}
         </Suggestions>
       )}
-      {featureLimits && !isPro && (
-        <UpgradeBanner remainingRequests={featureLimits.remaining_llm_requests} totalRequests={featureLimits.max_monthly_llm_requests} user={user} />
+      {showUpgradeBanner && (
+        <UpgradeBanner
+          remainingRequests={featureLimits.remaining_llm_requests}
+          totalRequests={featureLimits.max_monthly_llm_requests}
+          user={user}
+          upgradeButtonLabel={
+            isProOnlyTier && outOfCredits ? "Upgrade to Pro+" : undefined
+          }
+          exhaustedMessage={
+            isProOnlyTier && outOfCredits
+              ? "You have run out of credits"
+              : undefined
+          }
+        />
       )}
       <div className="flex w-full">
         {showQuestions ? (
