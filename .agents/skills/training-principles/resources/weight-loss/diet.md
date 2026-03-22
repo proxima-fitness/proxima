@@ -28,7 +28,7 @@ Prefer meals that fill you up for fewer calories—large portions of lower-calor
 
 ### Prioritize protein
 
-Include a **protein source at each meal** to improve satiety and support muscle retention while dieting.
+Include a **protein source at each meal** to improve satiety and support muscle retention while dieting. Research has shown 1g protein per lean pound of body mass is the sweet spot.
 
 ### Calories first; don’t obsess over macros
 
