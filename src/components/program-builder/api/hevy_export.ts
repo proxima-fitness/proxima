@@ -146,70 +146,9 @@ export const generateHevySets = (exercise: TSavedWorkoutExercise): THevySets[] =
             duration_seconds: exercise?.time_taken ? exercise.time_taken?.[i] || 0 : exercise?.time_range && exercise.time_range?.[i]?.[1] || 0,
             rpe: exercise?.rpe ? (exercise.rpe[i] ?? null) : (exercise?.rpe_range?.[i]?.[1] ?? null),
             custom_metric: 0, // Placeholder for custom metric
+            rep_range: null, // TODO: Add rep range to Hevy sets
         });
     }
 
     return sets;
 };
-
-
-/**
- * DEPRECATED: This function is no longer used.
- * Finds the Hevy exercise ID for a Proxima exercise name using fuzzy search.
- *
- * Searches the Hevy exercise database for a matching exercise by normalizing
- * the exercise name and using fuzzy matching (Fuse.js) to find the best match.
- * Returns the Hevy exercise template ID if a match is found above the threshold.
- *
- * @param exercise_name - The name of the Proxima exercise to find a match for
- * @returns A promise that resolves to the Hevy exercise template ID if found,
- *          or undefined if no match is found above the similarity threshold
- */
-// export const getHevyExerciseIdForProximaExercise = async (exercise_name: string) => {
-
-//     const options = {
-//         isCaseSensitive: false,
-//         includeScore: false,
-//         minMatchCharLength: 2,
-//         shouldSort: true,
-//         threshold: 0.9,
-//         keys: [
-//             "normalized_title",
-//         ],
-//     };
-
-//     const hevyExercises = await getHevyExercises();
-
-//     const fuse = new Fuse(hevyExercises, options);
-//     const fuseResults = fuse?.search(normalizeExerciseTitle(exercise_name), { limit: 1 });
-//     if (!fuseResults) {
-//         return;
-//     }
-
-//     return fuseResults?.[0]?.item.id;
-// };
-
-/**
- * DEPRECATED: This function is no longer used.
- * Normalizes an exercise title for matching purposes.
- *
- * Converts the exercise title to a standardized format by:
- * - Converting to lowercase
- * - Removing parentheses
- * - Sorting words alphabetically
- * - Preserving hyphens within words
- *
- * This normalization helps improve fuzzy matching accuracy when searching
- * for exercises across different naming conventions.
- *
- * @param title - The exercise title to normalize
- * @returns The normalized exercise title with sorted words and no parentheses
- */
-// export const normalizeExerciseTitle = (title: string): string => {
-//     return title
-//     .toLowerCase()
-//     .replace(/[()]/g, '')
-//     .split(/\s+/)  // Only split on spaces, preserve hyphens
-//     .sort()
-//     .join(' ');
-// };

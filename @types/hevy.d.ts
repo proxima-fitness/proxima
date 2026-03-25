@@ -55,6 +55,12 @@ type THevySets = {
     duration_seconds: number | null; // Number of seconds logged for the set
     rpe: number | null; // The RPE logged for the set
     custom_metric: number | null; // Custom metric logged for the set (Currently only used to log floors or steps for stair machine exercises)
+    rep_range: THevyRepRange | null;
+}
+
+type THevyRepRange = {
+    start: number;
+    end: number;
 }
 
 type THevyExerciseTemplates = {

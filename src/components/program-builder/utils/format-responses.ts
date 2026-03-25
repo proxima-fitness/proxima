@@ -562,6 +562,7 @@ export const hevyAddExerciseToHevySetsConverter = (addExercise: THevyAddExercise
             duration_seconds: addExercise.repTypeValue.includes("duration_seconds") ? rep ?? null : null,
             rpe: addExercise.intensityValue.includes("rpe") ? addExercise.intensityData?.[setIndex] ?? null : null,
             custom_metric: addExercise.repTypeValue.includes("custom_metric") ? rep ?? null : null,
+            rep_range: null, // TODO: Add rep range to Hevy sets
         };
     });
 

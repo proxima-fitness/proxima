@@ -541,6 +541,7 @@ export function getTools({
                             distance_meters: null,
                             duration_seconds: null,
                             custom_metric: null,
+                            rep_range: null, // TODO: Add rep range to Hevy sets
                         }));
 
                         totalSets += sets.length;
