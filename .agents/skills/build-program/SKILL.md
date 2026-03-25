@@ -48,7 +48,8 @@ When the user wants a **bodybuilding** or **hypertrophy** program (aesthetic foc
 
 ## Gotchas
 
-- **exercise_template_id**: Must be an exact ID from the getExerciseList result. Do not invent IDs or use titles; the client validates against the list and will fail otherwise.
+- **exercise_template_id**: Must be an exact ID from the getExerciseList result (must exist in `hevy_exercise_templates`). Invented or unknown IDs cause **buildWeek** to return an error.
+- **Exercise title (per exercise)**: Must be the **same title** as in getExerciseList for that ID. The server **auto-corrects** the title from the database when you pass `exercise_template_id`, so mismatches do not break the build—but you should still copy **id** and **title** exactly from the list for clarity and to avoid invalid IDs.
 - **Tool input**: buildWeek expects a JSON object, not a string. Pass the structured object to the tool, not a stringified JSON.
 - **routines.length**: Must exactly equal totalDays; mismatches return a validation error from the tool.
 - **First week only**: The client duplicates the first week across all weeks. Build only one week in a single buildWeek call; do not emit multiple weeks in buildWeek.
@@ -73,7 +74,7 @@ This is an example JSON, don't use the example values in this to influence the v
       "exercises": [
         {
           "exercise_template_id": "<id from getExerciseList>",
-          "title": "Bench Press",
+          "title": "<exact title from getExerciseList for that id; server overwrites with canonical DB title if different>",
           "sets": [
             { "type": "normal", "reps": 8, "rpe": 8 }
           ],

@@ -11,7 +11,7 @@
  *  - getMoreInfoQuestions – opens the pre-build questionnaire UI
  *  - planProgram – structured multi-week plan (duration, blocks, progression) before buildWeek
  *  - getCurrentProgram – returns the program snapshot from the request (may be stale mid-turn)
- *  - buildWeek – constructs a full week of THevyRoutine days in one call
+ *  - buildWeek – constructs a full week of THevyRoutine days in one call (titles resolved from hevy_exercise_templates by ID)
  *  - modifyProgram – applies RFC 6902 JSON Patch edits to the program
  *
  * Depends on: ai, zod, @/components/program-builder/api/hevy, @/assets/constants
@@ -101,6 +101,18 @@ export function getTools({
     hevyProgram,
     buildWeekOnceGuard,
 }: IProps = {}) {
+
+    /** Request-scoped id → canonical title from hevy_exercise_templates (populated by getExerciseList; buildWeek uses it or refetches). */
+    const exerciseIdToTitle = new Map<string, string>();
+
+    /** When getExerciseList has not run this turn, load all templates so buildWeek can still validate IDs. */
+    async function ensureExerciseIdToTitleMap(): Promise<void> {
+        if (exerciseIdToTitle.size > 0) return;
+        const all = await getHevyExercises();
+        for (const ex of all) {
+            if (ex?.id) exerciseIdToTitle.set(ex.id, ex.title);
+        }
+    }
 
     /**
      * Title: loadSkillTool
@@ -209,6 +221,11 @@ export function getTools({
                         const primaryMuscle = ex.primary_muscle_group?.toLowerCase() || '';
                         return !excludedAreasList.some((area: string) => primaryMuscle.includes(area));
                     });
+                }
+
+                exerciseIdToTitle.clear();
+                for (const ex of filteredExercises) {
+                    if (ex?.id) exerciseIdToTitle.set(ex.id, ex.title);
                 }
 
                 // Return full exercise list for application logic
@@ -389,7 +406,11 @@ export function getTools({
                                         .describe(
                                             'The exercise ID from the getExerciseList results - MUST be an exact match',
                                         ),
-                                    title: z.string().describe('The exercise title'),
+                                    title: z
+                                        .string()
+                                        .describe(
+                                            'Display title — must match getExerciseList for this ID; server replaces it with the canonical hevy_exercise_templates title.',
+                                        ),
                                     notes: z.string().default('').describe('Notes for the exercise (optional)'),
                                     rest_seconds: z
                                         .string()
@@ -466,6 +487,33 @@ export function getTools({
                     };
                 }
 
+                await ensureExerciseIdToTitleMap();
+
+                for (const routineInput of routines) {
+                    const dayNumber = routineInput.dayNumber;
+                    if (!Array.isArray(routineInput.exercises) || routineInput.exercises.length === 0) {
+                        return {
+                            error: 'Invalid exercises',
+                            message: `At least one exercise is required for day ${dayNumber}`,
+                        };
+                    }
+                    for (const exercise of routineInput.exercises) {
+                        const templateId = (exercise.exercise_template_id ?? '').trim();
+                        if (!templateId) {
+                            return {
+                                error: 'Invalid exercise_template_id',
+                                message: `Missing or empty exercise_template_id for day ${dayNumber}. Use getExerciseList and pass a valid ID.`,
+                            };
+                        }
+                        if (!exerciseIdToTitle.has(templateId)) {
+                            return {
+                                error: 'Invalid exercise_template_id',
+                                message: `exercise_template_id "${templateId}" (day ${dayNumber}) is not in hevy_exercise_templates. Call getExerciseList and use only IDs from that list.`,
+                            };
+                        }
+                    }
+                }
+
                 const builtRoutines: THevyRoutine[] = [];
                 let totalExercises = 0;
                 let totalSets = 0;
@@ -481,6 +529,9 @@ export function getTools({
                     }
 
                     const routineExercises = routineInput.exercises.map((exercise, exerciseIndex) => {
+                        const templateId = (exercise.exercise_template_id ?? '').trim();
+                        const canonicalTitle = exerciseIdToTitle.get(templateId) ?? 'Unknown Exercise';
+
                         const sets = (exercise.sets || []).map((set, setIndex) => ({
                             index: setIndex,
                             type: set.type || 'normal',
@@ -496,10 +547,10 @@ export function getTools({
 
                         return {
                             index: exerciseIndex,
-                            title: exercise.title || 'Unknown Exercise',
+                            title: canonicalTitle,
                             notes: exercise.notes || '',
                             rest_seconds: exercise.rest_seconds || '90',
-                            exercise_template_id: exercise.exercise_template_id || '',
+                            exercise_template_id: templateId,
                             supersets_id: exercise.supersets_id ?? null,
                             reason: exercise.reason?.trim() || undefined,
                             sets,

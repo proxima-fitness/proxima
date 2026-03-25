@@ -1,9 +1,25 @@
 import { describe, it, expect, vi } from "vitest";
 
+const mockExerciseTemplates = [
+    {
+        id: "ex-1",
+        title: "Bench Press (Barbell)",
+        type: "weight_reps",
+        primary_muscle_group: "Chest",
+        secondary_muscle_groups: null,
+        is_custom: false,
+        equipment: "Barbell",
+        normalized_title: "bench press barbell",
+        gif_id: null,
+        instructions: null,
+    },
+] as const;
+
 vi.mock("@/components/program-builder/api/hevy", () => ({
-    getHevyExercises: vi.fn(async () => []),
+    getHevyExercises: vi.fn(async () => [...mockExerciseTemplates]),
 }));
 
+import { getHevyExercises } from "@/components/program-builder/api/hevy";
 import { getTools, planProgramInputSchema } from "@/app/api/chat/tools/tools";
 
 describe("chat tools.ts", () => {
@@ -15,7 +31,7 @@ describe("chat tools.ts", () => {
             exercises: [
                 {
                     exercise_template_id: "ex-1",
-                    title: "Bench Press",
+                    title: "Bench Press (Barbell)",
                     notes: "",
                     sets: [{ type: "normal" as const, reps: 10, rpe: 8 }],
                 },
@@ -44,6 +60,57 @@ describe("chat tools.ts", () => {
             expect(routine.title).toBe("Day 1");
             expect(routine.exercises).toHaveLength(1);
             expect((routine.exercises[0] as { sets: unknown[] }).sets).toHaveLength(1);
+        });
+
+        it("auto-corrects exercise title to canonical hevy_exercise_templates title", async () => {
+            const tools = getTools({});
+            const buildWeek = tools.buildWeek as {
+                execute: (args: { totalDays: number; routines: typeof minimalRoutine[] }) => Promise<unknown>;
+            };
+
+            const wrongTitleRoutine = {
+                ...minimalRoutine,
+                exercises: [
+                    {
+                        ...minimalRoutine.exercises[0],
+                        title: "Totally Wrong Name",
+                    },
+                ],
+            };
+
+            const output = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [wrongTitleRoutine],
+            })) as { error?: string; routines?: Array<{ exercises: Array<{ title: string }> }> };
+
+            expect(output.error).toBeUndefined();
+            expect(output.routines![0].exercises[0].title).toBe("Bench Press (Barbell)");
+        });
+
+        it("rejects unknown exercise_template_id", async () => {
+            const tools = getTools({});
+            const buildWeek = tools.buildWeek as {
+                execute: (args: { totalDays: number; routines: typeof minimalRoutine[] }) => Promise<unknown>;
+            };
+
+            const badIdRoutine = {
+                ...minimalRoutine,
+                exercises: [
+                    {
+                        ...minimalRoutine.exercises[0],
+                        exercise_template_id: "not-in-db",
+                        title: "Whatever",
+                    },
+                ],
+            };
+
+            const output = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [badIdRoutine],
+            })) as { error?: string; message?: string };
+
+            expect(output.error).toBe("Invalid exercise_template_id");
+            expect(output.message).toContain("not-in-db");
         });
 
         it("returns error when routines.length !== totalDays", async () => {
@@ -104,6 +171,29 @@ describe("chat tools.ts", () => {
             expect(ok.error).toBeUndefined();
             expect(buildWeekOnceGuard.locked).toBe(true);
         });
+
+        it("uses exercise id→title cache from getExerciseList when buildWeek runs after it", async () => {
+            vi.mocked(getHevyExercises).mockClear();
+
+            const tools = getTools({});
+            const getExerciseList = tools.getExerciseList as {
+                execute: (args: { userRequest: string }) => Promise<unknown>;
+            };
+            const buildWeek = tools.buildWeek as {
+                execute: (args: { totalDays: number; routines: typeof minimalRoutine[] }) => Promise<unknown>;
+            };
+
+            await getExerciseList.execute({ userRequest: "test" });
+            expect(vi.mocked(getHevyExercises).mock.calls.length).toBe(1);
+
+            const output = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [minimalRoutine],
+            })) as { error?: string };
+
+            expect(output.error).toBeUndefined();
+            expect(vi.mocked(getHevyExercises).mock.calls.length).toBe(1);
+        });
     });
 
     describe("planProgram tool execute", () => {
@@ -154,4 +244,3 @@ describe("chat tools.ts", () => {
         });
     });
 });
-
