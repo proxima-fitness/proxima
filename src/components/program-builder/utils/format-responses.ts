@@ -552,21 +552,43 @@ export const addExerciseToProgramCreatorExerciseConverter = async (addExercise: 
  * @returns Array of THevySets matching the form's set count and prescriptions
  */
 export const hevyAddExerciseToHevySetsConverter = (addExercise: THevyAddExercise): THevySets[] => {
-    const sets: THevySets[] = (addExercise.reps ?? []).map((rep, setIndex) => {
+    const n = addExercise.setTypes.length;
+    if (addExercise.repTypeValue === "reps_range") {
+        const starts = addExercise.repRangeStart ?? [];
+        const ends = addExercise.repRangeEnd ?? [];
+        return Array.from({ length: n }, (_, setIndex) => ({
+            index: setIndex,
+            type: addExercise.setTypes[setIndex],
+            weight_kg: addExercise.intensityValue === "weight_kg" ? addExercise.intensityData?.[setIndex] ?? null : null,
+            reps: null,
+            distance_meters: null,
+            duration_seconds: null,
+            rpe: addExercise.intensityValue === "rpe" ? addExercise.intensityData?.[setIndex] ?? null : null,
+            custom_metric: null,
+            rep_range: {
+                start: starts[setIndex] ?? 0,
+                end: ends[setIndex] ?? 0,
+            },
+        }));
+    }
+    const repsArr = addExercise.reps ?? [];
+    return Array.from({ length: n }, (_, setIndex) => {
+        const rep = repsArr[setIndex];
         return {
             index: setIndex,
             type: addExercise.setTypes[setIndex],
-            weight_kg: addExercise.intensityValue === "weight_kg" ? addExercise.intensityData?.[setIndex] ?? null: null,
-            reps: addExercise.repTypeValue.includes("reps") ? rep ?? null : null,
-            distance_meters: addExercise.repTypeValue.includes("distance_meters") ? rep ?? null : null,
-            duration_seconds: addExercise.repTypeValue.includes("duration_seconds") ? rep ?? null : null,
-            rpe: addExercise.intensityValue.includes("rpe") ? addExercise.intensityData?.[setIndex] ?? null : null,
-            custom_metric: addExercise.repTypeValue.includes("custom_metric") ? rep ?? null : null,
-            rep_range: null, // TODO: Add rep range to Hevy sets
+            weight_kg: addExercise.intensityValue === "weight_kg" ? addExercise.intensityData?.[setIndex] ?? null : null,
+            reps: addExercise.repTypeValue === "reps" ? rep ?? null : null,
+            distance_meters: addExercise.repTypeValue === "distance_meters" ? rep ?? null : null,
+            duration_seconds: addExercise.repTypeValue === "duration_seconds" ? rep ?? null : null,
+            rpe: addExercise.intensityValue === "rpe" ? addExercise.intensityData?.[setIndex] ?? null : null,
+            custom_metric: addExercise.repTypeValue === "custom_metric" ? rep ?? null : null,
+            rep_range: addExercise.repTypeValue === "reps_range" ? {
+                start: addExercise.repRangeStart?.[setIndex] ?? 0,
+                end: addExercise.repRangeEnd?.[setIndex] ?? 0,
+            } : null,
         };
     });
-
-    return sets;
 };
 
 /**
@@ -588,7 +610,9 @@ export const convertHevyExerciseIntoHevyAddExercise = async (exercise: THevyExer
     const firstSet = exercise.sets[0];
 
     let repTypeValue: THevyAddExercise["repTypeValue"] = "reps";
-    if (firstSet?.distance_meters !== null && firstSet?.distance_meters > 0) {
+    if (firstSet?.rep_range != null) {
+        repTypeValue = "reps_range";
+    } else if (firstSet?.distance_meters !== null && firstSet?.distance_meters > 0) {
       repTypeValue = "distance_meters";
     } else if (firstSet?.duration_seconds !== null && firstSet?.duration_seconds > 0) {
       repTypeValue = "duration_seconds";
@@ -598,22 +622,7 @@ export const convertHevyExerciseIntoHevyAddExercise = async (exercise: THevyExer
 
     // Hevy exercises use either absolute weight or RPE for intensity — never both.
     const intensityValue: THevyAddExercise["intensityValue"] =
-      firstSet?.weight_kg ?? 0 > 0 ? "weight_kg" : "rpe";
-
-    const rawReps = exercise.sets.map(set => {
-        switch (repTypeValue) {
-            case "reps":
-            return set.reps;
-            case "distance_meters":
-            return set.distance_meters;
-            case "duration_seconds":
-            return set.duration_seconds;
-            case "custom_metric":
-            return set.custom_metric;
-        }
-    });
-    const filteredReps = rawReps.filter((val): val is number => val !== null && val !== undefined);
-    const reps: number[] | null = filteredReps.length > 0 ? filteredReps : null;
+      (firstSet?.weight_kg ?? 0) > 0 ? "weight_kg" : "rpe";
 
     const rawIntensityValues = exercise.sets.map(set => intensityValue === "weight_kg" ? set.weight_kg : set.rpe);
     const filteredIntensityData = rawIntensityValues.filter(
@@ -635,6 +644,37 @@ export const convertHevyExerciseIntoHevyAddExercise = async (exercise: THevyExer
     if (!exerciseTemplate) {
         throw new Error(`Exercise template with ID ${exercise.exercise_template_id} not found`);
     }
+
+    if (repTypeValue === "reps_range") {
+        const repRangeStart = exercise.sets.map((s) => s.rep_range?.start ?? 0);
+        const repRangeEnd = exercise.sets.map((s) => s.rep_range?.end ?? 0);
+        return {
+            selectedExercise: exerciseTemplate,
+            repTypeValue: "reps_range",
+            intensityValue,
+            reps: null,
+            repRangeStart,
+            repRangeEnd,
+            intensityData,
+            restSeconds: exercise.rest_seconds,
+            setTypes: exercise.sets.map(set => (set.type) as ("normal" | "warmup" | "dropset" | "failure")),
+        };
+    }
+
+    const rawReps = exercise.sets.map(set => {
+        switch (repTypeValue) {
+            case "reps":
+            return set.reps;
+            case "distance_meters":
+            return set.distance_meters;
+            case "duration_seconds":
+            return set.duration_seconds;
+            case "custom_metric":
+            return set.custom_metric;
+        }
+    });
+    const filteredReps = rawReps.filter((val): val is number => val !== null && val !== undefined);
+    const reps: number[] | null = filteredReps.length > 0 ? filteredReps : null;
 
     return {
         selectedExercise: exerciseTemplate,

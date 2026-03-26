@@ -63,6 +63,27 @@ const getSupersetColor = (supersetId: number | null | undefined): string | null 
     return SUPERSET_COLORS[supersetId % SUPERSET_COLORS.length];
 };
 
+const repRangesEqual = (
+    a: THevyRepRange | null | undefined,
+    b: THevyRepRange | null | undefined,
+): boolean => {
+    if (a == null || b == null) {
+        return a === b;
+    }
+    return a.start === b.start && a.end === b.end;
+};
+
+const formatHevyRepRange = (rr: THevyRepRange): string => `${rr.start}-${rr.end}`;
+
+const setTypeBadgeClass = (setType: string): string =>
+    setType === "warmup"
+        ? "text-white bg-gray-300 px-1 rounded-sm"
+        : setType === "dropset"
+          ? "text-white bg-[#33bbcf] px-1 rounded-sm"
+          : setType === "failure"
+            ? "text-white bg-[#01579B] px-1 rounded-sm"
+            : "";
+
 /**
  * Renders the exercise rows for one day with thumbnails, sets/reps/intensity, superset styling, tooltips, and edit/superset actions.
  */
@@ -195,19 +216,51 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             {sets.length}
                                         </div>
                                         <div className="min-w-[33%] flex flex-col justify-center items-center">
-                                            {sets[0] && sets[0].reps !== null && sets[0].reps > 0 && (
-                                                (sets.every((reps, i, arr) => reps.reps === arr[0].reps) && sets.every((reps, i, arr) => reps.type === arr[0].type)) ? (
-                                                    <div className="flex flex-row">
-                                                        {sets[0].reps}
-                                                    </div>
-                                                ) : (
-                                                    sets.map((set, index) => (
-                                                        <div key={index} className={`flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
-                                                            {set.reps}
-                                                        </div>
-                                                    ))
-                                                )
-                                            )}
+                                            {sets[0] &&
+                                                sets.some(
+                                                    (s) =>
+                                                        s.rep_range != null ||
+                                                        (s.reps !== null && s.reps > 0),
+                                                ) &&
+                                                (() => {
+                                                    const first = sets[0];
+                                                    const allSameType = sets.every((s) => s.type === first.type);
+                                                    const allRange =
+                                                        sets.every((s) => s.rep_range != null) &&
+                                                        sets.every((s) => repRangesEqual(s.rep_range, first.rep_range));
+                                                    const allFixed =
+                                                        sets.every((s) => s.rep_range == null) &&
+                                                        sets.every((s) => s.reps !== null && s.reps > 0) &&
+                                                        sets.every((s) => s.reps === first.reps);
+                                                    if (allSameType && (allRange || allFixed)) {
+                                                        return (
+                                                            <div className="flex flex-row">
+                                                                {allRange && first.rep_range
+                                                                    ? formatHevyRepRange(first.rep_range)
+                                                                    : first.reps}
+                                                            </div>
+                                                        );
+                                                    }
+                                                    return sets.map((set, index) => {
+                                                        const label =
+                                                            set.rep_range != null
+                                                                ? formatHevyRepRange(set.rep_range)
+                                                                : set.reps !== null && set.reps > 0
+                                                                  ? String(set.reps)
+                                                                  : null;
+                                                        if (label == null) {
+                                                            return null;
+                                                        }
+                                                        return (
+                                                            <div
+                                                                key={index}
+                                                                className={`flex flex-row ${setTypeBadgeClass(set.type)}`}
+                                                            >
+                                                                {label}
+                                                            </div>
+                                                        );
+                                                    });
+                                                })()}
                                             {sets[0] && sets[0].distance_meters !== null && sets[0].distance_meters > 0 && (
                                                 (sets.every((reps, i, arr) => reps.distance_meters === arr[0].distance_meters) && sets.every((reps, i, arr) => reps.type === arr[0].type)) ? (
                                                     <div className="flex flex-row">{sets[0].distance_meters} m</div>
