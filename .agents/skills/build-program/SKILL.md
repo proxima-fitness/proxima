@@ -59,11 +59,11 @@ When the user wants a **bodybuilding** or **hypertrophy** program (aesthetic foc
 
 ## Rep ranges
 
-For rep-based exercises, **always prefer `rep_range`** over a fixed `reps` value. `rep_range` is an object with `start` and `end` (e.g. `{start: 8, end: 12}` for an 8-12 rep range). When you provide `rep_range`, also set `reps` as a fallback (typically the upper bound of the range, e.g. `12`).
+`rep_range` is an object with `start` and `end` (e.g. `{start: 8, end: 12}` for an 8-12 rep range). **`rep_range` supersedes `reps` in the UI** — when `rep_range` is non-null the UI displays the range and ignores `reps`.
 
-- Use `rep_range` for all hypertrophy/bodybuilding sets and most strength accessories.
-- Only use a fixed `reps` without `rep_range` when the prescription genuinely requires an exact rep count (e.g. powerlifting singles/doubles/triples, AMRAP-style sets).
-- When periodizing via **modifyProgram**, patch `rep_range` (e.g. `/0/exercises/0/sets/0/rep_range`) with the full `{start, end}` object, not just `start` or `end` individually.
+- Use `rep_range` for all hypertrophy/bodybuilding sets and most strength accessories where a true range is intended (e.g. 8-12, 10-15). When you provide `rep_range`, also set `reps` as a fallback (typically the upper bound of the range, e.g. `12`).
+- **Fixed-rep rule:** When the prescription is a single fixed rep count (e.g. 5x5, triples, doubles, singles, AMRAP-style sets), set `rep_range` to **null** and only use `reps`. **NEVER** emit a degenerate `rep_range` where `start === end` (e.g. `{start: 5, end: 5}`). That will display as "5-5" in the UI which is incorrect. Instead use `rep_range: null, reps: 5`.
+- When periodizing via **modifyProgram**, patch `rep_range` (e.g. `/0/exercises/0/sets/0/rep_range`) with the full `{start, end}` object, not just `start` or `end` individually. To change from a range to fixed reps, patch `rep_range` to `null` and patch `reps` to the fixed value.
 
 ## buildWeek shape
 

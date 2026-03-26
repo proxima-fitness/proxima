@@ -44,7 +44,10 @@ When the user's program or requested changes are **bodybuilding- or hypertrophy-
 
 ## Rep ranges
 
-`rep_range` is a first-class field on every set (`{start, end}`). When the program uses rep ranges, **patch `rep_range`** (the full object) rather than only patching `reps`. Example: to change a set from 8-12 to 10-15, use `{ "op": "replace", "path": "/0/exercises/0/sets/0/rep_range", "value": { "start": 10, "end": 15 } }`.
+`rep_range` is a first-class field on every set (`{start, end}`). **`rep_range` supersedes `reps` in the UI** — when `rep_range` is non-null the UI displays the range and ignores `reps`.
+
+- When the program uses rep ranges, **patch `rep_range`** (the full object) rather than only patching `reps`. Example: to change a set from 8-12 to 10-15, use `{ "op": "replace", "path": "/0/exercises/0/sets/0/rep_range", "value": { "start": 10, "end": 15 } }`.
+- **Fixed-rep rule:** When changing to a fixed rep count (e.g. 5x5, singles, doubles, triples), patch `rep_range` to **null** and patch `reps` to the fixed value. **NEVER** emit a degenerate `rep_range` where `start === end` (e.g. `{start: 5, end: 5}`). That will display as "5-5" in the UI which is incorrect.
 
 ## Path examples
 

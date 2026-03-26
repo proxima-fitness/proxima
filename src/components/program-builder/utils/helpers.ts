@@ -847,6 +847,31 @@ export const prepareModifyPatchOperations = (ops: Operation[]): Operation[] =>
     normalizePatchOps(normalizePatchPaths(ops));
 
 /**
+ * Coerces degenerate rep_range objects (start === end) to null across an entire
+ * program, setting reps to the fixed value when it wasn't already set.
+ * rep_range supersedes reps in the UI, so {start:5,end:5} would display "5-5".
+ */
+export const normalizeRepRanges = (routines: THevyRoutine[]): THevyRoutine[] => {
+    let mutated = false;
+    for (const routine of routines) {
+        for (const exercise of routine.exercises ?? []) {
+            for (const set of exercise.sets ?? []) {
+                if (
+                    set.rep_range != null &&
+                    set.rep_range.start === set.rep_range.end
+                ) {
+                    const fixedReps = set.rep_range.start;
+                    set.rep_range = null;
+                    if (set.reps == null) set.reps = fixedReps;
+                    mutated = true;
+                }
+            }
+        }
+    }
+    return mutated ? [...routines] : routines;
+};
+
+/**
  * Assistant messages in the current user turn (everything after the last user message).
  */
 export const getAssistantMessagesSinceLastUser = (messages: UIMessage[]): UIMessage[] => {
@@ -1019,6 +1044,8 @@ export const tryCommitAtomicBuildWeekAndMergedPatches = (
         }
     }
 
+    doc = normalizeRepRanges(doc);
+
     const inversePatch = compare(doc as object, hevyProgram as object);
     const recordUndo = hevyProgram.length > 0;
     applyPatchWithUndo(doc, inversePatch, recordUndo);
@@ -1089,6 +1116,8 @@ export const applyModifyProgramPatchesFromMessages = (
     }
 
     if (keysSucceeded.length === 0) return false;
+
+    simulation = normalizeRepRanges(simulation);
 
     const inversePatch = compare(simulation as object, hevyProgram as object);
     applyPatchWithUndo(simulation, inversePatch, true);
