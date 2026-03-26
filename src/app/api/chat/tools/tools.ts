@@ -186,7 +186,7 @@ export function getTools({
      */
     const getExerciseListTool = tool({
 
-        description: 'Provides access to all available Hevy exercises for building workout programs. Use this tool when users request workout programs. The tool returns a reference list of exercises (ID and title only) - you should then return a minimal workout structure (TTextToJsonResponse format) with just exercise IDs, titles, sets, reps, and RPE.',
+        description: 'Provides access to all available Hevy exercises for building workout programs. Use this tool when users request workout programs. The tool returns a reference list of exercises (ID and title only) - you should then return a minimal workout structure with exercise IDs, titles, sets, rep_range (preferred) or reps, and RPE.',
         inputSchema: z.object({
             userRequest: z.string().describe('The user\'s workout request or description'),
             excludeAreas: z.string().optional().describe('Comma-separated list of muscle groups to exclude'),
@@ -384,7 +384,8 @@ export function getTools({
             'Builds an entire week of routines/days for the workout program in a SINGLE tool invocation (all training days in one payload). ' +
             'Call **buildWeek at most once** per user request to generate that week—after it succeeds, use **modifyProgram** only for any changes (never a second buildWeek to fix or tweak). ' +
             'Provide all days in order (Day 1, Day 2, …) so the UI can duplicate the first week across the remaining weeks. ' +
-            'IMPORTANT: Always provide a valid JSON object with the required fields.',
+            'IMPORTANT: Always provide a valid JSON object with the required fields. ' +
+            'For rep-based exercises, **prefer rep_range** (e.g. {start:8, end:12}) over a fixed reps value. Set reps as a fallback alongside rep_range.',
         inputSchema: z.object({
             totalDays: z.number().min(1).max(7).describe('Total number of days in the program week (1–7).'),
             routines: z
@@ -436,7 +437,18 @@ export function getTools({
                                                 type: z
                                                     .enum(['normal', 'warmup', 'dropset', 'failure'])
                                                     .describe('The type of set'),
-                                                reps: z.number().describe('Number of reps'),
+                                                reps: z.number().nullable().describe(
+                                                    'Fixed rep count. Provide as fallback when rep_range is set, or as the sole prescription when rep_range is null.',
+                                                ),
+                                                rep_range: z
+                                                    .object({
+                                                        start: z.number().int().min(1).describe('Lower bound of the rep range (e.g. 8 in 8-12)'),
+                                                        end: z.number().int().min(1).describe('Upper bound of the rep range (e.g. 12 in 8-12)'),
+                                                    })
+                                                    .nullable()
+                                                    .describe(
+                                                        'Preferred: rep range for this set (e.g. {start:8, end:12}). Use rep_range for hypertrophy/bodybuilding sets. When provided, reps serves as a fallback value only.',
+                                                    ),
                                                 rpe: z
                                                     .number()
                                                     .min(1)
@@ -535,13 +547,13 @@ export function getTools({
                         const sets = (exercise.sets || []).map((set, setIndex) => ({
                             index: setIndex,
                             type: set.type || 'normal',
-                            reps: set.reps ?? 10,
+                            reps: set.reps ?? null,
                             weight_kg: set.weight_kg ?? null,
                             rpe: set.rpe ?? null,
                             distance_meters: null,
                             duration_seconds: null,
                             custom_metric: null,
-                            rep_range: null, // TODO: Add rep range to Hevy sets
+                            rep_range: set.rep_range ?? null,
                         }));
 
                         totalSets += sets.length;

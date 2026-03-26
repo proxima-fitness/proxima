@@ -372,7 +372,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
     return (
         <div className="relative w-full min-w-0 overflow-x-hidden bg-muted border border-border rounded-lg p-6 sm:p-8">
             {showConfetti && confettiSize.width > 0 && confettiSize.height > 0 && (
-                <div className="pointer-events-none fixed inset-0 z-[100]" aria-hidden>
+                <div className="pointer-events-none fixed inset-0 z-100" aria-hidden>
                     <Confetti
                         key={confettiNonce}
                         width={confettiSize.width}
