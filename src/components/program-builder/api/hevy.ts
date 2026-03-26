@@ -424,6 +424,16 @@ export const postHevyRoutineProgram = async (
                     }
 
                     const reps = exercise.sets?.map((set) => set.reps) ?? null;
+                    const repsRangeFromSets =
+                        exercise.sets?.map((set) =>
+                            set.rep_range != null
+                                ? ([set.rep_range.start, set.rep_range.end] as [number, number])
+                                : null,
+                        ) ?? null;
+                    const reps_range =
+                        repsRangeFromSets == null || repsRangeFromSets.every((r) => r == null)
+                            ? null
+                            : repsRangeFromSets;
                     const timeTaken = exercise.sets?.map((set) => set.duration_seconds) ?? null;
                     const weights = exercise.sets?.map((set) => set.weight_kg) ?? null;
                     const rpe = exercise.sets?.map((set) => set.rpe) ?? null;
@@ -432,7 +442,7 @@ export const postHevyRoutineProgram = async (
                         schedule_id: scheduleId,
                         exercise_id: exerciseId,
                         reps: reps,
-                        reps_range: null,
+                        reps_range,
                         reps_max: null,
                         amrap: null,
                         time_taken: timeTaken?.[0] === null ? null : timeTaken,

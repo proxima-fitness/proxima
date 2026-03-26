@@ -33,7 +33,7 @@ describe("chat tools.ts", () => {
                     exercise_template_id: "ex-1",
                     title: "Bench Press (Barbell)",
                     notes: "",
-                    sets: [{ type: "normal" as const, reps: 10, rpe: 8 }],
+                    sets: [{ type: "normal" as const, reps: 12, rep_range: { start: 8, end: 12 }, rpe: 8 }],
                 },
             ],
         };
@@ -55,11 +55,42 @@ describe("chat tools.ts", () => {
             expect(output.exerciseCount).toBe(1);
             expect(output.setCount).toBe(1);
 
-            const routine = output.routines![0] as { id: string; title: string; exercises: unknown[] };
+            const routine = output.routines![0] as { id: string; title: string; exercises: Array<{ sets: Array<{ reps: number | null; rep_range: { start: number; end: number } | null }> }> };
             expect(routine.id).toBe("1");
             expect(routine.title).toBe("Day 1");
             expect(routine.exercises).toHaveLength(1);
-            expect((routine.exercises[0] as { sets: unknown[] }).sets).toHaveLength(1);
+            expect(routine.exercises[0].sets).toHaveLength(1);
+
+            const builtSet = routine.exercises[0].sets[0];
+            expect(builtSet.rep_range).toEqual({ start: 8, end: 12 });
+            expect(builtSet.reps).toBe(12);
+        });
+
+        it("accepts fixed reps without rep_range (fallback)", async () => {
+            const tools = getTools({});
+            const buildWeek = tools.buildWeek as {
+                execute: (args: { totalDays: number; routines: typeof minimalRoutine[] }) => Promise<unknown>;
+            };
+
+            const fixedRepsRoutine = {
+                ...minimalRoutine,
+                exercises: [
+                    {
+                        ...minimalRoutine.exercises[0],
+                        sets: [{ type: "normal" as const, reps: 5, rep_range: null, rpe: 9 }],
+                    },
+                ],
+            };
+
+            const output = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [fixedRepsRoutine],
+            })) as { error?: string; routines?: Array<{ exercises: Array<{ sets: Array<{ reps: number | null; rep_range: unknown }> }> }> };
+
+            expect(output.error).toBeUndefined();
+            const builtSet = output.routines![0].exercises[0].sets[0];
+            expect(builtSet.reps).toBe(5);
+            expect(builtSet.rep_range).toBeNull();
         });
 
         it("auto-corrects exercise title to canonical hevy_exercise_templates title", async () => {

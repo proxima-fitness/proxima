@@ -86,8 +86,10 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
     const [ editingSetWeight, setEditingSetWeight ] = useState([false,false,false,false]);
     const [ restSeconds, setRestSeconds ] = useState(isEditExercise ? addExerciseDialog.editExercise?.restSeconds ?? "0" : "0");
 
-    // 3 SECTIONS: SETS, REPS, INTENSITY. reps and intensity are inputs.
+    // 3 SECTIONS: SETS, REPS, INTENSITY. Row count follows `setTypes`; reps or rep-range inputs per row.
     const [ reps, setReps ] = useState<number[] | undefined>(isEditExercise ? undefined : [8,8,8,8]);
+    const [ repRangeStart, setRepRangeStart ] = useState<number[] | undefined>(undefined);
+    const [ repRangeEnd, setRepRangeEnd ] = useState<number[] | undefined>(undefined);
     const [ setTypes, setSetTypes ] = useState<("normal" | "warmup" | "dropset" | "failure")[]>(isEditExercise ? addExerciseDialog.editExercise?.setTypes ?? ["normal","normal","normal","normal"] : ["normal","normal","normal","normal"]);
 
     const [ intensityData, setIntensityData ] = useState<number[] | undefined>(isEditExercise ? undefined : [9,9,9,9]);
@@ -132,6 +134,22 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
         setReps(updatedReps);
 	};
 
+    const handleSaveRepRangeStart = (value: string | number, index: number) => {
+        setRepRangeStart((prev) => {
+            const next = [...(prev ?? Array(setTypes.length).fill(8))];
+            next[index] = Number(value);
+            return next;
+        });
+    };
+
+    const handleSaveRepRangeEnd = (value: string | number, index: number) => {
+        setRepRangeEnd((prev) => {
+            const next = [...(prev ?? Array(setTypes.length).fill(12))];
+            next[index] = Number(value);
+            return next;
+        });
+    };
+
 
     const handleSave = async () => {
         if (!selectedExercise || selectedExercise.title === "") {
@@ -139,8 +157,19 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
             return;
         }
 
-        const exerciseData = { selectedExercise, repTypeValue, intensityValue, reps, intensityData, setTypes, restSeconds };
-        const newExercise = (exerciseData as THevyAddExercise);
+        const isRepRange = repTypeValue === "reps_range";
+        const exerciseData: THevyAddExercise = {
+            selectedExercise,
+            repTypeValue: (repTypeValue ?? "reps") as THevyAddExercise["repTypeValue"],
+            intensityValue: intensityValue as THevyAddExercise["intensityValue"],
+            reps: isRepRange ? null : reps ?? null,
+            repRangeStart: isRepRange ? (repRangeStart ?? Array(setTypes.length).fill(8)) : null,
+            repRangeEnd: isRepRange ? (repRangeEnd ?? Array(setTypes.length).fill(12)) : null,
+            intensityData: intensityData ?? null,
+            setTypes,
+            restSeconds,
+        };
+        const newExercise = exerciseData;
 
         if (isEditExercise) {
             handleEditExercise({isOpen: false, folder_id: addExerciseDialog.folder_id, dayOrder: addExerciseDialog.dayOrder, exerciseIndex: addExerciseDialog.exerciseIndex ,editExercise: newExercise});
@@ -152,43 +181,56 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
     };
 
     const deleteSet = (index: number) => {
-        if (reps) {
-            setReps(reps.filter((_: number, i: number) => i !== index));
-            setSetTypes(setTypes.filter((_: string, i: number) => i !== index));
-        }
-        if (intensityData) {
-            setIntensityData(intensityData.filter((_: number, i: number) => i !== index));
-        }
+        setSetTypes((prev) => prev.filter((_, i) => i !== index));
+        setReps((prev) => prev?.filter((_, i) => i !== index));
+        setRepRangeStart((prev) => prev?.filter((_, i) => i !== index));
+        setRepRangeEnd((prev) => prev?.filter((_, i) => i !== index));
+        setIntensityData((prev) => prev?.filter((_, i) => i !== index));
     };
 
     const addSet = () => {
-        if (!reps) {
-            setReps([8]);
-        } else {
-            if (reps.length < 10)
-                {
-                    setReps([...reps, 8]);
-                    setSetTypes([...setTypes, "normal"]);
-                }
+        if (setTypes.length >= 10) {
+            return;
         }
-        if (!intensityData) {
-            setIntensityData([9]);
+        setSetTypes((prev) => [...prev, "normal"]);
+        setIntensityData((prev) => [...(prev ?? [9, 9, 9, 9]), 9]);
+        if ((repTypeValue ?? "reps") === "reps_range") {
+            setRepRangeStart((prev) => [...(prev ?? Array(setTypes.length).fill(8)), 8]);
+            setRepRangeEnd((prev) => [...(prev ?? Array(setTypes.length).fill(12)), 12]);
         } else {
-            if (intensityData.length < 10) setIntensityData([...intensityData, 9]);
+            setReps((prev) => [...(prev ?? [8, 8, 8, 8]), 8]);
         }
     };
 
     const handleSwapRepTypeValue = (value: string) => {
         setRepTypeValue(value);
-        setReps([8,8,8,8]);
+        const n = setTypes.length;
+        if (value === "reps_range") {
+            setRepRangeStart(Array.from({ length: n }, () => 8));
+            setRepRangeEnd(Array.from({ length: n }, () => 12));
+            setReps(undefined);
+        } else {
+            setReps(Array.from({ length: n }, () => 8));
+            setRepRangeStart(undefined);
+            setRepRangeEnd(undefined);
+        }
     };
 
     useEffect(() => {
         const getExercise = async () => {
             const exercise = addExerciseDialog?.editExercise?.selectedExercise;
-            setRepTypeValue(addExerciseDialog?.editExercise?.repTypeValue ?? hevy_rep_types[0].value);
+            const rt = addExerciseDialog?.editExercise?.repTypeValue ?? hevy_rep_types[0].value;
+            setRepTypeValue(rt);
             setIntensityData(addExerciseDialog?.editExercise?.intensityData ?? [9,9,9,9]);
-            setReps(addExerciseDialog?.editExercise?.reps ?? [8,8,8,8]);
+            if (rt === "reps_range") {
+                setReps(undefined);
+                setRepRangeStart(addExerciseDialog?.editExercise?.repRangeStart ?? [8,8,8,8]);
+                setRepRangeEnd(addExerciseDialog?.editExercise?.repRangeEnd ?? [12,12,12,12]);
+            } else {
+                setReps(addExerciseDialog?.editExercise?.reps ?? [8,8,8,8]);
+                setRepRangeStart(undefined);
+                setRepRangeEnd(undefined);
+            }
             setIntensityValue(addExerciseDialog?.editExercise?.intensityValue ?? hevy_intensities[0].value);
 
             if (exercise) {
@@ -200,7 +242,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
             setIsEditing(false);
             getExercise();
         }
-    }, [isEditExercise, addExerciseDialog?.editExercise?.intensityData, addExerciseDialog?.editExercise?.intensityValue, addExerciseDialog?.editExercise?.repTypeValue, addExerciseDialog?.editExercise?.reps, addExerciseDialog?.editExercise?.selectedExercise?.id, addExerciseDialog?.editExercise?.selectedExercise]);
+    }, [isEditExercise, addExerciseDialog?.editExercise?.intensityData, addExerciseDialog?.editExercise?.intensityValue, addExerciseDialog?.editExercise?.repTypeValue, addExerciseDialog?.editExercise?.repRangeStart, addExerciseDialog?.editExercise?.repRangeEnd, addExerciseDialog?.editExercise?.reps, addExerciseDialog?.editExercise?.selectedExercise?.id, addExerciseDialog?.editExercise?.selectedExercise]);
 
     const dialogTitle = `Add Exercise to Week ${addExerciseDialog.folder_id + 1} Day ${addExerciseDialog.dayOrder}`;
 
@@ -227,7 +269,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                             Set
                         </div>
                         <div className="w-[28%]">
-                            <Select value={ repTypeValue } aria-label="rep type" onValueChange={ (value) => handleSwapRepTypeValue(value) }>
+                            <Select value={ repTypeValue ?? "reps" } aria-label="rep type" onValueChange={ (value) => handleSwapRepTypeValue(value) }>
                                 <SelectTrigger  className="h-10">
                                     <SelectValue placeholder="Reps" />
                                 </SelectTrigger>
@@ -258,7 +300,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                         </div>
                     </div>
 
-                    { (reps && reps.length > 0) && reps?.map((rep: string | number, index: number) => (
+                    { setTypes.length > 0 && setTypes.map((_, index: number) => (
                         <div
                             key={ "Set" + index }
                             className={ `flex flex-row justify-center gap-2 items-center w-full py-1 pl-3 ${ setTypes[index] === "warmup" ? "bg-gray-300 dark:text-black" : setTypes[index] === "dropset" ? "bg-[#33bbcf]" : setTypes[index] === "failure" ? "bg-[#01579B]" : "" }` }>
@@ -266,6 +308,42 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                                 { index + 1 }
                             </div>
                             <div className="w-[28%]">
+                                { repTypeValue === "reps_range" ? (
+                                    <div className="flex flex-row gap-2 w-full">
+                                        <Input
+                                            type="number"
+                                            placeholder="Start"
+                                            inputMode="numeric"
+                                            autoComplete="off"
+                                            className="text-base sm:text-sm flex-1 min-w-0"
+                                            style={{ fontSize: isMobile ? '16px' : undefined }}
+                                            value={ repRangeStart?.[index] ?? "" }
+                                            onInput={ (event) => handleSaveRepRangeStart(event.currentTarget.value ?? "0", index) }
+                                            onBlur={ (event) => handleSaveRepRangeStart(event.target.value ?? "0", index) }
+                                            onKeyDown={ (e) => {
+                                                if (e.key === "Enter") {
+                                                    handleSaveRepRangeStart((e.target as HTMLInputElement).value, index);
+                                                }
+                                            } }
+                                        />
+                                        <Input
+                                            type="number"
+                                            placeholder="End"
+                                            inputMode="numeric"
+                                            autoComplete="off"
+                                            className="text-base sm:text-sm flex-1 min-w-0"
+                                            style={{ fontSize: isMobile ? '16px' : undefined }}
+                                            value={ repRangeEnd?.[index] ?? "" }
+                                            onInput={ (event) => handleSaveRepRangeEnd(event.currentTarget.value ?? "0", index) }
+                                            onBlur={ (event) => handleSaveRepRangeEnd(event.target.value ?? "0", index) }
+                                            onKeyDown={ (e) => {
+                                                if (e.key === "Enter") {
+                                                    handleSaveRepRangeEnd((e.target as HTMLInputElement).value, index);
+                                                }
+                                            } }
+                                        />
+                                    </div>
+                                ) : (
                                 <Input
                                     type="number"
                                     placeholder={ (repTypeValue === "duration_seconds") ? "Secs" : repTypeValue === "distance_meters" ? "Meters" : "Reps" }
@@ -273,7 +351,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                                     autoComplete="off"
                                     className="text-base sm:text-sm"
                                     style={{ fontSize: isMobile ? '16px' : undefined }}
-                                    value={ rep || '' }
+                                    value={ reps?.[index] ?? "" }
                                     onInput={ (event) => handleSaveReps(event.currentTarget.value ?? "0", index) }
                                     onBlur={ (event) => handleSaveReps(event.target.value ?? "0", index) }
                                     onKeyDown={ (e) => {
@@ -282,6 +360,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                                     }
                                     } }
                                 />
+                                ) }
                             </div>
                             <div className="w-[28%]">
                                 <Input

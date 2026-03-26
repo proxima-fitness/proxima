@@ -57,6 +57,14 @@ When the user wants a **bodybuilding** or **hypertrophy** program (aesthetic foc
 - **Patch safety**: Prefer **`replace`** for periodization (RPE, reps, rest, titles). Avoid **`add` / `remove` / `move`** in bulk-generated patches unless you order operations carefully — they shift indices and break later paths.
 - **Merged patch vs modify-program skill**: The modify-program skill tells end users "one patch, one call." For **this** multi-week generation flow, you may think in per-week terms, but you must deliver **one merged patch** to the client in a single modifyProgram call when possible.
 
+## Rep ranges
+
+For rep-based exercises, **always prefer `rep_range`** over a fixed `reps` value. `rep_range` is an object with `start` and `end` (e.g. `{start: 8, end: 12}` for an 8-12 rep range). When you provide `rep_range`, also set `reps` as a fallback (typically the upper bound of the range, e.g. `12`).
+
+- Use `rep_range` for all hypertrophy/bodybuilding sets and most strength accessories.
+- Only use a fixed `reps` without `rep_range` when the prescription genuinely requires an exact rep count (e.g. powerlifting singles/doubles/triples, AMRAP-style sets).
+- When periodizing via **modifyProgram**, patch `rep_range` (e.g. `/0/exercises/0/sets/0/rep_range`) with the full `{start, end}` object, not just `start` or `end` individually.
+
 ## buildWeek shape
 
 Use this structure. Set type must be one of "normal", "warmup", "dropset", "failure". Optional fields (rest_seconds, supersets_id, weight_kg) have defaults in the tool schema.
@@ -76,7 +84,7 @@ This is an example JSON, don't use the example values in this to influence the v
           "exercise_template_id": "<id from getExerciseList>",
           "title": "<exact title from getExerciseList for that id; server overwrites with canonical DB title if different>",
           "sets": [
-            { "type": "normal", "reps": 8, "rpe": 8 }
+            { "type": "normal", "reps": 12, "rep_range": { "start": 8, "end": 12 }, "rpe": 8 }
           ],
           "reason": "Primary horizontal press for chest development."
         }

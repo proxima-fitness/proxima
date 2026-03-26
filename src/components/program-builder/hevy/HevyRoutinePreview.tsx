@@ -13,6 +13,18 @@ import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
 import { Card } from "@/components/ui/card";
 
+const repRangesEqual = (
+    a: THevyRepRange | null | undefined,
+    b: THevyRepRange | null | undefined,
+): boolean => {
+    if (a == null || b == null) {
+        return a === b;
+    }
+    return a.start === b.start && a.end === b.end;
+};
+
+const formatHevyRepRange = (rr: THevyRepRange): string => `${rr.start}-${rr.end}`;
+
 /** Props for the read-only program preview. */
 interface IProps {
     /** Program as weeks (outer array) and days per week (inner array); de-flattened from flat hevyProgram. */
@@ -82,15 +94,52 @@ export const HevyRoutinePreview: React.FC<IProps> = (props) => {
                                                     { exercise.sets.length }
                                                 </div>
                                                 <div className="min-w-[33%] flex flex-col justify-center items-center">
-                                                    { exercise.sets[0] && exercise.sets[0].reps !== null && exercise.sets[0].reps > 0 && (
-                                                        exercise.sets.every((reps, i, arr) => reps.reps === arr[0].reps) ? (
-                                                            <div>{exercise.sets[0].reps}</div>
-                                                        ) : (
-                                                            exercise.sets.map((set, index) => (
-                                                                <div key={ index } className={ set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : "" }>{ set.reps }</div>
-                                                            ))
-                                                        )
-                                                    )}
+                                                    { exercise.sets[0] &&
+                                                        exercise.sets.some(
+                                                            (s) =>
+                                                                s.rep_range != null ||
+                                                                (s.reps !== null && s.reps > 0),
+                                                        ) &&
+                                                        (() => {
+                                                            const sets = exercise.sets;
+                                                            const first = sets[0];
+                                                            const allSameType = sets.every((s) => s.type === first.type);
+                                                            const allRange =
+                                                                sets.every((s) => s.rep_range != null) &&
+                                                                sets.every((s) => repRangesEqual(s.rep_range, first.rep_range));
+                                                            const allFixed =
+                                                                sets.every((s) => s.rep_range == null) &&
+                                                                sets.every((s) => s.reps !== null && s.reps > 0) &&
+                                                                sets.every((s) => s.reps === first.reps);
+                                                            if (allSameType && (allRange || allFixed)) {
+                                                                return (
+                                                                    <div>
+                                                                        {allRange && first.rep_range
+                                                                            ? formatHevyRepRange(first.rep_range)
+                                                                            : first.reps}
+                                                                    </div>
+                                                                );
+                                                            }
+                                                            return sets.map((set, index) => {
+                                                                const label =
+                                                                    set.rep_range != null
+                                                                        ? formatHevyRepRange(set.rep_range)
+                                                                        : set.reps !== null && set.reps > 0
+                                                                          ? String(set.reps)
+                                                                          : null;
+                                                                if (label == null) {
+                                                                    return null;
+                                                                }
+                                                                return (
+                                                                    <div
+                                                                        key={ index }
+                                                                        className={ set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : "" }
+                                                                    >
+                                                                        {label}
+                                                                    </div>
+                                                                );
+                                                            });
+                                                        })()}
                                                     { exercise.sets[0] && exercise.sets[0].distance_meters !== null && exercise.sets[0].distance_meters > 0 && (
                                                         exercise.sets.every((reps, i, arr) => reps.distance_meters === arr[0].distance_meters) ? (
                                                             <div>{exercise.sets[0].distance_meters} m</div>

@@ -104,6 +104,9 @@ export const convertHevyOutputIntoInput = (routine: THevyRoutine, folderId: numb
                 distance_meters: set?.distance_meters ?? null,
                 duration_seconds: set?.duration_seconds ?? null,
                 custom_metric: set?.custom_metric ?? null,
+                ...(set?.rep_range != null && {
+                    rep_range: { start: set.rep_range.start, end: set.rep_range.end },
+                }),
             })),
         })),
     };
@@ -137,16 +140,22 @@ export const generateHevySets = (exercise: TSavedWorkoutExercise): THevySets[] =
     );
 
     for (let i = 0; i < maxSets; i++) {
+        const rr = exercise.reps_range?.[i];
+        const hasRepRange = rr != null && Array.isArray(rr) && rr.length >= 2;
         sets.push({
             index: i,
             type: "normal", // Assuming all sets are normal
             weight_kg: exercise.weights?.[i] || 0,
-            reps: exercise?.reps ? exercise.reps?.[i] || 0 : exercise?.reps_range && exercise?.reps_range?.[i]?.[1] || 0,
+            reps: hasRepRange
+                ? null
+                : exercise?.reps
+                  ? exercise.reps[i] ?? null
+                  : null,
             distance_meters: 0, // No distance tracking by default
             duration_seconds: exercise?.time_taken ? exercise.time_taken?.[i] || 0 : exercise?.time_range && exercise.time_range?.[i]?.[1] || 0,
             rpe: exercise?.rpe ? (exercise.rpe[i] ?? null) : (exercise?.rpe_range?.[i]?.[1] ?? null),
             custom_metric: 0, // Placeholder for custom metric
-            rep_range: null, // TODO: Add rep range to Hevy sets
+            rep_range: hasRepRange ? { start: rr[0], end: rr[1] } : null,
         });
     }
 

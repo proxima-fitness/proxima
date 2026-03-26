@@ -28,7 +28,7 @@ When the user's program or requested changes are **bodybuilding- or hypertrophy-
 ## Gotchas
 
 - **Document root**: The program is a single array of all routines (all weeks). Length = daysPerWeek × programLength (e.g. 6×8 = 48). Paths are into this array: /0 … /N-1.
-- **Program-wide changes**: To change every occurrence (e.g. rename all "Push" to "Chest"), include one operation per routine index (/0/..., /1/..., …, /N-1/...). Do not patch only the first week.
+- **Program-wide changes**: To change every occurrence (e.g. rename all "Push" to "Chest"), include one operation per relevant routine index (/0/..., /1/..., …, /N-1/...). Do not patch only the first week.
 - **One patch, one call**: Pass a single patch array with all operations to modifyProgram. Do not split by week or make multiple modifyProgram calls for one logical edit.
 - **Zero-based indices**: /0 is the first routine, /0/exercises/1 is the second exercise of the first routine.
 - **Path = property name only**: Never put the new value inside the path string. The path must end with the property name (e.g. `/0/exercises/0/sets/0/rpe`), and the new value goes in the `value` field. Paths like `/0/exercises/0/sets/0/rpe:7` are **invalid** and will fail.
@@ -42,12 +42,17 @@ When the user's program or requested changes are **bodybuilding- or hypertrophy-
 - **move**: Relocate a value. `{ "op": "move", "from": "<source path>", "path": "<target path>" }`. Use to reorder exercises or routines.
 - **copy**: Duplicate a value. `{ "op": "copy", "from": "<source path>", "path": "<target path>" }`. Use to duplicate an exercise to another routine.
 
+## Rep ranges
+
+`rep_range` is a first-class field on every set (`{start, end}`). When the program uses rep ranges, **patch `rep_range`** (the full object) rather than only patching `reps`. Example: to change a set from 8-12 to 10-15, use `{ "op": "replace", "path": "/0/exercises/0/sets/0/rep_range", "value": { "start": 10, "end": 15 } }`.
+
 ## Path examples
 
 - /0 = first routine, /1 = second routine, /47 = 48th routine
 - /0/title = first routine's title
 - /0/exercises/0/title = first exercise's title
 - /0/exercises/0/sets/0/reps = reps of first set of first exercise
+- /0/exercises/0/sets/0/rep_range = rep range of first set (object: {start, end})
 - /0/exercises/- = append position (for "add")
 
 ## Patch template
@@ -55,8 +60,7 @@ When the user's program or requested changes are **bodybuilding- or hypertrophy-
 ```json
 [
   { "op": "replace", "path": "/0/title", "value": "Push Day" },
-  { "op": "replace", "path": "/0/exercises/0/sets/0/reps", "value": 10 }
+  { "op": "replace", "path": "/0/exercises/0/sets/0/rep_range", "value": { "start": 8, "end": 12 } },
+  { "op": "replace", "path": "/0/exercises/0/sets/0/reps", "value": 12 }
 ]
 ```
-
-For program-wide edits (e.g. change reps in first exercise of every routine), include one operation per routine index: /0/..., /1/..., /2/..., etc.
