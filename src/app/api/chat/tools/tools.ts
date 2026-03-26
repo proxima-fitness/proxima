@@ -186,7 +186,7 @@ export function getTools({
      */
     const getExerciseListTool = tool({
 
-        description: 'Provides access to all available Hevy exercises for building workout programs. Use this tool when users request workout programs. The tool returns a reference list of exercises (ID and title only) - you should then return a minimal workout structure with exercise IDs, titles, sets, rep_range (preferred) or reps, and RPE.',
+        description: 'Provides access to all available Hevy exercises for building workout programs. Use this tool when users request workout programs. The tool returns a reference list of exercises (ID and title only) - you should then return a minimal workout structure with exercise IDs, titles, sets, rep_range (for true ranges like 8-12) or reps (for fixed counts like 5 sets x 5 reps), and RPE. For fixed-rep work, set rep_range to null and use reps only.',
         inputSchema: z.object({
             userRequest: z.string().describe('The user\'s workout request or description'),
             excludeAreas: z.string().optional().describe('Comma-separated list of muscle groups to exclude'),
@@ -385,7 +385,10 @@ export function getTools({
             'Call **buildWeek at most once** per user request to generate that week—after it succeeds, use **modifyProgram** only for any changes (never a second buildWeek to fix or tweak). ' +
             'Provide all days in order (Day 1, Day 2, …) so the UI can duplicate the first week across the remaining weeks. ' +
             'IMPORTANT: Always provide a valid JSON object with the required fields. ' +
-            'For rep-based exercises, **prefer rep_range** (e.g. {start:8, end:12}) over a fixed reps value. Set reps as a fallback alongside rep_range.',
+            'For rep-based exercises, **prefer rep_range** (e.g. {start:8, end:12}) over a fixed reps value. Set reps as a fallback alongside rep_range. ' +
+            '**Fixed-rep rule:** When the prescription is a single fixed rep count (e.g. 5x5, triples, singles), set `rep_range` to **null** and only use `reps`. ' +
+            'NEVER emit a degenerate rep_range where start === end (e.g. {start:5, end:5}); that must be rep_range: null, reps: 5 instead. ' +
+            'rep_range supersedes reps in the UI, so a {start:5, end:5} range will display as "5-5" which is wrong.',
         inputSchema: z.object({
             totalDays: z.number().min(1).max(7).describe('Total number of days in the program week (1–7).'),
             routines: z
@@ -438,7 +441,7 @@ export function getTools({
                                                     .enum(['normal', 'warmup', 'dropset', 'failure'])
                                                     .describe('The type of set'),
                                                 reps: z.number().nullable().describe(
-                                                    'Fixed rep count. Provide as fallback when rep_range is set, or as the sole prescription when rep_range is null.',
+                                                    'Fixed rep count. When rep_range is set, provide as fallback (typically the upper bound). When rep_range is null, this is the sole prescription. For fixed-rep work (5x5, singles, doubles, triples), set rep_range to null and use only reps.',
                                                 ),
                                                 rep_range: z
                                                     .object({
@@ -447,7 +450,7 @@ export function getTools({
                                                     })
                                                     .nullable()
                                                     .describe(
-                                                        'Preferred: rep range for this set (e.g. {start:8, end:12}). Use rep_range for hypertrophy/bodybuilding sets. When provided, reps serves as a fallback value only.',
+                                                        'Rep range for this set (e.g. {start:8, end:12}). Use for hypertrophy/bodybuilding sets where a range is intended. When provided, reps serves as a fallback only. Set to **null** for fixed-rep prescriptions (5x5, singles, doubles, triples). NEVER use a degenerate range where start === end (e.g. {start:5, end:5}); use null and set reps instead.',
                                                     ),
                                                 rpe: z
                                                     .number()
@@ -544,17 +547,21 @@ export function getTools({
                         const templateId = (exercise.exercise_template_id ?? '').trim();
                         const canonicalTitle = exerciseIdToTitle.get(templateId) ?? 'Unknown Exercise';
 
-                        const sets = (exercise.sets || []).map((set, setIndex) => ({
-                            index: setIndex,
-                            type: set.type || 'normal',
-                            reps: set.reps ?? null,
-                            weight_kg: set.weight_kg ?? null,
-                            rpe: set.rpe ?? null,
-                            distance_meters: null,
-                            duration_seconds: null,
-                            custom_metric: null,
-                            rep_range: set.rep_range ?? null,
-                        }));
+                        const sets = (exercise.sets || []).map((set, setIndex) => {
+                            const rawRange = set.rep_range ?? null;
+                            const isDegenerate = rawRange != null && rawRange.start === rawRange.end;
+                            return {
+                                index: setIndex,
+                                type: set.type || 'normal',
+                                reps: isDegenerate ? (set.reps ?? rawRange.start) : (set.reps ?? null),
+                                weight_kg: set.weight_kg ?? null,
+                                rpe: set.rpe ?? null,
+                                distance_meters: null,
+                                duration_seconds: null,
+                                custom_metric: null,
+                                rep_range: isDegenerate ? null : rawRange,
+                            };
+                        });
 
                         totalSets += sets.length;
 

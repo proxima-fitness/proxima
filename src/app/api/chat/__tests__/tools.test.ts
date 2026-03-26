@@ -93,6 +93,60 @@ describe("chat tools.ts", () => {
             expect(builtSet.rep_range).toBeNull();
         });
 
+        it("normalizes degenerate rep_range (start===end) to rep_range null + reps", async () => {
+            const tools = getTools({});
+            const buildWeek = tools.buildWeek as {
+                execute: (args: { totalDays: number; routines: typeof minimalRoutine[] }) => Promise<unknown>;
+            };
+
+            const degenerateRangeRoutine = {
+                ...minimalRoutine,
+                exercises: [
+                    {
+                        ...minimalRoutine.exercises[0],
+                        sets: [{ type: "normal" as const, reps: null, rep_range: { start: 5, end: 5 }, rpe: 9 }],
+                    },
+                ],
+            };
+
+            const output = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [degenerateRangeRoutine],
+            })) as { error?: string; routines?: Array<{ exercises: Array<{ sets: Array<{ reps: number | null; rep_range: unknown }> }> }> };
+
+            expect(output.error).toBeUndefined();
+            const builtSet = output.routines![0].exercises[0].sets[0];
+            expect(builtSet.rep_range).toBeNull();
+            expect(builtSet.reps).toBe(5);
+        });
+
+        it("preserves reps when degenerate rep_range is normalized and reps is already set", async () => {
+            const tools = getTools({});
+            const buildWeek = tools.buildWeek as {
+                execute: (args: { totalDays: number; routines: typeof minimalRoutine[] }) => Promise<unknown>;
+            };
+
+            const degenerateWithRepsRoutine = {
+                ...minimalRoutine,
+                exercises: [
+                    {
+                        ...minimalRoutine.exercises[0],
+                        sets: [{ type: "normal" as const, reps: 5, rep_range: { start: 5, end: 5 }, rpe: 9 }],
+                    },
+                ],
+            };
+
+            const output = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [degenerateWithRepsRoutine],
+            })) as { error?: string; routines?: Array<{ exercises: Array<{ sets: Array<{ reps: number | null; rep_range: unknown }> }> }> };
+
+            expect(output.error).toBeUndefined();
+            const builtSet = output.routines![0].exercises[0].sets[0];
+            expect(builtSet.rep_range).toBeNull();
+            expect(builtSet.reps).toBe(5);
+        });
+
         it("auto-corrects exercise title to canonical hevy_exercise_templates title", async () => {
             const tools = getTools({});
             const buildWeek = tools.buildWeek as {
