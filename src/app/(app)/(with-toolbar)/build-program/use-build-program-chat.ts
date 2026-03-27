@@ -261,9 +261,13 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     const handleSubmit = useCallback(
         (text: string, files?: FileUIPart[]) => {
             if (!text.trim() && (!files || files.length === 0)) return;
+            if (isLoading) {
+                stop();
+                setIsBuilding(false);
+            }
             sendMessageWithContext({ text, files });
         },
-        [sendMessageWithContext]
+        [sendMessageWithContext, isLoading, stop]
     );
 
     const handleStop = useCallback(() => {

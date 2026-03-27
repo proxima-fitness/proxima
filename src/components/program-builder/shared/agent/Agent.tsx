@@ -20,10 +20,10 @@ import type { IQuestion } from "@/components/ui/questions"
 import { equipmentOptions, healthIssuesOptions } from "@/assets/constants/form-options"
 import { inferDaysPerWeek, inferProgramLength } from "@/components/program-builder/utils/helpers"
 
-import { Shimmer } from "@/components/ai-elements/shimmer"
 import { Chat } from "./Chat"
 import { Navbar } from "./Navbar"
 import { MessageBubbles } from "./MessageBubbles"
+import { LiveAgentProgress } from "./LiveAgentProgress"
 
 export type SendMessageWithContext = (message?: (Omit<UIMessage<unknown, UIDataTypes, UITools>, "id" | "role"> & {
     id?: string;
@@ -159,25 +159,6 @@ export const Agent: React.FC<IProps> = (props) => {
 
     // const [isFilters, setIsFilters] = useState(false)
 
-    /** "Running a step…" | "Generating…" | "Thinking…" from last message part and chatStatus. */
-    const statusLabel = useMemo(() => {
-        if (!isLoading) return null
-        const lastMessage = messages[messages.length - 1]
-        const lastPart = lastMessage?.parts?.[lastMessage.parts?.length - 1]
-        const toolState = lastPart && typeof lastPart === "object" && "state" in lastPart ? (lastPart as { state?: string }).state : undefined
-        const isToolInProgress =
-            lastMessage?.role === "assistant" &&
-            (toolState === "input-available" || toolState === "input-streaming")
-        const isStreamingContent =
-            lastPart &&
-            typeof lastPart === "object" &&
-            "type" in lastPart &&
-            ((lastPart as { type?: string }).type === "text" ||
-                (lastPart as { type?: string }).type === "reasoning")
-        if (isToolInProgress) return "Running a step…"
-        if (chatStatus === "streaming" && isStreamingContent) return "Generating…"
-        return "Thinking…"
-    }, [isLoading, messages, chatStatus])
 
     /** When the last message is assistant with getMoreInfoQuestions tool output, show questions in footer instead of input. */
     const activeQuestionsPayload = useMemo(() => {
@@ -325,11 +306,12 @@ export const Agent: React.FC<IProps> = (props) => {
                             appliedModifyProgramKeysRef={appliedModifyProgramKeysRef}
                             />
                         )}
-                        {isLoading && statusLabel && (
-                            <div className="mx-auto flex w-full max-w-3xl items-center gap-2 px-4 pt-2 md:px-6">
-                                <Shimmer className="text-sm">{statusLabel}</Shimmer>
-                            </div>
-                        )}
+                        <LiveAgentProgress
+                            messages={messages}
+                            status={chatStatus}
+                            isLoading={isLoading}
+                            className="mx-auto w-full max-w-3xl px-4 pt-2 md:px-6"
+                        />
                     </>
                 <ConversationScrollButton className="absolute bottom-4 right-5 z-50 shadow-xs" />
                 </ConversationContent>
