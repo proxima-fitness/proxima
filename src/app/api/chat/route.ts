@@ -131,14 +131,14 @@ export async function POST(req: Request) {
                 };
             },
 
-            // providerOptions: {
-            //     google: {
-            //         thinkingConfig: {
-            //             thinkingLevel: 'low',
-            //             includeThoughts: true,
-            //         },
-            //     },
-            // },
+            providerOptions: {
+                google: {
+                    thinkingConfig: {
+                        thinkingLevel: 'low',
+                        includeThoughts: true,
+                    },
+                },
+            },
           });
 
         return createAgentUIStreamResponse({
