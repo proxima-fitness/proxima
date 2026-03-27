@@ -321,7 +321,7 @@ export const Agent: React.FC<IProps> = (props) => {
                 isLoading={isLoading}
                 handleSubmit={handleSubmit}
                 handleStop={handleStop}
-                showSuggestions={messages.length === 0 && !showQuestionsPayload}
+                showSuggestions={messages.length === 0 && !showQuestionsPayload && !isLoading}
                 questionsPayload={showQuestionsPayload}
                 onQuestionsComplete={handleQuestionsComplete}
                 onQuestionsSkip={handleQuestionsSkip}
