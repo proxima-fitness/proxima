@@ -98,6 +98,24 @@ interface ILiveAgentProgressProps {
   className?: string;
 }
 
+function isStreamingFinalText(
+  messages: UIMessage<unknown, UIDataTypes, UITools>[],
+  status: ChatStatus | undefined
+): boolean {
+  if (status !== "streaming") return false;
+  const lastMessage = messages[messages.length - 1];
+  if (!lastMessage || lastMessage.role !== "assistant") return false;
+  const parts = lastMessage.parts;
+  if (!parts?.length) return false;
+  const lastPart = parts[parts.length - 1];
+  return (
+    lastPart != null &&
+    typeof lastPart === "object" &&
+    "type" in lastPart &&
+    (lastPart as { type: string }).type === "text"
+  );
+}
+
 export const LiveAgentProgress = memo(
   ({ messages, status, isLoading, className }: ILiveAgentProgressProps) => {
     const steps = useMemo(
@@ -106,6 +124,8 @@ export const LiveAgentProgress = memo(
     );
 
     if (!isLoading || steps.length === 0) return null;
+
+    if (isStreamingFinalText(messages, status)) return null;
 
     const activeStep = steps.find((s) => s.status === "active");
     const headerLabel = activeStep?.label ?? "Working…";

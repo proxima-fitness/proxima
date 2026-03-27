@@ -391,9 +391,11 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                             const lastPart = message.parts[message.parts.length - 1];
                             const isReasoningStreaming =
                                 isLastMessage && isStreaming && lastPart?.type === "reasoning";
+                            const hideReasoningDuringTextStream =
+                                isLastMessage && isStreaming && lastPart?.type === "text";
                             return (
                             <div key={message.id} className="whitespace-pre-wrap">
-                                {isAssistant && reasoningParts.length > 0 && (
+                                {isAssistant && reasoningParts.length > 0 && !hideReasoningDuringTextStream && (
                                     <Reasoning
                                         isStreaming={isReasoningStreaming}
                                         className="mx-auto w-full max-w-3xl px-4 pt-2 md:px-6"
