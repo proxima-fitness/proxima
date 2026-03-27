@@ -129,7 +129,7 @@ export const LiveAgentProgress = memo(
 
     if (steps.length === 0) {
       const fallbackLabel =
-        status === "submitted" ? "Reading your message…" : "Working…";
+        status === "submitted" ? "Thinking..." : "Working…";
       return (
         <div className={className}>
           <ChainOfThought defaultOpen open>

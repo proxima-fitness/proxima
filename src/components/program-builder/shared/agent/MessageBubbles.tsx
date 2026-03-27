@@ -243,7 +243,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
     const [editingText, setEditingText] = useState("");
 
-    const TIMEOUT_MS = 45000; // No progress for this long during build triggers onTimeoutError
+    const TIMEOUT_MS = 120000; // No progress for this long during build triggers onTimeoutError
     const lastProgressTimestampRef = useRef<number>(0);
     const timeoutCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
