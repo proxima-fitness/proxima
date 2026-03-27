@@ -123,9 +123,23 @@ export const LiveAgentProgress = memo(
       [messages, status]
     );
 
-    if (!isLoading || steps.length === 0) return null;
+    if (!isLoading) return null;
 
     if (isStreamingFinalText(messages, status)) return null;
+
+    if (steps.length === 0) {
+      const fallbackLabel =
+        status === "submitted" ? "Reading your message…" : "Working…";
+      return (
+        <div className={className}>
+          <ChainOfThought defaultOpen open>
+            <ChainOfThoughtHeader>
+              <Shimmer duration={1.5}>{fallbackLabel}</Shimmer>
+            </ChainOfThoughtHeader>
+          </ChainOfThought>
+        </div>
+      );
+    }
 
     const activeStep = steps.find((s) => s.status === "active");
     const headerLabel = activeStep?.label ?? "Working…";

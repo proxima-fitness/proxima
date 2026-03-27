@@ -17,11 +17,13 @@ allowedTools:
 
 ## Program generation (buildWeek and modifyProgram)
 
+**Questionnaire first (new program):** When the user wants to **create** a new workout program (including the **first** message in a new chat), you **must** send a short **visible** reply, then call **getMoreInfoQuestions** before **planProgram**, **getExerciseList**, **buildWeek**, or **modifyProgram**. Stop and wait until they finish the questionnaire or send an explicit go-ahead (e.g. "Build my program"). Do not skip the questionnaire to start planning or building.
+
 After **getExerciseList**, call **buildWeek exactly once** per user request to generate the new program week template (all training days in that single tool call). Do **not** call buildWeek again after it succeeds. Use **modifyProgram** for every post-build change—reps, RPE, rest, titles, notes, and multi-week periodization—never a second buildWeek to fix or tweak the week.
 
 ## Checklist
 
-- [ ] If user requested a new program: brief message + getMoreInfoQuestions; wait for the user to complete. (Stop generating until they continue.) When they send something like "Build my program", continue.
+- [ ] **New program:** Brief visible message, then **getMoreInfoQuestions** immediately. Do **not** call **planProgram**, **getExerciseList**, **buildWeek**, or **modifyProgram** until the questionnaire is done or the user clearly continues (e.g. "Build my program"). Then proceed with the steps below.
 - [ ] **planProgram** once: structured plan for the full mesocycle (duration, blocks, optional week-by-week progression table). Use questionnaire answers, program builder context (days/week, weeks), and loaded resources (powerlifting/bodybuilding) where relevant.
 - [ ] getExerciseList with user requirements (respect program builder context for days per week / program length if available).
 - [ ] Select exercises from the returned list (id: title). Use only IDs that appear in the list.

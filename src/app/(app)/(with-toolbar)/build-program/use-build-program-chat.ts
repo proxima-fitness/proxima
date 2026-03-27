@@ -81,7 +81,6 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     const search = searchParams.get("search") ?? "";
     const shared = searchParams.get("shared") ?? "";
     const shareId = searchParams.get("shareId") ?? "";
-    const resume = searchParams.get("resume") ?? "";
     const chatId = searchParams.get("chat") ?? "";
     const newChat = searchParams.get("new") ?? "";
 
@@ -213,7 +212,6 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             : search;
         if (!messageText?.trim() || initialSearchOccurred.current) return;
         if (shared === "true" && shareId && hevyProgram.length === 0 && !sharedProgramLoadAttemptedRef.current) return;
-        if (resume === "true" && hevyProgram.length === 0) return;
         initialSearchOccurred.current = true;
         if (isLongPromptPlaceholder && typeof sessionStorage !== "undefined") {
             sessionStorage.removeItem(PENDING_INITIAL_PROMPT_KEY);
@@ -256,7 +254,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         }
         sendMessageWithContext(files?.length ? { text: messageText, files } : { text: messageText });
         posthog?.capture?.("sent_first_prompt_to_ai", { search: messageText.slice(0, 200), user: user?.id ?? "user_id_unknown" });
-    }, [chatId, search, user, hevyProgram, shared, shareId, resume, sendMessageWithContext, programRequest]);
+    }, [chatId, search, user, hevyProgram, shared, shareId, sendMessageWithContext, programRequest]);
 
     const handleSubmit = useCallback(
         (text: string, files?: FileUIPart[]) => {

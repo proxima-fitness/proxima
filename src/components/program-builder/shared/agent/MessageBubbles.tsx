@@ -393,11 +393,16 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                 isLastMessage && isStreaming && lastPart?.type === "reasoning";
                             const hideReasoningDuringTextStream =
                                 isLastMessage && isStreaming && lastPart?.type === "text";
+                            const reasoningOnlyAssistant =
+                                isAssistant &&
+                                message.parts.length > 0 &&
+                                message.parts.every((p) => p.type === "reasoning");
                             return (
                             <div key={message.id} className="whitespace-pre-wrap">
                                 {isAssistant && reasoningParts.length > 0 && !hideReasoningDuringTextStream && (
                                     <Reasoning
                                         isStreaming={isReasoningStreaming}
+                                        suppressAutoClose={reasoningOnlyAssistant}
                                         className="mx-auto w-full max-w-3xl px-4 pt-2 md:px-6"
                                     >
                                         <ReasoningTrigger />
@@ -654,7 +659,26 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 message?: string;
                                             };
                                             const toolState = (part as { state?: ToolPart["state"] }).state ?? "output-available";
-                                            if (!toolOutput?.questions || !Array.isArray(toolOutput.questions)) return null;
+                                            const hasQuestions =
+                                                toolOutput?.questions != null && Array.isArray(toolOutput.questions);
+                                            const isInFlight =
+                                                toolState === "input-streaming" || toolState === "input-available";
+                                            if (!hasQuestions) {
+                                                return (
+                                                    <Tool
+                                                        key={`${message.id}-${index}-questions-pending`}
+                                                        defaultOpen
+                                                        className="mx-auto w-full max-w-3xl px-2 md:px-4 pt-2"
+                                                    >
+                                                        <ToolHeader type="tool-getMoreInfoQuestions" state={toolState} title="Survey" />
+                                                        <ToolContent className="w-full">
+                                                            <p className="text-sm text-muted-foreground py-2">
+                                                                {isInFlight ? "Preparing questionnaire…" : "Loading questions…"}
+                                                            </p>
+                                                        </ToolContent>
+                                                    </Tool>
+                                                );
+                                            }
                                             const isActiveSurvey = isLastMessage;
                                             return (
                                                 <Tool key={`${message.id}-${index}-questions`} defaultOpen className="mx-auto w-full max-w-3xl px-2 md:px-4 pt-2">

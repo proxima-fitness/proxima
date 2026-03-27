@@ -50,7 +50,7 @@ export const instructions = ({ hevyProgram, daysPerWeek, programLength }: IProps
 
         **Program tools — two flows:** (1) **Editing the live grid:** **getCurrentProgram** first—paths must match real order/exercises. (2) **Periodization after buildWeek:** do not use **getCurrentProgram** for paths (**hasProgram** may stay false post–**buildWeek**). Use builder context, **planProgram**, **buildWeek**, and the build-program skill index formula; **one merged** **modifyProgram** on the full duplicated doc (**totalDays × programLength** routines).
 
-        For creating or modifying workout programs, load the appropriate skill before using program tools.
+        **Mandatory skill loading:** When the user's message is clearly requesting to create, build, make, or generate a workout program, training program, or exercise routine—including the very first message in a new chat—you **must** call \`loadSkill\` with \`build-program\` **before** calling any other program tools (\`getMoreInfoQuestions\`, \`getExerciseList\`, \`planProgram\`, \`buildWeek\`, \`modifyProgram\`). The skill contains the full workflow; follow it. For modifying an existing program, load the \`modify-program\` skill instead.
         ${daysPerWeek != null && programLength != null ? `Program builder context: the user has selected ${daysPerWeek} days per week and ${programLength} weeks total. Use these when building or describing programs.` : ''}
         ${hevyProgram?.length ? 'A program currently exists; the user may want to modify it or create a new one.' : ''}
 

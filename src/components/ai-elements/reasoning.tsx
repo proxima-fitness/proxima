@@ -50,6 +50,8 @@ export type ReasoningProps = ComponentProps<typeof Collapsible> & {
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   duration?: number;
+  /** When true, do not auto-collapse after streaming ends (e.g. assistant has only reasoning until text/tools arrive). */
+  suppressAutoClose?: boolean;
 };
 
 const AUTO_CLOSE_DELAY = 1000;
@@ -63,6 +65,7 @@ export const Reasoning = memo(
     defaultOpen,
     onOpenChange,
     duration: durationProp,
+    suppressAutoClose = false,
     children,
     ...props
   }: ReasoningProps) => {
@@ -106,6 +109,7 @@ export const Reasoning = memo(
 
     // Auto-close when streaming ends (once only, and only if it ever streamed)
     useEffect(() => {
+      if (suppressAutoClose) return;
       if (
         hasEverStreamedRef.current &&
         !isStreaming &&
@@ -119,7 +123,7 @@ export const Reasoning = memo(
 
         return () => clearTimeout(timer);
       }
-    }, [isStreaming, isOpen, setIsOpen, hasAutoClosed]);
+    }, [isStreaming, isOpen, setIsOpen, hasAutoClosed, suppressAutoClose]);
 
     const handleOpenChange = useCallback(
       (newOpen: boolean) => {
