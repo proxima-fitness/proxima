@@ -260,7 +260,7 @@ const ChatInputBody = ({
         </Tooltip>
         <PromptInputTextarea
           placeholder="Ask anything…"
-          className="dark:text-white min-h-9 flex-1 min-w-0 py-2 text-base leading-[1.3] max-sm:min-h-8 max-sm:h-auto max-sm:py-1.5 [&::placeholder]:text-sm"
+          className="dark:text-white min-h-9 flex-1 min-w-0 py-2 text-base leading-[1.3] max-sm:min-h-8 max-sm:h-auto max-sm:py-1.5 placeholder:text-sm"
           onChange={(e) => checkMultiline(e.currentTarget)}
         />
         <div className={cn("flex shrink-0 flex-row gap-2", alignClass)}>

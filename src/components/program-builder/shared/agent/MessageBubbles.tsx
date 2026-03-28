@@ -243,7 +243,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
     const [editingText, setEditingText] = useState("");
 
-    const TIMEOUT_MS = 45000; // No progress for this long during build triggers onTimeoutError
+    const TIMEOUT_MS = 120000; // No progress for this long during build triggers onTimeoutError
     const lastProgressTimestampRef = useRef<number>(0);
     const timeoutCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -391,11 +391,18 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                             const lastPart = message.parts[message.parts.length - 1];
                             const isReasoningStreaming =
                                 isLastMessage && isStreaming && lastPart?.type === "reasoning";
+                            const hideReasoningDuringTextStream =
+                                isLastMessage && isStreaming && lastPart?.type === "text";
+                            const reasoningOnlyAssistant =
+                                isAssistant &&
+                                message.parts.length > 0 &&
+                                message.parts.every((p) => p.type === "reasoning");
                             return (
                             <div key={message.id} className="whitespace-pre-wrap">
-                                {isAssistant && reasoningParts.length > 0 && (
+                                {isAssistant && reasoningParts.length > 0 && !hideReasoningDuringTextStream && (
                                     <Reasoning
                                         isStreaming={isReasoningStreaming}
+                                        suppressAutoClose={reasoningOnlyAssistant}
                                         className="mx-auto w-full max-w-3xl px-4 pt-2 md:px-6"
                                     >
                                         <ReasoningTrigger />
@@ -652,7 +659,26 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 message?: string;
                                             };
                                             const toolState = (part as { state?: ToolPart["state"] }).state ?? "output-available";
-                                            if (!toolOutput?.questions || !Array.isArray(toolOutput.questions)) return null;
+                                            const hasQuestions =
+                                                toolOutput?.questions != null && Array.isArray(toolOutput.questions);
+                                            const isInFlight =
+                                                toolState === "input-streaming" || toolState === "input-available";
+                                            if (!hasQuestions) {
+                                                return (
+                                                    <Tool
+                                                        key={`${message.id}-${index}-questions-pending`}
+                                                        defaultOpen
+                                                        className="mx-auto w-full max-w-3xl px-2 md:px-4 pt-2"
+                                                    >
+                                                        <ToolHeader type="tool-getMoreInfoQuestions" state={toolState} title="Survey" />
+                                                        <ToolContent className="w-full">
+                                                            <p className="text-sm text-muted-foreground py-2">
+                                                                {isInFlight ? "Preparing questionnaire…" : "Loading questions…"}
+                                                            </p>
+                                                        </ToolContent>
+                                                    </Tool>
+                                                );
+                                            }
                                             const isActiveSurvey = isLastMessage;
                                             return (
                                                 <Tool key={`${message.id}-${index}-questions`} defaultOpen className="mx-auto w-full max-w-3xl px-2 md:px-4 pt-2">
@@ -666,8 +692,11 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                             );
                                         }
                                         case "tool-buildWeek": {
-                                            // Show progress UI for buildWeek calls
-                                            const buildPart = part as { output?: IBuildWeekOutput; state?: ToolPart["state"] };
+                                            const buildPart = part as {
+                                                input?: { totalDays?: number; routines?: Array<{ title?: string; exercises?: Array<{ title?: string }> }> };
+                                                output?: IBuildWeekOutput;
+                                                state?: ToolPart["state"];
+                                            };
                                             const toolOutput = buildPart.output;
                                             const toolState: ToolPart["state"] =
                                                 toolOutput?.routines && !toolOutput?.error
@@ -676,14 +705,38 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                         ? "input-available"
                                                         : "input-streaming";
 
+                                            const buildInput = buildPart.input;
+                                            const isInFlight = toolState === "input-available" || toolState === "input-streaming";
+
                                             return (
                                                 <Tool key={`${message.id}-${index}-build`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
                                                     <ToolHeader type="tool-buildWeek" state={toolState} title="Build week" />
                                                     <ToolContent>
-                                                        <BuildProgress
-                                                            totalDays={totalDays}
-                                                            isBuilding={isBuilding}
-                                                        />
+                                                        {isInFlight && buildInput?.routines?.length ? (
+                                                            <div className="space-y-1.5 px-3 pb-3">
+                                                                <p className="text-sm text-muted-foreground">
+                                                                    Building {buildInput.totalDays ?? buildInput.routines.length} day{(buildInput.totalDays ?? buildInput.routines.length) === 1 ? "" : "s"}:
+                                                                </p>
+                                                                <ul className="list-none space-y-1 text-sm text-muted-foreground">
+                                                                    {buildInput.routines.map((r, ri) => (
+                                                                        <li key={ri} className="flex items-baseline gap-1.5">
+                                                                            <span className="w-2 h-2 rounded-full shrink-0 bg-foreground/30 mt-1.5" />
+                                                                            <span>
+                                                                                <span className="text-foreground font-medium">{r.title ?? `Day ${ri + 1}`}</span>
+                                                                                {r.exercises?.length ? (
+                                                                                    <span className="text-muted-foreground"> — {r.exercises.length} exercise{r.exercises.length === 1 ? "" : "s"}</span>
+                                                                                ) : null}
+                                                                            </span>
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            </div>
+                                                        ) : (
+                                                            <BuildProgress
+                                                                totalDays={totalDays}
+                                                                isBuilding={isBuilding}
+                                                            />
+                                                        )}
                                                     </ToolContent>
                                                 </Tool>
                                             );
@@ -725,10 +778,17 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 );
                                             }
 
+                                            const modifyInFlight = !isComplete;
+
                                             return (
                                                 <Tool key={`${message.id}-${index}-modify`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
                                                     <ToolHeader type="tool-modifyProgram" state={toolState} title="Modify program" />
                                                     <ToolContent>
+                                                        {modifyInFlight && modifyPart.input?.patch?.length && (
+                                                            <p className="text-sm text-muted-foreground px-3 pb-1">
+                                                                Applying {modifyPart.input.patch.length} change{modifyPart.input.patch.length === 1 ? "" : "s"}…
+                                                            </p>
+                                                        )}
                                                         <ModifyProgramProgress
                                                             objectivesByRoutine={objectivesByRoutine}
                                                             status={isComplete ? "complete" : "processing"}

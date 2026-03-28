@@ -21,7 +21,7 @@ export const metadata = {
 /** Programs index; list/grid with fallback. */
 export default function ProgramsPage() {
     return (
-        <div className={ `bg-white dark:bg-extraDarkGray ${styles.paddingX} ${styles.flexCenter} flex-col` }>
+        <div className={ `bg-white dark:bg-extraDarkGray max-sm:px-2 ${styles.flexCenter} flex-col` }>
             <div className={ `${styles.boxWidth}` }>
                 <Suspense fallback={ <ProgramsFallback /> }>
                     <ProgramsLayout />

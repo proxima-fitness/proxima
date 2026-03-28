@@ -92,9 +92,13 @@ type THevyDialog = {
 
 type THevyAddExercise = {
     selectedExercise: THevyExerciseTemplate;
-    repTypeValue: "reps" | "distance_meters" | "duration_seconds" | "custom_metric";
+    repTypeValue: "reps" | "reps_range" | "distance_meters" | "duration_seconds" | "custom_metric";
     intensityValue: "rpe" | "weight_kg";
-    reps: number[] | null; // DATA for any rep type that is not a range
+    reps: number[] | null; // DATA for fixed reps / distance / time / custom (not rep range)
+    /** Per-set rep range start when `repTypeValue` is `"reps_range"`. */
+    repRangeStart?: number[] | null;
+    /** Per-set rep range end when `repTypeValue` is `"reps_range"`. */
+    repRangeEnd?: number[] | null;
     intensityData: number[] | null; // DATA for any intensity that is not a range
     setTypes: ("normal" | "warmup" | "dropset" | "failure")[];
     restSeconds: string | null;
@@ -134,6 +138,24 @@ type THevyRoutineRequest = {
     updated_at?: string; // ISO 8601 timestamp of when the routine was last updated. example: 2021-09-14T12:00:00Z
     created_at?: string; // ISO 8601 timestamp of when the routine was created. example: 2021-09-14T12:00:00Z
     exercises: THevyExerciseRequest[];
+}
+
+type THevyExerciseRequest = {
+    exercise_template_id: string;
+    superset_id: number | null;
+    rest_seconds: number;
+    notes: string;
+    sets: THevySetRequest[];
+}
+
+type THevySetRequest = {
+    type: string;
+    weight_kg: number | null;
+    reps: number | null;
+    distance_meters: number | null;
+    duration_seconds: number | null;
+    custom_metric: number | null;
+    rep_range?: THevyRepRange | null;
 }
 
 type TRoutineFolderResponse = {

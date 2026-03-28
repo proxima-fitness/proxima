@@ -21,6 +21,17 @@ Font.register({
   src: '/fonts/RussoOne-Regular.ttf',
 });
 
+const repRangesEqual = (
+    a: THevyRepRange | null | undefined,
+    b: THevyRepRange | null | undefined,
+): boolean => {
+    if (a == null || b == null) {
+        return a === b;
+    }
+    return a.start === b.start && a.end === b.end;
+};
+
+const formatHevyRepRange = (rr: THevyRepRange): string => `${rr.start}-${rr.end}`;
 
 /** Props for the PDF document. */
 interface IProps {
@@ -222,15 +233,52 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                         { exercise.sets.length }
                                                     </Text>
                                                     <Text>
-                                                        { exercise.sets[0] && exercise.sets[0].reps !== null && exercise.sets[0].reps > 0 && (
-                                                                exercise.sets.every((reps, i, arr) => reps.reps === arr[0].reps) ? (
-                                                                    <Text>{exercise.sets[0].reps}</Text>
-                                                                ) : (
-                                                                    exercise.sets.map((set, index) => (
-                                                                        <Text key={ index } style={ { color: set.type === "warmup" ? "#FFFFFF" : "#000000", backgroundColor: set.type === "warmup" ? "#cbd5e1" : "#f8f8f8", paddingHorizontal: "4px", borderRadius: "4px" } }>{ set.reps }</Text>
-                                                                    ))
-                                                                )
-                                                            )}
+                                                        { exercise.sets[0] &&
+                                                            exercise.sets.some(
+                                                                (s) =>
+                                                                    s.rep_range != null ||
+                                                                    (s.reps !== null && s.reps > 0),
+                                                            ) &&
+                                                            (() => {
+                                                                const sets = exercise.sets;
+                                                                const first = sets[0];
+                                                                const allSameType = sets.every((s) => s.type === first.type);
+                                                                const allRange =
+                                                                    sets.every((s) => s.rep_range != null) &&
+                                                                    sets.every((s) => repRangesEqual(s.rep_range, first.rep_range));
+                                                                const allFixed =
+                                                                    sets.every((s) => s.rep_range == null) &&
+                                                                    sets.every((s) => s.reps !== null && s.reps > 0) &&
+                                                                    sets.every((s) => s.reps === first.reps);
+                                                                if (allSameType && (allRange || allFixed)) {
+                                                                    return (
+                                                                        <Text>
+                                                                            {allRange && first.rep_range
+                                                                                ? formatHevyRepRange(first.rep_range)
+                                                                                : first.reps}
+                                                                        </Text>
+                                                                    );
+                                                                }
+                                                                return sets.map((set, index) => {
+                                                                    const label =
+                                                                        set.rep_range != null
+                                                                            ? formatHevyRepRange(set.rep_range)
+                                                                            : set.reps !== null && set.reps > 0
+                                                                              ? String(set.reps)
+                                                                              : null;
+                                                                    if (label == null) {
+                                                                        return null;
+                                                                    }
+                                                                    return (
+                                                                        <Text
+                                                                            key={ index }
+                                                                            style={ { color: set.type === "warmup" ? "#FFFFFF" : "#000000", backgroundColor: set.type === "warmup" ? "#cbd5e1" : "#f8f8f8", paddingHorizontal: "4px", borderRadius: "4px" } }
+                                                                        >
+                                                                            {label}
+                                                                        </Text>
+                                                                    );
+                                                                });
+                                                            })()}
                                                         { exercise.sets[0] && exercise.sets[0].distance_meters !== null && exercise.sets[0].distance_meters > 0 && (
                                                                 exercise.sets.every((reps, i, arr) => reps.distance_meters === arr[0].distance_meters) ? (
                                                                     <Text>{exercise.sets[0].distance_meters} m</Text>

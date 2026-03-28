@@ -17,11 +17,13 @@ allowedTools:
 
 ## Program generation (buildWeek and modifyProgram)
 
+**Questionnaire first (new program):** When the user wants to **create** a new workout program (including the **first** message in a new chat), you **must** send a short **visible** reply, then call **getMoreInfoQuestions** before **planProgram**, **getExerciseList**, **buildWeek**, or **modifyProgram**. Stop and wait until they finish the questionnaire or send an explicit go-ahead (e.g. "Build my program"). Do not skip the questionnaire to start planning or building.
+
 After **getExerciseList**, call **buildWeek exactly once** per user request to generate the new program week template (all training days in that single tool call). Do **not** call buildWeek again after it succeeds. Use **modifyProgram** for every post-build change—reps, RPE, rest, titles, notes, and multi-week periodization—never a second buildWeek to fix or tweak the week.
 
 ## Checklist
 
-- [ ] If user requested a new program: brief message + getMoreInfoQuestions; wait for the user to complete. (Stop generating until they continue.) When they send something like "Build my program", continue.
+- [ ] **New program:** Brief visible message, then **getMoreInfoQuestions** immediately. Do **not** call **planProgram**, **getExerciseList**, **buildWeek**, or **modifyProgram** until the questionnaire is done or the user clearly continues (e.g. "Build my program"). Then proceed with the steps below.
 - [ ] **planProgram** once: structured plan for the full mesocycle (duration, blocks, optional week-by-week progression table). Use questionnaire answers, program builder context (days/week, weeks), and loaded resources (powerlifting/bodybuilding) where relevant.
 - [ ] getExerciseList with user requirements (respect program builder context for days per week / program length if available).
 - [ ] Select exercises from the returned list (id: title). Use only IDs that appear in the list.
@@ -57,6 +59,14 @@ When the user wants a **bodybuilding** or **hypertrophy** program (aesthetic foc
 - **Patch safety**: Prefer **`replace`** for periodization (RPE, reps, rest, titles). Avoid **`add` / `remove` / `move`** in bulk-generated patches unless you order operations carefully — they shift indices and break later paths.
 - **Merged patch vs modify-program skill**: The modify-program skill tells end users "one patch, one call." For **this** multi-week generation flow, you may think in per-week terms, but you must deliver **one merged patch** to the client in a single modifyProgram call when possible.
 
+## Rep ranges
+
+`rep_range` is an object with `start` and `end` (e.g. `{start: 8, end: 12}` for an 8-12 rep range). **`rep_range` supersedes `reps` in the UI** — when `rep_range` is non-null the UI displays the range and ignores `reps`.
+
+- Use `rep_range` for all hypertrophy/bodybuilding sets and most strength accessories where a true range is intended (e.g. 8-12, 10-15). When you provide `rep_range`, also set `reps` as a fallback (typically the upper bound of the range, e.g. `12`).
+- **Fixed-rep rule:** When the prescription is a single fixed rep count (e.g. 5x5, triples, doubles, singles, AMRAP-style sets), set `rep_range` to **null** and only use `reps`. **NEVER** emit a degenerate `rep_range` where `start === end` (e.g. `{start: 5, end: 5}`). That will display as "5-5" in the UI which is incorrect. Instead use `rep_range: null, reps: 5`.
+- When periodizing via **modifyProgram**, patch `rep_range` (e.g. `/0/exercises/0/sets/0/rep_range`) with the full `{start, end}` object, not just `start` or `end` individually. To change from a range to fixed reps, patch `rep_range` to `null` and patch `reps` to the fixed value.
+
 ## buildWeek shape
 
 Use this structure. Set type must be one of "normal", "warmup", "dropset", "failure". Optional fields (rest_seconds, supersets_id, weight_kg) have defaults in the tool schema.
@@ -76,7 +86,7 @@ This is an example JSON, don't use the example values in this to influence the v
           "exercise_template_id": "<id from getExerciseList>",
           "title": "<exact title from getExerciseList for that id; server overwrites with canonical DB title if different>",
           "sets": [
-            { "type": "normal", "reps": 8, "rpe": 8 }
+            { "type": "normal", "reps": 12, "rep_range": { "start": 8, "end": 12 }, "rpe": 8 }
           ],
           "reason": "Primary horizontal press for chest development."
         }

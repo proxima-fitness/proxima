@@ -548,16 +548,22 @@ export const generateHevySets = (exercise: TSavedWorkoutExercise): THevySets[] =
     );
 
     for (let i = 0; i < maxSets; i++) {
+        const rr = exercise.reps_range?.[i];
+        const hasRepRange = rr != null && Array.isArray(rr) && rr.length >= 2;
         sets.push({
             index: i,
             type: "normal", // Assuming all sets are normal
             weight_kg: exercise.weights?.[i] || 0,
-            reps: exercise?.reps ? exercise.reps?.[i] || 0 : exercise?.reps_range && exercise?.reps_range?.[i]?.[1] || 0,
+            reps: hasRepRange
+                ? null
+                : exercise?.reps
+                  ? exercise.reps[i] ?? null
+                  : null,
             distance_meters: 0, // No distance tracking by default
             duration_seconds: exercise?.time_taken ? exercise.time_taken?.[i] || 0 : exercise?.time_range && exercise.time_range?.[i]?.[1] || 0,
             rpe: exercise?.rpe ? (exercise.rpe[i] ?? null) : (exercise?.rpe_range?.[i]?.[1] ?? null),
             custom_metric: 0, // Placeholder for custom metric
-            rep_range: null, // TODO: Add rep range to Hevy sets
+            rep_range: hasRepRange ? { start: rr[0], end: rr[1] } : null,
         });
     }
 
@@ -841,6 +847,31 @@ export const prepareModifyPatchOperations = (ops: Operation[]): Operation[] =>
     normalizePatchOps(normalizePatchPaths(ops));
 
 /**
+ * Coerces degenerate rep_range objects (start === end) to null across an entire
+ * program, setting reps to the fixed value when it wasn't already set.
+ * rep_range supersedes reps in the UI, so {start:5,end:5} would display "5-5".
+ */
+export const normalizeRepRanges = (routines: THevyRoutine[]): THevyRoutine[] => {
+    let mutated = false;
+    for (const routine of routines) {
+        for (const exercise of routine.exercises ?? []) {
+            for (const set of exercise.sets ?? []) {
+                if (
+                    set.rep_range != null &&
+                    set.rep_range.start === set.rep_range.end
+                ) {
+                    const fixedReps = set.rep_range.start;
+                    set.rep_range = null;
+                    if (set.reps == null) set.reps = fixedReps;
+                    mutated = true;
+                }
+            }
+        }
+    }
+    return mutated ? [...routines] : routines;
+};
+
+/**
  * Assistant messages in the current user turn (everything after the last user message).
  */
 export const getAssistantMessagesSinceLastUser = (messages: UIMessage[]): UIMessage[] => {
@@ -1013,6 +1044,8 @@ export const tryCommitAtomicBuildWeekAndMergedPatches = (
         }
     }
 
+    doc = normalizeRepRanges(doc);
+
     const inversePatch = compare(doc as object, hevyProgram as object);
     const recordUndo = hevyProgram.length > 0;
     applyPatchWithUndo(doc, inversePatch, recordUndo);
@@ -1083,6 +1116,8 @@ export const applyModifyProgramPatchesFromMessages = (
     }
 
     if (keysSucceeded.length === 0) return false;
+
+    simulation = normalizeRepRanges(simulation);
 
     const inversePatch = compare(simulation as object, hevyProgram as object);
     applyPatchWithUndo(simulation, inversePatch, true);

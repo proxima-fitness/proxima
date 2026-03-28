@@ -18,6 +18,10 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("buildWeek");
             expect(prompt).toContain("modifyProgram");
             expect(prompt).toContain("getMoreInfoQuestions");
+            expect(prompt).toContain("Mandatory skill loading");
+            expect(prompt).toContain("loadSkill");
+            expect(prompt).toContain("build-program");
+            expect(prompt).toContain("first message");
             expect(prompt).toContain("two flows");
             expect(prompt).toContain("periodization");
         });
