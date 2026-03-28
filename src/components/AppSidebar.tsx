@@ -261,7 +261,7 @@ export function AppSidebar() {
                                         const displayTitle = chat.title?.trim() || "Untitled chat";
                                         const href = `/build-program?chat=${encodeURIComponent(chat.id)}&edit=true${
                                             chat.program_id
-                                                ? `&shareId=${encodeURIComponent(chat.program_id)}&shared=true`
+                                                ? `&shareId=${encodeURIComponent(chat.program_id)}`
                                                 : ""
                                         }`;
                                         const isActive = chat.id === selectedChatId;

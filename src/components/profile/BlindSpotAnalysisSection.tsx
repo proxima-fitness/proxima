@@ -144,7 +144,6 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
             const search = buildStallSearchString(exploreFixesExercise, isInLbs);
             const params = new URLSearchParams({
                 shareId: String(program.id),
-                shared: "true",
                 edit: "true",
                 search,
             });

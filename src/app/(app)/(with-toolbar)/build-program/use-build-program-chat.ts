@@ -35,6 +35,13 @@ import type { SendMessageWithContext } from "@/components/program-builder/shared
 
 const chatTransport = new DefaultChatTransport({ api: "/api/chat" });
 
+/** Mirrors `isBuildProgramShareIdParam` in BuildProgram.tsx (avoid importing BuildProgram → circular deps). */
+function matchesBuildProgramShareIdParam(shareId: string): boolean {
+    if (!shareId.trim()) return false;
+    const n = Number(shareId);
+    return Number.isFinite(n) && n > 0;
+}
+
 const MAX_RETRIES = 2;
 
 export interface IUseBuildProgramChatOptions {
@@ -79,7 +86,6 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     const router = useRouter();
 
     const search = searchParams.get("search") ?? "";
-    const shared = searchParams.get("shared") ?? "";
     const shareId = searchParams.get("shareId") ?? "";
     const chatId = searchParams.get("chat") ?? "";
     const newChat = searchParams.get("new") ?? "";
@@ -211,7 +217,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             ? (typeof sessionStorage !== "undefined" ? sessionStorage.getItem(PENDING_INITIAL_PROMPT_KEY) : null) ?? ""
             : search;
         if (!messageText?.trim() || initialSearchOccurred.current) return;
-        if (shared === "true" && shareId && hevyProgram.length === 0 && !sharedProgramLoadAttemptedRef.current) return;
+        if (matchesBuildProgramShareIdParam(shareId) && hevyProgram.length === 0 && !sharedProgramLoadAttemptedRef.current) return;
         initialSearchOccurred.current = true;
         if (isLongPromptPlaceholder && typeof sessionStorage !== "undefined") {
             sessionStorage.removeItem(PENDING_INITIAL_PROMPT_KEY);
@@ -254,7 +260,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         }
         sendMessageWithContext(files?.length ? { text: messageText, files } : { text: messageText });
         posthog?.capture?.("sent_first_prompt_to_ai", { search: messageText.slice(0, 200), user: user?.id ?? "user_id_unknown" });
-    }, [chatId, search, user, hevyProgram, shared, shareId, sendMessageWithContext, programRequest]);
+    }, [chatId, search, user, hevyProgram, shareId, sendMessageWithContext, programRequest]);
 
     const handleSubmit = useCallback(
         (text: string, files?: FileUIPart[]) => {

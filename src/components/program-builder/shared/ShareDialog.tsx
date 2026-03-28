@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /**
  * @module ShareDialog
  * Modal to share program link: copy URL, Facebook, Reddit. Uses shareId from URL or programId prop.
@@ -42,7 +43,7 @@ export const ShareDialog: React.FC<IProps> = (props) => {
 
     const handleCopyShareId = () => {
         try {
-            navigator.clipboard.writeText(`https://proximafitness.com/build-program?shareId=${shareId || programId}&shared=true`);
+            navigator.clipboard.writeText(`https://proximafitness.com/build-program?shareId=${shareId || programId}`);
         } catch (error: unknown) {
             console.error("Error copying to clipboard",error);
             toast.error("Error copying to clipboard");
@@ -59,7 +60,7 @@ export const ShareDialog: React.FC<IProps> = (props) => {
                     </DialogTitle>
                     <span className="w-full flex flex-row max-sm:flex-col items-center justify-center max-sm:justify-center gap-4">
                         <span className="flex flex-row items-center justify-center gap-4">
-                            <a href={ `https://www.facebook.com/sharer/sharer.php?u=https://proximafitness.com/build-program?shareId=${shareId || programId}&shared=true&title=Check+Out+My+Custom+Workout+Program+Built+By+Proxima+AI!` } target="_blank" rel="noopener noreferrer">
+                            <a href={ `https://www.facebook.com/sharer/sharer.php?u=https://proximafitness.com/build-program?shareId=${shareId || programId}&title=Check+Out+My+Custom+Workout+Program+Built+By+Proxima+AI!` } target="_blank" rel="noopener noreferrer">
                                 <Button
                                     className="h-16 w-16 bg-lightSecondary"
                                     aria-label="Share on Facebook"
@@ -67,7 +68,7 @@ export const ShareDialog: React.FC<IProps> = (props) => {
                                     <img src={ facebook.src } alt="Facebook" className="h-full w-full" />
                                 </Button>
                             </a>
-                            <a href={ `https://www.reddit.com/submit?url=https://proximafitness.com/build-program?shareId=${shareId || programId}&shared=true&title=Check+Out+My+Custom+Workout+Program+Built+By+Proxima+AI!` } target="_blank" rel="noopener noreferrer">
+                            <a href={ `https://www.reddit.com/submit?url=https://proximafitness.com/build-program?shareId=${shareId || programId}&title=Check+Out+My+Custom+Workout+Program+Built+By+Proxima+AI!` } target="_blank" rel="noopener noreferrer">
                                 <Button
                                     variant="outline"
                                     className="h-16 w-16"
@@ -80,7 +81,7 @@ export const ShareDialog: React.FC<IProps> = (props) => {
                                 <Input
                                     className="h-16 max-sm:w-full sm:w-[400px]"
                                     readOnly
-                                    value={ `https://proximafitness.com/build-program?shareId=${shareId || programId}&shared=true` }
+                                    value={ `https://proximafitness.com/build-program?shareId=${shareId || programId}` }
                                 />
                                 <Button
                                     variant="outline"

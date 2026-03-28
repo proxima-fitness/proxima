@@ -43,6 +43,13 @@ import { useProgramRequestState } from "./use-program-request-state";
 import { useBuildProgramChat } from "./use-build-program-chat";
 import { Operation } from "fast-json-patch";
 
+/** True when the `shareId` query param should load a shared program from the API. */
+function isValidShareId(shareId: string): boolean {
+    if (!shareId.trim()) return false;
+    const n = Number(shareId);
+    return Number.isFinite(n) && n > 0;
+}
+
 function isPostHevyRoutineProgramSuccess(r: unknown): r is PostHevyRoutineProgramSuccess {
     return (
         typeof r === "object" &&
@@ -56,7 +63,7 @@ function isPostHevyRoutineProgramSuccess(r: unknown): r is PostHevyRoutineProgra
 
 /**
  * Program builder client: chat sidebar, program state (hevyProgram), filters,
- * URL params (shareId, edit, resume, shared, empty, search). No props; reads
+ * URL params (shareId, edit, resume, empty, search). No props; reads
  * searchParams and context. No props; reads searchParams and context.
  */
 export function BuildProgram() {
@@ -70,7 +77,6 @@ export function BuildProgram() {
     const shareId = searchParams.get('shareId') ?? '';
     const edit = searchParams.get('edit') ?? '';
     const resume = searchParams.get('resume') ?? '';
-    const shared = searchParams.get('shared') ?? '';
     const empty = searchParams.get('empty') ?? '';
     const search = searchParams.get('search') ?? '';
 
@@ -216,7 +222,7 @@ export function BuildProgram() {
             resumeLoadAttemptedRef.current = true;
         }
 
-        if (shared === 'true') {
+        if (isValidShareId(shareId)) {
             fetchSharedProgram();
         }
 
@@ -225,7 +231,7 @@ export function BuildProgram() {
         }
 
 
-    }, [edit, setIsPreview, resume, shared, shareId, empty, setHevyProgram, sharedProgramLoadAttemptedRef, resumeLoadAttemptedRef]);
+    }, [edit, setIsPreview, resume, shareId, empty, setHevyProgram, sharedProgramLoadAttemptedRef, resumeLoadAttemptedRef]);
 
 
     const handleSave = useCallback(async () => {
