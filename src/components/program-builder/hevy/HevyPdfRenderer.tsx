@@ -62,27 +62,51 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                     orientation="landscape"
                     size="A4"
                     style={ {
-                        padding: "12px",
+                        paddingLeft: "12px",
+                        paddingRight: "12px",
+                        paddingBottom: "12px",
+                        paddingTop: "12px",
                         height: "100%",
                         backgroundColor: "#FFFFFF",
                     } }
                 >
-                    <Text
+                    <View
+                        fixed
                         style={ {
-                            fontSize: "18px",
-                            fontFamily: "Russo One",
-                            textAlign: "left",
+                            width: "100%",
+                            display: "flex",
+                            flexDirection: "column",
                         } }
+                    >
+                        <Text
+                            style={ {
+                                fontSize: "18px",
+                                fontFamily: "Russo One",
+                                textAlign: "left",
+                            } }
                         >
-                        Week {index + 1}
-                    </Text>
-                    <Text style={ { fontSize: "8px", fontFamily: "Russo One"} }>© 2026 Proxima Fitness Inc.</Text>
+                            Week {index + 1}
+                        </Text>
+                        <Text
+                            style={ {
+                                fontSize: "11px",
+                                fontFamily: "Russo One",
+                                color: "#6B7280",
+                                paddingTop: "2px",
+                            } }
+                            render={({ subPageNumber }) => `Rotation ${subPageNumber}`}
+                        />
+                        <Text style={ { fontSize: "8px", fontFamily: "Russo One" } }>
+                            © 2026 Proxima Fitness Inc.
+                        </Text>
+                        <View style={ { width: "100%", height: "58px" } } />
+                    </View>
                     <View
                         style={ {
                             display: "flex",
                             flexDirection: "row",
                             justifyContent: "center",
-                            alignItems: "center",
+                            alignItems: "flex-start",
                             width: "100%",
                             paddingVertical: "8px",
                             gap: "16px",
@@ -91,6 +115,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                     >
                         { week.map((day) => (
                             <View
+                                wrap={false}
                                 style={ {
                                     paddingHorizontal: "16px",
                                     paddingVertical: "8px",
