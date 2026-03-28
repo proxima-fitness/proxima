@@ -2,7 +2,7 @@
  * @module BuildProgramModeMenu
  * Dropdown menu for selecting New (export) or Edit (sync) mode via `edit=true` URL param.
  * Designed to look like a breadcrumb segment (ghost trigger + chevrons icon).
- * Depends on: DropdownMenu, next/navigation. Used by: Breadcrumbs (desktop), BuildProgramToolbarEnd (mobile).
+ * Depends on: DropdownMenu, next/navigation. Used by: Breadcrumbs (desktop).
  */
 "use client";
 

@@ -5,7 +5,7 @@
  * @module MobileSidebarHeader
  * Minimal header shown only at max-sm: sidebar trigger and logo. Lets users open
  * the sidebar sheet on small viewports when the persistent sidebar is hidden.
- * On build-program route, shows mode toggle + Export/Sync (BuildProgramToolbarEnd) in the top navbar.
+ * On build-program route, shows Export/Sync (BuildProgramToolbarEnd) in the top navbar.
  * Depends on: CustomSidebarTrigger, SidebarProvider (useSidebar), public logo assets, BuildProgramToolbarEnd.
  * Used by: (app) layout.
  */
