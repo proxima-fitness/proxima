@@ -142,7 +142,7 @@ export const HevyProgramsGrid: React.FC<HevyProgramsGridProps> = ({ hevyPrograms
             routine.folder_id = 0;
         }
         localStorage.setItem("hevy-program-in-progress", JSON.stringify(program.program));
-        router.push("/build-program?resume=true");
+        router.push("/build-program?resume=true&edit=true");
     };
 
     if (isLoadingHevy) {

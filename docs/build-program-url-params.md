@@ -6,6 +6,7 @@ All parameters are read client-side via `useSearchParams()`:
 
 - [`BuildProgram.tsx`](../src/app/(app)/(with-toolbar)/build-program/BuildProgram.tsx) — `shareId`, `resume`, `empty`, `search`
 - [`use-build-program-chat.ts`](../src/app/(app)/(with-toolbar)/build-program/use-build-program-chat.ts) — `search`, `shareId`, `chat`, `new`
+- [`StepButton.tsx`](../src/components/program-builder/shared/StepButton.tsx) — `edit`
 
 Shared-program loading uses the same “valid `shareId`” rule as `isBuildProgramShareIdParam` in [`BuildProgram.tsx`](../src/app/(app)/(with-toolbar)/build-program/BuildProgram.tsx) (non-empty, parses to a finite number &gt; 0). [`use-build-program-chat.ts`](../src/app/(app)/(with-toolbar)/build-program/use-build-program-chat.ts) mirrors that logic for the initial-send guard. The legacy `shared` query key is not read; old URLs that still include `shared=true` behave correctly as long as `shareId` is present.
 
@@ -15,7 +16,8 @@ No additional query keys are consumed by the build-program `page.tsx` or `layout
 
 ### `edit`
 
-- **Status:** Not read by the app today. The `edit` query key is reserved for a future feature. Old bookmarks or links that include `edit=true` or other values have no effect on builder behavior.
+- **What it does:** When `edit=true`, the toolbar shows **Sync** instead of **Export** ([`StepButton.tsx`](../src/components/program-builder/shared/StepButton.tsx)). Sync opens a confirmation dialog; confirming will call the Hevy program **update** (PUT) flow once it is wired to the API. Typical entry: editing a synced Hevy program from the profile grid ([`HevyProgramsGrid.tsx`](../src/components/program-builder/hevy/HevyProgramsGrid.tsx)) navigates with `resume=true&edit=true`.
+- **Edge cases:** Other values (e.g. `edit=false`) are not treated as edit mode; only the string `true` enables Sync. Without `edit=true`, behavior matches a normal build (Export).
 
 ### `resume`
 
@@ -60,10 +62,12 @@ flowchart LR
     search
     chat
     new
+    edit
   end
   subgraph effects [Main effects]
     program[Hevy program state]
     chatState[Messages / history]
+    toolbar[Export vs Sync UI]
   end
   resume --> program
   shareId --> program
@@ -71,4 +75,5 @@ flowchart LR
   search --> program
   chat --> chatState
   new --> chatState
+  edit --> toolbar
 ```

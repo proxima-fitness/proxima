@@ -18,7 +18,7 @@ import { useUserContext } from "@/contexts/UserContext";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { ConnectHevyDialog } from "./ConnectHevyDialog";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import { signOutUser } from "@/api/authentication";
 import { useHevySecret, useMyFeatureLimits, useUserFullName, useProfilePictureByID } from "@/api/hooks";
 import { useProfilePictureContext } from "@/contexts/ProfilePictureContext";
@@ -450,7 +450,13 @@ export const Navbar: React.FC = () => {
                     <img src={ (proxima_logo_white as any).src } alt="Proxima Logo" className="h-10 w-auto sm:hidden dark:hidden" />
                 </Link>
                 <div className="flex-1 flex justify-end items-center min-w-0">
-                    {pathname.startsWith("/build-program") ? <StepButton /> : <div />}
+                    {pathname.startsWith("/build-program") ? (
+                        <Suspense fallback={<div className="w-10" aria-hidden />}>
+                            <StepButton />
+                        </Suspense>
+                    ) : (
+                        <div />
+                    )}
                 </div>
             </div>
         </nav>
