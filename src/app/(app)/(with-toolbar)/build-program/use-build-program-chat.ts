@@ -36,7 +36,7 @@ import type { SendMessageWithContext } from "@/components/program-builder/shared
 const chatTransport = new DefaultChatTransport({ api: "/api/chat" });
 
 /** Mirrors `isBuildProgramShareIdParam` in BuildProgram.tsx (avoid importing BuildProgram → circular deps). */
-function matchesBuildProgramShareIdParam(shareId: string): boolean {
+function isValidShareId(shareId: string): boolean {
     if (!shareId.trim()) return false;
     const n = Number(shareId);
     return Number.isFinite(n) && n > 0;
@@ -217,7 +217,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             ? (typeof sessionStorage !== "undefined" ? sessionStorage.getItem(PENDING_INITIAL_PROMPT_KEY) : null) ?? ""
             : search;
         if (!messageText?.trim() || initialSearchOccurred.current) return;
-        if (matchesBuildProgramShareIdParam(shareId) && hevyProgram.length === 0 && !sharedProgramLoadAttemptedRef.current) return;
+        if (isValidShareId(shareId) && hevyProgram.length === 0 && !sharedProgramLoadAttemptedRef.current) return;
         initialSearchOccurred.current = true;
         if (isLongPromptPlaceholder && typeof sessionStorage !== "undefined") {
             sessionStorage.removeItem(PENDING_INITIAL_PROMPT_KEY);
