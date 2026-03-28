@@ -7,7 +7,7 @@
  * share/resume/empty/search URL handling, undo, dialogs. Sits under build-program
  * layout; drives useChat, program state, and tool calls.
  *
- * Depends on: useChat, UserContext, PreviewContext, HevyContext, resizable panels,
+ * Depends on: useChat, UserContext, HevyContext, resizable panels,
  * Agent, ProgramRoutineView, program-builder utils, API (getSharedProgram, recordLlmRequest).
  * Used by: build-program/page.tsx.
  */
@@ -22,7 +22,6 @@ import { BuildProgramChatPanel } from "./BuildProgramChatPanel";
 import { MessageSquare } from "lucide-react";
 
 import { useSearchParams } from "next/navigation";
-import { usePreview } from "@/contexts/PreviewContext";
 import { appendOrderToHevyRoutines } from "@/components/program-builder/utils/format-responses";
 import { ProgramEditor } from "./ProgramEditor";
 import { Button } from "@/components/ui/button";
@@ -63,19 +62,16 @@ function isPostHevyRoutineProgramSuccess(r: unknown): r is PostHevyRoutineProgra
 
 /**
  * Program builder client: chat sidebar, program state (hevyProgram), filters,
- * URL params (shareId, edit, resume, empty, search). No props; reads
- * searchParams and context. No props; reads searchParams and context.
+ * URL params (shareId, resume, empty, search). No props; reads searchParams and context.
  */
 export function BuildProgram() {
 
 
     const { user } = useUserContext();
     const queryClient = useQueryClient();
-    const { setIsPreview } = usePreview();
     const searchParams = useSearchParams();
 
     const shareId = searchParams.get('shareId') ?? '';
-    const edit = searchParams.get('edit') ?? '';
     const resume = searchParams.get('resume') ?? '';
     const empty = searchParams.get('empty') ?? '';
     const search = searchParams.get('search') ?? '';
@@ -208,12 +204,6 @@ export function BuildProgram() {
             }
         };
 
-        if (edit === "true") {
-            setIsPreview(false);
-        } else {
-            setIsPreview(true);
-        }
-
         if (resume === 'true') {
             const program = localStorage.getItem('hevy-program-in-progress');
             if (program) {
@@ -231,7 +221,7 @@ export function BuildProgram() {
         }
 
 
-    }, [edit, setIsPreview, resume, shareId, empty, setHevyProgram, sharedProgramLoadAttemptedRef, resumeLoadAttemptedRef]);
+    }, [resume, shareId, empty, setHevyProgram, sharedProgramLoadAttemptedRef, resumeLoadAttemptedRef]);
 
 
     const handleSave = useCallback(async () => {

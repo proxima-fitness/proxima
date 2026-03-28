@@ -144,7 +144,6 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
             const search = buildStallSearchString(exploreFixesExercise, isInLbs);
             const params = new URLSearchParams({
                 shareId: String(program.id),
-                edit: "true",
                 search,
             });
             router.push(`/build-program?${params.toString()}`);
@@ -163,7 +162,6 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
             }
             localStorage.setItem("hevy-program-in-progress", JSON.stringify(program.program));
             const params = new URLSearchParams({
-                edit: "true",
                 resume: "true",
                 search,
             });

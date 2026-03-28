@@ -73,7 +73,7 @@ export function UpgradeBanner({
             {user ? (
               <Link href="/pricing">{upgradeButtonLabel}</Link>
             ) : (
-              <Link href={`/auth/login?next=${encodeURIComponent("/build-program?resume=true&edit=true")}`}>Sign in</Link>
+              <Link href={`/auth/login?next=${encodeURIComponent("/build-program?resume=true")}`}>Sign in</Link>
             )}
           </Button>
         </div>

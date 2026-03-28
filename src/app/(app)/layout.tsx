@@ -2,7 +2,7 @@
  * @module (app)/layout
  *
  * Root layout for the main app segment. Wraps all (app) routes with fonts,
- * theme, providers (user, Hevy, preview, sidebar, etc.), and main content area.
+ * theme, providers (user, Hevy, sidebar, etc.), and main content area.
  * Navigation is sidebar-only at sm and up; at max-sm a minimal mobile header
  * (sidebar trigger + logo) is shown so the sidebar can be opened as a sheet.
  * Sits at src/app/(app)/layout.tsx; wraps every page under (app).
@@ -25,7 +25,6 @@ import { MobileSidebarHeader } from "@/components/header/MobileSidebarHeader";
 import { Analytics } from "@vercel/analytics/react";
 import NextTopLoader from 'nextjs-toploader';
 import { PostHogClientProvider } from "@/utils/PostHogClientProvider";
-import { PreviewProvider } from "@/contexts/PreviewContext";
 import { UserProvider } from "@/contexts/UserContext";
 import { ProfilePictureProvider } from "@/contexts/ProfilePictureContext";
 import { ThemeProvider } from "@/components/theme-provider"
@@ -120,28 +119,26 @@ export default function RootLayout({
                     <UserProvider>
                         <ProfilePictureProvider>
                         <IsHevyProvider>
-                            <PreviewProvider>
-                                <SidebarProvider defaultOpen={false}>
-                                    <PoundsOrKgProvider>
-                                        <AppSidebarDynamic />
-                                        <div className="flex-1 min-w-0 bg-primary">
-                                            <MobileSidebarHeader />
-                                            <main id="main">
-                                                <PostHogClientProvider>
-                                                    <Analytics />
-                                                    <NextTopLoader
-                                                        showSpinner={ false }
-                                                        color="#33bbcf"
-                                                    />
-                                                    {children}
-                                                    <Toaster richColors />
-                                                </PostHogClientProvider>
-                                            </main>
-                                            <ConditionalFooterDynamic />
-                                        </div>
-                                    </PoundsOrKgProvider>
-                                </SidebarProvider>
-                            </PreviewProvider>
+                            <SidebarProvider defaultOpen={false}>
+                                <PoundsOrKgProvider>
+                                    <AppSidebarDynamic />
+                                    <div className="flex-1 min-w-0 bg-primary">
+                                        <MobileSidebarHeader />
+                                        <main id="main">
+                                            <PostHogClientProvider>
+                                                <Analytics />
+                                                <NextTopLoader
+                                                    showSpinner={ false }
+                                                    color="#33bbcf"
+                                                />
+                                                {children}
+                                                <Toaster richColors />
+                                            </PostHogClientProvider>
+                                        </main>
+                                        <ConditionalFooterDynamic />
+                                    </div>
+                                </PoundsOrKgProvider>
+                            </SidebarProvider>
                         </IsHevyProvider>
                         </ProfilePictureProvider>
                     </UserProvider>

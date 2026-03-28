@@ -70,7 +70,7 @@ const ProgramItem: React.FC<IProgramItemProps> = memo(({ item, userData }) => {
 
                 <div className="absolute inset-0 rounded-lg bg-black bg-opacity-40 backdrop-blur-xs flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
                     <Link
-                        href={ `/build-program?shareId=${item.id}&edit=true` }
+                        href={ `/build-program?shareId=${item.id}` }
                         rel="noopener noreferrer"
                         className="w-[50%]"
                         target="_self"

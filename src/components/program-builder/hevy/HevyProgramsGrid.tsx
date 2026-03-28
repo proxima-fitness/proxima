@@ -137,12 +137,12 @@ type HevyProgramsGridProps = {
 export const HevyProgramsGrid: React.FC<HevyProgramsGridProps> = ({ hevyPrograms, isLoadingHevy }) => {
     const router = useRouter();
 
-    const handleEditProgram = (program: HevyProgramItem, edit: boolean) => {
+    const handleEditProgram = (program: HevyProgramItem) => {
         for (const routine of program.program) {
             routine.folder_id = 0;
         }
         localStorage.setItem("hevy-program-in-progress", JSON.stringify(program.program));
-        router.push(`/build-program?edit=${String(edit)}&resume=true`);
+        router.push("/build-program?resume=true");
     };
 
     if (isLoadingHevy) {
@@ -203,7 +203,7 @@ export const HevyProgramsGrid: React.FC<HevyProgramsGridProps> = ({ hevyPrograms
                     <HevyProgramCard
                         key={index}
                         program={program}
-                        onEdit={() => handleEditProgram(program, true)}
+                        onEdit={() => handleEditProgram(program)}
                     />
                 ))}
             </div>

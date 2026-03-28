@@ -3,19 +3,16 @@
 /**
  * @module HevyRoutine
  * Main Hevy program builder view: week columns (or single week on mobile with prev/next), scroll and step UI,
- * and dialogs for add exercise, add note, add exercise note. Delegates to HevyColumn per week; in preview mode shows HevyRoutinePreview.
- * Depends on: HevyColumn, HevyAddExerciseDialog, HevyAddNoteDialog, HevyExerciseNotesDialog, HevyRoutinePreview, deFlattenHevyRoutine, Stepper.
+ * and dialogs for add exercise, add note, add exercise note. Delegates to HevyColumn per week.
+ * Depends on: HevyColumn, HevyAddExerciseDialog, HevyAddNoteDialog, HevyExerciseNotesDialog, Stepper.
  * Used by: BuildProgramClient.
  */
 
 import { useHevyCustomExercises, useHevyExercises, useHevySecret } from "@/api/hooks";
 import { HevyColumn } from "./HevyColumn";
 import { HevyAddExerciseDialog } from "./HevyAddExerciseDialog";
-import { deFlattenHevyRoutine } from "../utils";
 import { HevyAddNoteDialog } from "./HevyAddNoteDialog";
 import { HevyExerciseNotesDialog } from "./HevyExerciseNotesDialog";
-import { HevyRoutinePreview } from "./HevyRoutinePreview";
-import { usePreview } from "@/contexts/PreviewContext";
 import { Stepper } from "@/components/ui/stepper";
 import { programBuilderSteps } from "@/assets/constants";
 import { SetTypesLegend } from "../shared/SetTypesLegend";
@@ -88,7 +85,7 @@ interface IProps {
 }
 
 /**
- * Renders either preview (HevyRoutinePreview) or builder: week columns, scroll/stepper, and add-exercise/note dialogs.
+ * Renders week columns, scroll/stepper, and add-exercise/note dialogs.
  */
 export const HevyRoutine: React.FC<IProps> = (props) => {
 
@@ -127,9 +124,6 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     const { data: hevyApiKey } = useHevySecret(user);
     const { data: customExercises } = useHevyCustomExercises(user, hevyApiKey ?? "");
     const { data: hevyExercises } = useHevyExercises();
-
-    const { isPreview } = usePreview();
-
 
     const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -194,23 +188,12 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
 
     return (
         <>
-            { isPreview ?
-                <div className="sm:pl-8">
-                    { !user &&
-                        <div className="max-sm:hidden flex flex-row justify-start items-center max-sm:px-4 sm:px-0 pb-4 max-sm:pb-0 max-sm:gap-4 max-sm:flex-wrap">
-                            <Stepper steps={programBuilderSteps} currentStep={3} legend={isMobile ? <SetTypesLegend /> : undefined} />
-                        </div>
-                    }
-                    <HevyRoutinePreview deflatHevyRoutine={ deFlattenHevyRoutine(hevyProgram) } />
+            { !user &&
+                <div className="max-sm:hidden flex flex-row justify-start items-center max-sm:px-4 sm:px-0 pb-2 max-sm:pb-0 max-sm:gap-4 max-sm:flex-wrap">
+                    <Stepper steps={programBuilderSteps} currentStep={2} legend={isMobile ? <SetTypesLegend /> : undefined} />
                 </div>
-            :
-                <>
-                    { !user &&
-                        <div className="max-sm:hidden flex flex-row justify-start items-center max-sm:px-4 sm:px-0 pb-2 max-sm:pb-0 max-sm:gap-4 max-sm:flex-wrap">
-                            <Stepper steps={programBuilderSteps} currentStep={2} legend={isMobile ? <SetTypesLegend /> : undefined} />
-                        </div>
-                    }
-                    { isMobile ? (
+            }
+            { isMobile ? (
                         <div className="flex flex-col h-full w-full max-w-full overflow-hidden">
                             <div className="flex flex-row items-center justify-between px-4 py-1 h-9 border-b shrink-0 w-full max-w-full">
                                 <Button
@@ -358,9 +341,6 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                         />
                     }
 
-                </>
-
-            }
         </>
     );
 };

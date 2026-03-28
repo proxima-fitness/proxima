@@ -76,7 +76,7 @@ export const ResumeDraftBanner: React.FC = () => {
             <div className="flex flex-row items-center justify-end sm:justify-start gap-2 w-full sm:w-auto shrink-0">
                 <Button asChild size="default" className="shrink-0 bg-lightSecondary text-white">
                     <Link
-                        href="/build-program?resume=true&edit=true"
+                        href="/build-program?resume=true"
                         target="_self"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2"

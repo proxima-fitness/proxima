@@ -259,7 +259,7 @@ export function AppSidebar() {
                                 ) : (
                                     recentChats.map((chat) => {
                                         const displayTitle = chat.title?.trim() || "Untitled chat";
-                                        const href = `/build-program?chat=${encodeURIComponent(chat.id)}&edit=true${
+                                        const href = `/build-program?chat=${encodeURIComponent(chat.id)}${
                                             chat.program_id
                                                 ? `&shareId=${encodeURIComponent(chat.program_id)}`
                                                 : ""

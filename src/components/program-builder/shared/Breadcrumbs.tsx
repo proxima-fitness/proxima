@@ -32,8 +32,8 @@
 
 /**
  * @module Breadcrumbs
- * Renders Program Builder breadcrumb trail (Program Builder → Build Program → Review Program) with optional click-to-preview.
- * Depends on: PreviewContext, ui/breadcrumb. Used by: build-program layout / toolbar.
+ * Renders breadcrumb trail (Home → Build Program when on build-program).
+ * Depends on: ui/breadcrumb. Used by: build-program layout / toolbar.
  */
 "use client";
 
@@ -45,31 +45,14 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { usePreview } from "@/contexts/PreviewContext";
 
 export const Breadcrumbs: React.FC = () => {
-  const path = usePathname();
-  const segments = path.split("/").filter(Boolean);
-
-  const { setIsPreview } = usePreview();
+  const segments = usePathname().split("/").filter(Boolean);
 
   const breadcrumbs = [
     { href: "/", label: "Home" },
     ...(segments.includes("build-program")
-      ? [
-          {
-            onClick: () => setIsPreview(false),
-            label: "Build Program",
-          },
-        ]
-      : []),
-    ...(segments.includes("review-program")
-      ? [
-          {
-            onClick: () => setIsPreview(true),
-            label: "Review Program",
-          },
-        ]
+      ? [{ href: "/build-program", label: "Build Program" }]
       : []),
   ];
 
@@ -83,17 +66,7 @@ export const Breadcrumbs: React.FC = () => {
           >
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              {"href" in bc ? (
-                <BreadcrumbLink href={bc.href}>{bc.label}</BreadcrumbLink>
-              ) : (
-                <button
-                  onClick={bc.onClick}
-                  className="text-sm"
-                  aria-label={`Go to ${bc.label}`}
-                >
-                  {bc.label}
-                </button>
-              )}
+              <BreadcrumbLink href={bc.href}>{bc.label}</BreadcrumbLink>
             </BreadcrumbItem>
           </div>
         ))}

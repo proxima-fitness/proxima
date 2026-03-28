@@ -329,9 +329,9 @@ export const PromptTemplate: React.FC = () => {
             } catch {
                 // quota or other; fall back to truncation
             }
-            router.push(`/build-program?search=${encodeURIComponent(LONG_PROMPT_PLACEHOLDER)}&edit=true`);
+            router.push(`/build-program?search=${encodeURIComponent(LONG_PROMPT_PLACEHOLDER)}`);
         } else {
-            router.push(`/build-program?search=${encodeURIComponent(search)}&edit=true`);
+            router.push(`/build-program?search=${encodeURIComponent(search)}`);
         }
     };
 

@@ -14,7 +14,7 @@ import { useUserContext } from "@/contexts/UserContext";
 import posthog from "posthog-js";
 // import { ShareDialog } from "./ShareDialog";
 
-const BUILD_PROGRAM_PATH = "/build-program?resume=true&edit=true";
+const BUILD_PROGRAM_PATH = "/build-program?resume=true";
 const LOGIN_WITH_NEXT = `/auth/login?next=${encodeURIComponent(BUILD_PROGRAM_PATH)}`;
 
 /** Shows Loading, Sign in link, or Export button; Export opens ExportDialog. */

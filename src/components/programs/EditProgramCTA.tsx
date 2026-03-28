@@ -27,7 +27,7 @@ export const EditProgramCTA: React.FC<IProps> = ({ programId }) => {
                 <h2 className="font-main text-4xl pt-4 font-bold text-black dark:text-white">Personalize Program</h2>
                 <div className="pt-6">
                     <Link
-                        href={`/build-program?shareId=${programId.toString()}&edit=true`}
+                        href={`/build-program?shareId=${programId.toString()}`}
                         className="flex flex-row items-center text-white bg-lightSecondary hover:bg-black  justify-center gap-3 px-6 py-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors text-white"
                     >
                         <SparklesIcon className="w-5 h-5" />

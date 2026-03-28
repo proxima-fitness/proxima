@@ -4,7 +4,7 @@
 
 All parameters are read client-side via `useSearchParams()`:
 
-- [`BuildProgram.tsx`](../src/app/(app)/(with-toolbar)/build-program/BuildProgram.tsx) — `shareId`, `edit`, `resume`, `empty`, `search`
+- [`BuildProgram.tsx`](../src/app/(app)/(with-toolbar)/build-program/BuildProgram.tsx) — `shareId`, `resume`, `empty`, `search`
 - [`use-build-program-chat.ts`](../src/app/(app)/(with-toolbar)/build-program/use-build-program-chat.ts) — `search`, `shareId`, `chat`, `new`
 
 Shared-program loading uses the same “valid `shareId`” rule as `isBuildProgramShareIdParam` in [`BuildProgram.tsx`](../src/app/(app)/(with-toolbar)/build-program/BuildProgram.tsx) (non-empty, parses to a finite number &gt; 0). [`use-build-program-chat.ts`](../src/app/(app)/(with-toolbar)/build-program/use-build-program-chat.ts) mirrors that logic for the initial-send guard. The legacy `shared` query key is not read; old URLs that still include `shared=true` behave correctly as long as `shareId` is present.
@@ -15,8 +15,7 @@ No additional query keys are consumed by the build-program `page.tsx` or `layout
 
 ### `edit`
 
-- **What it does:** Only the literal string `edit=true` turns **off** preview mode (`setIsPreview(false)`). Any other value (missing, `false`, empty) leaves **preview mode on** (`setIsPreview(true)`).
-- **Edge cases:** [`HevyProgramsGrid`](../src/components/program-builder/hevy/HevyProgramsGrid.tsx) navigates with `edit=${String(boolean)}` (`"true"` / `"false"`). `edit=false` behaves like omitting `edit` (preview). Product links from landing ([`PromptTemplate`](../src/components/program-builder/shared/PromptTemplate.tsx), [`routes.ts`](../src/components/program-builder/utils/routes.ts)) consistently use `edit=true`.
+- **Status:** Not read by the app today. The `edit` query key is reserved for a future feature. Old bookmarks or links that include `edit=true` or other values have no effect on builder behavior.
 
 ### `resume`
 
@@ -26,7 +25,7 @@ No additional query keys are consumed by the build-program `page.tsx` or `layout
 ### `shareId`
 
 - **What it does:** When present and valid (see `isBuildProgramShareIdParam`), [`BuildProgram.tsx`](../src/app/(app)/(with-toolbar)/build-program/BuildProgram.tsx) calls `getSharedProgram(Number(shareId))` and, on success, replaces the editor program. Sets `sharedProgramLoadAttemptedRef` when the fetch finishes (success or not). Also used in sidebar links with `chat` to reopen a program tied to a saved chat ([`AppSidebar.tsx`](../src/components/AppSidebar.tsx) — recent chat links).
-- **Edge cases:** Invalid values (empty, non-numeric, zero, or negative) do not trigger a fetch. Async fetch can **race** with other program sources (`resume`, `empty`) if multiple flags are set. The first-message auto-send in `useBuildProgramChat` **defers** until the shared load is no longer blocked when `shareId` is valid, `hevyProgram` is still empty, and `sharedProgramLoadAttemptedRef` is not yet set (see [`use-build-program-chat.ts`](../src/app/(app)/(with-toolbar)/build-program/use-build-program-chat.ts)). View-only links omit `edit=true` ([`AiProgramGrid`](../src/components/program-builder/shared/AiProgramGrid.tsx) “View” vs “Edit”).
+- **Edge cases:** Invalid values (empty, non-numeric, zero, or negative) do not trigger a fetch. Async fetch can **race** with other program sources (`resume`, `empty`) if multiple flags are set. The first-message auto-send in `useBuildProgramChat` **defers** until the shared load is no longer blocked when `shareId` is valid, `hevyProgram` is still empty, and `sharedProgramLoadAttemptedRef` is not yet set (see [`use-build-program-chat.ts`](../src/app/(app)/(with-toolbar)/build-program/use-build-program-chat.ts)).
 
 ### `empty`
 
@@ -41,7 +40,7 @@ No additional query keys are consumed by the build-program `page.tsx` or `layout
 ### `chat`
 
 - **What it does:** Chat history id; [`useChatHistory`](../src/api/hooks.ts) loads messages and hydrates the UI when data arrives.
-- **Edge cases:** Disables the initial `search` auto-send (`if (chatId) return` at the start of that effect). Often paired with `shareId` + `edit` from the sidebar for a full “resume conversation + program” experience.
+- **Edge cases:** Disables the initial `search` auto-send (`if (chatId) return` at the start of that effect). Often paired with `shareId` from the sidebar for a full “resume conversation + program” experience.
 
 ### `new`
 
@@ -55,7 +54,6 @@ No additional query keys are consumed by the build-program `page.tsx` or `layout
 ```mermaid
 flowchart LR
   subgraph params [Query params]
-    edit
     resume
     shareId
     empty
@@ -64,11 +62,9 @@ flowchart LR
     new
   end
   subgraph effects [Main effects]
-    preview[PreviewContext]
     program[Hevy program state]
     chatState[Messages / history]
   end
-  edit --> preview
   resume --> program
   shareId --> program
   empty --> program
