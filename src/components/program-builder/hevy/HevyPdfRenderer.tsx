@@ -146,7 +146,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                 color: "#6B7280",
                                 paddingTop: "2px",
                             } }
-                            render={({ subPageNumber }) => `Rotation ${subPageNumber}`}
+                            render={({ subPageNumber }) => `Part ${subPageNumber}`}
                         />
                         <Text style={ { fontSize: "8px", fontFamily: "Russo One" } }>
                             © 2026 Proxima Fitness Inc.
