@@ -14,6 +14,7 @@ import apple from "./apple.svg";
 import proxima_logo from "./proxima_logo_blue-04.svg";
 import proxima_logo_white_full_text from "./proxima-logo-white.svg";
 import proxima_logo_small from "./proxima_logo_blue_small.svg";
+import icon_background_white from "./icon-background-white.jpg";
 import arnold from "./arnold.jpg";
 import google from "./google.svg";
 import arrow_up from "./arrow-up.svg";
@@ -122,4 +123,5 @@ export {
     google_sheets_logo_icon,
     proxima_logo_white,
     jack_small,
+    icon_background_white,
 }

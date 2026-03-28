@@ -2,9 +2,10 @@
 
 /**
  * @module HevyPdfRenderer
- * Renders the Hevy program as a multi-page PDF document (weeks as pages, days as cards with exercises).
- * Uses @react-pdf/renderer; supports weight unit via PoundsOrKgContext or isInLbs prop. Ends with a thank-you page.
- * Depends on: @react-pdf/renderer, formatWeight/getWeightUnit, shortEnglishHumanizer, Russo One font.
+ * Renders the Hevy program as a multi-page PDF document: title page (Proxima logo + slogan), then weeks as pages
+ * with days as cards and exercises, then a thank-you page.
+ * Uses @react-pdf/renderer; supports weight unit via PoundsOrKgContext or isInLbs prop.
+ * Depends on: @react-pdf/renderer, formatWeight/getWeightUnit, shortEnglishHumanizer, Russo One font, proxima_logo_title asset.
  * Used by: ExportDialog (and optionally SaveDialog).
  */
 
@@ -12,8 +13,8 @@ import { shortEnglishHumanizer } from "@/assets/constants";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { routineNotesForExport } from "@/lib/proximaExportAttribution";
 import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
-import { Page, Text, View, Document} from "@react-pdf/renderer";
-import { Font } from '@react-pdf/renderer';
+import { Document, Font, Image, Page, Text, View } from "@react-pdf/renderer";
+import { icon_background_white } from "public";
 
 // Register the font
 Font.register({
@@ -42,7 +43,7 @@ interface IProps {
 }
 
 /**
- * Renders a full program PDF: one page per week, day cards with exercises (sets/reps/intensity), then thank-you page.
+ * Renders a full program PDF: title page, one page per week with day cards and exercises, then thank-you page.
  */
 export const HevyPdfRenderer: React.FC<IProps> = (props) => {
 
@@ -54,8 +55,59 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
     const { isInLbs: contextIsInLbs } = usePoundsOrKgContext();
     const isInLbs = isInLbsProp ?? contextIsInLbs;
 
+    const logoSrc = (icon_background_white as { src: string }).src;
+
     return (
         <Document>
+            <Page
+                orientation="landscape"
+                size="A4"
+                style={ {
+                    padding: "24px",
+                    height: "100%",
+                    backgroundColor: "#FFFFFF",
+                } }
+            >
+                <View
+                    style={ {
+                        height: "100%",
+                        width: "100%",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        alignItems: "center",
+                    } }
+                >
+                    { /* eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer Image is not a DOM img */ }
+                    <Image
+                        src={ logoSrc }
+                        style={ { width: "320" } }
+                    />
+                    <View style={ { marginTop: "28px", alignItems: "center" } }>
+                        <Text
+                            style={ {
+                                fontFamily: "Russo One",
+                                fontSize: "28px",
+                                textAlign: "center",
+                                color: "#111827",
+                            } }
+                        >
+                            Proxima Fitness
+                        </Text>
+                        <Text
+                            style={ {
+                                fontFamily: "Russo One",
+                                fontSize: "24px",
+                                textAlign: "center",
+                                marginTop: "10px",
+                                color: "#111827",
+                            } }
+                        >
+                            Leave No Gains On The Table
+                        </Text>
+                    </View>
+                </View>
+            </Page>
             { hevyRoutine.map((week, index) => (
                 <Page
                     key={ `Week ${index}` }
