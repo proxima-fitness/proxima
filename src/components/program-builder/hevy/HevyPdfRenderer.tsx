@@ -306,7 +306,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                     <Text style={ { paddingVertical: "4px" } }>I hope this custom workout program helps you make the gains you were after. Respect for putting in the work!</Text>
                     <Text style={ { paddingVertical: "4px" } }>As a special thank you, enjoy 30% off your first year of Proxima Fitness - agentic workout programming .</Text>
                     <Text style={ { paddingVertical: "4px" } }>Your program will be saved to your Proxima Fitness account in case you want to come back and edit it.</Text>
-                    <Text style={ { paddingVertical: "4px", fontWeight: "bold" } }>Use code: GAINS30 at checkout</Text>
+                    <Text style={ { paddingVertical: "4px", fontWeight: "bold" } }>Use code: HEVY30 at checkout</Text>
                     <Text style={ { paddingVertical: "4px" } }>Subscribe at https://proximafitness.com and leave no gains on the table!</Text>
                     <View style={ { paddingVertical: "4px", display: "flex", flexDirection: "column", gap: "4px" } }>
                         <Text>Jack</Text>
