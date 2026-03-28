@@ -5,8 +5,8 @@
  * @module MobileSidebarHeader
  * Minimal header shown only at max-sm: sidebar trigger and logo. Lets users open
  * the sidebar sheet on small viewports when the persistent sidebar is hidden.
- * On build-program route, shows Export (StepButton) in the top navbar.
- * Depends on: CustomSidebarTrigger, SidebarProvider (useSidebar), public logo assets, StepButton.
+ * On build-program route, shows mode toggle + Export/Sync (BuildProgramToolbarEnd) in the top navbar.
+ * Depends on: CustomSidebarTrigger, SidebarProvider (useSidebar), public logo assets, BuildProgramToolbarEnd.
  * Used by: (app) layout.
  */
 import Link from "next/link";
@@ -16,8 +16,11 @@ import { Suspense } from "react";
 import { CustomTrigger } from "@/components/CustomSidebarTrigger";
 import { proxima_logo_black, proxima_logo_white } from "public";
 
-const StepButton = dynamic(
-  () => import("@/components/program-builder/shared/StepButton").then(m => ({ default: m.StepButton })),
+const BuildProgramToolbarEnd = dynamic(
+  () =>
+    import("@/components/program-builder/shared/BuildProgramToolbarEnd").then(m => ({
+      default: m.BuildProgramToolbarEnd,
+    })),
   { ssr: false, loading: () => <div className="w-10" aria-hidden /> }
 );
 
@@ -45,7 +48,7 @@ export function MobileSidebarHeader() {
       </Link>
       {isBuildProgram ? (
         <Suspense fallback={<div className="w-10" aria-hidden />}>
-          <StepButton />
+          <BuildProgramToolbarEnd />
         </Suspense>
       ) : (
         <div className="w-10" aria-hidden />

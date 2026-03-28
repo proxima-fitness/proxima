@@ -10,7 +10,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NavDrawer } from "./NavDrawer";
-import { StepButton } from "@/components/program-builder/shared/StepButton";
+import { BuildProgramToolbarEnd } from "@/components/program-builder/shared/BuildProgramToolbarEnd";
 import { proxima_logo, proxima_logo_white_full_text, proxima_logo_black, proxima_logo_white } from "public";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -452,7 +452,7 @@ export const Navbar: React.FC = () => {
                 <div className="flex-1 flex justify-end items-center min-w-0">
                     {pathname.startsWith("/build-program") ? (
                         <Suspense fallback={<div className="w-10" aria-hidden />}>
-                            <StepButton />
+                            <BuildProgramToolbarEnd />
                         </Suspense>
                     ) : (
                         <div />

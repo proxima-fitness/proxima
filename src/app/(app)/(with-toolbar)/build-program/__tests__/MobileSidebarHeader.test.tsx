@@ -3,7 +3,9 @@ import { render, screen } from "@testing-library/react";
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/build-program" }));
 vi.mock("@/components/CustomSidebarTrigger", () => ({ CustomTrigger: () => null }));
-vi.mock("@/components/program-builder/shared/StepButton", () => ({ StepButton: () => null }));
+vi.mock("@/components/program-builder/shared/BuildProgramToolbarEnd", () => ({
+    BuildProgramToolbarEnd: () => null,
+}));
 
 import { MobileSidebarHeader } from "@/components/header/MobileSidebarHeader";
 

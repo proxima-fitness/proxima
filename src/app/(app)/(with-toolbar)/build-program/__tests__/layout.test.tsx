@@ -3,7 +3,9 @@ import { render } from "@testing-library/react";
 
 // Mock dependencies used by ProgramBuilderLayout so we only assert its wrapper classes.
 vi.mock("@/components/program-builder/shared/Breadcrumbs", () => ({ Breadcrumbs: () => null }));
-vi.mock("@/components/program-builder/shared/StepButton", () => ({ StepButton: () => null }));
+vi.mock("@/components/program-builder/shared/BuildProgramToolbarEnd", () => ({
+    BuildProgramToolbarEnd: () => null,
+}));
 vi.mock("@/app/(app)/(with-toolbar)/build-program/BuildProgram", () => ({ BuildProgram: () => null }));
 vi.mock("@/components/program-builder/shared/BuildProgramSkeletonSSR", () => ({
     BuildProgramSkeletonSSR: () => null,
