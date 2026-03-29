@@ -5,9 +5,9 @@
  */
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import Confetti from "react-confetti";
+import { useHevySuccessConfetti } from "./useHevySuccessConfetti";
 import { useUserContext } from "@/contexts/UserContext";
 import { useHevySecret, useMyFeatureLimits } from "@/api/hooks";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -92,10 +92,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
     const [isEditingApiKey, setIsEditingApiKey] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [showExportSuccess, setShowExportSuccess] = useState(false);
-    const [showConfetti, setShowConfetti] = useState(false);
-    const [confettiNonce, setConfettiNonce] = useState(0);
-    const [confettiSize, setConfettiSize] = useState({ width: 0, height: 0 });
-    const confettiTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const { confettiOverlay, fireConfetti, resetConfetti } = useHevySuccessConfetti();
     const [uploadProgress, setUploadProgress] = useState<{
         uploaded: number;
         total: number;
@@ -243,11 +240,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
         }
 
         setShowExportSuccess(false);
-        setShowConfetti(false);
-        if (confettiTimeoutRef.current) {
-            clearTimeout(confettiTimeoutRef.current);
-            confettiTimeoutRef.current = null;
-        }
+        resetConfetti();
 
         setIsUploading(true);
 
@@ -336,18 +329,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                 toast.success("Program uploaded to Hevy and saved to your Profile");
                 posthog?.capture?.("exported_program", { user: user?.id ?? "user_id_unknown", destination: "hevy" });
                 setShowExportSuccess(true);
-                if (typeof window !== "undefined") {
-                    setConfettiSize({ width: window.innerWidth, height: window.innerHeight });
-                }
-                setConfettiNonce((n) => n + 1);
-                setShowConfetti(true);
-                if (confettiTimeoutRef.current) {
-                    clearTimeout(confettiTimeoutRef.current);
-                }
-                confettiTimeoutRef.current = setTimeout(() => {
-                    setShowConfetti(false);
-                    confettiTimeoutRef.current = null;
-                }, 4500);
+                fireConfetti();
                 if (!skipUsageTracking) {
                     incrementExportsUsed(undefined, {
                         onError: (err) => console.error("Failed to record export usage", err),
@@ -371,17 +353,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
 
     return (
         <div className="relative w-full min-w-0 overflow-x-hidden bg-muted border border-border rounded-lg p-6 sm:p-8">
-            {showConfetti && confettiSize.width > 0 && confettiSize.height > 0 && (
-                <div className="pointer-events-none fixed inset-0 z-100" aria-hidden>
-                    <Confetti
-                        key={confettiNonce}
-                        width={confettiSize.width}
-                        height={confettiSize.height}
-                        recycle={false}
-                        numberOfPieces={220}
-                    />
-                </div>
-            )}
+            {confettiOverlay}
             <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold tracking-tight">Export to Hevy</h3>
                 <span className="text-sm text-muted-foreground">

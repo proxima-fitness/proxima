@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ExportDialog } from "./ExportDialog";
 import { SyncToHevyDialog } from "./SyncToHevyDialog";
+import { useHevySuccessConfetti } from "./useHevySuccessConfetti";
 import { useUserContext } from "@/contexts/UserContext";
 import posthog from "posthog-js";
 import { toast } from "sonner";
@@ -31,6 +32,7 @@ export const StepButton: React.FC = () => {
     const [openExportDialog, setOpenExportDialog] = useState(false);
     const [openSyncDialog, setOpenSyncDialog] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
+    const { confettiOverlay, fireConfetti } = useHevySuccessConfetti();
 
     const handleSyncConfirm = async () => {
         setIsSyncing(true);
@@ -39,6 +41,7 @@ export const StepButton: React.FC = () => {
             await Promise.resolve();
             toast.info("Hevy program update will connect here once the API is ready.");
             setOpenSyncDialog(false);
+            fireConfetti();
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Sync failed.");
         } finally {
@@ -97,6 +100,7 @@ export const StepButton: React.FC = () => {
                     onConfirm={handleSyncConfirm}
                     isSyncing={isSyncing}
                 />
+                {confettiOverlay}
             </>
         );
     }

@@ -65,12 +65,12 @@ export function BuildProgramModeMenu({ className, triggerClassName }: IBuildProg
                 <DropdownMenuRadioGroup value={value} onValueChange={applyMode}>
                     <DropdownMenuRadioItem value="new" className="cursor-pointer">
                         New
-                        <span className="ml-2 text-xs text-muted-foreground">Export as new</span>
+                        <span className="ml-2 text-xs text-muted-foreground">Export as New</span>
                     </DropdownMenuRadioItem>
                     {hevyMode ? (
                         <DropdownMenuRadioItem value="edit" className="cursor-pointer">
                             Edit
-                            <span className="ml-2 text-xs text-muted-foreground">Sync to existing</span>
+                            <span className="ml-2 text-xs text-muted-foreground">Sync to Hevy</span>
                         </DropdownMenuRadioItem>
                     ) : null}
                 </DropdownMenuRadioGroup>
