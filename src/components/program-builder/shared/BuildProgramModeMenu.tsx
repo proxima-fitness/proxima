@@ -1,7 +1,7 @@
 /**
  * @module BuildProgramModeMenu
- * Dropdown menu for selecting New (export) or Edit (sync) mode via `edit=true` URL param.
- * Designed to look like a breadcrumb segment (ghost trigger + chevrons icon).
+ * Breadcrumb dropdown for program mode. With `hevy=true`, offers New vs Edit (`edit=true`).
+ * Without `hevy`, the dropdown only lists New (no Edit option).
  * Depends on: DropdownMenu, next/navigation. Used by: Breadcrumbs (desktop).
  */
 "use client";
@@ -27,8 +27,9 @@ export function BuildProgramModeMenu({ className, triggerClassName }: IBuildProg
     const pathname = usePathname();
     const router = useRouter();
     const searchParams = useSearchParams();
-    const isEditMode = searchParams.get("edit") === "true";
-    const value = isEditMode ? "edit" : "new";
+    const hevyMode = searchParams.get("hevy") === "true";
+    const editMode = searchParams.get("edit") === "true";
+    const value = (editMode && hevyMode) ? "edit" : "new";
 
     const applyMode = useCallback(
         (next: string) => {
@@ -49,12 +50,12 @@ export function BuildProgramModeMenu({ className, triggerClassName }: IBuildProg
         <DropdownMenu>
             <DropdownMenuTrigger
                 className={cn(
-                    "inline-flex items-center gap-1 text-sm text-foreground transition-colors hover:text-foreground/80 focus-visible:outline-none cursor-pointer select-none",
+                    " cursor-pointer inline-flex items-center gap-1 text-sm text-foreground transition-colors hover:text-foreground/80 focus-visible:outline-none select-none",
                     triggerClassName
                 )}
-                aria-label="Switch program mode"
+                aria-label={hevyMode ? "Switch program mode" : "Program mode"}
             >
-                <span>{isEditMode ? "Edit" : "New"}</span>
+                <span>{(editMode && hevyMode) ? "Edit" : "New"}</span>
                 <ChevronsUpDown className="size-3.5 text-muted-foreground" />
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -62,14 +63,16 @@ export function BuildProgramModeMenu({ className, triggerClassName }: IBuildProg
                 className={cn("min-w-36", className)}
             >
                 <DropdownMenuRadioGroup value={value} onValueChange={applyMode}>
-                    <DropdownMenuRadioItem value="new">
+                    <DropdownMenuRadioItem value="new" className="cursor-pointer">
                         New
                         <span className="ml-2 text-xs text-muted-foreground">Export as new</span>
                     </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="edit">
-                        Edit
-                        <span className="ml-2 text-xs text-muted-foreground">Sync to existing</span>
-                    </DropdownMenuRadioItem>
+                    {hevyMode ? (
+                        <DropdownMenuRadioItem value="edit" className="cursor-pointer">
+                            Edit
+                            <span className="ml-2 text-xs text-muted-foreground">Sync to existing</span>
+                        </DropdownMenuRadioItem>
+                    ) : null}
                 </DropdownMenuRadioGroup>
             </DropdownMenuContent>
         </DropdownMenu>

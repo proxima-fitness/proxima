@@ -14,7 +14,6 @@ import { NotepadTextIcon, EditIcon, ChevronLeft, ChevronRight, ChevronDown, Plus
 import { useRouter } from "next/navigation";
 import { hevy_logo } from "public";
 import { Button } from "@/components/ui/button";
-import { BUILD_PROGRAM_EMPTY_URL } from "@/components/program-builder/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
     DropdownMenu,
@@ -142,7 +141,7 @@ export const HevyProgramsGrid: React.FC<HevyProgramsGridProps> = ({ hevyPrograms
             routine.folder_id = 0;
         }
         localStorage.setItem("hevy-program-in-progress", JSON.stringify(program.program));
-        router.push("/build-program?resume=true&edit=true");
+        router.push("/build-program?resume=true&edit=true&hevy=true");
     };
 
     if (isLoadingHevy) {
@@ -170,7 +169,7 @@ export const HevyProgramsGrid: React.FC<HevyProgramsGridProps> = ({ hevyPrograms
                     <NotepadTextIcon className="mr-2 size-7" />
                     My Hevy Programs
                 </h2>
-                <Link href={BUILD_PROGRAM_EMPTY_URL} target="_self" rel="noopener noreferrer">
+                <Link href={"/build-program?empty=true"} target="_self" rel="noopener noreferrer">
                     <Button variant="outline">New Program<Plus className="ml-2 size-4" /></Button>
                 </Link>
             </div>

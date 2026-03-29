@@ -1,7 +1,7 @@
 /**
  * @module StepButton
  * CTA for program builder: "Sign in to save" when anonymous; when logged in, "Export"
- * (opens ExportDialog) or "Sync" (opens SyncToHevyDialog) when `edit=true`.
+ * (opens ExportDialog) or "Sync" (opens SyncToHevyDialog) when `edit=true` and `hevy=true`.
  * Depends on: ExportDialog, SyncToHevyDialog, useUserContext, useSearchParams. Used by: build-program toolbar / steps.
  */
 "use client";
@@ -23,8 +23,9 @@ const LOGIN_WITH_NEXT = `/auth/login?next=${encodeURIComponent(BUILD_PROGRAM_PAT
 /** Shows Loading, Sign in link, or Export / Sync; Export opens ExportDialog, Sync opens SyncToHevyDialog. */
 export const StepButton: React.FC = () => {
     const searchParams = useSearchParams();
-    const edit = searchParams.get("edit");
-    const isEditMode = edit === "true";
+    const editMode = searchParams.get("edit") === "true";
+    const hevyMode = searchParams.get("hevy") === "true";
+    const isSyncable = editMode && hevyMode;
 
     const { user, isLoading } = useUserContext();
     const [openExportDialog, setOpenExportDialog] = useState(false);
@@ -73,7 +74,7 @@ export const StepButton: React.FC = () => {
         );
     }
 
-    if (isEditMode) {
+    if (isSyncable) {
         return (
             <>
                 <Button

@@ -66,7 +66,6 @@ function isPostHevyRoutineProgramSuccess(r: unknown): r is PostHevyRoutineProgra
  */
 export function BuildProgram() {
 
-
     const { user } = useUserContext();
     const queryClient = useQueryClient();
     const searchParams = useSearchParams();

@@ -1,6 +1,6 @@
 /**
  * @module Breadcrumbs
- * Renders breadcrumb trail (Home → Build Program → New|Edit dropdown) on the build-program route.
+ * Renders breadcrumb trail (Home → Build Program → mode dropdown: New only, or New+Edit when `hevy=true`) on the build-program route.
  * Depends on: ui/breadcrumb, BuildProgramModeMenu. Used by: build-program layout / toolbar.
  */
 "use client";

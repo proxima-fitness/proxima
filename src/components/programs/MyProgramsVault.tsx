@@ -18,7 +18,6 @@ import { Card } from "@/components/ui/card";
 import { BookOpenTextIcon, Lock, Plus, SearchIcon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { BUILD_PROGRAM_EMPTY_URL } from "@/components/program-builder/utils";
 import posthog from "posthog-js";
 import { useEffect } from "react";
 
@@ -101,7 +100,7 @@ export const MyProgramsVault = () => {
                             <BookOpenTextIcon className="mr-2" />
                             My Programs
                         </h2>
-                        <Link href={BUILD_PROGRAM_EMPTY_URL} target="_self" rel="noopener noreferrer">
+                        <Link href={"/build-program?empty=true"} target="_self" rel="noopener noreferrer">
                             <Button variant="outline">New Program<Plus className="ml-2 size-4" /></Button>
                         </Link>
                     </div>
@@ -135,7 +134,7 @@ export const MyProgramsVault = () => {
                         <BookOpenTextIcon className="mr-2" />
                         My Programs ({programs.length})
                     </h2>
-                    <Link href={BUILD_PROGRAM_EMPTY_URL} target="_self" rel="noopener noreferrer">
+                    <Link href={"/build-program?empty=true"} target="_self" rel="noopener noreferrer">
                         <Button variant="outline">New Program<Plus className="ml-2 size-4" /></Button>
                     </Link>
                 </div>

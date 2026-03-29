@@ -6,8 +6,8 @@ All parameters are read client-side via `useSearchParams()`:
 
 - [`BuildProgram.tsx`](../src/app/(app)/(with-toolbar)/build-program/BuildProgram.tsx) — `shareId`, `resume`, `empty`, `search`
 - [`use-build-program-chat.ts`](../src/app/(app)/(with-toolbar)/build-program/use-build-program-chat.ts) — `search`, `shareId`, `chat`, `new`
-- [`StepButton.tsx`](../src/components/program-builder/shared/StepButton.tsx) (via [`BuildProgramToolbarEnd`](../src/components/program-builder/shared/BuildProgramToolbarEnd.tsx)) — `edit`
-- [`BuildProgramModeMenu.tsx`](../src/components/program-builder/shared/BuildProgramModeMenu.tsx) — `edit` (breadcrumb dropdown for switching mode)
+- [`StepButton.tsx`](../src/components/program-builder/shared/StepButton.tsx) (via [`BuildProgramToolbarEnd`](../src/components/program-builder/shared/BuildProgramToolbarEnd.tsx)) — `edit` and `hevy` (Sync only when both are `true`)
+- [`BuildProgramModeMenu.tsx`](../src/components/program-builder/shared/BuildProgramModeMenu.tsx) — `hevy` (dropdown only when `true`); `edit` when switching New vs Edit inside that session
 
 Shared-program loading uses the same “valid `shareId`” rule as `isBuildProgramShareIdParam` in [`BuildProgram.tsx`](../src/app/(app)/(with-toolbar)/build-program/BuildProgram.tsx) (non-empty, parses to a finite number &gt; 0). [`use-build-program-chat.ts`](../src/app/(app)/(with-toolbar)/build-program/use-build-program-chat.ts) mirrors that logic for the initial-send guard. The legacy `shared` query key is not read; old URLs that still include `shared=true` behave correctly as long as `shareId` is present.
 
@@ -15,10 +15,15 @@ No additional query keys are consumed by the build-program `page.tsx` or `layout
 
 ---
 
+### `hevy`
+
+- **What it does:** When `hevy=true`, the build-program session is allowed to offer **Hevy sync-to-existing** UI: the breadcrumb shows a **New / Edit** mode menu ([`BuildProgramModeMenu.tsx`](../src/components/program-builder/shared/BuildProgramModeMenu.tsx)), and the toolbar can show **Sync** when `edit=true` as well ([`StepButton.tsx`](../src/components/program-builder/shared/StepButton.tsx)). Typical entry: **Edit** on a program in the profile Hevy grid ([`HevyProgramsGrid.tsx`](../src/components/program-builder/hevy/HevyProgramsGrid.tsx)) navigates with `resume=true&edit=true&hevy=true`.
+- **Edge cases:** Without `hevy=true`, the mode menu is still a dropdown but only offers **New** (no Edit row). **`edit=true` alone does not enable Sync**; both `edit=true` and `hevy=true` are required.
+
 ### `edit`
 
-- **What it does:** When `edit=true`, the toolbar shows **Sync** instead of **Export** ([`StepButton.tsx`](../src/components/program-builder/shared/StepButton.tsx)). Sync opens a confirmation dialog; confirming will call the Hevy program **update** (PUT) flow once it is wired to the API. Typical entry: editing a synced Hevy program from the profile grid ([`HevyProgramsGrid.tsx`](../src/components/program-builder/hevy/HevyProgramsGrid.tsx)) navigates with `resume=true&edit=true`. On `sm+` breakpoints, mode is surfaced via a **breadcrumb dropdown** ([`BuildProgramModeMenu`](../src/components/program-builder/shared/BuildProgramModeMenu.tsx)) appended after "Build Program" in the breadcrumb trail. On sub-`sm` viewports (where breadcrumbs are hidden), the same dropdown renders inline in the toolbar. Both set or remove `edit=true` via `router.replace`, preserving all other query parameters (`resume`, `shareId`, `chat`, `search`, etc.).
-- **Edge cases:** Other values (e.g. `edit=false`) are not treated as edit mode; only the string `true` enables Sync. Without `edit=true`, behavior matches a normal build (Export).
+- **What it does:** Together with `hevy=true`, selects **Edit (sync)** vs **New (export)** in the breadcrumb menu and switches the primary toolbar action to **Sync** ([`StepButton.tsx`](../src/components/program-builder/shared/StepButton.tsx)). Sync opens a confirmation dialog; confirming will call the Hevy program **update** (PUT) flow once it is wired to the API. The menu sets or removes `edit=true` via `router.replace`, preserving other query parameters (`resume`, `hevy`, `shareId`, `chat`, `search`, etc.).
+- **Edge cases:** Other values (e.g. `edit=false`) are not treated as edit mode; only the string `true` counts. Without **`both`** `edit=true` and `hevy=true`, behavior matches a normal build (**Export**). A stray `edit=true` in the URL without `hevy=true` has no effect on Sync or the mode menu until the user navigates with both flags (e.g. from [`HevyProgramsGrid.tsx`](../src/components/program-builder/hevy/HevyProgramsGrid.tsx)).
 
 ### `resume`
 
@@ -33,7 +38,7 @@ No additional query keys are consumed by the build-program `page.tsx` or `layout
 ### `empty`
 
 - **What it does:** When `empty=true`, seeds the editor with `emptyHevyRoutineProgram` (ordered). Also flows into `programRequest.request` via [`useProgramRequestState`](../src/app/(app)/(with-toolbar)/build-program/use-program-request-state.ts) so the agent request payload includes the `empty` flag.
-- **Edge cases:** Conflicts with `resume=true` in the same navigation (empty wins synchronously after resume in the effect order). Typical entry: [`BUILD_PROGRAM_EMPTY_URL`](../src/components/program-builder/utils/routes.ts).
+- **Edge cases:** Conflicts with `resume=true` in the same navigation (empty wins synchronously after resume in the effect order). Typical entry: `/build-program?empty=true` (e.g. [`PromptTemplate.tsx`](../src/components/program-builder/shared/PromptTemplate.tsx), [`MyProgramsVault.tsx`](../src/components/programs/MyProgramsVault.tsx)).
 
 ### `search`
 
@@ -64,6 +69,7 @@ flowchart LR
     chat
     new
     edit
+    hevy
   end
   subgraph effects [Main effects]
     program[Hevy program state]
@@ -77,4 +83,5 @@ flowchart LR
   chat --> chatState
   new --> chatState
   edit --> toolbar
+  hevy --> toolbar
 ```
