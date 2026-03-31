@@ -24,7 +24,7 @@ export const StripeEmbeddedTable: React.FC = () => {
 
     const pricingTableId = process.env.NEXT_PUBLIC_STRIPE_PRICING_TABLE_ID;
     const darkPricingTableId = process.env.NEXT_PUBLIC_STRIPE_PRICING_TABLE_ID_DARK;
-
+    const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
     useEffect(() => {
         if (user) {
@@ -32,18 +32,17 @@ export const StripeEmbeddedTable: React.FC = () => {
         }
     }, [user]);
 
-    if (resolvedTheme === undefined) {
-        return (
-            <Skeleton className="min-h-[400px] w-full rounded-lg" />
-        );
-    }
-
-    const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
     if (!publishableKey) {
         return (
             <div className="min-h-[200px] flex items-center justify-center rounded-lg border border-dashed border-muted-foreground/25 text-muted-foreground text-sm">
                 Pricing table is not configured.
             </div>
+        );
+    }
+
+    if (resolvedTheme === undefined) {
+        return (
+            <Skeleton className="min-h-[400px] w-full rounded-lg" />
         );
     }
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { MAIN_DISCOUNT_CODE, MAIN_DISCOUNT_PERCENT } from "@/assets/constants/ui-constants";
+
 /*
  * @module HevyPromoBanner
  * @description Lightweight promo banner that advertises a discounted pricing code for Hevy users.
@@ -14,9 +16,9 @@ export function HevyPromoBanner() {
     return (
         <div className="mx-auto mb-8 max-w-xl rounded-xl border border-border bg-muted px-4 py-3 text-center">
             <p className="text-foreground font-medium">
-                Hi Hevy user! As a special thank you, enjoy 30% off on your first year on any plan using code:{" "}
+                Hi Hevy user! As a special thank you, enjoy {MAIN_DISCOUNT_PERCENT}% off on your first year on any plan using code:{" "}
                 <code className="rounded bg-foreground/10 px-2 py-0.5 font-mono text-sm font-semibold">
-                    HEVY30
+                    {MAIN_DISCOUNT_CODE}
                 </code>
             </p>
             <p className="mt-1 text-sm text-muted-foreground">

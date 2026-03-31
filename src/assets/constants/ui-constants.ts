@@ -24,3 +24,13 @@ export const LONG_PROMPT_PLACEHOLDER = "__long_prompt__";
 export const COLLAPSED_SIZE = 30;
 export const EXPANDED_SIZE = 70;
 export const CHAT_MESSAGES_KEY = "messages";
+
+export const MAIN_DISCOUNT_CODE = "HEVY30";
+export const MAIN_DISCOUNT_PERCENT = 30;
+
+/** Shown after a successful Calendly product-feedback booking on /pricing; create a matching Stripe promotion. */
+export const DISCOVERY_DISCOUNT_CODE = "DISCOVERY95";
+export const DISCOVERY_DISCOUNT_PERCENT = 95;
+
+/** Default Calendly event when `NEXT_PUBLIC_CALENDLY_URL` is unset (product feedback chat). */
+export const DEFAULT_CALENDLY_SCHEDULING_URL = "https://calendly.com/jack-proximafitness/product-feedback-chat";

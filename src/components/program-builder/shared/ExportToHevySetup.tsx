@@ -21,7 +21,7 @@ import {
     updateHevyApiKey,
     deleteHevyApiKey,
 } from "../api/hevy";
-import { RATE_LIMIT_EXHAUSTED_MESSAGE } from "@/assets/constants/ui-constants";
+import { MAIN_DISCOUNT_PERCENT, MAIN_DISCOUNT_CODE, RATE_LIMIT_EXHAUSTED_MESSAGE } from "@/assets/constants/ui-constants";
 import { postNewProgramSubscriber } from "@/api/programs";
 import { toast } from "sonner";
 import { validate } from "uuid";
@@ -608,7 +608,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                     {isFree && (
                         <p className="text-sm text-foreground">
                             Thanks for exporting! Upgrade for more exports and blind spot analysis. Use code{" "}
-                            <strong>HEVY30</strong> for 30% off on your first year.
+                            <strong>{MAIN_DISCOUNT_CODE}</strong> for {MAIN_DISCOUNT_PERCENT}% off on your first year.
                         </p>
                     )}
                 </div>
