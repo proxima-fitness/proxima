@@ -29,7 +29,7 @@ export const MAIN_DISCOUNT_CODE = "HEVY30";
 export const MAIN_DISCOUNT_PERCENT = 30;
 
 /** Shown after a successful Calendly product-feedback booking on /pricing; create a matching Stripe promotion. */
-export const DISCOVERY_DISCOUNT_CODE = "DISCOVERY95";
+export const DISCOVERY_DISCOUNT_CODE = "R95KMTWY";
 export const DISCOVERY_DISCOUNT_PERCENT = 95;
 
 /** Default Calendly event when `NEXT_PUBLIC_CALENDLY_URL` is unset (product feedback chat). */

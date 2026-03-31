@@ -5,7 +5,7 @@
  * Stripe plans table. Sits at src/app/(app)/pricing/page.tsx; route "/pricing".
  *
  * Depends on: HevyPromoBanner, PricingSignInCta, StripeEmbeddedTable.
- * Used by: Next.js (route "/pricing").
+ * Used by: Next.js (route "/pricing"). Stripe table is placed above promos so checkout stays high on the page.
  */
 
 import { HevyPromoBanner } from "@/components/pricing/HevyPromoBanner";
@@ -29,8 +29,8 @@ export default function PricingPage() {
                     </p>
                 </div>
                 <PricingSignInCta />
-                <HevyPromoBanner />
                 <StripeEmbeddedTable />
+                <HevyPromoBanner />
             </div>
         </section>
     );

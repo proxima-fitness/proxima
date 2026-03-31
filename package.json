@@ -99,6 +99,7 @@
     "posthog-js": "^1.335.2",
     "prettier": "^3.5.3",
     "react": "19.2.3",
+    "react-calendly": "^4.4.0",
     "react-confetti": "^6.4.0",
     "react-dom": "19.2.3",
     "react-dropzone": "^14.3.8",
