@@ -12,14 +12,22 @@ import {
     MAIN_DISCOUNT_PERCENT,
 } from "@/assets/constants/ui-constants";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 /*
  * @module HevyPromoBanner
- * @description Pricing promos: Hevy discount code and optional product-feedback call path with Calendly (code revealed after booking).
- * @dependsOn react-calendly, Tabs, ui-constants.
- * @usedBy /pricing page below the Stripe table.
+ * @description Pricing promos: Hevy discount and product-feedback Calendly path (95% code after booking).
+ * @dependsOn react-calendly, Separator, ui-constants.
+ * @usedBy /pricing accordion panel.
  */
+
+export type HevyPromoBannerProps = {
+    /** Merged onto the outer wrapper. */
+    className?: string;
+    /** Scrolls to the checkout section below (e.g. after booking a call). */
+    onJumpToCheckout?: () => void;
+};
 
 const PopupModal = dynamic(
     () => import("react-calendly").then((m) => m.PopupModal),
@@ -27,15 +35,14 @@ const PopupModal = dynamic(
 );
 
 const emptySubscribe = () => () => {};
-/** Portal target for Calendly modal (document.body on client-only; avoids setState in effects). */
 function getCalendlyPortalRoot(): HTMLElement | null {
     return typeof document !== "undefined" ? document.body : null;
 }
 
 /**
- * HevyPromoBanner shows Hevy and discovery-call discount options in a tabbed card.
+ * HevyPromoBanner stacks Hevy and discovery-call offers for use inside the pricing accordion.
  */
-export function HevyPromoBanner() {
+export function HevyPromoBanner({ className, onJumpToCheckout }: HevyPromoBannerProps = {}) {
     const calendlyUrl = process.env.NEXT_PUBLIC_CALENDLY_URL || DEFAULT_CALENDLY_SCHEDULING_URL;
     const portalRoot = useSyncExternalStore(emptySubscribe, getCalendlyPortalRoot, () => null);
     const [calendlyOpen, setCalendlyOpen] = useState(false);
@@ -50,49 +57,63 @@ export function HevyPromoBanner() {
     });
 
     return (
-        <div className="mx-auto mt-8 max-w-xl rounded-xl border border-border bg-muted px-4 py-3 text-center">
-            <Tabs defaultValue="hevy" className="w-full">
-                <TabsList className="mx-auto grid w-full max-w-md grid-cols-2">
-                    <TabsTrigger value="hevy">Hevy users</TabsTrigger>
-                    <TabsTrigger value="discovery">Product feedback call</TabsTrigger>
-                </TabsList>
-                <TabsContent value="hevy" className="mt-3">
-                    <p className="text-foreground font-medium">
-                        Hi Hevy user! As a special thank you, enjoy {MAIN_DISCOUNT_PERCENT}% off on your first year on any
-                        plan using code:{" "}
-                        <code className="rounded bg-foreground/10 px-2 py-0.5 font-mono text-sm font-semibold">
-                            {MAIN_DISCOUNT_CODE}
-                        </code>
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground">Offer expires April 1st, 2026.</p>
-                </TabsContent>
-                <TabsContent value="discovery" className="mt-3 space-y-3">
-                    {discoveryCodeRevealed ? (
-                        <>
-                            <p className="text-foreground font-medium">
-                                Thanks for booking. Use code{" "}
-                                <code className="rounded bg-foreground/10 px-2 py-0.5 font-mono text-sm font-semibold">
-                                    {DISCOVERY_DISCOUNT_CODE}
-                                </code>{" "}
-                                for {DISCOVERY_DISCOUNT_PERCENT}% off your first year on any plan.
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                                Apply the code at checkout in the pricing table above.
-                            </p>
-                        </>
-                    ) : (
-                        <>
-                            <p className="text-foreground text-sm font-medium leading-snug">
-                                Book a short product feedback chat on Calendly (include your phone number in the booking
-                                form). After you schedule, your {DISCOVERY_DISCOUNT_PERCENT}% off code appears here.
-                            </p>
-                            <Button type="button" size="sm" className="mt-1" onClick={() => setCalendlyOpen(true)}>
-                                Schedule a call
+        <div
+            className={cn(
+                "mx-auto mt-8 max-w-xl space-y-5 rounded-xl border border-border bg-muted px-4 py-3 text-left sm:text-center",
+                className,
+            )}
+        >
+            <div className="space-y-2">
+                <p className="text-sm font-semibold text-foreground">Hevy users</p>
+                <p className="text-foreground text-sm font-medium leading-snug">
+                    As a special thank you, enjoy {MAIN_DISCOUNT_PERCENT}% off on your first year on any plan
+                    using code:{" "}
+                    <code className="rounded bg-foreground/10 px-2 py-0.5 font-mono text-sm font-semibold">
+                        {MAIN_DISCOUNT_CODE}
+                    </code>
+                </p>
+                <p className="text-sm text-muted-foreground">Offer expires April 1st, 2026.</p>
+            </div>
+
+            <Separator className="bg-border" />
+
+            <div className="space-y-3">
+                <p className="text-sm font-semibold text-foreground">Product feedback call</p>
+                {discoveryCodeRevealed ? (
+                    <>
+                        <p className="text-sm font-medium leading-snug text-foreground">
+                            Thanks for booking. Use code{" "}
+                            <code className="rounded bg-foreground/10 px-2 py-0.5 font-mono text-sm font-semibold">
+                                {DISCOVERY_DISCOUNT_CODE}
+                            </code>{" "}
+                            for {DISCOVERY_DISCOUNT_PERCENT}% off your first year on any plan.
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                            Apply this code at checkout in the pricing table below.
+                        </p>
+                        {onJumpToCheckout ? (
+                            <Button type="button" size="sm" className="mt-1" onClick={() => onJumpToCheckout()}>
+                                View pricing and checkout
                             </Button>
-                        </>
-                    )}
-                </TabsContent>
-            </Tabs>
+                        ) : null}
+                    </>
+                ) : (
+                    <>
+                        <p className="text-sm font-medium leading-snug text-foreground">
+                            Book a 30 minute call with us to to talk about your goals, and what we could do for you. After our call, you will be provided with a {DISCOVERY_DISCOUNT_PERCENT}% off code for your first year on any plan.
+                        </p>
+                        <Button
+                            type="button"
+                            size="sm"
+                            className="bg-lightSecondary text-white hover:bg-lightSecondary/90"
+                            onClick={() => setCalendlyOpen(true)}
+                        >
+                            Schedule a call
+                        </Button>
+                    </>
+                )}
+            </div>
+
             {portalRoot ? (
                 <PopupModal
                     url={calendlyUrl}

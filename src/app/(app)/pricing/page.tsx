@@ -1,36 +1,32 @@
 /**
  * @module (app)/pricing/page
  *
- * Pricing page route. Renders pricing headline, sign-in CTA, Hevy promo, and
- * Stripe plans table. Sits at src/app/(app)/pricing/page.tsx; route "/pricing".
+ * Pricing page route. Renders headline, an accordion of promo codes and Calendly offer
+ * above the Stripe plans table, then sign-in CTA + embedded checkout.
  *
- * Depends on: HevyPromoBanner, PricingSignInCta, StripeEmbeddedTable.
- * Used by: Next.js (route "/pricing"). Stripe table is placed above promos so checkout stays high on the page.
+ * Depends on: PricingPageModes.
+ * Used by: Next.js (route "/pricing").
  */
 
-import { HevyPromoBanner } from "@/components/pricing/HevyPromoBanner";
-import { PricingSignInCta } from "@/components/pricing/PricingSignInCta";
-import { StripeEmbeddedTable } from "@/components/pricing/StripeEmbeddedTable";
+import { PricingPageModes } from "@/components/pricing/PricingPageModes";
 
 export const metadata = {
     title: "Pricing | Proxima Fitness",
     description: "Review our Pricing plans and our Free tier functionality",
 };
 
-/** Pricing page; sign-in CTA, Hevy promo, and Stripe table. */
+/** Pricing page; promos accordion then checkout. */
 export default function PricingPage() {
     return (
-        <section className="w-full py-12 md:py-12 lg:py-12 flex justify-center items-center bg-white dark:bg-extraDarkGray">
+        <section className="flex w-full items-center justify-center bg-white py-12 md:py-12 lg:py-12 dark:bg-extraDarkGray">
             <div className="container px-4 md:px-6">
-                <div className="text-center space-y-2">
-                    <h2 className="text-3xl text-foreground font-bold tracking-tighter sm:text-4xl md:text-5xl">Our Pricing Plans</h2>
-                    <p className="max-w-[600px] pb-12 text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400 mx-auto">
+                <div className="space-y-2 text-center">
+                    <h2 className="text-3xl font-bold tracking-tighter text-foreground sm:text-4xl md:text-5xl">Our Pricing Plans</h2>
+                    <p className="mx-auto max-w-[600px] pb-6 text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
                         Select the best plan that fits your needs.
                     </p>
                 </div>
-                <PricingSignInCta />
-                <StripeEmbeddedTable />
-                <HevyPromoBanner />
+                <PricingPageModes />
             </div>
         </section>
     );

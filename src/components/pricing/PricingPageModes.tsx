@@ -2,62 +2,49 @@
 
 /**
  * @module PricingPageModes
- * @description Page-level tabs: primary "Compare plans" (Stripe) vs "Discounts and calls" (promos).
- * @dependsOn Tabs, PricingSignInCta, StripeEmbeddedTable, HevyPromoBanner.
+ * @description Collapsible promos (accordion) above sign-in CTA and Stripe pricing table.
+ * @dependsOn Accordion, PricingSignInCta, StripeEmbeddedTable, HevyPromoBanner.
  * @usedBy /pricing
  */
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Percent } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { HevyPromoBanner } from "@/components/pricing/HevyPromoBanner";
 import { PricingSignInCta } from "@/components/pricing/PricingSignInCta";
 import { StripeEmbeddedTable } from "@/components/pricing/StripeEmbeddedTable";
 
-const PLANS_TAB = "plans";
-const OFFERS_TAB = "offers";
+const PRICING_CHECKOUT_ID = "pricing-checkout";
 
-/** Controlled pricing view: plans/checkout vs discount and Calendly offers. */
+function jumpToCheckout() {
+    document.getElementById(PRICING_CHECKOUT_ID)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/** Accordion for discounts above checkout; table stays visible without switching page modes. */
 export function PricingPageModes() {
-    const [tab, setTab] = useState(PLANS_TAB);
-
     return (
         <div className="space-y-6">
-            <p className="mx-auto max-w-xl text-center text-sm text-muted-foreground">
-                Have a promo code or want to save with a quick call?{" "}
-                <Button
-                    type="button"
-                    variant="link"
-                    className="h-auto p-0 align-baseline text-sm font-medium"
-                    onClick={() => setTab(OFFERS_TAB)}
-                >
-                    View discounts and calls
-                </Button>
-            </p>
-
-            <Tabs
-                value={tab}
-                onValueChange={setTab}
-                className="w-full"
+            <Accordion
+                type="single"
+                collapsible
+                className="mx-auto w-full max-w-lg rounded-xl border border-border px-4"
             >
-                <TabsList
-                    className="grid h-auto w-full grid-cols-2 p-1 sm:mx-auto sm:max-w-md"
- aria-label="Pricing page sections"
-                >
-                    <TabsTrigger value={PLANS_TAB}>Compare plans</TabsTrigger>
-                    <TabsTrigger value={OFFERS_TAB}>Discounts and calls</TabsTrigger>
-                </TabsList>
-                <TabsContent value={PLANS_TAB} className="mt-6 space-y-6 outline-none" tabIndex={0}>
-                    <PricingSignInCta />
-                    <StripeEmbeddedTable />
-                </TabsContent>
-                <TabsContent value={OFFERS_TAB} className="mt-6 outline-none" tabIndex={0}>
-                    <HevyPromoBanner
-                        className="mt-0"
-                        onRequestShowPlans={() => setTab(PLANS_TAB)}
-                    />
-                </TabsContent>
-            </Tabs>
+                <AccordionItem value="promos" className="border-b-0">
+                    <AccordionTrigger className="text-base hover:no-underline">
+                        <span className="flex items-center gap-2">
+                            <Percent className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+                            Promo codes
+                        </span>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                        <HevyPromoBanner className="mt-0 border-0 bg-transparent px-0 py-0" onJumpToCheckout={jumpToCheckout} />
+                    </AccordionContent>
+                </AccordionItem>
+            </Accordion>
+
+            <div id={PRICING_CHECKOUT_ID} className="scroll-mt-24 space-y-6">
+                <PricingSignInCta />
+                <StripeEmbeddedTable />
+            </div>
         </div>
     );
 }
