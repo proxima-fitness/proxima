@@ -46,7 +46,7 @@ export const defaultFetch = async <T>(url: string, apiKey: string): Promise<T> =
     });
 
     if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        throw new Error(`HTTP GET error! Status: ${response.status}`);
     }
 
     return (await response.json()) as T;
@@ -648,7 +648,38 @@ export const defaultPost = async <T, U = unknown>(url: string, apiKey: string, b
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      throw new Error(`HTTP POST error! Status: ${response.status}`);
+    }
+
+    return (await response.json()) as T;
+  };
+
+
+/**
+ * Generic authenticated PUT request against the Hevy public API.
+ *
+ * Wraps `fetch` with JSON content-type, the required `api-key` header,
+ * and automatic body serialisation / response parsing.
+ *
+ * @param url - Fully-qualified Hevy API URL to send the PUT to
+ * @param apiKey - User's Hevy API key for authentication
+ * @param body - Request payload (will be JSON-stringified)
+ * @returns The parsed JSON response body cast to `T`
+ * @throws {Error} On any non-2xx HTTP status
+ */
+export const defaultPut = async <T, U = unknown>(url: string, apiKey: string, body: U): Promise<T> => {
+    const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'api-key': apiKey,
+        },
+        body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP PUT error! Status: ${response.status}`);
     }
 
     return (await response.json()) as T;
@@ -1449,19 +1480,19 @@ export const sortWorkouts = (scheduleWorkouts: TScheduleWorkouts[]) => {
  * @param apiKey - The hevy api key
  * @returns The updated routine
  */
-// export const putRoutine = async (routineId: string, updateRoutine: THevyRoutineRequest, apiKey: string) => {
-//     const body: THevyRoutineRequestObject = {
-//         routine: updateRoutine,
-//     };
+export const putRoutine = async (routineId: string, updateRoutine: THevyRoutineRequest, apiKey: string) => {
+    const body: THevyRoutineRequestObject = {
+        routine: updateRoutine,
+    };
 
-//     const response = await defaultPut<THevyRoutineRequest, THevyRoutineRequestObject>(
-//         `https://api.hevyapp.com/v1/routines/${routineId}`,
-//         apiKey,
-//         body,
-//     );
+    const response = await defaultPut<THevyRoutineRequest, THevyRoutineRequestObject>(
+        `https://api.hevyapp.com/v1/routines/${routineId}`,
+        apiKey,
+        body,
+    );
 
-//     return response;
-// };
+    return response;
+};
 
 /**
  * APPENDS "  ✅" TO THE ROUTINE TITLE OF A COMPLETED ROUTINE
