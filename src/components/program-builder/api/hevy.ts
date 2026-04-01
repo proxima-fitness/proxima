@@ -272,13 +272,25 @@ export const getHevyRoutines = async (user: User | undefined | null, apiKey: str
 /** One exercise omitted from the saved program (e.g. not found in library). Caller should show a warning toast. */
 export type SkippedExercise = { exerciseName: string; reason: string };
 
-/** Success shape returned by postHevyRoutineProgram when the program is saved. */
-export type PostHevyRoutineProgramSuccess = {
+/** Success shape returned by {@link saveProgramToSupabase} when the program is saved. */
+export type SaveProgramToSupabaseSuccess = {
     status: "success";
     id: number;
     /** Exercises that were omitted; UI should show a warning toast per item. */
     skippedExercises?: SkippedExercise[];
 };
+
+/** Type guard for {@link SaveProgramToSupabaseSuccess}. */
+export function isSaveProgramToSupabaseSuccess(r: unknown): r is SaveProgramToSupabaseSuccess {
+    return (
+        typeof r === "object" &&
+        r !== null &&
+        "status" in r &&
+        (r as { status: string }).status === "success" &&
+        "id" in r &&
+        typeof (r as { id: unknown }).id === "number"
+    );
+}
 
 /**
  * Persists an AI-generated program to the Proxima Supabase database.
@@ -300,11 +312,11 @@ export type PostHevyRoutineProgramSuccess = {
  * @param request - Optional request metadata (title, equipment, difficulty, etc.)
  * @returns `{ status: "success", id, skippedExercises? }` on success, or an Error
  */
-export const postHevyRoutineProgram = async (
+export const saveProgramToSupabase = async (
     hevyRoutines: THevyRoutine[],
     prompt: string,
     request?: TTextToJsonRequest,
-): Promise<PostHevyRoutineProgramSuccess | Error | unknown> => {
+): Promise<SaveProgramToSupabaseSuccess | Error | unknown> => {
     const weeks = getMaxFolderId(hevyRoutines) + 1;
     const BATCH_SIZE = 50; // Process exercises in batches of 50
 
@@ -712,7 +724,7 @@ export const getMostRecentHevyWorkout = async (apiKey: string, page: number, pag
  * Creates a single routine in the user's Hevy account.
  *
  * Maps to `POST /v1/routines`. Called once per workout-day during the
- * program upload flow (see {@link postRoutineProgramToHevyOneFolder}).
+ * program upload flow (see {@link postProgramToHevyOneFolder}).
  *
  * @see https://api.hevyapp.com/docs/#/Routines/post_v1_routines
  * @param postRoutine - Routine payload conforming to the Hevy request schema
@@ -971,21 +983,21 @@ export const postRoutineFolders = async (title: string, apiKey: string) => {
  * Routines are uploaded in batches of {@link ROUTINES_BATCH_SIZE} with a
  * {@link RATE_LIMIT_BACKOFF_MS} pause between batches.
  *
- * @param routineProgram - Array of routines for a single week
+ * @param hevyRoutines - Array of routines for a single week
  * @param week - 1-based week number used in the folder title
  * @param apiKey - User's Hevy API key
  * @param programTitle - Program title metadata (first element's title is used)
  * @param onProgress - Optional callback receiving upload counts and rate-limit countdowns
  * @returns `{ success: true, data: [] }` on success, or `{ success: false, data: Error }`
  */
-export const postRoutineProgramToHevyOneFolder = async (
-    routineProgram: THevyRoutine[],
+export const postProgramToHevyOneFolder = async (
+    hevyRoutines: THevyRoutine[],
     week: number,
     apiKey: string,
     programTitle: TProgramTitle[] | undefined,
     onProgress?: HevyUploadProgressCallback,
 ) => {
-    const total = routineProgram.length;
+    const total = hevyRoutines.length;
     const folderTitle = `Week ${week} - ${programTitle?.[0]?.title ?? "Proxima Program"}`;
 
     try {
@@ -1022,13 +1034,13 @@ export const postRoutineProgramToHevyOneFolder = async (
             return { success: false, data: new Error("Routine folder not found") };
         }
 
-        for (let batchStart = 0; batchStart < routineProgram.length; batchStart += ROUTINES_BATCH_SIZE) {
-            const batchEnd = Math.min(batchStart + ROUTINES_BATCH_SIZE, routineProgram.length);
+        for (let batchStart = 0; batchStart < hevyRoutines.length; batchStart += ROUTINES_BATCH_SIZE) {
+            const batchEnd = Math.min(batchStart + ROUTINES_BATCH_SIZE, hevyRoutines.length);
             for (let i = batchStart; i < batchEnd; i++) {
                 for (let retry = 0; retry <= RATE_LIMIT_MAX_RETRIES; retry++) {
                     try {
                         onProgress?.(i + 1, total, 'uploading');
-                        await postRoutines(convertHevyOutputIntoInput(routineProgram[i], folderId.id), apiKey);
+                        await postRoutines(convertHevyOutputIntoInput(hevyRoutines[i], folderId.id), apiKey);
                         break;
                     } catch (error: unknown) {
                         if (retry >= RATE_LIMIT_MAX_RETRIES) {
@@ -1039,14 +1051,14 @@ export const postRoutineProgramToHevyOneFolder = async (
                     }
                 }
             }
-            if (batchEnd < routineProgram.length) {
+            if (batchEnd < hevyRoutines.length) {
                 await delayWithRateLimitCountdown(batchEnd, total, onProgress);
             }
         }
 
         return { success: true, data: [] };
     } catch (error: unknown) {
-        console.error("Error saving Routine program to Hevy", error);
+        console.error("Error saving program to Hevy", error);
         return { success: false, data: error };
     }
 };
@@ -1058,22 +1070,22 @@ export const postRoutineProgramToHevyOneFolder = async (
  * Replaced by the single-folder variant which gives users more control over
  * which week to upload. Kept for backward compatibility but no longer called.
  *
- * @param routineProgram - Array of routines spanning multiple weeks
+ * @param hevyRoutines - Array of routines spanning multiple weeks
  * @param apiKey - User's Hevy API key
  * @param onProgress - Optional callback receiving upload counts and rate-limit countdowns
  * @returns `{ success: true, data: [] }` on success, or `{ success: false, data: Error }`
  */
-export const postRoutineProgramToHevy = async (
-    routineProgram: THevyRoutine[],
+export const postProgramToHevy = async (
+    hevyRoutines: THevyRoutine[],
     apiKey: string,
     onProgress?: HevyUploadProgressCallback,
 ) => {
-    const total = routineProgram.length;
+    const total = hevyRoutines.length;
 
     try {
         const weeks = Array.from(
             new Set(
-                routineProgram
+                hevyRoutines
                     .map((p) => p.folder_id)
                     .filter((week): week is number => typeof week === 'number'),
             ),
@@ -1126,17 +1138,17 @@ export const postRoutineProgramToHevy = async (
             }
         }
 
-        for (let batchStart = 0; batchStart < routineProgram.length; batchStart += ROUTINES_BATCH_SIZE) {
-            const batchEnd = Math.min(batchStart + ROUTINES_BATCH_SIZE, routineProgram.length);
+        for (let batchStart = 0; batchStart < hevyRoutines.length; batchStart += ROUTINES_BATCH_SIZE) {
+            const batchEnd = Math.min(batchStart + ROUTINES_BATCH_SIZE, hevyRoutines.length);
             for (let j = batchStart; j < batchEnd; j++) {
                 const folderId = routineFolders?.routine_folders.find(
-                    (folder) => folder.title === `Week ${Number(routineProgram[j].folder_id) + 1}`,
+                    (folder) => folder.title === `Week ${Number(hevyRoutines[j].folder_id) + 1}`,
                 );
                 if (!folderId) continue;
                 for (let retry = 0; retry <= RATE_LIMIT_MAX_RETRIES; retry++) {
                     try {
                         onProgress?.(j + 1, total, 'uploading');
-                        await postRoutines(convertHevyOutputIntoInput(routineProgram[j], folderId.id), apiKey);
+                        await postRoutines(convertHevyOutputIntoInput(hevyRoutines[j], folderId.id), apiKey);
                         break;
                     } catch (error: unknown) {
                         if (retry >= RATE_LIMIT_MAX_RETRIES) {
@@ -1147,13 +1159,13 @@ export const postRoutineProgramToHevy = async (
                     }
                 }
             }
-            if (batchEnd < routineProgram.length) {
+            if (batchEnd < hevyRoutines.length) {
                 await delayWithRateLimitCountdown(batchEnd, total, onProgress);
             }
         }
         return { success: true, data: [] };
     } catch (error: unknown) {
-        console.error("Error saving Routine program to Hevy", error);
+        console.error("Error saving program to Hevy", error);
         return { success: false, data: error };
     }
 };
@@ -1423,7 +1435,7 @@ export const sortWorkouts = (scheduleWorkouts: TScheduleWorkouts[]) => {
 //     }
 
 //     // 6. Upload to Hevy
-//     await postRoutineProgramToHevyOneFolder(weekHevyRoutines, week_number, hevyApiKey, [{ id: program_id, title: programTitle }]);
+//     await postProgramToHevyOneFolder(weekHevyRoutines, week_number, hevyApiKey, [{ id: program_id, title: programTitle }]);
 // }
 
 

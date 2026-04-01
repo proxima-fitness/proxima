@@ -2,15 +2,15 @@
  * @module programs/route
  *
  * Server-side API route for creating (persisting) a workout program.
- * Validates the incoming payload and delegates to `postHevyRoutineProgram`
- * which writes the program to the database (and optionally to Hevy).
+ * Validates the incoming payload and delegates to {@link saveProgramToSupabase},
+ * which inserts the program into Supabase (`programs`, `schedule_workouts`,
+ * `program_workout_exercises`).
  *
- * Depends on: @/components/program-builder/api/hevy (postHevyRoutineProgram)
- * Used by: programs.ts client helper (createProgram)
+ * Depends on: @/components/program-builder/api/hevy (`saveProgramToSupabase`)
  */
 
 import { NextResponse } from 'next/server';
-import { postHevyRoutineProgram } from '@/components/program-builder/api/hevy';
+import { saveProgramToSupabase } from '@/components/program-builder/api/hevy';
 
 /**
  * Creates a new workout program from the provided Hevy routines and metadata.
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
             );
         }
 
-        const result = await postHevyRoutineProgram(hevyRoutines, prompt, programRequest);
+        const result = await saveProgramToSupabase(hevyRoutines, prompt, programRequest);
 
         if (result instanceof Error) {
             return NextResponse.json(

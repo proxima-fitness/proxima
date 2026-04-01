@@ -13,13 +13,13 @@ import { useHevySecret, useMyFeatureLimits } from "@/api/hooks";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { incrementMonthlyExportsUsed } from "@/api/feature-limits";
 import {
-    postHevyApikey,
-    postHevyRoutineProgram,
-    PostHevyRoutineProgramSuccess,
-    postRoutineProgramToHevy,
-    postRoutineProgramToHevyOneFolder,
-    updateHevyApiKey,
     deleteHevyApiKey,
+    isSaveProgramToSupabaseSuccess,
+    postHevyApikey,
+    postProgramToHevy,
+    postProgramToHevyOneFolder,
+    saveProgramToSupabase,
+    updateHevyApiKey,
 } from "../api/hevy";
 import { MAIN_DISCOUNT_PERCENT, MAIN_DISCOUNT_CODE, RATE_LIMIT_EXHAUSTED_MESSAGE } from "@/assets/constants/ui-constants";
 import { postNewProgramSubscriber } from "@/api/programs";
@@ -42,18 +42,6 @@ import { deFlattenHevyRoutine } from "../utils";
 import posthog from "posthog-js";
 
 const TOTAL_STEPS = 2;
-
-/** Type guard for successful post-program response from backend. */
-function isPostHevyRoutineProgramSuccess(r: unknown): r is PostHevyRoutineProgramSuccess {
-    return (
-        typeof r === "object" &&
-        r !== null &&
-        "status" in r &&
-        (r as { status: string }).status === "success" &&
-        "id" in r &&
-        typeof (r as { id: unknown }).id === "number"
-    );
-}
 
 /** Props for the Hevy export setup panel. */
 interface IExportToHevySetupProps {
@@ -245,8 +233,8 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
         setIsUploading(true);
 
         try {
-            const supabaseResult = await postHevyRoutineProgram(hevyRoutines, prompt, request);
-            const saved = isPostHevyRoutineProgramSuccess(supabaseResult);
+            const supabaseResult = await saveProgramToSupabase(hevyRoutines, prompt, request);
+            const saved = isSaveProgramToSupabaseSuccess(supabaseResult);
             const programId = saved ? supabaseResult.id : undefined;
             if (!saved || programId === undefined) {
                 const errorMessage = "Failed to save program to My Programs.";
@@ -285,7 +273,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
             };
 
             if (exportToOneFolderMode) {
-                const hevyResult = await postRoutineProgramToHevyOneFolder(
+                const hevyResult = await postProgramToHevyOneFolder(
                     routinesToUpload,
                     1,
                     hevyApiKey,
@@ -304,7 +292,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                     return;
                 }
             } else {
-                const hevyResult = await postRoutineProgramToHevy(routinesToUpload, hevyApiKey, onProgress);
+                const hevyResult = await postProgramToHevy(routinesToUpload, hevyApiKey, onProgress);
                 if (hevyResult?.success !== true) {
                     const message =
                         hevyResult?.data instanceof Error &&
