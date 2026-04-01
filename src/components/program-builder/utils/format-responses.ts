@@ -79,6 +79,120 @@ export const appendOrderToHevyRoutines = (routines: THevyRoutine[]): THevyRoutin
 };
 
 
+const PROXIMA_TITLE_PREFIX = /^(\d+)\s*-\s*/;
+const WEEK_PATTERN = /Week\s+(\d+)/i;
+const DAY_PATTERN = /Day\s+(\d+)/i;
+
+function parseWeekAndDay(title: string): { week: number; day: number } | null {
+    const weekMatch = title.match(WEEK_PATTERN);
+    const dayMatch = title.match(DAY_PATTERN);
+    if (weekMatch && dayMatch) {
+        return { week: parseInt(weekMatch[1], 10), day: parseInt(dayMatch[1], 10) };
+    }
+    return null;
+}
+
+function stripWeekDayLabels(title: string): string {
+    return title
+        .replace(/Week\s+\d+\s*[-–—]\s*/i, "")
+        .replace(/\s*[-–—]\s*Day\s+\d+/i, "")
+        .trim();
+}
+
+function sortByCreatedAt(routines: THevyRoutine[]): THevyRoutine[] {
+    return [...routines].sort((a, b) => {
+        if (!a.created_at || !b.created_at) return 0;
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    });
+}
+
+function allTitlesHaveProximaPrefix(routines: THevyRoutine[]): boolean {
+    return routines.every(r => PROXIMA_TITLE_PREFIX.test(r.title));
+}
+
+function allTitlesHaveWeekAndDay(routines: THevyRoutine[]): boolean {
+    return routines.every(r => parseWeekAndDay(r.title) !== null);
+}
+
+function distributeByProximaPrefix(routines: THevyRoutine[]): THevyRoutine[] {
+    const sorted = sortByCreatedAt(routines);
+    let weekIndex = 0;
+    return sorted.map((routine, i) => {
+        if (i > 0) {
+            const match = routine.title.match(PROXIMA_TITLE_PREFIX);
+            if (match && parseInt(match[1], 10) === 1) weekIndex++;
+        }
+        return { ...routine, folder_id: weekIndex };
+    });
+}
+
+function distributeByWeekDay(routines: THevyRoutine[]): THevyRoutine[] {
+    const parsed = routines.map(r => ({
+        routine: r,
+        ...parseWeekAndDay(r.title)!,
+    }));
+    parsed.sort((a, b) => a.week - b.week || a.day - b.day);
+
+    return parsed.map(({ routine, week, day }) => ({
+        ...routine,
+        folder_id: week - 1,
+        title: `${day} - ${stripWeekDayLabels(routine.title)}`,
+    }));
+}
+
+function detectDaysPerWeek(titles: string[]): number {
+    const baseTitles = titles.map(t => t.replace(PROXIMA_TITLE_PREFIX, ""));
+    for (let k = 1; k <= Math.floor(baseTitles.length / 2); k++) {
+        if (baseTitles.length % k !== 0) continue;
+        if (baseTitles.every((t, i) => t === baseTitles[i % k])) return k;
+    }
+    return baseTitles.length;
+}
+
+/**
+ * Normalizes a flat array of Hevy routines for the program builder by assigning
+ * correct `folder_id` (week) values and ensuring titles follow the Proxima
+ * `"N - Title"` convention.
+ *
+ * Three-priority pipeline:
+ *  1. Titles contain "Week W" and "Day D" -- sort by (week, day), strip labels,
+ *     produce `"D - cleanTitle"` format.
+ *  2. Titles already in Proxima `"N - ..."` format -- sort by `created_at` to
+ *     recover creation order, then walk prefix resets for week boundaries.
+ *  3. Plain titles -- sort by `created_at`, detect repeating title cycle for
+ *     `daysPerWeek`, assign `folder_id` and prepend `"N - "`.
+ *
+ * @param routines - Flat array of routines (typically all sharing one Hevy folder_id)
+ * @returns New array sorted in program order with `folder_id` set per-week and
+ *          titles in Proxima format
+ */
+export const normalizeRoutineTitlesForBuilder = (
+    routines: THevyRoutine[],
+): THevyRoutine[] => {
+    if (!routines || routines.length === 0) return [];
+
+    if (allTitlesHaveWeekAndDay(routines)) {
+        return distributeByWeekDay(routines);
+    }
+
+    if (allTitlesHaveProximaPrefix(routines)) {
+        return distributeByProximaPrefix(routines);
+    }
+
+    const sorted = sortByCreatedAt(routines);
+    const daysPerWeek = detectDaysPerWeek(sorted.map(r => r.title));
+
+    return sorted.map((routine, i) => {
+        const weekIndex = Math.floor(i / daysPerWeek);
+        const dayNum = (i % daysPerWeek) + 1;
+        return {
+            ...routine,
+            folder_id: weekIndex,
+            title: `${dayNum} - ${routine.title}`,
+        };
+    });
+};
+
 /**
  * Flattens a weeks × days nested array into a single array for drag-and-drop
  * reordering. The existing `weekOrder` annotations preserve group membership

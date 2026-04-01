@@ -540,7 +540,8 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                                         </div>
                                         {uploadProgress.status === "rate_limited" && (
                                             <p className="text-xs text-muted-foreground">
-                                                Rate limited — trying again in {" "}
+                                                Rate limited: trying again in {" "}
+                                                This is normal when uploading a large program to Hevy.
                                                 {typeof uploadProgress.rateLimitSecondsLeft === "number"
                                                     ? `${uploadProgress.rateLimitSecondsLeft}`
                                                     : "60"}{" "}

@@ -762,7 +762,7 @@ export const getMostRecentHevyWorkout = async (apiKey: string, page: number, pag
  * @param apiKey - User's Hevy API key
  * @returns The created routine as returned by the Hevy API
  */
-export const postRoutines = async (postRoutine: THevyRoutineRequest, apiKey: string) => {
+export const postRoutine = async (postRoutine: THevyRoutineRequest, apiKey: string) => {
     const body: THevyRoutineRequestObject = {
         routine: postRoutine,
     };
@@ -1071,7 +1071,7 @@ export const postProgramToHevyOneFolder = async (
                 for (let retry = 0; retry <= RATE_LIMIT_MAX_RETRIES; retry++) {
                     try {
                         onProgress?.(i + 1, total, 'uploading');
-                        await postRoutines(convertHevyOutputIntoInput(hevyRoutines[i], folderId.id), apiKey);
+                        await postRoutine(convertHevyOutputIntoInput(hevyRoutines[i], folderId.id), apiKey);
                         break;
                     } catch (error: unknown) {
                         if (retry >= RATE_LIMIT_MAX_RETRIES) {
@@ -1179,7 +1179,7 @@ export const postProgramToHevy = async (
                 for (let retry = 0; retry <= RATE_LIMIT_MAX_RETRIES; retry++) {
                     try {
                         onProgress?.(j + 1, total, 'uploading');
-                        await postRoutines(convertHevyOutputIntoInput(hevyRoutines[j], folderId.id), apiKey);
+                        await postRoutine(convertHevyOutputIntoInput(hevyRoutines[j], folderId.id), apiKey);
                         break;
                     } catch (error: unknown) {
                         if (retry >= RATE_LIMIT_MAX_RETRIES) {
@@ -1481,6 +1481,7 @@ export const sortWorkouts = (scheduleWorkouts: TScheduleWorkouts[]) => {
  * @returns The updated routine
  */
 export const putRoutine = async (routineId: string, updateRoutine: THevyRoutineRequest, apiKey: string) => {
+
     const body: THevyRoutineRequestObject = {
         routine: updateRoutine,
     };
