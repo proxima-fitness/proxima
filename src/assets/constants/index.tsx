@@ -434,7 +434,7 @@ export const fallbackPPL = {
 
 
 /** Empty Hevy routine template used as a starting point for exports. */
-export const emptyHevyRoutineProgram: THevyRoutine[] = [
+export const emptyHevyProgram: THevyRoutine[] = [
     {
         id: "1",
         title: "",

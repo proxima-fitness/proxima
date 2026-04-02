@@ -10,7 +10,7 @@
  *
  * Depends on: Proxima types (TScheduleWorkouts, TSavedWorkoutExercise),
  *             Hevy types (THevyRoutine, THevyRoutineRequest, THevySets)
- * Used by: hevy.ts (postRoutineProgramToHevyOneFolder, postRoutineProgramToHevy)
+ * Used by: hevy.ts (postProgramToHevyOneFolder, postProgramToHevy)
  */
 
 import { routineNotesForExport } from "@/lib/proximaExportAttribution";

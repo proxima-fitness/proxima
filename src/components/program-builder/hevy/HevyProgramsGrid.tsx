@@ -20,6 +20,7 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { normalizeRoutineTitlesForBuilder } from "@/components/program-builder/utils/format-responses";
 
 export type HevyProgramItem = { program_title: string; program: THevyRoutine[] };
 
@@ -137,10 +138,8 @@ export const HevyProgramsGrid: React.FC<HevyProgramsGridProps> = ({ hevyPrograms
     const router = useRouter();
 
     const handleEditProgram = (program: HevyProgramItem) => {
-        for (const routine of program.program) {
-            routine.folder_id = 0;
-        }
-        localStorage.setItem("hevy-program-in-progress", JSON.stringify(program.program));
+        const normalized = normalizeRoutineTitlesForBuilder(program.program);
+        localStorage.setItem("hevy-program-in-progress", JSON.stringify(normalized));
         router.push("/build-program?resume=true&edit=true&hevy=true");
     };
 

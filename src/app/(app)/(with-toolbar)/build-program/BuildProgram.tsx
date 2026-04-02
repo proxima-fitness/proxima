@@ -28,13 +28,16 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getSharedProgram } from "@/api/programs";
 import { CHAT_MESSAGES_KEY, COLLAPSED_SIZE, EXPANDED_SIZE, LONG_PROMPT_PLACEHOLDER, SIDEBAR_POSITION_KEY, SIDEBAR_SIZE_KEY } from "@/assets/constants/ui-constants";
-import { emptyHevyRoutineProgram } from "@/assets/constants";
+import { emptyHevyProgram } from "@/assets/constants";
 import { getMessageText } from "@/components/program-builder/utils/helpers";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUserContext } from "@/contexts/UserContext";
-import { postHevyRoutineProgram, type PostHevyRoutineProgramSuccess } from "@/components/program-builder/api/hevy";
+import {
+    isSaveProgramToSupabaseSuccess,
+    saveProgramToSupabase,
+} from "@/components/program-builder/api/hevy";
 import { postChatHistory } from "@/api/chat-history";
 import { ToolbarPortalButtons } from "@/components/program-builder/shared/ToolbarPortalButtons";
 import { editorReducer } from "./editor-reducer";
@@ -47,17 +50,6 @@ function isValidShareId(shareId: string): boolean {
     if (!shareId.trim()) return false;
     const n = Number(shareId);
     return Number.isFinite(n) && n > 0;
-}
-
-function isPostHevyRoutineProgramSuccess(r: unknown): r is PostHevyRoutineProgramSuccess {
-    return (
-        typeof r === "object" &&
-        r !== null &&
-        "status" in r &&
-        (r as { status: string }).status === "success" &&
-        "id" in r &&
-        typeof (r as { id: unknown }).id === "number"
-    );
 }
 
 /**
@@ -216,7 +208,7 @@ export function BuildProgram() {
         }
 
         if (empty === 'true') {
-            setHevyProgram(appendOrderToHevyRoutines(emptyHevyRoutineProgram));
+            setHevyProgram(appendOrderToHevyRoutines(emptyHevyProgram));
         }
 
 
@@ -242,9 +234,9 @@ export function BuildProgram() {
 
         try {
             const prompt = title !== "Untitled" ? title : search || "";
-            const supabaseResult = await postHevyRoutineProgram(orderedProgram, prompt, programRequest.request);
+            const supabaseResult = await saveProgramToSupabase(orderedProgram, prompt, programRequest.request);
 
-            if (!isPostHevyRoutineProgramSuccess(supabaseResult)) {
+            if (!isSaveProgramToSupabaseSuccess(supabaseResult)) {
                 toast.error("Failed to save program.");
                 console.error("Failed to save program.", supabaseResult);
                 return;

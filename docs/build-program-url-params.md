@@ -37,7 +37,7 @@ No additional query keys are consumed by the build-program `page.tsx` or `layout
 
 ### `empty`
 
-- **What it does:** When `empty=true`, seeds the editor with `emptyHevyRoutineProgram` (ordered). Also flows into `programRequest.request` via [`useProgramRequestState`](../src/app/(app)/(with-toolbar)/build-program/use-program-request-state.ts) so the agent request payload includes the `empty` flag.
+- **What it does:** When `empty=true`, seeds the editor with `emptyHevyProgram` (ordered). Also flows into `programRequest.request` via [`useProgramRequestState`](../src/app/(app)/(with-toolbar)/build-program/use-program-request-state.ts) so the agent request payload includes the `empty` flag.
 - **Edge cases:** Conflicts with `resume=true` in the same navigation (empty wins synchronously after resume in the effect order). Typical entry: `/build-program?empty=true` (e.g. [`PromptTemplate.tsx`](../src/components/program-builder/shared/PromptTemplate.tsx), [`MyProgramsVault.tsx`](../src/components/programs/MyProgramsVault.tsx)).
 
 ### `search`

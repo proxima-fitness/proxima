@@ -15,7 +15,7 @@
  * Used by: program-builder Agent/Chat, image upload flows, moderation pipeline
  */
 import { supabaseKey, supabaseUrl } from ".";
-// import { emptyHevyRoutineProgram } from "@/assets/constants";
+// import { emptyHevyProgram } from "@/assets/constants";
 // import { aiRequest, buildPrompt } from "@/components/program-builder/utils";
 // import { toast } from "sonner";
 
@@ -241,7 +241,7 @@ export const postNsfwImageDetection = async (imageUrl: string) => {
 //     try {
 
 //         if (request.empty === "true") {
-//             return emptyHevyRoutineProgram;
+//             return emptyHevyProgram;
 //         }
 
 //         const promptBase = buildPrompt(
