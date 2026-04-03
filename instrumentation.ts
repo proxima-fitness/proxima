@@ -1,27 +1,24 @@
 /**
  * @module instrumentation
  *
- * Next.js instrumentation hook that wires up OpenTelemetry tracing with
- * Langfuse as the export backend. Next.js calls `register()` once at
- * server startup, before any request handling begins.
+ * Next.js instrumentation hook: registers OpenTelemetry with Langfuse export
+ * via LangfuseSpanProcessor (Langfuse v4 / @langfuse/otel). Next.js calls
+ * `register()` once at server startup.
  *
- * Depends on: @vercel/otel, langfuse-vercel
- * Used by: Next.js runtime (automatic instrumentation entry-point)
+ * Depends on: @langfuse/otel, @opentelemetry/sdk-trace-node
+ * Used by: Next.js runtime; api/chat imports `langfuseSpanProcessor` for flush
  */
 
-import { registerOTel } from '@vercel/otel';
-import { LangfuseExporter } from 'langfuse-vercel';
+import { LangfuseSpanProcessor } from '@langfuse/otel';
+import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 
-/**
- * Register OpenTelemetry with Langfuse trace export.
- *
- * Called automatically by Next.js at server startup. Enables distributed
- * tracing across API routes and server components, with traces forwarded
- * to Langfuse for observability.
- */
+/** Exported for serverless flush after streaming responses (see api/chat). */
+export const langfuseSpanProcessor = new LangfuseSpanProcessor();
+
+const tracerProvider = new NodeTracerProvider({
+  spanProcessors: [langfuseSpanProcessor],
+});
+
 export function register() {
-  registerOTel({
-    serviceName: 'next-app',
-    traceExporter: new LangfuseExporter(),
-  });
+  tracerProvider.register();
 }

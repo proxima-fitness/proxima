@@ -9,17 +9,14 @@
  *
  * Observability is provided by Langfuse via OpenTelemetry.
  *
- * Depends on: ai (Vercel AI SDK), @langfuse/otel, ./instructions, ./tools
+ * Depends on: ai (Vercel AI SDK), @langfuse/tracing, ./instructions, ./tools
  * Used by: Chat.tsx (program-builder agent panel)
  */
 
 import { ToolLoopAgent, createAgentUIStreamResponse, gateway, stepCountIs } from 'ai';
-
-// Vercel serverless function timeout - 2 minutes for workout generation
-// This is important for longer programs that may take time to generate
-export const maxDuration = 120;
-import { NodeSDK } from "@opentelemetry/sdk-node";
-import { LangfuseSpanProcessor } from "@langfuse/otel";
+import { after } from 'next/server';
+import { observe } from '@langfuse/tracing';
+import { langfuseSpanProcessor } from '../../../../instrumentation';
 import { instructions } from './instructions/instructions';
 import { getTools, type IBuildWeekOnceGuard } from './tools/tools';
 import { createSandbox } from './skills/sandbox';
@@ -27,11 +24,9 @@ import { discoverSkills } from './skills/index';
 import z from 'zod';
 import { sanitizeMessagesWithUnresolvedToolCalls } from './sanitize-messages';
 
-const sdk = new NodeSDK({
-  spanProcessors: [new LangfuseSpanProcessor()],
-});
-
-sdk.start();
+// Vercel serverless function timeout - 2 minutes for workout generation
+// This is important for longer programs that may take time to generate
+export const maxDuration = 120;
 
 function buildSkillsPrompt(skills: ISkillMetadata[]): string {
     if (skills.length === 0) return '';
@@ -75,8 +70,7 @@ const callOptionsSchema = z.object({
  * @returns A streaming `Response` that the Vercel AI SDK client consumes to
  *   render incremental agent output and tool invocations.
  */
-export async function POST(req: Request) {
-
+async function handleChatPost(req: Request) {
     try {
         const { messages, hevyProgram = [], daysPerWeek, programLength, excludeAreas = "", excludeEquipment = "", healthIssues = "" } = await req.json();
 
@@ -141,6 +135,10 @@ export async function POST(req: Request) {
             },
           });
 
+        after(async () => {
+            await langfuseSpanProcessor.forceFlush();
+        });
+
         return createAgentUIStreamResponse({
             agent: andy,
             uiMessages: sanitizedMessages,
@@ -158,3 +156,8 @@ export async function POST(req: Request) {
         );
     }
 }
+
+export const POST = observe(handleChatPost, {
+    name: 'andy-chat',
+    endOnExit: false,
+});
