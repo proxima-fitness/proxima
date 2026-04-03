@@ -23,6 +23,7 @@ import { Drawer, DrawerContent, DrawerFooter, DrawerTitle } from "@/components/u
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useUserContext } from "@/contexts/UserContext";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 /** Props for the add/edit exercise dialog. */
 interface IProps {
@@ -519,18 +520,30 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                 modal={ addExerciseDialog.isOpen }
                 onOpenChange={ (open) => { if (!open) closeAddExerciseDialog(); } }
             >
-                <DrawerContent className="max-h-[98%]">
-                    <div className="overflow-y-auto">
+                <DrawerContent
+                    className={ cn(
+                        showCreateCustomExercise
+                            ? "mt-0 h-[100dvh] max-h-[100dvh] flex flex-col overflow-hidden"
+                            : "max-h-[98%]",
+                    ) }
+                >
+                    <div
+                        className={ cn(
+                            "overflow-y-auto",
+                            showCreateCustomExercise && "min-h-0 flex-1",
+                        ) }
+                    >
                         { showCreateCustomExercise ? (
                             <div className="flex flex-row items-center gap-2 px-4 pt-4">
                                 <Button
                                     type="button"
                                     variant="ghost"
-                                    className="h-9 shrink-0 -ml-1 gap-1.5 px-2"
+                                    size="icon"
+                                    className="h-9 w-9 shrink-0 -ml-1"
                                     onClick={ exitCustomExerciseView }
+                                    aria-label="Back"
                                 >
                                     <ChevronLeft className="h-4 w-4 shrink-0" aria-hidden />
-                                    Back
                                 </Button>
                                 <DrawerTitle className="font-bold flex-1 text-center">
                                     {dialogTitle}
