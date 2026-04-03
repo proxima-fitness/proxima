@@ -13,13 +13,14 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState, useMemo } from "react";
 import { hevy_intensities, hevy_rep_types } from "@/assets/constants";
 import { toast } from "sonner";
-import { PlusIcon, Trash2Icon } from "lucide-react";
+import { ChevronLeft, PlusIcon, Trash2Icon, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { HevyCreateCustomExerciseView, HEVY_CREATE_CUSTOM_EXERCISE_FORM_ID } from "./HevyCreateCustomExerciseView";
 import { HevyExerciseSearchBar } from "./HevyExerciseSearchBar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Drawer, DrawerContent, DrawerFooter, DrawerTitle } from "@/components/ui/drawer";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useUserContext } from "@/contexts/UserContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -70,6 +71,20 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
     }, [exercises, customExercises]);
 
     const isLoading = loadingHevyExercises || loadingCustomExercises;
+
+    const [ showCreateCustomExercise, setShowCreateCustomExercise ] = useState(false);
+    const [ customExerciseSubmitting, setCustomExerciseSubmitting ] = useState(false);
+
+    const exitCustomExerciseView = () => {
+        setShowCreateCustomExercise(false);
+        setCustomExerciseSubmitting(false);
+    };
+
+    const closeAddExerciseDialog = () => {
+        setShowCreateCustomExercise(false);
+        setCustomExerciseSubmitting(false);
+        handleOpenAddExerciseDialog({ folder_id: 0, dayOrder: 0, isOpen: false });
+    };
 
     const [ selectedExercise, setSelectedExercise ] = useState<THevyExerciseTemplate>();
     const [ isEditing, setIsEditing ] = useState(true);
@@ -177,7 +192,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
             handleAddExercise(addExerciseDialog.folder_id, addExerciseDialog.dayOrder, newExercise);
         }
 
-        handleOpenAddExerciseDialog({ folder_id: 0, dayOrder: 0, isOpen: false});
+        closeAddExerciseDialog();
     };
 
     const deleteSet = (index: number) => {
@@ -244,9 +259,20 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
         }
     }, [isEditExercise, addExerciseDialog?.editExercise?.intensityData, addExerciseDialog?.editExercise?.intensityValue, addExerciseDialog?.editExercise?.repTypeValue, addExerciseDialog?.editExercise?.repRangeStart, addExerciseDialog?.editExercise?.repRangeEnd, addExerciseDialog?.editExercise?.reps, addExerciseDialog?.editExercise?.selectedExercise?.id, addExerciseDialog?.editExercise?.selectedExercise]);
 
-    const dialogTitle = `Add Exercise to Week ${addExerciseDialog.folder_id + 1} Day ${addExerciseDialog.dayOrder}`;
+    const dialogTitle = showCreateCustomExercise
+        ? "Create Custom Exercise"
+        : `Add Exercise to Week ${addExerciseDialog.folder_id + 1} Day ${addExerciseDialog.dayOrder}`;
 
-    const dialogContent = (
+    const dialogContent = showCreateCustomExercise ? (
+        <HevyCreateCustomExerciseView
+            hevyApiKey={ hevyApiKey }
+            onSubmittingChange={ setCustomExerciseSubmitting }
+            onSuccess={ () => {
+                setShowCreateCustomExercise(false);
+                setIsEditing(true);
+            } }
+        />
+    ) : (
         <>
             <div className="overflow-y-auto mx-auto w-full max-w-3xl px-4 sm:px-6">
                 { isLoading ?
@@ -261,6 +287,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                         selectedExercise={ selectedExercise }
                         isEditing={ isEditing }
                         handleIsEditing={ handleIsEditing }
+                        onCreateCustomExercise={ () => setShowCreateCustomExercise(true) }
                     />
                 }
                 <div className="mt-4">
@@ -439,10 +466,10 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
         </>
     );
 
-    const dialogFooterButtons = (
+    const addExerciseFooterButtons = (
         <>
             <span className="w-full flex items-center justify-center">
-                <Button onClick={ () => handleOpenAddExerciseDialog({folder_id: 0, dayOrder: 0, isOpen: false} ) } variant="ghost" className="w-full h-12" aria-label="Cancel and close">
+                <Button onClick={ closeAddExerciseDialog } variant="ghost" className="w-full h-12" aria-label="Cancel and close">
                     Cancel
                 </Button>
             </span>
@@ -458,24 +485,66 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
         </>
     );
 
+    const customExerciseFooterButtons = (
+        <>
+            <span className="w-full flex items-center justify-center">
+                <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full h-12"
+                    onClick={ exitCustomExerciseView }
+                    aria-label="Cancel and go back to exercise search"
+                >
+                    Cancel
+                </Button>
+            </span>
+            <span className="w-full flex items-center justify-center">
+                <Button
+                    type="submit"
+                    form={ HEVY_CREATE_CUSTOM_EXERCISE_FORM_ID }
+                    variant="ghost"
+                    className="bg-lightSecondary text-white hover:bg-lightSecondary w-full h-12"
+                    disabled={ customExerciseSubmitting }
+                >
+                    Create
+                </Button>
+            </span>
+        </>
+    );
+
     if (isMobile) {
         return (
             <Drawer
                 open={ addExerciseDialog.isOpen }
                 modal={ addExerciseDialog.isOpen }
-                onOpenChange={
-                    () => handleOpenAddExerciseDialog({ folder_id: 0, dayOrder: 0, isOpen: false} )
-                }
+                onOpenChange={ (open) => { if (!open) closeAddExerciseDialog(); } }
             >
                 <DrawerContent className="max-h-[98%]">
                     <div className="overflow-y-auto">
-                        <DrawerTitle className="font-bold flex items-center justify-center px-4 pt-4">
-                            {dialogTitle}
-                        </DrawerTitle>
+                        { showCreateCustomExercise ? (
+                            <div className="flex flex-row items-center gap-2 px-4 pt-4">
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    className="h-9 shrink-0 -ml-1 gap-1.5 px-2"
+                                    onClick={ exitCustomExerciseView }
+                                >
+                                    <ChevronLeft className="h-4 w-4 shrink-0" aria-hidden />
+                                    Back
+                                </Button>
+                                <DrawerTitle className="font-bold flex-1 text-center">
+                                    {dialogTitle}
+                                </DrawerTitle>
+                            </div>
+                        ) : (
+                            <DrawerTitle className="font-bold flex items-center justify-center px-4 pt-4">
+                                {dialogTitle}
+                            </DrawerTitle>
+                        ) }
                         {dialogContent}
                     </div>
                     <DrawerFooter className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4 px-4">
-                        {dialogFooterButtons}
+                        { showCreateCustomExercise ? customExerciseFooterButtons : addExerciseFooterButtons }
                     </DrawerFooter>
                 </DrawerContent>
             </Drawer>
@@ -485,21 +554,50 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
     return (
         <Dialog
             open={ addExerciseDialog.isOpen }
-            onOpenChange={
-                () => handleOpenAddExerciseDialog({ folder_id: 0, dayOrder: 0, isOpen: false} )
-            }
+            onOpenChange={ (open) => { if (!open) closeAddExerciseDialog(); } }
         >
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col" onOpenAutoFocus={(e) => e.preventDefault()}>
-                <DialogHeader>
-                    <DialogTitle className="font-bold text-center">
-                        {dialogTitle}
-                    </DialogTitle>
+            <DialogContent
+                className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col"
+                onOpenAutoFocus={ (e) => e.preventDefault() }
+                hideClose={ showCreateCustomExercise }
+            >
+                <DialogHeader
+                    className={
+                        showCreateCustomExercise
+                            ? "grid grid-cols-[auto_1fr_auto] items-center gap-2 space-y-0 w-full"
+                            : undefined
+                    }
+                >
+                    { showCreateCustomExercise ? (
+                        <>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                className="h-9 shrink-0 -ml-2 gap-1.5 px-2"
+                                onClick={ exitCustomExerciseView }
+                            >
+                                <ChevronLeft className="h-4 w-4 shrink-0" aria-hidden />
+                                Back
+                            </Button>
+                            <DialogTitle className="font-bold text-center">
+                                {dialogTitle}
+                            </DialogTitle>
+                            <DialogClose className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
+                                <X className="h-4 w-4" />
+                                <span className="sr-only">Close</span>
+                            </DialogClose>
+                        </>
+                    ) : (
+                        <DialogTitle className="font-bold text-center">
+                            {dialogTitle}
+                        </DialogTitle>
+                    ) }
                 </DialogHeader>
                 <div className="overflow-y-auto flex-1">
                     {dialogContent}
                 </div>
                 <DialogFooter className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4">
-                    {dialogFooterButtons}
+                    { showCreateCustomExercise ? customExerciseFooterButtons : addExerciseFooterButtons }
                 </DialogFooter>
             </DialogContent>
         </Dialog>
