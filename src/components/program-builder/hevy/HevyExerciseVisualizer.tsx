@@ -356,7 +356,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                         <p className="text-xs font-semibold uppercase tracking-wide text-white/90 mb-1.5">
                                             Why this exercise?
                                         </p>
-                                        <p className="text-sm text-left leading-snug whitespace-normal">
+                                        <p className="text-sm text-left leading-snug whitespace-pre-line">
                                             {exercise.reason}
                                         </p>
                                     </>

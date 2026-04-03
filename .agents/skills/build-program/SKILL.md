@@ -19,7 +19,7 @@ allowedTools:
 
 **Questionnaire first (new program):** When the user wants to **create** a new workout program (including the **first** message in a new chat), you **must** send a short **visible** reply, then call **getMoreInfoQuestions** before **planProgram**, **getExerciseList**, **buildWeek**, or **modifyProgram**. Stop and wait until they finish the questionnaire or send an explicit go-ahead (e.g. "Build my program"). Do not skip the questionnaire to start planning or building.
 
-After **getExerciseList**, call **buildWeek exactly once** per user request to generate the new program week template (all training days in that single tool call). Do **not** call buildWeek again after it succeeds. Use **modifyProgram** for every post-build change—reps, RPE, rest, titles, notes, and multi-week periodization—never a second buildWeek to fix or tweak the week.
+After **getExerciseList**, call **buildWeek exactly once** per user request to generate the new program week template (all training days in that single tool call). Do **not** call buildWeek again after it succeeds. Use **modifyProgram** for every post-build change (reps, RPE, rest, titles, notes, and multi-week periodization); never a second buildWeek to fix or tweak the week.
 
 ## Checklist
 
@@ -27,8 +27,8 @@ After **getExerciseList**, call **buildWeek exactly once** per user request to g
 - [ ] **planProgram** once: structured plan for the full mesocycle (duration, blocks, optional week-by-week progression table). Use questionnaire answers, program builder context (days/week, weeks), and loaded resources (powerlifting/bodybuilding) where relevant.
 - [ ] getExerciseList with user requirements (respect program builder context for days per week / program length if available).
 - [ ] Select exercises from the returned list (id: title). Use only IDs that appear in the list.
-- [ ] **buildWeek** once: one week only — week 1 template. `routines.length` = totalDays; `dayNumber` 1..N in order. Align structure with **planProgram** (stable exercise choices within blocks when the plan says so).
-- [ ] **Periodization (modifyProgram) after buildWeek:** Do **not** rely on **getCurrentProgram** for patch paths—the request snapshot may still be empty even though **buildWeek** succeeded. Compute paths for the **full** duplicated program: `totalDays × programLength` routines (see **Routine index math** below), using **planProgram**, **buildWeek** output, and program builder context.
+- [ ] **buildWeek** once: one week only (week 1 template). `routines.length` = totalDays; `dayNumber` 1..N in order. Align structure with **planProgram** (stable exercise choices within blocks when the plan says so).
+- [ ] **Periodization (modifyProgram) after buildWeek:** Do **not** rely on **getCurrentProgram** for patch paths; the request snapshot may still be empty even though **buildWeek** succeeded. Compute paths for the **full** duplicated program: `totalDays × programLength` routines (see **Routine index math** below), using **planProgram**, **buildWeek** output, and program builder context.
 - [ ] **modifyProgram**: Prefer **one** call with a **single patch array** that applies all periodization (per-week RPE, reps, rest, notes, block-boundary exercise swaps). If you draft edits per week mentally, **concatenate** all operations into one patch list in **ascending path order** (see below) before calling the tool once.
 - [ ] After success: brief summary (max 5 bullets).
 
@@ -51,17 +51,17 @@ When the user wants a **bodybuilding** or **hypertrophy** program (aesthetic foc
 ## Gotchas
 
 - **exercise_template_id**: Must be an exact ID from the getExerciseList result (must exist in `hevy_exercise_templates`). Invented or unknown IDs cause **buildWeek** to return an error.
-- **Exercise title (per exercise)**: Must be the **same title** as in getExerciseList for that ID. The server **auto-corrects** the title from the database when you pass `exercise_template_id`, so mismatches do not break the build—but you should still copy **id** and **title** exactly from the list for clarity and to avoid invalid IDs.
+- **Exercise title (per exercise)**: Must be the **same title** as in getExerciseList for that ID. The server **auto-corrects** the title from the database when you pass `exercise_template_id`, so mismatches do not break the build, but you should still copy **id** and **title** exactly from the list for clarity and to avoid invalid IDs.
 - **Tool input**: buildWeek expects a JSON object, not a string. Pass the structured object to the tool, not a stringified JSON.
 - **routines.length**: Must exactly equal totalDays; mismatches return a validation error from the tool.
 - **First week only**: The client duplicates the first week across all weeks. Build only one week in a single buildWeek call; do not emit multiple weeks in buildWeek.
-- **getCurrentProgram vs periodization**: After **buildWeek**, **getCurrentProgram** may still report no program—it reflects the request-time snapshot, not the new week. For multi-week patches, use the index formula and **modifyProgram** anyway; do not wait on **hasProgram**.
-- **Patch safety**: Prefer **`replace`** for periodization (RPE, reps, rest, titles). Avoid **`add` / `remove` / `move`** in bulk-generated patches unless you order operations carefully — they shift indices and break later paths.
+- **getCurrentProgram vs periodization**: After **buildWeek**, **getCurrentProgram** may still report no program; it reflects the request-time snapshot, not the new week. For multi-week patches, use the index formula and **modifyProgram** anyway; do not wait on **hasProgram**.
+- **Patch safety**: Prefer **`replace`** for periodization (RPE, reps, rest, titles). Avoid **`add` / `remove` / `move`** in bulk-generated patches unless you order operations carefully; they shift indices and break later paths.
 - **Merged patch vs modify-program skill**: The modify-program skill tells end users "one patch, one call." For **this** multi-week generation flow, you may think in per-week terms, but you must deliver **one merged patch** to the client in a single modifyProgram call when possible.
 
 ## Rep ranges
 
-`rep_range` is an object with `start` and `end` (e.g. `{start: 8, end: 12}` for an 8-12 rep range). **`rep_range` supersedes `reps` in the UI** — when `rep_range` is non-null the UI displays the range and ignores `reps`.
+`rep_range` is an object with `start` and `end` (e.g. `{start: 8, end: 12}` for an 8-12 rep range). **`rep_range` supersedes `reps` in the UI**: when `rep_range` is non-null the UI displays the range and ignores `reps`.
 
 - Use `rep_range` for all hypertrophy/bodybuilding sets and most strength accessories where a true range is intended (e.g. 8-12, 10-15). When you provide `rep_range`, also set `reps` as a fallback (typically the upper bound of the range, e.g. `12`).
 - **Fixed-rep rule:** When the prescription is a single fixed rep count (e.g. 5x5, triples, doubles, singles, AMRAP-style sets), set `rep_range` to **null** and only use `reps`. **NEVER** emit a degenerate `rep_range` where `start === end` (e.g. `{start: 5, end: 5}`). That will display as "5-5" in the UI which is incorrect. Instead use `rep_range: null, reps: 5`.
@@ -70,6 +70,8 @@ When the user wants a **bodybuilding** or **hypertrophy** program (aesthetic foc
 ## buildWeek shape
 
 Use this structure. Set type must be one of "normal", "warmup", "dropset", "failure". Optional fields (rest_seconds, supersets_id, weight_kg) have defaults in the tool schema.
+
+For each exercise **`reason`**, use four bullet lines joined with newline characters (`\n`), labeled **• What:** / **• Day:** / **• Order:** / **• Fit:**, matching the `buildWeek` tool schema (movement purpose, day/split, position in the workout, program + questionnaire fit). **Each line must add real information:** name concrete facts from the questionnaire or plan (e.g. a stated limitation, equipment, sessions/week, split, goal). Avoid hollow phrases that could apply to anyone.
 
 This is an example JSON, don't use the example values in this to influence the values you add to the real tool response of buildWeek.
 
@@ -88,7 +90,7 @@ This is an example JSON, don't use the example values in this to influence the v
           "sets": [
             { "type": "normal", "reps": 12, "rep_range": { "start": 8, "end": 12 }, "rpe": 8 }
           ],
-          "reason": "Primary horizontal press for chest development."
+          "reason": "• What: Flat bench, heavy horizontal push; you said bench irritates front shoulders, so elbows stay tucked and ROM controlled, not wide-flare max width.\n• Day: Push, primary pressing here so pull day can prioritize rows/hinges without doubling anterior fatigue same day.\n• Order: First, heaviest compound while groove is freshest; flyes/cables after on purpose.\n• Fit: Intake: hypertrophy + 4×/week; 8-12 drives this session's chest volume before accessories."
         }
       ]
     }

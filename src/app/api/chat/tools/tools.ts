@@ -7,12 +7,12 @@
  * returning only a summary to the LLM while sending full data to the client.
  *
  * Tools provided:
- *  - getExerciseList – fetches and filters available Hevy exercises
- *  - getMoreInfoQuestions – opens the pre-build questionnaire UI
- *  - planProgram – structured multi-week plan (duration, blocks, progression) before buildWeek
- *  - getCurrentProgram – returns the program snapshot from the request (may be stale mid-turn)
- *  - buildWeek – constructs a full week of THevyRoutine days in one call (titles resolved from hevy_exercise_templates by ID)
- *  - modifyProgram – applies RFC 6902 JSON Patch edits to the program
+ *  - getExerciseList - fetches and filters available Hevy exercises
+ *  - getMoreInfoQuestions - opens the pre-build questionnaire UI
+ *  - planProgram - structured multi-week plan (duration, blocks, progression) before buildWeek
+ *  - getCurrentProgram - returns the program snapshot from the request (may be stale mid-turn)
+ *  - buildWeek - constructs a full week of THevyRoutine days in one call (titles resolved from hevy_exercise_templates by ID)
+ *  - modifyProgram - applies RFC 6902 JSON Patch edits to the program
  *
  * Depends on: ai, zod, @/components/program-builder/api/hevy, @/assets/constants
  * Used by: /api/chat/route.ts (passed to ToolLoopAgent)
@@ -53,7 +53,7 @@ const weekProgressionEntrySchema = z.record(
     z.union([z.array(z.number()), z.string()]),
 );
 
-/** Exported for tests — same schema as planProgram tool input. */
+/** Exported for tests: same schema as planProgram tool input. */
 export const planProgramInputSchema = z
     .object({
         durationWeeks: z.number().int().min(1).max(52).describe('Total program length in weeks.'),
@@ -344,7 +344,7 @@ export function getTools({
             const o = output as { summary?: string };
             return {
                 type: 'text' as const,
-                value: `Plan recorded: ${o.summary ?? 'OK'}. Proceed with getExerciseList, then call buildWeek exactly once (all days in that call), then apply periodization with modifyProgram only—do not call buildWeek again after it succeeds.`,
+                value: `Plan recorded: ${o.summary ?? 'OK'}. Proceed with getExerciseList, then call buildWeek exactly once (all days in that call), then apply periodization with modifyProgram only; do not call buildWeek again after it succeeds.`,
             };
         },
     });
@@ -356,9 +356,9 @@ export function getTools({
      */
     const getCurrentProgramTool = tool({
         description:
-            'Program JSON **as of request start** (does not refresh after **buildWeek** in the same turn—may stay empty right after a new build). ' +
+            'Program JSON **as of request start** (does not refresh after **buildWeek** in the same turn; may stay empty right after a new build). ' +
             'Use for **editing** an existing grid (accurate paths/order). ' +
-            'For **post–buildWeek periodization**, do not use this for paths; use builder context, **planProgram**, **buildWeek** output, and the build-program skill index formula.',
+            'For **post-buildWeek periodization**, do not use this for paths; use builder context, **planProgram**, **buildWeek** output, and the build-program skill index formula.',
         inputSchema: z.object({
             reason: z.string().optional().describe('Optional reason for checking the current program state'),
         }),
@@ -382,7 +382,7 @@ export function getTools({
     const buildWeekTool = tool({
         description:
             'Builds an entire week of routines/days for the workout program in a SINGLE tool invocation (all training days in one payload). ' +
-            'Call **buildWeek at most once** per user request to generate that week—after it succeeds, use **modifyProgram** only for any changes (never a second buildWeek to fix or tweak). ' +
+            'Call **buildWeek at most once** per user request to generate that week; after it succeeds, use **modifyProgram** only for any changes (never a second buildWeek to fix or tweak). ' +
             'Provide all days in order (Day 1, Day 2, …) so the UI can duplicate the first week across the remaining weeks. ' +
             'IMPORTANT: Always provide a valid JSON object with the required fields. ' +
             'For rep-based exercises, **prefer rep_range** (e.g. {start:8, end:12}) over a fixed reps value. Set reps as a fallback alongside rep_range. ' +
@@ -390,7 +390,7 @@ export function getTools({
             'NEVER emit a degenerate rep_range where start === end (e.g. {start:5, end:5}); that must be rep_range: null, reps: 5 instead. ' +
             'rep_range supersedes reps in the UI, so a {start:5, end:5} range will display as "5-5" which is wrong.',
         inputSchema: z.object({
-            totalDays: z.number().min(1).max(7).describe('Total number of days in the program week (1–7).'),
+            totalDays: z.number().min(1).max(7).describe('Total number of days in the program week (1-7).'),
             routines: z
                 .array(
                     z.object({
@@ -413,7 +413,7 @@ export function getTools({
                                     title: z
                                         .string()
                                         .describe(
-                                            'Display title — must match getExerciseList for this ID; server replaces it with the canonical hevy_exercise_templates title.',
+                                            'Display title: must match getExerciseList for this ID; server replaces it with the canonical hevy_exercise_templates title.',
                                         ),
                                     notes: z.string().default('').describe('Notes for the exercise (optional)'),
                                     rest_seconds: z
@@ -429,10 +429,13 @@ export function getTools({
                                         ),
                                     reason: z
                                         .string()
-                                        .max(200)
+                                        .max(500)
                                         .optional()
                                         .describe(
-                                            'Short reason why this exercise was selected (1 sentence; shown in UI tooltip only, not exported).',
+                                            'Brief, contextual "why" for this exercise (shown in UI under "Why this exercise?", not exported to Hevy). ' +
+                                                'Use 4 bullet lines separated by newlines (\\n), each starting with • What: / • Day: / • Order: / • Fit: covering (1) movement purpose, (2) day/split, (3) slot in session, (4) program + questionnaire fit. ' +
+                                                'Each line must add real detail: reference concrete facts from the questionnaire or plan (e.g. named limitation, equipment, sessions/week, split, goal, experience), not empty labels. ' +
+                                                'Max 500 characters total.',
                                         ),
                                     sets: z
                                         .array(
@@ -656,14 +659,14 @@ export function getTools({
      */
     const jsonPatchOperationSchema = z.object({
         op: z.string().transform(canonicalizePatchOp).describe('Operation type: add, remove, replace, move, copy, or test (typos like replace_seconds are coerced to replace).'),
-        path: z.string().describe('JSON Pointer to the target property (e.g. /0/title, /0/exercises/1/sets/0/reps). Must contain only property names and array indices — never append the value to the path (e.g. /0/.../rpe:7 is WRONG; use /0/.../rpe and put 7 in value).'),
+        path: z.string().describe('JSON Pointer to the target property (e.g. /0/title, /0/exercises/1/sets/0/reps). Must contain only property names and array indices; never append the value to the path (e.g. /0/.../rpe:7 is WRONG; use /0/.../rpe and put 7 in value).'),
         value: z.unknown().optional().describe('Value for add, replace, test'),
         from: z.string().optional().describe('JSON Pointer for move/copy source'),
     });
 
     /**
      * Title: modifyProgramTool
-     * Description: JSON Patch (RFC 6902). Two use cases—see tool description.
+     * Description: JSON Patch (RFC 6902). Two use cases; see tool description.
      * @returns { Tool }
      */
     const modifyProgramTool = tool({
