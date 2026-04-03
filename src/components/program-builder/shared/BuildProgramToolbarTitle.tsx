@@ -45,8 +45,8 @@ function BuildProgramToolbarTitleInner({ value, onChange }: IBuildProgramToolbar
             type="text"
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            placeholder="My Proxima Program"
-            aria-label="Program name"
+            placeholder="Progam Title"
+            aria-label="Progam Title"
             autoComplete="off"
             containerClassName="w-fit max-w-[20ch]"
             className={TITLE_INPUT_CLASS}
