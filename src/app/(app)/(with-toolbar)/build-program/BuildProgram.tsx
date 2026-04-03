@@ -40,6 +40,7 @@ import {
 } from "@/components/program-builder/api/hevy";
 import { postChatHistory } from "@/api/chat-history";
 import { ToolbarPortalButtons } from "@/components/program-builder/shared/ToolbarPortalButtons";
+import { BuildProgramToolbarTitle } from "@/components/program-builder/shared/BuildProgramToolbarTitle";
 import { editorReducer } from "./editor-reducer";
 import { useProgramRequestState } from "./use-program-request-state";
 import { useBuildProgramChat } from "./use-build-program-chat";
@@ -418,6 +419,10 @@ export function BuildProgram() {
 
     return (
         <>
+            <BuildProgramToolbarTitle
+                value={programRequest.programTitle}
+                onChange={programRequest.handleProgramTitle}
+            />
             <ToolbarPortalButtons
                 canUndo={undoStack.length > 0}
                 onUndo={handleUndo}

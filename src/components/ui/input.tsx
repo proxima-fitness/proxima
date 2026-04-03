@@ -9,21 +9,22 @@ import * as React from "react";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/** @param startIcon - Icon shown at leading edge. @param endIcon - Icon shown at trailing edge. */
+/** @param startIcon - Icon shown at leading edge. @param endIcon - Icon shown at trailing edge. @param containerClassName - Classes for the outer wrapper (default full width). */
 export interface IInputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   startIcon?: LucideIcon;
   endIcon?: LucideIcon;
+  containerClassName?: string;
 }
 
 /** Single-line input; padding adjusted when startIcon/endIcon are set. */
 const Input = React.forwardRef<HTMLInputElement, IInputProps>(
-  ({ className, type, startIcon, endIcon, ...props }, ref) => {
+  ({ className, type, startIcon, endIcon, containerClassName, ...props }, ref) => {
     const StartIcon = startIcon;
     const EndIcon = endIcon;
 
     return (
-        <div className="w-full relative">
+        <div className={cn("relative", containerClassName ?? "w-full")}>
             {StartIcon && (
             <div className="absolute left-1.5 top-1/2 transform -translate-y-1/2">
                 <StartIcon size={ 18 } className="text-muted-foreground" />

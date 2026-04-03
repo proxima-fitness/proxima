@@ -1,106 +1,49 @@
 /**
  * @module (app)/(with-toolbar)/build-program/layout
  *
- * Layout for the build-program route. Sticky toolbar: breadcrumbs, set-type
- * badges (Warmup/Working/Drop/Failure), and step/undo controls. Sits at
- * src/app/(app)/(with-toolbar)/build-program/layout.tsx; wraps build-program page.
+ * Layout for the build-program route. Sticky toolbar (sm+): breadcrumbs, program title
+ * (portaled from BuildProgram), set-types popover, and undo/export controls.
  *
- * Depends on: Breadcrumbs, BuildProgramToolbarEnd, Badge, Tooltip components.
+ * Depends on: Breadcrumbs, BuildProgramToolbarEnd, BuildProgramSetTypesPopover.
  * Used by: build-program/page and its BuildProgramClient.
  */
 
 import { Breadcrumbs } from "@/components/program-builder/shared/Breadcrumbs";
+import { BuildProgramSetTypesPopover } from "@/components/program-builder/shared/BuildProgramSetTypesPopover";
 import { ReactNode, Suspense } from "react";
 import { BuildProgramToolbarEnd } from "@/components/program-builder/shared/BuildProgramToolbarEnd";
-import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 /**
- * Program builder toolbar layout; breadcrumbs, set-type tooltips, undo/step area.
+ * Program builder toolbar layout; breadcrumbs, title portal, set-types, undo/step area.
  *
  * @param props.children - Build-program page content (BuildProgramClient).
  */
 export default function ProgramBuilderLayout({ children }: { children: ReactNode }) {
     return (
         <div className="h-screen max-sm:h-[calc(100dvh-4rem)] flex flex-col overflow-hidden">
-            <div className="max-sm:hidden shrink-0 z-50 p-2 bg-extraLightGray dark:bg-extraDarkGray border-b-2 dark:border-darkGray border-white flex flex-row items-center text-xl text-black dark:text-white">
-                <div className="flex-1 min-w-0 overflow-hidden">
+            <div className="max-sm:hidden shrink-0 z-50 p-2 bg-extraLightGray dark:bg-extraDarkGray border-b-2 dark:border-darkGray border-white flex flex-row items-center gap-2 text-xl text-black dark:text-white">
+                <div className="min-w-0 flex-1 overflow-hidden">
                     <Breadcrumbs />
                 </div>
-                {/* <ProgramBuilderTabs /> */}
 
-                {/* Set Types - Centered on desktop only */}
-                <div className="hidden md:flex shrink-0 justify-center items-center gap-2">
-                    <TooltipProvider delayDuration={0}>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Badge variant="outline" className="bg-gray-300 dark:text-black border-none text-xs gap-2 justify-start">
-                                    Warmup
-                                </Badge>
-                            </TooltipTrigger>
-                            <TooltipContent className="bg-gray-600 max-w-xs text-white rounded-lg">
-                                <p><strong>Definition:</strong> A warmup set prepares your muscles and joints for the working sets. Performed with lighter weight to increase blood flow and reduce injury risk.</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                    <TooltipProvider delayDuration={0}>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Badge variant="outline" className="text-xs gap-2 justify-start">
-                                     Working
-                                </Badge>
-                            </TooltipTrigger>
-                            <TooltipContent className="bg-gray-600 max-w-xs text-white rounded-lg">
-                                <p><strong>Definition:</strong> A working set is your main training set performed at your target intensity. This is where you build strength and muscle.</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                    <TooltipProvider delayDuration={0}>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Badge
-                                    variant="outline"
-                                    className="bg-[#33bbcf] text-white border-none text-xs gap-2 justify-start"
-                                >
-                                     Drop
-                                </Badge>
-                            </TooltipTrigger>
-                            <TooltipContent className="bg-gray-600 max-w-xs text-white rounded-lg">
-                                <p><strong>Definition:</strong> A drop set involves immediately reducing the weight after reaching failure and continuing the set. Used to maximize muscle fatigue and growth.</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                    <TooltipProvider delayDuration={0}>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Badge
-                                    variant="outline"
-                                    className="bg-[#01579B] text-white border-none text-xs gap-2 justify-start"
-                                >
-                                     Failure
-                                </Badge>
-                            </TooltipTrigger>
-                            <TooltipContent className="bg-gray-600 max-w-xs text-white rounded-lg">
-                                <p><strong>Definition:</strong> A failure set is performed until you cannot complete another rep with proper form. Used to maximize muscle recruitment and growth.</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+                <div className="flex min-w-0 flex-[1.1] justify-center px-2">
+                    <div id="toolbar-program-title-portal" className="flex w-fit min-w-0 max-w-[20ch] justify-center" />
                 </div>
 
-                <div className="flex-1 min-w-0 flex flex-row items-center justify-end gap-4 max-sm:ml-auto">
-                    {/* <ToolsTabs /> */}
-                    <div className="flex items-center gap-2">
-                        <div id="toolbar-undo-portal" />
-                        <div id="toolbar-save-portal" />
-                        <Suspense fallback={null}>
-                            <BuildProgramToolbarEnd />
-                        </Suspense>
+                <div className="flex min-w-0 flex-1 flex-row items-center justify-end gap-2">
+                    <div className="hidden md:flex shrink-0">
+                        <BuildProgramSetTypesPopover />
                     </div>
+                    <div id="toolbar-undo-portal" />
+                    <Suspense fallback={null}>
+                        <BuildProgramToolbarEnd />
+                    </Suspense>
+                    {/* Save button re-enable: portal target stays in DOM for ToolbarPortalButtons */}
+                    <div id="toolbar-save-portal" className="hidden" aria-hidden />
                 </div>
             </div>
+
             {children}
         </div>
-
     );
-};
-
+}

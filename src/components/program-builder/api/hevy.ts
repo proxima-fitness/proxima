@@ -321,9 +321,9 @@ export const saveProgramToSupabase = async (
     const BATCH_SIZE = 50; // Process exercises in batches of 50
 
     try {
-        // Ensure title defaults to "My AI Program" if missing, null, undefined, or empty string
+        // Ensure title defaults to "My Proxima Program" if missing, null, undefined, or empty string
         const programTitle = request?.programTitle?.trim();
-        const title = programTitle && programTitle.length > 0 ? programTitle : "My AI Program";
+        const title = programTitle && programTitle.length > 0 ? programTitle : "My Proxima Program";
 
         const programUploadObject = {
             title,
