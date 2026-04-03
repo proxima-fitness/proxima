@@ -270,9 +270,9 @@ type THevyPostExerciseTemplate = {
     other_muscles: ("abdominals" | "shoulders" | "biceps" | "triceps" | "forearms" | "quadriceps" | "hamstrings" | "calves" | "glutes" | "abductors" | "adductors" | "lats" | "upper_back" | "traps" | "lower_back" | "chest" | "cardio" | "neck" | "full_body" | "other")[];
 }
 
-/** Success body for `POST /v1/exercise_templates` per Hevy OpenAPI. */
+/** Success body for `POST /v1/exercise_templates`. OpenAPI documents `{ id: number }` but the live API may return a raw UUID string body. */
 type THevyPostCustomExerciseResponse = {
-    id: number;
+    id: number | string;
 };
 
 type THevyExerciseTemplates = {

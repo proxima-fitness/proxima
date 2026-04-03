@@ -125,7 +125,8 @@ export const HevyCreateCustomExerciseView: React.FC<IProps> = ({ hevyApiKey, onS
             onSuccess();
         } catch (e) {
             console.error(e);
-            toast.error("Could not create custom exercise. Try again.");
+            const message = e instanceof Error ? e.message : undefined;
+            toast.error(message ?? "Could not create custom exercise. Try again.");
         } finally {
             setIsSubmitting(false);
             onSubmittingChange?.(false);

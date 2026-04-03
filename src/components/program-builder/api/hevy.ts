@@ -98,27 +98,90 @@ export const getHevyCustomExercises = async (user: User | undefined | null, apiK
     return customExercises;
 };
 
+/** UUID regex used to recognise a bare UUID returned by Hevy on exercise-template creation. */
+const HEVY_UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Parses the `POST /v1/exercise_templates` response body.
+ *
+ * The live Hevy API returns a raw UUID string (Content-Type: text/html) on success,
+ * rather than the `{ id }` JSON object documented in the OpenAPI spec. This helper
+ * handles both shapes so callers never see a JSON parse error on a successful request.
+ */
+export function parsePostCustomExerciseBody(text: string): THevyPostCustomExerciseResponse {
+    const trimmed = text.trim();
+    if (!trimmed) {
+        throw new Error("Hevy API returned an empty body when creating a custom exercise");
+    }
+    try {
+        const parsed: unknown = JSON.parse(trimmed);
+        if (parsed !== null && typeof parsed === "object" && "id" in (parsed as object)) {
+            const id = (parsed as { id: unknown }).id;
+            if (typeof id === "number" || typeof id === "string") {
+                return { id };
+            }
+        }
+        if (typeof parsed === "string" && HEVY_UUID_PATTERN.test(parsed)) {
+            return { id: parsed };
+        }
+    } catch {
+        if (HEVY_UUID_PATTERN.test(trimmed)) {
+            return { id: trimmed };
+        }
+    }
+    throw new Error(
+        `Unexpected Hevy create-exercise response (first 120 chars): ${trimmed.slice(0, 120)}`,
+    );
+}
+
 /**
  * Creates a custom exercise template in the user's Hevy account.
  *
  * Maps to `POST /v1/exercise_templates`.
  *
+ * Uses a dedicated fetch path instead of `defaultPost` because Hevy returns the new
+ * exercise ID as a raw UUID string body (Content-Type: text/html), not JSON, which
+ * breaks `response.json()`. The response is parsed with `parsePostCustomExerciseBody`.
+ *
  * @see https://api.hevyapp.com/docs/#/ExerciseTemplates/post_v1_exercise_templates
  * @param exercise - Custom exercise fields (title, type, equipment, muscles)
  * @param apiKey - User's Hevy API key
- * @returns `{ id }` for the new template (per Hevy OpenAPI success response)
+ * @returns `{ id }` for the new template
  */
 export const postHevyCustomExercise = async (
     exercise: THevyPostExerciseTemplate,
     apiKey: string,
 ): Promise<THevyPostCustomExerciseResponse> => {
-    const body: THevyPostExerciseTemplateRequest = { exercise };
+    const payload: THevyPostExerciseTemplateRequest = { exercise };
 
-    return defaultPost<THevyPostCustomExerciseResponse, THevyPostExerciseTemplateRequest>(
-        "https://api.hevyapp.com/v1/exercise_templates",
-        apiKey,
-        body,
-    );
+    const response = await fetch("https://api.hevyapp.com/v1/exercise_templates", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "api-key": apiKey,
+        },
+        body: JSON.stringify(payload),
+    });
+
+    const text = await response.text();
+
+    if (!response.ok) {
+        let detail = "";
+        try {
+            const err = JSON.parse(text) as { error?: string };
+            if (typeof err?.error === "string") {
+                detail = `: ${err.error}`;
+            }
+        } catch {
+            if (text.trim()) {
+                detail = `: ${text.trim().slice(0, 200)}`;
+            }
+        }
+        throw new Error(`HTTP POST error! Status: ${response.status}${detail}`);
+    }
+
+    return parsePostCustomExerciseBody(text);
 };
 
 /**
