@@ -55,7 +55,7 @@ export const HevyExerciseDetailsDialog: React.FC<IProps> = (props) => {
                             />
                         </div>
                         <div className="mt-4 border-b border-border pb-2">
-                            <h3 className="text-sm font-semibold text-[#007AFF]">How to</h3>
+                            <h3 className="text-sm font-semibold text-lightSecondary/80">How to</h3>
                         </div>
                         {instructions.length > 0 ? (
                             <ol className="mt-2 list-none space-y-0">
