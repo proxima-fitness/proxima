@@ -148,7 +148,11 @@ async function handleChatPost(req: Request) {
                 });
 
                 after(async () => {
-                    await langfuseSpanProcessor.forceFlush();
+                    try {
+                        await langfuseSpanProcessor.forceFlush();
+                    } catch (err) {
+                        console.error('[langfuse] forceFlush failed:', err);
+                    }
                 });
 
                 return createAgentUIStreamResponse({
