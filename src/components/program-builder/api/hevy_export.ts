@@ -15,6 +15,52 @@
 
 import { routineNotesForExport } from "@/lib/proximaExportAttribution";
 
+const RPE_SEP = "\u00B7";
+const RPE_SLOT_EMPTY = "\u2013";
+
+function isMeaningfulRpe(r: number | null | undefined): r is number {
+    return r != null && r > 0;
+}
+
+/**
+ * Builds one compact RPE line from set-level prescriptions for Hevy exercise notes
+ * (the API does not surface per-set RPE on routine create).
+ *
+ * - All sets share the same RPE → `RPE 7`
+ * - Otherwise one token per set, `–` when no target, e.g. `RPE –·–·7·7`
+ */
+export function formatRpeLineFromSets(sets: THevySets[]): string | null {
+    if (sets.length === 0) return null;
+
+    const meaningful = sets.map((s) => (isMeaningfulRpe(s.rpe) ? s.rpe : null));
+    if (!meaningful.some((v) => v != null)) return null;
+
+    const allSlotsHaveRpe = meaningful.every((v) => v != null);
+    const first = meaningful.find((v) => v != null);
+    const allSame =
+        allSlotsHaveRpe &&
+        first != null &&
+        meaningful.every((v) => v === first);
+
+    if (allSame && first != null) {
+        return `RPE ${first}`;
+    }
+
+    const parts = meaningful.map((v) => (v != null ? String(v) : RPE_SLOT_EMPTY));
+    return `RPE ${parts.join(RPE_SEP)}`;
+}
+
+/**
+ * Puts the RPE line first, then optional coaching notes (Hevy shows notes above sets).
+ */
+export function mergeExerciseNotesForHevyExport(existingNotes: string, sets: THevySets[]): string {
+    const rpeLine = formatRpeLineFromSets(sets);
+    const trimmed = existingNotes.trim();
+    if (rpeLine && trimmed) return `${rpeLine}\n\n${trimmed}`;
+    if (rpeLine) return rpeLine;
+    return trimmed;
+}
+
 /**
  * Converts Proxima schedule workouts into Hevy routine format.
  *
@@ -92,23 +138,26 @@ export const convertHevyOutputIntoInput = (routine: THevyRoutine, folderId: numb
         title: routine?.title?.length > 0 ? routine.title : "Proxima AI Routine",
         folder_id: folderId,
         notes: routineNotesForExport(routine?.notes),
-        exercises: uniqueExercises.map((exercise) => ({
-            exercise_template_id: exercise?.exercise_template_id,
-            superset_id: exercise?.supersets_id,
-            rest_seconds: 90,
-            notes: exercise?.notes?.length > 0 ? exercise?.notes : "...",
-            sets: exercise?.sets?.map((set) => ({
-                type: set?.type?.length > 0 ? set?.type : "normal",
-                weight_kg: set?.weight_kg ?? null,
-                reps: set?.reps ?? null,
-                distance_meters: set?.distance_meters ?? null,
-                duration_seconds: set?.duration_seconds ?? null,
-                custom_metric: set?.custom_metric ?? null,
-                ...(set?.rep_range != null && {
-                    rep_range: { start: set.rep_range.start, end: set.rep_range.end },
-                }),
-            })),
-        })),
+        exercises: uniqueExercises.map((exercise) => {
+            const mergedNotes = mergeExerciseNotesForHevyExport(exercise?.notes ?? "", exercise?.sets ?? []);
+            return {
+                exercise_template_id: exercise?.exercise_template_id,
+                superset_id: exercise?.supersets_id,
+                rest_seconds: 90,
+                notes: mergedNotes.length > 0 ? mergedNotes : "...",
+                sets: exercise?.sets?.map((set) => ({
+                    type: set?.type?.length > 0 ? set?.type : "normal",
+                    weight_kg: set?.weight_kg ?? null,
+                    reps: set?.reps ?? null,
+                    distance_meters: set?.distance_meters ?? null,
+                    duration_seconds: set?.duration_seconds ?? null,
+                    custom_metric: set?.custom_metric ?? null,
+                    ...(set?.rep_range != null && {
+                        rep_range: { start: set.rep_range.start, end: set.rep_range.end },
+                    }),
+                })),
+            };
+        }),
     };
 };
 
