@@ -660,8 +660,16 @@ export function getTools({
     const jsonPatchOperationSchema = z.object({
         op: z.string().transform(canonicalizePatchOp).describe('Operation type: add, remove, replace, move, copy, or test (typos like replace_seconds are coerced to replace).'),
         path: z.string().describe('JSON Pointer to the target property (e.g. /0/title, /0/exercises/1/sets/0/reps). Must contain only property names and array indices; never append the value to the path (e.g. /0/.../rpe:7 is WRONG; use /0/.../rpe and put 7 in value).'),
-        value: z.unknown().optional().describe('Value for add, replace, test'),
-        from: z.string().optional().describe('JSON Pointer for move/copy source'),
+        value: z.unknown().optional().describe('Value for add, replace, test. Do NOT include for move, copy, or remove.'),
+        from: z.string().optional().describe('JSON Pointer for move/copy source (REQUIRED for move and copy operations — e.g. { "op": "move", "from": "/0/exercises/2", "path": "/0/exercises/0" })'),
+    }).superRefine((op, ctx) => {
+        if ((op.op === 'move' || op.op === 'copy') && (!op.from || op.from.trim() === '')) {
+            ctx.addIssue({
+                code: 'custom',
+                message: `"from" is required for "${op.op}" operations (RFC 6902). Provide the source JSON Pointer in "from".`,
+                path: ['from'],
+            });
+        }
     });
 
     /**

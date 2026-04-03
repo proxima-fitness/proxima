@@ -842,9 +842,24 @@ const normalizePatchPaths = (ops: Operation[]): Operation[] => {
     });
 };
 
-/** Normalizes LLM JSON Patch ops before validate/apply (op coercion + path cleanup). */
+/**
+ * Coerces `move` ops that are missing a `from` pointer to `remove` ops.
+ * This handles the LLM anti-pattern of emitting `{ op:"move", path, value:null }`
+ * when the intent was to delete an element — RFC 6902 requires `from` on move.
+ * `copy` without `from` is not guessable and is left as-is (validatePatch will reject it).
+ */
+const normalizeMoveWithoutFrom = (ops: Operation[]): Operation[] =>
+    ops.map(op => {
+        if (op.op === "move" && (!("from" in op) || !(op as { from?: string }).from)) {
+            const { path } = op;
+            return { op: "remove", path } as Operation;
+        }
+        return op;
+    });
+
+/** Normalizes LLM JSON Patch ops before validate/apply (op coercion + path cleanup + move→remove coercion). */
 export const prepareModifyPatchOperations = (ops: Operation[]): Operation[] =>
-    normalizePatchOps(normalizePatchPaths(ops));
+    normalizeMoveWithoutFrom(normalizePatchOps(normalizePatchPaths(ops)));
 
 /**
  * Coerces degenerate rep_range objects (start === end) to null across an entire
