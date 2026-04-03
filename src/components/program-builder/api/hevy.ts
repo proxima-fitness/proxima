@@ -3,7 +3,7 @@
  *
  * Primary integration layer between Proxima and the Hevy workout-tracking app.
  * Provides functions for every Hevy public-API endpoint the app consumes
- * (routines, routine folders, workouts, exercise templates, exercise history)
+ * (routines, routine folders, workouts, exercise templates, custom exercise creation, exercise history)
  * as well as Supabase persistence for programs, API-key management, and
  * workout-count tracking.
  *
@@ -96,6 +96,29 @@ export const getHevyCustomExercises = async (user: User | undefined | null, apiK
     }
 
     return customExercises;
+};
+
+/**
+ * Creates a custom exercise template in the user's Hevy account.
+ *
+ * Maps to `POST /v1/exercise_templates`.
+ *
+ * @see https://api.hevyapp.com/docs/#/ExerciseTemplates/post_v1_exercise_templates
+ * @param exercise - Custom exercise fields (title, type, equipment, muscles)
+ * @param apiKey - User's Hevy API key
+ * @returns `{ id }` for the new template (per Hevy OpenAPI success response)
+ */
+export const postHevyCustomExercise = async (
+    exercise: THevyPostExerciseTemplate,
+    apiKey: string,
+): Promise<THevyPostCustomExerciseResponse> => {
+    const body: THevyPostExerciseTemplateRequest = { exercise };
+
+    return defaultPost<THevyPostCustomExerciseResponse, THevyPostExerciseTemplateRequest>(
+        "https://api.hevyapp.com/v1/exercise_templates",
+        apiKey,
+        body,
+    );
 };
 
 /**
