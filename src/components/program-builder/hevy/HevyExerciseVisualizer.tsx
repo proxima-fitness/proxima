@@ -3,17 +3,19 @@
 /**
  * @module HevyExerciseVisualizer
  * Renders the list of exercises for one day: each row shows thumbnail, title, sets/reps/intensity, superset styling,
- * and tooltip/actions (reason, notes, rest, add note, delete). Supports edit mode for superset selection (checkboxes).
- * Depends on: HevyExerciseGif, formatWeight/getWeightUnit, Tooltip.
+ * and tooltip/actions (reason, notes, rest, details, add note, delete). Supports edit mode for superset selection (checkboxes).
+ * Depends on: HevyExerciseGif, HevyExerciseDetailsDialog, formatWeight/getWeightUnit, Tooltip.
  * Used by: HevyDayCard.
  */
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
-import { LinkIcon, NotebookTextIcon, TimerIcon, Trash2Icon, XIcon } from "lucide-react";
+import { InfoIcon, LinkIcon, NotebookTextIcon, TimerIcon, Trash2Icon, XIcon } from "lucide-react";
 import { HevyExerciseGif } from "./HevyExerciseGif";
+import { HevyExerciseDetailsDialog } from "./HevyExerciseDetailsDialog";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { useState } from "react";
 
 /** Props for the exercise list within a day card. */
 interface IProps {
@@ -103,6 +105,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
 
     const { isInLbs } = usePoundsOrKgContext();
     const isSm = useMediaQuery("(min-width: 640px)");
+    const [detailsExercise, setDetailsExercise] = useState<THevyExerciseTemplate | undefined>(undefined);
 
     const editHandler = (e: React.MouseEvent<HTMLButtonElement>, folder_id: number, dayOrder: number, i: number, exercise: THevyExercise) => {
         if (editMode) {
@@ -115,6 +118,11 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
 
     return (
         <div>
+            <HevyExerciseDetailsDialog
+                isOpen={!!detailsExercise}
+                onClose={() => setDetailsExercise(undefined)}
+                exercise={detailsExercise}
+            />
             {day?.exercises?.map((exercise: THevyExercise, i: number) => {
                 const isSelected = selectedExercises.includes(i);
                 const supersetColor = getSupersetColor(exercise.supersets_id);
@@ -341,7 +349,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                     </TooltipTrigger>
                                     <TooltipContent
                                         side="right"
-                                        className="bg-lightSecondary text-white flex flex-col p-3 max-w-[260px] rounded-md shadow-lg"
+                                        className="bg-lightSecondary text-white flex flex-col p-3 max-w-[360px] rounded-md shadow-lg"
                                     >
                                 {exercise.reason && (
                                     <>
@@ -372,7 +380,23 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             Rest time {exercise.rest_seconds} s
                                         </div>
                                     )}
-                                    <div className="flex flex-row items-center gap-4">
+                                    <div className="flex flex-row flex-nowrap items-center gap-3">
+                                        <button
+                                            type="button"
+                                            className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 text-sm"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setDetailsExercise(
+                                                    hevyExercises?.find(
+                                                        (h) => h.id === exercise.exercise_template_id,
+                                                    ),
+                                                );
+                                            }}
+                                            aria-label="Exercise details"
+                                        >
+                                            <InfoIcon className="shrink-0 size-5" />
+                                            <span>Details</span>
+                                        </button>
                                         <button
                                             type="button"
                                             className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 text-sm"
