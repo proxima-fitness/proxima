@@ -15,8 +15,9 @@
 
 import { ToolLoopAgent, createAgentUIStreamResponse, gateway, stepCountIs } from 'ai';
 import { after } from 'next/server';
-import { observe } from '@langfuse/tracing';
+import { observe, propagateAttributes } from '@langfuse/tracing';
 import { langfuseSpanProcessor } from '../../../../instrumentation';
+import { createClient } from '@/utils/supabase/server';
 import { instructions } from './instructions/instructions';
 import { getTools, type IBuildWeekOnceGuard } from './tools/tools';
 import { createSandbox } from './skills/sandbox';
@@ -72,78 +73,91 @@ const callOptionsSchema = z.object({
  */
 async function handleChatPost(req: Request) {
     try {
-        const { messages, hevyProgram = [], daysPerWeek, programLength, excludeAreas = "", excludeEquipment = "", healthIssues = "" } = await req.json();
+        const { messages, hevyProgram = [], daysPerWeek, programLength, excludeAreas = "", excludeEquipment = "", healthIssues = "", chatSessionId } = await req.json();
 
-        const sanitizedMessages = sanitizeMessagesWithUnresolvedToolCalls(messages);
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
 
-        const systemPrompt = instructions({ hevyProgram, daysPerWeek, programLength });
-        const buildWeekOnceGuard: IBuildWeekOnceGuard = { locked: false };
-        const tools = getTools({
-            excludeAreas,
-            excludeEquipment,
-            healthIssues,
-            hevyProgram,
-            buildWeekOnceGuard,
-        });
+        const userId = user?.id?.slice(0, 200) || undefined;
+        const sessionId = typeof chatSessionId === 'string' && chatSessionId.trim()
+            ? chatSessionId.trim().slice(0, 200)
+            : undefined;
 
-        const sandbox = createSandbox({ workingDirectory: process.cwd() });
-        const skills = await discoverSkills(sandbox, ['.agents/skills']);
-        const activeToolScope: { allowedTools: string[] | null } = { allowedTools: null };
+        return propagateAttributes(
+            { userId, sessionId, traceName: 'andy-chat', metadata: { source: 'build-program' } },
+            async () => {
+                const sanitizedMessages = sanitizeMessagesWithUnresolvedToolCalls(messages);
 
-        const andy = new ToolLoopAgent({
-            model: gateway(
-                'google/gemini-3-flash'),
-                // 'anthropic/claude-sonnet-4.5'
-            instructions: systemPrompt,
-            tools: tools,
-            callOptionsSchema: callOptionsSchema,
-            stopWhen: stepCountIs(28),
-            experimental_telemetry: { isEnabled: true },
-            prepareCall: ({ options, ...settings }) => {
-                const CORE_TOOLS = ['loadSkill', 'readFile', 'bash'];
-                let filteredTools = settings.tools;
-                if (options.activeToolScope.allowedTools?.length) {
-                    const allowed = new Set([
-                        ...options.activeToolScope.allowedTools,
-                        ...CORE_TOOLS,
-                    ]);
-                    filteredTools = Object.fromEntries(
-                        Object.entries(settings.tools as Record<string, unknown>).filter(
-                            ([name]) => allowed.has(name)
-                        )
-                    ) as typeof settings.tools;
-                }
-                return {
-                    ...settings,
-                    tools: filteredTools,
-                    instructions: `${settings.instructions}\n\n${buildSkillsPrompt(options.skills)}`,
-                    experimental_context: {
-                        sandbox: options.sandbox,
-                        skills: options.skills,
-                        activeToolScope: options.activeToolScope,
+                const systemPrompt = instructions({ hevyProgram, daysPerWeek, programLength });
+                const buildWeekOnceGuard: IBuildWeekOnceGuard = { locked: false };
+                const tools = getTools({
+                    excludeAreas,
+                    excludeEquipment,
+                    healthIssues,
+                    hevyProgram,
+                    buildWeekOnceGuard,
+                });
+
+                const sandbox = createSandbox({ workingDirectory: process.cwd() });
+                const skills = await discoverSkills(sandbox, ['.agents/skills']);
+                const activeToolScope: { allowedTools: string[] | null } = { allowedTools: null };
+
+                const andy = new ToolLoopAgent({
+                    model: gateway(
+                        'google/gemini-3-flash'),
+                        // 'anthropic/claude-sonnet-4.5'
+                    instructions: systemPrompt,
+                    tools: tools,
+                    callOptionsSchema: callOptionsSchema,
+                    stopWhen: stepCountIs(28),
+                    experimental_telemetry: { isEnabled: true },
+                    prepareCall: ({ options, ...settings }) => {
+                        const CORE_TOOLS = ['loadSkill', 'readFile', 'bash'];
+                        let filteredTools = settings.tools;
+                        if (options.activeToolScope.allowedTools?.length) {
+                            const allowed = new Set([
+                                ...options.activeToolScope.allowedTools,
+                                ...CORE_TOOLS,
+                            ]);
+                            filteredTools = Object.fromEntries(
+                                Object.entries(settings.tools as Record<string, unknown>).filter(
+                                    ([name]) => allowed.has(name)
+                                )
+                            ) as typeof settings.tools;
+                        }
+                        return {
+                            ...settings,
+                            tools: filteredTools,
+                            instructions: `${settings.instructions}\n\n${buildSkillsPrompt(options.skills)}`,
+                            experimental_context: {
+                                sandbox: options.sandbox,
+                                skills: options.skills,
+                                activeToolScope: options.activeToolScope,
+                            },
+                        };
                     },
-                };
-            },
 
-            providerOptions: {
-                google: {
-                    thinkingConfig: {
-                        thinkingLevel: 'low',
-                        includeThoughts: true,
+                    providerOptions: {
+                        google: {
+                            thinkingConfig: {
+                                thinkingLevel: 'low',
+                                includeThoughts: true,
+                            },
+                        },
                     },
-                },
-            },
-          });
+                });
 
-        after(async () => {
-            await langfuseSpanProcessor.forceFlush();
-        });
+                after(async () => {
+                    await langfuseSpanProcessor.forceFlush();
+                });
 
-        return createAgentUIStreamResponse({
-            agent: andy,
-            uiMessages: sanitizedMessages,
-            options: { sandbox, skills, activeToolScope },
-        });
+                return createAgentUIStreamResponse({
+                    agent: andy,
+                    uiMessages: sanitizedMessages,
+                    options: { sandbox, skills, activeToolScope },
+                });
+            }
+        );
 
     } catch (error) {
         console.error('Error in chat API route:', error);

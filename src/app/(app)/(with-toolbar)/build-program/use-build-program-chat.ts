@@ -140,12 +140,14 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
                 excludeAreas: programRequest.excludeAreas?.length ? programRequest.excludeAreas.map((o) => o.value).join(", ") : "",
                 excludeEquipment: programRequest.excludeEquipment?.length ? programRequest.excludeEquipment.map((o) => o.value).join(", ") : "",
                 healthIssues: programRequest.healthIssues?.length ? programRequest.healthIssues.map((o) => o.value).join(", ") : "",
+                chatSessionId: chatId || undefined,
             };
             return sendMessage(message, { ...sendOptions, body: { ...contextBody, ...sendOptions?.body } });
         },
         [
             sendMessage,
             hevyProgram,
+            chatId,
             programRequest.daysPerWeek,
             programRequest.programLength,
             programRequest.excludeAreas,
