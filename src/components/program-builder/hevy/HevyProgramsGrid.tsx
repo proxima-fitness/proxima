@@ -59,7 +59,7 @@ function HevyProgramCard({
                     className="h-6 object-contain"
                 />
                 <span className="font-third text-sm font-medium">
-                    {totalRoutines} workout{totalRoutines !== 1 ? "s" : ""}
+                    {totalRoutines} Routine{totalRoutines !== 1 ? "s" : ""}
                 </span>
             </div>
 
