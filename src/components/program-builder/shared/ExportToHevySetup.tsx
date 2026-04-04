@@ -43,6 +43,25 @@ import posthog from "posthog-js";
 
 const TOTAL_STEPS = 2;
 
+const HEVY_EXPORT_LOG_PREFIX = "[Hevy export]";
+
+/** Matches resolver / Hevy API errors from custom template sync (for targeted console logging). */
+function isHevyCustomExerciseExportFailureMessage(msg: string): boolean {
+    const m = msg.toLowerCase();
+    return (
+        m.includes("not found in the library") ||
+        m.includes("multiple hevy exercises named") ||
+        (m.includes("already created") && m.includes("custom exercise")) ||
+        m.includes("invalid exercise type for hevy export") ||
+        m.includes("invalid equipment for hevy export") ||
+        m.includes("invalid primary muscle group for hevy export") ||
+        m.includes("custom exercise template has no title") ||
+        m.includes("user is required to load hevy custom exercises") ||
+        m.includes("internal error: missing id mapping") ||
+        m.includes("exceeds-custom-exercise-limit")
+    );
+}
+
 /** Props for the Hevy export setup panel. */
 interface IExportToHevySetupProps {
     /** Notifies parent when upload is in progress (e.g. to block dialog close). */
@@ -183,14 +202,14 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
             const rawProgram = localStorage.getItem("hevy-program-in-progress");
             if (!rawProgram) {
                 toast.error("Missing program. Build a program first.");
-                console.error("Missing program. Build a program first.");
+                console.error(`${HEVY_EXPORT_LOG_PREFIX} Missing program. Build a program first.`);
                 return;
             }
             try {
                 hevyRoutines = JSON.parse(rawProgram) as THevyRoutine[];
             } catch (error) {
                 toast.error("Invalid program data.");
-                console.error("Invalid program data.", error);
+                console.error(`${HEVY_EXPORT_LOG_PREFIX} Invalid program data.`, error);
                 return;
             }
 
@@ -215,14 +234,14 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
         if (!user) {
             const errorMessage = "You must be signed in to upload.";
             toast.error(errorMessage);
-            console.error(errorMessage);
+            console.error(`${HEVY_EXPORT_LOG_PREFIX} export_failed`, errorMessage);
             posthog?.capture?.("export_failed", { user: "user_id_unknown", destination: "hevy", error: errorMessage });
             return;
         }
         if (!hevyApiKey || hevyApiKey.length === 0) {
             const errorMessage = "Connect your Hevy API key first.";
             toast.error(errorMessage);
-            console.error(errorMessage);
+            console.error(`${HEVY_EXPORT_LOG_PREFIX} export_failed`, errorMessage);
             posthog?.capture?.("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: errorMessage });
             return;
         }
@@ -239,7 +258,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
             if (!saved || programId === undefined) {
                 const errorMessage = "Failed to save program to My Programs.";
                 toast.error(errorMessage);
-                console.error(errorMessage, supabaseResult);
+                console.error(`${HEVY_EXPORT_LOG_PREFIX} export_failed`, errorMessage, supabaseResult);
                 posthog?.capture?.("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: errorMessage });
                 return;
             }
@@ -272,45 +291,56 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                 setUploadProgress({ uploaded, total, status, rateLimitSecondsLeft });
             };
 
-            if (exportToOneFolderMode) {
-                const hevyResult = await postProgramToHevyOneFolder(
-                    routinesToUpload,
-                    1,
-                    hevyApiKey,
-                    programTitle,
-                    onProgress,
-                );
-                if (hevyResult?.success !== true) {
-                    const message =
-                        hevyResult?.data instanceof Error &&
-                        hevyResult.data.message.includes("Rate limited after 3 retries")
-                            ? RATE_LIMIT_EXHAUSTED_MESSAGE
-                            : "Failed to upload program to Hevy.";
-                    toast.error(message);
-                    console.error("Failed to upload program to Hevy.", hevyResult);
-                    posthog?.capture?.("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: message });
-                    return;
+            const hevyResult = exportToOneFolderMode
+                ? await postProgramToHevyOneFolder(
+                      routinesToUpload,
+                      1,
+                      hevyApiKey,
+                      programTitle,
+                      user,
+                      onProgress,
+                  )
+                : await postProgramToHevy(routinesToUpload, hevyApiKey, user, onProgress);
+            if (hevyResult?.success !== true) {
+                const message =
+                    hevyResult?.data instanceof Error &&
+                    hevyResult.data.message.includes("Rate limited after 3 retries")
+                        ? RATE_LIMIT_EXHAUSTED_MESSAGE
+                        : hevyResult?.data instanceof Error
+                          ? hevyResult.data.message
+                          : "Failed to upload program to Hevy.";
+                toast.error(message);
+                const err = hevyResult?.data instanceof Error ? hevyResult.data : undefined;
+                console.error(`${HEVY_EXPORT_LOG_PREFIX} export_failed Upload to Hevy failed.`, {
+                    message,
+                    hevyResult,
+                    cause: err,
+                });
+                if (
+                    (err && isHevyCustomExerciseExportFailureMessage(err.message)) ||
+                    isHevyCustomExerciseExportFailureMessage(message)
+                ) {
+                    console.error(
+                        `${HEVY_EXPORT_LOG_PREFIX} export_failed Custom exercise sync to Hevy failed (resolve or POST template).`,
+                        err?.message ?? message,
+                        err ?? hevyResult?.data,
+                    );
                 }
-            } else {
-                const hevyResult = await postProgramToHevy(routinesToUpload, hevyApiKey, onProgress);
-                if (hevyResult?.success !== true) {
-                    const message =
-                        hevyResult?.data instanceof Error &&
-                        hevyResult.data.message.includes("Rate limited after 3 retries")
-                            ? RATE_LIMIT_EXHAUSTED_MESSAGE
-                            : "Failed to upload program to Hevy.";
-                    toast.error(message);
-                    console.error("Failed to upload program to Hevy.", hevyResult);
-                    posthog?.capture?.("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: message });
-                    return;
-                }
+                posthog?.capture?.("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: message });
+                return;
+            }
+            if (
+                hevyResult.success &&
+                (hevyResult.createdNewHevyCustomTemplates ?? 0) > 0
+            ) {
+                queryClient.invalidateQueries({ queryKey: ["hevy-custom-exercises"] });
             }
 
             const subscriberError = await postNewProgramSubscriber(user, String(programId));
             if (subscriberError) {
                 const errorMessage = "Program saved but failed to add to My Programs.";
                 toast.error(errorMessage);
-                console.error(errorMessage, subscriberError);
+                console.error(`${HEVY_EXPORT_LOG_PREFIX} export_failed`, errorMessage, subscriberError);
                 posthog?.capture?.("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: errorMessage });
             } else {
                 queryClient.invalidateQueries({ queryKey: ["subscribed-programs", user.id] });
@@ -327,7 +357,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
             }
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "Upload failed.";
-            console.error("Upload error:", err);
+            console.error(`${HEVY_EXPORT_LOG_PREFIX} export_failed Upload threw.`, err);
             toast.error(errorMessage);
             posthog?.capture?.("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: errorMessage });
         } finally {

@@ -22,8 +22,14 @@ import { validate as validateUuid } from "uuid";
 import { getMaxFolderId } from "@/components/program-builder/utils";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/api/index";
-import { convertHevyOutputIntoInput } from "./hevy_export";
+import { convertHevyOutputIntoInput, mapSupabaseExerciseTemplateRowToPostExercise } from "./hevy_export";
 import { HEVY_OMIT_REASON, RATE_LIMIT_EXHAUSTED_MESSAGE } from "@/assets/constants/ui-constants";
+
+/** Max pages when listing Hevy exercise templates (100 templates per page). */
+const HEVY_EXERCISE_TEMPLATES_MAX_PAGES = 40;
+
+/** Chunk size for Supabase `.in("id", ...)` when loading templates for Hevy export. */
+const EXPORT_TEMPLATE_IDS_CHUNK_SIZE = 150;
 
 /**
  * Generic authenticated GET request against the Hevy public API.
@@ -55,7 +61,7 @@ export const defaultFetch = async <T>(url: string, apiKey: string): Promise<T> =
 /**
  * Fetches all user-created custom exercise templates from the Hevy API.
  *
- * Paginates through up to 10 pages (100 templates/page) and filters for
+ * Paginates through up to 40 pages (100 templates/page) and filters for
  * `is_custom === true`. Used when the program builder needs to know which
  * exercises exist only in the user's Hevy account (vs. the global library).
  *
@@ -68,7 +74,7 @@ export const getHevyCustomExercises = async (user: User | undefined | null, apiK
 
     const customExercises: THevyExerciseTemplate[] = [];
 
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= HEVY_EXERCISE_TEMPLATES_MAX_PAGES; i++) {
         const url = `https://api.hevyapp.com/v1/exercise_templates?page=${i}&pageSize=100`;
 
         try {
@@ -708,7 +714,305 @@ async function delayWithRateLimitCountdown(
     }
 }
 
+type ExerciseTemplateDbRow = {
+    id: string;
+    title: string | null;
+    type: string | null;
+    equipment: string | null;
+    primary_muscle_group: string | null;
+    secondary_muscle_groups: string[] | null;
+    is_custom: boolean | null;
+};
 
+/**
+ * Collects distinct non-empty exercise template IDs from routines (export / upload).
+ */
+function collectExerciseTemplateIdsFromRoutines(routines: THevyRoutine[]): string[] {
+    const set = new Set<string>();
+    for (const r of routines) {
+        for (const ex of r.exercises ?? []) {
+            const id = ex.exercise_template_id?.trim();
+            if (id) set.add(id);
+        }
+    }
+    return Array.from(set);
+}
+
+/**
+ * Replaces `exercise_template_id` where a Proxima UUID maps to a Hevy account ID.
+ */
+function remapRoutineExerciseTemplateIds(routines: THevyRoutine[], idMap: Map<string, string>): THevyRoutine[] {
+    return routines.map((routine) => ({
+        ...routine,
+        exercises: routine.exercises.map((ex) => {
+            const next = idMap.get(ex.exercise_template_id);
+            if (next === undefined) return ex;
+            return { ...ex, exercise_template_id: next };
+        }),
+    }));
+}
+
+async function fetchExerciseTemplateRowsFromSupabase(
+    templateIds: string[],
+): Promise<{ success: true; rows: ExerciseTemplateDbRow[] } | { success: false; error: Error }> {
+    const unique = Array.from(new Set(templateIds));
+    const merged: ExerciseTemplateDbRow[] = [];
+    const seen = new Set<string>();
+
+    for (let i = 0; i < unique.length; i += EXPORT_TEMPLATE_IDS_CHUNK_SIZE) {
+        const chunk = unique.slice(i, i + EXPORT_TEMPLATE_IDS_CHUNK_SIZE);
+        const { data, error } = await supabase
+            .from("hevy_exercise_templates")
+            .select("id, title, type, equipment, primary_muscle_group, secondary_muscle_groups, is_custom")
+            .in("id", chunk);
+        if (error) {
+            return { success: false, error: new Error(error.message) };
+        }
+        for (const row of data ?? []) {
+            const r = row as ExerciseTemplateDbRow;
+            if (r.id && !seen.has(r.id)) {
+                seen.add(r.id);
+                merged.push(r);
+            }
+        }
+    }
+    return { success: true, rows: merged };
+}
+
+/**
+ * Lists all custom exercise templates on the user's Hevy account for program export.
+ * Throws if any page cannot be fetched after retries (no partial results).
+ */
+export async function getHevyCustomExercisesForUpload(
+    user: User | null | undefined,
+    apiKey: string,
+): Promise<THevyExerciseTemplate[]> {
+    if (!user) {
+        throw new Error("User is required to load Hevy custom exercises for export.");
+    }
+
+    const customExercises: THevyExerciseTemplate[] = [];
+
+    for (let page = 1; page <= HEVY_EXERCISE_TEMPLATES_MAX_PAGES; page++) {
+        const url = `https://api.hevyapp.com/v1/exercise_templates?page=${page}&pageSize=100`;
+        let result: { exercise_templates: THevyExerciseTemplate[] } | undefined;
+
+        for (let retry = 0; retry <= RATE_LIMIT_MAX_RETRIES; retry++) {
+            try {
+                result = await defaultFetch<{ exercise_templates: THevyExerciseTemplate[] }>(url, apiKey);
+                break;
+            } catch (error: unknown) {
+                const msg = error instanceof Error ? error.message : String(error);
+                const statusMatch = msg.match(/Status: (\d+)/);
+                const status = statusMatch ? parseInt(statusMatch[1], 10) : 0;
+                const is429 = status === 429;
+                const is5xx = status >= 500 && status < 600;
+                const maybeNetwork =
+                    msg.includes("Failed to fetch") ||
+                    msg.includes("NetworkError") ||
+                    msg.toLowerCase().includes("network request failed");
+                const canRetry = is429 || is5xx || maybeNetwork || status === 0;
+                if (!canRetry || retry >= RATE_LIMIT_MAX_RETRIES) {
+                    throw error instanceof Error ? error : new Error(String(error));
+                }
+                const waitSec = is429 ? 60 * Math.pow(2, retry) : Math.min(8, Math.pow(2, retry));
+                console.warn(`getHevyCustomExercisesForUpload page ${page} retry ${retry}`, error);
+                await delay(waitSec * 1000);
+            }
+        }
+
+        if (!result) {
+            throw new Error("getHevyCustomExercisesForUpload: unexpected empty response");
+        }
+
+        const exercises = result.exercise_templates;
+        if (!exercises || exercises.length === 0) {
+            break;
+        }
+        customExercises.push(...exercises.filter((e) => e.is_custom));
+        if (exercises.length < 100) {
+            break;
+        }
+    }
+
+    return customExercises;
+}
+
+function isRetryablePostHevyCustomError(error: unknown): boolean {
+    const msg = error instanceof Error ? error.message : String(error);
+    if (msg.includes("Status: 429")) return true;
+    const m = msg.match(/Status: (\d+)/);
+    if (m) {
+        const s = parseInt(m[1], 10);
+        if (s >= 500 && s < 600) return true;
+    }
+    if (
+        msg.includes("Failed to fetch") ||
+        msg.includes("NetworkError") ||
+        msg.toLowerCase().includes("network request failed")
+    ) {
+        return true;
+    }
+    return false;
+}
+
+async function postHevyCustomExerciseWithRateLimitRetry(
+    exercise: THevyPostExerciseTemplate,
+    apiKey: string,
+    onProgress: HevyUploadProgressCallback | undefined,
+    uploaded: number,
+    total: number,
+): Promise<THevyPostCustomExerciseResponse> {
+    for (let retry = 0; retry <= RATE_LIMIT_MAX_RETRIES; retry++) {
+        try {
+            return await postHevyCustomExercise(exercise, apiKey);
+        } catch (error: unknown) {
+            if (!isRetryablePostHevyCustomError(error) || retry >= RATE_LIMIT_MAX_RETRIES) {
+                throw error;
+            }
+            const msg = error instanceof Error ? error.message : String(error);
+            const is429 = msg.includes("Status: 429");
+            console.warn("Retrying postHevyCustomExercise...", error);
+            if (is429) {
+                await delayWithRateLimitCountdown(uploaded, total, onProgress, 60 * Math.pow(2, retry));
+            } else {
+                await delay(Math.min(8000, 1000 * Math.pow(2, retry)));
+            }
+        }
+    }
+    throw new Error("postHevyCustomExerciseWithRateLimitRetry: exhausted retries");
+}
+
+export type ResolveCustomExerciseTemplatesResult =
+    | { success: true; routines: THevyRoutine[]; createdNewHevyCustomTemplates: number }
+    | { success: false; error: Error };
+
+/**
+ * For each Proxima `is_custom` template in the routines: match Hevy custom exercises
+ * by exact title (trimmed) or POST a new custom template, then remap IDs for upload.
+ */
+export async function resolveCustomExerciseTemplatesForHevyUpload(
+    user: User | null | undefined,
+    apiKey: string,
+    routines: THevyRoutine[],
+    onProgress?: HevyUploadProgressCallback,
+): Promise<ResolveCustomExerciseTemplatesResult> {
+    if (!user) {
+        return { success: true, routines, createdNewHevyCustomTemplates: 0 };
+    }
+
+    const templateIds = collectExerciseTemplateIdsFromRoutines(routines);
+    if (templateIds.length === 0) {
+        return { success: true, routines, createdNewHevyCustomTemplates: 0 };
+    }
+
+    const fetched = await fetchExerciseTemplateRowsFromSupabase(templateIds);
+    if (fetched.success === false) {
+        return { success: false, error: fetched.error };
+    }
+
+    const foundIds = new Set(fetched.rows.map((r) => r.id));
+    const missingIds = templateIds.filter((id) => !foundIds.has(id));
+    if (missingIds.length > 0) {
+        const sample = missingIds.slice(0, 5).join(", ");
+        const suffix = missingIds.length > 5 ? ` (and ${missingIds.length - 5} more)` : "";
+        return {
+            success: false,
+            error: new Error(
+                `${missingIds.length} exercise template(s) not found in the library: ${sample}${suffix}`,
+            ),
+        };
+    }
+
+    const customRows = fetched.rows.filter((r) => r.is_custom === true);
+    if (customRows.length === 0) {
+        return { success: true, routines, createdNewHevyCustomTemplates: 0 };
+    }
+
+    let hevyCustoms: THevyExerciseTemplate[];
+    try {
+        hevyCustoms = await getHevyCustomExercisesForUpload(user, apiKey);
+    } catch (e: unknown) {
+        return {
+            success: false,
+            error: e instanceof Error ? e : new Error(String(e)),
+        };
+    }
+
+    const idMap = new Map<string, string>();
+    let createdNewHevyCustomTemplates = 0;
+    const createdHevyTemplateIds: string[] = [];
+    const totalForProgress = routines.length;
+
+    for (const row of customRows) {
+        const proximaId = row.id;
+        const titleTrim = (row.title ?? "").trim();
+        const sameTitle = hevyCustoms.filter((h) => (h.title ?? "").trim() === titleTrim);
+        if (sameTitle.length > 1) {
+            return {
+                success: false,
+                error: new Error(
+                    `Multiple Hevy exercises named "${titleTrim}". Rename one in Hevy and try again.`,
+                ),
+            };
+        }
+        const match = sameTitle[0];
+        if (match) {
+            idMap.set(proximaId, String(match.id));
+            continue;
+        }
+
+        let postBody: THevyPostExerciseTemplate;
+        try {
+            postBody = mapSupabaseExerciseTemplateRowToPostExercise(row);
+        } catch (e: unknown) {
+            return {
+                success: false,
+                error: e instanceof Error ? e : new Error(String(e)),
+            };
+        }
+
+        try {
+            const result = await postHevyCustomExerciseWithRateLimitRetry(
+                postBody,
+                apiKey,
+                onProgress,
+                0,
+                totalForProgress,
+            );
+            const hevyId = String(result.id);
+            idMap.set(proximaId, hevyId);
+            createdHevyTemplateIds.push(hevyId);
+            createdNewHevyCustomTemplates += 1;
+        } catch (e: unknown) {
+            const base = e instanceof Error ? e : new Error(String(e));
+            if (createdHevyTemplateIds.length > 0) {
+                return {
+                    success: false,
+                    error: new Error(
+                        `${base.message} Already created ${createdHevyTemplateIds.length} custom exercise(s) on Hevy; you may see duplicates if you retry.`,
+                    ),
+                };
+            }
+            return { success: false, error: base };
+        }
+    }
+
+    for (const row of customRows) {
+        if (!idMap.has(row.id)) {
+            return {
+                success: false,
+                error: new Error(`Internal error: missing ID mapping for template ${row.id}`),
+            };
+        }
+    }
+
+    return {
+        success: true,
+        routines: remapRoutineExerciseTemplateIds(routines, idMap),
+        createdNewHevyCustomTemplates,
+    };
+}
 
 /**
  * Generic authenticated POST request against the Hevy public API.
@@ -1105,6 +1409,7 @@ export const postRoutineFolders = async (title: string, apiKey: string) => {
  * @param apiKey - User's Hevy API key
  * @param programTitle - Program title metadata (first element's title is used)
  * @param onProgress - Optional callback receiving upload counts and rate-limit countdowns
+ * @param user - Authenticated user; required to remap Proxima custom template IDs to Hevy before upload
  * @returns `{ success: true, data: [] }` on success, or `{ success: false, data: Error }`
  */
 export const postProgramToHevyOneFolder = async (
@@ -1112,9 +1417,18 @@ export const postProgramToHevyOneFolder = async (
     week: number,
     apiKey: string,
     programTitle: TProgramTitle[] | undefined,
+    user: User,
     onProgress?: HevyUploadProgressCallback,
 ) => {
-    const total = hevyRoutines.length;
+    let routinesToUpload = hevyRoutines;
+    const resolved = await resolveCustomExerciseTemplatesForHevyUpload(user, apiKey, hevyRoutines, onProgress);
+    if (resolved.success === false) {
+        return { success: false, data: resolved.error };
+    }
+    routinesToUpload = resolved.routines;
+    const createdNewHevyCustomTemplates = resolved.createdNewHevyCustomTemplates;
+
+    const total = routinesToUpload.length;
     const folderTitle = `Week ${week} - ${programTitle?.[0]?.title ?? "Proxima Program"}`;
 
     try {
@@ -1151,13 +1465,13 @@ export const postProgramToHevyOneFolder = async (
             return { success: false, data: new Error("Routine folder not found") };
         }
 
-        for (let batchStart = 0; batchStart < hevyRoutines.length; batchStart += ROUTINES_BATCH_SIZE) {
-            const batchEnd = Math.min(batchStart + ROUTINES_BATCH_SIZE, hevyRoutines.length);
+        for (let batchStart = 0; batchStart < routinesToUpload.length; batchStart += ROUTINES_BATCH_SIZE) {
+            const batchEnd = Math.min(batchStart + ROUTINES_BATCH_SIZE, routinesToUpload.length);
             for (let i = batchStart; i < batchEnd; i++) {
                 for (let retry = 0; retry <= RATE_LIMIT_MAX_RETRIES; retry++) {
                     try {
                         onProgress?.(i + 1, total, 'uploading');
-                        await postRoutine(convertHevyOutputIntoInput(hevyRoutines[i], folderId.id), apiKey);
+                        await postRoutine(convertHevyOutputIntoInput(routinesToUpload[i], folderId.id), apiKey);
                         break;
                     } catch (error: unknown) {
                         if (retry >= RATE_LIMIT_MAX_RETRIES) {
@@ -1168,12 +1482,12 @@ export const postProgramToHevyOneFolder = async (
                     }
                 }
             }
-            if (batchEnd < hevyRoutines.length) {
+            if (batchEnd < routinesToUpload.length) {
                 await delayWithRateLimitCountdown(batchEnd, total, onProgress);
             }
         }
 
-        return { success: true, data: [] };
+        return { success: true, data: [], createdNewHevyCustomTemplates };
     } catch (error: unknown) {
         console.error("Error saving program to Hevy", error);
         return { success: false, data: error };
@@ -1190,19 +1504,29 @@ export const postProgramToHevyOneFolder = async (
  * @param hevyRoutines - Array of routines spanning multiple weeks
  * @param apiKey - User's Hevy API key
  * @param onProgress - Optional callback receiving upload counts and rate-limit countdowns
+ * @param user - Authenticated user; required to remap Proxima custom template IDs to Hevy before upload
  * @returns `{ success: true, data: [] }` on success, or `{ success: false, data: Error }`
  */
 export const postProgramToHevy = async (
     hevyRoutines: THevyRoutine[],
     apiKey: string,
+    user: User,
     onProgress?: HevyUploadProgressCallback,
 ) => {
-    const total = hevyRoutines.length;
+    let routinesToUpload = hevyRoutines;
+    const resolved = await resolveCustomExerciseTemplatesForHevyUpload(user, apiKey, hevyRoutines, onProgress);
+    if (resolved.success === false) {
+        return { success: false, data: resolved.error };
+    }
+    routinesToUpload = resolved.routines;
+    const createdNewHevyCustomTemplates = resolved.createdNewHevyCustomTemplates;
+
+    const total = routinesToUpload.length;
 
     try {
         const weeks = Array.from(
             new Set(
-                hevyRoutines
+                routinesToUpload
                     .map((p) => p.folder_id)
                     .filter((week): week is number => typeof week === 'number'),
             ),
@@ -1255,17 +1579,17 @@ export const postProgramToHevy = async (
             }
         }
 
-        for (let batchStart = 0; batchStart < hevyRoutines.length; batchStart += ROUTINES_BATCH_SIZE) {
-            const batchEnd = Math.min(batchStart + ROUTINES_BATCH_SIZE, hevyRoutines.length);
+        for (let batchStart = 0; batchStart < routinesToUpload.length; batchStart += ROUTINES_BATCH_SIZE) {
+            const batchEnd = Math.min(batchStart + ROUTINES_BATCH_SIZE, routinesToUpload.length);
             for (let j = batchStart; j < batchEnd; j++) {
                 const folderId = routineFolders?.routine_folders.find(
-                    (folder) => folder.title === `Week ${Number(hevyRoutines[j].folder_id) + 1}`,
+                    (folder) => folder.title === `Week ${Number(routinesToUpload[j].folder_id) + 1}`,
                 );
                 if (!folderId) continue;
                 for (let retry = 0; retry <= RATE_LIMIT_MAX_RETRIES; retry++) {
                     try {
                         onProgress?.(j + 1, total, 'uploading');
-                        await postRoutine(convertHevyOutputIntoInput(hevyRoutines[j], folderId.id), apiKey);
+                        await postRoutine(convertHevyOutputIntoInput(routinesToUpload[j], folderId.id), apiKey);
                         break;
                     } catch (error: unknown) {
                         if (retry >= RATE_LIMIT_MAX_RETRIES) {
@@ -1276,11 +1600,11 @@ export const postProgramToHevy = async (
                     }
                 }
             }
-            if (batchEnd < hevyRoutines.length) {
+            if (batchEnd < routinesToUpload.length) {
                 await delayWithRateLimitCountdown(batchEnd, total, onProgress);
             }
         }
-        return { success: true, data: [] };
+        return { success: true, data: [], createdNewHevyCustomTemplates };
     } catch (error: unknown) {
         console.error("Error saving program to Hevy", error);
         return { success: false, data: error };

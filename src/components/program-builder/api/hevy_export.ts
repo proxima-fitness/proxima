@@ -15,6 +15,109 @@
 
 import { routineNotesForExport } from "@/lib/proximaExportAttribution";
 
+/** Supabase `hevy_exercise_templates` row fields needed to POST a custom exercise to Hevy. */
+export type THevyExerciseTemplateRowForPost = {
+    title: string | null;
+    type: string | null;
+    equipment: string | null;
+    primary_muscle_group: string | null;
+    secondary_muscle_groups: string[] | null;
+};
+
+const HEVY_POST_EXERCISE_TYPES = new Set<string>([
+    "weight_reps",
+    "reps_only",
+    "bodyweight_reps",
+    "bodyweight_assisted_reps",
+    "duration",
+    "weight_duration",
+    "distance_duration",
+    "short_distance_weight",
+]);
+
+const HEVY_POST_EQUIPMENT = new Set<string>([
+    "none",
+    "barbell",
+    "dumbbell",
+    "kettlebell",
+    "machine",
+    "plate",
+    "resistance_band",
+    "suspension",
+    "other",
+]);
+
+const HEVY_POST_MUSCLE = new Set<string>([
+    "abdominals",
+    "shoulders",
+    "biceps",
+    "triceps",
+    "forearms",
+    "quadriceps",
+    "hamstrings",
+    "calves",
+    "glutes",
+    "abductors",
+    "adductors",
+    "lats",
+    "upper_back",
+    "traps",
+    "lower_back",
+    "chest",
+    "cardio",
+    "neck",
+    "full_body",
+    "other",
+]);
+
+/**
+ * Maps a Proxima `hevy_exercise_templates` row to Hevy `POST /v1/exercise_templates` body.
+ * Throws if required fields are missing or not valid Hevy enum values.
+ */
+export function mapSupabaseExerciseTemplateRowToPostExercise(row: THevyExerciseTemplateRowForPost): THevyPostExerciseTemplate {
+    const title = (row.title ?? "").trim();
+    if (!title) {
+        throw new Error("Custom exercise template has no title");
+    }
+
+    const rawType = row.type?.trim() ?? "";
+    if (!HEVY_POST_EXERCISE_TYPES.has(rawType)) {
+        throw new Error(`Invalid exercise type for Hevy export: ${row.type ?? "(empty)"}`);
+    }
+    const exercise_type = rawType as THevyPostExerciseTemplate["exercise_type"];
+
+    const rawEquipment = row.equipment?.trim() ?? "";
+    if (!HEVY_POST_EQUIPMENT.has(rawEquipment)) {
+        throw new Error(`Invalid equipment for Hevy export: ${row.equipment ?? "(empty)"}`);
+    }
+    const equipment_category = rawEquipment as THevyPostExerciseTemplate["equipment_category"];
+
+    const rawPrimary = row.primary_muscle_group?.trim() ?? "";
+    if (!HEVY_POST_MUSCLE.has(rawPrimary)) {
+        throw new Error(`Invalid primary muscle group for Hevy export: ${row.primary_muscle_group ?? "(empty)"}`);
+    }
+    const muscle_group = rawPrimary as THevyPostExerciseTemplate["muscle_group"];
+
+    const secondary = row.secondary_muscle_groups ?? [];
+    const other_muscles: THevyPostExerciseTemplate["other_muscles"] = [];
+    for (const m of secondary) {
+        const t = typeof m === "string" ? m.trim() : "";
+        if (!t || !HEVY_POST_MUSCLE.has(t)) continue;
+        const mg = t as THevyPostExerciseTemplate["muscle_group"];
+        if (mg !== muscle_group && !other_muscles.includes(mg)) {
+            other_muscles.push(mg);
+        }
+    }
+
+    return {
+        title,
+        exercise_type,
+        equipment_category,
+        muscle_group,
+        other_muscles,
+    };
+}
+
 const RPE_SEP = "\u00B7";
 const RPE_SLOT_EMPTY = "\u2013";
 
