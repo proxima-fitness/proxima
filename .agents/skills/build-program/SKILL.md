@@ -24,7 +24,7 @@ After **getExerciseList**, call **buildWeek exactly once** per user request to g
 ## Checklist
 
 - [ ] **New program:** Brief visible message, then **getMoreInfoQuestions** immediately. Do **not** call **planProgram**, **getExerciseList**, **buildWeek**, or **modifyProgram** until the questionnaire is done or the user clearly continues (e.g. "Build my program"). Then proceed with the steps below.
-- [ ] **planProgram** once: structured plan for the full mesocycle (duration, blocks, optional week-by-week progression table). Use questionnaire answers, program builder context (days/week, weeks), and loaded resources (powerlifting/bodybuilding/weight-loss) where relevant.
+- [ ] **planProgram** once: structured plan for the full mesocycle (duration, blocks, optional week-by-week progression table). Use questionnaire answers, program builder context (days/week, weeks), and loaded resources (powerlifting/bodybuilding/hyrox/crossfit/weight-loss) where relevant.
 - [ ] getExerciseList with user requirements (respect program builder context for days per week / program length if available).
 - [ ] Select exercises from the returned list (id: title). Use only IDs that appear in the list.
 - [ ] **buildWeek** once: one week only (week 1 template). `routines.length` = totalDays; `dayNumber` 1..N in order. Align structure with **planProgram** (stable exercise choices within blocks when the plan says so).
@@ -49,6 +49,10 @@ When the user wants a **powerlifting** program (squat, bench, deadlift), a progr
 When the user wants a **bodybuilding** or **hypertrophy** program (aesthetic focus, muscle building, PPL, upper/lower, bro split, or training by muscle group), use `readFile` to load `.agents/skills/build-program/resources/bodybuilding.md` and apply that knowledge when planning, selecting exercises, and building the week.
 
 When the user wants a **fat-loss-first** or **weight-loss** program (cutting, leaning out, calorie deficit, body recomposition emphasis), use `readFile` to load the weight-loss resources—`.agents/skills/build-program/resources/weight-loss/diet.md`, `.agents/skills/build-program/resources/weight-loss/cardio-exercise.md`, and `.agents/skills/build-program/resources/weight-loss/lifting-program.md`—**and** `.agents/skills/build-program/resources/bodybuilding.md` for muscle volumes and exercise selection. Apply that knowledge when planning, selecting exercises, and building the week. **Exception:** if they explicitly want **powerlifting-style** fat loss (meet prep cut, S/B/D focus), load `powerlifting.md` as appropriate and still use the weight-loss resources for nutrition, cardio, and how lifting fits a deficit.
+
+When the user wants a **Hyrox** program (Hyrox prep, Hyrox race, indoor fitness racing in the Hyrox format, or they name Hyrox stations such as SkiErg, sled push/pull, farmers carry, sandbag lunges, wall balls), use `readFile` to load `.agents/skills/build-program/resources/hyrox.md` and apply that knowledge when planning, selecting exercises, and building the week. If they also want **fat loss** or **general muscle** work, you may combine with `.agents/skills/build-program/resources/weight-loss/` or `bodybuilding.md` **only as secondary** to Hyrox-specific run-and-station priorities.
+
+When the user wants **CrossFit**, **CrossFit-style**, **GPP**, a **WOD** or **metcon** program, or formats like **AMRAP** / **EMOM** / **for time**, or they reference **benchmark-style** couplets or chipper-style workouts (without needing full reproduction of trademarked workouts), use `readFile` to load `.agents/skills/build-program/resources/crossfit.md` and apply that knowledge when planning, selecting exercises, and building the week. If they also want **bodybuilding**, **powerlifting**, or **weight-loss** emphasis, you may combine with `bodybuilding.md`, `powerlifting.md`, or `.agents/skills/build-program/resources/weight-loss/` **only when** secondary to their stated CrossFit-style goals.
 
 ## Gotchas
 
