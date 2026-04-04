@@ -12,19 +12,12 @@ allowedTools:
 
 # Modify Program
 
-## Checklist (two phases)
+## Checklist
 
-**Phase A — Proposal (when the user has not yet confirmed this round of edits)**
-
-- [ ] Reply in **plain language** only: summarize what would change and ask them to confirm before you apply.
-- [ ] **Do not** call `modifyProgram` yet. **Do not** paste JSON Patch, operation arrays, or fenced JSON in the chat—those belong only in the tool payload in Phase B.
-
-**Phase B — Apply (after the user clearly agrees, e.g. yes, go ahead, apply it)**
-
-- [ ] `loadSkill` with `modify-program` if you have not already loaded it this turn.
-- [ ] `getCurrentProgram` to get current state and length (N = total routines).
-- [ ] Build one patch array with all operations for the requested change. For edits affecting every routine: include one op per index /0 through /N-1 as needed.
-- [ ] Call `modifyProgram` once with the full patch array.
+- [ ] getCurrentProgram to get current state and length (N = total routines).
+- [ ] Build one patch array with all operations for the requested change.
+- [ ] For edits affecting every routine: include one op per index /0 through /N-1 as needed.
+- [ ] Call modifyProgram once with the full patch array.
 
 ## Program types
 
