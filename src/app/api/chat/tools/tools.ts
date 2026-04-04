@@ -432,10 +432,9 @@ export function getTools({
                                         .max(500)
                                         .optional()
                                         .describe(
-                                            'Brief, contextual "why" for this exercise (shown in UI under "Why this exercise?", not exported to Hevy). ' +
-                                                'Use 4 bullet lines separated by newlines (\\n), each starting with • What: / • Day: / • Order: / • Fit: covering (1) movement purpose, (2) day/split, (3) slot in session, (4) program + questionnaire fit. ' +
-                                                'Each line must add real detail: reference concrete facts from the questionnaire or plan (e.g. named limitation, equipment, sessions/week, split, goal, experience), not empty labels. ' +
-                                                'Max 500 characters total.',
+                                            'Short prose (2–4 sentences) explaining why this exercise is here — shown in the UI under "Why this exercise?", not exported to Hevy. ' +
+                                                'Cover: what the movement does, where it sits in the day/split, and how it fits this person\'s plan or questionnaire answers. ' +
+                                                'Be concrete: name real facts (stated limitation, equipment, sessions/week, goal, experience). Do not use bullet labels. Max 500 characters.',
                                         ),
                                     sets: z
                                         .array(

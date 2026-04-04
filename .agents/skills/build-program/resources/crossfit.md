@@ -93,6 +93,6 @@ Use **`notes`** for **time caps**, **rep schemes**, and **rest between pieces** 
 
 - **Primary frame:** CrossFit-style = **varied** functional fitness with **conditioning** + **strength/skill**—not a **pure bodybuilding** split, **powerlifting meet prep**, or **Hyrox** race template unless the user asks to **blend** styles.
 - **`buildWeek`:** Use **session titles** that reflect the day (e.g. “Strength + short metcon”, “Long conditioning”, “Skill + AMRAP”). Put **WOD format**, **time cap**, and **rep scheme** in **`notes`** when they apply to the whole session.
-- **`reason`:** Still use **• What:** / **• Day:** / **• Order:** / **• Fit:** with concrete facts (equipment, skill level, weak movements, days/week).
+- **`reason`:** Short prose covering what the movement does, where it fits the day/session structure, and concrete facts (equipment, skill level, weak movements, days/week). No bullet labels required.
 - **Optional cross-load:** If the user wants **extra hypertrophy** or **limit strength**, you may secondarily load [`bodybuilding.md`](./bodybuilding.md) or [`powerlifting.md`](./powerlifting.md)—keep **metcon + GPP** priorities unless they say otherwise. For fat-loss nutrition habits, see [`weight-loss/`](./weight-loss/) if relevant.
 - Use **only** exercise template IDs returned by **getExerciseList**; never invent IDs.
