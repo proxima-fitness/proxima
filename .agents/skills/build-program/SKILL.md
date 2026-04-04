@@ -32,6 +32,15 @@ After **getExerciseList**, call **buildWeek exactly once** per user request to g
 - [ ] **modifyProgram**: Prefer **one** call with a **single patch array** that applies all periodization (per-week RPE, reps, rest, notes, block-boundary exercise swaps). If you draft edits per week mentally, **concatenate** all operations into one patch list in **ascending path order** (see below) before calling the tool once.
 - [ ] After success: brief summary (max 5 bullets).
 
+## Warmup exercises
+
+**Warmup exercises vs warmup sets:** **Warmup sets** are lighter sets of the *same* working lift (set `type` may be `"warmup"` in the schema). **Warmup exercises** are *separate movements* chosen from **getExerciseList**—mobility, activation, or easy patterns that prepare the body before working sets. Always prioritize **warmup exercises** at the start of each day; do not rely on routine notes alone.
+
+- Include **1–2 warmup exercises** as the **first** exercises on **every training day** in **buildWeek** (`exercises[0]`, and `exercises[1]` if two). Place them **before** all working exercises for that day.
+- Pick warmups that match the session (e.g. shoulder-friendly activation before pressing, hip/ankle prep before squats, light pulling before heavy pulls). Use **set `type` `"normal"`**, **low RPE (about 3–5)**, and **moderate reps (about 10–15)** with a sensible `rep_range`; these are standalone prep movements, not warmup sets on the main lift.
+- If the questionnaire or context mentions **injury, pain, or a movement limitation**, use **two** warmup exercises when helpful, biased toward **low-load mobility or activation** for the affected area (still only IDs from **getExerciseList**).
+- In each warmup exercise’s **`reason`**, tie the choice to the day’s demands and any stated limitation (same four-line **• What:** / **• Day:** / **• Order:** / **• Fit:** format as other exercises).
+
 ## Routine index math (JSON Patch paths)
 
 Paths are zero-based into the **full** duplicated program array `/0` … `/N-1`.
@@ -75,7 +84,7 @@ When the user wants **CrossFit**, **CrossFit-style**, **GPP**, a **WOD** or **me
 
 ## buildWeek shape
 
-Use this structure. Set type must be one of "normal", "warmup", "dropset", "failure". Optional fields (rest_seconds, supersets_id, weight_kg) have defaults in the tool schema.
+Use this structure. Set type must be one of "normal", "warmup", "dropset", "failure". Optional fields (rest_seconds, supersets_id, weight_kg) have defaults in the tool schema. **Warmup exercises** at the start of the day still use **`"normal"`** set types at low RPE (see **Warmup exercises** above); reserve set `type` `"warmup"` for lighter sets *within* a working exercise when the schema calls for it.
 
 For each exercise **`reason`**, use four bullet lines joined with newline characters (`\n`), labeled **• What:** / **• Day:** / **• Order:** / **• Fit:**, matching the `buildWeek` tool schema (movement purpose, day/split, position in the workout, program + questionnaire fit). **Each line must add real information:** name concrete facts from the questionnaire or plan (e.g. a stated limitation, equipment, sessions/week, split, goal). Avoid hollow phrases that could apply to anyone.
 
@@ -90,6 +99,14 @@ This is an example JSON, don't use the example values in this to influence the v
       "title": "Push Day",
       "notes": "",
       "exercises": [
+        {
+          "exercise_template_id": "<warmup exercise id from getExerciseList>",
+          "title": "<exact title from getExerciseList for that id>",
+          "sets": [
+            { "type": "normal", "reps": 15, "rep_range": { "start": 10, "end": 15 }, "rpe": 4 }
+          ],
+          "reason": "Easy activation for shoulders and upper back before pressing.First on Push; matches horizontal push emphasis later. • Order: Warmup exercise before any heavy work.You wanted prep work every session; low RPE and no grind."
+        },
         {
           "exercise_template_id": "<id from getExerciseList>",
           "title": "<exact title from getExerciseList for that id; server overwrites with canonical DB title if different>",

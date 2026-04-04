@@ -19,6 +19,14 @@ allowedTools:
 - [ ] For edits affecting every routine: include one op per index /0 through /N-1 as needed.
 - [ ] Call modifyProgram once with the full patch array.
 
+## Warmup exercises
+
+**Warmup exercises vs warmup sets:** **Warmup exercises** are separate movements (IDs from **getExerciseList**) at the start of the day to prepare for the session. **Warmup sets** are lighter sets of the same working lift. When adding prep work, add **warmup exercises** with **`"normal"`** sets at low RPE—not only extra `"warmup"`-typed sets on the main lift.
+
+- If the user reports an **injury, pain, or limitation**, or asks for better prep, check whether each affected **training day** already begins with **1–2 appropriate warmup exercises**. If the day jumps straight into heavy work, add **1–2 warmup exercises** (bias **two** when injury or limitation is present).
+- **Prepend** with **`add`** at `/routineIndex/exercises/0` (inserts before the current first exercise). To insert two warmups in order, **`add` the first warmup at `/routineIndex/exercises/0`**, then **`add` the second at `/routineIndex/exercises/1`**. Use **getExerciseList** for valid template IDs and titles; match the day’s movements and any stated limitation.
+- When the change should apply to **every week**, include **`add` (or other) operations for each routine index** that corresponds to that day across the full program (see **Gotchas**: length = daysPerWeek × programLength). Example: for **day 1** every week, patch `/0/exercises/0`, `/daysPerWeek/exercises/0`, `/2×daysPerWeek/exercises/0`, … as needed—compute indices with the same formula as build-program’s routine index math.
+
 ## Program types
 
 When the user's program or requested changes are **powerlifting-focused** (squat, bench, deadlift, or "like" a known powerlifting program such as Starting Strength, 5/3/1, Texas Method, GZCL, Sheiko, etc.), use `readFile` to load `.agents/skills/modify-program/resources/powerlifting.md` and apply that knowledge when building the patch (e.g. preserve SBD emphasis, recovery, and style).
