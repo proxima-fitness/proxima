@@ -86,6 +86,10 @@ const setTypeBadgeClass = (setType: string): string =>
             ? "text-white bg-[#01579B] px-1 rounded-sm"
             : "";
 
+/** Normalizes CRLF and literal "\\n" sequences (e.g. from serialized AI copy) for multiline display. */
+const normalizeMultilineExerciseText = (s: string): string =>
+    s.replace(/\r\n/g, "\n").replace(/\\n/g, "\n");
+
 /**
  * Renders the exercise rows for one day with thumbnails, sets/reps/intensity, superset styling, tooltips, and edit/superset actions.
  */
@@ -349,33 +353,33 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                     </TooltipTrigger>
                                     <TooltipContent
                                         side="right"
-                                        className="bg-lightSecondary text-white flex flex-col p-3 max-w-[360px] rounded-md shadow-lg"
+                                        className="bg-popover text-popover-foreground border border-border border-l-4 border-l-lightSecondary flex flex-col p-3 max-w-[360px] rounded-md shadow-lg"
                                     >
                                 {exercise.reason && (
                                     <>
-                                        <p className="text-xs font-semibold uppercase tracking-wide text-white/90 mb-1.5">
+                                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
                                             Why this exercise?
                                         </p>
                                         <p className="text-sm text-left leading-snug whitespace-pre-line">
-                                            {exercise.reason}
+                                            {normalizeMultilineExerciseText(exercise.reason)}
                                         </p>
                                     </>
                                 )}
                                 <div
-                                    className={`flex flex-col ${exercise.reason && exercise.notes ? "border-t border-white/25 pt-2 mt-1" : ""}`}
+                                    className={`flex flex-col ${exercise.reason && exercise.notes ? "border-t border-border pt-2 mt-1" : ""}`}
                                 >
                                     {exercise.notes && (
                                         <div className="mb-2">
-                                            <p className="text-xs font-semibold uppercase tracking-wide text-white/90 mb-1.5">
+                                            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
                                                 Exercise Note
                                             </p>
-                                            <p className="text-sm text-left leading-snug whitespace-normal">
-                                                {exercise.notes}
+                                            <p className="text-sm text-left leading-snug whitespace-pre-line">
+                                                {normalizeMultilineExerciseText(exercise.notes)}
                                             </p>
                                         </div>
                                     )}
                                     {exercise.rest_seconds && Number(exercise.rest_seconds) > 0 && (
-                                        <div className="border-t border-b border-white/25 py-2 my-2 flex items-center gap-1.5 text-sm">
+                                        <div className="border-t border-b border-border py-2 my-2 flex items-center gap-1.5 text-sm">
                                             <TimerIcon className="shrink-0 size-5" />
                                             Rest time {exercise.rest_seconds} s
                                         </div>
@@ -383,7 +387,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                     <div className="flex flex-row flex-nowrap items-center gap-3">
                                         <button
                                             type="button"
-                                            className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 text-sm"
+                                            className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 text-sm text-foreground"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 setDetailsExercise(
@@ -399,7 +403,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                         </button>
                                         <button
                                             type="button"
-                                            className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 text-sm"
+                                            className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 text-sm text-foreground"
                                             onClick={() => handleOpenAddExerciseNoteDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), exerciseIndex: i, isOpen: true})}
                                             aria-label="Add note to exercise"
                                         >
@@ -408,7 +412,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                         </button>
                                         <button
                                             type="button"
-                                            className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 text-sm"
+                                            className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 text-sm text-foreground"
                                             onClick={() => {
                                                 handleDeleteExercise(Number(folder_id), Number(day.order), i);
                                             }}
