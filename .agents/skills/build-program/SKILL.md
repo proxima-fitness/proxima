@@ -90,7 +90,7 @@ This is an example JSON, don't use the example values in this to influence the v
           "sets": [
             { "type": "normal", "reps": 12, "rep_range": { "start": 8, "end": 12 }, "rpe": 8 }
           ],
-          "reason": "• What: Flat bench, heavy horizontal push; you said bench irritates front shoulders, so elbows stay tucked and ROM controlled, not wide-flare max width.\n• Day: Push, primary pressing here so pull day can prioritize rows/hinges without doubling anterior fatigue same day.\n• Order: First, heaviest compound while groove is freshest; flyes/cables after on purpose.\n• Fit: Intake: hypertrophy + 4×/week; 8-12 drives this session's chest volume before accessories."
+          "reason": "A heavy horizontal push; you said bench irritates front shoulders, so elbows stay tucked and ROM controlled, not wide-flare max width. Primary pressing here so pull day can prioritize rows/hinges without doubling anterior fatigue same day. Heaviest compound while groove is freshest; flyes/cables after on purpose. Drives this session's chest volume before accessories."
         }
       ]
     }
