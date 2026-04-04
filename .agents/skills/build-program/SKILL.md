@@ -24,7 +24,7 @@ After **getExerciseList**, call **buildWeek exactly once** per user request to g
 ## Checklist
 
 - [ ] **New program:** Brief visible message, then **getMoreInfoQuestions** immediately. Do **not** call **planProgram**, **getExerciseList**, **buildWeek**, or **modifyProgram** until the questionnaire is done or the user clearly continues (e.g. "Build my program"). Then proceed with the steps below.
-- [ ] **planProgram** once: structured plan for the full mesocycle (duration, blocks, optional week-by-week progression table). Use questionnaire answers, program builder context (days/week, weeks), and loaded resources (powerlifting/bodybuilding) where relevant.
+- [ ] **planProgram** once: structured plan for the full mesocycle (duration, blocks, optional week-by-week progression table). Use questionnaire answers, program builder context (days/week, weeks), and loaded resources (powerlifting/bodybuilding/weight-loss) where relevant.
 - [ ] getExerciseList with user requirements (respect program builder context for days per week / program length if available).
 - [ ] Select exercises from the returned list (id: title). Use only IDs that appear in the list.
 - [ ] **buildWeek** once: one week only (week 1 template). `routines.length` = totalDays; `dayNumber` 1..N in order. Align structure with **planProgram** (stable exercise choices within blocks when the plan says so).
@@ -47,6 +47,8 @@ Example: 4 days/week, week 3, day 2 → index `(3-1)×4 + (2-1) = 9` → paths s
 When the user wants a **powerlifting** program (squat, bench, deadlift), a program "like" or "similar to" a known one (e.g. Starting Strength, 5/3/1, Texas Method, GZCL, Sheiko, Candito, Smolov, nSuns, Bullmastiff, Calgary Barbell), or mentions periodisation, peaking, or meet prep, use `readFile` to load `.agents/skills/build-program/resources/powerlifting.md` and apply that knowledge when planning, selecting exercises, and building the week.
 
 When the user wants a **bodybuilding** or **hypertrophy** program (aesthetic focus, muscle building, PPL, upper/lower, bro split, or training by muscle group), use `readFile` to load `.agents/skills/build-program/resources/bodybuilding.md` and apply that knowledge when planning, selecting exercises, and building the week.
+
+When the user wants a **fat-loss-first** or **weight-loss** program (cutting, leaning out, calorie deficit, body recomposition emphasis), use `readFile` to load the weight-loss resources—`.agents/skills/build-program/resources/weight-loss/diet.md`, `.agents/skills/build-program/resources/weight-loss/cardio-exercise.md`, and `.agents/skills/build-program/resources/weight-loss/lifting-program.md`—**and** `.agents/skills/build-program/resources/bodybuilding.md` for muscle volumes and exercise selection. Apply that knowledge when planning, selecting exercises, and building the week. **Exception:** if they explicitly want **powerlifting-style** fat loss (meet prep cut, S/B/D focus), load `powerlifting.md` as appropriate and still use the weight-loss resources for nutrition, cardio, and how lifting fits a deficit.
 
 ## Gotchas
 
