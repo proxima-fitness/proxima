@@ -23,6 +23,8 @@ After **getExerciseList**, call **buildWeek exactly once** per user request to g
 
 ## Checklist
 
+**STOP — Questionnaire Gate.** If this is a new program request, you **must** call **getMoreInfoQuestions** and then **terminate your response**. Do not perform any internal reasoning about exercise selection, do not call **getExerciseList**, and do not call **planProgram** until the user has actually provided the data. Treat the questionnaire as a **gate** that must be unlocked by a fresh user message.
+
 - [ ] **New program:** Brief visible message, then **getMoreInfoQuestions** immediately. Do **not** call **planProgram**, **getExerciseList**, **buildWeek**, or **modifyProgram** until the questionnaire is done or the user clearly continues (e.g. "Build my program"). Then proceed with the steps below.
 - [ ] **planProgram** once: structured plan for the full mesocycle (duration, blocks, optional week-by-week progression table). Use questionnaire answers, program builder context (days/week, weeks), and loaded resources (powerlifting/bodybuilding/hyrox/crossfit/weight-loss) where relevant.
 - [ ] getExerciseList with user requirements (respect program builder context for days per week / program length if available).
@@ -31,6 +33,10 @@ After **getExerciseList**, call **buildWeek exactly once** per user request to g
 - [ ] **Periodization (modifyProgram) after buildWeek:** Do **not** rely on **getCurrentProgram** for patch paths; the request snapshot may still be empty even though **buildWeek** succeeded. Compute paths for the **full** duplicated program: `totalDays × programLength` routines (see **Routine index math** below), using **planProgram**, **buildWeek** output, and program builder context.
 - [ ] **modifyProgram**: Prefer **one** call with a **single patch array** that applies all periodization (per-week RPE, reps, rest, notes, block-boundary exercise swaps). If you draft edits per week mentally, **concatenate** all operations into one patch list in **ascending path order** (see below) before calling the tool once.
 - [ ] After success: brief summary (max 5 bullets).
+
+## Tool dependency rule
+
+**getExerciseList** and **planProgram** are **strictly dependent** on the output of the questionnaire. Calling them before the questionnaire is answered is a waste of context and a violation of the workflow. Do not "pre-fetch" the exercise list or begin planning to be proactive — wait for the user's questionnaire answers or explicit go-ahead first.
 
 ## Warmup exercises
 
