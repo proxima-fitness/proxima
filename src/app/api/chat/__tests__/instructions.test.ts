@@ -41,6 +41,30 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("3");
             expect(prompt).toContain("4");
         });
+
+        it("includes health / injury line when healthIssues is non-empty", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+                healthIssues: " knee, lower_back ",
+            });
+
+            expect(prompt).toContain("Health / injury considerations:");
+            expect(prompt).toContain("knee, lower_back");
+            expect(prompt).toContain("movement variations");
+        });
+
+        it("omits health / injury line when healthIssues is empty or whitespace", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+                healthIssues: "   ",
+            });
+
+            expect(prompt).not.toContain("Health / injury considerations:");
+        });
     });
 });
 

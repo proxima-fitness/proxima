@@ -88,7 +88,7 @@ async function handleChatPost(req: Request) {
             async () => {
                 const sanitizedMessages = sanitizeMessagesWithUnresolvedToolCalls(messages);
 
-                const systemPrompt = instructions({ hevyProgram, daysPerWeek, programLength });
+                const systemPrompt = instructions({ hevyProgram, daysPerWeek, programLength, healthIssues });
                 const buildWeekOnceGuard: IBuildWeekOnceGuard = { locked: false };
                 const tools = getTools({
                     excludeAreas,

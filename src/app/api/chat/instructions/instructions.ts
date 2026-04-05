@@ -3,7 +3,7 @@
  *
  * Builds the system prompt for "Andy", the AI personal trainer agent.
  * The prompt is dynamically assembled from the user's current program state
- * and program-builder settings (days per week, program length) so the LLM
+ * and program-builder settings (days per week, program length, health issues) so the LLM
  * knows which tools to call and in what order.
  *
  * Depends on: THevyRoutine (global type)
@@ -18,6 +18,7 @@
  * @param props.hevyProgram - The user's current workout routines (may be empty).
  * @param props.daysPerWeek - Number of training days per week the user selected.
  * @param props.programLength - Total program length in weeks.
+ * @param props.healthIssues - Comma-separated health/injury considerations from the builder (optional).
  * @returns The complete system prompt string.
  */
 
@@ -25,9 +26,16 @@ interface IProps {
     hevyProgram: THevyRoutine[];
     daysPerWeek: number;
     programLength: number;
+    healthIssues?: string;
 }
 
-export const instructions = ({ hevyProgram, daysPerWeek, programLength }: IProps) => {
+export const instructions = ({ hevyProgram, daysPerWeek, programLength, healthIssues = '' }: IProps) => {
+
+    const healthIssuesTrimmed = typeof healthIssues === 'string' ? healthIssues.trim() : '';
+    const healthIssuesLine =
+        healthIssuesTrimmed.length > 0
+            ? `Health / injury considerations: ${healthIssuesTrimmed}. Respect these when selecting exercises, volumes, and movement variations.`
+            : '';
 
     return (
         `
@@ -52,6 +60,7 @@ export const instructions = ({ hevyProgram, daysPerWeek, programLength }: IProps
 
         **Mandatory skill loading:** When the user's message is clearly requesting to create, build, make, or generate a workout program, training program, or exercise routine—including the very first message in a new chat—you **must** call \`loadSkill\` with \`build-program\` first. In that same turn, you may only call \`getMoreInfoQuestions\`. Do not call \`getExerciseList\`, \`planProgram\`, or \`buildWeek\` in the same turn as the questionnaire. You must stop, send your visible response, and wait for the user to submit their answers or say "Build my program" before proceeding to exercise selection. For modifying an existing program, load the \`modify-program\` skill instead.
         ${daysPerWeek != null && programLength != null ? `Program builder context: the user has selected ${daysPerWeek} days per week and ${programLength} weeks total. Use these when building or describing programs.` : ''}
+        ${healthIssuesLine}
         ${hevyProgram?.length ? 'A program currently exists; the user may want to modify it or create a new one.' : ''}
 
         **Upload to Hevy:** You cannot upload the program to Hevy from chat. If the user asks to upload to Hevy, export to Hevy, or sync to Hevy, tell them they must click the **Export** button, go through the Hevy export flow, and click the **Upload** button in that dialog to upload to Hevy.
