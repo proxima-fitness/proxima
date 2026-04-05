@@ -278,7 +278,10 @@ export const Agent: React.FC<IProps> = (props) => {
                     body: {
                         daysPerWeek: daysPerWeekValue ? Number(daysPerWeekValue) : undefined,
                         programLength: programLengthValue ? Number(programLengthValue) : undefined,
-                        excludeEquipment: excludeEquipmentValue?.length ? excludeEquipmentValue.map((eq) => eq.value).join(", ") : undefined,
+                        excludeEquipment:
+                            (excludeEquipmentValue?.length
+                                ? excludeEquipmentValue.map((eq) => eq.value).join(", ")
+                                : excludeEquipment?.map((eq) => eq.value).join(", ")) || undefined,
                         healthIssues: healthIssuesValue?.length ? healthIssuesValue.map((issue) => issue.value).join(", ") : undefined,
                         splitType: (splitTypeAns || splitType.trim()) || undefined,
                         exerciseVariability: (exerciseVariabilityAns || exerciseVariability.trim()) || undefined,
@@ -310,6 +313,7 @@ export const Agent: React.FC<IProps> = (props) => {
             convertStringArrayToOptions,
             daysPerWeek,
             programLength,
+            excludeEquipment,
             splitType,
             exerciseVariability,
             progressionSystem,

@@ -68,7 +68,7 @@ const callOptionsSchema = z.object({
  *
  * @param req - Request whose JSON body contains `messages`, `hevyProgram`,
  *   `daysPerWeek`, `programLength`, optional exclusion/health filters, and optional
- *   questionnaire fields (`splitType`, `exerciseVariability`, `progressionSystem`, `deloadWeek`, `peakWeek`).
+ *   questionnaire fields (`excludeEquipment`, `splitType`, `exerciseVariability`, `progressionSystem`, `deloadWeek`, `peakWeek`).
  * @returns A streaming `Response` that the Vercel AI SDK client consumes to
  *   render incremental agent output and tool invocations.
  */
@@ -108,6 +108,7 @@ async function handleChatPost(req: Request) {
                     daysPerWeek,
                     programLength,
                     healthIssues,
+                    excludeEquipment,
                     splitType,
                     exerciseVariability,
                     progressionSystem,

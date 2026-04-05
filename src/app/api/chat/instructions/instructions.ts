@@ -19,6 +19,7 @@
  * @param props.daysPerWeek - Number of training days per week the user selected.
  * @param props.programLength - Total program length in weeks.
  * @param props.healthIssues - Comma-separated health/injury considerations from the builder (optional).
+ * @param props.excludeEquipment - Comma-separated equipment types to exclude (questionnaire / builder; optional).
  * @param props.splitType - Questionnaire preferred split option id (optional).
  * @param props.exerciseVariability - Questionnaire variability preference (optional).
  * @param props.progressionSystem - Questionnaire progression system id (optional).
@@ -32,6 +33,7 @@ interface IProps {
     daysPerWeek: number;
     programLength: number;
     healthIssues?: string;
+    excludeEquipment?: string;
     splitType?: string;
     exerciseVariability?: string;
     progressionSystem?: string;
@@ -46,6 +48,7 @@ function trimOpt(s: string | undefined): string {
 /** Builds one line when any questionnaire preference is set (health, split, variability, etc.). */
 function buildQuestionnairePreferencesLine(props: {
     healthIssues?: string;
+    excludeEquipment?: string;
     splitType?: string;
     exerciseVariability?: string;
     progressionSystem?: string;
@@ -55,6 +58,8 @@ function buildQuestionnairePreferencesLine(props: {
     const parts: string[] = [];
     const hi = trimOpt(props.healthIssues);
     if (hi) parts.push(`Health / injury: ${hi}`);
+    const exEq = trimOpt(props.excludeEquipment);
+    if (exEq) parts.push(`Exclude equipment: ${exEq}`);
     const st = trimOpt(props.splitType);
     if (st) parts.push(`Preferred split: ${st}`);
     const ev = trimOpt(props.exerciseVariability);
@@ -74,6 +79,7 @@ export const instructions = ({
     daysPerWeek,
     programLength,
     healthIssues = '',
+    excludeEquipment = '',
     splitType = '',
     exerciseVariability = '',
     progressionSystem = '',
@@ -83,6 +89,7 @@ export const instructions = ({
 
     const questionnairePreferencesLine = buildQuestionnairePreferencesLine({
         healthIssues,
+        excludeEquipment,
         splitType,
         exerciseVariability,
         progressionSystem,

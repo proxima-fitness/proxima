@@ -66,6 +66,18 @@ describe("chat instructions.ts", () => {
             expect(prompt).not.toContain("Questionnaire preferences");
         });
 
+        it("includes exclude equipment in questionnaire preferences when set", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+                excludeEquipment: " bodyweight, band ",
+            });
+
+            expect(prompt).toContain("Questionnaire preferences");
+            expect(prompt).toContain("Exclude equipment: bodyweight, band");
+        });
+
         it("includes questionnaire preferences when any of split / variability / progression / deload / peak are set", () => {
             const prompt = instructions({
                 hevyProgram: [],
@@ -86,11 +98,13 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("Peak week: no");
         });
 
-        it("omits questionnaire preferences line when all five fields are empty", () => {
+        it("omits questionnaire preferences line when health, exclude equipment, and split-related fields are empty", () => {
             const prompt = instructions({
                 hevyProgram: [],
                 daysPerWeek: 4,
                 programLength: 8,
+                healthIssues: "",
+                excludeEquipment: "",
                 splitType: "  ",
                 exerciseVariability: "",
             });
