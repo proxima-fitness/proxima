@@ -6437,6 +6437,15 @@ export const sampleQuestions: IQuestion[] = [
       ],
       allowOther: false,
     },
+    {
+      id: "peak-week",
+      question: "Do you want a Peak week?",
+      options: [
+        { id: "yes", label: "Yes ( Include a higher-intensity week in the program)" },
+        { id: "no", label: "No" },
+      ],
+      allowOther: false,
+    },
   ];
 
 export const SIDEBAR_POSITION_KEY = "andy-sidebar-position";
