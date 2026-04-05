@@ -94,6 +94,11 @@ function BuildProgramChatPanelInner({
             excludeEquipment={programRequest.excludeEquipment}
             excludeSpecializations={programRequest.excludeSpecializations}
             healthIssues={programRequest.healthIssues}
+            splitType={programRequest.splitType}
+            exerciseVariability={programRequest.exerciseVariability}
+            progressionSystem={programRequest.progressionSystem}
+            deloadWeek={programRequest.deloadWeek}
+            peakWeek={programRequest.peakWeek}
             programTitle={programRequest.programTitle}
             explore={programRequest.explore}
             handleSex={programRequest.handleSex}
@@ -112,6 +117,11 @@ function BuildProgramChatPanelInner({
             handleExcludeEquipment={programRequest.handleExcludeEquipment}
             handleExcludeSpecializations={programRequest.handleExcludeSpecializations}
             handleHealthIssues={programRequest.handleHealthIssues}
+            handleSplitType={programRequest.handleSplitType}
+            handleExerciseVariability={programRequest.handleExerciseVariability}
+            handleProgressionSystem={programRequest.handleProgressionSystem}
+            handleDeloadWeek={programRequest.handleDeloadWeek}
+            handlePeakWeek={programRequest.handlePeakWeek}
             handleProgramTitle={programRequest.handleProgramTitle}
             handleExplore={programRequest.handleExplore}
             messages={messages}

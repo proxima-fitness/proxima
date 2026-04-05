@@ -43,6 +43,11 @@ export function useProgramRequestState(options: IUseProgramRequestStateOptions =
     const [excludeEquipment, setExcludeEquipment] = useState<IOption[]>(() => DEFAULT_EXCLUDE_EQUIPMENT);
     const [excludeSpecializations, setExcludeSpecializations] = useState<IOption[]>([]);
     const [healthIssues, setHealthIssues] = useState<IOption[]>([]);
+    const [splitType, setSplitType] = useState<string>("");
+    const [exerciseVariability, setExerciseVariability] = useState<string>("");
+    const [progressionSystem, setProgressionSystem] = useState<string>("");
+    const [deloadWeek, setDeloadWeek] = useState<string>("");
+    const [peakWeek, setPeakWeek] = useState<string>("");
     const [explore, toggleExplore] = useReducer((prev: boolean) => !prev, true);
     const [programTitle, setProgramTitle] = useState("My Proxima Program");
 
@@ -67,6 +72,11 @@ export function useProgramRequestState(options: IUseProgramRequestStateOptions =
                 excludeEquipment: excludeEquipment.map((opt) => opt.value).join(", "),
                 excludeSpecializations: excludeSpecializations.map((opt) => opt.value).join(", "),
                 healthIssues: healthIssues.map((opt) => opt.value).join(", "),
+                splitType,
+                exerciseVariability,
+                progressionSystem,
+                deloadWeek,
+                peakWeek,
                 programTitle,
                 explore: explore ? "true" : "false",
             }) as TTextToJsonRequest,
@@ -89,6 +99,11 @@ export function useProgramRequestState(options: IUseProgramRequestStateOptions =
             excludeEquipment,
             excludeSpecializations,
             healthIssues,
+            splitType,
+            exerciseVariability,
+            progressionSystem,
+            deloadWeek,
+            peakWeek,
             programTitle,
             explore,
         ]
@@ -110,6 +125,11 @@ export function useProgramRequestState(options: IUseProgramRequestStateOptions =
     const handleExcludeEquipment = useCallback((value: IOption[]) => setExcludeEquipment(value), []);
     const handleExcludeSpecializations = useCallback((value: IOption[]) => setExcludeSpecializations(value), []);
     const handleHealthIssues = useCallback((value: IOption[]) => setHealthIssues(value), []);
+    const handleSplitType = useCallback((value: string) => setSplitType(value), []);
+    const handleExerciseVariability = useCallback((value: string) => setExerciseVariability(value), []);
+    const handleProgressionSystem = useCallback((value: string) => setProgressionSystem(value), []);
+    const handleDeloadWeek = useCallback((value: string) => setDeloadWeek(value), []);
+    const handlePeakWeek = useCallback((value: string) => setPeakWeek(value), []);
     const handleProgramTitle = useCallback((value: string) => setProgramTitle(value), []);
     const handleExplore = useCallback(() => toggleExplore(), []);
 
@@ -131,6 +151,11 @@ export function useProgramRequestState(options: IUseProgramRequestStateOptions =
         excludeEquipment,
         excludeSpecializations,
         healthIssues,
+        splitType,
+        exerciseVariability,
+        progressionSystem,
+        deloadWeek,
+        peakWeek,
         programTitle,
         explore,
         // Derived
@@ -158,6 +183,11 @@ export function useProgramRequestState(options: IUseProgramRequestStateOptions =
         handleExcludeEquipment,
         handleExcludeSpecializations,
         handleHealthIssues,
+        handleSplitType,
+        handleExerciseVariability,
+        handleProgressionSystem,
+        handleDeloadWeek,
+        handlePeakWeek,
         handleProgramTitle,
         handleExplore,
     };

@@ -42,7 +42,7 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("4");
         });
 
-        it("includes health / injury line when healthIssues is non-empty", () => {
+        it("includes health in questionnaire preferences when healthIssues is non-empty", () => {
             const prompt = instructions({
                 hevyProgram: [],
                 daysPerWeek: 4,
@@ -50,12 +50,12 @@ describe("chat instructions.ts", () => {
                 healthIssues: " knee, lower_back ",
             });
 
-            expect(prompt).toContain("Health / injury considerations:");
-            expect(prompt).toContain("knee, lower_back");
-            expect(prompt).toContain("movement variations");
+            expect(prompt).toContain("Questionnaire preferences");
+            expect(prompt).toContain("Health / injury: knee, lower_back");
+            expect(prompt).toContain("exercise selection, volume, and movement choices");
         });
 
-        it("omits health / injury line when healthIssues is empty or whitespace", () => {
+        it("omits questionnaire preferences line when healthIssues is whitespace-only and no other prefs", () => {
             const prompt = instructions({
                 hevyProgram: [],
                 daysPerWeek: 4,
@@ -63,7 +63,39 @@ describe("chat instructions.ts", () => {
                 healthIssues: "   ",
             });
 
-            expect(prompt).not.toContain("Health / injury considerations:");
+            expect(prompt).not.toContain("Questionnaire preferences");
+        });
+
+        it("includes questionnaire preferences when any of split / variability / progression / deload / peak are set", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+                splitType: "ppl",
+                exerciseVariability: "little",
+                progressionSystem: "linear",
+                deloadWeek: "yes",
+                peakWeek: "no",
+            });
+
+            expect(prompt).toContain("Questionnaire preferences");
+            expect(prompt).toContain("Preferred split: ppl");
+            expect(prompt).toContain("Exercise variability: little");
+            expect(prompt).toContain("Progression system: linear");
+            expect(prompt).toContain("Deload week: yes");
+            expect(prompt).toContain("Peak week: no");
+        });
+
+        it("omits questionnaire preferences line when all five fields are empty", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+                splitType: "  ",
+                exerciseVariability: "",
+            });
+
+            expect(prompt).not.toContain("Questionnaire preferences");
         });
     });
 });

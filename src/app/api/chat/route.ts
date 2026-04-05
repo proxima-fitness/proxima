@@ -67,13 +67,28 @@ const callOptionsSchema = z.object({
  * payload, runs the ToolLoopAgent, and returns a streaming UI response.
  *
  * @param req - Request whose JSON body contains `messages`, `hevyProgram`,
- *   `daysPerWeek`, `programLength`, and optional exclusion/health filters.
+ *   `daysPerWeek`, `programLength`, optional exclusion/health filters, and optional
+ *   questionnaire fields (`splitType`, `exerciseVariability`, `progressionSystem`, `deloadWeek`, `peakWeek`).
  * @returns A streaming `Response` that the Vercel AI SDK client consumes to
  *   render incremental agent output and tool invocations.
  */
 async function handleChatPost(req: Request) {
     try {
-        const { messages, hevyProgram = [], daysPerWeek, programLength, excludeAreas = "", excludeEquipment = "", healthIssues = "", chatSessionId } = await req.json();
+        const {
+            messages,
+            hevyProgram = [],
+            daysPerWeek,
+            programLength,
+            excludeAreas = "",
+            excludeEquipment = "",
+            healthIssues = "",
+            splitType = "",
+            exerciseVariability = "",
+            progressionSystem = "",
+            deloadWeek = "",
+            peakWeek = "",
+            chatSessionId,
+        } = await req.json();
 
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
@@ -88,7 +103,17 @@ async function handleChatPost(req: Request) {
             async () => {
                 const sanitizedMessages = sanitizeMessagesWithUnresolvedToolCalls(messages);
 
-                const systemPrompt = instructions({ hevyProgram, daysPerWeek, programLength, healthIssues });
+                const systemPrompt = instructions({
+                    hevyProgram,
+                    daysPerWeek,
+                    programLength,
+                    healthIssues,
+                    splitType,
+                    exerciseVariability,
+                    progressionSystem,
+                    deloadWeek,
+                    peakWeek,
+                });
                 const buildWeekOnceGuard: IBuildWeekOnceGuard = { locked: false };
                 const tools = getTools({
                     excludeAreas,
