@@ -88,6 +88,11 @@ type TTextToJsonRequest = {
     excludeEquipment: string; // goes into AI Prompt
     excludeSpecializations: string; // goes into AI Prompt
     healthIssues: string; // goes into AI Prompt
+    splitType: string; // Questionnaire: preferred split (option id, e.g. ppl, ul).
+    exerciseVariability: string; // Questionnaire: exercise variability (little | lots | custom).
+    progressionSystem: string; // Questionnaire: progression system option id.
+    deloadWeek: string; // Questionnaire: deload week (yes | no).
+    peakWeek: string; // Questionnaire: peak week (yes | no).
     programTitle: string; // goes into AI Prompt
     explore: string; // goes into AI Prompt
 }

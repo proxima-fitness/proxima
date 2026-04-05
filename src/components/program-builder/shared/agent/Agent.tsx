@@ -75,6 +75,11 @@ interface IProps {
     excludeEquipment: IOption[];
     excludeSpecializations: IOption[];
     healthIssues: IOption[];
+    splitType: string;
+    exerciseVariability: string;
+    progressionSystem: string;
+    deloadWeek: string;
+    peakWeek: string;
     programTitle: string;
     explore: boolean;
     handleSex: (value: string) => void;
@@ -93,6 +98,11 @@ interface IProps {
     handleExcludeEquipment: (value: IOption[]) => void;
     handleExcludeSpecializations: (value: IOption[]) => void;
     handleHealthIssues: (value: IOption[]) => void;
+    handleSplitType: (value: string) => void;
+    handleExerciseVariability: (value: string) => void;
+    handleProgressionSystem: (value: string) => void;
+    handleDeloadWeek: (value: string) => void;
+    handlePeakWeek: (value: string) => void;
     handleProgramTitle: (value: string) => void;
     handleExplore: () => void;
     // AI agent state (lifted from Agent into parent)
@@ -132,10 +142,20 @@ export const Agent: React.FC<IProps> = (props) => {
         programLength,
         excludeEquipment,
         healthIssues,
+        splitType,
+        exerciseVariability,
+        progressionSystem,
+        deloadWeek,
+        peakWeek,
         handleDaysPerWeek,
         handleProgramLength,
         handleExcludeEquipment,
         handleHealthIssues,
+        handleSplitType,
+        handleExerciseVariability,
+        handleProgressionSystem,
+        handleDeloadWeek,
+        handlePeakWeek,
         messages,
         setMessages,
         sendMessageWithContext,
@@ -174,12 +194,28 @@ export const Agent: React.FC<IProps> = (props) => {
         if (daysPerWeek) initialAnswers["days-per-week"] = daysPerWeek
         if (excludeEquipment?.length) initialAnswers["exclude-equipment"] = excludeEquipment.map((o) => o.value)
         if (healthIssues?.length) initialAnswers["health-issues"] = healthIssues.map((o) => o.label).join(", ")
+        if (splitType) initialAnswers["split-type"] = splitType
+        if (exerciseVariability) initialAnswers["exercise-variability"] = exerciseVariability
+        if (progressionSystem) initialAnswers["progression-system"] = progressionSystem
+        if (deloadWeek) initialAnswers["deload-week"] = deloadWeek
+        if (peakWeek) initialAnswers["peak-week"] = peakWeek
         return {
             questions: toolOutput.questions,
             userRequest: toolOutput.userRequest ?? "",
             initialAnswers: Object.keys(initialAnswers).length > 0 ? initialAnswers : undefined,
         }
-    }, [messages, programLength, daysPerWeek, excludeEquipment, healthIssues])
+    }, [
+        messages,
+        programLength,
+        daysPerWeek,
+        excludeEquipment,
+        healthIssues,
+        splitType,
+        exerciseVariability,
+        progressionSystem,
+        deloadWeek,
+        peakWeek,
+    ])
 
     const [dismissedForMessageId, setDismissedForMessageId] = useState<string | null>(null)
     const lastMessage = messages[messages.length - 1]
@@ -221,14 +257,37 @@ export const Agent: React.FC<IProps> = (props) => {
                 programLengthValue = programLength || inferProgramLength(userRequest) || "12"
             }
 
+            const readStr = (key: string) => {
+                const v = answers[key]
+                return typeof v === "string" ? v.trim() : ""
+            }
+            const splitTypeAns = readStr("split-type")
+            if (splitTypeAns) handleSplitType(splitTypeAns)
+            const exerciseVariabilityAns = readStr("exercise-variability")
+            if (exerciseVariabilityAns) handleExerciseVariability(exerciseVariabilityAns)
+            const progressionSystemAns = readStr("progression-system")
+            if (progressionSystemAns) handleProgressionSystem(progressionSystemAns)
+            const deloadWeekAns = readStr("deload-week")
+            if (deloadWeekAns) handleDeloadWeek(deloadWeekAns)
+            const peakWeekAns = readStr("peak-week")
+            if (peakWeekAns) handlePeakWeek(peakWeekAns)
+
             sendMessageWithContext(
                 { text: "Build my program" },
                 {
                     body: {
                         daysPerWeek: daysPerWeekValue ? Number(daysPerWeekValue) : undefined,
                         programLength: programLengthValue ? Number(programLengthValue) : undefined,
-                        excludeEquipment: excludeEquipmentValue?.length ? excludeEquipmentValue.map((eq) => eq.value).join(", ") : undefined,
+                        excludeEquipment:
+                            (excludeEquipmentValue?.length
+                                ? excludeEquipmentValue.map((eq) => eq.value).join(", ")
+                                : excludeEquipment?.map((eq) => eq.value).join(", ")) || undefined,
                         healthIssues: healthIssuesValue?.length ? healthIssuesValue.map((issue) => issue.value).join(", ") : undefined,
+                        splitType: (splitTypeAns || splitType.trim()) || undefined,
+                        exerciseVariability: (exerciseVariabilityAns || exerciseVariability.trim()) || undefined,
+                        progressionSystem: (progressionSystemAns || progressionSystem.trim()) || undefined,
+                        deloadWeek: (deloadWeekAns || deloadWeek.trim()) || undefined,
+                        peakWeek: (peakWeekAns || peakWeek.trim()) || undefined,
                     },
                 }
             )
@@ -246,9 +305,20 @@ export const Agent: React.FC<IProps> = (props) => {
             handleProgramLength,
             handleExcludeEquipment,
             handleHealthIssues,
+            handleSplitType,
+            handleExerciseVariability,
+            handleProgressionSystem,
+            handleDeloadWeek,
+            handlePeakWeek,
             convertStringArrayToOptions,
             daysPerWeek,
             programLength,
+            excludeEquipment,
+            splitType,
+            exerciseVariability,
+            progressionSystem,
+            deloadWeek,
+            peakWeek,
         ]
     )
 

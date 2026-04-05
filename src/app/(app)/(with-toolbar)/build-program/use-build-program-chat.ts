@@ -140,6 +140,11 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
                 excludeAreas: programRequest.excludeAreas?.length ? programRequest.excludeAreas.map((o) => o.value).join(", ") : "",
                 excludeEquipment: programRequest.excludeEquipment?.length ? programRequest.excludeEquipment.map((o) => o.value).join(", ") : "",
                 healthIssues: programRequest.healthIssues?.length ? programRequest.healthIssues.map((o) => o.value).join(", ") : "",
+                splitType: programRequest.splitType?.trim() ?? "",
+                exerciseVariability: programRequest.exerciseVariability?.trim() ?? "",
+                progressionSystem: programRequest.progressionSystem?.trim() ?? "",
+                deloadWeek: programRequest.deloadWeek?.trim() ?? "",
+                peakWeek: programRequest.peakWeek?.trim() ?? "",
                 chatSessionId: chatId || undefined,
             };
             return sendMessage(message, { ...sendOptions, body: { ...contextBody, ...sendOptions?.body } });
@@ -153,6 +158,11 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             programRequest.excludeAreas,
             programRequest.excludeEquipment,
             programRequest.healthIssues,
+            programRequest.splitType,
+            programRequest.exerciseVariability,
+            programRequest.progressionSystem,
+            programRequest.deloadWeek,
+            programRequest.peakWeek,
             incrementLlmRequests,
         ]
     );
