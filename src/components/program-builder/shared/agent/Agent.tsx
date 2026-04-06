@@ -12,8 +12,9 @@ import {
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation"
 import { MessageSquare } from "lucide-react"
-import { useMemo, useCallback, useState } from "react"
+import { useMemo, useCallback, useState, useRef, useLayoutEffect } from "react"
 import type { RefObject } from "react"
+import { useIsMobile } from "@/hooks/use-mobile"
 import { IOption } from "@/components/ui/multi-select"
 import { type ChatStatus, FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai"
 import type { IQuestion } from "@/components/ui/questions"
@@ -176,6 +177,23 @@ export const Agent: React.FC<IProps> = (props) => {
         appliedModifyProgramKeysRef,
     } = props;
 
+    const chatFooterRef = useRef<HTMLDivElement>(null);
+    const [measuredFooterHeight, setMeasuredFooterHeight] = useState<number | null>(null);
+    const isMobile = useIsMobile();
+
+    useLayoutEffect(() => {
+        if (!isMobile) return;
+        const el = chatFooterRef.current;
+        if (!el) return;
+        const observer = new ResizeObserver((entries) => {
+            const height = entries[0]?.borderBoxSize?.[0]?.blockSize ?? entries[0]?.contentRect.height;
+            if (height != null) setMeasuredFooterHeight(Math.max(220, height));
+        });
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, [isMobile]);
+
+    const footerPad = isMobile && measuredFooterHeight != null ? measuredFooterHeight : undefined;
 
     // const [isFilters, setIsFilters] = useState(false)
 
@@ -338,7 +356,10 @@ export const Agent: React.FC<IProps> = (props) => {
                 sidebarPosition={sidebarPosition}
             />
             <Conversation className="flex-1 min-h-0 max-sm:h-full sm:overflow-hidden">
-                <ConversationContent className="min-h-full max-sm:pb-[220px]">
+                <ConversationContent
+                    className="min-h-full max-sm:pb-[220px]"
+                    style={{ paddingBottom: footerPad }}
+                >
                     <>
                         {messages.length === 0 ? (
                             <ConversationEmptyState
@@ -388,6 +409,7 @@ export const Agent: React.FC<IProps> = (props) => {
             </Conversation>
             { /* The chat input is here */ }
             <Chat
+                ref={chatFooterRef}
                 isLoading={isLoading}
                 handleSubmit={handleSubmit}
                 handleStop={handleStop}
