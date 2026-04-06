@@ -7,7 +7,7 @@
  * Used by: onboarding, program builder, surveys.
  */
 import * as React from "react"
-import { ChevronUp, ChevronDown, CircleHelp, CornerDownLeft, Loader2, X } from "lucide-react"
+import { ChevronUp, ChevronDown, CircleHelp, CornerDownLeft, Loader2, X, ChevronsDown, ChevronsUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -440,6 +440,7 @@ export function Questions({
   const [otherTexts, setOtherTexts] = React.useState<Record<string, string>>({})
   const [visibleIndex, setVisibleIndex] = React.useState(0)
   const [isLargeScreen, setIsLargeScreen] = React.useState(false)
+  const [isCollapsed, setIsCollapsed] = React.useState(false)
 
   const containerRef = React.useRef<HTMLDivElement>(null)
   const questionRefs = React.useRef<(HTMLDivElement | null)[]>([])
@@ -677,47 +678,60 @@ export function Questions({
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b px-4 py-3">
+      <div className={cn("flex items-center justify-between px-4 py-3", !isCollapsed && "border-b")}>
         <div className="flex items-center gap-2 text-sm font-medium">
           {onDismiss ? (
-            <button
-              type="button"
-              onClick={onDismiss}
-              className="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              aria-label="Close survey"
-            >
-              <X className="size-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={onDismiss}
+                className="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                aria-label="Close survey"
+              >
+                <X className="size-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsCollapsed((c) => !c)}
+                className="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                aria-label={isCollapsed ? "Expand questionnaire" : "Collapse questionnaire"}
+                aria-expanded={!isCollapsed}
+              >
+                {isCollapsed ? <ChevronsUp className="size-4" /> : <ChevronsDown className="size-4" />}
+              </button>
+            </div>
           ) : (
             <CircleHelp className="size-4 text-muted-foreground" />
           )}
           <span>Questions</span>
         </div>
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <button
-            onClick={handlePrevious}
-            disabled={visibleIndex === 0}
-            className="p-0.5 hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
-            aria-label="Previous question"
-          >
-            <ChevronUp className="size-4" />
-          </button>
-          <span className="min-w-14 text-center">
-            {visibleIndex + 1} of {totalQuestions}
-          </span>
-          <button
-            onClick={handleNext}
-            disabled={visibleIndex === totalQuestions - 1}
-            className="p-0.5 hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
-            aria-label="Next question"
-          >
-            <ChevronDown className="size-4" />
-          </button>
-        </div>
+        {!isCollapsed && (
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <button
+              onClick={handlePrevious}
+              disabled={visibleIndex === 0}
+              className="p-0.5 hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
+              aria-label="Previous question"
+            >
+              <ChevronUp className="size-4" />
+            </button>
+            <span className="min-w-14 text-center">
+              {visibleIndex + 1} of {totalQuestions}
+            </span>
+            <button
+              onClick={handleNext}
+              disabled={visibleIndex === totalQuestions - 1}
+              className="p-0.5 hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
+              aria-label="Next question"
+            >
+              <ChevronDown className="size-4" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Scrollable Questions Content */}
-      <div
+      {!isCollapsed && <div
         ref={containerRef}
         className="max-h-80 overflow-y-auto scroll-smooth"
       >
@@ -767,10 +781,10 @@ export function Questions({
             </div>
           )
         })}
-      </div>
+      </div>}
 
       {/* Footer */}
-      <div className="flex items-center justify-end gap-2 border-t px-4 py-3">
+      {!isCollapsed && <div className="flex items-center justify-end gap-2 border-t px-4 py-3">
         {hasSelections ? (
           <TooltipProvider delayDuration={0}>
             <Tooltip>
@@ -825,7 +839,7 @@ export function Questions({
             </>
           )}
         </Button>
-      </div>
+      </div>}
     </div>
   )
 }
