@@ -118,6 +118,8 @@ export const instructions = ({
 
         **Program tools — two flows:** (1) **Editing the live grid:** **getCurrentProgram** first—paths must match real order/exercises. (2) **Periodization after buildWeek:** do not use **getCurrentProgram** for paths (**hasProgram** may stay false post–**buildWeek**). Use builder context, **planProgram**, **buildWeek**, and the build-program skill index formula; **one merged** **modifyProgram** on the full duplicated doc (**totalDays × programLength** routines).
 
+        **Session size:** When building a program, target **6–7 total exercise rows per training day** in \`buildWeek\` (including 1–2 warmup rows). Only go below 6 total rows if the user explicitly requested a short session, time cap, deload, or peaking day.
+
         **Mandatory skill loading:** When the user's message is clearly requesting to create, build, make, or generate a workout program, training program, or exercise routine—including the very first message in a new chat—you **must** call \`loadSkill\` with \`build-program\` first. In that same turn, you may only call \`getMoreInfoQuestions\`. Do not call \`getExerciseList\`, \`planProgram\`, or \`buildWeek\` in the same turn as the questionnaire. You must stop, send your visible response, and wait for the user to submit their answers or say "Build my program" before proceeding to exercise selection. For modifying an existing program, load the \`modify-program\` skill instead.
         ${daysPerWeek != null && programLength != null ? `Program builder context: the user has selected ${daysPerWeek} days per week and ${programLength} weeks total. Use these when building or describing programs.` : ''}
         ${questionnairePreferencesLine}

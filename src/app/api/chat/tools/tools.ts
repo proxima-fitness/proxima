@@ -278,7 +278,7 @@ export function getTools({
      */
     const getExerciseListTool = tool({
 
-        description: 'Provides access to all available Hevy exercises for building workout programs. Use this tool when users request workout programs. The tool returns a reference list of exercises (ID and title only) - you should then return a minimal workout structure with exercise IDs, titles, sets, rep_range (for true ranges like 8-12) or reps (for fixed counts like 5 sets x 5 reps), and RPE. For fixed-rep work, set rep_range to null and use reps only.',
+        description: 'Provides access to all available Hevy exercises for building workout programs. Use this tool when users request workout programs. The tool returns a reference list of exercises (ID and title only) - you should then build a complete, well-structured day using exercise IDs, titles, sets, rep_range (for true ranges like 8-12) or reps (for fixed counts like 5 sets x 5 reps), and RPE. For fixed-rep work, set rep_range to null and use reps only. Target 6–7 total exercise rows per training day including warmup(s); see the build-program skill for the session-size default and exceptions.',
         inputSchema: z.object({
             userRequest: z.string().describe('The user\'s workout request or description'),
             excludeAreas: z.string().optional().describe('Comma-separated list of muscle groups to exclude'),
@@ -363,7 +363,7 @@ export function getTools({
 
             return {
                 type: 'text' as const,
-                value: `Available exercises (${output.totalExercises} total):\n${exerciseList}\n\nCRITICAL: You must ONLY use exercise_template_id values that exist in the list above. Do not invent exercises or use IDs that are not in this list.`,
+                value: `Available exercises (${output.totalExercises} total):\n${exerciseList}\n\nCRITICAL: You must ONLY use exercise_template_id values that exist in the list above. Do not invent exercises or use IDs that are not in this list.\n\nSession size reminder: target 6–7 total exercise rows per training day in buildWeek (including the 1–2 warmup rows). A typical day = 1 warmup + 5–6 working exercises. Only go below 6 total if the user explicitly requested a short session, time cap, or deload day.`,
             };
         },
     });
@@ -480,7 +480,8 @@ export function getTools({
             'For rep-based exercises, **prefer rep_range** (e.g. {start:8, end:12}) over a fixed reps value. Set reps as a fallback alongside rep_range. ' +
             '**Fixed-rep rule:** When the prescription is a single fixed rep count (e.g. 5x5, triples, singles), set `rep_range` to **null** and only use `reps`. ' +
             'NEVER emit a degenerate rep_range where start === end (e.g. {start:5, end:5}); that must be rep_range: null, reps: 5 instead. ' +
-            'rep_range supersedes reps in the UI, so a {start:5, end:5} range will display as "5-5" which is wrong.',
+            'rep_range supersedes reps in the UI, so a {start:5, end:5} range will display as "5-5" which is wrong. ' +
+            'Session size: target **6–7 total rows in `exercises[]` per training day** including warmup row(s). Typical day = 1 warmup + 5–6 working exercises. Only drop below 6 total rows if the user explicitly asked for a short/brief session, time cap, deload day, or peaking day with deliberately low volume.',
         inputSchema: z.object({
             totalDays: z.number().min(1).max(7).describe('Total number of days in the program week (1-7).'),
             routines: z

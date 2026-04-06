@@ -49,6 +49,15 @@ After **getExerciseList**, call **buildWeek exactly once** per user request to g
 - If the questionnaire or context mentions **injury, pain, or a movement limitation**, use **two** warmup exercises when helpful, biased toward **low-load mobility or activation** for the affected area (still only IDs from **getExerciseList**).
 - In each warmup exercise’s **`reason`**, tie the choice to the day’s demands and any stated limitation in the same short prose style as other exercises.
 
+## Session size (exercise rows per day)
+
+**Default target: 6–7 total rows in `exercises[]` per training day**, counting warmup row(s).
+
+- Typical layout: **1 warmup** (`exercises[0]`) + **5–6 working exercises** = 6–7 rows total.
+- When the context calls for **2 warmups** (injury, limitation, or longer session): **2 warmups** + **4–5 working exercises** = still 6–7 rows total.
+- **Do not routinely build days with only 4–5 total rows** (~3 working after warmups). That is consistently under-volume and should be avoided unless the user or context explicitly requests it (short time cap, user-requested brief session, deload day, or a powerlifting peaking day where volume is deliberately low).
+- This default applies to all split types (PPL, Upper/Lower, Full-Body, etc.). Powerlifting programs may legitimately have slightly fewer working exercises per day but should still meet a warmup + at minimum 3–4 working exercises.
+
 ## Routine index math (JSON Patch paths)
 
 Paths are zero-based into the **full** duplicated program array `/0` … `/N-1`.
