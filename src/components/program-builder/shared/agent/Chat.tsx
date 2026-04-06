@@ -344,6 +344,7 @@ export const Chat: React.FC<IProps> = (props) => {
               ? "You have run out of credits"
               : undefined
           }
+          enableMobileCollapse
         />
       )}
       <div className="flex w-full">
