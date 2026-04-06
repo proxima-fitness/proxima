@@ -40,7 +40,7 @@ import { useMyFeatureLimits } from "@/api/hooks";
 import { useUserContext } from "@/contexts/UserContext";
 import { quickTriggerSuggestionChips } from "@/assets/constants/suggestions";
 import type { FileUIPart } from "ai";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useState, forwardRef } from "react";
 import { Questions } from "@/components/ui/questions";
 import type { IQuestion } from "@/components/ui/questions";
 
@@ -295,7 +295,7 @@ const ChatInputBody = ({
 };
 
 /** Chat footer: suggestions, upgrade banner when not pro, and PromptInput or Questions. */
-export const Chat: React.FC<IProps> = (props) => {
+export const Chat = forwardRef<HTMLDivElement, IProps>((props, ref) => {
   const {
     isLoading,
     handleSubmit,
@@ -318,7 +318,7 @@ export const Chat: React.FC<IProps> = (props) => {
   const showQuestions = questionsPayload != null && questionsPayload.questions?.length > 0;
 
   return (
-    <div className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl shrink-0 px-3 pb-3 md:px-5 md:pb-5 max-sm:fixed max-sm:bottom-[calc(70px+max(0.5rem,env(safe-area-inset-bottom)))] max-sm:left-0 max-sm:right-0 max-sm:px-4 max-sm:bg-background max-sm:dark:bg-extraDarkGray pt-4 max-sm:pt-2">
+    <div ref={ref} className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl shrink-0 px-3 pb-3 md:px-5 md:pb-5 max-sm:fixed max-sm:bottom-[calc(70px+max(0.5rem,env(safe-area-inset-bottom)))] max-sm:left-0 max-sm:right-0 max-sm:px-4 max-sm:bg-background max-sm:dark:bg-extraDarkGray pt-4 max-sm:pt-2">
       {showSuggestions && !showQuestions && (
         <Suggestions className="mb-3">
           {quickTriggerSuggestionChips.map((label) => (
@@ -378,4 +378,6 @@ export const Chat: React.FC<IProps> = (props) => {
       </div>
     </div>
   );
-};
+});
+
+Chat.displayName = "Chat";
