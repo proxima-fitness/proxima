@@ -44,6 +44,26 @@ When the user's program or requested changes are **bodybuilding- or hypertrophy-
 ## Operations
 
 - **op must be exactly one of**: `add`, `remove`, `replace`, `move`, `copy`, `test`. Do not use variants like `replace_seconds` — use `replace` for any value update (e.g. rest_seconds, reps, rpe).
+
+### Critical: `op` and `path` are separate fields
+
+Each patch operation uses **three separate top-level keys** for a value update: `op`, `path`, and `value` (plus `from` for move/copy).
+
+- **`op`** is **only** the short verb (`replace`, `add`, …). It must **not** contain `/`, routine indices, or property names.
+- **`path`** is **always** its own string: a JSON Pointer starting with `/` (e.g. `/24/exercises/1/sets/0/rep_range`). If your pointer contains `/`, it belongs in **`path`**, not glued onto **`op`**.
+
+**Wrong** (path merged into `op`; will fail validation):
+
+```json
+{ "op": "replaceRegistry/24/exercises/1/sets/0/rep_range", "value": null }
+```
+
+**Right:**
+
+```json
+{ "op": "replace", "path": "/24/exercises/1/sets/0/rep_range", "value": null }
+```
+
 - **replace**: Update an existing value. `{ "op": "replace", "path": "<path>", "value": <new value> }`. Path must already exist.
 - **add**: Insert a value. `{ "op": "add", "path": "<path>", "value": <value> }`. Use `/-` to append to an array (e.g. /0/exercises/-).
 - **remove**: Delete a value. `{ "op": "remove", "path": "<path>" }`. No `value` needed.
@@ -68,12 +88,14 @@ When the user's program or requested changes are **bodybuilding- or hypertrophy-
 
 ## Patch template
 
-The following is **only** the payload shape for the **`modifyProgram` tool**—do **not** copy this block into user-visible assistant messages.
+The following is **only** the payload shape for the **`modifyProgram` tool**—do **not** copy this block into user-visible assistant messages. The tool expects an object with a **`patch`** array (not a bare array at the top level).
 
 ```json
-[
-  { "op": "replace", "path": "/0/title", "value": "Push Day" },
-  { "op": "replace", "path": "/0/exercises/0/sets/0/rep_range", "value": { "start": 8, "end": 12 } },
-  { "op": "replace", "path": "/0/exercises/0/sets/0/reps", "value": 12 }
-]
+{
+  "patch": [
+    { "op": "replace", "path": "/0/title", "value": "Push Day" },
+    { "op": "replace", "path": "/0/exercises/0/sets/0/rep_range", "value": { "start": 8, "end": 12 } },
+    { "op": "replace", "path": "/0/exercises/0/sets/0/reps", "value": 12 }
+  ]
+}
 ```

@@ -20,7 +20,12 @@ vi.mock("@/components/program-builder/api/hevy", () => ({
 }));
 
 import { getHevyExercises } from "@/components/program-builder/api/hevy";
-import { getTools, planProgramInputSchema } from "@/app/api/chat/tools/tools";
+import {
+    getTools,
+    modifyProgramInputSchema,
+    planProgramInputSchema,
+    repairJsonPatchOperationForTest,
+} from "@/app/api/chat/tools/tools";
 
 describe("chat tools.ts", () => {
     describe("buildWeek tool execute", () => {
@@ -326,6 +331,40 @@ describe("chat tools.ts", () => {
                 },
             });
             expect(parsed.success).toBe(false);
+        });
+    });
+
+    describe("modifyProgramInputSchema", () => {
+        it("parses when path was merged into op (replaceRegistry/…)", () => {
+            const malformed = {
+                patch: [
+                    {
+                        op: "replaceRegistry/24/exercises/1/sets/0/rep_range",
+                        value: null,
+                    },
+                ],
+            };
+            const repaired = repairJsonPatchOperationForTest(malformed.patch[0]);
+            expect(repaired).toEqual({
+                op: "replaceRegistry",
+                path: "/24/exercises/1/sets/0/rep_range",
+                value: null,
+            });
+
+            const parsed = modifyProgramInputSchema.safeParse(malformed);
+            expect(parsed.success).toBe(true);
+            if (parsed.success) {
+                expect(parsed.data.patch[0].op).toBe("replace");
+                expect(parsed.data.patch[0].path).toBe("/24/exercises/1/sets/0/rep_range");
+                expect(parsed.data.patch[0].value).toBeNull();
+            }
+        });
+
+        it("leaves well-formed operations unchanged", () => {
+            const parsed = modifyProgramInputSchema.safeParse({
+                patch: [{ op: "replace", path: "/0/title", value: "Push" }],
+            });
+            expect(parsed.success).toBe(true);
         });
     });
 });

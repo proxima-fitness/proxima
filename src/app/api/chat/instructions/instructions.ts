@@ -114,7 +114,7 @@ export const instructions = ({
         - planProgram: Submits a structured multi-week plan (duration, blocks, optional week-by-week progression) before building the first week.
         - getCurrentProgram: Returns the program snapshot from the **start of this request** (what was already on the builder). It does **not** refresh after **buildWeek** in the same turn.
         - buildWeek: Builds an entire week of routines/days for the workout program in a single call.
-        - modifyProgram: Applies a JSON Patch (RFC 6902) to the program—see tool description for the two use cases (edit existing vs. periodization after buildWeek).
+        - modifyProgram: Applies a JSON Patch (RFC 6902) to the program—see tool description for the two use cases (edit existing vs. periodization after buildWeek). Each operation must use separate **op** (verb only) and **path** (JSON Pointer starting with /); never embed the path inside **op**.
 
         **Program tools — two flows:** (1) **Editing the live grid:** **getCurrentProgram** first—paths must match real order/exercises. (2) **Periodization after buildWeek:** do not use **getCurrentProgram** for paths (**hasProgram** may stay false post–**buildWeek**). Use builder context, **planProgram**, **buildWeek**, and the build-program skill index formula; **one merged** **modifyProgram** on the full duplicated doc (**totalDays × programLength** routines).
 
