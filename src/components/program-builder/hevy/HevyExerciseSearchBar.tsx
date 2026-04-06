@@ -3,7 +3,7 @@
  * @module HevyExerciseSearchBar
  * Searchable list of Hevy exercise templates: fuzzy search via Fuse, virtual list for performance.
  * Two modes: editing (search input + scrollable list) or selected (show chosen exercise and image; click to edit).
- * Depends on: HevyExerciseGif, Input, react-window FixedSizeList, Fuse.js, use-mobile.
+ * Depends on: HevyExerciseGif, hevy-muscle-group-labels, Input, react-window FixedSizeList, Fuse.js, use-mobile.
  * Used by: HevyAddExerciseDialog.
  */
 
@@ -12,6 +12,7 @@ import { FixedSizeList as List } from "react-window";
 import Fuse from "fuse.js";
 import { EditIcon, PlusIcon, SearchIcon } from 'lucide-react';
 import { HevyExerciseGif } from './HevyExerciseGif';
+import { formatHevyPrimaryMuscleGroupLabel } from '@/components/program-builder/hevy/hevy-muscle-group-labels';
 import { Input } from '@/components/ui/input';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -24,6 +25,7 @@ const options = {
     threshold: 0.1,
     keys: [
         "title",
+        "primary_muscle_group",
     ],
 };
 
@@ -117,33 +119,37 @@ export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
         } = props;
 
         const item = data.filteredItems[index];
+        const muscleLabel = formatHevyPrimaryMuscleGroupLabel(item.primary_muscle_group);
+        const showMetaRow = muscleLabel.length > 0 || item.is_custom === true;
 
         return (
             <div
-                key={ item.id }
                 style={ style }
                 onClick={ () => data.selectItem(item) }
-                className='h-full w-full flex flex-row gap-4 cursor-pointer items-center'
+                className="h-full w-full flex flex-row gap-4 cursor-pointer items-center px-0.5"
             >
                 <HevyExerciseGif
                     thumbnailOrImage="thmb"
+                    thumbnailShape="circle"
                     name={ item.title }
                     gif_id={ item?.gif_id }
                     resolution="180"
                     file_type="jpg"
                 />
-                <div
-                    className="w-full flex flex-col justify-center items-start h-14"
-                >
-                    { item.title }
-                    {/* <span style={ { fontSize: '10px' } }>
-                        { item.muscleGroups.map((muscleGroup, index) => (
-                            <span key={ index }>
-                                {muscleGroup[language]}
-                                {index < item.muscleGroups.length - 1 ? ', ' : ''}
-                            </span>
-                                ) ) }
-                    </span> */}
+                <div className="min-w-0 flex flex-1 flex-col justify-center items-start gap-0.5 py-0.5">
+                    <span className="line-clamp-2 text-sm font-medium text-foreground">{ item.title }</span>
+                    { showMetaRow ? (
+                        <div className="flex flex-row flex-wrap items-center gap-1.5">
+                            { muscleLabel ? (
+                                <span className="text-xs text-muted-foreground">{ muscleLabel }</span>
+                            ) : null }
+                            { item.is_custom === true ? (
+                                <span className="inline-flex shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-foreground">
+                                    Custom
+                                </span>
+                            ) : null }
+                        </div>
+                    ) : null }
                 </div>
             </div>
         );
@@ -210,7 +216,7 @@ export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
                     <List
                         height={ 320 }
                         itemCount={ filteredItems.length }
-                        itemSize={ 80 }
+                        itemSize={ 92 }
                         width={ '100%' }
                         itemData={ { filteredItems, selectItem } }
                         >

@@ -11,6 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { postHevyCustomExercise } from "@/components/program-builder/api/hevy";
+import { getHevyMuscleGroupSelectOptions } from "@/components/program-builder/hevy/hevy-muscle-group-labels";
 import { Input } from "@/components/ui/input";
 import MultiSelect, { type IOption } from "@/components/ui/multi-select";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -38,28 +39,7 @@ const EQUIPMENT_OPTIONS: { value: THevyPostExerciseTemplate["equipment_category"
     { value: "other", label: "Other" },
 ];
 
-const MUSCLE_GROUP_OPTIONS: { value: THevyPostExerciseTemplate["muscle_group"]; label: string }[] = [
-    { value: "abdominals", label: "Abdominals" },
-    { value: "shoulders", label: "Shoulders" },
-    { value: "biceps", label: "Biceps" },
-    { value: "triceps", label: "Triceps" },
-    { value: "forearms", label: "Forearms" },
-    { value: "quadriceps", label: "Quadriceps" },
-    { value: "hamstrings", label: "Hamstrings" },
-    { value: "calves", label: "Calves" },
-    { value: "glutes", label: "Glutes" },
-    { value: "abductors", label: "Abductors" },
-    { value: "adductors", label: "Adductors" },
-    { value: "lats", label: "Lats" },
-    { value: "upper_back", label: "Upper back" },
-    { value: "traps", label: "Traps" },
-    { value: "lower_back", label: "Lower back" },
-    { value: "chest", label: "Chest" },
-    { value: "cardio", label: "Cardio" },
-    { value: "neck", label: "Neck" },
-    { value: "full_body", label: "Full body" },
-    { value: "other", label: "Other" },
-];
+const MUSCLE_GROUP_OPTIONS = getHevyMuscleGroupSelectOptions();
 
 const MUSCLE_MULTI_OPTIONS: IOption[] = MUSCLE_GROUP_OPTIONS.map((o) => ({
     value: o.value,

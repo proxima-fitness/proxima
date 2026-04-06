@@ -29,6 +29,8 @@ interface IProps {
   file_type: "jpg" | "gif";
   /** Optional index (e.g. for list key). */
   index?: number;
+  /** Thumbnail corner style; `"circle"` matches Hevy-style list avatars. Ignored when `thumbnailOrImage` is `"img"`. */
+  thumbnailShape?: "square" | "circle";
 }
 
 /**
@@ -36,7 +38,7 @@ interface IProps {
  */
 export const HevyExerciseGif: React.FC<IProps> = (props) => {
 
-    const { thumbnailOrImage, name, gif_id, resolution, file_type } = props;
+    const { thumbnailOrImage, name, gif_id, resolution, file_type, thumbnailShape = "square" } = props;
 
     const { data: exerciseGif } = useExerciseGif(gif_id, resolution, file_type, name ?? "");
 
@@ -47,6 +49,9 @@ export const HevyExerciseGif: React.FC<IProps> = (props) => {
     }, []);
 
     const isThumbnail = thumbnailOrImage === "thmb";
+    const thumbRoundClass = isThumbnail && thumbnailShape === "circle" ? "rounded-full" : "rounded-xl";
+    const thumbFallbackRoundClass =
+        isThumbnail && thumbnailShape === "circle" ? "rounded-full" : "rounded-lg";
 
     const containerClass = isThumbnail
         ? "h-14 w-14 min-w-14 min-h-14"
@@ -56,15 +61,15 @@ export const HevyExerciseGif: React.FC<IProps> = (props) => {
         <>
             {exerciseGif && (
                 <div
-                    className={`${containerClass} flex items-center justify-center relative`}
+                    className={`${containerClass} flex items-center justify-center relative overflow-hidden ${isThumbnail && thumbnailShape === "circle" ? "rounded-full" : ""}`}
                 >
-                {!loaded && <Skeleton className="absolute top-0 left-0 w-full h-full rounded-xl" /> }
+                {!loaded && <Skeleton className={`absolute top-0 left-0 w-full h-full ${isThumbnail ? thumbRoundClass : ""}`} /> }
                 <img
                     alt="exercise GIF"
                     src={exerciseGif}
                     onLoad={() => setLoaded(true)}
                     className={`${
-                    isThumbnail ? "rounded-xl" : "" } w-full h-full object-contain transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0" }`}
+                    isThumbnail ? thumbRoundClass : "" } w-full h-full object-contain transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0" }`}
                 />
                 </div>
             )}
@@ -73,7 +78,7 @@ export const HevyExerciseGif: React.FC<IProps> = (props) => {
                 <>
                     {isThumbnail ? (
                         <div
-                            className={`${containerClass} flex items-center justify-center rounded-lg cursor-pointer`}
+                            className={`${containerClass} flex items-center justify-center ${thumbFallbackRoundClass} cursor-pointer overflow-hidden`}
                             style={{ background: randomColour }}
                         >
                         <div>{getInitials(name) ?? <DumbbellIcon className="h-6 w-6" />}</div>

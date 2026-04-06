@@ -23,7 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropIndicator } from "@/components/program-builder/shared/DropIndicator";
-import { HevyExerciseVisualizer } from "./HevyExerciseVisualizer";
+import { HevyExerciseVisualizer, type HevyExerciseThumbnailShape } from "./HevyExerciseVisualizer";
 import { HevyDuplicateDay } from "./HevyDuplicateDay";
 import { IOption } from "@/components/ui/multi-select";
 import { convertHevyExerciseIntoHevyAddExercise } from "../utils";
@@ -71,6 +71,8 @@ interface IProps {
     hevyExercises?: THevyExerciseTemplate[];
     /** When true (mobile), use fade-in instead of layout animation to avoid slide-from-top-left. */
     isMobile?: boolean;
+    /** Row thumbnail shape in the exercise list; */
+    exerciseThumbnailShape: HevyExerciseThumbnailShape;
 }
 
 /**
@@ -99,6 +101,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         customExercises,
         hevyExercises,
         isMobile = false,
+        exerciseThumbnailShape,
     } = props;
 
     const { resolvedTheme } = useTheme();
@@ -319,6 +322,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                             toggleExerciseSelection={toggleExerciseSelection}
                             removeFromSuperset={removeFromSuperset}
                             hevyExercises={ hevyExercises }
+                            exerciseThumbnailShape={ exerciseThumbnailShape }
                         />
                     </div>
                     <div
