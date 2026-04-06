@@ -627,7 +627,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                     {isFree && (
                         <p className="text-sm text-foreground">
                             Thanks for exporting! Upgrade for more exports and blind spot analysis. Use code{" "}
-                            <strong>{MAIN_DISCOUNT_CODE}</strong> for {MAIN_DISCOUNT_PERCENT}% off on your first year.
+                            <strong>{MAIN_DISCOUNT_CODE}</strong> for {MAIN_DISCOUNT_PERCENT}% off your first year on Pro+.
                         </p>
                     )}
                 </div>

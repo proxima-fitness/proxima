@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 
 /*
  * @module HevyPromoBanner
- * @description Pricing promos: Hevy discount and product-feedback Calendly path (95% code after booking).
+ * @description Pricing promos: public Pro+ discount (code from MAIN_DISCOUNT_*) and product-feedback Calendly path (95% code after booking).
  * @dependsOn react-calendly, Separator, ui-constants.
  * @usedBy /pricing accordion panel.
  */
@@ -40,7 +40,7 @@ function getCalendlyPortalRoot(): HTMLElement | null {
 }
 
 /**
- * HevyPromoBanner stacks Hevy and discovery-call offers for use inside the pricing accordion.
+ * HevyPromoBanner stacks the main Pro+ promo and discovery-call offers for use inside the pricing accordion.
  */
 export function HevyPromoBanner({ className, onJumpToCheckout }: HevyPromoBannerProps = {}) {
     const calendlyUrl = process.env.NEXT_PUBLIC_CALENDLY_URL || DEFAULT_CALENDLY_SCHEDULING_URL;
@@ -64,15 +64,14 @@ export function HevyPromoBanner({ className, onJumpToCheckout }: HevyPromoBanner
             )}
         >
             <div className="space-y-2">
-                <p className="text-sm font-semibold text-foreground">Hevy users</p>
+                <p className="text-sm font-semibold text-foreground">Limited Time Offer</p>
                 <p className="text-foreground text-sm font-medium leading-snug">
-                    As a special thank you, enjoy {MAIN_DISCOUNT_PERCENT}% off on your first year on any plan
-                    using code:{" "}
+                    Enjoy {MAIN_DISCOUNT_PERCENT}% off your first year on Pro+ using code:{" "}
                     <code className="rounded bg-foreground/10 px-2 py-0.5 font-mono text-sm font-semibold">
                         {MAIN_DISCOUNT_CODE}
                     </code>
                 </p>
-                <p className="text-sm text-muted-foreground">Offer expires April 1st, 2026.</p>
+                <p className="text-sm text-muted-foreground">Offer expires April 30th, 2026.</p>
             </div>
 
             <Separator className="bg-border" />

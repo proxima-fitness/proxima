@@ -25,8 +25,8 @@ export const COLLAPSED_SIZE = 30;
 export const EXPANDED_SIZE = 70;
 export const CHAT_MESSAGES_KEY = "messages";
 
-export const MAIN_DISCOUNT_CODE = "HEVY30";
-export const MAIN_DISCOUNT_PERCENT = 30;
+export const MAIN_DISCOUNT_CODE = "PROXIMA50";
+export const MAIN_DISCOUNT_PERCENT = 50;
 
 /** Shown after a successful Calendly product-feedback booking on /pricing; create a matching Stripe promotion. */
 export const DISCOVERY_DISCOUNT_CODE = "R95KMTWY";
