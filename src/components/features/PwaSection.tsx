@@ -26,10 +26,10 @@ export const PwaSection: React.FC = () => {
     >
       <div className={`${layout.sectionInfoCentered} px-6 sm:px-0`}>
         <h2 className="font-main font-semibold xs:text-[48px] text-[28px] text-black dark:text-white xs:leading-[76.8px] leading-[66.8px] text-center w-full">
-           Proxima <span style={{ color: "#33bbcf" }}>App </span>on the go{" "}
+        Works great at the{" "}<span style={{ color: "#33bbcf" }}>Gym</span>
         </h2>
         <p className="font-second font-normal text-slate-600 dark:text-gray-400 ss:text-[18px] text-[14px] leading-[30.8px] max-w-[560px] mt-4 text-center mx-auto">
-            Add to your home screen for quick access in the gym.
+            Add Proxima as an App to your home screen for quick access
         </p>
       </div>
 
