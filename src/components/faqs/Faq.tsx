@@ -29,13 +29,13 @@ const FAQItem = ({ question, answer }: any) => {
             style={ { cursor: 'pointer', width: "100%" } }
         >
             <div
-            className="relative z-10 flex flex-row p-6 justify-between colour-flip"
+            className="relative z-10 flex flex-row p-6 justify-between"
         >
                 <h4 className={ `font-second font-semibold text-black dark:text-white text-[18px] leading-[23.4px] mb-1` }>{question}</h4>
                 { isOpen ?
-                    <img src={ (minus as any).src } alt="star" className={ "text-black dark:text-white w-[25px] h-[25px] object-contain " } />
+                    <img src={ (minus as any).src } alt="Collapse answer" className="h-[25px] w-[25px] object-contain [filter:brightness(0)] dark:[filter:brightness(0)_invert(1)]" />
                 :
-                    <img src={ (add as any).src } alt="star" className="text-black dark:text-white w-[25px] h-[25px] object-contain" />
+                    <img src={ (add as any).src } alt="Expand answer" className="h-[25px] w-[25px] object-contain [filter:brightness(0)] dark:[filter:brightness(0)_invert(1)]" />
             }
             </div>
             { isOpen && (

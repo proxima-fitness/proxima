@@ -15,7 +15,7 @@ const styles = {
 
     heading2Centered: `font-main font-semibold xs:text-[48px] text-[40px] flex justify-center items-center text-white xs:leading-[76.8px] text-center md:text-left leading-[66.8px] w-full`,
     heading2End: `font-main font-semibold xs:text-[48px] text-[24px] flex justify-end items-end text-white xs:leading-[76.8px] leading-[66.8px] w-full`,
-    heading2: "font-main font-semibold xs:text-[48px] text-[24px] text-white xs:leading-[76.8px] leading-[66.8px] w-full",
+    heading2: "font-main font-semibold xs:text-[48px] text-[24px] text-black dark:text-white xs:leading-[76.8px] leading-[66.8px] w-full",
     heading2Themes: "font-main font-semibold xs:text-[48px] text-[40px] text-white xs:leading-[76.8px] leading-[66.8px] text-center md:text-left md:pl-[100px] w-full",
     heading2WhiteSection: "font-main font-semibold xs:text-[48px] text-[40px] text-black xs:leading-[76.8px] leading-[66.8px] md:pl-[100px] text-center md:text-left w-full",
     heading2Programs: "font-main font-semibold xs:text-[48px] text-[40px] text-black xs:leading-[76.8px] leading-[66.8px]  text-center md:text-center w-full",
