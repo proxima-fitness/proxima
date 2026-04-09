@@ -23,7 +23,7 @@ export default function PricingPage() {
                 <div className="space-y-2 text-center">
                     <h2 className="text-3xl font-bold tracking-tighter text-foreground sm:text-4xl md:text-5xl">Our Pricing Plans</h2>
                     <p className="mx-auto max-w-[600px] pb-6 text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
-                        Select the best plan that fits your needs.
+                        Select the plan that fits your needs
                     </p>
                 </div>
                 <PricingPageModes />
