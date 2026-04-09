@@ -229,6 +229,14 @@
   }
 
   .faq-card {
+    background: #fafafa;
+    border-width: 2px;
+    border-color: black;
+    color: #0a0a0a;
+
+  }
+
+  .dark .faq-card {
     background: var(--black-gradient);
     box-shadow: var(--card-shadow);
     border-width: 2px;

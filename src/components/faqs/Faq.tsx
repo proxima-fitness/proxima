@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
@@ -30,16 +31,16 @@ const FAQItem = ({ question, answer }: any) => {
             <div
             className="relative z-10 flex flex-row p-6 justify-between colour-flip"
         >
-                <h4 className={ `font-second font-semibold text-white text-[18px] leading-[23.4px] mb-1` }>{question}</h4>
+                <h4 className={ `font-second font-semibold text-black dark:text-white text-[18px] leading-[23.4px] mb-1` }>{question}</h4>
                 { isOpen ?
-                    <img src={ (minus as any).src } alt="star" className={ "text-white w-[25px] h-[25px] object-contain " } />
+                    <img src={ (minus as any).src } alt="star" className={ "text-black dark:text-white w-[25px] h-[25px] object-contain " } />
                 :
-                    <img src={ (add as any).src } alt="star" className="text-white w-[25px] h-[25px] object-contain" />
+                    <img src={ (add as any).src } alt="star" className="text-black dark:text-white w-[25px] h-[25px] object-contain" />
             }
             </div>
             { isOpen && (
             <>
-                <p className={ styles.paragraph } style={ { maxWidth: "90%", marginLeft: "20px", marginRight: "20px", marginBottom: "20px" } }>{answer}</p>
+                <p className={ `${styles.paragraph} text-black dark:text-white` } style={ { maxWidth: "90%", marginLeft: "20px", marginRight: "20px", marginBottom: "20px" } }>{answer}</p>
             </>
         ) }
         </motion.div>
