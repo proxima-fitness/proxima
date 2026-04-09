@@ -2,16 +2,18 @@
 
 /**
  * @module PricingPageModes
- * @description Collapsible promos (accordion) above sign-in CTA and Stripe pricing table.
- * @dependsOn Accordion, PricingSignInCta, StripeEmbeddedTable, HevyPromoBanner.
+ * @description Collapsible promos (accordion) above sign-in CTA, Stripe pricing table, and FAQ.
+ * @dependsOn Accordion, PricingSignInCta, StripeEmbeddedTable, HevyPromoBanner, Faq, style.
  * @usedBy /pricing
  */
 
 import { Percent } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Faq } from "@/components/faqs/Faq";
 import { HevyPromoBanner } from "@/components/pricing/HevyPromoBanner";
 import { PricingSignInCta } from "@/components/pricing/PricingSignInCta";
 import { StripeEmbeddedTable } from "@/components/pricing/StripeEmbeddedTable";
+import styles from "@/style";
 
 const PRICING_CHECKOUT_ID = "pricing-checkout";
 
@@ -44,6 +46,11 @@ export function PricingPageModes() {
             <div id={PRICING_CHECKOUT_ID} className="scroll-mt-24 space-y-6">
                 <PricingSignInCta />
                 <StripeEmbeddedTable />
+                <div className={` ${styles.paddingX} ${styles.flexCenter} flex-col`}>
+                    <div className={styles.boxWidth}>
+                        <Faq />
+                    </div>
+                </div>
             </div>
         </div>
     );

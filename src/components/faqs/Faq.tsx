@@ -53,32 +53,48 @@ export const Faq = () => {
             <h2 className={ styles.heading2 } style={ { textAlign: "center" } }>Frequently Asked Questions</h2>
             <div className="mt-10 flex flex-col justify-center items-center w-full md:px-72">
                 <FAQItem
-            question="I don't have much time. How can Proxima fit into my schedule?"
-            answer="You can generate a program in seconds with the AI builder and export it to Hevy. When you build, you choose program length and session duration so it fits your available time."
+            question="How is this different from just asking ChatGPT?"
+            answer="ChatGPT has no memory of your previous workouts and no direct connection to Hevy. Proxima reads your actual Hevy history to build and adjust your program around what you've already been doing."
             />
                 <FAQItem
-                question="How reliable is the program builder?"
-                answer="The builder is built for lifters and tested with real programs. We're a small team and respond to support and feedback directly."
+                question="What does science-backed actually mean here? "
+                answer="The agent is trained on periodization principles, progressive overload, RPE, accumulation, peak weeks, deload weeks, and mesocycle structure. It doesn’t just guess exercises, it structures a full training block with intent."
             />
                 <FAQItem
-                question="Is there a free tier?"
-                answer="Yes. The free tier lets you build and export programs, follow community programs, and track PRs. Pro adds more exports and premium features."
+                question="How does the blind spot analysis work?"
+                answer="It looks at your last 15 workouts in Hevy, flags exercises where your weights have stalled or regressed, and lets you ask the agent to diagnose why and suggest fixes."
             />
                 <FAQItem
-                question="Can I use Proxima with my existing routine or Hevy?"
-                answer="Yes. Build a program and export it to Hevy, PDF, or spreadsheet. Use it alongside your current training or as your main plan."
+                question="Can I just use HevyGPT instead?"
+                answer="HevyGPT is great for a quick split generation. Proxima is for people who want a full periodized block, multiple weeks, progressive intensity, deload weeks built in, that syncs to Hevy."
             />
                 <FAQItem
-                question="How do I share or follow other lifters?"
-                answer="Share your programs on the feed and follow other members. From your profile you can share PRs and see who you follow."
+                question="Does it just generate a program and disappear?"
+                answer="Unlike ChatGPT, your program stays in the app and you can modify it without having to re-generate the entire program, allowing you to go through an iterative improvement cycle before saving it to Hevy (or to PDF/Spreadsheet)."
             />
                 <FAQItem
-                question="Are programs customizable to my level and goals?"
-                answer="Yes. When you build a program you set goals, duration, equipment, and more. The AI tailors the program to your inputs."
+                question="How do I actually get the program into Hevy?"
+                answer="One click export. Hevy Pro users get it pushed directly to the app. There's also a PDF and CSV option if you prefer."
             />
                 <FAQItem
-                question="Do I need to sign up to try the program builder?"
-                answer="You can try the program builder without signing in. An account is required to save and export programs. We don't sell your data."
+                question="Is this free?"
+                answer="The program builder is free, the growing program library is free as well. I only paywall AI usage and Blind Spot Analysis, otherwise I would be homeless in a few days. (Seriously guys, who keeps spending 1.5hrs building their workout programs and billing me :( for the AI credits)"
+            />
+             <FAQItem
+                question="Why would I use this over a proven program like nSuns or GZCLP?"
+                answer="You don't have to. The program library actually includes nSuns and other established programs. Proxima is useful if you have specific constraints, injuries, equipment limitations, time, that make a cookie cutter program a bad fit."
+            />
+            <FAQItem
+                question="Can I trust the exercise reasoning it gives?"
+                answer="Every exercise has a note explaining why it's in your program based on your stated goals. It can and does make mistakes - call it out and it'll either defend the choice with reasoning or change it."
+            />
+            <FAQItem
+                question="Is my Hevy API key and data safe?"
+                answer="Your API key is stored in an encrypted vault and never exposed. Your workout data is only ever used to power your own experience and you can delete your account and all associated data at any time."
+            />
+            <FAQItem
+                question="I already have a program, is this useful to me?"
+                answer="Yes, connect your Hevy API Key and load your program into the builder and ask it to improve your current program. A direct sync feature is currently being built to save the changes automatically and update the program for you in Hevy!"
             />
             </div>
         </section>
