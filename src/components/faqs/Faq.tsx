@@ -70,7 +70,7 @@ export const Faq = () => {
                 answer="HevyGPT is great for a quick split generation. Proxima is for people who want a full periodized block, multiple weeks, progressive intensity, deload weeks built in, that syncs to Hevy."
             />
                 <FAQItem
-                question="Does it just generate a program and disappear?"
+                question="Can I edit the program after it's generated?"
                 answer="Unlike ChatGPT, your program stays in the app and you can modify it without having to re-generate the entire program, allowing you to go through an iterative improvement cycle before saving it to Hevy (or to PDF/Spreadsheet)."
             />
                 <FAQItem
