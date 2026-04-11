@@ -35,6 +35,7 @@ import { useDebouncedCallback } from "use-debounce";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUserContext } from "@/contexts/UserContext";
 import {
+    getSaveProgramToSupabaseFailureDetail,
     isSaveProgramToSupabaseSuccess,
     saveProgramToSupabase,
 } from "@/components/program-builder/api/hevy";
@@ -235,10 +236,16 @@ export function BuildProgram() {
 
         try {
             const prompt = title !== "Untitled" ? title : search || "";
-            const supabaseResult = await saveProgramToSupabase(orderedProgram, prompt, programRequest.request);
+            const supabaseResult = await saveProgramToSupabase(
+                orderedProgram,
+                prompt,
+                programRequest.request,
+                user.id,
+            );
 
             if (!isSaveProgramToSupabaseSuccess(supabaseResult)) {
-                toast.error("Failed to save program.");
+                const detail = getSaveProgramToSupabaseFailureDetail(supabaseResult);
+                toast.error(`Failed to save program: ${detail}`);
                 console.error("Failed to save program.", supabaseResult);
                 return;
             }

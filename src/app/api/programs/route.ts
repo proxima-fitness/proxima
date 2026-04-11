@@ -10,7 +10,12 @@
  */
 
 import { NextResponse } from 'next/server';
-import { saveProgramToSupabase } from '@/components/program-builder/api/hevy';
+import { createClient } from '@/utils/supabase/server';
+import {
+    isSaveProgramToSupabaseError,
+    isSaveProgramToSupabaseSuccess,
+    saveProgramToSupabase,
+} from '@/components/program-builder/api/hevy';
 
 /**
  * Creates a new workout program from the provided Hevy routines and metadata.
@@ -21,6 +26,11 @@ import { saveProgramToSupabase } from '@/components/program-builder/api/hevy';
  */
 export async function POST(request: Request) {
     try {
+        const supabase = await createClient();
+        const {
+            data: { user },
+        } = await supabase.auth.getUser();
+
         const body = await request.json();
         const { hevyRoutines, prompt, request: programRequest } = body;
 
@@ -31,16 +41,23 @@ export async function POST(request: Request) {
             );
         }
 
-        const result = await saveProgramToSupabase(hevyRoutines, prompt, programRequest);
+        const result = await saveProgramToSupabase(hevyRoutines, prompt, programRequest, user?.id);
 
-        if (result instanceof Error) {
+        if (isSaveProgramToSupabaseSuccess(result)) {
+            return NextResponse.json(result);
+        }
+
+        if (isSaveProgramToSupabaseError(result)) {
             return NextResponse.json(
-                { error: result.message },
+                { error: result.message, code: result.code },
                 { status: 500 }
             );
         }
 
-        return NextResponse.json(result);
+        return NextResponse.json(
+            { error: 'Unexpected response when saving program' },
+            { status: 500 }
+        );
     } catch (error) {
         console.error('Error in program creation:', error);
         return NextResponse.json(

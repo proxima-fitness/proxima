@@ -14,6 +14,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { incrementMonthlyExportsUsed } from "@/api/feature-limits";
 import {
     deleteHevyApiKey,
+    getSaveProgramToSupabaseFailureDetail,
     isSaveProgramToSupabaseSuccess,
     postHevyApikey,
     postProgramToHevy,
@@ -252,26 +253,34 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
         setIsUploading(true);
 
         try {
-            const supabaseResult = await saveProgramToSupabase(hevyRoutines, prompt, request);
-            const saved = isSaveProgramToSupabaseSuccess(supabaseResult);
-            const programId = saved ? supabaseResult.id : undefined;
-            if (!saved || programId === undefined) {
-                const errorMessage = "Failed to save program to My Programs.";
-                toast.error(errorMessage);
-                console.error(`${HEVY_EXPORT_LOG_PREFIX} export_failed`, errorMessage, supabaseResult);
-                posthog?.capture?.("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: errorMessage });
-                return;
-            }
+            let programId: number | undefined;
+            let supabaseSaveFailed = false;
 
-            if (saved && supabaseResult.skippedExercises?.length) {
-                for (const skipped of supabaseResult.skippedExercises) {
-                    toast.warning(`${skipped.exerciseName}: ${skipped.reason}`);
+            const supabaseResult = await saveProgramToSupabase(hevyRoutines, prompt, request, user.id);
+            if (isSaveProgramToSupabaseSuccess(supabaseResult)) {
+                programId = supabaseResult.id;
+                if (supabaseResult.skippedExercises?.length) {
+                    for (const skipped of supabaseResult.skippedExercises) {
+                        toast.warning(`${skipped.exerciseName}: ${skipped.reason}`);
+                    }
                 }
+            } else {
+                supabaseSaveFailed = true;
+                const detail = getSaveProgramToSupabaseFailureDetail(supabaseResult);
+                toast.warning(`Could not save to My Programs yet: ${detail}`);
+                console.error(`${HEVY_EXPORT_LOG_PREFIX} supabase_program_save_failed`, detail, supabaseResult);
+                posthog?.capture?.("supabase_program_save_failed", {
+                    user: user.id,
+                    destination: "hevy",
+                    error: detail,
+                    phase: "pre_upload",
+                });
             }
 
-            const programTitle = request?.programTitle
-                ? [{ id: String(programId), title: request.programTitle }]
-                : undefined;
+            const programTitle =
+                request?.programTitle != null && request.programTitle.length > 0
+                    ? [{ id: programId !== undefined ? String(programId) : "pending", title: request.programTitle }]
+                    : undefined;
 
             const folderIds = hevyRoutines
                 .map((r) => r.folder_id)
@@ -336,12 +345,59 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                 queryClient.invalidateQueries({ queryKey: ["hevy-custom-exercises"] });
             }
 
+            if (supabaseSaveFailed) {
+                const retryResult = await saveProgramToSupabase(hevyRoutines, prompt, request, user.id);
+                if (isSaveProgramToSupabaseSuccess(retryResult)) {
+                    programId = retryResult.id;
+                    supabaseSaveFailed = false;
+                    if (retryResult.skippedExercises?.length) {
+                        for (const skipped of retryResult.skippedExercises) {
+                            toast.warning(`${skipped.exerciseName}: ${skipped.reason}`);
+                        }
+                    }
+                } else {
+                    const detail = getSaveProgramToSupabaseFailureDetail(retryResult);
+                    console.error(`${HEVY_EXPORT_LOG_PREFIX} supabase_program_save_failed`, detail, retryResult);
+                    posthog?.capture?.("supabase_program_save_failed", {
+                        user: user.id,
+                        destination: "hevy",
+                        error: detail,
+                        phase: "post_upload",
+                    });
+                }
+            }
+
+            if (programId === undefined) {
+                toast.warning(
+                    "Program uploaded to Hevy but could not be saved to your profile. Please contact support.",
+                );
+                posthog?.capture?.("supabase_program_save_failed", {
+                    user: user.id,
+                    destination: "hevy",
+                    error: "no_program_id_after_retries",
+                    phase: "final",
+                });
+                setShowExportSuccess(true);
+                fireConfetti();
+                if (!skipUsageTracking) {
+                    incrementExportsUsed(undefined, {
+                        onError: (err) => console.error("Failed to record export usage", err),
+                    });
+                }
+                onExportSuccess?.();
+                return;
+            }
+
             const subscriberError = await postNewProgramSubscriber(user, String(programId));
             if (subscriberError) {
                 const errorMessage = "Program saved but failed to add to My Programs.";
                 toast.error(errorMessage);
                 console.error(`${HEVY_EXPORT_LOG_PREFIX} export_failed`, errorMessage, subscriberError);
-                posthog?.capture?.("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: errorMessage });
+                posthog?.capture?.("export_failed", {
+                    user: user?.id ?? "user_id_unknown",
+                    destination: "hevy",
+                    error: errorMessage,
+                });
             } else {
                 queryClient.invalidateQueries({ queryKey: ["subscribed-programs", user.id] });
                 toast.success("Program uploaded to Hevy and saved to your Profile");
