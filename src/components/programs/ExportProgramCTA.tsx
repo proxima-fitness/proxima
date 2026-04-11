@@ -3,6 +3,8 @@
 import { ExportProgramCTAButtons } from "./ExportProgramCTAButtons";
 import { exportOptions } from "@/assets/constants/export-options";
 import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
     Dialog,
     DialogContent,
@@ -41,7 +43,9 @@ interface IProps {
 
 export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsByWeek }) => {
     const { isInLbs } = usePoundsOrKgContext();
-    const { user } = useUserContext();
+    const { user, isLoading: authLoading } = useUserContext();
+    const pathname = usePathname();
+    const loginWithNext = `/auth/login?next=${encodeURIComponent(pathname ?? "/")}`;
 
     const [pdfOpen, setPdfOpen] = useState(false);
     const [hevyOpen, setHevyOpen] = useState(false);
@@ -58,6 +62,7 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
     const hevyRoutine = flatHevyRoutines ? deFlattenHevyRoutine(flatHevyRoutines) : undefined;
 
     const handleSelectExport = (id: string) => {
+        if (!user) return;
         if (id === "pdf") {
             setPdfOpen(true);
         } else if (id === "hevy") {
@@ -96,14 +101,49 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
     return (
         <>
             <div className="rounded-xl dark:bg-darkGray bg-extraLightGray text-black dark:text-white shadow-md flex flex-col text-center justify-start items-center px-8 w-full h-full max-sm:h-auto max-sm:pb-4">
-                <div className="flex flex-col w-full">
-                    <h2 className="font-main text-2xl max-sm:text-3xl pt-4 font-bold pb-4">Export Program</h2>
-                    <ExportProgramCTAButtons
-                        programId={programId}
-                        exportOptions={exportOptions}
-                        onSelectExport={handleSelectExport}
-                        hideHevyCrown
-                    />
+                <div className="flex flex-col w-full items-center">
+                    {(authLoading || user) && (
+                        <h2 className="font-main text-2xl max-sm:text-3xl pt-4 font-bold pb-4">Export Program</h2>
+                    )}
+                    {authLoading ? (
+                        <div className="flex flex-col gap-3 w-full pb-4" aria-busy="true" aria-label="Loading export options">
+                            <Skeleton className="h-[88px] w-full rounded-lg" />
+                            <Skeleton className="h-[88px] w-full rounded-lg" />
+                            <Skeleton className="h-[88px] w-full rounded-lg" />
+                        </div>
+                    ) : user ? (
+                        <ExportProgramCTAButtons
+                            programId={programId}
+                            exportOptions={exportOptions}
+                            onSelectExport={handleSelectExport}
+                            hideHevyCrown
+                        />
+                    ) : (
+                        <div className="relative w-full pb-4 ">
+                            <div
+                                className="flex flex-col w-full opacity-50 pointer-events-none select-none"
+                                aria-hidden="true"
+                            >
+                                <h2 className="font-main text-2xl max-sm:text-3xl pt-4 font-bold pb-4">
+                                    Export Program
+                                </h2>
+                                <ExportProgramCTAButtons
+                                    programId={programId}
+                                    exportOptions={exportOptions}
+                                    onSelectExport={handleSelectExport}
+                                    hideHevyCrown
+                                />
+                            </div>
+                            <div className="absolute inset-0 z-10 flex items-center justify-center overflow-hidden rounded-lg px-4 bg-extraLightGray/15 dark:bg-darkGray/20 backdrop-blur-[0.5px]">
+                                <Button
+                                    asChild
+                                    className="relative z-[1] h-10 bg-lightSecondary hover:bg-lightSecondary/80 text-white shadow-md"
+                                >
+                                    <Link href={loginWithNext}>Sign in to Export</Link>
+                                </Button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
