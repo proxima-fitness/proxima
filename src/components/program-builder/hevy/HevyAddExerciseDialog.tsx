@@ -61,34 +61,14 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
     const { data: exercises, isLoading: loadingHevyExercises } = useHevyExercises();
     const { data: customExercises, isLoading: loadingCustomExercises } = useHevyCustomExercises(user, hevyApiKey);
 
-    // Hevy API customs first; then Supabase mirror rows, skipping duplicates by normalized title
-    // so the same logical exercise does not appear twice (prefer the Hevy-account id).
+    // Hevy API customs first, then Supabase mirror (full library). Overlapping titles may appear twice.
     const combinedExercises = useMemo(() => {
         if (!exercises && !customExercises) return undefined;
 
         const custom = customExercises || [];
         const regular = exercises || [];
 
-        const dedupeKey = (e: THevyExerciseTemplate) => {
-            const n = (e.normalized_title ?? "").trim();
-            if (n) return n;
-            const t = (e.title ?? "").trim().toLowerCase();
-            if (t) return t;
-            return e.id;
-        };
-
-        const seen = new Set<string>();
-        for (const c of custom) {
-            seen.add(dedupeKey(c));
-        }
-        const merged: THevyExerciseTemplate[] = [...custom];
-        for (const r of regular) {
-            const k = dedupeKey(r);
-            if (seen.has(k)) continue;
-            merged.push(r);
-            seen.add(k);
-        }
-        return merged;
+        return [...custom, ...regular];
     }, [exercises, customExercises]);
 
     const isLoading = loadingHevyExercises || loadingCustomExercises;
