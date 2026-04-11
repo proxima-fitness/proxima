@@ -18,6 +18,20 @@
 import { getMediaPublicUrl } from '@/api/blog';
 import type { SerializedEditorState } from "@payloadcms/richtext-lexical/lexical";
 
+const linkAnchorClassName =
+    "text-primary underline underline-offset-2 hover:opacity-90";
+
+/** Resolve href for Payload LinkFeature nodes; internal links need a site-specific mapper (fallback `#`). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function hrefForLinkNode(node: any): string {
+    const fields = node?.fields;
+    if (!fields) return "#";
+    if (fields.linkType === "internal") {
+        return "#";
+    }
+    return typeof fields.url === "string" ? fields.url : "#";
+}
+
 interface IProps {
     /**
      * Serialized Lexical editor state produced by Payload's rich-text field.
@@ -29,7 +43,7 @@ interface IProps {
 /**
  * Render a Payload CMS Lexical rich-text document into semantic HTML
  * elements, including support for lists, headings, quotes, horizontal
- * rules, and uploaded media.
+ * rules, links, and uploaded media.
  */
 export const RichText: React.FC<IProps> = (props) => {
 
@@ -75,6 +89,36 @@ export const RichText: React.FC<IProps> = (props) => {
                 return <hr className="border-border" key={ index } />;
             case "upload":
                 return <img key={ index } src={ getMediaPublicUrl(node.fields?.media_url) } alt="uploaded content" />;
+            case "autolink": {
+                const rel = node.fields?.newTab ? "noopener noreferrer" : undefined;
+                const target = node.fields?.newTab ? "_blank" : undefined;
+                return (
+                    <a
+                        key={ index }
+                        href={ node.fields?.url ?? "#" }
+                        rel={ rel }
+                        target={ target }
+                        className={ linkAnchorClassName }
+                    >
+                        { node.children?.map(renderNode) }
+                    </a>
+                );
+            }
+            case "link": {
+                const rel = node.fields?.newTab ? "noopener noreferrer" : undefined;
+                const target = node.fields?.newTab ? "_blank" : undefined;
+                return (
+                    <a
+                        key={ index }
+                        href={ hrefForLinkNode(node) }
+                        rel={ rel }
+                        target={ target }
+                        className={ linkAnchorClassName }
+                    >
+                        { node.children?.map(renderNode) }
+                    </a>
+                );
+            }
             default:
                 return null;
             }
