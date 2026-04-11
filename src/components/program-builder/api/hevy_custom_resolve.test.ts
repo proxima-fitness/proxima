@@ -115,14 +115,16 @@ describe("resolveCustomExerciseTemplatesForHevyUpload", () => {
         expect(out.routines[0].exercises[0].exercise_template_id).toBe(PROXIMA_ID);
     });
 
-    it("fails when an exercise template id is not in the library", async () => {
+    it("passes through Hevy-native template ids not in the Supabase mirror (user customs from Hevy)", async () => {
+        const hevyNativeId = "71059ed8-c8ff-45ab-84db-9f728f06d0cf";
         supabaseRows.current = [];
-        const routines = [minimalRoutine(PROXIMA_ID)];
+        const routines = [minimalRoutine(hevyNativeId)];
         const out = await resolveCustomExerciseTemplatesForHevyUpload(user, "key", routines);
-        expect(out.success).toBe(false);
-        if (out.success !== false) return;
-        expect(out.error.message).toContain("not found in the library");
-        expect(out.error.message).toContain(PROXIMA_ID);
+        expect(out.success).toBe(true);
+        if (!out.success) return;
+        expect(out.createdNewHevyCustomTemplates).toBe(0);
+        expect(out.routines[0].exercises[0].exercise_template_id).toBe(hevyNativeId);
+        expect(fetch).not.toHaveBeenCalled();
     });
 
     it("remaps to existing Hevy custom exercise when titles match exactly (trimmed)", async () => {

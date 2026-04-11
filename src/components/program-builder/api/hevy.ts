@@ -888,8 +888,12 @@ export type ResolveCustomExerciseTemplatesResult =
     | { success: false; error: Error };
 
 /**
- * For each Proxima `is_custom` template in the routines: match Hevy custom exercises
- * by exact title (trimmed) or POST a new custom template, then remap IDs for upload.
+ * Resolves Proxima `hevy_exercise_templates` rows that need a Hevy-account ID before upload.
+ *
+ * - Template IDs **present** in Supabase with `is_custom: true` are matched to the user's Hevy
+ *   customs by exact title (trimmed) or created via `POST /v1/exercise_templates`, then remapped.
+ * - Template IDs **not** in the Supabase mirror (e.g. exercises picked from the user's Hevy account
+ *   in the add-exercise dialog) are treated as already-valid Hevy template IDs and left unchanged.
  */
 export async function resolveCustomExerciseTemplatesForHevyUpload(
     user: User | null | undefined,
@@ -909,19 +913,6 @@ export async function resolveCustomExerciseTemplatesForHevyUpload(
     const fetched = await fetchExerciseTemplateRowsFromSupabase(templateIds);
     if (fetched.success === false) {
         return { success: false, error: fetched.error };
-    }
-
-    const foundIds = new Set(fetched.rows.map((r) => r.id));
-    const missingIds = templateIds.filter((id) => !foundIds.has(id));
-    if (missingIds.length > 0) {
-        const sample = missingIds.slice(0, 5).join(", ");
-        const suffix = missingIds.length > 5 ? ` (and ${missingIds.length - 5} more)` : "";
-        return {
-            success: false,
-            error: new Error(
-                `${missingIds.length} exercise template(s) not found in the library: ${sample}${suffix}`,
-            ),
-        };
     }
 
     const customRows = fetched.rows.filter((r) => r.is_custom === true);
