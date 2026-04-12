@@ -334,6 +334,59 @@ describe("chat tools.ts", () => {
         });
     });
 
+    describe("rateProgram tool execute", () => {
+        it("returns structured score when a program exists", async () => {
+            const hevyProgram: THevyRoutine[] = [
+                {
+                    id: "1",
+                    title: "Push",
+                    folder_id: 0,
+                    order: "1",
+                    notes: "",
+                    exercises: [
+                        {
+                            index: 0,
+                            title: "Bench Press (Barbell)",
+                            notes: "",
+                            rest_seconds: "90",
+                            exercise_template_id: "ex-1",
+                            supersets_id: null,
+                            sets: [
+                                {
+                                    index: 0,
+                                    type: "normal",
+                                    reps: 10,
+                                    weight_kg: null,
+                                    rpe: 8,
+                                    distance_meters: null,
+                                    duration_seconds: null,
+                                    custom_metric: null,
+                                    rep_range: { start: 8, end: 12 },
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ];
+
+            const tools = getTools({ hevyProgram });
+            const rateProgram = tools.rateProgram as {
+                execute: (args: Record<string, never>) => Promise<unknown>;
+            };
+
+            const output = (await rateProgram.execute({})) as {
+                score?: { emptyProgram?: boolean; summary?: { total: number } };
+                error?: string;
+            };
+
+            expect(output.error).toBeUndefined();
+            expect(output.score).toBeDefined();
+            expect(output.score?.emptyProgram).toBe(false);
+            expect((output.score?.summary?.total ?? 0) > 0).toBe(true);
+            expect(vi.mocked(getHevyExercises).mock.calls.length).toBeGreaterThan(0);
+        });
+    });
+
     describe("modifyProgramInputSchema", () => {
         it("parses when path was merged into op (replaceRegistry/…)", () => {
             const malformed = {

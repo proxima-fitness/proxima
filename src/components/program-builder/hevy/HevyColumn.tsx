@@ -282,7 +282,6 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                             customExercises={ customExercises }
                             hevyExercises={ hevyExercises }
                             isMobile={ isMobile }
-                            exerciseThumbnailShape={ "square" }
                         />
                     );
                 })}

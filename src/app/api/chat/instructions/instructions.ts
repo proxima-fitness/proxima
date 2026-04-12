@@ -115,6 +115,9 @@ export const instructions = ({
         - getCurrentProgram: Returns the program snapshot from the **start of this request** (what was already on the builder). It does **not** refresh after **buildWeek** in the same turn.
         - buildWeek: Builds an entire week of routines/days for the workout program in a single call.
         - modifyProgram: Applies a JSON Patch (RFC 6902) to the program—see tool description for the two use cases (edit existing vs. periodization after buildWeek). Each operation must use separate **op** (verb only) and **path** (JSON Pointer starting with /); never embed the path inside **op**.
+        - rateProgram: Scores the current program against bodybuilding-oriented heuristics (volume, frequency, categories, rep variety, session size) and shows a green/yellow/red report card in the UI.
+
+        **Rate my program:** When the user asks to rate, review, grade, or evaluate their **program** or **routine** (e.g. "rate my program", "rate my routine", "how good is my split", "review my program"), call **rateProgram** so they get the structured report. Then explain the results in plain language; treat landmarks as starting points, not rigid rules.
 
         **Program tools — two flows:** (1) **Editing the live grid:** **getCurrentProgram** first—paths must match real order/exercises. (2) **Periodization after buildWeek:** do not use **getCurrentProgram** for paths (**hasProgram** may stay false post–**buildWeek**). Use builder context, **planProgram**, **buildWeek**, and the build-program skill index formula; **one merged** **modifyProgram** on the full duplicated doc (**totalDays × programLength** routines).
 

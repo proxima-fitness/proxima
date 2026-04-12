@@ -13,6 +13,7 @@
  *  - getCurrentProgram - returns the program snapshot from the request (may be stale mid-turn)
  *  - buildWeek - constructs a full week of THevyRoutine days in one call (titles resolved from hevy_exercise_templates by ID)
  *  - modifyProgram - applies RFC 6902 JSON Patch edits to the program
+ *  - rateProgram - scores the current bodybuilding program (heuristic report card)
  *
  * Depends on: ai, zod, @/components/program-builder/api/hevy, @/assets/constants
  * Used by: /api/chat/route.ts (passed to ToolLoopAgent)
@@ -21,6 +22,7 @@
 import { z } from 'zod';
 import { getHevyExercises } from '@/components/program-builder/api/hevy';
 import { sampleQuestions } from '@/assets/constants';
+import { scoreProgramForBodybuilding } from '@/components/program-builder/utils/score-program';
 import { tool } from 'ai';
 
 /** Request-scoped flag: set after first successful buildWeek so the agent cannot call buildWeek twice in one chat turn. */
@@ -766,6 +768,50 @@ export function getTools({
         },
     });
 
+    const rateProgramTool = tool({
+        description:
+            'Rates the user\'s current program against bodybuilding training-principles (volume landmarks, frequency, movement categories, rep variety, session size). ' +
+            'Call when the user asks to rate, review, or grade their program or routine (e.g. "rate my program", "how good is my split"). ' +
+            'Uses the program JSON from this request (same snapshot as getCurrentProgram).',
+        inputSchema: z.object({
+            reason: z.string().optional().describe('Short note on why the rating was requested'),
+        }),
+        execute: async () => {
+            try {
+                const templates = await getHevyExercises();
+                const score = scoreProgramForBodybuilding(hevyProgram ?? [], templates);
+                return { score };
+            } catch (error) {
+                console.error('Error in rateProgram tool:', error);
+                return {
+                    error: 'Failed to rate program',
+                    message: error instanceof Error ? error.message : 'Unknown error',
+                };
+            }
+        },
+        toModelOutput: async ({ output }) => {
+            if (output && typeof output === 'object' && 'error' in output && output.error) {
+                const o = output as { message?: string };
+                return {
+                    type: 'text' as const,
+                    value: `Error: ${o.message ?? 'Failed to rate program'}`,
+                };
+            }
+            const o = output as { score?: { headline: string; summary: { passed: number; failed: number; okay: number }; emptyProgram: boolean } };
+            const s = o.score;
+            if (!s) {
+                return { type: 'text' as const, value: 'No score returned.' };
+            }
+            if (s.emptyProgram) {
+                return { type: 'text' as const, value: s.headline };
+            }
+            return {
+                type: 'text' as const,
+                value: `${s.headline} Green = on track, yellow = could improve, red = priority fix. Summarize tradeoffs briefly; landmarks are starting points, not rigid rules.`,
+            };
+        },
+    });
+
     return {
         getExerciseList: getExerciseListTool,
         getMoreInfoQuestions: getMoreInfoQuestionsTool,
@@ -773,6 +819,7 @@ export function getTools({
         getCurrentProgram: getCurrentProgramTool,
         buildWeek: buildWeekTool,
         modifyProgram: modifyProgramTool,
+        rateProgram: rateProgramTool,
         loadSkill: loadSkillTool,
         readFile: readFileTool,
         bash: bashTool,

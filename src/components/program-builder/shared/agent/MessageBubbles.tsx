@@ -32,6 +32,8 @@ import {
 import { Tool, ToolContent, ToolHeader } from "@/components/ai-elements/tool";
 import type { ToolPart } from "@/components/ai-elements/tool";
 import { ModifyProgramProgress } from "./ModifyProgramProgress";
+import { RateProgramResults } from "@/components/program-builder/shared/RateProgramResults";
+import type { IProgramScore } from "@/components/program-builder/utils/score-program";
 import { toast } from "sonner";
 import Link from "next/link";
 import { type Operation } from "fast-json-patch";
@@ -793,6 +795,59 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                             objectivesByRoutine={objectivesByRoutine}
                                                             status={isComplete ? "complete" : "processing"}
                                                         />
+                                                    </ToolContent>
+                                                </Tool>
+                                            );
+                                        }
+                                        case "tool-rateProgram": {
+                                            type RateProgramPart = {
+                                                type: "tool-rateProgram";
+                                                state?: ToolPart["state"];
+                                                output?: { score?: IProgramScore; error?: string; message?: string };
+                                                errorText?: string;
+                                            };
+                                            const ratePart = part as unknown as RateProgramPart;
+                                            const out = ratePart.output;
+                                            const hasScore = Boolean(out?.score && !out?.error);
+                                            const toolState: ToolPart["state"] = out?.error
+                                                ? "output-error"
+                                                : hasScore
+                                                    ? "output-available"
+                                                    : (ratePart.state ?? "input-available");
+
+                                            if (out?.error) {
+                                                return (
+                                                    <Tool key={`${message.id}-${index}-rate-error`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
+                                                        <ToolHeader type="tool-rateProgram" state={toolState} title="Rate program" />
+                                                        <ToolContent>
+                                                            <p className="text-destructive text-sm px-3 pb-3">
+                                                                {out.message ?? "Could not rate this program."}
+                                                            </p>
+                                                        </ToolContent>
+                                                    </Tool>
+                                                );
+                                            }
+
+                                            if (!hasScore || !out?.score) {
+                                                return (
+                                                    <Tool key={`${message.id}-${index}-rate-pending`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
+                                                        <ToolHeader type="tool-rateProgram" state={toolState} title="Rate program" />
+                                                        <ToolContent>
+                                                            <p className="text-muted-foreground text-sm px-3 pb-3">
+                                                                Scoring your program…
+                                                            </p>
+                                                        </ToolContent>
+                                                    </Tool>
+                                                );
+                                            }
+
+                                            return (
+                                                <Tool key={`${message.id}-${index}-rate`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
+                                                    <ToolHeader type="tool-rateProgram" state={toolState} title="Rate program" />
+                                                    <ToolContent className="max-w-full overflow-x-auto">
+                                                        <div className="px-1 pb-2">
+                                                            <RateProgramResults score={out.score} />
+                                                        </div>
                                                     </ToolContent>
                                                 </Tool>
                                             );

@@ -17,11 +17,6 @@ import { HevyExerciseDetailsDialog } from "./HevyExerciseDetailsDialog";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useState } from "react";
 
-/** Thumbnail silhouette for row thumbnails; */
-export type HevyExerciseThumbnailShape = "square" | "circle";
-
-
-
 /** Props for the exercise list within a day card. */
 interface IProps {
     /** The day (routine) whose exercises are displayed. */
@@ -44,8 +39,6 @@ interface IProps {
     removeFromSuperset: (exerciseIndex: number) => void;
     /** Global Hevy exercise library from parent (for thumbnails); undefined while loading. */
     hevyExercises?: THevyExerciseTemplate[];
-
-    exerciseThumbnailShape: HevyExerciseThumbnailShape;
 }
 
 // Color palette for supersets - distinct colors that work in both light and dark modes
@@ -112,7 +105,6 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
         toggleExerciseSelection,
         removeFromSuperset,
         hevyExercises,
-        exerciseThumbnailShape,
     } = props;
 
     const { isInLbs } = usePoundsOrKgContext();
@@ -224,14 +216,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                                 />
                                             )}
                                         </div>
-                                        <HevyExerciseGif
-                                            thumbnailOrImage="thmb"
-                                            thumbnailShape={exerciseThumbnailShape}
-                                            name={exercise.title}
-                                            gif_id={hevyExercises?.find((hevyExercise: THevyExerciseTemplate) => hevyExercise.id === exercise.exercise_template_id)?.gif_id}
-                                            resolution="180"
-                                            file_type="jpg"
-                                        />
+                                        <HevyExerciseGif thumbnailOrImage={"thmb"} name={exercise.title} gif_id={hevyExercises?.find((hevyExercise: THevyExerciseTemplate) => hevyExercise.id === exercise.exercise_template_id)?.gif_id} resolution={"180"} file_type={'jpg'} />
                                         <div className="flex flex-row items-center justify-between">
                                             <div className={isSelected ? 'text-white' : 'dark:text-offWhite'}>
                                                 {exercise.title}

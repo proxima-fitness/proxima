@@ -17,12 +17,12 @@ import {
 import type { ComponentProps, HTMLAttributes } from "react";
 import { createContext, useContext, useMemo } from "react";
 
-type TestStatus = "passed" | "failed" | "skipped" | "running";
+type TestStatus = "passed" | "failed" | "okay" | "running";
 
 interface ITestResultsSummary {
   passed: number;
   failed: number;
-  skipped: number;
+  okay: number;
   total: number;
   duration?: number;
 }
@@ -49,7 +49,7 @@ export const TestResultsHeader = ({
 }: TestResultsHeaderProps) => (
   <div
     className={cn(
-      "flex items-center justify-between border-b px-4 py-3",
+      "flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b px-4 py-3",
       className
     )}
     {...props}
@@ -92,7 +92,7 @@ export const TestResultsSummary = ({
   }
 
   return (
-    <div className={cn("flex items-center gap-3", className)} {...props}>
+    <div className={cn("flex min-w-0 flex-wrap items-center gap-3", className)} {...props}>
       {children ?? (
         <>
           <Badge
@@ -102,6 +102,16 @@ export const TestResultsSummary = ({
             <CheckCircle2Icon className="size-3" />
             {summary.passed} passed
           </Badge>
+
+          {summary.okay > 0 && (
+            <Badge
+              className="gap-1 bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+              variant="secondary"
+            >
+              <CircleIcon className="size-3" />
+              {summary.okay} okay
+            </Badge>
+          )}
           {summary.failed > 0 && (
             <Badge
               className="gap-1 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
@@ -109,15 +119,6 @@ export const TestResultsSummary = ({
             >
               <XCircleIcon className="size-3" />
               {summary.failed} failed
-            </Badge>
-          )}
-          {summary.skipped > 0 && (
-            <Badge
-              className="gap-1 bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-              variant="secondary"
-            >
-              <CircleIcon className="size-3" />
-              {summary.skipped} skipped
             </Badge>
           )}
         </>
@@ -224,14 +225,14 @@ const statusStyles: Record<TestStatus, string> = {
   failed: "text-red-600 dark:text-red-400",
   passed: "text-green-600 dark:text-green-400",
   running: "text-blue-600 dark:text-blue-400",
-  skipped: "text-yellow-600 dark:text-yellow-400",
+  okay: "text-yellow-600 dark:text-yellow-400",
 };
 
 const statusIcons: Record<TestStatus, React.ReactNode> = {
   failed: <XCircleIcon className="size-4" />,
   passed: <CheckCircle2Icon className="size-4" />,
   running: <CircleDotIcon className="size-4 animate-pulse" />,
-  skipped: <CircleIcon className="size-4" />,
+  okay: <CircleIcon className="size-4" />,
 };
 
 const TestStatusIcon = ({ status }: { status: TestStatus }) => (
@@ -290,13 +291,13 @@ export const TestSuiteName = ({
 export type TestSuiteStatsProps = HTMLAttributes<HTMLDivElement> & {
   passed?: number;
   failed?: number;
-  skipped?: number;
+  okay?: number;
 };
 
 export const TestSuiteStats = ({
   passed = 0,
   failed = 0,
-  skipped = 0,
+  okay = 0,
   className,
   children,
   ...props
@@ -317,9 +318,9 @@ export const TestSuiteStats = ({
             {failed} failed
           </span>
         )}
-        {skipped > 0 && (
+        {okay > 0 && (
           <span className="text-yellow-600 dark:text-yellow-400">
-            {skipped} skipped
+            {okay} okay
           </span>
         )}
       </>
