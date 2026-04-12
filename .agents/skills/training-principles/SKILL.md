@@ -38,6 +38,14 @@ Provide evidence-based advice on training and programming principles. This skill
 | Diet and habits    | `.agents/skills/training-principles/resources/weight-loss/diet.md`                         |
 | Cardio and exercise | `.agents/skills/training-principles/resources/weight-loss/cardio-exercise.md`               |
 
+### Stimulus, RPE, and “effective volume”
+
+| Topic | File |
+| ----- | ---- |
+| Hard sets, RPE vs set counting, deloads, scorecard | `.agents/skills/build-program/resources/stimulus-and-volume.md` |
+
+Use this when the user asks about **effective reps**, **junk volume**, **RPE vs weekly sets**, **proximity to failure**, or whether volume “should” be **sets×reps×weight**. Summarize that file and tie back to muscle-specific guides as needed.
+
 ### Bodybuilding guides (by muscle)
 
 
@@ -58,6 +66,7 @@ Provide evidence-based advice on training and programming principles. This skill
 2. **Hypertrophy or training a muscle:** If the question touches this, identify which muscle(s) and use `readFile` to load **only** the relevant guide(s) from the bodybuilding table. Do not load all guides — they are long and will waste context.
 3. Summarise and cite the loaded content. Keep advice practical and aligned with the guides' tone: "food for thought or places to start, not dogmatic scriptures to follow to the letter."
 4. If the question is general (e.g. "What is MEV?") and not muscle-specific, load one or two representative guides (e.g. chest + back) to ground your answer in concrete numbers, or explain the concept and offer to dive into a specific muscle.
+5. **Effective reps, junk volume, or RPE vs set counting:** Load `.agents/skills/build-program/resources/stimulus-and-volume.md` and summarize how weekly landmarks relate to **hard sets** and **target RPE**; do not imply that MEV/MAV/MRV are raw tonnage.
 
 ## Notes
 

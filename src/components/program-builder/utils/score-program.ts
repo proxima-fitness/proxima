@@ -1,6 +1,7 @@
 /**
  * Heuristic bodybuilding program scoring against editable volume landmarks and rules.
- * Thresholds follow training-principles bodybuilding guides (starting points, not dogma).
+ * Narrative muscle volumes live in `.agents/skills/build-program/resources/bodybuilding.md`;
+ * landmarks here are **scoring-tuned** and may differ (e.g. back/quads MEV) — see VOLUME_LANDMARKS.
  */
 
 /** Maps TestResults UI: passed = green, okay = yellow, failed = red */
@@ -32,7 +33,12 @@ export interface IProgramScore {
     headline: string;
 }
 
-/** Editable volume landmarks per logical muscle (sets/week, intermediate lifter anchors). */
+/**
+ * Weekly **working-set** landmarks for the scorecard (one scored week, intermediate-oriented).
+ * Not sets×reps×weight. Intentionally separate from prose in `bodybuilding.md` where they differ
+ * (e.g. back MEV 4–6 here vs 6–10 in markdown; quads MEV 6–8 here vs 4–6 in markdown) so we do not
+ * silently change pass/fail for existing programs — align in a dedicated pass if desired.
+ */
 export const VOLUME_LANDMARKS: Record<
     string,
     { mev: readonly [number, number]; mav: readonly [number, number]; mrv: readonly [number, number] }
@@ -80,6 +86,58 @@ function normalizeMuscleKey(primary: string | null | undefined): keyof typeof VO
 function workingSetCount(sets: THevySets[] | undefined): number {
     if (!sets?.length) return 0;
     return sets.filter((s) => (s.type || "normal") !== "warmup").length;
+}
+
+/** RPE floor for “hypertrophy stimulus band” reporting (logged working sets only). */
+export const STIMULUS_RPE_THRESHOLD = 6;
+
+interface IStimulusCounts {
+    workingSets: number;
+    withRpe: number;
+    hardSets: number;
+    /** 0 < rpe < STIMULUS_RPE_THRESHOLD */
+    lightSets: number;
+    unspecifiedRpe: number;
+}
+
+/** All non-warmup sets in the scored week (every exercise), for RPE/stimulus reporting. */
+function aggregateStimulusFromWeek(routines: THevyRoutine[]): IStimulusCounts {
+    const out: IStimulusCounts = {
+        workingSets: 0,
+        withRpe: 0,
+        hardSets: 0,
+        lightSets: 0,
+        unspecifiedRpe: 0,
+    };
+    for (const routine of routines) {
+        for (const ex of routine.exercises ?? []) {
+            for (const s of ex.sets ?? []) {
+                if ((s.type || "normal") === "warmup") continue;
+                out.workingSets += 1;
+                const r = s.rpe;
+                if (r == null || r <= 0) {
+                    out.unspecifiedRpe += 1;
+                    continue;
+                }
+                out.withRpe += 1;
+                if (r >= STIMULUS_RPE_THRESHOLD) out.hardSets += 1;
+                else out.lightSets += 1;
+            }
+        }
+    }
+    return out;
+}
+
+function scoreStimulusRpeLogging(c: IStimulusCounts): TProgramScoreStatus {
+    if (c.workingSets === 0) return "okay";
+    if (c.unspecifiedRpe === 0) return "passed";
+    return "okay";
+}
+
+function scoreStimulusIntensityMix(c: IStimulusCounts): TProgramScoreStatus {
+    if (c.workingSets === 0) return "okay";
+    if (c.withRpe === 0) return "okay";
+    return c.hardSets / c.withRpe >= 0.65 ? "passed" : "okay";
 }
 
 /** Effective reps for a set (first number in range for prescription). */
@@ -224,12 +282,15 @@ export function scoreProgramForBodybuilding(
         };
     }
 
+    const stimulus = aggregateStimulusFromWeek(weekRoutines);
+
     const byMuscle: Partial<Record<keyof typeof VOLUME_LANDMARKS, IMuscleAgg>> = {};
     const repBuckets = { heavy: 0, moderate: 0, light: 0 };
     const categoryHits: Partial<Record<keyof typeof VOLUME_LANDMARKS, Set<string>>> = {};
 
+    const routinesOrdered = [...weekRoutines].sort((a, b) => Number(a.order ?? 0) - Number(b.order ?? 0));
     let dayIndex = 0;
-    for (const routine of weekRoutines.sort((a, b) => Number(a.order ?? 0) - Number(b.order ?? 0))) {
+    for (const routine of routinesOrdered) {
         const exercises = routine.exercises ?? [];
         for (const ex of exercises) {
             const tmpl = idToTemplate.get(ex.exercise_template_id);
@@ -276,10 +337,43 @@ export function scoreProgramForBodybuilding(
             detail:
                 sets === 0
                     ? "No direct volume this week"
-                    : `${sets} working sets/wk (MEV–MAV ~${lm.mev[0]}–${lm.mav[1]}, MRV ~${lm.mrv[1]})`,
+                    : `${sets} hypertrophy-intended working sets/wk (MEV–MAV ~${lm.mev[0]}–${lm.mav[1]}, MRV ~${lm.mrv[1]}); set counts, not tonnage`,
         });
     }
-    suites.push({ id: "volume", name: "Weekly volume", tests: volumeTests });
+    suites.push({ id: "volume", name: "Weekly volume (working sets)", tests: volumeTests });
+
+    const stimDetailRpe =
+        stimulus.workingSets === 0
+            ? "No working sets in the scored week."
+            : stimulus.unspecifiedRpe === 0
+              ? `${stimulus.workingSets} working sets — all have target RPE logged.`
+              : `${stimulus.workingSets} working sets — ${stimulus.withRpe} with target RPE, ${stimulus.unspecifiedRpe} without RPE. Add target RPE on each working set for a clearer stimulus check.`;
+
+    const stimDetailMix =
+        stimulus.workingSets === 0
+            ? "No working sets to evaluate."
+            : stimulus.withRpe === 0
+              ? `Log target RPE on working sets to see how many land in the hypertrophy band (RPE ${STIMULUS_RPE_THRESHOLD}+). Missing RPE does not change weekly set-count scoring.`
+              : `${stimulus.hardSets} of ${stimulus.withRpe} logged sets at RPE ≥${STIMULUS_RPE_THRESHOLD}; ${stimulus.lightSets} below (${STIMULUS_RPE_THRESHOLD - 1} or lower) — expected for deloads, technique, or easy work.`;
+
+    suites.push({
+        id: "stimulus",
+        name: "Stimulus coverage (RPE)",
+        tests: [
+            {
+                id: "stimulus-rpe-logging",
+                name: "Target RPE on working sets",
+                status: scoreStimulusRpeLogging(stimulus),
+                detail: stimDetailRpe,
+            },
+            {
+                id: "stimulus-intensity-mix",
+                name: `Hypertrophy stimulus band (RPE ≥${STIMULUS_RPE_THRESHOLD})`,
+                status: scoreStimulusIntensityMix(stimulus),
+                detail: stimDetailMix,
+            },
+        ],
+    });
 
     const freqTests: IProgramScoreTest[] = [];
     for (const muscle of Object.keys(VOLUME_LANDMARKS) as (keyof typeof VOLUME_LANDMARKS)[]) {
@@ -332,7 +426,7 @@ export function scoreProgramForBodybuilding(
     });
 
     const sessionTests: IProgramScoreTest[] = [];
-    for (const routine of weekRoutines) {
+    for (const routine of routinesOrdered) {
         const n = (routine.exercises ?? []).length;
         const label = routine.title?.trim() || `Day ${routine.order ?? "?"}`;
         sessionTests.push({

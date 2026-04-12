@@ -2,9 +2,11 @@
 
 Use this file when the user wants a **bodybuilding** or **hypertrophy** program: aesthetic focus, muscle building, PPL, upper/lower, bro split, or training by muscle group. Apply these principles when selecting exercises (match names to getExerciseList results) and building the week.
 
+**Stimulus vs junk volume:** Weekly set landmarks below assume **hypertrophy-intended working sets** (challenging effort / ~0–3 RIR), not easy or untracked fluff. For the full framing—effective reps, RPE, deloads, and how this differs from tonnage—use `readFile` on `.agents/skills/build-program/resources/stimulus-and-volume.md` whenever intensity or “what counts as volume” is in question.
+
 ## Shared principles
 
-- **Volume landmarks:** MEV = minimum for growth, MAV = best long-term gains, MRV = recoverable max. Values below are weekly sets for intermediate lifters; beginners use less.
+- **Volume landmarks:** MEV = minimum for growth, MAV = best long-term gains, MRV = recoverable max. Values below are **weekly working sets** (hypertrophy-intended hard sets, excluding warmups) for intermediate lifters; beginners use less. This is **not** sets×reps×weight in the program scorecard.
 - **Per session:** 1–3 exercises per muscle, 8–12 sets per muscle per session max (beyond that, systemic fatigue reduces efficiency).
 - **Per week:** 2–5 different exercises per muscle. Match exercise IDs from getExerciseList; use titles below to find the right IDs.
 - **Compound RPE (bodybuilding default):** For heavy **compound** lifts—especially barbell patterns such as bench press, squat, and deadlift, and similarly demanding compounds—**do not** prescribe sets above **~8.5 RPE** in typical hypertrophy blocks. Prefer leaving **1–2 reps in reserve**; avoid grinders and true failure on these movements (injury risk).
