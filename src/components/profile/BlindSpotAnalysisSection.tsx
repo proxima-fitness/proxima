@@ -284,8 +284,8 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
                         onClick={() => setAnalysisRequested(true)}
                         className="min-w-[14rem] h-12 rounded-full px-10 text-md text-white bg-lightSecondary hover:bg-lightSecondary/90"
                     >
-                        <SparklesIcon className="size-4" />
                         Analyze
+                        <SparklesIcon className="size-4" />
                     </Button>
                 </div>
             )}
