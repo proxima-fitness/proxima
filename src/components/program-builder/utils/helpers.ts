@@ -918,7 +918,32 @@ export interface IMergedBuildModifySnapshot {
     totalDays: number;
     mergedPatch: Operation[];
     modifyKeys: string[];
+    /** From the newest successful `tool-planProgram` before the last `tool-buildWeek`, when present. */
+    durationWeeksFromPlan?: number;
 }
+
+/**
+ * Reads `planProgram.durationWeeks` from the latest successful plan tool call strictly before the flattened buildWeek index.
+ */
+function getDurationWeeksFromPlanBeforeBuildWeek(flat: TFlatPart[], lastBuildWeekFlatIndex: number): number | undefined {
+    for (let i = lastBuildWeekFlatIndex - 1; i >= 0; i--) {
+        const { part } = flat[i];
+        if (part.type !== "tool-planProgram") continue;
+        const out = (part as { output?: { plan?: { durationWeeks?: number }; error?: string } }).output;
+        if (!out || out.error) continue;
+        const w = out.plan?.durationWeeks;
+        if (typeof w === "number" && Number.isFinite(w) && w >= 1) {
+            return Math.floor(w);
+        }
+    }
+    return undefined;
+}
+
+/** Weeks to duplicate for atomic build: prefer plan so modifyProgram paths stay valid; else UI; else 1. */
+export const resolveEffectiveWeeksForAtomicCommit = (
+    snap: IMergedBuildModifySnapshot,
+    programLengthFromUi?: number
+): number => Math.max(1, snap.durationWeeksFromPlan ?? programLengthFromUi ?? 1);
 
 /**
  * Finds the last successful buildWeek in the current assistant turn and concatenates
@@ -944,6 +969,8 @@ export const getMergedBuildAndModifySnapshot = (messages: UIMessage[]): IMergedB
 
     if (lastBwIdx < 0 || !routines?.length) return null;
 
+    const durationWeeksFromPlan = getDurationWeeksFromPlanBeforeBuildWeek(flat, lastBwIdx);
+
     const mergedPatch: Operation[] = [];
     const modifyKeys: string[] = [];
 
@@ -962,6 +989,7 @@ export const getMergedBuildAndModifySnapshot = (messages: UIMessage[]): IMergedB
         totalDays,
         mergedPatch,
         modifyKeys,
+        durationWeeksFromPlan,
     };
 };
 
@@ -997,7 +1025,8 @@ export const buildFullProgramFromFirstWeek = (
  */
 export const getAtomicBuildCommitKey = (
     snapshot: IMergedBuildModifySnapshot,
-    messages: UIMessage[]
+    messages: UIMessage[],
+    effectiveWeeks: number
 ): string => {
     let lastUserIdx = -1;
     for (let i = messages.length - 1; i >= 0; i--) {
@@ -1007,7 +1036,7 @@ export const getAtomicBuildCommitKey = (
         }
     }
     const tailIds = messages.slice(lastUserIdx + 1).map((m) => m.id ?? "");
-    return `${tailIds.join("|")}|${snapshot.baseWeekRoutines.length}|${snapshot.mergedPatch.length}|${snapshot.modifyKeys.join(",")}`;
+    return `${tailIds.join("|")}|${snapshot.baseWeekRoutines.length}|${snapshot.mergedPatch.length}|${snapshot.modifyKeys.join(",")}|${effectiveWeeks}`;
 };
 
 export type ChatStatusForAtomic = "streaming" | "ready" | (string & {});
@@ -1015,13 +1044,15 @@ export type ChatStatusForAtomic = "streaming" | "ready" | (string & {});
 /**
  * When the assistant turn includes a successful buildWeek, duplicates week 1 across all weeks,
  * applies all modifyProgram patches after that buildWeek in one shot, and commits via applyPatchWithUndo.
- * Returns true if a new program was committed. Only runs when status is ready (stream finished).
+ * Only runs when status is ready (stream finished).
  * When the program was empty, commits with `recordUndo: false` so the user cannot undo back to an empty grid.
+ *
+ * Duplication week count prefers **planProgram.durationWeeks** from the same turn (matches model patch indices), then **programLengthFromUi**.
  */
 export const tryCommitAtomicBuildWeekAndMergedPatches = (
     messages: UIMessage[],
     status: ChatStatusForAtomic | undefined,
-    programLength: number,
+    programLengthFromUi: number | undefined,
     hevyProgram: THevyRoutine[],
     appliedModifyProgramKeysRef: React.RefObject<Set<string>>,
     lastAtomicCommitKeyRef: React.RefObject<string | null>,
@@ -1030,16 +1061,29 @@ export const tryCommitAtomicBuildWeekAndMergedPatches = (
         inversePatch: Operation[],
         recordUndo?: boolean
     ) => void
-): boolean => {
-    if (status === "streaming") return false;
+): { committed: boolean; effectiveWeeks?: number } => {
+    if (status === "streaming") return { committed: false };
 
     const snap = getMergedBuildAndModifySnapshot(messages);
-    if (!snap) return false;
+    if (!snap) return { committed: false };
 
-    const commitKey = getAtomicBuildCommitKey(snap, messages);
-    if (lastAtomicCommitKeyRef.current === commitKey) return false;
+    const effectiveWeeks = resolveEffectiveWeeksForAtomicCommit(snap, programLengthFromUi);
+    if (
+        snap.durationWeeksFromPlan != null &&
+        programLengthFromUi != null &&
+        snap.durationWeeksFromPlan !== programLengthFromUi
+    ) {
+        console.warn("[tryCommitAtomicBuildWeekAndMergedPatches] planProgram.durationWeeks differs from UI programLength", {
+            durationWeeksFromPlan: snap.durationWeeksFromPlan,
+            programLengthFromUi,
+            effectiveWeeks,
+        });
+    }
 
-    const base = buildFullProgramFromFirstWeek(snap.baseWeekRoutines, snap.totalDays, programLength);
+    const commitKey = getAtomicBuildCommitKey(snap, messages, effectiveWeeks);
+    if (lastAtomicCommitKeyRef.current === commitKey) return { committed: false };
+
+    const base = buildFullProgramFromFirstWeek(snap.baseWeekRoutines, snap.totalDays, effectiveWeeks);
     let doc = base;
 
     if (snap.mergedPatch.length > 0) {
@@ -1047,7 +1091,7 @@ export const tryCommitAtomicBuildWeekAndMergedPatches = (
         if (err) {
             toast.error("Program modification failed: patch is invalid for duplicated program.");
             console.error("Atomic build patch validation failed", err);
-            return false;
+            return { committed: false };
         }
         try {
             const result = applyPatch(doc as object, snap.mergedPatch, true, false) as { newDocument: THevyRoutine[] };
@@ -1055,7 +1099,7 @@ export const tryCommitAtomicBuildWeekAndMergedPatches = (
         } catch (e) {
             toast.error("Program modification failed: could not apply patch.");
             console.error(e);
-            return false;
+            return { committed: false };
         }
     }
 
@@ -1066,7 +1110,7 @@ export const tryCommitAtomicBuildWeekAndMergedPatches = (
     applyPatchWithUndo(doc, inversePatch, recordUndo);
     snap.modifyKeys.forEach((k) => appliedModifyProgramKeysRef.current.add(k));
     lastAtomicCommitKeyRef.current = commitKey;
-    return true;
+    return { committed: true, effectiveWeeks };
 };
 
 export const applyModifyProgramPatchesFromMessages = (

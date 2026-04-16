@@ -332,23 +332,24 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
 
     useEffect(() => {
         // After stream finishes: duplicate week 1 across all weeks, merge modifyProgram patches after buildWeek, one commit
-        const weeks = programLength ? Number(programLength) : 1;
-        const committed = tryCommitAtomicBuildWeekAndMergedPatches(
+        const programLengthFromUi = programLength ? Number(programLength) : undefined;
+        const weeksFallback = programLengthFromUi ?? 1;
+        const result = tryCommitAtomicBuildWeekAndMergedPatches(
             messages,
             status,
-            weeks,
+            programLengthFromUi,
             hevyProgram,
             appliedModifyProgramKeysRef,
             lastAtomicBuildCommitKeyRef,
             applyPatchWithUndo
         );
-        if (committed) {
+        if (result.committed) {
             handleIsBuilding(false);
             onBuildComplete?.();
             posthog?.capture?.("generated_a_program", {
                 user: user?.id ?? "user_id_unknown",
                 daysPerWeek: totalDays || allRoutines.length,
-                programLength: weeks,
+                programLength: result.effectiveWeeks ?? weeksFallback,
             });
         }
     }, [
