@@ -4,7 +4,7 @@
  * Privacy policy page. Static legal content (definitions, collection, access,
  * security, retention). Sits at src/app/(app)/privacy/page.tsx; route "/privacy".
  *
- * Depends on: none (static markup and exer-card styles).
+ * Depends on: none (static markup; theme tokens for surfaces and text).
  * Used by: Next.js (route "/privacy").
  */
 
@@ -13,17 +13,24 @@ export const metadata = {
     description: "These are the Privacy Policies that we abide by",
 };
 
+const legalBody =
+    "[&_a]:text-secondary [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:text-lightSecondary [&_h2]:mt-10 [&_h2]:mb-3 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:first:mt-0 [&_strong]:font-semibold";
+
 /** Privacy policy page; static legal text. */
 export default function PrivacyPage() {
     return (
-        <main className="min-h-screen px-4 py-10 bg-gray-100">
-            <h1 className="text-5xl max-sm:text-3xl pl-28 max-sm:pl-0 max-sm:flex max-sm:justify-center font-bold text-gray-900 mb-6 text-left">
+        <div className="min-h-screen bg-background px-4 py-10 text-foreground">
+            <h1 className="mb-8 max-w-3xl mx-auto text-left text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
                 Privacy Policy
             </h1>
-            <section className="py-8 px-32 max-sm:px-0">
-            <div className="exer-card exer-cards">
+            <section className="max-w-3xl mx-auto pb-8">
+                <div
+                    className={`rounded-xl border border-border bg-card p-6 text-card-foreground shadow-sm sm:p-8 space-y-4 ${legalBody}`}
+                >
                     <h2>Introduction and Scope of Policy</h2>
-                    <div className="privacy-text">This policy outlines how Proxima Fitness handles Personal Information for the delivery of the Proxima Fitness Application and Website. This policy outlines the privacy practices followed when you use Proxima Fitness Services, including ensuring the accuracy, confidentiality, and security of your Personal Information and requesting access to and correction of your Personal Information.</div>
+                    <p>
+                        This policy outlines how Proxima Fitness handles Personal Information for the delivery of the Proxima Fitness Application and Website. This policy outlines the privacy practices followed when you use Proxima Fitness Services, including ensuring the accuracy, confidentiality, and security of your Personal Information and requesting access to and correction of your Personal Information.
+                    </p>
                     <h2>Definitions</h2>
                     The following definitions are used for the purposes of this policy:
                     <strong>Proxima Fitness Services</strong> means your access to, and use of, the Proxima Fitness Application, the Proxima Fitness Website and the tools and resources available through all products owned by Proxima Fitness.
@@ -51,11 +58,11 @@ export default function PrivacyPage() {
                     Personal information will be retained in accordance with the records retention requirements, for as long as may be necessary or relevant for the purpose of collection, or as may be otherwise required or permitted by law, after which time it will be made anonymous, or destroyed.
                     <h2>Changes to this Privacy Policy</h2>
                     Changes to this policy may be made without direct notice to you. Any changes will be posted on the Proxima Fitness Website and will be effective as of the date of posting.
-                    <strong>Last posted on: January 25, 2024</strong>
+                    <p>
+                        <strong>Last posted on: January 25, 2024</strong>
+                    </p>
                 </div>
             </section>
-
-
-        </main>
+        </div>
     );
   }
