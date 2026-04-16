@@ -13,9 +13,11 @@
  * @property isLoadingHevy Whether Hevy programs are still loading.
  */
 import { useState, useMemo, useEffect, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useUserContext } from "@/contexts/UserContext";
 import { useExerciseStallsAnalysis, useHevyExercises, useMyFeatureLimits, useSubscribedPrograms } from "@/api/hooks";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -32,7 +34,7 @@ import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
 import { ExerciseStalls, type IExercise } from "./ExerciseStalls";
 import Link from "next/link";
-import { ChartLineIcon } from "lucide-react";
+import { ChartLineIcon, SparklesIcon } from "lucide-react";
 import type { HevyProgramItem } from "@/components/program-builder/hevy/HevyProgramsGrid";
 
 const PRO_PAGE_SIZE = 9;
@@ -118,10 +120,18 @@ type BlindSpotAnalysisSectionProps = {
  */
 export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHevy = false }: BlindSpotAnalysisSectionProps) {
     const router = useRouter();
+    const queryClient = useQueryClient();
     const { user } = useUserContext();
     const { isInLbs } = usePoundsOrKgContext();
-    const { data: templates = [], isLoading: isLoadingTemplates } = useHevyExercises();
-    const { data: exerciseStallsData, isLoading: isLoadingExerciseStalls } = useExerciseStallsAnalysis(user);
+    const [analysisRequested, setAnalysisRequested] = useState(false);
+    const { data: templates = [], isLoading: isLoadingTemplates } = useHevyExercises({
+        enabled: analysisRequested,
+    });
+    const {
+        data: exerciseStallsData,
+        isFetching: isFetchingExerciseStalls,
+        refetch: refetchExerciseStalls,
+    } = useExerciseStallsAnalysis(user, { enabled: analysisRequested });
     const { data: featureLimits } = useMyFeatureLimits(user);
     const { data: subscribedPrograms = [], isLoading: isLoadingPrograms } = useSubscribedPrograms(user);
     const isPro = featureLimits?.has_active_subscription === true;
@@ -132,6 +142,17 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
     const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
     const [exploreFixesDialogOpen, setExploreFixesDialogOpen] = useState(false);
     const [exploreFixesExercise, setExploreFixesExercise] = useState<IExercise | null>(null);
+
+    const stallAnalysisResolved = exerciseStallsData !== undefined;
+    const showIdleAnalyze = !analysisRequested && !stallAnalysisResolved && !isFetchingExerciseStalls;
+    const dataLoading = analysisRequested && isFetchingExerciseStalls;
+
+    const handleCancelAnalysis = useCallback(() => {
+        void queryClient.cancelQueries({
+            queryKey: ["exercise-stalls-analysis", user?.id, "v6"],
+        });
+        setAnalysisRequested(false);
+    }, [queryClient, user?.id]);
 
     const handleExploreFixes = useCallback((exercise: IExercise) => {
         setExploreFixesExercise(exercise);
@@ -201,11 +222,12 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
     }, [templates, isPro]);
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- reset pagination when filters or result size change
         setCurrentPage(1);
     }, [filteredAndSorted.length, sortBy, hideNoData, statusFilter]);
-    const dataLoading = isLoadingExerciseStalls;
-    const showPlaceholderCards = isLoadingTemplates === false && dataLoading && templates.length > 0;
+
+    const showPlaceholderCards =
+        analysisRequested && isLoadingTemplates === false && dataLoading && templates.length > 0;
 
     const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
     useEffect(() => {
@@ -216,16 +238,54 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
         return () => clearInterval(id);
     }, [dataLoading]);
 
-    const displayCount = dataLoading ? templates.length : filteredAndSorted.length;
+    const titleSuffix = (() => {
+        if (showIdleAnalyze) return null;
+        if (dataLoading) return "(…)";
+        return `(${filteredAndSorted.length})`;
+    })();
 
     return (
         <section>
-            <h2 className="text-2xl font-main mb-6 text-black dark:text-white flex items-center justify-start">
-                <ChartLineIcon className="mr-2 size-7" /> Blind Spot Analysis ({displayCount})
+            <h2 className="text-2xl font-main mb-6 text-black dark:text-white flex items-center justify-start flex-wrap gap-x-2">
+                <span className="flex items-center">
+                    <ChartLineIcon className="mr-2 size-7" /> Blind Spot Analysis{titleSuffix ? ` ${titleSuffix}` : ""}
+                </span>
+                {stallAnalysisResolved && !showIdleAnalyze ? (
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="shrink-0"
+                        disabled={isFetchingExerciseStalls}
+                        onClick={() => {
+                            setAnalysisRequested(true);
+                            void refetchExerciseStalls();
+                        }}
+                    >
+                        {isFetchingExerciseStalls ? "Refreshing…" : "Run again"}
+                    </Button>
+                ) : null}
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
                 A smoke check for your lifts. Explore fixes for any exercises that are not progressing.
             </p>
+            {showIdleAnalyze && (
+                <div className="mb-6 rounded-lg border border-border bg-card/50 p-5 flex flex-col items-center text-center">
+                    <p className="text-sm text-muted-foreground mb-4 max-w-md">
+                        Analysis pulls your history from Hevy for each exercise in the library (roughly a minute). Stay on
+                        this page until it finishes. Nothing runs until you start it.
+                    </p>
+                    <Button
+                        type="button"
+                        size="lg"
+                        onClick={() => setAnalysisRequested(true)}
+                        className="min-w-[14rem] h-12 px-10 text-base bg-lightSecondary hover:bg-lightSecondary/90"
+                    >
+                        <SparklesIcon className="size-4" />
+                        Analyze
+                    </Button>
+                </div>
+            )}
             {dataLoading && (
                 <div className="mb-4 w-full">
                     <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
@@ -237,6 +297,11 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
                     <p className="text-sm font-medium text-yellow-600 dark:text-yellow-500 mt-1">
                         Don&apos;t leave the page
                     </p>
+                    <div className="flex justify-center mt-4">
+                        <Button type="button" variant="outline" size="lg" onClick={handleCancelAnalysis}>
+                            Cancel
+                        </Button>
+                    </div>
                 </div>
             )}
             {!dataLoading && allExercises.length > 0 && (
@@ -371,7 +436,7 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
                     </div>
                 </DialogContent>
             </Dialog>
-            {showPlaceholderCards ? (
+            {showIdleAnalyze ? null : showPlaceholderCards ? (
                 <ExerciseStalls
                     exercises={placeholderExercises}
                     onExploreFixes={handleExploreFixes}
@@ -379,7 +444,7 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
                     showViewMore={!isPro}
                     dataLoading={true}
                 />
-            ) : isLoadingTemplates ? (
+            ) : analysisRequested && isLoadingTemplates ? (
                 <div className="pt-5 w-full max-w-full overflow-hidden px-0 box-border">
                     <div className="flex justify-between items-center mb-3 w-full max-w-full box-border">
                         <Skeleton className="h-3.5 w-2/5 flex-1 min-w-0" />
