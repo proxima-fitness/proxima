@@ -75,14 +75,14 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
 
                         {/* Social proof band, now inside the hero/prompt section */}
                         <div className="mt-10">
-                            <div className="rounded-2xl bg-transparent text-card-foreground px-4 sm:px-6 py-4 sm:py-5 flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
+                            <div className="rounded-2xl bg-transparent text-card-foreground px-4 sm:px-6 py-4 sm:py-5 flex flex-col md:flex-row items-center md:items-center justify-between gap-6">
                                 {/* Left: Avatar stack + copy */}
 
 
 
 
                                 {/* Right: Compact integrations logos */}
-                                <div className="flex flex-col items-center md:items-end gap-4">
+                                <div className="flex flex-col items-center gap-4">
                                     <span className="font-secondary text-[10px] sm:text-xs font-semibold tracking-[0.12em] uppercase text-black dark:text-white">
                                         Integrated with
                                     </span>
@@ -115,13 +115,13 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                                         />
                                     </a>
                                 </div>
-                                <div className="flex flex-col items-center md:items-center gap-4">
+                                <div className="flex flex-col items-center gap-4">
                                     <span className="font-secondary text-[10px] sm:text-xs font-semibold tracking-[0.12em] uppercase text-black dark:text-white">
                                         Featured on
                                     </span>
                                     <ProductHunt />
                                 </div>
-                                <div className="flex flex-col items-center md:items-start gap-4 max-sm:text-sm">
+                                <div className="flex flex-col items-center gap-4 max-sm:text-sm">
                                     <span className="font-secondary text-[10px] sm:text-xs font-semibold tracking-[0.12em] uppercase text-black dark:text-white">
                                         Join 2,000+ athletes
                                     </span>
