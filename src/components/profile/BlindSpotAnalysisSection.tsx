@@ -246,16 +246,22 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
 
     return (
         <section>
-            <h2 className="text-2xl font-main mb-6 text-black dark:text-white flex items-center justify-start flex-wrap gap-x-2">
-                <span className="flex items-center">
-                    <ChartLineIcon className="mr-2 size-7" /> Blind Spot Analysis{titleSuffix ? ` ${titleSuffix}` : ""}
-                </span>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-6">
+                <div className="min-w-0 space-y-1">
+                    <h2 className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-2 flex-wrap">
+                        <ChartLineIcon className="size-5 shrink-0 opacity-80" aria-hidden />
+                        Blind spot analysis{titleSuffix ? ` ${titleSuffix}` : ""}
+                    </h2>
+                    <p className="text-sm text-muted-foreground max-w-2xl">
+                        Quick check on lift progress. Open fixes for exercises that stall.
+                    </p>
+                </div>
                 {stallAnalysisResolved && !showIdleAnalyze ? (
                     <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="shrink-0"
+                        className="shrink-0 rounded-full border-border/80"
                         disabled={isFetchingExerciseStalls}
                         onClick={() => {
                             setAnalysisRequested(true);
@@ -265,10 +271,7 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
                         {isFetchingExerciseStalls ? "Refreshing…" : "Run again"}
                     </Button>
                 ) : null}
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-                A smoke check for your lifts. Explore fixes for any exercises that are not progressing.
-            </p>
+            </div>
             {showIdleAnalyze && (
                 <div className="mb-6 rounded-lg bg-card/50 p-5 flex flex-col items-center text-center">
                     <p className="text-sm text-muted-foreground mb-4 max-w-md">
@@ -279,7 +282,7 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
                         type="button"
                         size="lg"
                         onClick={() => setAnalysisRequested(true)}
-                        className="min-w-[14rem] h-12 px-10 text-md text-white bg-lightSecondary hover:bg-lightSecondary/90"
+                        className="min-w-[14rem] h-12 rounded-full px-10 text-md text-white bg-lightSecondary hover:bg-lightSecondary/90"
                     >
                         <SparklesIcon className="size-4" />
                         Analyze

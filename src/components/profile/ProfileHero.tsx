@@ -2,7 +2,7 @@
 
 /**
  * @module ProfileHero
- * Profile hero section: avatar, stats (lifts/followers/following), username as header with first/last name underneath, bio, and Edit Profile button.
+ * Profile hero section: avatar, stats (lifts/followers/following), primary name with optional @username, bio, and Edit profile.
  * Rendered at the top of the profile page when the user is logged in.
  * Depends on: UserContext, ProfilePictureContext, useUserMetadata, useProfilePictureByID, useUserFullName, useFollowersMyProfile, useFollowingMyProfile, Button, Avatar, Skeleton.
  * Used by: ProfileContent.
@@ -39,9 +39,16 @@ export function ProfileHero({ onEditProfileClick }: IProfileHeroProps) {
 
     if (!user) return null;
 
-    const displayName = fullName && fullName !== "Anonymous" ? fullName : [metaData?.first_name, metaData?.last_name].filter(Boolean).join(" ") || "User";
-    const headerText = metaData?.username?.trim() || displayName || "User";
     const fullNameLine = [metaData?.first_name, metaData?.last_name].filter(Boolean).join(" ");
+    const displayName = fullName && fullName !== "Anonymous" ? fullName : fullNameLine || "User";
+    const username = metaData?.username?.trim() ?? "";
+    /** Single primary line: real name when present, else @handle or display name. */
+    const primaryName =
+        fullNameLine ||
+        (fullName && fullName !== "Anonymous" ? fullName : "") ||
+        (username ? `@${username}` : displayName);
+    const showUsernameSubline =
+        Boolean(username) && Boolean(fullNameLine || (fullName && fullName !== "Anonymous"));
     const initials = displayName
         .split(" ")
         .map((s) => s[0])
@@ -53,7 +60,7 @@ export function ProfileHero({ onEditProfileClick }: IProfileHeroProps) {
         <div className="flex flex-col gap-4">
             <div className="flex flex-row items-start gap-6">
                 <div className="relative shrink-0">
-                    <Avatar className="h-[90px] w-[90px] md:h-[120px] md:w-[120px] rounded-full border-2 border-border">
+                    <Avatar className="h-[90px] w-[90px] md:h-[120px] md:w-[120px] rounded-full border border-border/80 shadow-sm">
                         {profilePicUrl ? (
                             <AvatarImage src={profilePicUrl} alt="" className="object-cover" />
                         ) : null}
@@ -63,40 +70,55 @@ export function ProfileHero({ onEditProfileClick }: IProfileHeroProps) {
                     </Avatar>
                 </div>
                 <div className="flex flex-1 flex-col gap-1 min-w-0">
-                    <div className="flex flex-row gap-6 sm:gap-24 text-center">
-                        <div className="flex flex-col items-center">
-                            <span className="text-base font-medium tabular-nums">0</span>
-                            <span className="text-[11px] text-muted-foreground whitespace-nowrap">lifts</span>
+                    <div className="flex flex-row gap-8 sm:gap-20 text-center">
+                        <div className="flex flex-col items-center gap-0.5">
+                            <span className="text-sm tabular-nums tracking-tight text-foreground/90">0</span>
+                            <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground whitespace-nowrap">
+                                lifts
+                            </span>
                         </div>
-                        <div className="flex flex-col items-center">
+                        <div className="flex flex-col items-center gap-0.5">
                             {loadingFollowers ? (
                                 <Skeleton className="h-4 w-6" />
                             ) : (
-                                <span className="text-base font-medium tabular-nums">{followers?.length ?? 0}</span>
+                                <span className="text-sm tabular-nums tracking-tight text-foreground/90">
+                                    {followers?.length ?? 0}
+                                </span>
                             )}
-                            <span className="text-[11px] text-muted-foreground whitespace-nowrap">followers</span>
+                            <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground whitespace-nowrap">
+                                followers
+                            </span>
                         </div>
-                        <div className="flex flex-col items-center">
+                        <div className="flex flex-col items-center gap-0.5">
                             {loadingFollowing ? (
                                 <Skeleton className="h-4 w-6" />
                             ) : (
-                                <span className="text-base font-medium tabular-nums">{following?.length ?? 0}</span>
+                                <span className="text-sm tabular-nums tracking-tight text-foreground/90">
+                                    {following?.length ?? 0}
+                                </span>
                             )}
-                            <span className="text-[11px] text-muted-foreground whitespace-nowrap">following</span>
+                            <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground whitespace-nowrap">
+                                following
+                            </span>
                         </div>
                     </div>
-                    <p className="text-lg font-bold text-foreground pt-1">{headerText}</p>
-                    {fullNameLine ? (
-                        <p className="text-sm text-muted-foreground">{fullNameLine}</p>
+                    <p className="text-2xl font-semibold tracking-tight text-foreground pt-2">{primaryName}</p>
+                    {showUsernameSubline ? (
+                        <p className="text-sm text-muted-foreground">@{username}</p>
                     ) : null}
                     {metaData?.bio ? (
-                        <p className="text-sm text-muted-foreground line-clamp-2">{metaData.bio}</p>
+                        <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">{metaData.bio}</p>
                     ) : null}
                 </div>
             </div>
-            <div className="flex items-center gap-2">
-                <Button variant="default" size="sm" className="rounded-lg bg-lightSecondary text-white hover:bg-lightSecondary/90" onClick={onEditProfileClick}>
-                    Edit Profile
+            <div className="flex items-center gap-2 pt-1">
+                <Button
+                    variant="default"
+                    size="sm"
+                    className="rounded-full bg-lightSecondary px-5 text-white hover:bg-lightSecondary/90"
+                    onClick={onEditProfileClick}
+                >
+                    Edit profile
                 </Button>
             </div>
         </div>

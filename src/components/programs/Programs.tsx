@@ -47,9 +47,9 @@ export const Programs: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-3 max-sm:grid-cols-1 gap-4 pb-8">
                     <div className="w-full max-w-md mx-auto">
-                        <div className="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl dark:bg-gray-950">
+                        <div className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden dark:border-white/10 dark:bg-card/80">
                             <Skeleton
-                                className="w-full h-[200px] object-cover"
+                                className="w-full h-[200px] object-cover rounded-none"
                             />
                             <div className="p-4 space-y-2">
                                 <div className="uppercase text-sm overflow-hidden text-ellipsis line-clamp-1">
@@ -64,9 +64,9 @@ export const Programs: React.FC = () => {
                         </div>
                     </div>
                     <div className="w-full max-w-md mx-auto">
-                        <div className="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl dark:bg-gray-950">
+                        <div className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden dark:border-white/10 dark:bg-card/80">
                             <Skeleton
-                                className="w-full h-[200px] object-cover"
+                                className="w-full h-[200px] object-cover rounded-none"
                             />
                             <div className="p-4 space-y-2">
                                 <div className="uppercase text-sm overflow-hidden text-ellipsis line-clamp-1">
@@ -81,9 +81,9 @@ export const Programs: React.FC = () => {
                         </div>
                     </div>
                     <div className="w-full max-w-md mx-auto">
-                        <div className="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl dark:bg-gray-950">
+                        <div className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden dark:border-white/10 dark:bg-card/80">
                             <Skeleton
-                                className="w-full h-[200px] object-cover"
+                                className="w-full h-[200px] object-cover rounded-none"
                             />
                             <div className="p-4 space-y-2">
                                 <div className="uppercase text-sm overflow-hidden text-ellipsis line-clamp-1">
@@ -98,9 +98,9 @@ export const Programs: React.FC = () => {
                         </div>
                     </div>
                     <div className="w-full max-w-md mx-auto">
-                        <div className="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl dark:bg-gray-950">
+                        <div className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden dark:border-white/10 dark:bg-card/80">
                             <Skeleton
-                                className="w-full h-[200px] object-cover"
+                                className="w-full h-[200px] object-cover rounded-none"
                             />
                             <div className="p-4 space-y-2">
                                 <div className="uppercase text-sm overflow-hidden text-ellipsis line-clamp-1">
@@ -115,9 +115,9 @@ export const Programs: React.FC = () => {
                         </div>
                     </div>
                     <div className="w-full max-w-md mx-auto">
-                        <div className="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl dark:bg-gray-950">
+                        <div className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden dark:border-white/10 dark:bg-card/80">
                             <Skeleton
-                                className="w-full h-[200px] object-cover"
+                                className="w-full h-[200px] object-cover rounded-none"
                             />
                             <div className="p-4 space-y-2">
                                 <div className="uppercase text-sm overflow-hidden text-ellipsis line-clamp-1">
@@ -132,9 +132,9 @@ export const Programs: React.FC = () => {
                         </div>
                     </div>
                     <div className="w-full max-w-md mx-auto">
-                        <div className="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl dark:bg-gray-950">
+                        <div className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden dark:border-white/10 dark:bg-card/80">
                             <Skeleton
-                                className="w-full h-[200px] object-cover"
+                                className="w-full h-[200px] object-cover rounded-none"
                             />
                             <div className="p-4 space-y-2">
                                 <div className="uppercase text-sm overflow-hidden text-ellipsis line-clamp-1">
