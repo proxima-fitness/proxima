@@ -34,7 +34,7 @@ import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
 import { ExerciseStalls, type IExercise } from "./ExerciseStalls";
 import Link from "next/link";
-import { ChartLineIcon, SparklesIcon } from "lucide-react";
+import { ChartLineIcon, SparklesIcon, XIcon } from "lucide-react";
 import type { HevyProgramItem } from "@/components/program-builder/hevy/HevyProgramsGrid";
 
 const PRO_PAGE_SIZE = 9;
@@ -272,14 +272,14 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
             {showIdleAnalyze && (
                 <div className="mb-6 rounded-lg border border-border bg-card/50 p-5 flex flex-col items-center text-center">
                     <p className="text-sm text-muted-foreground mb-4 max-w-md">
-                        Analysis pulls your history from Hevy for each exercise in the library (30s). Stay on
+                        This feature will pull your history from Hevy for each exercise in the library (30s). Please stay on
                         this page until it finishes.
                     </p>
                     <Button
                         type="button"
                         size="lg"
                         onClick={() => setAnalysisRequested(true)}
-                        className="min-w-[14rem] h-12 px-10 text-base bg-lightSecondary hover:bg-lightSecondary/90"
+                        className="min-w-[14rem] h-12 px-10 text-md text-white bg-lightSecondary hover:bg-lightSecondary/90"
                     >
                         <SparklesIcon className="size-4" />
                         Analyze
@@ -299,6 +299,7 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
                     </p>
                     <div className="flex justify-center mt-4">
                         <Button type="button" variant="outline" size="lg" onClick={handleCancelAnalysis}>
+                            <XIcon className="size-4" />
                             Cancel
                         </Button>
                     </div>
