@@ -59,12 +59,7 @@ export function ProfileContent() {
                 <div className="flex items-center justify-center">
                     <ResumeDraftBanner />
                 </div>
-                <Card className="p-6 dark:border-none">
-                    <BlindSpotAnalysisSection
-                        hevyPrograms={hevyPrograms}
-                        isLoadingHevy={isLoadingHevy}
-                    />
-                </Card>
+
                 {showHevyCard ? (
                     <Card className="p-6 dark:border-none">
                         <HevyProgramsGrid
@@ -79,10 +74,16 @@ export function ProfileContent() {
                     />
                 )}
                 <Suspense fallback={<ProgramsFallback />}>
-                    <Card className="p-6 mb-12 dark:border-none">
+                    <Card className="p-6 dark:border-none">
                         <MyProgramsVault />
                     </Card>
                 </Suspense>
+                <Card className="p-6 mb-12 dark:border-none">
+                    <BlindSpotAnalysisSection
+                        hevyPrograms={hevyPrograms}
+                        isLoadingHevy={isLoadingHevy}
+                    />
+            </Card>
             </div>
         </div>
     );

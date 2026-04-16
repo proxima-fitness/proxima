@@ -383,7 +383,7 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
                         ) : subscribedPrograms.length === 0 && (!hevyPrograms || hevyPrograms.length === 0) ? (
                             <div>
                                 <p className="text-sm text-muted-foreground">
-                                    You don&apos;t have any saved programs yet. Save programs from Explore to modify them, or connect Hevy to use your Hevy programs.
+                                    You don&apos;t have any saved programs yet. Save programs from the Programs page to modify them, or connect Hevy to use your Hevy programs.
                                 </p>
                                 <Link
                                     href="/programs"

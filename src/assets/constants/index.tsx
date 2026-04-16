@@ -5936,7 +5936,7 @@ export const authenticatedNavLinks = [
     },
     {
         id: "programs",
-        title: "Explore"
+        title: "Programs"
     },
 
     // {
@@ -5965,7 +5965,7 @@ export const navLinks = [
     },
     {
         id: "programs",
-        title: "Explore",
+        title: "Programs",
     },
     {
         id: "about",
