@@ -270,7 +270,7 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
                 A smoke check for your lifts. Explore fixes for any exercises that are not progressing.
             </p>
             {showIdleAnalyze && (
-                <div className="mb-6 rounded-lg border border-border bg-card/50 p-5 flex flex-col items-center text-center">
+                <div className="mb-6 rounded-lg bg-card/50 p-5 flex flex-col items-center text-center">
                     <p className="text-sm text-muted-foreground mb-4 max-w-md">
                         This feature will pull your history from Hevy for each exercise in the library (30s). Please stay on
                         this page until it finishes.
