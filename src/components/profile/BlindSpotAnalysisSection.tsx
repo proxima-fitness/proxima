@@ -272,8 +272,8 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
             {showIdleAnalyze && (
                 <div className="mb-6 rounded-lg border border-border bg-card/50 p-5 flex flex-col items-center text-center">
                     <p className="text-sm text-muted-foreground mb-4 max-w-md">
-                        Analysis pulls your history from Hevy for each exercise in the library (roughly a minute). Stay on
-                        this page until it finishes. Nothing runs until you start it.
+                        Analysis pulls your history from Hevy for each exercise in the library (30s). Stay on
+                        this page until it finishes.
                     </p>
                     <Button
                         type="button"
