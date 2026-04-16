@@ -291,7 +291,7 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                         <DropdownMenuTrigger asChild>
                             <Button
                                 onClick={ () => setDropdownOpen(true) }
-                                className="mb-4 w-44 font-bold uppercase h-12 rounded-lg bg-lightSecondary hover:bg-black text-white"
+                                className="mb-4 h-12 w-44 rounded-full bg-lightSecondary font-semibold uppercase text-white hover:bg-lightSecondary/90"
                                 aria-label="Add day to week">
                                 <PlusIcon />
                                 Add Day

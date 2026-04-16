@@ -14,10 +14,10 @@ export interface IProps {
 }
 
 const CHAT_TRIGGER_CLASS =
-    "flex-1 data-[state=active]:font-semibold data-[state=active]:text-lightSecondary data-[state=active]:bg-gray-100 dark:data-[state=active]:bg-gray-800 rounded-lg py-2 flex flex-row items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors";
+    "flex-1 data-[state=active]:font-semibold data-[state=active]:text-lightSecondary data-[state=active]:bg-gray-100 dark:data-[state=active]:bg-gray-800 rounded-2xl py-2 flex flex-row items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors";
 const PROGRAM_TRIGGER_CLASS_ACTIVE =
-    "flex-1 rounded-lg py-2 flex flex-row items-center justify-center gap-2 transition-colors data-[state=active]:font-semibold data-[state=active]:text-lightSecondary data-[state=active]:bg-gray-100 dark:data-[state=active]:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900";
-const PROGRAM_TRIGGER_CLASS_DISABLED = "flex-1 rounded-lg py-2 flex flex-row items-center justify-center gap-2 transition-colors opacity-50 cursor-not-allowed";
+    "flex-1 rounded-2xl py-2 flex flex-row items-center justify-center gap-2 transition-colors data-[state=active]:font-semibold data-[state=active]:text-lightSecondary data-[state=active]:bg-gray-100 dark:data-[state=active]:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900";
+const PROGRAM_TRIGGER_CLASS_DISABLED = "flex-1 rounded-2xl py-2 flex flex-row items-center justify-center gap-2 transition-colors opacity-50 cursor-not-allowed";
 
 function BuildProgramMobileLayoutInner({
     mobileTab,

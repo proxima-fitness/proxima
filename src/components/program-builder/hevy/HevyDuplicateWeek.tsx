@@ -91,13 +91,18 @@ export const HevyDuplicateWeek: React.FC<IProps> = (props) => {
                         })}
                     </span>
                 </DialogDescription>
-                <span className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4">
-                    <span className="w-full flex items-center justify-center">
-                        <Button onClick={ () => setDuplicateWeekOpen(false) } variant="ghost" className="w-full h-12" aria-label="Cancel duplicate week">
+                <span className="flex flex-col gap-2 border-t border-border/40 pt-4 sm:flex-row sm:justify-stretch">
+                    <span className="flex w-full items-center justify-center">
+                        <Button
+                            onClick={ () => setDuplicateWeekOpen(false) }
+                            variant="outline"
+                            className="h-11 w-full rounded-full border-border/80 sm:h-12"
+                            aria-label="Cancel duplicate week"
+                        >
                             Cancel
                         </Button>
                     </span>
-                    <span className="w-full flex items-center justify-center">
+                    <span className="flex w-full items-center justify-center">
                         <Button
                             onClick={ () => {
                                 handleDuplicateWeek(
@@ -107,8 +112,7 @@ export const HevyDuplicateWeek: React.FC<IProps> = (props) => {
                                 setDuplicateWeekOpen(false);
                                 }
                             }
-                            variant="ghost"
-                            className="bg-lightSecondary text-white hover:bg-lightSecondary w-full h-12"
+                            className="h-11 w-full rounded-full bg-lightSecondary text-white hover:bg-lightSecondary/90 sm:h-12"
                             aria-label="Duplicate week"
                         >
                             Duplicate

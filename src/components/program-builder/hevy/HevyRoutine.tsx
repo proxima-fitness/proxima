@@ -201,7 +201,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                                     disabled={ currentWeekIndex === 0 }
                                     variant="ghost"
                                     size="icon"
-                                    className={ `shrink-0 ${currentWeekIndex === 0 ? "opacity-50 cursor-not-allowed" : ""}` }
+                                    className={ `size-9 shrink-0 rounded-full ${currentWeekIndex === 0 ? "opacity-50 cursor-not-allowed" : ""}` }
                                     aria-label="Previous week"
                                 >
                                     <ChevronLeft className="h-5 w-5" />
@@ -214,7 +214,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                                     disabled={ currentWeekIndex >= numberOfWeeks - 1 }
                                     variant="ghost"
                                     size="icon"
-                                    className={ `shrink-0 ${currentWeekIndex >= numberOfWeeks - 1 ? "opacity-50 cursor-not-allowed" : ""}` }
+                                    className={ `size-9 shrink-0 rounded-full ${currentWeekIndex >= numberOfWeeks - 1 ? "opacity-50 cursor-not-allowed" : ""}` }
                                     aria-label="Next week"
                                 >
                                     <ChevronRight className="h-5 w-5" />

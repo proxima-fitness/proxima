@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo } from "react";
+import { PenBoxIcon } from "lucide-react";
 
 interface IProfileHeroProps {
     onEditProfileClick: () => void;
@@ -119,6 +120,7 @@ export function ProfileHero({ onEditProfileClick }: IProfileHeroProps) {
                     onClick={onEditProfileClick}
                 >
                     Edit profile
+                    <PenBoxIcon className="size-4" />
                 </Button>
             </div>
         </div>

@@ -38,16 +38,14 @@ export const Navbar: React.FC<IProps> = (props) => {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="text-black dark:text-white bg-white dark:bg-black hover:bg-gray-200 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600"
+                                        className="size-10 shrink-0 rounded-full text-black dark:text-white bg-white dark:bg-black hover:bg-gray-200 dark:hover:bg-gray-800"
                                         onClick={onToggleHide}
                                         aria-label="Hide chat"
                                     >
                                         <PanelLeftClose className="h-5 w-5" />
                                     </Button>
                                 </TooltipTrigger>
-                                <TooltipContent className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900">
-                                    Hide chat
-                                </TooltipContent>
+                                <TooltipContent className="bg-lightSecondary text-white">Hide chat</TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
                     )}
@@ -59,7 +57,7 @@ export const Navbar: React.FC<IProps> = (props) => {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="text-black dark:text-white bg-white dark:bg-black hover:bg-gray-200 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600"
+                                    className="size-10 shrink-0 rounded-full text-black dark:text-white bg-white dark:bg-black hover:bg-gray-200 dark:hover:bg-gray-800"
                                     onClick={onToggleExpand}
                                     aria-label={isExpanded ? "Collapse chat" : "Expand chat"}
                                 >
@@ -70,16 +68,14 @@ export const Navbar: React.FC<IProps> = (props) => {
                                     )}
                                 </Button>
                             </TooltipTrigger>
-                            <TooltipContent className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900">
-                                {isExpanded ? "Collapse chat" : "Expand chat"}
-                            </TooltipContent>
+                            <TooltipContent className="bg-lightSecondary text-white">{isExpanded ? "Collapse chat" : "Expand chat"}</TooltipContent>
                         </Tooltip>
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="text-black dark:text-white bg-white dark:bg-black hover:bg-gray-200 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600"
+                                    className="size-10 shrink-0 rounded-full text-black dark:text-white bg-white dark:bg-black hover:bg-gray-200 dark:hover:bg-gray-800"
                                     onClick={onTogglePosition}
                                     aria-label={sidebarPosition === "left" ? "Move sidebar to right" : "Move sidebar to left"}
                                 >
@@ -90,7 +86,7 @@ export const Navbar: React.FC<IProps> = (props) => {
                                     )}
                                 </Button>
                             </TooltipTrigger>
-                            <TooltipContent className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900">
+                            <TooltipContent className="bg-lightSecondary text-white">
                                 {sidebarPosition === "left" ? "Move sidebar to right" : "Move sidebar to left"}
                             </TooltipContent>
                         </Tooltip>

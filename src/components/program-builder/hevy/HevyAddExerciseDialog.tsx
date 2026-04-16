@@ -457,7 +457,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                     <Button
                         onClick={ () => addSet() }
                         variant="ghost"
-                        className="w-full h-10 uppercase"
+                        className="h-10 w-full rounded-full font-bold uppercase hover:bg-gray-200 dark:hover:bg-darkGray"
                     >
                         <PlusIcon /> Add Set
                     </Button>
@@ -469,16 +469,20 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 
     const addExerciseFooterButtons = (
         <>
-            <span className="w-full flex items-center justify-center">
-                <Button onClick={ closeAddExerciseDialog } variant="ghost" className="w-full h-12" aria-label="Cancel and close">
+            <span className="flex w-full items-center justify-center">
+                <Button
+                    onClick={ closeAddExerciseDialog }
+                    variant="outline"
+                    className="h-11 w-full rounded-full border-border/80 sm:h-12"
+                    aria-label="Cancel and close"
+                >
                     Cancel
                 </Button>
             </span>
-            <span className="w-full flex items-center justify-center">
+            <span className="flex w-full items-center justify-center">
                 <Button
                     onClick={ () => handleSave() }
-                    variant="ghost"
-                    className="bg-lightSecondary text-white hover:bg-lightSecondary w-full h-12"
+                    className="h-11 w-full rounded-full bg-lightSecondary text-white hover:bg-lightSecondary/90 sm:h-12"
                 >
                     {isEditExercise ? "Edit" : "Add"}
                 </Button>
@@ -488,23 +492,22 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 
     const customExerciseFooterButtons = (
         <>
-            <span className="w-full flex items-center justify-center">
+            <span className="flex w-full items-center justify-center">
                 <Button
                     type="button"
-                    variant="ghost"
-                    className="w-full h-12"
+                    variant="outline"
+                    className="h-11 w-full rounded-full border-border/80 sm:h-12"
                     onClick={ exitCustomExerciseView }
                     aria-label="Cancel and go back to exercise search"
                 >
                     Cancel
                 </Button>
             </span>
-            <span className="w-full flex items-center justify-center">
+            <span className="flex w-full items-center justify-center">
                 <Button
                     type="submit"
                     form={ HEVY_CREATE_CUSTOM_EXERCISE_FORM_ID }
-                    variant="ghost"
-                    className="bg-lightSecondary text-white hover:bg-lightSecondary w-full h-12"
+                    className="h-11 w-full rounded-full bg-lightSecondary text-white hover:bg-lightSecondary/90 disabled:opacity-60 sm:h-12"
                     disabled={ customExerciseSubmitting }
                 >
                     Create
@@ -539,7 +542,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                                     type="button"
                                     variant="ghost"
                                     size="icon"
-                                    className="h-9 w-9 shrink-0 -ml-1"
+                                    className="-ml-1 h-9 w-9 shrink-0 rounded-full"
                                     onClick={ exitCustomExerciseView }
                                     aria-label="Back"
                                 >
@@ -556,7 +559,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                         ) }
                         {dialogContent}
                     </div>
-                    <DrawerFooter className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4 px-4">
+                    <DrawerFooter className="flex flex-row items-center justify-between gap-2 border-t border-border/40 px-4 pt-4">
                         { showCreateCustomExercise ? customExerciseFooterButtons : addExerciseFooterButtons }
                     </DrawerFooter>
                 </DrawerContent>
@@ -586,7 +589,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                             <Button
                                 type="button"
                                 variant="ghost"
-                                className="h-9 shrink-0 -ml-2 gap-1.5 px-2"
+                                className="-ml-2 h-9 shrink-0 gap-1.5 rounded-full px-3"
                                 onClick={ exitCustomExerciseView }
                             >
                                 <ChevronLeft className="h-4 w-4 shrink-0" aria-hidden />
@@ -609,7 +612,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                 <div className="overflow-y-auto flex-1">
                     {dialogContent}
                 </div>
-                <DialogFooter className="flex flex-row justify-between items-center gap-2 border-t-2 pt-4">
+                <DialogFooter className="flex flex-row items-center justify-between gap-2 border-t border-border/40 pt-4">
                     { showCreateCustomExercise ? customExerciseFooterButtons : addExerciseFooterButtons }
                 </DialogFooter>
             </DialogContent>

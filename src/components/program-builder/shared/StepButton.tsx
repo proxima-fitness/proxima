@@ -30,13 +30,12 @@ export const StepButton: React.FC = () => {
     const { user, isLoading } = useUserContext();
     const [openExportDialog, setOpenExportDialog] = useState(false);
 
+    const primaryPill =
+        "rounded-full px-4 gap-2 text-white bg-lightSecondary hover:bg-lightSecondary/90 shadow-sm";
+
     if (isLoading) {
         return (
-            <Button
-                variant="default"
-                className="text-white bg-lightSecondary hover:bg-black"
-                disabled
-            >
+            <Button variant="default" className={primaryPill} disabled>
                 <span className="hidden sm:inline">Loading...</span>
                 <ArrowRightIcon />
             </Button>
@@ -46,10 +45,7 @@ export const StepButton: React.FC = () => {
     if (!user) {
         return (
             <Link href={LOGIN_WITH_NEXT}>
-                <Button
-                    variant="default"
-                    className="text-white bg-lightSecondary hover:bg-black"
-                >
+                <Button variant="default" className={primaryPill}>
                     <span className="hidden sm:inline">Sign in to save</span>
                     <span className="sm:hidden">Sign in</span>
                     <ArrowRightIcon />
@@ -64,18 +60,14 @@ export const StepButton: React.FC = () => {
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <span className="inline-flex" tabIndex={0}>
-                            <Button
-                                variant="default"
-                                className="text-white bg-lightSecondary hover:bg-lightSecondary/80"
-                                disabled
-                            >
+                            <Button variant="default" className={primaryPill} disabled>
                                 <span className="hidden sm:inline">Sync</span>
                                 <span className="sm:hidden">Sync</span>
                                 <RefreshCw className="h-4 w-4 shrink-0" />
                             </Button>
                         </span>
                     </TooltipTrigger>
-                    <TooltipContent className="bg-lightSecondary text-white">Sync coming soon...</TooltipContent>
+                    <TooltipContent>Sync coming soon...</TooltipContent>
                 </Tooltip>
             </TooltipProvider>
         );
@@ -85,7 +77,7 @@ export const StepButton: React.FC = () => {
         <>
             <Button
                 variant="default"
-                className="text-white bg-lightSecondary hover:bg-lightSecondary/80"
+                className={primaryPill}
                 onClick={() => {
                     posthog?.capture?.("opened_export_dialog", { user: user?.id ?? "user_id_unknown" });
                     setOpenExportDialog(true);

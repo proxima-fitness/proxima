@@ -445,16 +445,14 @@ export function BuildProgram() {
                                 variant="outline"
                                 size="sm"
                                 onClick={handleOpenChat}
-                                className="fixed top-31 z-40 max-sm:hidden gap-2 shadow-md bg-white dark:bg-extraDarkGray border-gray-300 dark:border-gray-600 rounded-none rounded-tr-md rounded-br-md"
+                                className="fixed top-31 z-40 max-sm:hidden gap-2 rounded-l-none rounded-r-full px-4 py-2 shadow-md bg-white dark:bg-extraDarkGray border-gray-300 dark:border-gray-600"
                                 aria-label="Open chat"
                             >
                                 <MessageSquare className="h-4 w-4" />
 
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900">
-                            Open chat
-                        </TooltipContent>
+                        <TooltipContent className="bg-lightSecondary text-white">Open chat</TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
             )}
