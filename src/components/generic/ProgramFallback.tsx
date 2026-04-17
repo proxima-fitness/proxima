@@ -21,7 +21,7 @@ export const ProgramFallback: React.FC = () => {
                 <div className="order-4 lg:col-start-1 lg:row-start-3">
                     <Skeleton className="h-[min(28rem,50vh)] w-full rounded-2xl sm:h-[450px]" />
                 </div>
-                <aside className="order-3 flex flex-col gap-4 lg:sticky lg:top-24 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:self-start">
+                <aside className="order-3 flex min-h-0 flex-col gap-4 lg:sticky lg:top-0 lg:max-h-[100dvh] lg:overflow-y-auto lg:overscroll-contain lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:self-start">
                     <Skeleton className="h-[min(20rem,40vh)] w-full rounded-2xl" />
                     <Skeleton className="h-40 w-full rounded-2xl" />
                 </aside>
