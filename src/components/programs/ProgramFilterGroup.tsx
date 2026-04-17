@@ -109,8 +109,9 @@ export const ProgramFilterGroup: React.FC<IProps> = (props) => {
                             value={ opt }
                             aria-label={ opt }
                             className={ cn(
-                                "h-auto min-h-9 rounded-full border-0 bg-muted/40 px-3 py-1.5 text-sm font-medium text-foreground shadow-none ring-1 ring-black/[0.05] transition-colors",
-                                "hover:bg-muted/60 dark:bg-muted/25 dark:ring-white/10 dark:hover:bg-muted/40",
+                                "h-auto min-h-9 rounded-full border-0 px-3 py-1.5 text-sm font-medium text-foreground shadow-none transition-colors",
+                                "data-[state=off]:bg-muted/40 data-[state=off]:ring-1 data-[state=off]:ring-black/[0.05] data-[state=off]:hover:bg-muted/60",
+                                "data-[state=off]:dark:bg-muted/25 data-[state=off]:dark:ring-white/10 data-[state=off]:dark:hover:bg-muted/40",
                                 "data-[state=on]:bg-lightSecondary data-[state=on]:text-white data-[state=on]:ring-0",
                                 "data-[state=on]:hover:bg-lightSecondary/90 data-[state=on]:hover:text-white",
                             ) }
