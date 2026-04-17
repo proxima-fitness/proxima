@@ -77,7 +77,7 @@ export const ProgramOverviewCard: React.FC<IProps> = (props) => {
                             : "n/a"}
                     </dd>
                 </div>
-                <div className="flex flex-col gap-1 pt-4">
+                <div className="flex flex-col gap-1 pt-4 sm:flex-row sm:items-start sm:gap-6">
                     <dt className={labelClass}>Difficulty</dt>
                     <dd className={valueClass}>
                         { (p0?.difficulty && p0.difficulty.length > 0)
