@@ -38,7 +38,7 @@ export const ModifyProgramProgress: React.FC<IProps> = ({
 
     return (
         <div className="w-full pb-4">
-            <div className="flex flex-col p-4 gap-2 bg-muted/50 rounded-lg border border-border">
+            <div className="flex flex-col p-4 gap-2 bg-muted/50 rounded-2xl border border-border">
                 <p className="font-medium text-sm text-foreground">
                     {isComplete ? "Program modified" : "Applying program changes…"}
                 </p>
@@ -53,7 +53,7 @@ export const ModifyProgramProgress: React.FC<IProps> = ({
                                     <button
                                         type="button"
                                         onClick={() => toggleExpanded(routineIndex)}
-                                        className="flex items-center gap-2 w-full text-left rounded-md hover:bg-muted/50 py-0.5 -mx-1 px-1"
+                                        className="flex items-center gap-2 w-full text-left rounded-xl hover:bg-muted/50 py-0.5 -mx-1 px-1"
                                         aria-label={isExpanded ? "Collapse routine details" : "Expand routine details"}
                                     >
                                         <span

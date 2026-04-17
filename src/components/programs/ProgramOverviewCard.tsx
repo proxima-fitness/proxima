@@ -16,6 +16,14 @@ interface IProps {
     program: TProgramPage;
 }
 
+const rowDivider =
+    "border-b border-black/5 pb-4 dark:border-white/10 sm:flex-row sm:items-start sm:gap-6";
+
+const labelClass =
+    "text-sm font-medium text-muted-foreground sm:w-[min(28%,11rem)] sm:shrink-0";
+
+const valueClass = "text-sm text-foreground sm:min-w-0 sm:flex-1";
+
 /**
  * ProgramOverviewCard renders labeled rows summarizing the main properties of the selected program.
  */
@@ -25,66 +33,59 @@ export const ProgramOverviewCard: React.FC<IProps> = (props) => {
         program,
     } = props;
 
+    const p0 = program?.program?.[0];
+    const equipmentDisplay =
+        p0?.equipment && p0.equipment.length > 0 ? p0.equipment : "n/a";
+
     return (
-        <Card className="py-4 pl-4 bg-gray-100 dark:bg-darkGray">
-            <div className="text-xl uppercase pb-2">
-                Program overview
-            </div>
-            <div className="text-3xl font-main">
-                Program Details
-            </div>
-            <div className="flex flex-col gap-4 pt-4">
-                <div className="border-b-2 border-gray-200 flex flex-row justify-start items-center">
-                    <div className="max-sm:hidden w-[25%] ">
-                        Program Length
-                    </div>
-                    <div className="">
-                        { program?.program?.[0]?.program_length ? program.program[0].program_length + " weeks" : "# Weeks"}
-                    </div>
+        <Card className="rounded-2xl border-border/60 bg-card/80 p-6 shadow-sm backdrop-blur-sm dark:bg-card/60 sm:p-8">
+            <h2 className="font-third text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                Details
+            </h2>
+            <dl className="mt-6 flex flex-col gap-0">
+                <div className={`flex flex-col gap-1 pt-0 ${rowDivider}`}>
+                    <dt className={labelClass}>Program length</dt>
+                    <dd className={valueClass}>
+                        { p0?.program_length ? `${p0.program_length} weeks` : "# Weeks"}
+                    </dd>
                 </div>
-                <div className="border-b-2 border-gray-200 flex flex-row justify-start items-center">
-                    <div className="max-sm:hidden w-[25%]">
-                        Program Description
-                    </div>
-                    <div className="w-[75%]">
-                        { (program?.program?.[0]?.details && program.program[0].details.length > 0)
-                            ? <ExpandableText text={program.program[0].details} maxLines={3} />
+                <div className={`flex flex-col gap-1 pt-4 ${rowDivider}`}>
+                    <dt className={labelClass}>Description</dt>
+                    <dd className={valueClass}>
+                        { (p0?.details && p0.details.length > 0)
+                            ? <ExpandableText text={p0.details} maxLines={3} />
                             : "n/a" }
-                    </div>
+                    </dd>
                 </div>
-                <div className="border-b-2 border-gray-200 flex flex-row justify-start items-center">
-                    <div className="max-sm:hidden w-[25%]">
-                        Workout Duration
-                    </div>
-                    <div className="w-[75%]">
-                        { program?.program?.[0]?.workout_duration ? program.program[0].workout_duration + " mins" : "n/a"}
-                    </div>
+                <div className={`flex flex-col gap-1 pt-4 ${rowDivider}`}>
+                    <dt className={labelClass}>Workout duration</dt>
+                    <dd className={valueClass}>
+                        { p0?.workout_duration ? `${p0.workout_duration} mins` : "n/a"}
+                    </dd>
                 </div>
-                <div className="border-b-2 border-gray-200 flex flex-row justify-start items-center">
-                    <div className="max-sm:hidden w-[25%]">
-                        Equipment
-                    </div>
-                    <div className="w-[75%]">
-                        { program?.program?.[0]?.equipment && program?.program?.[0]?.equipment.length > 0 ? program.program[0].equipment : "n/a" }
-                    </div>
+                <div className={`flex flex-col gap-1 pt-4 ${rowDivider}`}>
+                    <dt className={labelClass}>Equipment</dt>
+                    <dd className={valueClass}>
+                        { equipmentDisplay }
+                    </dd>
                 </div>
-                <div className="border-b-2 border-gray-200 flex flex-row justify-start items-center">
-                    <div className="max-sm:hidden w-[25%]">
-                        Specialization
-                    </div>
-                    <div className="w-[75%]">
-                        { (program?.program?.[0]?.specialization && program?.program?.[0]?.specialization.length > 0) ? program.program[0].specialization.map((spec) => spec).join(', '): "n/a"}
-                    </div>
+                <div className={`flex flex-col gap-1 pt-4 ${rowDivider}`}>
+                    <dt className={labelClass}>Specialization</dt>
+                    <dd className={valueClass}>
+                        { (p0?.specialization && p0.specialization.length > 0)
+                            ? p0.specialization.map((spec) => spec).join(", ")
+                            : "n/a"}
+                    </dd>
                 </div>
-                <div className="flex flex-row justify-start items-center">
-                    <div className="max-sm:hidden w-[25%]">
-                        Difficulty
-                    </div>
-                    <div className="w-[75%]">
-                        { (program?.program?.[0]?.difficulty && program?.program?.[0]?.difficulty.length > 0) ? program.program[0].difficulty.map((diff) => diff).join(', '): "n/a"}
-                    </div>
+                <div className="flex flex-col gap-1 pt-4 sm:flex-row sm:items-start sm:gap-6">
+                    <dt className={labelClass}>Difficulty</dt>
+                    <dd className={valueClass}>
+                        { (p0?.difficulty && p0.difficulty.length > 0)
+                            ? p0.difficulty.map((diff) => diff).join(", ")
+                            : "n/a"}
+                    </dd>
                 </div>
-            </div>
+            </dl>
         </Card>
     );
 };

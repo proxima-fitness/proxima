@@ -17,7 +17,7 @@ export function BuildProgramSetTypesPopover() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="h-9 shrink-0 gap-1.5 px-2 font-secondary font-semibold"
+                    className="h-9 shrink-0 gap-1.5 rounded-full px-3.5 font-secondary font-semibold"
                     aria-label="Legend: warmup, working, drop, and failure sets"
                 >
                     <Info className="h-4 w-4" aria-hidden />

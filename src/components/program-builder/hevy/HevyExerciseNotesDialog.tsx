@@ -92,8 +92,9 @@ export const HevyExerciseNotesDialog: React.FC<IProps> = (props) => {
                                         ) }
                                     />
                                 <Button
-                                        type="submit"
-                                        className="w-auto h-10 bg-[#33bbcf] text-white">
+                                    type="submit"
+                                    className="h-10 w-auto rounded-full bg-lightSecondary px-5 text-white hover:bg-lightSecondary/90"
+                                >
                                     <SparklesIcon /> Add Note
                                 </Button>
                             </form>

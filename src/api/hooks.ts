@@ -17,7 +17,7 @@
  *             ./featureLimits, ../components/program-builder/api/hevy
  * Used by: virtually every page and component that renders dynamic data
  */
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, type QueryFunctionContext } from "@tanstack/react-query";
 import { getBlogById, getBlogs } from "./blog";
 import { getCommunityAiPrograms, getCommunityAiProgramsPaginated, getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID, getSubscribedPrograms } from "./programs";
 import { getOpUserId, getUserFullName, getUserMetaData, getUsersBatch } from "./users";
@@ -145,24 +145,34 @@ export const useSubscribedPrograms = (user: User | undefined | null) => {
  * Calls the internal `/api/hevy/exercise-history` route to retrieve exercise
  * stall/plateau analysis data for all exercises.
  */
-async function fetchExerciseStallsData(): Promise<TExerciseStallResult[]> {
+async function fetchExerciseStallsData({ signal }: QueryFunctionContext): Promise<TExerciseStallResult[]> {
     const res = await fetch("/api/hevy/exercise-history", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
         credentials: "same-origin",
+        signal,
     });
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data) ? data : [];
 }
 
+export type UseExerciseStallsAnalysisOptions = {
+    /** When false, does not POST exercise-history (no Hevy fan-out). Default true. */
+    enabled?: boolean;
+};
+
 /** Fetches full exercise stall data (all exercises). Cached 1hr; no refetch on window focus to avoid Hevy 429. */
-export const useExerciseStallsAnalysis = (user: User | undefined | null) => {
+export const useExerciseStallsAnalysis = (
+    user: User | undefined | null,
+    options?: UseExerciseStallsAnalysisOptions,
+) => {
+    const enabledFlag = options?.enabled ?? true;
     return useQuery({
         queryKey: ["exercise-stalls-analysis", user?.id, "v6"],
         queryFn: fetchExerciseStallsData,
-        enabled: !!user,
+        enabled: !!user && enabledFlag,
         staleTime: 60 * 60 * 1000,
         gcTime: 2 * 60 * 60 * 1000,
         refetchOnWindowFocus: false,
@@ -341,13 +351,19 @@ export const useUsersBatch = (userIds: string[]) => {
     });
 };
 
+export type UseHevyExercisesOptions = {
+    enabled?: boolean;
+};
+
 /**
- * Fetches the global exercise library from the Hevy API.
+ * Fetches the global exercise library from the Proxima Supabase mirror of Hevy templates.
  */
-export const useHevyExercises = () => {
+export const useHevyExercises = (options?: UseHevyExercisesOptions) => {
+    const enabled = options?.enabled ?? true;
     return useQuery({
         queryKey: ["hevy-exercises"],
         queryFn: () => getHevyExercises(),
+        enabled,
     });
 };
 

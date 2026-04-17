@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useLayoutEffect, useRef } from "react";
 import { shortEnglishHumanizer } from "@/assets/constants";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
@@ -21,33 +21,56 @@ export const ProgramPreview: React.FC<IProps> = (props) => {
     const { isInLbs } = usePoundsOrKgContext();
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
-    const [canScrollRight, setCanScrollRight] = useState(true);
+    /** Optimistic until measured: multi-week row usually overflows on sm+ (arrows are max-sm:hidden). */
+    const [canScrollRight, setCanScrollRight] = useState(
+        () => sortedWorkoutsByWeek.length > 1,
+    );
 
-    // Update scroll button visibility based on scroll position
-    useEffect(() => {
+    useLayoutEffect(() => {
         const container = scrollContainerRef.current;
         if (!container) return;
 
-        const updateScrollButtons = () => {
+        const EPS = 1;
+
+        const update = () => {
             const { scrollLeft, scrollWidth, clientWidth } = container;
-            setCanScrollLeft(scrollLeft > 0);
-            setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+            const maxScroll = Math.max(0, scrollWidth - clientWidth);
+            const overflow = scrollWidth > clientWidth + EPS;
+            setCanScrollLeft(scrollLeft > EPS);
+            setCanScrollRight(overflow && scrollLeft < maxScroll - EPS);
         };
 
-        updateScrollButtons();
-        container.addEventListener('scroll', updateScrollButtons);
-        window.addEventListener('resize', updateScrollButtons);
+        let cancelled = false;
+        update();
+        const rafOuter = requestAnimationFrame(() => {
+            if (cancelled) return;
+            update();
+            requestAnimationFrame(() => {
+                if (cancelled) return;
+                update();
+            });
+        });
+
+        container.addEventListener("scroll", update, { passive: true });
+        window.addEventListener("resize", update);
+        const ro = new ResizeObserver(() => {
+            update();
+        });
+        ro.observe(container);
 
         return () => {
-            container.removeEventListener('scroll', updateScrollButtons);
-            window.removeEventListener('resize', updateScrollButtons);
+            cancelled = true;
+            cancelAnimationFrame(rafOuter);
+            container.removeEventListener("scroll", update);
+            window.removeEventListener("resize", update);
+            ro.disconnect();
         };
     }, [sortedWorkoutsByWeek.length]);
 
     const handleScrollLeft = () => {
         if (scrollContainerRef.current) {
-            // Each week card is approximately 400px wide + 16px gap (gap-4)
-            const scrollAmount = 416;
+            // ~400px card + gap-5 (20px)
+            const scrollAmount = 420;
             scrollContainerRef.current.scrollBy({
                 left: -scrollAmount,
                 behavior: 'smooth'
@@ -57,8 +80,7 @@ export const ProgramPreview: React.FC<IProps> = (props) => {
 
     const handleScrollRight = () => {
         if (scrollContainerRef.current) {
-            // Each week card is approximately 400px wide + 16px gap (gap-4)
-            const scrollAmount = 416;
+            const scrollAmount = 420;
             scrollContainerRef.current.scrollBy({
                 left: scrollAmount,
                 behavior: 'smooth'
@@ -67,23 +89,36 @@ export const ProgramPreview: React.FC<IProps> = (props) => {
     };
 
     return (
-        <div className="w-full dark:bg-darkGray relative">
+        <div className="w-full">
+            <p className="mb-4 font-third text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Schedule preview
+            </p>
+            <div className="relative z-0 w-full overflow-visible">
             <div
                 ref={scrollContainerRef}
-                className="flex flex-row max-sm:flex-col w-full overflow-scroll max-sm:p-0 p-2 gap-4"
+                className="scrollbar-thin flex w-full min-w-0 flex-row gap-5 overflow-x-auto overflow-y-visible pb-2 max-sm:flex-col max-sm:p-0 sm:px-0"
             >
                 { sortedWorkoutsByWeek.map((week, index) => (
-                    <div className="w-full" key={ `Week ${index}` }>
-                        <span className="bg-white dark:bg-darkGray p-2 font-main">Week {index + 1}</span>
+                    <div
+                        className="flex w-full min-w-0 flex-col sm:max-w-[400px] sm:min-w-[400px] sm:shrink-0"
+                        key={ `Week ${index}` }
+                    >
+                        <span className="mb-2 inline-flex rounded-full bg-muted/90 px-3 py-1 font-third text-xs font-semibold uppercase tracking-wider text-muted-foreground ring-1 ring-border/50">
+                            Week {index + 1}
+                        </span>
                         { week.map((day) => (
-                            <Card className="px-4 py-4 my-4 min-w-[400px] max-w-[400px] w-[400px] max-sm:min-w-[99%] max-sm:max-w-[99%] max-sm:w-[99%] bg-gray-100 dark:bg-extraDarkGray" key={ "week " + day.nthWeek + "day " + day.nthDay + " " }>
-                                <div className="border-b-2 border-gray-200">
+                            <Card className="my-3 min-w-[400px] max-w-[400px] w-[400px] max-sm:min-w-[99%] max-sm:max-w-[99%] max-sm:w-[99%] rounded-2xl border border-border/60 bg-card/90 px-5 py-5 shadow-sm backdrop-blur-sm dark:bg-card/50" key={ "week " + day.nthWeek + "day " + day.nthDay + " " }>
+                                <div className="border-b border-black/5 pb-3 dark:border-white/10">
                                     <div>
-                                        <h3 className="font-main text-lg">{ "Day" } { day.nthDay } { day?.day_title ? <> &middot; { day.day_title }</> : "" }</h3>
-                                        <p className="font-light dark:text-offWhite">{ day.program_workout_exercises.length } {day.program_workout_exercises.length === 1 ? "Exercise" : `Exercises`}</p>
+                                        <h3 className="font-third text-lg font-semibold tracking-tight text-foreground">
+                                            Day { day.nthDay }{ day?.day_title ? <> · { day.day_title }</> : "" }
+                                        </h3>
+                                        <p className="mt-1 text-sm text-muted-foreground">
+                                            { day.program_workout_exercises.length }{day.program_workout_exercises.length === 1 ? " exercise" : " exercises"}
+                                        </p>
                                     </div>
                                 </div>
-                                <div className="flex flex-row justify-between gap-4 border-b-2 py-2 border-gray-200 text-sm dark:text-offWhite">
+                                <div className="flex flex-row justify-between gap-4 border-b border-black/5 py-3 text-sm text-muted-foreground dark:border-white/10">
                                     <div className="flex flex-row gap-4 max-w-[50%]">
                                         <div>
                                             #
@@ -105,16 +140,14 @@ export const ProgramPreview: React.FC<IProps> = (props) => {
                                     </div>
 
                                 </div>
-                                <div
-                                    className="my-4 rounded-xl dark:text-offWhite"
-                                >
+                                <div className="my-2 divide-y divide-black/5 rounded-xl text-foreground dark:divide-white/10">
                                     { day?.program_workout_exercises?.map((exercise: TSavedWorkoutExercise, exerciseIndex: number) => (
                                         <div key={ exerciseIndex }>
-                                            <div className="border-b-2 dark:border-offWhite text-sm border-gray-200 flex flex-row justify-between font-light items-center py-2">
-                                                <div className="flex flex-row gap-4 max-w-[50%]">
-                                                    <div className="text-lightSecondary font-bold">{exerciseIndex + 1}</div>
+                                            <div className="flex flex-row items-center justify-between py-2.5 text-sm font-normal">
+                                                <div className="flex max-w-[50%] flex-row gap-4">
+                                                    <div className="font-semibold text-secondary dark:text-lightSecondary">{exerciseIndex + 1}</div>
                                                     <div>
-                                                        <div className="font-third font-normal text-sm dark:text-extraLightGray">{ exercise?.hevy_exercise_templates?.title }</div>
+                                                        <div className="font-third text-sm text-foreground">{ exercise?.hevy_exercise_templates?.title }</div>
                                                     </div>
                                                     <div></div>
                                                 </div>
@@ -277,10 +310,10 @@ export const ProgramPreview: React.FC<IProps> = (props) => {
                     onClick={handleScrollLeft}
                     variant="outline"
                     size="icon"
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white dark:bg-lightSecondary dark:hover:bg-lightSecondary shadow-lg border-2 h-12 w-12 rounded-full transition-opacity flex items-center justify-center p-0 max-sm:hidden"
+                    className="absolute left-2 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border/60 text-white bg-lightSecondary p-0 shadow-md backdrop-blur-sm transition-opacity hover:bg-lightSecondary/90 hover:text-white max-sm:hidden"
                     aria-label="Scroll left"
                 >
-                    <ChevronLeft className="h-6 w-6" />
+                    <ChevronLeft className="h-5 w-5" />
                 </Button>
             )}
             {/* Right Arrow Button */}
@@ -289,12 +322,13 @@ export const ProgramPreview: React.FC<IProps> = (props) => {
                     onClick={handleScrollRight}
                     variant="outline"
                     size="icon"
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white dark:bg-lightSecondary dark:hover:bg-lightSecondary shadow-lg border-2 h-12 w-12 rounded-full transition-opacity flex items-center justify-center p-0 max-sm:hidden"
+                    className="absolute right-2 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center hover:text-white justify-center rounded-full border border-border/60 text-white bg-lightSecondary p-0 shadow-md backdrop-blur-sm transition-opacity hover:bg-lightSecondary/90 max-sm:hidden"
                     aria-label="Scroll right"
                 >
-                    <ChevronRight className="h-6 w-6" />
+                    <ChevronRight className="h-5 w-5" />
                 </Button>
             )}
+            </div>
         </div>
     );
 };

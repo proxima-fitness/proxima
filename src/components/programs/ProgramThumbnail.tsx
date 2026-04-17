@@ -19,8 +19,11 @@ interface IProps {
     id: number;
 }
 
+const frameClass =
+    "relative w-full max-h-[420px] aspect-[16/10] overflow-hidden rounded-3xl ring-1 ring-black/5 dark:ring-white/10";
+
 /**
- * ProgramThumbnail renders a fixed-height thumbnail image for a program with a loading skeleton while the image is fetched.
+ * ProgramThumbnail renders a hero thumbnail for a program with a loading skeleton while the image is fetched.
  */
 export const ProgramThumbnail: React.FC<IProps> = (props) => {
 
@@ -32,16 +35,17 @@ export const ProgramThumbnail: React.FC<IProps> = (props) => {
 
     if (loadingThumbnail) {
         return (
-            <Skeleton className="rounded-lg object-cover h-[350px] w-full">
-            </Skeleton>
+            <Skeleton className={`${frameClass} bg-muted`} />
         );
     }
 
     return (
-        <img
-            className="rounded-lg object-cover h-[350px] w-full"
-            alt="Program Thumbnail"
-            src={ (thumbnail !== undefined && thumbnail instanceof Blob) ? URL.createObjectURL(thumbnail) : fallbackThumbnail.src }
-        />
+        <div className={frameClass}>
+            <img
+                className="absolute inset-0 h-full w-full object-cover"
+                alt="Program cover"
+                src={ (thumbnail !== undefined && thumbnail instanceof Blob) ? URL.createObjectURL(thumbnail) : fallbackThumbnail.src }
+            />
+        </div>
     );
 };

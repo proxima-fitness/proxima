@@ -1,7 +1,7 @@
 import { people03, people02, people04, people05, people06, star } from "public";
 
-/** Filter group options for narrowing down programs and content. */
-export const filterGroupOptions: TFilterGroupOption[] = [
+/** Program search: length + duration row under search (comboboxes). */
+export const programSearchComboRow: TFilterGroupOption[] = [
     {
         component: "combobox",
         type: "program_length",
@@ -14,12 +14,10 @@ export const filterGroupOptions: TFilterGroupOption[] = [
         title: "Workout Duration",
         values: Array.from({ length: 18 }, (_, i) => (i * 10 + 10).toString()),
     },
-    {
-        component: "badge",
-        type: "equipment",
-        title: "Equipment",
-        values: ["Full Gym", "Garage Gym", "Dumbbells Only", "Bodyweight"],
-    },
+];
+
+/** Program search: chip row (left to right). */
+export const programSearchChipRow: TFilterGroupOption[] = [
     {
         component: "badge",
         type: "specialization",
@@ -28,10 +26,22 @@ export const filterGroupOptions: TFilterGroupOption[] = [
     },
     {
         component: "badge",
+        type: "equipment",
+        title: "Equipment",
+        values: ["Full Gym", "Garage Gym", "Dumbbells Only", "Bodyweight"],
+    },
+    {
+        component: "badge",
         type: "difficulty",
         title: "Difficulty",
         values: ["Beginner", "Novice", "Intermediate", "Advanced"],
     },
+];
+
+/** All program filter groups (combo row then chip row). */
+export const filterGroupOptions: TFilterGroupOption[] = [
+    ...programSearchComboRow,
+    ...programSearchChipRow,
 ];
 
 /** Navigation links shown to authenticated users. */
@@ -42,7 +52,7 @@ export const authenticatedNavLinks = [
     },
     {
         id: "programs",
-        title: "Explore"
+        title: "Programs"
     },
 
     // {
@@ -71,7 +81,7 @@ export const navLinks = [
     },
     {
         id: "programs",
-        title: "Explore",
+        title: "Programs",
     },
     {
         id: "about",

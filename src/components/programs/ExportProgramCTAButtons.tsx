@@ -7,7 +7,7 @@
  */
 
 import { JSX } from "react";
-import { hevy_logo } from "public";
+import { hevy_logo, hevy_logo_black } from "public";
 
 /**
  * Props for `ExportProgramCTAButtons`.
@@ -59,9 +59,15 @@ export const ExportProgramCTAButtons: React.FC<IProps> = ({
                 <div className="flex items-center gap-2">
                     <img
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        src={(hevy_logo_black as any).src}
+                        alt="Hevy"
+                        className="h-6 w-auto max-w-[9rem] object-contain object-left dark:hidden"
+                    />
+                    <img
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         src={(hevy_logo as any).src}
                         alt="Hevy"
-                        className="w-full h-6 object-contain"
+                        className="hidden h-6 w-auto max-w-[9rem] object-contain object-left dark:block"
                     />
                 </div>
             ) : (
@@ -73,20 +79,20 @@ export const ExportProgramCTAButtons: React.FC<IProps> = ({
             key={option.id}
             disabled={option.disabled ?? false}
             onClick={() => handleClick(option)}
-            className="cursor-pointer flex flex-col items-start justify-between gap-3 px-4 py-3 rounded-lg bg-extraDarkGray dark:bg-gray-800 hover:bg-gray-700 dark:hover:bg-gray-700/80 transition-colors text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex w-full cursor-pointer flex-col items-stretch gap-1 rounded-xl border border-border/60 bg-muted/35 px-4 py-3.5 text-left text-foreground shadow-sm transition-colors hover:bg-muted/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-muted/15 dark:hover:bg-muted/30"
             aria-label={`Export as ${option.name}`}
         >
-            <div className="flex flex-row gap-3">
-                <span className="">{effectiveIcon}</span>
-                {!option.brand ? <span className="font-main text-lg">{option.name}</span> : null}
+            <div className="flex flex-row items-center gap-3">
+                <span className="flex shrink-0 items-center text-foreground [&_svg]:h-6 [&_svg]:w-6">{effectiveIcon}</span>
+                {!option.brand ? <span className="font-third text-base font-semibold">{option.name}</span> : null}
             </div>
-            {option.subtitle ? <span className="text-sm  text-left text-gray-400">{option.subtitle}</span> : null}
+            {option.subtitle ? <span className="text-sm text-muted-foreground">{option.subtitle}</span> : null}
         </button>
         );
     };
 
     return (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
             {enabledOptions.map(renderOption)}
             {showComingSoonLabel && disabledOptions.length > 0 ? (
                 <>

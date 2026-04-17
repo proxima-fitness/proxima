@@ -33,15 +33,18 @@ export const MyProgramsVault = () => {
     if (userLoading || loadingPrograms) {
         return (
             <>
-                <div className="pt-0 pb-6">
-                    <Skeleton className="h-8 w-48 mb-2 bg-gray-100 dark:bg-darkGray" />
-                    <Skeleton className="h-4 w-72 bg-gray-100 dark:bg-darkGray" />
+                <div className="pt-0 pb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                    <div className="space-y-2">
+                        <Skeleton className="h-7 w-52" />
+                        <Skeleton className="h-4 w-72" />
+                    </div>
+                    <Skeleton className="h-9 w-36 rounded-full shrink-0" />
                 </div>
-                <div className="grid grid-cols-3 max-sm:grid-cols-1 gap-4 pb-8 max-md:grid-cols-2">
+                <div className="grid grid-cols-3 max-sm:grid-cols-1 gap-5 pb-8 max-md:grid-cols-2">
                     {[1, 2, 3, 4, 5, 6].map((i) => (
                         <div key={i} className="w-full max-w-md mx-auto">
-                            <div className="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl dark:bg-gray-950">
-                                <Skeleton className="w-full h-[200px] object-cover" />
+                            <div className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden dark:border-white/10 dark:bg-card/80">
+                                <Skeleton className="w-full h-[200px] object-cover rounded-none" />
                                 <div className="p-4 space-y-2">
                                     <div className="uppercase text-sm overflow-hidden text-ellipsis line-clamp-1"></div>
                                     <h3 className="text-xl font-main overflow-hidden text-ellipsis line-clamp-1"></h3>
@@ -62,15 +65,15 @@ export const MyProgramsVault = () => {
     if (!user) {
         return (
             <div className="pt-0 min-h-[500px] flex flex-col items-center justify-center">
-                <Card className="p-8 bg-gray-100 dark:bg-darkGray max-w-md w-full text-center">
-                    <Lock className="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600" />
-                    <h2 className="text-2xl font-main mb-4 dark:text-white">Authentication Required</h2>
-                    <p className="text-gray-600 dark:text-gray-400 mb-6">
+                <Card className="p-8 max-w-md w-full text-center rounded-2xl border border-border/50 bg-muted/30 shadow-sm dark:border-white/10 dark:bg-card/40">
+                    <Lock className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                    <h2 className="text-xl font-semibold tracking-tight mb-2 text-foreground">Authentication required</h2>
+                    <p className="text-sm text-muted-foreground mb-6">
                         Please log in to view your saved programs in the Vault.
                     </p>
                     <Link href="/auth/login">
-                        <Button className="bg-lightSecondary text-white hover:bg-[#2a9ba8]">
-                            Log In
+                        <Button className="rounded-full bg-lightSecondary text-white hover:bg-lightSecondary/90">
+                            Log in
                         </Button>
                     </Link>
                 </Card>
@@ -81,9 +84,9 @@ export const MyProgramsVault = () => {
     if (errorFetchingPrograms) {
         return (
             <div className="pt-0 min-h-[500px] flex flex-col items-center justify-center">
-                <Card className="p-8 bg-gray-100 dark:bg-darkGray max-w-md w-full text-center">
-                    <h2 className="text-2xl font-main mb-4 dark:text-white">Error Loading Programs</h2>
-                    <p className="text-gray-600 dark:text-gray-400">
+                <Card className="p-8 max-w-md w-full text-center rounded-2xl border border-border/50 bg-muted/30 shadow-sm dark:border-white/10 dark:bg-card/40">
+                    <h2 className="text-xl font-semibold tracking-tight mb-2 text-foreground">Couldn&apos;t load programs</h2>
+                    <p className="text-sm text-muted-foreground">
                         An error occurred while fetching your saved programs. Please try again later.
                     </p>
                 </Card>
@@ -95,29 +98,34 @@ export const MyProgramsVault = () => {
         return (
             <>
                 <div className="pt-0 pb-6">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-2">
-                        <h2 className="text-2xl font-main text-black dark:text-white flex items-center justify-start">
-                            <BookOpenTextIcon className="mr-2" />
-                            My Programs
-                        </h2>
-                        <Link href={"/build-program?empty=true"} target="_self" rel="noopener noreferrer">
-                            <Button variant="outline">New Program<Plus className="ml-2 size-4" /></Button>
+                    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-2">
+                        <div className="min-w-0 space-y-1">
+                            <h2 className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-2">
+                                <BookOpenTextIcon className="size-5 shrink-0 opacity-80" aria-hidden />
+                                My Programs
+                            </h2>
+                            <p className="text-sm text-muted-foreground">
+                                Permanent storage on Proxima for programs you save.
+                            </p>
+                        </div>
+                        <Link href={"/build-program?empty=true"} target="_self" rel="noopener noreferrer" className="shrink-0">
+                            <Button className="rounded-full bg-lightSecondary px-4 text-white hover:bg-lightSecondary/90">
+                                New program
+                                <Plus className="ml-2 size-4" />
+                            </Button>
                         </Link>
                     </div>
-                    <p className="text-gray-600 dark:text-gray-400 mb-6">
-                        Permanent storage for your workout programs
-                    </p>
                 </div>
                 <div className="pt-4 min-h-[400px] flex flex-col items-center justify-center">
-                    <Card className="p-8 bg-gray-100 dark:bg-darkGray max-w-md w-full text-center border-2 border-dashed border-gray-300 dark:border-gray-600">
-                        <Lock className="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600" />
-                        <h2 className="text-2xl font-main mb-4 dark:text-white">Your Vault is Empty</h2>
-                        <p className="text-gray-600 dark:text-gray-400 mb-6">
-                            Start building your collection by saving programs you love. They&apos;ll be stored here permanently.
+                    <Card className="p-8 max-w-md w-full text-center rounded-2xl border border-dashed border-border/60 bg-muted/20 dark:bg-card/30">
+                        <Lock className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                        <h2 className="text-xl font-semibold tracking-tight mb-2 text-foreground">Your vault is empty</h2>
+                        <p className="text-sm text-muted-foreground mb-6">
+                            Save programs you love — they&apos;ll stay here permanently.
                         </p>
                         <Link href="/programs">
-                            <Button className="bg-lightSecondary text-white hover:bg-[#2a9ba8]">
-                                Explore Programs
+                            <Button variant="outline" className="rounded-full border-border/80">
+                                Explore programs
                             </Button>
                         </Link>
                     </Card>
@@ -128,21 +136,26 @@ export const MyProgramsVault = () => {
 
     return (
         <>
-            <div className="pt-0 pb-6 ">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-6">
-                    <h2 className="text-2xl font-main text-black dark:text-white flex items-center justify-start">
-                        <BookOpenTextIcon className="mr-2" />
-                        My Programs ({programs.length})
-                    </h2>
-                    <Link href={"/build-program?empty=true"} target="_self" rel="noopener noreferrer">
-                        <Button variant="outline">New Program<Plus className="ml-2 size-4" /></Button>
+            <div className="pt-0 pb-6">
+                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-2">
+                    <div className="min-w-0 space-y-1">
+                        <h2 className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-2">
+                            <BookOpenTextIcon className="size-5 shrink-0 opacity-80" aria-hidden />
+                            My Programs ({programs.length})
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
+                            Permanent storage on Proxima for programs you save.
+                        </p>
+                    </div>
+                    <Link href={"/build-program?empty=true"} target="_self" rel="noopener noreferrer" className="shrink-0">
+                        <Button className="rounded-full bg-lightSecondary px-4 text-white hover:bg-lightSecondary/90">
+                            New program
+                            <Plus className="ml-2 size-4" />
+                        </Button>
                     </Link>
                 </div>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                    Permanent storage for your workout programs. Stored on Proxima.
-                </p>
             </div>
-            <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 max-md:grid-cols-2 pb-8">
+            <div className="grid grid-cols-3 gap-5 max-sm:grid-cols-1 max-md:grid-cols-2 pb-8">
                 {programs.map((program) => (
                     <Link
                         key={program.id}
@@ -156,10 +169,7 @@ export const MyProgramsVault = () => {
             </div>
             <div className="w-full max-w-full pb-8 box-border overflow-hidden flex justify-center pt-4">
                 <Link href="/programs">
-                    <Button
-                        size="lg"
-                        className="w-[220px] bg-darkGray text-white hover:bg-lightSecondary/90"
-                    >
+                    <Button variant="outline" size="lg" className="rounded-full border-border/80 min-w-[12rem]">
                         Explore programs
                         <SearchIcon className="size-4 ml-1" />
                     </Button>

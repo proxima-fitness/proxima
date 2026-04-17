@@ -21,7 +21,6 @@ import styles from "../../../style";
 import { Suspense, useState } from "react";
 import { ProgramsFallback } from "@/components/generic/ProgramsFallback";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Card } from "@/components/ui/card";
 import { EditProfile } from "@/components/profile/EditProfile";
 
 /**
@@ -36,42 +35,46 @@ export function ProfileContent() {
 
     const showHevyCard = (hevyPrograms?.length ?? 0) > 0 || isLoadingHevy;
 
+    const sectionDivider = "border-t border-border/40 pt-12 dark:border-white/10";
+    /** First block after profile head: head wrapper already has border-b; avoid border-t stack. */
+    const sectionFirstAfterHead = "pt-12";
+
     return (
-        <div className={`bg-white dark:bg-extraDarkGray px-8 max-sm:px-3 ${styles.flexCenter} flex-col`}>
-            <div className={`${styles.boxWidth} flex flex-col gap-6`}>
-                {user && (
-                    <>
-                        <Card className="p-6 mt-12 dark:border-none">
-                            <ProfileHero onEditProfileClick={() => setEditDialogOpen(true)} />
-                        </Card>
-                        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-                            <DialogContent className="max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
-                                {user && (
-                                    <EditProfile
-                                        user={user}
-                                        onSuccess={() => setEditDialogOpen(false)}
-                                    />
-                                )}
-                            </DialogContent>
-                        </Dialog>
-                    </>
-                )}
-                <div className="flex items-center justify-center">
-                    <ResumeDraftBanner />
+        <div className={`bg-background px-8 max-sm:px-3 ${styles.flexCenter} flex-col`}>
+            <div className={`${styles.boxWidth} flex flex-col gap-0`}>
+                <div className="border-b border-border/40 dark:border-white/10">
+                    {user && (
+                        <>
+                            <div className="mt-14 py-8 pb-10">
+                                <ProfileHero onEditProfileClick={() => setEditDialogOpen(true)} />
+                            </div>
+                            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+                                <DialogContent
+                                    className="max-w-md sm:rounded-2xl"
+                                    onOpenAutoFocus={(e) => e.preventDefault()}
+                                >
+                                    {user && (
+                                        <EditProfile
+                                            user={user}
+                                            onSuccess={() => setEditDialogOpen(false)}
+                                        />
+                                    )}
+                                </DialogContent>
+                            </Dialog>
+                        </>
+                    )}
+                    <div className="flex items-center justify-center pb-6 max-sm:pb-4">
+                        <ResumeDraftBanner />
+                    </div>
                 </div>
-                <Card className="p-6 dark:border-none">
-                    <BlindSpotAnalysisSection
-                        hevyPrograms={hevyPrograms}
-                        isLoadingHevy={isLoadingHevy}
-                    />
-                </Card>
+
                 {showHevyCard ? (
-                    <Card className="p-6 dark:border-none">
+                    <section className={sectionFirstAfterHead}>
                         <HevyProgramsGrid
                             hevyPrograms={hevyPrograms}
                             isLoadingHevy={isLoadingHevy}
                         />
-                    </Card>
+                    </section>
                 ) : (
                     <HevyProgramsGrid
                         hevyPrograms={hevyPrograms}
@@ -79,10 +82,16 @@ export function ProfileContent() {
                     />
                 )}
                 <Suspense fallback={<ProgramsFallback />}>
-                    <Card className="p-6 mb-12 dark:border-none">
+                    <section className={showHevyCard ? sectionDivider : sectionFirstAfterHead}>
                         <MyProgramsVault />
-                    </Card>
+                    </section>
                 </Suspense>
+                <section className={`${sectionDivider} pb-16`}>
+                    <BlindSpotAnalysisSection
+                        hevyPrograms={hevyPrograms}
+                        isLoadingHevy={isLoadingHevy}
+                    />
+                </section>
             </div>
         </div>
     );

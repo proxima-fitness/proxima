@@ -3,7 +3,7 @@
 /*
  * @module ProgramSearch
  * @description Search and filter surface for browsing workout programs with text search, keyboard shortcuts, and structured filters.
- * @dependsOn Command input primitives, filter configuration constants, program search API, program card components, and the coaches/community toggle.
+ * @dependsOn Command input primitives, filter configuration constants, program search API, program card components, coaches/community toggle; section layout (no card chrome).
  * @usedBy Program listing pages to provide a discoverable interface over coach and community programs.
  */
 
@@ -20,15 +20,15 @@ import {
     CommandInput,
 } from "@/components/ui/command";
 import { ProgramFilterGroup } from "./ProgramFilterGroup";
-import { filterGroupOptions } from "@/assets/constants/nav-links";
-import { useEffect, useRef, useState } from "react";
+import { programSearchChipRow, programSearchComboRow } from "@/assets/constants/nav-links";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import { getProgramsSearchResultsWithThumbnail } from "@/api/search";
-import { Card } from "../ui/card";
 import Link from "next/link";
 import { ProgramCard } from "./ProgramCard";
 import { CoachesCommunityToggle } from "./CoachesCommunityToggle";
 import { useDebouncedCallback } from "use-debounce";
+import { cn } from "@/lib/utils";
 
 interface IProps {
     programs: TProgram[];
@@ -55,8 +55,8 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
 
     const [filteredPrograms, setFilteredPrograms] = useState<TProgram[]>(programs);
 
-    const [appliedProgramLengthFilter, setAppliedProgramLengthFilter] = useState<string>(""); // casting the number to string
-    const [appliedWorkoutDurationFilter, setAppliedWorkoutDurationFilter] = useState<string>(""); // casting the number to string
+    const [appliedProgramLengthFilter, setAppliedProgramLengthFilter] = useState<string>("");
+    const [appliedWorkoutDurationFilter, setAppliedWorkoutDurationFilter] = useState<string>("");
     const [appliedEquipmentFilter, setAppliedEquipmentFilter] = useState<string[]>([]);
     const [appliedSpecializationFilter, setAppliedSpecializationFilter] = useState<string[]>([]);
     const [appliedDifficultyFilter, setAppliedDifficultyFilter] = useState<string[]>([]);
@@ -81,13 +81,20 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
         setAppliedDifficultyFilter(appliedDifficultyFilter);
     };
 
-    const handleClearFilters = () => {
+    const handleClearFilters = useCallback(() => {
         setAppliedProgramLengthFilter("");
         setAppliedWorkoutDurationFilter("");
         setAppliedEquipmentFilter([]);
         setAppliedSpecializationFilter([]);
         setAppliedDifficultyFilter([]);
-    };
+    }, []);
+
+    const hasActiveFilters =
+        Boolean(appliedProgramLengthFilter) ||
+        Boolean(appliedWorkoutDurationFilter) ||
+        appliedEquipmentFilter.length > 0 ||
+        appliedSpecializationFilter.length > 0 ||
+        appliedDifficultyFilter.length > 0;
 
     const handleSearch = useDebouncedCallback(async (value: string) => {
 
@@ -136,13 +143,13 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
         setFilteredPrograms(filteredItems);
     }, [appliedProgramLengthFilter, appliedWorkoutDurationFilter, appliedEquipmentFilter, appliedSpecializationFilter, appliedDifficultyFilter, programs]);
 
-    // Filtering Shortcut keybindings
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.ctrlKey && event.key.toLowerCase() === "k") {
+            const mod = event.ctrlKey || event.metaKey;
+            if (mod && event.key.toLowerCase() === "k") {
                 event.preventDefault();
                 commandRef.current?.focus();
-            } else if (event.ctrlKey && event.key.toLowerCase() === "c") {
+            } else if (mod && event.shiftKey && event.key.toLowerCase() === "c") {
                 event.preventDefault();
                 handleClearFilters();
             }
@@ -152,32 +159,105 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
         return () => {
             document.removeEventListener("keydown", handleKeyDown);
         };
-    }, [filteredPrograms, appliedEquipmentFilter]);
+    }, [handleClearFilters]);
 
     return (
         <>
-            <div className="pt-10">
-                <Card className="p-4 bg-gray-100 dark:bg-darkGray">
-                    <h1 className="text-center text-3xl pb-4 font-main">Workout Programs</h1>
-                    <div className="max-sm:w-full flex flex-col items-center justify-center">
-                        <div className="w-full flex flex-row max-sm:flex-col items-center justify-center">
-                            <div className="flex-1"></div>
-                            <div className="w-[60%] max-sm:w-full">
-                                <Command>
-                                    <CommandInput onInput={ (e) => handleSearch((e.target as HTMLInputElement).value) } ref={ commandRef } placeholder="Search for a program... [Ctrl + k]" />
-                                </Command>
+            <div className="border-b border-border/40 pb-10 dark:border-white/10">
+                <div className="pt-10">
+                    <section aria-labelledby="programs-explore-heading">
+                        <h1
+                            id="programs-explore-heading"
+                            className="pb-8 text-center font-third font-bold text-2xl tracking-tight text-foreground sm:text-3xl"
+                        >
+                            Workout Programs
+                        </h1>
+                        <div className="flex flex-col items-stretch gap-10">
+                            <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                            <div className="min-w-0 flex-1 space-y-2">
+                                <div
+                                    className={ cn(
+                                        "overflow-hidden rounded-2xl bg-muted/40 ring-1 ring-black/[0.06] dark:bg-muted/25 dark:ring-white/10",
+                                    ) }
+                                >
+                                    <Command
+                                        className={ cn(
+                                            "border-0 bg-transparent shadow-none",
+                                            "[&_[cmdk-input-wrapper]]:border-0 [&_[cmdk-input-wrapper]]:bg-transparent",
+                                        ) }
+                                    >
+                                        <CommandInput
+                                            ref={ commandRef }
+                                            placeholder="Search programs"
+                                            onInput={ (e) => handleSearch((e.target as HTMLInputElement).value) }
+                                        />
+                                    </Command>
+                                </div>
+                                <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-[11px] leading-relaxed text-muted-foreground">
+                                    <span className="inline-flex items-center gap-1">
+                                        <span>Focus search</span>
+                                        <kbd className="pointer-events-none inline-flex h-5 min-w-[1.25rem] select-none items-center justify-center rounded-md bg-muted/70 px-1.5 font-mono text-[10px] font-medium text-muted-foreground dark:bg-muted/50">
+                                            Ctrl
+                                        </kbd>
+                                        <kbd className="pointer-events-none inline-flex h-5 min-w-[1.25rem] select-none items-center justify-center rounded-md bg-muted/70 px-1.5 font-mono text-[10px] font-medium text-muted-foreground dark:bg-muted/50">
+                                            K
+                                        </kbd>
+                                        <span className="sr-only">; Command K on Mac</span>
+                                    </span>
+                                    <span className="text-muted-foreground/50" aria-hidden>·</span>
+                                    <span className="inline-flex items-center gap-1">
+                                        <span>Clear filters</span>
+                                        <kbd className="pointer-events-none inline-flex h-5 min-w-[1.25rem] select-none items-center justify-center rounded-md bg-muted/70 px-1.5 font-mono text-[10px] font-medium text-muted-foreground dark:bg-muted/50">
+                                            Ctrl
+                                        </kbd>
+                                        <kbd className="pointer-events-none inline-flex h-5 min-w-[1.25rem] select-none items-center justify-center rounded-md bg-muted/70 px-1.5 font-mono text-[10px] font-medium text-muted-foreground dark:bg-muted/50">
+                                            ⇧
+                                        </kbd>
+                                        <kbd className="pointer-events-none inline-flex h-5 min-w-[1.25rem] select-none items-center justify-center rounded-md bg-muted/70 px-1.5 font-mono text-[10px] font-medium text-muted-foreground dark:bg-muted/50">
+                                            C
+                                        </kbd>
+                                        <span className="sr-only">; Command Shift C on Mac</span>
+                                    </span>
+                                </p>
                             </div>
-                            { appliedProgramLengthFilter || appliedWorkoutDurationFilter || (appliedEquipmentFilter && appliedEquipmentFilter.length > 0) || (appliedSpecializationFilter && appliedSpecializationFilter.length > 0) || (appliedDifficultyFilter && appliedDifficultyFilter.length > 0) ?
-                                <div className="flex-1 flex items-center justify-start">
-                                    <Button onClick={ handleClearFilters } className={ "text-[#37BCCF]" } variant="ghost">Reset Filters [Ctrl + c]</Button>
-                                </div>
-                                :
-                                <div className="flex-1 flex items-center justify-start">
-                                </div>
-                            }
+                            { hasActiveFilters && (
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="shrink-0 text-muted-foreground hover:text-foreground sm:mt-2"
+                                    onClick={ handleClearFilters }
+                                    aria-label="Reset all filters"
+                                >
+                                    Reset filters
+                                </Button>
+                            ) }
                         </div>
-                        <div className="grid grid-cols-3 max-md:grid-cols-2 max-sm:grid-cols-1">
-                            { filterGroupOptions.map((group) => (
+                        <div className="flex w-full flex-col items-stretch gap-6 sm:flex-row sm:flex-wrap sm:justify-center">
+                            { programSearchComboRow.map((group) => (
+                                <div
+                                    key={ group.type }
+                                    className="mx-auto w-full min-w-0 max-w-sm sm:mx-0 sm:w-[min(100%,280px)]"
+                                >
+                                    <ProgramFilterGroup
+                                        headingAlign="center"
+                                        filter={ group }
+                                        appliedProgramLengthFilter={ appliedProgramLengthFilter }
+                                        appliedWorkoutDurationFilter={ appliedWorkoutDurationFilter }
+                                        appliedEquipmentFilter={ appliedEquipmentFilter }
+                                        appliedDifficultyFilter={ appliedDifficultyFilter }
+                                        appliedSpecializationFilter={ appliedSpecializationFilter }
+                                        handleAppliedProgramLengthFilter={ handleAppliedProgramLengthFilter }
+                                        handleAppliedWorkoutDurationFilter={ handleAppliedWorkoutDurationFilter }
+                                        handleAppliedEquipmentFilter={ handleAppliedEquipmentFilter }
+                                        handleAppliedSpecializationFilter={ handleAppliedSpecializationFilter }
+                                        handleAppliedDifficultyFilter={ handleAppliedDifficultyFilter }
+                                    />
+                                </div>
+                            )) }
+                        </div>
+                        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+                            { programSearchChipRow.map((group) => (
                                 <ProgramFilterGroup
                                     key={ group.type }
                                     filter={ group }
@@ -192,20 +272,21 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
                                     handleAppliedSpecializationFilter={ handleAppliedSpecializationFilter }
                                     handleAppliedDifficultyFilter={ handleAppliedDifficultyFilter }
                                 />
-                            ) ) }
+                            )) }
                         </div>
                     </div>
-                </Card>
+                    </section>
+                </div>
+                <div className="flex justify-center pt-8">
+                    <CoachesCommunityToggle
+                        viewMode={ viewMode }
+                        onViewModeChange={ onViewModeChange }
+                        coachCount={ viewMode === "coaches" ? filteredPrograms.length : coachCount }
+                        communityCount={ viewMode === "community" ? filteredPrograms.length : communityCount }
+                    />
+                </div>
             </div>
-            <div className="pt-6">
-                <CoachesCommunityToggle
-                    viewMode={viewMode}
-                    onViewModeChange={onViewModeChange}
-                    coachCount={viewMode === "coaches" ? filteredPrograms.length : coachCount}
-                    communityCount={viewMode === "community" ? filteredPrograms.length : communityCount}
-                />
-            </div>
-            <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 max-md:grid-cols-2 py-8">
+            <div className="grid grid-cols-3 gap-4 py-8 max-md:grid-cols-2 max-sm:grid-cols-1">
                 { filteredPrograms?.map((program) => (
                     <Link
                         key={ program.id }
@@ -217,7 +298,7 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
                             program={ program }
                         />
                     </Link>
-            ))}
+                )) }
             </div>
         </>
     );

@@ -415,7 +415,7 @@ function QuestionTextWithQuickfill({
             variant="outline"
             size="sm"
             onClick={() => handleQuickfillClick(option)}
-            className="text-xs"
+            className="rounded-full text-xs"
           >
             {option.label}
           </Button>
@@ -795,6 +795,7 @@ export function Questions({
                     size="sm"
                     onClick={onSkip}
                     disabled={isLoading || isBuilding || hasSelections}
+                    className="rounded-full"
                     aria-label="Skip questionnaire"
                   >
                     Skip
@@ -812,6 +813,7 @@ export function Questions({
           size="sm"
           onClick={onSkip}
           disabled={isLoading || isBuilding}
+          className="rounded-full"
           aria-label="Skip questionnaire"
         >
           Skip
@@ -821,7 +823,7 @@ export function Questions({
           size="sm"
           onClick={handleContinue}
           disabled={isLoading || isBuilding}
-          className="bg-lightGold text-black hover:bg-lightGold/80 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-full bg-lightGold px-4 text-black hover:bg-lightGold/80 disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Build program"
         >
           {isBuilding ? (

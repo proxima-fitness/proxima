@@ -5895,38 +5895,7 @@ export const shortEnglishHumanizer = humanizeDuration.humanizer({
 } );
 
 /** Filter group options for narrowing down programs and content. */
-export const filterGroupOptions: TFilterGroupOption[] = [
-    {
-        component: "combobox",
-        type: "program_length",
-        title: "Program Length",
-        values: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
-    },
-    {
-        component: "combobox",
-        type: "workout_duration",
-        title: "Workout Duration",
-        values: Array.from({ length: 18 }, (_, i) => (i * 10 + 10).toString()),
-    },
-    {
-        component: "badge",
-        type: "equipment",
-        title: "Equipment",
-        values: ["Full Gym", "Garage Gym", "Dumbbells Only", "Bodyweight"],
-    },
-    {
-        component: "badge",
-        type: "specialization",
-        title: "Specialization",
-        values: ["Bodybuilding", "Powerbuilding", "Powerlifting", "Athletics", "Bodyweight Training", "Olympic Weightlifting", "Calisthenics"],
-    },
-    {
-        component: "badge",
-        type: "difficulty",
-        title: "Difficulty",
-        values: ["Beginner", "Novice", "Intermediate", "Advanced"],
-    },
-];
+export { filterGroupOptions, programSearchChipRow, programSearchComboRow } from "./nav-links";
 
 /** Navigation links shown to authenticated users. */
 export const authenticatedNavLinks = [
@@ -5936,7 +5905,7 @@ export const authenticatedNavLinks = [
     },
     {
         id: "programs",
-        title: "Explore"
+        title: "Programs"
     },
 
     // {
@@ -5965,7 +5934,7 @@ export const navLinks = [
     },
     {
         id: "programs",
-        title: "Explore",
+        title: "Programs",
     },
     {
         id: "about",

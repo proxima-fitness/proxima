@@ -22,16 +22,21 @@ interface IProps {
  */
 export const EditProgramCTA: React.FC<IProps> = ({ programId }) => {
     return (
-        <div className="rounded-xl dark:bg-darkGray bg-extraLightGray shadow-md flex flex-col text-center justify-center items-center px-8 py-8 h-full w-full">
-            <div className="flex flex-col w-full">
-                <h2 className="font-main text-4xl pt-4 font-bold text-black dark:text-white">Personalize Program</h2>
+        <div className="flex w-full flex-col items-center justify-center rounded-2xl border border-border/60 bg-card/80 px-6 py-8 text-center shadow-sm backdrop-blur-sm dark:bg-card/60 sm:px-8">
+            <div className="flex w-full flex-col">
+                <h2 className="font-third text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                    Personalize this program
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                    Open in the builder to tailor it with AI.
+                </p>
                 <div className="pt-6">
                     <Link
                         href={`/build-program?shareId=${programId.toString()}`}
-                        className="flex flex-row items-center text-white bg-lightSecondary hover:bg-black  justify-center gap-3 px-6 py-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors text-white"
+                        className="inline-flex w-full flex-row items-center justify-center gap-2 rounded-xl bg-secondary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-secondary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:bg-lightSecondary dark:text-extraDarkGray dark:hover:bg-lightSecondary/90"
                     >
-                        <SparklesIcon className="w-5 h-5" />
-                        <span className="font-main text-sm">Personalize</span>
+                        <SparklesIcon className="h-5 w-5 shrink-0 text-white" aria-hidden />
+                        <span className="font-third text-white">Personalize</span>
                     </Link>
                 </div>
             </div>

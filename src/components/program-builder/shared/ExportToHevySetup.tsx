@@ -495,7 +495,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="bg-lightGold text-black w-fit gap-2 hover:bg-lightGold/90"
+                                    className="w-fit gap-2 rounded-full bg-lightGold px-4 text-black hover:bg-lightGold/90"
                                     onClick={() =>
                                         window.open("https://hevy.com/settings?developer", "_blank", "noopener,noreferrer")
                                     }
@@ -520,7 +520,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                                     <Button
                                         variant="default"
                                         className={cn(
-                                            "bg-lightSecondary text-white w-fit",
+                                            "w-fit rounded-full bg-lightSecondary px-5 text-white hover:bg-lightSecondary/90",
                                             !user && "opacity-50"
                                         )}
                                         onClick={handleConnectHevy}
@@ -532,8 +532,9 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                                     </Button>
                                     {step1Completed && (
                                         <Button
-                                            variant="ghost"
+                                            variant="outline"
                                             size="sm"
+                                            className="rounded-full border-border/80"
                                             onClick={() =>
                                                 setIsEditingApiKey(false)}
                                         >
@@ -646,7 +647,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                                 <div className="flex flex-wrap items-center gap-3">
                                     <Button
                                         variant="default"
-                                        className="w-fit gap-2 bg-lightSecondary text-white"
+                                        className="w-fit gap-2 rounded-full bg-lightSecondary px-5 text-white hover:bg-lightSecondary/90"
                                         onClick={() =>
                                             handleUploadProgram(exportToOneFolder)}
                                         disabled={isUploading || atExportLimit}
@@ -655,7 +656,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                                         {!isUploading && <Upload className="h-4 w-4 shrink-0" />}
                                     </Button>
                                     {atExportLimit && isFree && (
-                                        <Button variant="default" className="w-fit gap-2 bg-lightGold text-black hover:bg-lightGold/90" asChild>
+                                        <Button variant="default" className="w-fit gap-2 rounded-full bg-lightGold px-4 text-black hover:bg-lightGold/90" asChild>
                                             <Link href="/pricing">
                                                 <Crown className="h-4 w-4 shrink-0" />
                                                 Upgrade

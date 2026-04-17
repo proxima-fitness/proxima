@@ -146,7 +146,7 @@ const GenerationError: React.FC<{
                         <Button
                             size="sm"
                             onClick={onRetry}
-                            className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white border-0"
+                            className="w-full sm:w-auto rounded-full border-0 bg-red-600 px-4 text-white hover:bg-red-700"
                         >
                             <RefreshCw className="w-4 h-4 mr-2" />
                             Try Again
@@ -156,7 +156,7 @@ const GenerationError: React.FC<{
                         <Button
                             variant="outline"
                             size="sm"
-                            className="w-full sm:w-auto border-border text-muted-foreground hover:bg-muted/50"
+                            className="w-full sm:w-auto rounded-full border-border/80 text-muted-foreground hover:bg-muted/50"
                         >
                             Explore Programs
                         </Button>
@@ -332,23 +332,24 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
 
     useEffect(() => {
         // After stream finishes: duplicate week 1 across all weeks, merge modifyProgram patches after buildWeek, one commit
-        const weeks = programLength ? Number(programLength) : 1;
-        const committed = tryCommitAtomicBuildWeekAndMergedPatches(
+        const programLengthFromUi = programLength ? Number(programLength) : undefined;
+        const weeksFallback = programLengthFromUi ?? 1;
+        const result = tryCommitAtomicBuildWeekAndMergedPatches(
             messages,
             status,
-            weeks,
+            programLengthFromUi,
             hevyProgram,
             appliedModifyProgramKeysRef,
             lastAtomicBuildCommitKeyRef,
             applyPatchWithUndo
         );
-        if (committed) {
+        if (result.committed) {
             handleIsBuilding(false);
             onBuildComplete?.();
             posthog?.capture?.("generated_a_program", {
                 user: user?.id ?? "user_id_unknown",
                 daysPerWeek: totalDays || allRoutines.length,
-                programLength: weeks,
+                programLength: result.effectiveWeeks ?? weeksFallback,
             });
         }
     }, [
@@ -439,6 +440,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                     <Button
                                                                         variant="outline"
                                                                         size="sm"
+                                                                        className="rounded-full border-border/80"
                                                                         onClick={() => setEditingMessageId(null)}
                                                                         aria-label="Cancel edit"
                                                                     >
@@ -446,7 +448,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                     </Button>
                                                                     <Button
                                                                         size="sm"
-                                                                        className="bg-lightSecondary text-white hover:bg-lightSecondary/80"
+                                                                        className="rounded-full bg-lightSecondary px-4 text-white hover:bg-lightSecondary/90"
                                                                         onClick={() => {
                                                                             setMessages((prev) => prev.slice(0, messageIndex));
                                                                             sendMessage({ text: editingText.trim() });

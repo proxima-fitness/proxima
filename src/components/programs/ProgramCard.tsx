@@ -105,7 +105,7 @@ export const ProgramCard: React.FC<IProps> = (props) => {
     return (
         <>
             <div className="w-full max-w-md mx-auto">
-                <div className="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-[1.01] hover:-translate-y-0.5 dark:bg-darkGray cursor-pointer">
+                <div className="bg-card rounded-2xl  shadow-sm overflow-hidden transition-shadow duration-300 hover:shadow-md dark:border-white/10 dark:bg-card/80 cursor-pointer">
                     <div className="relative overflow-hidden">
                         <img
                             src={ program.thumbnail instanceof Blob ? URL.createObjectURL(program.thumbnail) : thumbnail.src }

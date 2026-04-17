@@ -4,7 +4,7 @@
  * Terms of use page. Static legal content (license, account, acceptable use,
  * termination, disclaimer, liability). Sits at src/app/(app)/terms-of-use/page.tsx; route "/terms-of-use".
  *
- * Depends on: none (static markup and exer-card styles).
+ * Depends on: none (static markup; theme tokens for surfaces and text).
  * Used by: Next.js (route "/terms-of-use").
  */
 
@@ -13,15 +13,20 @@ export const metadata = {
     description: "These are the Terms of Use you agree to whilst using Proxima Fitness Inc. products and services",
 };
 
+const legalBody =
+    "[&_a]:text-secondary [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:text-lightSecondary [&_h2]:mt-10 [&_h2]:mb-3 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:first:mt-0 [&_p]:leading-relaxed [&_strong]:font-semibold";
+
 /** Terms of use page; static legal text. */
 export default function TermsOfUsePage() {
     return (
-        <main className="min-h-screen px-4 py-10 bg-gray-100">
-            <h1 className="text-5xl max-sm:text-3xl pl-28 max-sm:pl-0 max-sm:flex max-sm:justify-center font-bold text-gray-900 mb-6 text-left">
+        <div className="min-h-screen bg-background px-4 py-10 text-foreground">
+            <h1 className="mb-8 max-w-3xl mx-auto text-left text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
                 Terms Of Use
             </h1>
-            <section className="py-8 px-32 max-sm:px-0">
-            <div className="exer-card exer-cards">
+            <section className="max-w-3xl mx-auto pb-8">
+                <div
+                    className={`rounded-xl border border-border bg-card p-6 text-card-foreground shadow-sm sm:p-8 space-y-4 ${legalBody}`}
+                >
                     <p>Welcome to the Proxima Fitness Website (the <strong className="bold">“Website”</strong>). These Terms of Use are an agreement between you and Proxima Fitness, as defined that Proxima Fitness governs your access to, and use of, the Website and Application and the tools (<strong>“Services”</strong>) and resources (<strong>“Content”</strong>) available on the Website and Application (the Website, the Application, the Services and the Content are collectively referred to as the <strong>“Proxima Fitness Resources”</strong>). By accessing the Website and/or using any Services or Content, you agree unconditionally to these Terms of Use. If you do not wish to agree to these Terms of Use, you must close your browser and not access or use the Proxima Fitness Resources.</p>
 
                     <h2>1. Acceptance of Terms of Use</h2>
@@ -77,9 +82,11 @@ export default function TermsOfUsePage() {
                     <h2>13. General</h2>
                     These Terms of Use (including the Privacy Policy) are the entire agreement between you and Proxima Fitness with respect to their subject matter.  In these Terms of Use: (a) headings are inserted for convenience only and will not be used in interpreting or construing any provision of these Terms of Use; and (b) “including” is not intended to be limiting, regardless of whether it is expressly stated not to be so. If any provision of these Terms of Use is invalid, illegal or unenforceable, that provision will be severed from these Terms of Use and all other provisions will remain in full force and effect.  These Terms of Use will be governed by and construed in accordance with the laws of Proxima Fitness of British Columbia and the applicable laws of Canada.  By accessing the Website and/or using any Services or Content, you consent to the exclusive jurisdiction and venue of the courts of British Columbia, sitting in Victoria, for the hearing of any dispute arising from or related to these Terms of Use.
 
-                    <strong>Last updated:  March 29, 2025</strong>
+                    <p>
+                        <strong>Last updated: March 29, 2025</strong>
+                    </p>
                 </div>
             </section>
-        </main>
+        </div>
     );
   }

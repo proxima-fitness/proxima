@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { hevy_logo, google_sheets_logo_icon } from "public";
+import { hevy_logo, hevy_logo_black, google_sheets_logo_icon } from "public";
 import { Crown, FileText, Table } from "lucide-react";
 
 /** Export destinations available for generated programs. */
@@ -12,9 +12,15 @@ export const exportOptions = [
                 <Crown className="w-6 h-6 text-lightGold" />
                 <img
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    src={(hevy_logo_black as any).src}
+                    alt="Hevy"
+                    className="h-6 w-auto max-w-[9rem] object-contain object-left dark:hidden"
+                />
+                <img
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     src={(hevy_logo as any).src}
                     alt="Hevy"
-                    className="w-full h-6 object-contain"
+                    className="hidden h-6 w-auto max-w-[9rem] object-contain object-left dark:block"
                 />
             </div>
         ),

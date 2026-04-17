@@ -21,7 +21,7 @@ export const SetTypesLegend = () => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Button variant="outline" size="sm" className="flex items-center gap-2 font-secondary font-bold" aria-label="Show set types legend">
+      <Button variant="outline" size="sm" className="flex h-9 items-center gap-2 rounded-full px-3.5 font-secondary font-bold" aria-label="Show set types legend">
         <InfoIcon className="w-4 h-4" />
         Legend
       </Button>

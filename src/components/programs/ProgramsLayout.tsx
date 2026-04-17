@@ -23,7 +23,7 @@ export default function ProgramsLayout() {
     }, [user]);
 
     return (
-        <div className="px-24 max-sm:px-0">
+        <div className="px-24 max-sm:px-4">
             <Programs />
         </div>
     );

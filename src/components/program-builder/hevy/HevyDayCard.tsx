@@ -326,7 +326,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                         onClick={ () => {
                             handleOpenAddExerciseDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true});
                          } }>
-                        <Button variant="ghost" className="mt-1 w-full font-bold uppercase h-9 sm:h-12 text-sm sm:text-base hover:bg-gray-200 dark:hover:bg-darkGray text-black dark:text-white" aria-label="Add exercise to this day"><PlusIcon />Add Exercise</Button>
+                        <Button variant="ghost" className="mt-1 w-full rounded-full font-bold uppercase h-9 sm:h-12 text-sm sm:text-base hover:bg-gray-200 dark:hover:bg-darkGray text-black dark:text-white" aria-label="Add exercise to this day"><PlusIcon />Add Exercise</Button>
                     </div>
                     <div className="flex flex-row justify-between items-center px-3">
                         {editMode ? (
@@ -346,7 +346,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                     <button
                                         onClick={createSuperset}
                                         disabled={selectedExercises.length < 2}
-                                        className={`flex-1 py-1.5 sm:py-2 text-sm sm:text-base rounded-md font-medium
+                                        className={`flex-1 py-1.5 sm:py-2 text-sm sm:text-base rounded-full font-medium
                                             ${selectedExercises.length < 2 ? 'bg-lightSecondary opacity-50 text-white' : 'bg-lightSecondary text-white hover:bg-black'}`}
                                         aria-label="Create superset"
                                     >
@@ -357,7 +357,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                             setEditMode(false);
                                             setSelectedExercises([]);
                                         }}
-                                        className="flex-1 py-1.5 sm:py-2 text-sm sm:text-base rounded-md font-medium border border-gray-300 hover:bg-gray-100"
+                                        className="flex-1 py-1.5 sm:py-2 text-sm sm:text-base rounded-full font-medium border border-gray-300 hover:bg-gray-100"
                                         aria-label="Cancel superset"
                                     >
                                         Cancel
@@ -368,7 +368,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                             <Button
                                 variant="ghost"
                                 disabled={!day.exercises || day.exercises.length < 2}
-                                className="mt-1 w-full font-bold bg-lightGray dark:bg-darkGray text-lightSecondary disabled:text-gray-500 uppercase hover:text-lightSecondary hover:bg-gray-200 h-9 sm:h-12 text-sm sm:text-base border-2 border-lightSecondary dark:border-darkGray disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-lightGray dark:disabled:hover:bg-darkGray disabled:border-gray-300 dark:disabled:border-gray-600"
+                                className="mt-1 w-full rounded-full font-bold bg-lightGray dark:bg-darkGray text-lightSecondary disabled:text-gray-500 uppercase hover:text-lightSecondary hover:bg-gray-200 h-9 sm:h-12 text-sm sm:text-base border-2 border-lightSecondary dark:border-darkGray disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-lightGray dark:disabled:hover:bg-darkGray disabled:border-gray-300 dark:disabled:border-gray-600"
                                 onClick={() => {
                                     if (day.exercises && day.exercises.length >= 2) {
                                         setEditMode(true);

@@ -26,6 +26,7 @@ import { PromptTemplate } from "./PromptTemplate";
 import { ResumeDraftBanner } from "../ResumeDraftBanner";
 // import { BuyMeCoffee } from "@/components/ui/buy-me-coffee";
 import posthog from "posthog-js";
+import { ProductHunt } from "./ProductHunt";
 /** Props for the landing prompt section. */
 interface IProps {
     /** User from server (e.g. session); synced into UserContext on mount. */
@@ -59,8 +60,8 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                             <img src={(proxima_logo_black as any).src} alt="Proxima" className="h-14 w-auto hidden dark:block" />
                             <img src={(proxima_logo_white as any).src} alt="Proxima" className="h-14 w-auto dark:hidden block" />
                         </div>
-                        <div className="font-main text-4xl max-sm:text-2xl max-sm:px-6 font-bold uppercase dark:text-white">The <span className="text-secondary dark:text-lightSecondary">Fitness Plan</span> for you, by you</div>
-                        <div className="text-lg font-normal px-12 max-sm:text-sm max-sm:px-2 dark:text-white">Chat with a science-backed AI Agent to build your periodized fitness plan</div>
+                        <div className="font-main text-4xl max-sm:text-2xl max-sm:px-6 font-bold uppercase dark:text-white">The <span className="text-secondary dark:text-lightSecondary">Fitness Plan</span> for you</div>
+                        <div className="text-lg font-normal px-12 max-sm:text-sm max-sm:px-2 dark:text-white">Chat with a science-backed AI Agent to build your periodized plan</div>
                     </div>
                     <div className="w-full max-w-3xl max-sm:px-2 ">
                         <div className="pt-8">
@@ -74,9 +75,56 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
 
                         {/* Social proof band, now inside the hero/prompt section */}
                         <div className="mt-10">
-                            <div className="rounded-2xl bg-transparent text-card-foreground px-4 sm:px-6 py-4 sm:py-5 flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div className="rounded-2xl bg-transparent text-card-foreground px-4 sm:px-6 py-4 sm:py-5 flex flex-col md:flex-row items-center md:items-center justify-between gap-6">
                                 {/* Left: Avatar stack + copy */}
-                                <div className="flex flex-col items-center md:items-start gap-2 max-sm:text-sm">
+
+
+
+
+                                {/* Right: Compact integrations logos */}
+                                <div className="flex flex-col items-center gap-4">
+                                    <span className="font-secondary text-[10px] sm:text-xs font-semibold tracking-[0.12em] uppercase text-black dark:text-white">
+                                        Integrated with
+                                    </span>
+                                    <div className="flex flex-row items-center justify-center gap-3 sm:gap-4">
+                                    <a
+                                        href="https://www.hevyapp.com/"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-label="Visit Hevy website"
+                                    >
+                                        <img src={hevy_logo.src} alt="Hevy" className="h-7 sm:h-8 w-auto object-contain hidden dark:block" />
+                                        <img src={hevy_logo_black.src} alt="Hevy" className="h-7 sm:h-8 w-auto object-contain dark:hidden block" />
+                                        </a>
+                                    </div>
+                                </div>
+                                 {/* Middle: Backed by LOI */}
+                                 <div className="flex flex-col items-center gap-4">
+                                    <span className="font-secondary text-[10px] sm:text-xs font-semibold tracking-[0.12em] uppercase text-black dark:text-white">
+                                        Backed by
+                                    </span>
+                                    <a
+                                        href="https://www.loi.ac/"
+                                        target="_blank"
+                                        rel="noreferrer noopener"
+                                    >
+                                        <img
+                                            src={(league_of_innovators_logo as any).src}
+                                            alt="League of Innovators"
+                                            className="h-7 sm:h-8 w-auto object-contain"
+                                        />
+                                    </a>
+                                </div>
+                                <div className="flex flex-col items-center gap-4">
+                                    <span className="font-secondary text-[10px] sm:text-xs font-semibold tracking-[0.12em] uppercase text-black dark:text-white">
+                                        Featured on
+                                    </span>
+                                    <ProductHunt />
+                                </div>
+                                <div className="flex flex-col items-center gap-4 max-sm:text-sm">
+                                    <span className="font-secondary text-[10px] sm:text-xs font-semibold tracking-[0.12em] uppercase text-black dark:text-white">
+                                        Join 2,000+ athletes
+                                    </span>
                                     <AvatarStack
                                         avatars={[
                                             { name: "jack.hanlon", image: jack_small.src },
@@ -97,45 +145,6 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                                         ]}
                                         maxAvatarsAmount={5}
                                     />
-                                    <p className="font-secondary text-[10px] sm:text-xs font-semibold tracking-[0.12em] uppercase text-black dark:text-white">
-                                        18,000+ athletes
-                                    </p>
-                                </div>
-
-                                {/* Middle: Backed by LOI */}
-                                <div className="flex flex-col items-start gap-1">
-                                    <span className="font-secondary text-[10px] sm:text-xs font-semibold tracking-[0.12em] uppercase text-black dark:text-white">
-                                        Backed by
-                                    </span>
-                                    <a
-                                        href="https://www.loi.ac/"
-                                        target="_blank"
-                                        rel="noreferrer noopener"
-                                    >
-                                        <img
-                                            src={(league_of_innovators_logo as any).src}
-                                            alt="League of Innovators"
-                                            className="h-6 sm:h-7 w-auto"
-                                        />
-                                    </a>
-                                </div>
-
-                                {/* Right: Compact integrations logos */}
-                                <div className="flex flex-col items-center md:items-end gap-2">
-                                    <span className="font-secondary text-[10px] sm:text-xs font-semibold tracking-[0.12em] uppercase text-black dark:text-white">
-                                        Integrated with
-                                    </span>
-                                    <div className="flex flex-row items-center justify-center gap-3 sm:gap-4">
-                                    <a
-                                        href="https://www.hevyapp.com/"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        aria-label="Visit Hevy website"
-                                    >
-                                        <img src={hevy_logo.src} alt="Hevy" className="h-5 sm:h-6 w-auto hidden dark:block" />
-                                        <img src={hevy_logo_black.src} alt="Hevy" className="h-5 sm:h-6 w-auto dark:hidden block" />
-                                        </a>
-                                    </div>
                                 </div>
                             </div>
                         </div>

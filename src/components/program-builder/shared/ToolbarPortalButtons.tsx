@@ -42,7 +42,7 @@ function ToolbarPortalButtonsInner({
             <Button
                 size="sm"
                 onClick={onUndo}
-                className="gap-2 bg-lightGold hover:bg-lightGold/80 text-black h-9"
+                className="gap-2 rounded-full bg-lightGold hover:bg-lightGold/80 text-black h-9 px-4"
             >
                 <Undo2 className="h-4 w-4" />
                 Undo

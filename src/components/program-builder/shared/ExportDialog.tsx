@@ -119,8 +119,8 @@ export const ExportDialog: React.FC<IProps> = (props) => {
                 <DialogContent
                     className={
                         selectedExportId === "pdf" || selectedExportId === "hevy"
-                            ? "sm:max-w-6xl max-sm:w-[95vw]"
-                            : ""
+                            ? "sm:max-w-6xl max-sm:w-[95vw] sm:rounded-2xl"
+                            : "sm:rounded-2xl"
                     }
                     hideClose={isHevyStepAndUploading}
                     onPointerDownOutside={isHevyStepAndUploading ? (e) => e.preventDefault() : undefined}
@@ -147,7 +147,7 @@ export const ExportDialog: React.FC<IProps> = (props) => {
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 min-w-0 px-2 text-xs gap-1 -ml-2"
+                            className="-ml-2 h-8 min-w-0 gap-1 rounded-full px-3 text-xs"
                             onClick={() => setSelectedExportId(null)}
                             aria-label="Back to export options"
                         >
@@ -164,7 +164,7 @@ export const ExportDialog: React.FC<IProps> = (props) => {
                                 );
                             }
                             return (
-                                <PDFViewer className="w-full max-sm:h-[50vh] h-[60vh] rounded-lg border">
+                                <PDFViewer className="w-full max-sm:h-[50vh] h-[60vh] rounded-2xl border border-border/50">
                                     <HevyPdfRenderer hevyRoutine={hevyRoutine} isInLbs={isInLbs} />
                                 </PDFViewer>
                             );
@@ -176,7 +176,7 @@ export const ExportDialog: React.FC<IProps> = (props) => {
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 min-w-0 px-2 text-xs gap-1 -ml-2"
+                            className="-ml-2 h-8 min-w-0 gap-1 rounded-full px-3 text-xs"
                             onClick={handleHevyBackClick}
                             aria-label="Back to export options"
                         >
@@ -193,7 +193,7 @@ export const ExportDialog: React.FC<IProps> = (props) => {
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 min-w-0 px-2 text-xs gap-1 -ml-2"
+                            className="-ml-2 h-8 min-w-0 gap-1 rounded-full px-3 text-xs"
                             onClick={() => setSelectedExportId(null)}
                             aria-label="Back to export options"
                         >
@@ -214,7 +214,10 @@ export const ExportDialog: React.FC<IProps> = (props) => {
                                     <p className="text-sm text-muted-foreground">
                                         Open in Excel, Google Sheets, or any spreadsheet app.
                                     </p>
-                                    <Button className="bg-lightSecondary hover:bg-lightSecondary/80 text-white" onClick={handleDownloadCsv}>
+                                    <Button
+                                        className="rounded-full bg-lightSecondary px-6 text-white hover:bg-lightSecondary/90"
+                                        onClick={handleDownloadCsv}
+                                    >
                                         Download CSV
                                     </Button>
                                 </div>
@@ -225,18 +228,18 @@ export const ExportDialog: React.FC<IProps> = (props) => {
             </DialogContent>
         </Dialog>
             <Dialog open={showBackConfirm} onOpenChange={setShowBackConfirm}>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="sm:max-w-[425px] sm:rounded-2xl">
                     <DialogHeader>
                         <DialogTitle>Stop upload?</DialogTitle>
                         <DialogDescription>
                             Are you sure? Closing will stop the upload.
                         </DialogDescription>
                     </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowBackConfirm(false)}>
+                    <DialogFooter className="gap-2 sm:justify-end">
+                        <Button variant="outline" className="rounded-full border-border/80" onClick={() => setShowBackConfirm(false)}>
                             Cancel
                         </Button>
-                        <Button variant="destructive" onClick={handleConfirmStopUpload}>
+                        <Button variant="destructive" className="rounded-full px-4" onClick={handleConfirmStopUpload}>
                             Yes, stop upload
                         </Button>
                     </DialogFooter>

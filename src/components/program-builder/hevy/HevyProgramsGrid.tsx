@@ -47,11 +47,11 @@ function HevyProgramCard({
     return (
         <div
             className={
-                "flex flex-col rounded-xl border border-border dark:border-0 bg-white dark:bg-blueGray text-black dark:text-white overflow-hidden min-h-[200px] shadow-lg dark:shadow-none"
+                "flex flex-col rounded-2xl border border-border/60 bg-card text-foreground overflow-hidden min-h-[200px] shadow-sm dark:border-white/10 dark:bg-blueGray dark:text-white dark:shadow-none"
             }
         >
             {/* Top bar: Hevy logo + workout count */}
-            <div className="flex flex-row items-center justify-between px-4 py-3 bg-extraDarkGray dark:bg-lightSecondary text-white shrink-0">
+            <div className="flex flex-row items-center justify-between px-4 py-3 bg-neutral-950 dark:bg-lightSecondary text-white shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                     src={(hevy_logo as { src: string }).src}
@@ -64,7 +64,7 @@ function HevyProgramCard({
             </div>
 
             {/* Program title */}
-            <div className="px-4 pt-3 font-main text-sm text-foreground dark:text-white">
+            <div className="px-4 pt-3 font-main text-sm font-medium text-foreground dark:text-white">
                 {program?.program_title || "No title"}
             </div>
 
@@ -73,7 +73,7 @@ function HevyProgramCard({
                 {routinesSlice.map((routine) => (
                     <div
                         key={routine.id}
-                        className="rounded-lg bg-lightGray dark:bg-extraDarkGray px-3 py-2 font-third text-sm"
+                        className="rounded-xl bg-muted/60 px-3 py-2.5 font-third text-sm dark:bg-extraDarkGray"
                     >
                         {routine.title}
                     </div>
@@ -82,24 +82,24 @@ function HevyProgramCard({
 
             {/* Pagination controls */}
             {totalRoutines > ROUTINES_PER_PAGE && (
-                <div className="flex flex-row items-center justify-center gap-2 px-4 pb-2">
+                <div className="flex flex-row items-center justify-center gap-1 px-4 pb-2">
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 shrink-0"
+                        className="h-9 w-9 shrink-0 text-muted-foreground"
                         onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                         disabled={!canGoPrev}
                         aria-label="Previous page"
                     >
                         <ChevronLeft className="size-4" />
                     </Button>
-                    <span className="font-third text-xs text-muted-foreground min-w-16 text-center">
-                        Page {currentPage} of {totalPages}
+                    <span className="font-third text-[11px] tabular-nums text-muted-foreground min-w-[5.5rem] text-center">
+                        {currentPage} / {totalPages}
                     </span>
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 shrink-0"
+                        className="h-9 w-9 shrink-0 text-muted-foreground"
                         onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                         disabled={!canGoNext}
                         aria-label="Next page"
@@ -110,10 +110,11 @@ function HevyProgramCard({
             )}
 
             {/* Footer: Edit button */}
-            <div className="flex flex-row justify-end p-4 border-t border-border dark:border-white/10 ">
+            <div className="flex flex-row justify-end p-4 border-t border-border/60 dark:border-white/10">
                 <Button
-                    size="lg"
-                    className="gap-2 py-2 bg-lightSecondary text-white hover:bg-black hover:text-white rounded-lg shadow-sm"
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 rounded-full border-border/80 bg-background/80"
                     onClick={onEdit}
                 >
                     <EditIcon className="size-4" /> Edit
@@ -146,11 +147,16 @@ export const HevyProgramsGrid: React.FC<HevyProgramsGridProps> = ({ hevyPrograms
     if (isLoadingHevy) {
         return (
             <section className="pt-0 pb-0">
-                <Skeleton className="h-8 w-48 mb-6" />
-                <Skeleton className="h-4 w-72 mb-6" />
-                <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 max-md:grid-cols-2 pb-8">
+                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+                    <div className="space-y-2">
+                        <Skeleton className="h-7 w-52" />
+                        <Skeleton className="h-4 w-72" />
+                    </div>
+                    <Skeleton className="h-9 w-36 rounded-full shrink-0" />
+                </div>
+                <div className="grid grid-cols-3 gap-5 max-sm:grid-cols-1 max-md:grid-cols-2 pb-8">
                     {[1, 2, 3].map((i) => (
-                        <Skeleton key={i} className="h-[200px] w-full rounded-xl" />
+                        <Skeleton key={i} className="h-[200px] w-full rounded-2xl" />
                     ))}
                 </div>
             </section>
@@ -163,40 +169,45 @@ export const HevyProgramsGrid: React.FC<HevyProgramsGridProps> = ({ hevyPrograms
 
     return (
         <section className="pt-0 pb-0">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-6">
-                <h2 className="text-2xl font-main text-black dark:text-white flex items-center justify-start">
-                    <NotepadTextIcon className="mr-2 size-7" />
-                    My Hevy Programs
-                </h2>
-                <Link href={"/build-program?empty=true"} target="_self" rel="noopener noreferrer">
-                    <Button variant="outline">New Program<Plus className="ml-2 size-4" /></Button>
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-2">
+                <div className="min-w-0 space-y-1">
+                    <h2 className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-2">
+                        <NotepadTextIcon className="size-5 shrink-0 opacity-80" aria-hidden />
+                        My Hevy Programs
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                        Synced from Hevy.{" "}
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button
+                                    type="button"
+                                    className="text-foreground/80 underline-offset-4 hover:underline"
+                                    aria-label="Read more about Hevy programs"
+                                >
+                                    More info
+                                    <ChevronDown className="inline size-3.5 align-middle ml-0.5" aria-hidden />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                                align="start"
+                                className="min-w-0 max-w-[calc(100vw-2rem)] sm:min-w-[20rem] sm:max-w-md p-4"
+                            >
+                                <p className="text-sm text-popover-foreground">
+                                    Click &quot;Edit&quot; on a program to modify or ask
+                                    questions in the builder. Folders are treated as separate programs, please add your routine to a folder in Hevy to see the program sync here (My Routines folder is not considered a folder by Hevy). Exporting will create a new program in Hevy.
+                                </p>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </p>
+                </div>
+                <Link href={"/build-program?empty=true"} target="_self" rel="noopener noreferrer" className="shrink-0">
+                    <Button className="rounded-full bg-lightSecondary px-4 text-white hover:bg-lightSecondary/90">
+                        New program
+                        <Plus className="ml-2 size-4" />
+                    </Button>
                 </Link>
             </div>
-            <div className="text-gray-600 dark:text-gray-400 mb-6">
-                These are your synced programs from Hevy.{" "}
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                            variant="link"
-                            className="h-auto p-0 text-gray-600 dark:text-gray-400 font-normal underline underline-offset-2"
-                            aria-label="Read more about Hevy programs"
-                        >
-                            More Info
-                            <ChevronDown className="ml-0.5 size-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="start"
-                        className="min-w-0 max-w-[calc(100vw-2rem)] sm:min-w-[20rem] sm:max-w-md p-4"
-                    >
-                        <p className="text-sm text-popover-foreground">
-                            Click &quot;Edit&quot; on a program to modify or ask
-                            questions in the builder. Folders are treated as separate programs, please add your routine to a folder in Hevy to see the program sync here (My Routines folder is not considered a folder by Hevy). Exporting will create a new program in Hevy.
-                        </p>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-            <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1 max-md:grid-cols-2 pb-8">
+            <div className="grid grid-cols-3 gap-5 max-sm:grid-cols-1 max-md:grid-cols-2 pb-8 pt-4">
                 {hevyPrograms.map((program, index) => (
                     <HevyProgramCard
                         key={index}
