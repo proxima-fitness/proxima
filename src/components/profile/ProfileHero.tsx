@@ -59,7 +59,7 @@ export function ProfileHero({ onEditProfileClick }: IProfileHeroProps) {
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="flex flex-row items-start gap-6">
+            <div className="flex flex-row items-start gap-4 sm:gap-6">
                 <div className="relative shrink-0">
                     <Avatar className="h-[90px] w-[90px] md:h-[120px] md:w-[120px] rounded-full border border-border/80 shadow-sm">
                         {profilePicUrl ? (
@@ -71,14 +71,14 @@ export function ProfileHero({ onEditProfileClick }: IProfileHeroProps) {
                     </Avatar>
                 </div>
                 <div className="flex flex-1 flex-col gap-1 min-w-0">
-                    <div className="flex flex-row gap-8 sm:gap-20 text-center">
-                        <div className="flex flex-col items-center gap-0.5">
+                    <div className="flex w-full min-w-0 flex-row justify-between gap-2 text-center sm:gap-8 md:gap-20">
+                        <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5">
                             <span className="text-sm tabular-nums tracking-tight text-foreground/90">0</span>
                             <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground whitespace-nowrap">
                                 lifts
                             </span>
                         </div>
-                        <div className="flex flex-col items-center gap-0.5">
+                        <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5">
                             {loadingFollowers ? (
                                 <Skeleton className="h-4 w-6" />
                             ) : (
@@ -90,7 +90,7 @@ export function ProfileHero({ onEditProfileClick }: IProfileHeroProps) {
                                 followers
                             </span>
                         </div>
-                        <div className="flex flex-col items-center gap-0.5">
+                        <div className="flex min-w-0 flex-1 flex-col items-center gap-0.5">
                             {loadingFollowing ? (
                                 <Skeleton className="h-4 w-6" />
                             ) : (
