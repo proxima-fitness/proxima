@@ -168,7 +168,7 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
                     <section aria-labelledby="programs-explore-heading">
                         <h1
                             id="programs-explore-heading"
-                            className="pb-8 text-center font-main text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
+                            className="pb-8 text-center font-third font-bold text-2xl tracking-tight text-foreground sm:text-3xl"
                         >
                             Workout Programs
                         </h1>
