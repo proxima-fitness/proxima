@@ -12,6 +12,12 @@ import { ProgramFallback } from "@/components/generic/ProgramFallback";
 import { ProgramsSlugLayout } from "@/components/programs/ProgramsSlugLayout";
 import { Suspense } from "react";
 
+const programDetailShell =
+ "w-full min-h-0 bg-background text-foreground font-third";
+
+const programDetailInner =
+    "mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-10 lg:px-8";
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string[] }> }) {
     const { slug } = await params;
     const rawTitle = slug[0]?.replace(/-/g, ' ') ?? "Program";
@@ -38,10 +44,14 @@ export default async function ProgramsSlugPage({
     const programId = slug[slug.length - 1];
     if (!programId) {
         return (
-            <div className="bg-white dark:bg-extraDarkGray flex items-start justify-start flex-col px-12 max-sm:px-2 py-6">
-                <div className="text-center py-8">
-                    <h1 className="text-2xl font-bold">Program not found</h1>
-                    <p className="text-muted-foreground mt-2">Invalid program URL</p>
+            <div className={programDetailShell}>
+                <div className={programDetailInner}>
+                    <div className="rounded-2xl border border-border/60 bg-card/50 px-6 py-12 text-center shadow-sm">
+                        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                            Program not found
+                        </h1>
+                        <p className="mt-2 text-sm text-muted-foreground">Invalid program URL</p>
+                    </div>
                 </div>
             </div>
         );
@@ -50,20 +60,26 @@ export default async function ProgramsSlugPage({
     const programIdInt = parseInt(programId, 10);
     if (isNaN(programIdInt)) {
         return (
-            <div className="bg-white dark:bg-extraDarkGray flex items-start justify-start flex-col px-12 max-sm:px-2 py-6">
-                <div className="text-center py-8">
-                    <h1 className="text-2xl font-bold">Program not found</h1>
-                    <p className="text-muted-foreground mt-2">Invalid program ID format</p>
+            <div className={programDetailShell}>
+                <div className={programDetailInner}>
+                    <div className="rounded-2xl border border-border/60 bg-card/50 px-6 py-12 text-center shadow-sm">
+                        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                            Program not found
+                        </h1>
+                        <p className="mt-2 text-sm text-muted-foreground">Invalid program ID format</p>
+                    </div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="bg-white dark:bg-extraDarkGray flex items-start justify-start flex-col px-12 max-sm:px-2 py-6">
-            <Suspense fallback={ <ProgramFallback /> }>
-                <ProgramsSlugLayout id={programIdInt} />
-            </Suspense>
+        <div className={programDetailShell}>
+            <div className={programDetailInner}>
+                <Suspense fallback={<ProgramFallback />}>
+                    <ProgramsSlugLayout id={programIdInt} />
+                </Suspense>
+            </div>
         </div>
     );
 }

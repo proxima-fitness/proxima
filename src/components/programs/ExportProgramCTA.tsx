@@ -100,10 +100,12 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
 
     return (
         <>
-            <div className="rounded-xl dark:bg-darkGray bg-extraLightGray text-black dark:text-white shadow-md flex flex-col text-center justify-start items-center px-8 w-full h-full max-sm:h-auto max-sm:pb-4">
-                <div className="flex flex-col w-full items-center">
+            <div className="flex h-full w-full max-sm:h-auto flex-col items-center justify-start rounded-2xl border border-border/60 bg-card/80 px-6 py-6 text-center text-foreground shadow-sm backdrop-blur-sm dark:bg-card/60 max-sm:pb-5 sm:px-8">
+                <div className="flex w-full flex-col items-center">
                     {(authLoading || user) && (
-                        <h2 className="font-main text-2xl max-sm:text-3xl pt-4 font-bold pb-4">Export Program</h2>
+                        <h2 className="font-third pb-3 pt-1 text-2xl font-semibold tracking-tight max-sm:text-3xl">
+                            Export
+                        </h2>
                     )}
                     {authLoading ? (
                         <div className="flex flex-col gap-3 w-full pb-4" aria-busy="true" aria-label="Loading export options">
@@ -121,11 +123,11 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
                     ) : (
                         <div className="relative w-full pb-4 ">
                             <div
-                                className="flex flex-col w-full opacity-50 pointer-events-none select-none"
+                                className="flex w-full flex-col opacity-50 pointer-events-none select-none"
                                 aria-hidden="true"
                             >
-                                <h2 className="font-main text-2xl max-sm:text-3xl pt-4 font-bold pb-4">
-                                    Export Program
+                                <h2 className="font-third pb-3 pt-1 text-2xl font-semibold tracking-tight max-sm:text-3xl">
+                                    Export
                                 </h2>
                                 <ExportProgramCTAButtons
                                     programId={programId}
@@ -134,12 +136,12 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
                                     hideHevyCrown
                                 />
                             </div>
-                            <div className="absolute inset-0 z-10 flex items-center justify-center overflow-hidden rounded-lg px-4 bg-extraLightGray/15 dark:bg-darkGray/20 backdrop-blur-[0.5px]">
+                            <div className="absolute inset-0 z-10 flex items-center justify-center overflow-hidden rounded-2xl bg-background/40 px-4 backdrop-blur-sm dark:bg-background/25">
                                 <Button
                                     asChild
-                                    className="relative z-[1] h-10 bg-lightSecondary hover:bg-lightSecondary/80 text-white shadow-md"
+                                    className="relative z-[1] h-10 rounded-xl bg-secondary font-semibold text-white shadow-sm hover:bg-secondary/90 dark:bg-lightSecondary dark:text-extraDarkGray dark:hover:bg-lightSecondary/90"
                                 >
-                                    <Link href={loginWithNext}>Sign in to Export</Link>
+                                    <Link href={loginWithNext}>Sign in to export</Link>
                                 </Button>
                             </div>
                         </div>
@@ -149,8 +151,8 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
 
             <Dialog open={pdfOpen} onOpenChange={setPdfOpen}>
                 <DialogContent className="sm:max-w-6xl max-sm:w-[95vw]">
-                    <DialogTitle className="font-bold font-main text-xl sm:text-2xl text-center">
-                        PDF Preview
+                    <DialogTitle className="text-center font-third text-xl font-semibold tracking-tight sm:text-2xl">
+                        PDF preview
                     </DialogTitle>
                     {hevyRoutine && hevyRoutine.length > 0 ? (
                         <PdfPreviewPane hevyRoutine={hevyRoutine} isInLbs={isInLbs} />
@@ -167,7 +169,7 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
                     onPointerDownOutside={hevyUploading ? (e) => e.preventDefault() : undefined}
                     onEscapeKeyDown={hevyUploading ? (e) => e.preventDefault() : undefined}
                 >
-                    <DialogTitle className="font-bold font-main text-xl sm:text-2xl text-center">
+                    <DialogTitle className="text-center font-third text-xl font-semibold tracking-tight sm:text-2xl">
                         Export to Hevy
                     </DialogTitle>
                     <div className="w-full px-4 py-4 sm:px-6 sm:py-5 md:px-8 md:py-6 lg:px-10 lg:py-6">
@@ -193,7 +195,7 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
 
             <Dialog open={spreadsheetOpen} onOpenChange={setSpreadsheetOpen}>
                 <DialogContent className="sm:max-w-lg max-sm:w-[95vw]">
-                    <DialogTitle className="font-bold font-main text-xl sm:text-2xl text-center">
+                    <DialogTitle className="text-center font-third text-xl font-semibold tracking-tight sm:text-2xl">
                         Spreadsheet
                     </DialogTitle>
                     {sortedWorkoutsByWeek.length === 0 ? (
@@ -210,7 +212,7 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
                                 Open in Excel, Google Sheets, or any spreadsheet app.
                             </p>
                             <Button
-                                className="bg-lightSecondary hover:bg-lightSecondary/80 text-white"
+                                className="rounded-xl bg-secondary font-semibold text-white hover:bg-secondary/90 dark:bg-lightSecondary dark:text-extraDarkGray dark:hover:bg-lightSecondary/90"
                                 onClick={handleDownloadCsv}
                             >
                                 Download CSV

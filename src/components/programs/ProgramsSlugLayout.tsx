@@ -47,24 +47,27 @@ export const ProgramsSlugLayout: FC<IProps> =  async (props) => {
 
     return (
         <>
-            <div className="grid grid-cols-3 max-sm:grid-cols-1 grid-rows-[350px_auto_auto] max-sm:grid-rows-none gap-x-12 max-sm:gap-x-0 gap-y-6 md:gap-y-8 pb-8">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_min(340px,32vw)] lg:gap-x-12 lg:gap-y-8 lg:items-start">
                 { program && fullName && programCreatorMetadata &&
                     <>
-                        <div className="col-span-2 row-start-1 max-sm:col-span-1">
+                        <div className="order-1 lg:col-start-1 lg:row-start-1">
                             <ProgramThumbnail id={ id } />
                         </div>
-                        <Card className="col-span-2 row-start-2 py-4 pl-4 bg-gray-100 dark:bg-darkGray max-sm:col-span-1" id="program-title-card">
-                            <div className="text-xl uppercase pb-2">
-                                PROGRAM BY {" "}
+                        <Card
+                            className="order-2 border-border/60 bg-card/80 shadow-sm backdrop-blur-sm dark:bg-card/60 lg:col-start-1 lg:row-start-2 rounded-2xl p-6 sm:p-8"
+                            id="program-title-card"
+                        >
+                            <p className="text-sm font-medium text-muted-foreground">
+                                Program by{" "}
                                 <HoverCard>
-                                    <HoverCardTrigger className="hover:underline">
+                                    <HoverCardTrigger className="font-medium text-foreground underline decoration-border underline-offset-4 transition-colors hover:text-secondary dark:hover:text-lightSecondary">
                                         { fullName }
                                     </HoverCardTrigger>
-                                    <HoverCardContent className="w-72 h-auto">
+                                    <HoverCardContent className="w-72 h-auto rounded-xl border-border/60 shadow-lg">
                                         <div className="flex justify-around space-x-4">
                                             <div className="space-y-1">
                                                 <h4 className="text-sm font-semibold">{ fullName }</h4>
-                                                <p className="text-sm">
+                                                <p className="text-sm text-muted-foreground">
                                                     { programCreatorMetadata.bio }
                                                 </p>
                                                 <div className="flex items-center pt-2">
@@ -77,31 +80,31 @@ export const ProgramsSlugLayout: FC<IProps> =  async (props) => {
                                         </div>
                                     </HoverCardContent>
                                 </HoverCard>
-                            </div>
-                            <div className="text-3xl font-main ">
+                            </p>
+                            <h1 className="mt-3 font-third text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
                                 { program.program[0].title }
-                            </div>
-                            <div className="mt-3 flex items-center gap-2 text-sm text-secondary dark:text-lightSecondary">
-                                <User className="h-4 w-4" aria-hidden="true" />
+                            </h1>
+                            <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                                <User className="h-4 w-4 shrink-0" aria-hidden="true" />
                                 <span>
                                     {program.program[0].saves} {program.program[0].saves === 1 ? "lifter has" : "lifters have"} joined
                                 </span>
                             </div>
                         </Card>
-                        <div className="col-span-2 row-start-3 max-sm:col-span-1">
+                        <div className="order-4 lg:col-start-1 lg:row-start-3">
                             <ProgramOverviewCard program={ program } />
                         </div>
-                        <div className="row-span-2 row-start-1 flex items-start h-full max-sm:row-span-1 max-sm:row-start-auto">
+                        <aside className="order-3 flex flex-col gap-4 lg:sticky lg:top-24 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:self-start">
                             <ExportProgramCTA programId={id} sortedWorkoutsByWeek={sortedWorkoutsByWeek} />
-                        </div>
-                        <div className="row-start-3 h-full max-sm:row-start-auto">
                             <EditProgramCTA programId={id} />
-                        </div>
+                        </aside>
                     </>
                 }
             </div>
             { sortedWorkoutsByWeek &&
-                <ProgramPreview sortedWorkoutsByWeek={ sortedWorkoutsByWeek } />
+                <div className="mt-10 md:mt-12">
+                    <ProgramPreview sortedWorkoutsByWeek={ sortedWorkoutsByWeek } />
+                </div>
             }
         </>
     );
