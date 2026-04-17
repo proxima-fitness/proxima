@@ -8,6 +8,7 @@
 import { ExportProgramCTA } from "./ExportProgramCTA";
 import { EditProgramCTA } from "./EditProgramCTA";
 import { useOpUserMetadataSSR, useProgramByIdSSR, useUserFullNameSSR } from "@/api/hooks";
+import { ANONYMOUS_USER_METADATA } from "@/api/users";
 import { ProgramPreview } from "./ProgramPreview";
 import { sortWorkouts } from "@/utils/general/helpers";
 import { FC } from "react";
@@ -41,11 +42,28 @@ export const ProgramsSlugLayout: FC<IProps> =  async (props) => {
         sortedWorkoutsByWeek = sortWorkouts(program.schedule[0].schedule_workouts);
     }
 
+    if (!program) {
+        return (
+            <div className="rounded-2xl border border-border/60 bg-card/50 px-6 py-12 text-center shadow-sm">
+                <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                    Program not found
+                </h1>
+                <p className="mt-2 text-sm text-muted-foreground">
+                    This program could not be loaded. Try again later.
+                </p>
+            </div>
+        );
+    }
+
+    const displayFullName = fullName?.trim() ? fullName : "Anonymous";
+    const creatorMeta = programCreatorMetadata ?? ANONYMOUS_USER_METADATA;
+    const joinedLine = creatorMeta.created_at
+        ? `Joined ${convertSupabaseDateToReadable(creatorMeta.created_at)}`
+        : "";
+
     return (
         <>
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_min(340px,32vw)] lg:gap-x-12 lg:gap-y-8 lg:items-start">
-                { program && fullName && programCreatorMetadata &&
-                    <>
                         <div className="order-1 lg:col-start-1 lg:row-start-1">
                             <ProgramThumbnail id={ id } />
                         </div>
@@ -56,9 +74,9 @@ export const ProgramsSlugLayout: FC<IProps> =  async (props) => {
                             <div className="text-sm font-medium text-muted-foreground">
                                 Program by{" "}
                                 <ProgramCreatorHoverCard
-                                    fullName={fullName}
-                                    bio={programCreatorMetadata.bio}
-                                    joinedReadable={`Joined ${convertSupabaseDateToReadable(programCreatorMetadata.created_at)}`}
+                                    fullName={displayFullName}
+                                    bio={creatorMeta.bio}
+                                    joinedReadable={joinedLine || "Join date unavailable"}
                                 />
                             </div>
                             <h1 className="mt-3 font-third text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
@@ -78,8 +96,6 @@ export const ProgramsSlugLayout: FC<IProps> =  async (props) => {
                             <ExportProgramCTA programId={id} sortedWorkoutsByWeek={sortedWorkoutsByWeek} />
                             <EditProgramCTA programId={id} />
                         </aside>
-                    </>
-                }
             </div>
             { sortedWorkoutsByWeek &&
                 <div className="mt-10 md:mt-12">

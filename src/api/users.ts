@@ -12,6 +12,15 @@
 import { User } from "@supabase/supabase-js";
 import { supabase } from ".";
 
+/** Safe default when user row is missing or metadata fetch fails. */
+export const ANONYMOUS_USER_METADATA: TUserDetails = {
+    first_name: "Anonymous",
+    last_name: "",
+    username: "anonymous",
+    bio: "",
+    created_at: "",
+};
+
 /**
  * Resolves the `user_id` of the user who created a given program.
  *
@@ -27,11 +36,15 @@ export const getOpUserId = async (program_id: string) => {
 
         if (userIdError) {
             console.error("Error fetching program creator user id",userIdError);
-        } else {
+            return undefined;
+        }
+        if (userId && userId.length > 0) {
             return userId[0].user_id as string;
         }
+        return undefined;
     } catch (error: unknown) {
         console.error("Error fetching program creator user id",error);
+        return undefined;
     }
 };
 /**
@@ -121,7 +134,7 @@ export const getUserFullName = async (id: string | number | undefined, id_type: 
  * bio, and account creation date.
  *
  * @param id - The user's UUID
- * @returns The user's metadata as a TUserDetails object, or undefined on error
+ * @returns The user's metadata as a TUserDetails object, or anonymous defaults on error / missing row
  */
 export const getUserMetaData = async (id: string) => {
     try {
@@ -132,11 +145,15 @@ export const getUserMetaData = async (id: string) => {
 
         if (metaDataError) {
             console.error('Error fetching users metadata', metaDataError);
-        } else {
-           return metaData[0] as TUserDetails;
+            return ANONYMOUS_USER_METADATA;
         }
+        if (metaData && metaData.length > 0) {
+            return metaData[0] as TUserDetails;
+        }
+        return ANONYMOUS_USER_METADATA;
     } catch (error) {
         console.error("Error fetching users metadata", error);
+        return ANONYMOUS_USER_METADATA;
     }
 };
 

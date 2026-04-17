@@ -20,7 +20,7 @@
 import { useQuery, type QueryFunctionContext } from "@tanstack/react-query";
 import { getBlogById, getBlogs } from "./blog";
 import { getCommunityAiPrograms, getCommunityAiProgramsPaginated, getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID, getSubscribedPrograms } from "./programs";
-import { getOpUserId, getUserFullName, getUserMetaData, getUsersBatch } from "./users";
+import { ANONYMOUS_USER_METADATA, getOpUserId, getUserFullName, getUserMetaData, getUsersBatch } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getHevyApiKey, getHevyCustomExercises, getHevyExercises, getHevyPrograms, getHevyRoutines } from "../components/program-builder/api/hevy";
 import { getMyFeatureLimits } from "./feature-limits";
@@ -468,10 +468,11 @@ export const useOpUserMetadataSSR = async (id: string) => {
     const userId = await getOpUserId(id);
     if (!userId) {
          console.error("User ID not found");
-         return { first_name: "Anonymous", last_name: "", username: "anonymous", bio: "", created_at: "" };
+         return ANONYMOUS_USER_METADATA;
     }
 
-    return getUserMetaData(userId);
+    const meta = await getUserMetaData(userId);
+    return meta ?? ANONYMOUS_USER_METADATA;
 };
 
 // // FETCHES THE USER ID OF THE OP OF A WORKOUT PROGRAM
