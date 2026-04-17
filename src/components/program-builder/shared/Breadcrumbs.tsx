@@ -31,7 +31,7 @@ export const Breadcrumbs: React.FC = () => {
           <>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href="/build-program">Build Program</BreadcrumbLink>
+              <BreadcrumbLink href="/build-program?resume=true">Build Program</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
