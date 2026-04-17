@@ -13,13 +13,9 @@ import { sortWorkouts } from "@/utils/general/helpers";
 import { FC } from "react";
 import { Card } from "../ui/card";
 import { ProgramOverviewCard } from "./ProgramOverviewCard";
+import { ProgramCreatorHoverCard } from "./ProgramCreatorHoverCard";
 import { ProgramThumbnail } from "./ProgramThumbnail";
-import {
-    HoverCard,
-    HoverCardContent,
-    HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { CalendarIcon, User } from "lucide-react";
+import { User } from "lucide-react";
 import { convertSupabaseDateToReadable } from "@/utils/general/helpers";
 
 interface IProps {
@@ -59,27 +55,11 @@ export const ProgramsSlugLayout: FC<IProps> =  async (props) => {
                         >
                             <div className="text-sm font-medium text-muted-foreground">
                                 Program by{" "}
-                                <HoverCard>
-                                    <HoverCardTrigger className="font-medium text-foreground underline decoration-border underline-offset-4 transition-colors hover:text-secondary dark:hover:text-lightSecondary">
-                                        { fullName }
-                                    </HoverCardTrigger>
-                                    <HoverCardContent className="w-72 h-auto rounded-xl border-border/60 shadow-lg">
-                                        <div className="flex justify-around space-x-4">
-                                            <div className="space-y-1">
-                                                <h4 className="text-sm font-semibold">{ fullName }</h4>
-                                                <p className="text-sm text-muted-foreground">
-                                                    { programCreatorMetadata.bio }
-                                                </p>
-                                                <div className="flex items-center pt-2">
-                                                    <CalendarIcon className="mr-2 h-4 w-4 opacity-70" />{" "}
-                                                    <span className="text-xs text-muted-foreground">
-                                                        Joined {convertSupabaseDateToReadable(programCreatorMetadata.created_at)}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </HoverCardContent>
-                                </HoverCard>
+                                <ProgramCreatorHoverCard
+                                    fullName={fullName}
+                                    bio={programCreatorMetadata.bio}
+                                    joinedReadable={`Joined ${convertSupabaseDateToReadable(programCreatorMetadata.created_at)}`}
+                                />
                             </div>
                             <h1 className="mt-3 font-third text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
                                 { program.program[0].title }
@@ -91,10 +71,10 @@ export const ProgramsSlugLayout: FC<IProps> =  async (props) => {
                                 </span>
                             </div>
                         </Card>
-                        <div className="order-4 lg:col-start-1 lg:row-start-3">
+                        <div className="order-3 lg:col-start-1 lg:row-start-3">
                             <ProgramOverviewCard program={ program } />
                         </div>
-                        <aside className="order-3 flex flex-col gap-4 lg:sticky lg:top-24 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:self-start">
+                        <aside className="order-4 flex flex-col gap-4 lg:sticky lg:top-24 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:self-start">
                             <ExportProgramCTA programId={id} sortedWorkoutsByWeek={sortedWorkoutsByWeek} />
                             <EditProgramCTA programId={id} />
                         </aside>
