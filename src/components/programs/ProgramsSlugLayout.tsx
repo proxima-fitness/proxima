@@ -57,7 +57,7 @@ export const ProgramsSlugLayout: FC<IProps> =  async (props) => {
                             className="order-2 border-border/60 bg-card/80 shadow-sm backdrop-blur-sm dark:bg-card/60 lg:col-start-1 lg:row-start-2 rounded-2xl p-6 sm:p-8"
                             id="program-title-card"
                         >
-                            <p className="text-sm font-medium text-muted-foreground">
+                            <div className="text-sm font-medium text-muted-foreground">
                                 Program by{" "}
                                 <HoverCard>
                                     <HoverCardTrigger className="font-medium text-foreground underline decoration-border underline-offset-4 transition-colors hover:text-secondary dark:hover:text-lightSecondary">
@@ -80,7 +80,7 @@ export const ProgramsSlugLayout: FC<IProps> =  async (props) => {
                                         </div>
                                     </HoverCardContent>
                                 </HoverCard>
-                            </p>
+                            </div>
                             <h1 className="mt-3 font-third text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
                                 { program.program[0].title }
                             </h1>
