@@ -3,7 +3,7 @@
 /*
  * @module CoachesCommunityToggle
  * @description Segmented toggle that switches between coach-created and community-created program views while surfacing program counts.
- * @dependsOn React client rendering, shared button styles, and parent program search layout state.
+ * @dependsOn React client rendering and parent program search layout state.
  * @usedBy Program discovery pages to let users flip between curated coach programs and community programs.
  */
 
@@ -22,49 +22,50 @@ interface IProps {
 }
 
 /**
- * CoachesCommunityToggle renders a two-state pill control for switching between coach and community program feeds.
+ * CoachesCommunityToggle renders a two-state segmented control for switching between coach and community program feeds.
  */
 export function CoachesCommunityToggle({
     viewMode,
     onViewModeChange,
     coachCount,
     communityCount,
-}:  IProps) {
+}: IProps) {
     return (
-        <div className="w-full">
-            <div className="inline-flex rounded-lg overflow-hidden border border-lightGray dark:border-darkGray bg-lightGray dark:bg-darkGray">
-                <button
-                    type="button"
-                    onClick={() => onViewModeChange("coaches")}
-                    className={`
-                        px-4 py-2.5 text-sm font-bold uppercase tracking-wide transition-colors
-                        ${viewMode === "coaches"
-                            ? "bg-lightSecondary text-primary dark:text-primary"
-                            : "bg-white dark:bg-extraDarkGray text-gray-500 dark:text-dimWhite hover:bg-extraLightGray dark:hover:bg-blueGray"
-                        }
-                    `}
-                    aria-pressed={viewMode === "coaches"}
-                    aria-label={`By coaches (${coachCount} programs)`}
-                >
-                    BY COACHES ({coachCount})
-                </button>
-                <button
-                    type="button"
-                    onClick={() => onViewModeChange("community")}
-                    className={`
-                        px-4 py-2.5 text-sm font-bold uppercase tracking-wide transition-colors
-                        ${viewMode === "community"
-                            ? "bg-lightSecondary text-primary dark:text-primary"
-                            : "bg-white dark:bg-extraDarkGray text-gray-500 dark:text-dimWhite hover:bg-extraLightGray dark:hover:bg-blueGray"
-                        }
-                    `}
-                    aria-pressed={viewMode === "community"}
-                    aria-label={`By community (${communityCount} programs)`}
-                >
-                    BY COMMUNITY ({communityCount})
-                </button>
-            </div>
-            <div className="h-0.5 w-full bg-lightSecondary mt-0.5" aria-hidden />
+        <div
+            className="inline-flex rounded-2xl bg-muted/40 p-1 ring-1 ring-black/[0.06] dark:bg-muted/25 dark:ring-white/10"
+            role="tablist"
+            aria-label="Program source"
+        >
+            <button
+                type="button"
+                role="tab"
+                onClick={ () => onViewModeChange("coaches") }
+                className={ `relative flex min-w-[8rem] items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                    viewMode === "coaches"
+                        ? "bg-background text-foreground shadow-sm dark:bg-extraDarkGray"
+                        : "text-muted-foreground hover:text-foreground"
+                }` }
+                aria-selected={ viewMode === "coaches" }
+                aria-label={ `Coaches, ${coachCount} programs` }
+            >
+                <span>Coaches</span>
+                <span className="tabular-nums text-xs text-muted-foreground">{ coachCount }</span>
+            </button>
+            <button
+                type="button"
+                role="tab"
+                onClick={ () => onViewModeChange("community") }
+                className={ `relative flex min-w-[8rem] items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                    viewMode === "community"
+                        ? "bg-background text-foreground shadow-sm dark:bg-extraDarkGray"
+                        : "text-muted-foreground hover:text-foreground"
+                }` }
+                aria-selected={ viewMode === "community" }
+                aria-label={ `Community, ${communityCount} programs` }
+            >
+                <span>Community</span>
+                <span className="tabular-nums text-xs text-muted-foreground">{ communityCount }</span>
+            </button>
         </div>
     );
 }

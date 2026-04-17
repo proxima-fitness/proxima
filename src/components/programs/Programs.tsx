@@ -32,7 +32,7 @@ export const Programs: React.FC = () => {
         return (
             <>
                 <div className="pt-10 h-[500px]">
-                    <Skeleton className="h-[420px] p-4 bg-gray-100">
+                    <Skeleton className="h-[420px] rounded-3xl bg-muted/30 p-4 dark:bg-muted/20">
                         <h1 className="text-center text-3xl pb-4 font-main"></h1>
                         <div className="max-sm:w-full flex flex-col items-center justify-center">
                             <div className="w-full flex flex-row max-sm:flex-col items-center justify-center">

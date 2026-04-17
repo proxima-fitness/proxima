@@ -2,8 +2,8 @@
 
 /*
  * @module ProgramFilterGroup
- * @description Reusable filter section for the program search UI, capable of rendering badges, sliders, or comboboxes per filter type.
- * @dependsOn Badge, slider, and combobox UI components as well as higher-level program filter state from the parent search component.
+ * @description Reusable filter section for the program search UI: comboboxes or multi-select chip toggles.
+ * @dependsOn ComboBox, ToggleGroup, higher-level program filter state from the parent search component.
  * @usedBy `ProgramSearch` to present grouped filters for program length, workout duration, equipment, specialization, and difficulty.
  */
 
@@ -20,14 +20,15 @@
  * @property handleAppliedEquipmentFilter Setter for the equipment filter list.
  * @property handleAppliedSpecializationFilter Setter for the specialization filter list.
  * @property handleAppliedDifficultyFilter Setter for the difficulty filter list.
+ * @property headingAlign Optional alignment for section title and chip row (row 1 uses center).
  */
-import { useState } from "react";
-import { Badge } from "../ui/badge";
-import { Slider } from "@/components/ui/slider";
 import { ComboBox } from "../generic/ComboBox";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { cn } from "@/lib/utils";
 
 interface IProps {
     filter: TFilterGroupOption;
+    headingAlign?: "center" | "start";
     appliedProgramLengthFilter: string;
     appliedWorkoutDurationFilter: string;
     appliedEquipmentFilter: string[];
@@ -44,6 +45,7 @@ export const ProgramFilterGroup: React.FC<IProps> = (props) => {
 
     const {
         filter,
+        headingAlign = "start",
         appliedProgramLengthFilter,
         appliedWorkoutDurationFilter,
         appliedEquipmentFilter,
@@ -56,83 +58,83 @@ export const ProgramFilterGroup: React.FC<IProps> = (props) => {
         handleAppliedDifficultyFilter,
     } = props;
 
-    const [sliderValue, setSliderValue] = useState([60]);
-
     const handleSelectedFilters = (filterType: string) => {
         if (filter.type === "program_length") {
             handleAppliedProgramLengthFilter(filterType);
-        } else if(filter.type === "workout_duration") {
+        } else if (filter.type === "workout_duration") {
             handleAppliedWorkoutDurationFilter(filterType);
-        } else if (filter.type === "equipment") {
-            if (appliedEquipmentFilter.includes(filterType)) {
-                // remove filter if already selected
-                handleAppliedEquipmentFilter(appliedEquipmentFilter.filter(item => item !== filterType));
-            } else {
-                handleAppliedEquipmentFilter([...appliedEquipmentFilter, filterType]);
-            }
-        } else if (filter.type === "specialization") {
-            if (appliedSpecializationFilter.includes(filterType)) {
-                // remove filter if already selected
-                handleAppliedSpecializationFilter(appliedSpecializationFilter.filter(item => item !== filterType));
-            } else {
-                handleAppliedSpecializationFilter([...appliedSpecializationFilter, filterType]);
-            }
-        } else if (filter.type === "difficulty") {
-            if (appliedDifficultyFilter.includes(filterType)) {
-                // remove filter if already selected
-                handleAppliedDifficultyFilter(appliedDifficultyFilter.filter(item => item !== filterType));
-            } else {
-                handleAppliedDifficultyFilter([...appliedDifficultyFilter, filterType]);
-            }
         }
     };
 
-    const badgeSelected = (filterType: string): boolean => {
-        if (appliedProgramLengthFilter === filterType) {
-            return true;
-        } else if (appliedWorkoutDurationFilter === filterType) {
-            return true;
-        } else if (appliedEquipmentFilter.includes(filterType)) {
-            return true;
-        } else if (appliedSpecializationFilter.includes(filterType)) {
-            return true;
-        } else if (appliedDifficultyFilter.includes(filterType)) {
-            return true;
-        } else {
-            return false;
-        }
-    };
+    const multiValue =
+        filter.type === "equipment"
+            ? appliedEquipmentFilter
+            : filter.type === "specialization"
+              ? appliedSpecializationFilter
+              : filter.type === "difficulty"
+                ? appliedDifficultyFilter
+                : [];
 
     return (
-        <div className="px-2 pt-4">
-            <div className="text-sm font-bold">{filter.title}</div>
+        <div className={ cn("min-w-0", headingAlign === "center" && "flex flex-col items-center") }>
+            <div
+                className={ cn(
+                    "w-full text-xs font-medium uppercase tracking-wide text-muted-foreground",
+                    headingAlign === "center" && "text-center",
+                ) }
+            >
+                { filter.title }
+            </div>
             { filter.component === "badge" ? (
-                <div className="flex flex-row gap-2 flex-wrap pt-2">
-                    { filter.values.map((filter) => {
-                    return (
-                        <Badge onClick={ () => handleSelectedFilters(filter) } key={ filter } className={ `p-2 cursor-pointer ${ badgeSelected(filter) ? "bg-[#37BCCF] hover:bg-[#37BCCF] text-white hover:text-white" : "bg-white dark:bg-extraDarkGray hover:bg-white"}  ` }>{filter}</Badge>
-                    );
-                } ) }
+                <ToggleGroup
+                    type="multiple"
+                    value={ multiValue }
+                    onValueChange={ (next) => {
+                        if (filter.type === "equipment") {
+                            handleAppliedEquipmentFilter(next);
+                        } else if (filter.type === "specialization") {
+                            handleAppliedSpecializationFilter(next);
+                        } else if (filter.type === "difficulty") {
+                            handleAppliedDifficultyFilter(next);
+                        }
+                    } }
+                    className={ cn(
+                        "mt-3 flex flex-wrap gap-2",
+                        headingAlign === "center" ? "justify-center" : "justify-start",
+                    ) }
+                >
+                    { filter.values.map((opt) => (
+                        <ToggleGroupItem
+                            key={ opt }
+                            value={ opt }
+                            aria-label={ opt }
+                            className={ cn(
+                                "h-auto min-h-9 rounded-full border-0 bg-muted/40 px-3 py-1.5 text-sm font-medium text-foreground shadow-none ring-1 ring-black/[0.05] transition-colors",
+                                "hover:bg-muted/60 dark:bg-muted/25 dark:ring-white/10 dark:hover:bg-muted/40",
+                                "data-[state=on]:bg-lightSecondary data-[state=on]:text-white data-[state=on]:ring-0",
+                                "data-[state=on]:hover:bg-lightSecondary/90 data-[state=on]:hover:text-white",
+                            ) }
+                        >
+                            { opt }
+                        </ToggleGroupItem>
+                    )) }
+                </ToggleGroup>
+            ) : (
+                <div className={ cn("mt-3 w-full", headingAlign === "center" && "flex justify-center") }>
+                    <ComboBox
+                        value={
+                            filter.type === "program_length"
+                                ? appliedProgramLengthFilter
+                                : filter.type === "workout_duration"
+                                  ? appliedWorkoutDurationFilter
+                                  : ""
+                        }
+                        handleSelectedFilters={ handleSelectedFilters }
+                        options={ filter.values }
+                        title={ filter.title }
+                    />
                 </div>
-            ) : filter.component === "combobox" ?
-            (
-                <div className="pt-2">
-                    <ComboBox value={ filter.type === "program_length" ? appliedProgramLengthFilter: filter.type === "workout_duration" ? appliedWorkoutDurationFilter : "" } handleSelectedFilters={ handleSelectedFilters } options={ filter.values } title={ filter.title } />
-                </div>
-            ) : filter.component === "slider" ?
-            (
-                <div className="py-4">
-                    <Slider value={ sliderValue } onValueChange={ setSliderValue } max={ Number(filter.values[filter.values.length - 1]) } step={ 10 } />
-                    { filter.title === "Workout Duration" && `${sliderValue} Mins` }
-                </div>
-            )
-            :
-            (
-                <>
-                    <ComboBox value={ filter.type === "program_length" ? appliedProgramLengthFilter: filter.type === "workout_duration" ? appliedWorkoutDurationFilter : "" } handleSelectedFilters={ handleSelectedFilters } options={ filter.values } title={ filter.title } />
-                </>
-            )
-            }
+            ) }
         </div>
     );
 };
