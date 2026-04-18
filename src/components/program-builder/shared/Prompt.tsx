@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { useUserContext } from "@/contexts/UserContext";
 import { User } from "@supabase/supabase-js";
 import {
+    hero,
     hevy_logo,
     hevy_logo_black,
     jack_small,
@@ -53,7 +54,26 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
     return (
         <>
             {/* min-h-screen + safe-area padding (not h-screen/100vh) to avoid hero text shifting on mobile PWAs and in-app browsers when chrome resizes */}
-            <div className="min-h-screen flex flex-col items-center justify-center gap-10 relative pt-[max(2rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))]">
+            <div className="min-h-screen flex flex-col items-center justify-center gap-10 relative overflow-hidden pt-[max(2rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))]">
+                {/* 1C ghost gym layer: photo + scrim (Fitbod-style), decorative only */}
+                <div className="pointer-events-none absolute inset-0 z-0" aria-hidden>
+                    <img
+                        src={(hero as any).src}
+                        alt=""
+                        className="absolute inset-0 h-full w-full object-cover object-center"
+                        loading="lazy"
+                        fetchPriority="low"
+                        decoding="async"
+                    />
+                    <div
+                        className="absolute inset-0 bg-white/80 dark:bg-black/72"
+                        aria-hidden
+                    />
+                    <div
+                        className="absolute inset-0 bg-[radial-gradient(ellipse_75%_65%_at_50%_35%,transparent_20%,rgba(0,0,0,0.22)_100%)] dark:bg-[radial-gradient(ellipse_75%_65%_at_50%_35%,transparent_25%,rgba(0,0,0,0.55)_100%)]"
+                        aria-hidden
+                    />
+                </div>
                 <div className="flex flex-col items-center justify-center gap-12 w-full relative z-10">
                     <div className="text-center flex flex-col items-center gap-3">
                         <div className="hidden sm:block">
@@ -150,13 +170,6 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                         </div>
                     </div>
                 </div>
-
-                <div className="absolute z-0 top-40 w-[60%] h-[50%] blue__gradient_dark block" />
-
-
-                <div className="absolute z-0 w-[40%] h-[35%] top-0 pink__gradient_light block dark:hidden" />
-                <div className="absolute z-0 w-[60%] h-[80%] rounded-full white__gradient_light bottom-40 block dark:hidden" />
-                <div className="absolute z-0 top-40 w-[60%] h-[50%] blue__gradient_light block dark:hidden" />
             </div>
 
             {/* <AiProgramGrid /> */}

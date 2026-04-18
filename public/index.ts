@@ -65,7 +65,7 @@ import pwa_flow_1 from "./pwa-flow-1.webp";
 import pwa_flow_2 from "./pwa-flow-2.webp";
 import pwa_flow_3 from "./pwa-flow-3.webp";
 import pwa_flow_4 from "./pwa-flow-4.webp";
-
+import hero from "./hero.jpg";
 
 export {
     qr_code,
@@ -124,4 +124,5 @@ export {
     proxima_logo_white,
     jack_small,
     icon_background_white,
+    hero,
 }
