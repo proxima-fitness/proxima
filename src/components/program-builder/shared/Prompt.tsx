@@ -66,11 +66,11 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                         decoding="async"
                     />
                     <div
-                        className="absolute inset-0 bg-white/80 dark:bg-black/72"
+                        className="absolute inset-0 bg-white/52 dark:bg-black/72"
                         aria-hidden
                     />
                     <div
-                        className="absolute inset-0 bg-[radial-gradient(ellipse_75%_65%_at_50%_35%,transparent_20%,rgba(0,0,0,0.22)_100%)] dark:bg-[radial-gradient(ellipse_75%_65%_at_50%_35%,transparent_25%,rgba(0,0,0,0.55)_100%)]"
+                        className="absolute inset-0 bg-[radial-gradient(ellipse_75%_65%_at_50%_35%,transparent_20%,rgba(0,0,0,0.09)_100%)] dark:bg-[radial-gradient(ellipse_75%_65%_at_50%_35%,transparent_25%,rgba(0,0,0,0.55)_100%)]"
                         aria-hidden
                     />
                 </div>
