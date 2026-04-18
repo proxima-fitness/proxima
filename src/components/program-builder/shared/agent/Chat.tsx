@@ -67,6 +67,8 @@ interface IProps {
   /** Called when user dismisses the questions without building (e.g. close button). */
   onQuestionsDismiss?: () => void;
   isBuilding?: boolean;
+  /** Override the default suggestion chip labels (defaults to quickTriggerSuggestionChips). */
+  suggestionChips?: string[];
 }
 
 interface IAttachmentItemProps {
@@ -346,6 +348,7 @@ export const Chat = forwardRef<HTMLDivElement, IProps>((props, ref) => {
     onQuestionsSkip,
     onQuestionsDismiss,
     isBuilding = false,
+    suggestionChips = quickTriggerSuggestionChips,
   } = props;
   const { user } = useUserContext();
   const { data: featureLimits } = useMyFeatureLimits(user);
@@ -361,7 +364,7 @@ export const Chat = forwardRef<HTMLDivElement, IProps>((props, ref) => {
     <div ref={ref} className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl shrink-0 px-3 pb-3 md:px-5 md:pb-5 max-sm:fixed max-sm:bottom-[calc(70px+max(0.5rem,env(safe-area-inset-bottom)))] max-sm:left-0 max-sm:right-0 max-sm:px-4 max-sm:bg-background max-sm:dark:bg-extraDarkGray pt-4 max-sm:pt-2">
       {showSuggestions && !showQuestions && (
         <Suggestions className="mb-3">
-          {quickTriggerSuggestionChips.map((label) => (
+          {suggestionChips.map((label) => (
             <Suggestion
               key={label}
               suggestion={label}

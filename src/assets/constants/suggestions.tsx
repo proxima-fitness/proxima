@@ -1,4 +1,4 @@
- 
+
 import { BicepsFlexedIcon, BookOpenIcon, Calculator, FootprintsIcon, SquarePowerIcon } from "lucide-react";
 
 /** Suggestion groups for common program builder starting points. */
@@ -67,4 +67,14 @@ export const quickTriggerSuggestionChips = [
   "Beginner SBD",
   "Weight Loss",
   "Body Recomp",
+];
+
+/** Quick chips when a program is already in the builder: short review and improvement prompts (sent as the user message on tap). */
+export const quickModifyProgramSuggestionChips = [
+  "How can I improve this program?",
+  "Check volume and recovery fit",
+  "Rate my program",
+  "Find gaps in exercise selection",
+  "Flag fatigue or injury risks",
+  "Progression and deload ideas",
 ];
