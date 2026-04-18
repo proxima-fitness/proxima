@@ -23,11 +23,10 @@ export const PositiveReviewsMosaic: React.FC = () => {
       <div className={`${styles.boxWidth} mx-auto w-full`}>
         <div className={`${layout.sectionInfoCentered} px-6 sm:px-0 mb-8`}>
           <h2 className="font-main font-semibold xs:text-[48px] text-[28px] text-black dark:text-white xs:leading-[76.8px] leading-[66.8px] text-center w-full">
-            Loved by the{" "}
-            <span style={{ color: "#33bbcf" }}>community</span>
+            What People Are Saying
           </h2>
           <p className="font-second font-normal text-slate-600 dark:text-gray-400 ss:text-[18px] text-[14px] leading-[30.8px] max-w-[560px] mt-4 text-center mx-auto">
-            Thoughts from the community on Reddit.
+            Love from the community <span style={{ color: "#33bbcf" }}>♥️</span>
           </p>
         </div>
 
