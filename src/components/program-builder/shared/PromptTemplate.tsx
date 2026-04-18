@@ -29,12 +29,13 @@ import {
 } from "@/components/ai-elements/attachments";
 import type { AttachmentData } from "@/components/ai-elements/attachments";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { Paperclip, X, MicIcon } from "lucide-react";
+import { Paperclip, X, MicIcon, Square, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Suggestions, Suggestion } from "@/components/ai-elements/suggestion";
 import { cn } from "@/lib/utils";
 import type { FileUIPart } from "ai";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMicTranscription } from "@/hooks/use-mic-transcription";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -136,7 +137,34 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
   onSend,
 }) => {
   const attachments = usePromptInputAttachments();
+  const controller = usePromptInputController();
   const [isMultiline, setIsMultiline] = useState(false);
+
+  const onTranscript = useCallback(
+    (text: string) => {
+      const prev = controller.textInput.value;
+      controller.textInput.setInput(prev.trim() ? `${prev} ${text}` : text);
+    },
+    [controller.textInput],
+  );
+
+  const { status: micStatus, toggle: toggleMic } = useMicTranscription({
+    onTranscript,
+  });
+
+  const micDisabled = micStatus === "transcribing";
+
+  const micTooltip = useMemo(() => {
+    if (micStatus === "recording") return "Stop recording";
+    if (micStatus === "transcribing") return "Transcribing…";
+    return "Use Voice Mode";
+  }, [micStatus]);
+
+  const MicIconEl = micStatus === "recording"
+    ? Square
+    : micStatus === "transcribing"
+      ? Loader2
+      : MicIcon;
 
   useEffect(() => {
     return () => { roRef.current?.disconnect(); };
@@ -145,7 +173,6 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      // Trigger form submit so blob-to-dataURL conversion runs and onSend receives files
       const form = (e.target as HTMLElement).closest("form");
       if (form) {
         form.requestSubmit();
@@ -242,12 +269,25 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
             <TooltipProvider delayDuration={0}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="p-2 cursor-not-allowed opacity-50">
-                    <MicIcon className="size-5" />
-                  </div>
+                  <button
+                    type="button"
+                    onClick={toggleMic}
+                    disabled={micDisabled}
+                    aria-label={micTooltip}
+                    aria-pressed={micStatus === "recording"}
+                    className={cn(
+                      "p-2 rounded-full transition-colors",
+                      micStatus === "recording"
+                        ? "bg-red-500 text-white"
+                        : "hover:bg-extraLightGray dark:hover:bg-darkGray/80",
+                      micDisabled && "opacity-50 cursor-not-allowed",
+                    )}
+                  >
+                    <MicIconEl className={cn("size-5", micStatus === "transcribing" && "animate-spin")} />
+                  </button>
                 </TooltipTrigger>
                 <TooltipContent className="bg-lightSecondary text-white">
-                  Coming soon
+                  {micTooltip}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -292,12 +332,25 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
           <TooltipProvider delayDuration={0}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="p-2 cursor-not-allowed opacity-50">
-                  <MicIcon className="size-5" />
-                </div>
+                <button
+                  type="button"
+                  onClick={toggleMic}
+                  disabled={micDisabled}
+                  aria-label={micTooltip}
+                  aria-pressed={micStatus === "recording"}
+                  className={cn(
+                    "p-2 rounded-full transition-colors",
+                    micStatus === "recording"
+                      ? "bg-red-500 text-white"
+                      : "hover:bg-extraLightGray dark:hover:bg-darkGray/80",
+                    micDisabled && "opacity-50 cursor-not-allowed",
+                  )}
+                >
+                  <MicIconEl className={cn("size-5", micStatus === "transcribing" && "animate-spin")} />
+                </button>
               </TooltipTrigger>
               <TooltipContent className="bg-lightSecondary text-white">
-                Coming soon
+                {micTooltip}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

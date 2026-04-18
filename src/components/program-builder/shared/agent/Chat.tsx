@@ -12,6 +12,7 @@ import {
   PromptInputTextarea,
   PromptInputSubmit,
   usePromptInputAttachments,
+  usePromptInputController,
 } from "@/components/ai-elements/prompt-input";
 import {
   Attachment,
@@ -27,7 +28,7 @@ import {
 } from "@/components/ai-elements/attachments";
 import type { AttachmentData } from "@/components/ai-elements/attachments";
 import { Suggestions, Suggestion } from "@/components/ai-elements/suggestion";
-import { Mic, Paperclip } from "lucide-react";
+import { Mic, Paperclip, Square, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -40,7 +41,8 @@ import { useMyFeatureLimits } from "@/api/hooks";
 import { useUserContext } from "@/contexts/UserContext";
 import { quickTriggerSuggestionChips } from "@/assets/constants/suggestions";
 import type { FileUIPart } from "ai";
-import { memo, useCallback, useState, forwardRef } from "react";
+import { memo, useCallback, useState, forwardRef, useMemo } from "react";
+import { useMicTranscription } from "@/hooks/use-mic-transcription";
 import { Questions } from "@/components/ui/questions";
 import type { IQuestion } from "@/components/ui/questions";
 
@@ -137,7 +139,35 @@ const ChatInputBody = ({
   handleStop,
 }: IChatInputBodyProps) => {
   const attachments = usePromptInputAttachments();
+  const controller = usePromptInputController();
   const [isMultiline, setIsMultiline] = useState(false);
+
+  const onTranscript = useCallback(
+    (text: string) => {
+      const prev = controller.textInput.value;
+      controller.textInput.setInput(prev.trim() ? `${prev} ${text}` : text);
+    },
+    [controller.textInput],
+  );
+
+  const { status: micStatus, toggle: toggleMic } = useMicTranscription({
+    onTranscript,
+    disabled: outOfCredits,
+  });
+
+  const micDisabled = outOfCredits || micStatus === "transcribing";
+
+  const micTooltip = useMemo(() => {
+    if (micStatus === "recording") return "Stop recording";
+    if (micStatus === "transcribing") return "Transcribing…";
+    return "Use Voice Mode";
+  }, [micStatus]);
+
+  const MicIconEl = micStatus === "recording"
+    ? Square
+    : micStatus === "transcribing"
+      ? Loader2
+      : Mic;
 
   const handleRemoveAttachment = useCallback(
     (id: string) => attachments.remove(id),
@@ -213,16 +243,21 @@ const ChatInputBody = ({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="size-9 rounded-full bg-white text-black dark:bg-black dark:text-white hover:bg-white/90 hover:text-white [&_svg]:text-black dark:[&_svg]:text-white disabled:opacity-60"
-                    disabled
-                    aria-label="Voice input (coming soon)"
+                    className={cn(
+                      "size-9 rounded-full bg-white text-black dark:bg-black dark:text-white hover:bg-white/90 hover:text-white [&_svg]:text-black dark:[&_svg]:text-white disabled:opacity-60",
+                      micStatus === "recording" && "bg-red-500 dark:bg-red-500 [&_svg]:text-white dark:[&_svg]:text-white hover:bg-red-600",
+                    )}
+                    disabled={micDisabled}
+                    onClick={toggleMic}
+                    aria-label={micTooltip}
+                    aria-pressed={micStatus === "recording"}
                   >
-                    <Mic size={18} />
+                    <MicIconEl size={18} className={cn(micStatus === "transcribing" && "animate-spin")} />
                   </Button>
                 </span>
               </TooltipTrigger>
               <TooltipContent className="bg-lightSecondary text-white">
-                Coming soon
+                {micTooltip}
               </TooltipContent>
             </Tooltip>
             <PromptInputSubmit
@@ -270,16 +305,21 @@ const ChatInputBody = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-9 rounded-full bg-white text-black dark:bg-black dark:text-white hover:bg-white/90 hover:text-white [&_svg]:text-black dark:[&_svg]:text-white disabled:opacity-50"
-                  disabled
-                  aria-label="Voice input (coming soon)"
+                  className={cn(
+                    "size-9 rounded-full bg-white text-black dark:bg-black dark:text-white hover:bg-white/90 hover:text-white [&_svg]:text-black dark:[&_svg]:text-white disabled:opacity-50",
+                    micStatus === "recording" && "bg-red-500 dark:bg-red-500 [&_svg]:text-white dark:[&_svg]:text-white hover:bg-red-600",
+                  )}
+                  disabled={micDisabled}
+                  onClick={toggleMic}
+                  aria-label={micTooltip}
+                  aria-pressed={micStatus === "recording"}
                 >
-                  <Mic size={18} />
+                  <MicIconEl size={18} className={cn(micStatus === "transcribing" && "animate-spin")} />
                 </Button>
               </span>
             </TooltipTrigger>
             <TooltipContent className="bg-lightSecondary text-white">
-              Coming soon
+              {micTooltip}
             </TooltipContent>
           </Tooltip>
           <PromptInputSubmit
