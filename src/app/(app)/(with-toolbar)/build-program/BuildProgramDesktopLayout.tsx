@@ -53,7 +53,7 @@ function BuildProgramDesktopLayoutInner({
         <ResizablePanel
             id="main-content"
             order={sidebarPosition === "left" ? 2 : 1}
-            minSize={30}
+            minSize={0}
             className={MAIN_PANEL_CLASS}
         >
             <div className="sm:pl-8 w-full max-w-full max-sm:overflow-x-hidden h-full flex flex-col">

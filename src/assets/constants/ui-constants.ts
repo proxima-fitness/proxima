@@ -22,7 +22,7 @@ export const PENDING_ATTACHMENTS_KEY = "pending-attachments";
 export const PENDING_INITIAL_PROMPT_KEY = "pending-initial-prompt";
 export const LONG_PROMPT_PLACEHOLDER = "__long_prompt__";
 export const COLLAPSED_SIZE = 30;
-export const EXPANDED_SIZE = 70;
+export const EXPANDED_SIZE = 100;
 export const CHAT_MESSAGES_KEY = "messages";
 
 export const MAIN_DISCOUNT_CODE = "PROXIMA50";
