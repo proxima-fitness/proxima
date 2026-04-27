@@ -770,8 +770,9 @@ export function getTools({
 
     const rateProgramTool = tool({
         description:
-            'Rates the user\'s current program against bodybuilding training-principles (volume landmarks, frequency, movement categories, rep variety, session size). ' +
-            'Call when the user asks to rate, review, or grade their program or routine (e.g. "rate my program", "how good is my split"). ' +
+            'Heuristic report card (volume, frequency, categories, rep variety, session size). ' +
+            'Call only when the user explicitly asks to rate their program (same intent as the "Rate my program" chip). ' +
+            'Do not call for "how do I improve", generic review, or critique—use getCurrentProgram and reply in chat. ' +
             'Uses the program JSON from this request (same snapshot as getCurrentProgram).',
         inputSchema: z.object({
             reason: z.string().optional().describe('Short note on why the rating was requested'),

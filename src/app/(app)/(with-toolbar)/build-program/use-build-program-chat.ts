@@ -35,7 +35,7 @@ import type { SendMessageWithContext } from "@/components/program-builder/shared
 
 const chatTransport = new DefaultChatTransport({ api: "/api/chat" });
 
-/** Mirrors `isBuildProgramShareIdParam` in BuildProgram.tsx (avoid importing BuildProgram → circular deps). */
+/** Mirrors `isValidShareId` in BuildProgram.tsx (avoid importing BuildProgram → circular deps). */
 function isValidShareId(shareId: string): boolean {
     if (!shareId.trim()) return false;
     const n = Number(shareId);

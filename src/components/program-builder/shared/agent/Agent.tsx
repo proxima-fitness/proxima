@@ -19,6 +19,7 @@ import { IOption } from "@/components/ui/multi-select"
 import { type ChatStatus, FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai"
 import type { IQuestion } from "@/components/ui/questions"
 import { equipmentOptions, healthIssuesOptions } from "@/assets/constants/form-options"
+import { quickModifyProgramSuggestionChips } from "@/assets/constants/suggestions"
 import { inferDaysPerWeek, inferProgramLength } from "@/components/program-builder/utils/helpers"
 
 import { Chat } from "./Chat"
@@ -414,6 +415,7 @@ export const Agent: React.FC<IProps> = (props) => {
                 handleSubmit={handleSubmit}
                 handleStop={handleStop}
                 showSuggestions={messages.length === 0 && !showQuestionsPayload && !isLoading}
+                suggestionChips={hevyProgram.length > 0 ? quickModifyProgramSuggestionChips : undefined}
                 questionsPayload={showQuestionsPayload}
                 onQuestionsComplete={handleQuestionsComplete}
                 onQuestionsSkip={handleQuestionsSkip}
