@@ -8,11 +8,8 @@ import {
     DEFAULT_CALENDLY_SCHEDULING_URL,
     DISCOVERY_DISCOUNT_CODE,
     DISCOVERY_DISCOUNT_PERCENT,
-    MAIN_DISCOUNT_CODE,
-    MAIN_DISCOUNT_PERCENT,
 } from "@/assets/constants/ui-constants";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 /*
@@ -63,6 +60,7 @@ export function HevyPromoBanner({ className, onJumpToCheckout }: HevyPromoBanner
                 className,
             )}
         >
+            {/* Limited Time Offer — hidden for now
             <div className="space-y-2">
                 <p className="text-sm font-semibold text-foreground">Limited Time Offer</p>
                 <p className="text-foreground text-sm font-medium leading-snug">
@@ -75,6 +73,7 @@ export function HevyPromoBanner({ className, onJumpToCheckout }: HevyPromoBanner
             </div>
 
             <Separator className="bg-border" />
+            */}
 
             <div className="space-y-3">
                 <p className="text-sm font-semibold text-foreground">Product feedback call</p>
