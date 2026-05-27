@@ -42,6 +42,22 @@ function isValidShareId(shareId: string): boolean {
     return Number.isFinite(n) && n > 0;
 }
 
+/** Anonymous session restore — read once at `useChat` init when `!chatId && !user`. */
+function readAnonymousChatMessages(): UIMessage[] {
+    if (typeof window === "undefined") return [];
+    try {
+        const stored = localStorage.getItem(CHAT_MESSAGES_KEY);
+        if (!stored) return [];
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed as UIMessage[];
+        }
+        return [];
+    } catch {
+        return [];
+    }
+}
+
 function logAgentError(error: unknown, userId: string | undefined): void {
     const normalized = error instanceof Error ? error : new Error(String(error));
     posthog?.capture?.("ai_agent_error", {
@@ -124,6 +140,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
 
     const { messages, sendMessage, setMessages, status, stop, error } = useChat({
         transport: chatTransport,
+        messages: chatId || user ? [] : readAnonymousChatMessages(),
         onError: (err) => {
             console.error("Chat error:", err);
             setGenerationError(err);
@@ -182,24 +199,6 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             incrementLlmRequests,
         ]
     );
-
-    useEffect(() => {
-        if (typeof window === "undefined") return;
-        if (user) {
-            localStorage.removeItem(CHAT_MESSAGES_KEY);
-            return;
-        }
-        try {
-            const stored = localStorage.getItem(CHAT_MESSAGES_KEY);
-            if (!stored) return;
-            const parsed = JSON.parse(stored);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-                setMessages(parsed);
-            }
-        } catch {
-            // ignore parse errors
-        }
-    }, [user, setMessages]);
 
     useEffect(() => {
         if (!chatId || chatHistoryData == null) return;
