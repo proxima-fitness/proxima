@@ -143,8 +143,6 @@ export function AppSidebar() {
         router.push("/build-program");
     }, [clearChat, closeMobileSidebar, router]);
 
-    // Temporarily unused while New Chat button is disabled.
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- re-enable with SidebarMenuButton onClick
     const handleNewChatClick = () => {
         if (user) return; // Logged in: do nothing
         const hasProgress =
@@ -197,8 +195,8 @@ export function AppSidebar() {
                             <SidebarMenu>
                                 <SidebarMenuItem>
                                     <SidebarMenuButton
-                                        tooltip="New Chat — coming soon"
-                                        disabled
+                                        tooltip="New Chat"
+                                        onClick={handleNewChatClick}
                                     >
                                         <MessageSquarePlus className="shrink-0" />
                                         <span className="font-main">New Chat</span>

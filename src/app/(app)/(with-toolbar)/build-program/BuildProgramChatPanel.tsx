@@ -5,6 +5,7 @@ import type { RefObject } from "react";
 import type { ChatStatus, FileUIPart, UIDataTypes, UIMessage, UITools } from "ai";
 import type { Operation } from "fast-json-patch";
 import { Agent } from "@/components/program-builder/shared/agent/Agent";
+import { Spinner } from "@/components/ui/spinner";
 import type { useProgramRequestState } from "./use-program-request-state";
 
 type ProgramRequest = ReturnType<typeof useProgramRequestState>;
@@ -42,6 +43,8 @@ export interface IProps {
     onToggleExpand: () => void;
     onToggleHide?: () => void;
     isExpanded: boolean;
+    /** True while `?chat=` history is loading (avoids empty transcript flash). */
+    chatHistoryLoading?: boolean;
 }
 
 function BuildProgramChatPanelInner({
@@ -72,8 +75,19 @@ function BuildProgramChatPanelInner({
     onToggleExpand,
     onToggleHide,
     isExpanded,
+    chatHistoryLoading = false,
 }: IProps) {
     return (
+        <div className="relative flex h-full min-h-0 flex-col">
+            {chatHistoryLoading && (
+                <div
+                    className="absolute inset-0 z-10 flex items-center justify-center bg-background/80"
+                    aria-busy="true"
+                    aria-label="Loading chat history"
+                >
+                    <Spinner size="large" />
+                </div>
+            )}
         <Agent
             search={search}
             hevyProgram={hevyProgram}
@@ -148,6 +162,7 @@ function BuildProgramChatPanelInner({
             onToggleHide={onToggleHide}
             isExpanded={isExpanded}
         />
+        </div>
     );
 }
 

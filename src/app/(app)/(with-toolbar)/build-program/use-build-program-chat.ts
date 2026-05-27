@@ -7,7 +7,6 @@ import { DefaultChatTransport, type FileUIPart } from "ai";
 import type { ChatStatus, UIDataTypes, UIMessage, UITools } from "ai";
 import posthog from "posthog-js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useChatHistory } from "@/api/hooks";
 import { recordLlmRequest } from "@/api/feature-limits";
 import {
     CHAT_MESSAGES_KEY,
@@ -43,7 +42,7 @@ function isValidShareId(shareId: string): boolean {
 }
 
 /** Anonymous session restore — read once at `useChat` init when `!chatId && !user`. */
-function readAnonymousChatMessages(): UIMessage[] {
+export function readAnonymousChatMessages(): UIMessage[] {
     if (typeof window === "undefined") return [];
     try {
         const stored = localStorage.getItem(CHAT_MESSAGES_KEY);
@@ -74,6 +73,10 @@ export interface IUseBuildProgramChatOptions {
     programRequest: ReturnType<typeof useProgramRequestState>;
     isMobile: boolean;
     setMobileTab: (tab: string) => void;
+    /** Snapshot for keyed remount (chat history or anonymous restore). */
+    initialMessages: UIMessage<unknown, UIDataTypes, UITools>[];
+    /** True once shared-program fetch finished or was not needed (no valid `shareId`). */
+    sharedProgramLoadAttempted: boolean;
 }
 
 export interface IProps {
@@ -100,12 +103,18 @@ export interface IProps {
     onBuildComplete: () => void;
     lastAtomicBuildCommitKeyRef: React.RefObject<string | null>;
     appliedModifyProgramKeysRef: React.RefObject<Set<string>>;
-    sharedProgramLoadAttemptedRef: React.RefObject<boolean>;
-    resumeLoadAttemptedRef: React.RefObject<boolean>;
 }
 
 export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProps {
-    const { user, hevyProgram, programRequest, isMobile, setMobileTab } = options;
+    const {
+        user,
+        hevyProgram,
+        programRequest,
+        isMobile,
+        setMobileTab,
+        initialMessages,
+        sharedProgramLoadAttempted,
+    } = options;
     const queryClient = useQueryClient();
     const searchParams = useSearchParams();
 
@@ -125,8 +134,6 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     const [isBuilding, setIsBuilding] = useState(false);
 
     const initialSearchOccurred = useRef<boolean>(false);
-    const sharedProgramLoadAttemptedRef = useRef<boolean>(false);
-    const resumeLoadAttemptedRef = useRef<boolean>(false);
     /** Survives MessageBubbles unmount when switching mobile tabs (Radix Tabs). */
     const lastAtomicBuildCommitKeyRef = useRef<string | null>(null);
     const appliedModifyProgramKeysRef = useRef<Set<string>>(new Set());
@@ -140,7 +147,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
 
     const { messages, sendMessage, setMessages, status, stop, error } = useChat({
         transport: chatTransport,
-        messages: chatId || user ? [] : readAnonymousChatMessages(),
+        messages: initialMessages,
         onError: (err) => {
             console.error("Chat error:", err);
             setGenerationError(err);
@@ -148,7 +155,6 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             logAgentError(err, user?.id);
         },
     });
-    const { data: chatHistoryData } = useChatHistory(user, chatId);
 
     const clearMessages = useCallback(() => {
         resetChatSessionRefs();
@@ -201,19 +207,13 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     );
 
     useEffect(() => {
-        if (!chatId || chatHistoryData == null) return;
-        const conversation = Array.isArray(chatHistoryData?.[0]) ? chatHistoryData[0] : [];
-        setMessages(conversation);
-    }, [chatId, chatHistoryData, setMessages]);
-
-    useEffect(() => {
         if (chatId) return;
         const isLongPromptPlaceholder = search === LONG_PROMPT_PLACEHOLDER;
         const messageText = isLongPromptPlaceholder
             ? (typeof sessionStorage !== "undefined" ? sessionStorage.getItem(PENDING_INITIAL_PROMPT_KEY) : null) ?? ""
             : search;
         if (!messageText?.trim() || initialSearchOccurred.current) return;
-        if (isValidShareId(shareId) && hevyProgram.length === 0 && !sharedProgramLoadAttemptedRef.current) return;
+        if (isValidShareId(shareId) && hevyProgram.length === 0 && !sharedProgramLoadAttempted) return;
         initialSearchOccurred.current = true;
         if (isLongPromptPlaceholder && typeof sessionStorage !== "undefined") {
             sessionStorage.removeItem(PENDING_INITIAL_PROMPT_KEY);
@@ -256,7 +256,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         }
         sendMessageWithContext(files?.length ? { text: messageText, files } : { text: messageText });
         posthog?.capture?.("sent_first_prompt_to_ai", { search: messageText.slice(0, 200), user: user?.id ?? "user_id_unknown" });
-    }, [chatId, search, user, hevyProgram, shareId, sendMessageWithContext, programRequest]);
+    }, [chatId, search, user, hevyProgram, shareId, sendMessageWithContext, programRequest, sharedProgramLoadAttempted]);
 
     const handleSubmit = useCallback(
         (text: string, files?: FileUIPart[]) => {
@@ -325,7 +325,5 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         onBuildComplete,
         lastAtomicBuildCommitKeyRef,
         appliedModifyProgramKeysRef,
-        sharedProgramLoadAttemptedRef,
-        resumeLoadAttemptedRef,
     };
 }

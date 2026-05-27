@@ -12,7 +12,7 @@
  * Used by: build-program/page.tsx.
  */
 
-import { useState, useEffect, useMemo, useReducer, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useReducer, useCallback, useRef, type RefObject } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { ImperativePanelHandle } from "react-resizable-panels";
 
@@ -45,7 +45,10 @@ import { ToolbarPortalButtons } from "@/components/program-builder/shared/Toolba
 import { BuildProgramToolbarTitle } from "@/components/program-builder/shared/BuildProgramToolbarTitle";
 import { editorReducer } from "./editor-reducer";
 import { useProgramRequestState } from "./use-program-request-state";
-import { useBuildProgramChat } from "./use-build-program-chat";
+import type { UIDataTypes, UIMessage, UITools } from "ai";
+import { readAnonymousChatMessages, useBuildProgramChat } from "./use-build-program-chat";
+import type { User } from "@supabase/supabase-js";
+import { useChatHistory } from "@/api/hooks";
 import { Operation } from "fast-json-patch";
 import posthog from "posthog-js";
 
@@ -65,22 +68,61 @@ function isValidShareId(shareId: string): boolean {
     return Number.isFinite(n) && n > 0;
 }
 
+function deriveChatTitle(): string {
+    if (typeof window === "undefined") return "Untitled";
+    try {
+        const promptRaw = localStorage.getItem("prompt");
+        const parsed = promptRaw ? (JSON.parse(promptRaw) as string) : "";
+        if (parsed && parsed !== LONG_PROMPT_PLACEHOLDER) {
+            return parsed.trim().slice(0, 200);
+        }
+    } catch {
+        // ignore
+    }
+    return "Untitled";
+}
+
 /**
  * Program builder client: chat sidebar, program state (hevyProgram), filters,
  * URL params (shareId, resume, empty, search). No props; reads searchParams and context.
  */
 export function BuildProgram() {
-
     const { user } = useUserContext();
-    const { clearChatRef } = useBuildProgramActions();
     logPageView(user?.id);
-    const queryClient = useQueryClient();
     const searchParams = useSearchParams();
 
-    const shareId = searchParams.get('shareId') ?? '';
-    const resume = searchParams.get('resume') ?? '';
-    const empty = searchParams.get('empty') ?? '';
-    const search = searchParams.get('search') ?? '';
+    const shareId = searchParams.get("shareId") ?? "";
+    const resume = searchParams.get("resume") ?? "";
+    const empty = searchParams.get("empty") ?? "";
+    const search = searchParams.get("search") ?? "";
+    const chatId = searchParams.get("chat") ?? "";
+
+    const [sharedProgramLoadAttempted, setSharedProgramLoadAttempted] = useState(
+        () => !isValidShareId(shareId),
+    );
+
+    const {
+        data: chatHistoryData,
+        isPending: chatHistoryPending,
+        isSuccess: chatHistorySuccess,
+    } = useChatHistory(user, chatId);
+
+    const chatHistoryLoading = Boolean(chatId && user && chatHistoryPending);
+
+    const chatSessionKey = chatId ? `chat-${chatId}` : user ? "logged-in" : "anonymous";
+
+    const shellKey =
+        chatId && user ? `${chatSessionKey}-${chatHistorySuccess ? "ready" : "pending"}` : chatSessionKey;
+
+    const chatInitialMessages = useMemo(() => {
+        if (chatId && chatHistorySuccess && chatHistoryData != null) {
+            return Array.isArray(chatHistoryData[0]) ? chatHistoryData[0] : [];
+        }
+        if (!chatId && !user) {
+            return readAnonymousChatMessages();
+        }
+        return [];
+    }, [chatId, user, chatHistorySuccess, chatHistoryData]);
 
     const [sidebarPosition, setSidebarPosition] = useState<"left" | "right">("left");
     const [sidebarSize, setSidebarSize] = useState(28);
@@ -107,7 +149,7 @@ export function BuildProgram() {
                 dispatchEditor({ type: "REPLACE_PROGRAM", program: value });
             }
         },
-        []
+        [],
     );
     const applyPatchWithUndo = useCallback(
         (newDocument: THevyRoutine[], inversePatch: Operation[], recordUndo = true) => {
@@ -121,16 +163,203 @@ export function BuildProgram() {
             }
             dispatchEditor({ type: "APPLY_PATCH", newDocument, inversePatch });
         },
-        []
+        [],
     );
     const orderedProgram = useMemo(
         () => appendOrderToHevyRoutines(hevyProgram) as THevyRoutine[],
-        [hevyProgram]
+        [hevyProgram],
     );
-    /*************************************************************************************/
 
     const programRequest = useProgramRequestState({ empty, search });
     const isMobile = useIsMobile();
+
+    const handleUndo = useCallback(() => {
+        dispatchEditor({ type: "UNDO" });
+    }, []);
+
+    useEffect(() => {
+        const savedPosition = localStorage.getItem(SIDEBAR_POSITION_KEY) as "left" | "right" | null;
+        if (savedPosition === "left" || savedPosition === "right") {
+            setSidebarPosition(savedPosition);
+        }
+        const savedSize = localStorage.getItem(SIDEBAR_SIZE_KEY);
+        if (savedSize) {
+            const size = parseFloat(savedSize);
+            if (size >= 20 && size <= EXPANDED_SIZE) {
+                setSidebarSize(size);
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        setHevyProgram([]);
+        setSharedProgramLoadAttempted(!isValidShareId(shareId));
+
+        const fetchSharedProgram = async () => {
+            try {
+                const sharedProgram = await getSharedProgram(Number(shareId));
+                if (sharedProgram) {
+                    setHevyProgram(appendOrderToHevyRoutines(sharedProgram));
+                }
+            } finally {
+                setSharedProgramLoadAttempted(true);
+            }
+        };
+
+        if (resume === "true") {
+            const program = localStorage.getItem("hevy-program-in-progress");
+            if (program) {
+                setHevyProgram(appendOrderToHevyRoutines(JSON.parse(program)));
+            }
+        }
+
+        if (isValidShareId(shareId)) {
+            fetchSharedProgram();
+        }
+
+        if (empty === "true") {
+            setHevyProgram(appendOrderToHevyRoutines(emptyHevyProgram));
+        }
+    }, [resume, shareId, empty, setHevyProgram]);
+
+    const toggleSidebarPosition = useCallback(() => {
+        setSidebarPosition((prev) => {
+            const newPosition = prev === "left" ? "right" : "left";
+            localStorage.setItem(SIDEBAR_POSITION_KEY, newPosition);
+            return newPosition;
+        });
+    }, []);
+
+    const onToggleExpand = useCallback(() => {
+        const panel = sidebarPanelRef.current;
+        if (!panel) return;
+        const current = panel.getSize();
+        if (current <= COLLAPSED_SIZE + 5) {
+            panel.resize(EXPANDED_SIZE);
+        } else {
+            panel.resize(COLLAPSED_SIZE);
+        }
+    }, []);
+
+    const handleToggleHide = useCallback(() => {
+        sidebarPanelRef.current?.collapse();
+        setIsChatHidden(true);
+    }, []);
+
+    const handleOpenChat = useCallback(() => {
+        const panel = sidebarPanelRef.current;
+        if (panel) {
+            panel.expand();
+            panel.resize(lastSidebarSizeRef.current || 28);
+        }
+        setIsChatHidden(false);
+    }, []);
+
+    const onSidebarResize = useCallback(
+        (size: number) => {
+            setSidebarSize(size);
+            saveSidebarSize(size);
+            setIsChatHidden(size < 1);
+            if (size >= 1) lastSidebarSizeRef.current = size;
+        },
+        [saveSidebarSize],
+    );
+
+    const isExpanded = sidebarSize >= EXPANDED_SIZE - 5;
+
+    return (
+        <BuildProgramShell
+            key={shellKey}
+            chatHistoryLoading={chatHistoryLoading}
+            initialMessages={chatInitialMessages}
+            user={user}
+            search={search}
+            resume={resume}
+            hevyProgram={hevyProgram}
+            setHevyProgram={setHevyProgram}
+            orderedProgram={orderedProgram}
+            applyPatchWithUndo={applyPatchWithUndo}
+            programRequest={programRequest}
+            isMobile={isMobile}
+            sharedProgramLoadAttempted={sharedProgramLoadAttempted}
+            undoStackLength={undoStack.length}
+            handleUndo={handleUndo}
+            sidebarPosition={sidebarPosition}
+            toggleSidebarPosition={toggleSidebarPosition}
+            onToggleExpand={onToggleExpand}
+            handleToggleHide={handleToggleHide}
+            handleOpenChat={handleOpenChat}
+            isExpanded={isExpanded}
+            sidebarPanelRef={sidebarPanelRef}
+            sidebarSize={sidebarSize}
+            onSidebarResize={onSidebarResize}
+            isChatHidden={isChatHidden}
+            mobileTab={mobileTab}
+            setMobileTab={setMobileTab}
+        />
+    );
+}
+
+interface IBuildProgramShellProps {
+    chatHistoryLoading: boolean;
+    initialMessages: UIMessage<unknown, UIDataTypes, UITools>[];
+    user: User | null;
+    search: string;
+    resume: string;
+    hevyProgram: THevyRoutine[];
+    setHevyProgram: (value: THevyRoutine[] | ((prev: THevyRoutine[]) => THevyRoutine[])) => void;
+    orderedProgram: THevyRoutine[];
+    applyPatchWithUndo: (newDocument: THevyRoutine[], inversePatch: Operation[], recordUndo?: boolean) => void;
+    programRequest: ReturnType<typeof useProgramRequestState>;
+    isMobile: boolean;
+    sharedProgramLoadAttempted: boolean;
+    undoStackLength: number;
+    handleUndo: () => void;
+    sidebarPosition: "left" | "right";
+    toggleSidebarPosition: () => void;
+    onToggleExpand: () => void;
+    handleToggleHide: () => void;
+    handleOpenChat: () => void;
+    isExpanded: boolean;
+    sidebarPanelRef: RefObject<ImperativePanelHandle | null>;
+    sidebarSize: number;
+    onSidebarResize: (size: number) => void;
+    isChatHidden: boolean;
+    mobileTab: string;
+    setMobileTab: (tab: string) => void;
+}
+
+function BuildProgramShell({
+    chatHistoryLoading,
+    initialMessages,
+    user,
+    search,
+    resume,
+    hevyProgram,
+    setHevyProgram,
+    orderedProgram,
+    applyPatchWithUndo,
+    programRequest,
+    isMobile,
+    sharedProgramLoadAttempted,
+    undoStackLength,
+    handleUndo,
+    sidebarPosition,
+    toggleSidebarPosition,
+    onToggleExpand,
+    handleToggleHide,
+    handleOpenChat,
+    isExpanded,
+    sidebarPanelRef,
+    sidebarSize,
+    onSidebarResize,
+    isChatHidden,
+    mobileTab,
+    setMobileTab,
+}: IBuildProgramShellProps) {
+    const { clearChatRef } = useBuildProgramActions();
+    const queryClient = useQueryClient();
+    const [isSaving, setIsSaving] = useState(false);
 
     const chat = useBuildProgramChat({
         user,
@@ -138,7 +367,10 @@ export function BuildProgram() {
         programRequest,
         isMobile,
         setMobileTab,
+        initialMessages,
+        sharedProgramLoadAttempted,
     });
+
     const {
         messages,
         setMessages,
@@ -159,79 +391,9 @@ export function BuildProgram() {
         onBuildComplete,
         lastAtomicBuildCommitKeyRef,
         appliedModifyProgramKeysRef,
-        sharedProgramLoadAttemptedRef,
-        resumeLoadAttemptedRef,
     } = chat;
 
     clearChatRef.current = clearMessages;
-
-    const handleUndo = useCallback(() => {
-        dispatchEditor({ type: "UNDO" });
-    }, []);
-
-    const deriveChatTitle = useCallback(() => {
-        if (typeof window === "undefined") return "Untitled";
-        try {
-            const promptRaw = localStorage.getItem("prompt");
-            const parsed = promptRaw ? (JSON.parse(promptRaw) as string) : "";
-            if (parsed && parsed !== LONG_PROMPT_PLACEHOLDER) {
-                return parsed.trim().slice(0, 200);
-            }
-        } catch {
-            // ignore
-        }
-        return "Untitled";
-    }, []);
-
-    const [isSaving, setIsSaving] = useState(false);
-
-    useEffect(() => {
-        const savedPosition = localStorage.getItem(SIDEBAR_POSITION_KEY) as "left" | "right" | null;
-        if (savedPosition === "left" || savedPosition === "right") {
-            setSidebarPosition(savedPosition);
-        }
-        const savedSize = localStorage.getItem(SIDEBAR_SIZE_KEY);
-        if (savedSize) {
-            const size = parseFloat(savedSize);
-            if (size >= 20 && size <= EXPANDED_SIZE) {
-                setSidebarSize(size);
-            }
-        }
-    }, []);
-
-    useEffect(() => {
-        setHevyProgram([]);
-
-        const fetchSharedProgram = async () => {
-            try {
-                const sharedProgram = await getSharedProgram(Number(shareId));
-                if (sharedProgram) {
-                    setHevyProgram(appendOrderToHevyRoutines(sharedProgram));
-                }
-            } finally {
-                sharedProgramLoadAttemptedRef.current = true;
-            }
-        };
-
-        if (resume === 'true') {
-            const program = localStorage.getItem('hevy-program-in-progress');
-            if (program) {
-                setHevyProgram(appendOrderToHevyRoutines(JSON.parse(program)));
-            }
-            resumeLoadAttemptedRef.current = true;
-        }
-
-        if (isValidShareId(shareId)) {
-            fetchSharedProgram();
-        }
-
-        if (empty === 'true') {
-            setHevyProgram(appendOrderToHevyRoutines(emptyHevyProgram));
-        }
-
-
-    }, [resume, shareId, empty, setHevyProgram, sharedProgramLoadAttemptedRef, resumeLoadAttemptedRef]);
-
 
     const handleSave = useCallback(async () => {
         if (!user) {
@@ -287,16 +449,7 @@ export function BuildProgram() {
         } finally {
             setIsSaving(false);
         }
-    }, [
-        user,
-        hevyProgram.length,
-        messages,
-        orderedProgram,
-        programRequest.request,
-        search,
-        deriveChatTitle,
-        queryClient,
-    ]);
+    }, [user, hevyProgram.length, messages, orderedProgram, programRequest.request, search, queryClient]);
 
     const localStorageDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const DEBOUNCE_MS = 500;
@@ -323,7 +476,6 @@ export function BuildProgram() {
             const promptToStore = (search && search.trim()) || (firstUser ? getMessageText(firstUser) : "");
             localStorage.setItem("prompt", JSON.stringify(promptToStore));
 
-            // Persist anonymous chat history so non-logged-in users don't lose it on refresh.
             if (!user && messages.length > 0) {
                 localStorage.setItem(CHAT_MESSAGES_KEY, JSON.stringify(messages));
             }
@@ -336,51 +488,6 @@ export function BuildProgram() {
             }
         };
     }, [hevyProgram, programRequest.request, resume, search, user, messages]);
-
-    const toggleSidebarPosition = useCallback(() => {
-        setSidebarPosition((prev) => {
-            const newPosition = prev === "left" ? "right" : "left";
-            localStorage.setItem(SIDEBAR_POSITION_KEY, newPosition);
-            return newPosition;
-        });
-    }, []);
-
-    const onToggleExpand = useCallback(() => {
-        const panel = sidebarPanelRef.current;
-        if (!panel) return;
-        const current = panel.getSize();
-        if (current <= COLLAPSED_SIZE + 5) {
-            panel.resize(EXPANDED_SIZE);
-        } else {
-            panel.resize(COLLAPSED_SIZE);
-        }
-    }, []);
-
-    const handleToggleHide = useCallback(() => {
-        sidebarPanelRef.current?.collapse();
-        setIsChatHidden(true);
-    }, []);
-
-    const handleOpenChat = useCallback(() => {
-        const panel = sidebarPanelRef.current;
-        if (panel) {
-            panel.expand();
-            panel.resize(lastSidebarSizeRef.current || 28);
-        }
-        setIsChatHidden(false);
-    }, []);
-
-    const onSidebarResize = useCallback(
-        (size: number) => {
-            setSidebarSize(size);
-            saveSidebarSize(size);
-            setIsChatHidden(size < 1);
-            if (size >= 1) lastSidebarSizeRef.current = size;
-        },
-        [saveSidebarSize]
-    );
-
-    const isExpanded = sidebarSize >= EXPANDED_SIZE - 5;
 
     const chatPanelStateProps = {
         search,
@@ -406,6 +513,7 @@ export function BuildProgram() {
         onBuildComplete,
         lastAtomicBuildCommitKeyRef,
         appliedModifyProgramKeysRef,
+        chatHistoryLoading,
     } as const;
 
     const desktopChatPanel = (
@@ -431,11 +539,7 @@ export function BuildProgram() {
     );
 
     const routineContent = (
-        <ProgramEditor
-            orderedProgram={orderedProgram}
-            setHevyProgram={setHevyProgram}
-            isMobile={isMobile}
-        />
+        <ProgramEditor orderedProgram={orderedProgram} setHevyProgram={setHevyProgram} isMobile={isMobile} />
     );
 
     const hasProgramContent = hevyProgram.some((r) => r.exercises.length > 0);
@@ -447,7 +551,7 @@ export function BuildProgram() {
                 onChange={programRequest.handleProgramTitle}
             />
             <ToolbarPortalButtons
-                canUndo={undoStack.length > 0}
+                canUndo={undoStackLength > 0}
                 onUndo={handleUndo}
                 onSave={handleSave}
                 saveDisabled={!user || hevyProgram.length === 0 || messages.length === 0}
@@ -465,7 +569,6 @@ export function BuildProgram() {
                                 aria-label="Open chat"
                             >
                                 <MessageSquare className="h-4 w-4" />
-
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent className="bg-lightSecondary text-white">Open chat</TooltipContent>
