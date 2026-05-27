@@ -47,6 +47,7 @@ import { editorReducer } from "./editor-reducer";
 import { useProgramRequestState } from "./use-program-request-state";
 import type { UIDataTypes, UIMessage, UITools } from "ai";
 import { readAnonymousChatMessages, useBuildProgramChat } from "./use-build-program-chat";
+import { isValidShareId } from "./initial-prompt";
 import type { User } from "@supabase/supabase-js";
 import { useChatHistory } from "@/api/hooks";
 import { Operation } from "fast-json-patch";
@@ -59,13 +60,6 @@ function logPageView(userId: string | undefined): void {
     if (!userId || buildProgramPageViewSent) return;
     buildProgramPageViewSent = true;
     posthog?.capture?.("page_view", { page: "/build-program", user: userId });
-}
-
-/** True when the `shareId` query param should load a shared program from the API. */
-function isValidShareId(shareId: string): boolean {
-    if (!shareId.trim()) return false;
-    const n = Number(shareId);
-    return Number.isFinite(n) && n > 0;
 }
 
 function deriveChatTitle(): string {
@@ -389,11 +383,16 @@ function BuildProgramShell({
         maxRetries: MAX_RETRIES,
         onTimeoutError: handleTimeoutError,
         onBuildComplete,
+        trySendInitialPrompt,
         lastAtomicBuildCommitKeyRef,
         appliedModifyProgramKeysRef,
     } = chat;
 
     clearChatRef.current = clearMessages;
+
+    useEffect(() => {
+        trySendInitialPrompt();
+    }, [trySendInitialPrompt, sharedProgramLoadAttempted]);
 
     const handleSave = useCallback(async () => {
         if (!user) {

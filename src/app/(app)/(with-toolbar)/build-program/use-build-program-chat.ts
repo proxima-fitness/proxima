@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type FileUIPart } from "ai";
@@ -11,35 +11,23 @@ import { recordLlmRequest } from "@/api/feature-limits";
 import {
     CHAT_MESSAGES_KEY,
     LONG_PROMPT_PLACEHOLDER,
-    PENDING_ATTACHMENTS_KEY,
-    PENDING_INITIAL_PROMPT_KEY,
 } from "@/assets/constants/ui-constants";
 import {
-    focusAreasOptions,
-    equipmentOptions,
-    healthIssuesOptions,
-} from "@/assets/constants/form-options";
-import {
-    inferDaysPerWeek,
-    inferProgramLength,
-    inferExcludeAreas,
-    inferExcludeEquipment,
-    inferHealthIssues,
     getTextFromChatMessage,
     isMessageAboutProgram,
 } from "@/components/program-builder/utils/helpers";
+import {
+    clearLongPromptFromSessionStorage,
+    inferProgramRequestFromPrompt,
+    readPendingAttachmentFileParts,
+    resolveInitialPromptText,
+    shouldDeferInitialSend,
+} from "./initial-prompt";
 import type { useProgramRequestState } from "./use-program-request-state";
 import type { User } from "@supabase/supabase-js";
 import type { SendMessageWithContext } from "@/components/program-builder/shared/agent/Agent";
 
 const chatTransport = new DefaultChatTransport({ api: "/api/chat" });
-
-/** Mirrors `isValidShareId` in BuildProgram.tsx (avoid importing BuildProgram → circular deps). */
-function isValidShareId(shareId: string): boolean {
-    if (!shareId.trim()) return false;
-    const n = Number(shareId);
-    return Number.isFinite(n) && n > 0;
-}
 
 /** Anonymous session restore — read once at `useChat` init when `!chatId && !user`. */
 export function readAnonymousChatMessages(): UIMessage[] {
@@ -101,6 +89,7 @@ export interface IProps {
     maxRetries: number;
     onTimeoutError: () => void;
     onBuildComplete: () => void;
+    trySendInitialPrompt: () => void;
     lastAtomicBuildCommitKeyRef: React.RefObject<string | null>;
     appliedModifyProgramKeysRef: React.RefObject<Set<string>>;
 }
@@ -121,6 +110,19 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     const search = searchParams.get("search") ?? "";
     const shareId = searchParams.get("shareId") ?? "";
     const chatId = searchParams.get("chat") ?? "";
+
+    const {
+        daysPerWeek,
+        programLength,
+        excludeAreas,
+        excludeEquipment,
+        healthIssues,
+        setDaysPerWeek,
+        setProgramLength,
+        setExcludeAreas,
+        setExcludeEquipment,
+        setHealthIssues,
+    } = programRequest;
 
     const { mutate: incrementLlmRequests } = useMutation({
         mutationFn: () => recordLlmRequest(user),
@@ -206,57 +208,60 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         ]
     );
 
-    useEffect(() => {
+    const trySendInitialPrompt = useCallback(() => {
         if (chatId) return;
         const isLongPromptPlaceholder = search === LONG_PROMPT_PLACEHOLDER;
-        const messageText = isLongPromptPlaceholder
-            ? (typeof sessionStorage !== "undefined" ? sessionStorage.getItem(PENDING_INITIAL_PROMPT_KEY) : null) ?? ""
-            : search;
-        if (!messageText?.trim() || initialSearchOccurred.current) return;
-        if (isValidShareId(shareId) && hevyProgram.length === 0 && !sharedProgramLoadAttempted) return;
+        const messageText = resolveInitialPromptText(search);
+        if (!messageText.trim() || initialSearchOccurred.current) return;
+        if (
+            shouldDeferInitialSend({
+                shareId,
+                hevyProgramLength: hevyProgram.length,
+                sharedProgramLoadAttempted,
+            })
+        ) {
+            return;
+        }
+
         initialSearchOccurred.current = true;
-        if (isLongPromptPlaceholder && typeof sessionStorage !== "undefined") {
-            sessionStorage.removeItem(PENDING_INITIAL_PROMPT_KEY);
-        }
-        let files: FileUIPart[] | undefined;
-        try {
-            const stored = sessionStorage.getItem(PENDING_ATTACHMENTS_KEY);
-            if (stored) {
-                const parsed = JSON.parse(stored);
-                if (Array.isArray(parsed)) {
-                    files = parsed.filter(
-                        (p): p is FileUIPart =>
-                            p != null && typeof p === "object" && p.type === "file" && typeof (p as FileUIPart).url === "string"
-                    );
-                }
-                sessionStorage.removeItem(PENDING_ATTACHMENTS_KEY);
-            }
-        } catch {
-            // ignore
-        }
-        if (!programRequest.daysPerWeek) {
-            const inferredDays = inferDaysPerWeek(messageText);
-            if (inferredDays) programRequest.setDaysPerWeek(inferredDays);
-        }
-        if (!programRequest.programLength) {
-            const inferredLength = inferProgramLength(messageText);
-            if (inferredLength) programRequest.setProgramLength(inferredLength);
-        }
-        if (programRequest.excludeAreas.length === 0) {
-            const inferred = inferExcludeAreas(messageText, focusAreasOptions);
-            if (inferred.length > 0) programRequest.setExcludeAreas(inferred);
-        }
-        if (programRequest.excludeEquipment.length === 0) {
-            const inferred = inferExcludeEquipment(messageText, equipmentOptions);
-            if (inferred.length > 0) programRequest.setExcludeEquipment(inferred);
-        }
-        if (programRequest.healthIssues.length === 0) {
-            const inferred = inferHealthIssues(messageText, healthIssuesOptions);
-            if (inferred.length > 0) programRequest.setHealthIssues(inferred);
-        }
+        clearLongPromptFromSessionStorage(isLongPromptPlaceholder);
+        const files = readPendingAttachmentFileParts();
+        inferProgramRequestFromPrompt(messageText, {
+            daysPerWeek,
+            programLength,
+            excludeAreas,
+            excludeEquipment,
+            healthIssues,
+            setDaysPerWeek,
+            setProgramLength,
+            setExcludeAreas,
+            setExcludeEquipment,
+            setHealthIssues,
+        });
         sendMessageWithContext(files?.length ? { text: messageText, files } : { text: messageText });
-        posthog?.capture?.("sent_first_prompt_to_ai", { search: messageText.slice(0, 200), user: user?.id ?? "user_id_unknown" });
-    }, [chatId, search, user, hevyProgram, shareId, sendMessageWithContext, programRequest, sharedProgramLoadAttempted]);
+        posthog?.capture?.("sent_first_prompt_to_ai", {
+            search: messageText.slice(0, 200),
+            user: user?.id ?? "user_id_unknown",
+        });
+    }, [
+        chatId,
+        search,
+        shareId,
+        hevyProgram.length,
+        sharedProgramLoadAttempted,
+        sendMessageWithContext,
+        user?.id,
+        daysPerWeek,
+        programLength,
+        excludeAreas,
+        excludeEquipment,
+        healthIssues,
+        setDaysPerWeek,
+        setProgramLength,
+        setExcludeAreas,
+        setExcludeEquipment,
+        setHealthIssues,
+    ]);
 
     const handleSubmit = useCallback(
         (text: string, files?: FileUIPart[]) => {
@@ -323,6 +328,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         maxRetries: MAX_RETRIES,
         onTimeoutError: handleTimeoutError,
         onBuildComplete,
+        trySendInitialPrompt,
         lastAtomicBuildCommitKeyRef,
         appliedModifyProgramKeysRef,
     };
