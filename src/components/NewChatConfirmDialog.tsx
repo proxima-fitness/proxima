@@ -1,7 +1,7 @@
 /*
  * @module NewChatConfirmDialog
  * @description Confirmation dialog when a logged-out user starts a new chat with unsaved progress.
- * Cancel keeps current page; Continue clears messages and hevy-program-in-progress then navigates to /build-program.
+ * Cancel keeps current page; Continue clears localStorage, calls clearChat, then navigates to /build-program.
  * @dependsOn UI dialog, Button.
  * @usedBy AppSidebar.
  */

@@ -12,7 +12,6 @@
 import {
     Home,
     LogOut,
-    // MessageSquarePlus,
     Search,
     Receipt,
     Crown,
@@ -26,6 +25,7 @@ import {
     PanelLeft,
     LogIn,
     Info,
+    MessageSquarePlus,
 } from "lucide-react";
 import {
     Sidebar,
@@ -52,7 +52,7 @@ import {
 import { useUserContext } from "@/contexts/UserContext";
 import { useProfilePictureContext } from "@/contexts/ProfilePictureContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useMyFeatureLimits, useUserFullName, useProfilePictureByID, useHevySecret } from "@/api/hooks";
+import { useMyFeatureLimits, useUserFullName, useProfilePictureByID, useHevySecret, useChatIds } from "@/api/hooks";
 import { signOutUser } from "@/api/authentication";
 import { TestUserTierToggle } from "@/components/TestUserTierToggle";
 import { isTestUser } from "@/api/feature-limits";
@@ -65,9 +65,10 @@ import { ConnectHevyDialog } from "@/components/header/ConnectHevyDialog";
 import { useTheme } from "next-themes";
 import { proxima_logo, proxima_logo_white_full_text } from "public";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { NewChatConfirmDialog } from "@/components/NewChatConfirmDialog";
 import { authenticatedNavLinks, navLinks, navIdToUrl } from "@/assets/constants/nav-links";
+import { useBuildProgramActions } from "@/contexts/BuildProgramActionsContext";
 
 const CHAT_MESSAGES_KEY = "messages";
 const HEVY_PROGRAM_IN_PROGRESS_KEY = "hevy-program-in-progress";
@@ -84,7 +85,7 @@ const signOutServer = async () => {
     }
 };
 
-// const RECENTS_LIMIT = 10;
+const RECENTS_LIMIT = 10;
 const navIdToIcon: Record<string, React.ComponentType<{ className?: string }>> = {
     home: Home,
     programs: Search,
@@ -114,42 +115,51 @@ export function AppSidebar() {
     const [openConnectHevyDialog, setOpenConnectHevyDialog] = useState(false);
     const [showNewChatConfirm, setShowNewChatConfirm] = useState(false);
     const router = useRouter();
+    const { clearChat } = useBuildProgramActions();
 
     const { toggleSidebar, state, isMobile, openMobile, setOpenMobile } = useSidebar();
     const closeMobileSidebar = useCallback(() => {
         if (isMobile) setOpenMobile(false);
     }, [isMobile, setOpenMobile]);
-    // const { data: chatIds, isLoading: chatIdsLoading, isError: chatIdsError } = useChatIds(user);
-    // const recentChats = (chatIds ?? []).slice(0, RECENTS_LIMIT);
-    // const pathname = usePathname();
-    // const searchParams = useSearchParams();
-    // const selectedChatId =
-    //     pathname?.startsWith("/build-program") === true ? searchParams.get("chat") : null;
+    const { data: chatIds, isLoading: chatIdsLoading, isError: chatIdsError } = useChatIds(user);
+    const recentChats = (chatIds ?? []).slice(0, RECENTS_LIMIT);
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const selectedChatId =
+        pathname?.startsWith("/build-program") === true ? searchParams.get("chat") : null;
 
     const handleLogout = async () => {
         await signOutUser();
         await signOutServer();
     };
 
-    // const handleNewChatClick = () => {
-    //     if (user) return; // Logged in: do nothing
-    //     const hasProgress =
-    //         typeof window !== "undefined" &&
-    //         (!!localStorage.getItem(CHAT_MESSAGES_KEY) ||
-    //             !!localStorage.getItem(HEVY_PROGRAM_IN_PROGRESS_KEY));
-    //     if (hasProgress) {
-    //         setShowNewChatConfirm(true);
-    //     } else {
-    //         router.push("/build-program");
-    //     }
-    // };
-
-    const handleNewChatContinue = () => {
+    const startNewChat = useCallback(() => {
         if (typeof window !== "undefined") {
             localStorage.removeItem(CHAT_MESSAGES_KEY);
             localStorage.removeItem(HEVY_PROGRAM_IN_PROGRESS_KEY);
         }
-        router.push("/build-program?new=true");
+        clearChat();
+        closeMobileSidebar();
+        router.push("/build-program");
+    }, [clearChat, closeMobileSidebar, router]);
+
+    // Temporarily unused while New Chat button is disabled.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- re-enable with SidebarMenuButton onClick
+    const handleNewChatClick = () => {
+        if (user) return; // Logged in: do nothing
+        const hasProgress =
+            typeof window !== "undefined" &&
+            (!!localStorage.getItem(CHAT_MESSAGES_KEY) ||
+                !!localStorage.getItem(HEVY_PROGRAM_IN_PROGRESS_KEY));
+        if (hasProgress) {
+            setShowNewChatConfirm(true);
+        } else {
+            startNewChat();
+        }
+    };
+
+    const handleNewChatContinue = () => {
+        startNewChat();
     };
 
     const sidebarNavLinks = user ? authenticatedNavLinks : navLinks;
@@ -182,13 +192,13 @@ export function AppSidebar() {
                 </SidebarHeader>
 
                 <SidebarContent>
-                    {/* <SidebarGroup>
+                    <SidebarGroup>
                         <SidebarGroupContent>
                             <SidebarMenu>
                                 <SidebarMenuItem>
                                     <SidebarMenuButton
-                                        tooltip="New Chat"
-                                        onClick={handleNewChatClick}
+                                        tooltip="New Chat — coming soon"
+                                        disabled
                                     >
                                         <MessageSquarePlus className="shrink-0" />
                                         <span className="font-main">New Chat</span>
@@ -196,7 +206,7 @@ export function AppSidebar() {
                                 </SidebarMenuItem>
                             </SidebarMenu>
                         </SidebarGroupContent>
-                    </SidebarGroup> */}
+                    </SidebarGroup>
                     <SidebarGroup>
                         <SidebarGroupLabel>Navigate</SidebarGroupLabel>
                         <SidebarGroupContent>
@@ -226,7 +236,7 @@ export function AppSidebar() {
                         </SidebarGroupContent>
                     </SidebarGroup>
 
-                    {/* <SidebarGroup>
+                    <SidebarGroup>
                         <SidebarGroupLabel>Recents</SidebarGroupLabel>
                         <SidebarGroupContent>
                             <SidebarMenu>
@@ -290,7 +300,7 @@ export function AppSidebar() {
                                 )}
                             </SidebarMenu>
                         </SidebarGroupContent>
-                    </SidebarGroup> */}
+                    </SidebarGroup>
 
                     {shouldShowTestUserToggle && (
                         <>

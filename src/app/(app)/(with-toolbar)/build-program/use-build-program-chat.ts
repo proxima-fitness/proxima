@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type FileUIPart } from "ai";
 import type { ChatStatus, UIDataTypes, UIMessage, UITools } from "ai";
@@ -92,12 +92,10 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     const { user, hevyProgram, programRequest, isMobile, setMobileTab } = options;
     const queryClient = useQueryClient();
     const searchParams = useSearchParams();
-    const router = useRouter();
 
     const search = searchParams.get("search") ?? "";
     const shareId = searchParams.get("shareId") ?? "";
     const chatId = searchParams.get("chat") ?? "";
-    const newChat = searchParams.get("new") ?? "";
 
     const { mutate: incrementLlmRequests } = useMutation({
         mutationFn: () => recordLlmRequest(user),
@@ -202,12 +200,6 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             // ignore parse errors
         }
     }, [user, setMessages]);
-
-    useEffect(() => {
-        if (newChat !== "true") return;
-        clearMessages();
-        router.replace("/build-program");
-    }, [newChat, clearMessages, router]);
 
     useEffect(() => {
         if (!chatId || chatHistoryData == null) return;

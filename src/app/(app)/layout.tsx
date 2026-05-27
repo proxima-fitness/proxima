@@ -29,6 +29,7 @@ import { UserProvider } from "@/contexts/UserContext";
 import { ProfilePictureProvider } from "@/contexts/ProfilePictureContext";
 import { ThemeProvider } from "@/components/theme-provider"
 import { PoundsOrKgProvider } from "@/contexts/PoundsOrKgContext";
+import { BuildProgramActionsProvider } from "@/contexts/BuildProgramActionsContext";
 
 export const viewport: Viewport = {
   themeColor: [
@@ -121,6 +122,7 @@ export default function RootLayout({
                         <IsHevyProvider>
                             <SidebarProvider defaultOpen={false}>
                                 <PoundsOrKgProvider>
+                                    <BuildProgramActionsProvider>
                                     <AppSidebarDynamic />
                                     <div className="flex-1 min-w-0 bg-primary">
                                         <MobileSidebarHeader />
@@ -137,6 +139,7 @@ export default function RootLayout({
                                         </main>
                                         <ConditionalFooterDynamic />
                                     </div>
+                                    </BuildProgramActionsProvider>
                                 </PoundsOrKgProvider>
                             </SidebarProvider>
                         </IsHevyProvider>

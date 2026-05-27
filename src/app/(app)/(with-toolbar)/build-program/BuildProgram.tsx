@@ -34,6 +34,7 @@ import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUserContext } from "@/contexts/UserContext";
+import { useBuildProgramActions } from "@/contexts/BuildProgramActionsContext";
 import {
     getSaveProgramToSupabaseFailureDetail,
     isSaveProgramToSupabaseSuccess,
@@ -71,6 +72,7 @@ function isValidShareId(shareId: string): boolean {
 export function BuildProgram() {
 
     const { user } = useUserContext();
+    const { clearChatRef } = useBuildProgramActions();
     logPageView(user?.id);
     const queryClient = useQueryClient();
     const searchParams = useSearchParams();
@@ -140,6 +142,7 @@ export function BuildProgram() {
     const {
         messages,
         setMessages,
+        clearMessages,
         sendMessageWithContext,
         handleSubmit,
         handleStop,
@@ -159,6 +162,8 @@ export function BuildProgram() {
         sharedProgramLoadAttemptedRef,
         resumeLoadAttemptedRef,
     } = chat;
+
+    clearChatRef.current = clearMessages;
 
     const handleUndo = useCallback(() => {
         dispatchEditor({ type: "UNDO" });
