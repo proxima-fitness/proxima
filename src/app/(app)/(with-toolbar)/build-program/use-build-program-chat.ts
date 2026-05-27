@@ -42,6 +42,14 @@ function isValidShareId(shareId: string): boolean {
     return Number.isFinite(n) && n > 0;
 }
 
+function logAgentError(error: unknown, userId: string | undefined): void {
+    const normalized = error instanceof Error ? error : new Error(String(error));
+    posthog?.capture?.("ai_agent_error", {
+        user: userId ?? "user_id_unknown",
+        errorMessage: normalized.message || "unknown",
+    });
+}
+
 const MAX_RETRIES = 2;
 
 export interface IUseBuildProgramChatOptions {
@@ -104,9 +112,6 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     const initialSearchOccurred = useRef<boolean>(false);
     const sharedProgramLoadAttemptedRef = useRef<boolean>(false);
     const resumeLoadAttemptedRef = useRef<boolean>(false);
-    const prevErrorRef = useRef<Error | null>(null);
-    const pageViewSentRef = useRef(false);
-
     /** Survives MessageBubbles unmount when switching mobile tabs (Radix Tabs). */
     const lastAtomicBuildCommitKeyRef = useRef<string | null>(null);
     const appliedModifyProgramKeysRef = useRef<Set<string>>(new Set());
@@ -118,6 +123,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             console.error("Chat error:", err);
             setGenerationError(err);
             setIsBuilding(false);
+            logAgentError(err, user?.id);
         },
     });
     const { data: chatHistoryData } = useChatHistory(user, chatId);
@@ -166,24 +172,6 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             incrementLlmRequests,
         ]
     );
-
-    useEffect(() => {
-        const userId = user?.id ?? "user_id_unknown";
-        if (user && !pageViewSentRef.current) {
-            posthog?.capture?.("page_view", { page: "/build-program", user: userId });
-            pageViewSentRef.current = true;
-        }
-        if (activeError && prevErrorRef.current === null) {
-            posthog?.capture?.("ai_agent_error", {
-                user: userId,
-                errorMessage: activeError?.message ?? "unknown",
-            });
-            prevErrorRef.current = activeError;
-        }
-        if (activeError === null) {
-            prevErrorRef.current = null;
-        }
-    }, [activeError, user]);
 
     useEffect(() => {
         if (messages.length > 0) return;
@@ -308,10 +296,12 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
 
     const handleTimeoutError = useCallback(() => {
         console.error("Workout generation timed out - no progress for 45 seconds");
-        setGenerationError(new Error("Generation timed out. The AI took too long to respond."));
+        const timeoutError = new Error("Generation timed out. The AI took too long to respond.");
+        setGenerationError(timeoutError);
         setIsBuilding(false);
         stop();
-    }, [stop]);
+        logAgentError(timeoutError, user?.id);
+    }, [stop, user?.id]);
 
     const onBuildComplete = useCallback(() => {
         if (!isMobile || hasAutoSwitchedToProgramAfterFirstBuildRef.current) return;

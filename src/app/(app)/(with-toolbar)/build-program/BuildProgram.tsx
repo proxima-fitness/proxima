@@ -46,6 +46,16 @@ import { editorReducer } from "./editor-reducer";
 import { useProgramRequestState } from "./use-program-request-state";
 import { useBuildProgramChat } from "./use-build-program-chat";
 import { Operation } from "fast-json-patch";
+import posthog from "posthog-js";
+
+/** Logged-in only; module guard avoids duplicate capture under Strict Mode remount. */
+let buildProgramPageViewSent = false;
+
+function logPageView(userId: string | undefined): void {
+    if (!userId || buildProgramPageViewSent) return;
+    buildProgramPageViewSent = true;
+    posthog?.capture?.("page_view", { page: "/build-program", user: userId });
+}
 
 /** True when the `shareId` query param should load a shared program from the API. */
 function isValidShareId(shareId: string): boolean {
@@ -61,6 +71,7 @@ function isValidShareId(shareId: string): boolean {
 export function BuildProgram() {
 
     const { user } = useUserContext();
+    logPageView(user?.id);
     const queryClient = useQueryClient();
     const searchParams = useSearchParams();
 
