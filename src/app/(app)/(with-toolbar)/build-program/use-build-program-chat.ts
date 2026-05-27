@@ -1,12 +1,19 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, type FileUIPart } from "ai";
-import type { ChatStatus, UIDataTypes, UIMessage, UITools } from "ai";
+import {
+    DefaultChatTransport,
+    type ChatStatus,
+    type FileUIPart,
+    type UIDataTypes,
+    type UIMessage,
+    type UITools,
+} from "ai";
 import posthog from "posthog-js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { User } from "@supabase/supabase-js";
 import { recordLlmRequest } from "@/api/feature-limits";
 import {
     CHAT_MESSAGES_KEY,
@@ -16,6 +23,7 @@ import {
     getTextFromChatMessage,
     isMessageAboutProgram,
 } from "@/components/program-builder/utils/helpers";
+import type { SendMessageWithContext } from "@/components/program-builder/shared/agent/Agent";
 import {
     clearLongPromptFromSessionStorage,
     inferProgramRequestFromPrompt,
@@ -24,55 +32,35 @@ import {
     shouldDeferInitialSend,
 } from "./initial-prompt";
 import type { useProgramRequestState } from "./use-program-request-state";
-import type { User } from "@supabase/supabase-js";
-import type { SendMessageWithContext } from "@/components/program-builder/shared/agent/Agent";
+
+// ---------------------------------------------------------------------------
+// Types & constants
+// ---------------------------------------------------------------------------
+
+type BuildProgramChatMessage = UIMessage<unknown, UIDataTypes, UITools>;
+type ProgramRequestState = ReturnType<typeof useProgramRequestState>;
 
 const chatTransport = new DefaultChatTransport({ api: "/api/chat" });
-
-/** Anonymous session restore — read once at `useChat` init when `!chatId && !user`. */
-export function readAnonymousChatMessages(): UIMessage[] {
-    if (typeof window === "undefined") return [];
-    try {
-        const stored = localStorage.getItem(CHAT_MESSAGES_KEY);
-        if (!stored) return [];
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed as UIMessage[];
-        }
-        return [];
-    } catch {
-        return [];
-    }
-}
-
-function logAgentError(error: unknown, userId: string | undefined): void {
-    const normalized = error instanceof Error ? error : new Error(String(error));
-    posthog?.capture?.("ai_agent_error", {
-        user: userId ?? "user_id_unknown",
-        errorMessage: normalized.message || "unknown",
-    });
-}
-
 const MAX_RETRIES = 2;
 
 export interface IUseBuildProgramChatOptions {
     user: User | null;
     hevyProgram: THevyRoutine[];
-    programRequest: ReturnType<typeof useProgramRequestState>;
+    programRequest: ProgramRequestState;
     isMobile: boolean;
     setMobileTab: (tab: string) => void;
     /** Snapshot for keyed remount (chat history or anonymous restore). */
-    initialMessages: UIMessage<unknown, UIDataTypes, UITools>[];
+    initialMessages: BuildProgramChatMessage[];
     /** True once shared-program fetch finished or was not needed (no valid `shareId`). */
     sharedProgramLoadAttempted: boolean;
 }
 
 export interface IProps {
-    messages: UIMessage<unknown, UIDataTypes, UITools>[];
+    messages: BuildProgramChatMessage[];
     setMessages: (
         messages:
-            | UIMessage<unknown, UIDataTypes, UITools>[]
-            | ((msgs: UIMessage<unknown, UIDataTypes, UITools>[]) => UIMessage<unknown, UIDataTypes, UITools>[]),
+            | BuildProgramChatMessage[]
+            | ((msgs: BuildProgramChatMessage[]) => BuildProgramChatMessage[]),
     ) => void;
     sendMessageWithContext: SendMessageWithContext;
     clearMessages: () => void;
@@ -94,6 +82,84 @@ export interface IProps {
     appliedModifyProgramKeysRef: React.RefObject<Set<string>>;
 }
 
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** Anonymous session restore — read once at `useChat` init when `!chatId && !user`. */
+export function readAnonymousChatMessages(): UIMessage[] {
+    if (typeof window === "undefined") return [];
+
+    try {
+        const stored = localStorage.getItem(CHAT_MESSAGES_KEY);
+        if (!stored) return [];
+
+        const parsed = JSON.parse(stored);
+        return Array.isArray(parsed) && parsed.length > 0 ? (parsed as UIMessage[]) : [];
+    } catch {
+        return [];
+    }
+}
+
+function logAgentError(error: unknown, userId: string | undefined): void {
+    const normalized = error instanceof Error ? error : new Error(String(error));
+    posthog?.capture?.("ai_agent_error", {
+        user: userId ?? "user_id_unknown",
+        errorMessage: normalized.message || "unknown",
+    });
+}
+
+function joinOptionValues(options: { value: string }[] | undefined): string {
+    return options?.length ? options.map((option) => option.value).join(", ") : "";
+}
+
+function optionalNumericField(value: string | undefined): number | undefined {
+    return value ? Number(value) : undefined;
+}
+
+function trimOrEmpty(value: string | undefined): string {
+    return value?.trim() ?? "";
+}
+
+interface IMessageContextBodyInput {
+    messageText: string;
+    hevyProgram: THevyRoutine[];
+    chatId: string;
+    daysPerWeek: string;
+    programLength: string;
+    excludeAreas: { value: string }[];
+    excludeEquipment: { value: string }[];
+    healthIssues: { value: string }[];
+    splitType: string;
+    exerciseVariability: string;
+    progressionSystem: string;
+    deloadWeek: string;
+    peakWeek: string;
+}
+
+function buildMessageContextBody(input: IMessageContextBodyInput) {
+    const includeProgram = isMessageAboutProgram(input.messageText);
+
+    return {
+        hevyProgram: includeProgram ? input.hevyProgram : [],
+        daysPerWeek: optionalNumericField(input.daysPerWeek),
+        programLength: optionalNumericField(input.programLength),
+        excludeAreas: joinOptionValues(input.excludeAreas),
+        excludeEquipment: joinOptionValues(input.excludeEquipment),
+        healthIssues: joinOptionValues(input.healthIssues),
+        splitType: trimOrEmpty(input.splitType),
+        exerciseVariability: trimOrEmpty(input.exerciseVariability),
+        progressionSystem: trimOrEmpty(input.progressionSystem),
+        deloadWeek: trimOrEmpty(input.deloadWeek),
+        peakWeek: trimOrEmpty(input.peakWeek),
+        chatSessionId: input.chatId || undefined,
+    };
+}
+
+// ---------------------------------------------------------------------------
+// Hook
+// ---------------------------------------------------------------------------
+
 export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProps {
     const {
         user,
@@ -104,6 +170,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         initialMessages,
         sharedProgramLoadAttempted,
     } = options;
+
     const queryClient = useQueryClient();
     const searchParams = useSearchParams();
 
@@ -135,7 +202,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     const [retryCount, setRetryCount] = useState(0);
     const [isBuilding, setIsBuilding] = useState(false);
 
-    const initialSearchOccurred = useRef<boolean>(false);
+    const initialSearchOccurred = useRef(false);
     /** Survives MessageBubbles unmount when switching mobile tabs (Radix Tabs). */
     const lastAtomicBuildCommitKeyRef = useRef<string | null>(null);
     const appliedModifyProgramKeysRef = useRef<Set<string>>(new Set());
@@ -164,31 +231,37 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     }, [resetChatSessionRefs, setMessages]);
 
     const activeError = generationError || error || null;
-    const isSubmitted = status === "submitted";
-    const isStreaming = status === "streaming";
-    const isLoading = isSubmitted || isStreaming;
+    const isLoading = status === "submitted" || status === "streaming";
 
     const sendMessageWithContext = useCallback<SendMessageWithContext>(
         (message, sendOptions) => {
             if (message == null) return Promise.resolve();
-            incrementLlmRequests(undefined, { onError: (err) => console.error("Failed to record LLM usage", err) });
-            const text = getTextFromChatMessage(message);
-            const includeProgram = isMessageAboutProgram(text);
-            const contextBody = {
-                hevyProgram: includeProgram ? hevyProgram : [],
-                daysPerWeek: programRequest.daysPerWeek ? Number(programRequest.daysPerWeek) : undefined,
-                programLength: programRequest.programLength ? Number(programRequest.programLength) : undefined,
-                excludeAreas: programRequest.excludeAreas?.length ? programRequest.excludeAreas.map((o) => o.value).join(", ") : "",
-                excludeEquipment: programRequest.excludeEquipment?.length ? programRequest.excludeEquipment.map((o) => o.value).join(", ") : "",
-                healthIssues: programRequest.healthIssues?.length ? programRequest.healthIssues.map((o) => o.value).join(", ") : "",
-                splitType: programRequest.splitType?.trim() ?? "",
-                exerciseVariability: programRequest.exerciseVariability?.trim() ?? "",
-                progressionSystem: programRequest.progressionSystem?.trim() ?? "",
-                deloadWeek: programRequest.deloadWeek?.trim() ?? "",
-                peakWeek: programRequest.peakWeek?.trim() ?? "",
-                chatSessionId: chatId || undefined,
-            };
-            return sendMessage(message, { ...sendOptions, body: { ...contextBody, ...sendOptions?.body } });
+
+            incrementLlmRequests(undefined, {
+                onError: (err) => console.error("Failed to record LLM usage", err),
+            });
+
+            const messageText = getTextFromChatMessage(message);
+            const contextBody = buildMessageContextBody({
+                messageText,
+                hevyProgram,
+                chatId,
+                daysPerWeek: programRequest.daysPerWeek,
+                programLength: programRequest.programLength,
+                excludeAreas: programRequest.excludeAreas,
+                excludeEquipment: programRequest.excludeEquipment,
+                healthIssues: programRequest.healthIssues,
+                splitType: programRequest.splitType,
+                exerciseVariability: programRequest.exerciseVariability,
+                progressionSystem: programRequest.progressionSystem,
+                deloadWeek: programRequest.deloadWeek,
+                peakWeek: programRequest.peakWeek,
+            });
+
+            return sendMessage(message, {
+                ...sendOptions,
+                body: { ...contextBody, ...sendOptions?.body },
+            });
         },
         [
             sendMessage,
@@ -205,14 +278,17 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             programRequest.deloadWeek,
             programRequest.peakWeek,
             incrementLlmRequests,
-        ]
+        ],
     );
 
     const trySendInitialPrompt = useCallback(() => {
         if (chatId) return;
+
         const isLongPromptPlaceholder = search === LONG_PROMPT_PLACEHOLDER;
         const messageText = resolveInitialPromptText(search);
+
         if (!messageText.trim() || initialSearchOccurred.current) return;
+
         if (
             shouldDeferInitialSend({
                 shareId,
@@ -225,7 +301,9 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
 
         initialSearchOccurred.current = true;
         clearLongPromptFromSessionStorage(isLongPromptPlaceholder);
+
         const files = readPendingAttachmentFileParts();
+
         inferProgramRequestFromPrompt(messageText, {
             daysPerWeek,
             programLength,
@@ -238,7 +316,13 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             setExcludeEquipment,
             setHealthIssues,
         });
-        sendMessageWithContext(files?.length ? { text: messageText, files } : { text: messageText });
+
+        const payload = files?.length
+            ? { text: messageText, files }
+            : { text: messageText };
+
+        sendMessageWithContext(payload);
+
         posthog?.capture?.("sent_first_prompt_to_ai", {
             search: messageText.slice(0, 200),
             user: user?.id ?? "user_id_unknown",
@@ -268,7 +352,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             if (!text.trim() && (!files || files.length === 0)) return;
             sendMessageWithContext({ text, files });
         },
-        [sendMessageWithContext]
+        [sendMessageWithContext],
     );
 
     const handleStop = useCallback(() => {
@@ -281,12 +365,12 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     }, []);
 
     const handleRetry = useCallback(() => {
-        if (retryCount < MAX_RETRIES) {
-            setGenerationError(null);
-            setRetryCount((prev) => prev + 1);
-            setIsBuilding(true);
-            sendMessageWithContext({ text: "Build my program" });
-        }
+        if (retryCount >= MAX_RETRIES) return;
+
+        setGenerationError(null);
+        setRetryCount((prev) => prev + 1);
+        setIsBuilding(true);
+        sendMessageWithContext({ text: "Build my program" });
     }, [retryCount, sendMessageWithContext]);
 
     const handleClearError = useCallback(() => {
@@ -297,6 +381,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
 
     const handleTimeoutError = useCallback(() => {
         console.error("Workout generation timed out - no progress for 45 seconds");
+
         const timeoutError = new Error("Generation timed out. The AI took too long to respond.");
         setGenerationError(timeoutError);
         setIsBuilding(false);
@@ -306,6 +391,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
 
     const onBuildComplete = useCallback(() => {
         if (!isMobile || hasAutoSwitchedToProgramAfterFirstBuildRef.current) return;
+
         hasAutoSwitchedToProgramAfterFirstBuildRef.current = true;
         setMobileTab("program");
     }, [isMobile, setMobileTab]);
