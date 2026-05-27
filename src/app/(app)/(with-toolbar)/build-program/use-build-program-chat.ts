@@ -68,6 +68,7 @@ export interface IProps {
             | ((msgs: UIMessage<unknown, UIDataTypes, UITools>[]) => UIMessage<unknown, UIDataTypes, UITools>[]),
     ) => void;
     sendMessageWithContext: SendMessageWithContext;
+    clearMessages: () => void;
     handleSubmit: (text: string, files?: FileUIPart[]) => void;
     handleStop: () => void;
     isBuilding: boolean;
@@ -117,6 +118,12 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     const appliedModifyProgramKeysRef = useRef<Set<string>>(new Set());
     const hasAutoSwitchedToProgramAfterFirstBuildRef = useRef(false);
 
+    const resetChatSessionRefs = useCallback(() => {
+        lastAtomicBuildCommitKeyRef.current = null;
+        appliedModifyProgramKeysRef.current.clear();
+        hasAutoSwitchedToProgramAfterFirstBuildRef.current = false;
+    }, []);
+
     const { messages, sendMessage, setMessages, status, stop, error } = useChat({
         transport: chatTransport,
         onError: (err) => {
@@ -127,6 +134,11 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         },
     });
     const { data: chatHistoryData } = useChatHistory(user, chatId);
+
+    const clearMessages = useCallback(() => {
+        resetChatSessionRefs();
+        setMessages([]);
+    }, [resetChatSessionRefs, setMessages]);
 
     const activeError = generationError || error || null;
     const isSubmitted = status === "submitted";
@@ -174,13 +186,6 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     );
 
     useEffect(() => {
-        if (messages.length > 0) return;
-        lastAtomicBuildCommitKeyRef.current = null;
-        appliedModifyProgramKeysRef.current.clear();
-        hasAutoSwitchedToProgramAfterFirstBuildRef.current = false;
-    }, [messages.length]);
-
-    useEffect(() => {
         if (typeof window === "undefined") return;
         if (user) {
             localStorage.removeItem(CHAT_MESSAGES_KEY);
@@ -200,9 +205,9 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
 
     useEffect(() => {
         if (newChat !== "true") return;
-        setMessages([]);
+        clearMessages();
         router.replace("/build-program");
-    }, [newChat, setMessages, router]);
+    }, [newChat, clearMessages, router]);
 
     useEffect(() => {
         if (!chatId || chatHistoryData == null) return;
@@ -312,6 +317,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     return {
         messages,
         setMessages,
+        clearMessages,
         sendMessageWithContext,
         handleSubmit,
         handleStop,
