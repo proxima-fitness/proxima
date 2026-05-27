@@ -38,5 +38,6 @@ dist
 .env.sentry-build-plugin
 .cursor
 coverage
+docs/
 
 tsconfig.tsbuildinfo
