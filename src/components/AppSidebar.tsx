@@ -85,7 +85,7 @@ const signOutServer = async () => {
     }
 };
 
-const RECENTS_LIMIT = 10;
+const RECENTS_LIMIT = 20;
 const navIdToIcon: Record<string, React.ComponentType<{ className?: string }>> = {
     home: Home,
     programs: Search,
