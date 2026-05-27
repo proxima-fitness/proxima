@@ -572,3 +572,14 @@ type TCard = {
     id: string,
     weekOrder: string,
 }
+
+/** buildWeek tool result shape: full week of routines plus aggregate counts, optional error. */
+interface IBuildWeekOutput {
+    routines?: THevyRoutine[];
+    totalDays?: number;
+    routineCount?: number;
+    exerciseCount?: number;
+    setCount?: number;
+    error?: string;
+    message?: string;
+}

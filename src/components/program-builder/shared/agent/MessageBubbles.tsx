@@ -15,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
-import { Copy, ThumbsUp, ThumbsDown, Pencil, Trash, AlertCircle, RefreshCw, FileText } from "lucide-react"
+import { Copy, ThumbsUp, ThumbsDown, Pencil, Trash, FileText } from "lucide-react"
 import { type ChatStatus, FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai";
 import type { IQuestion } from "@/components/ui/questions";
 import { IOption } from "@/components/ui/multi-select";
@@ -35,7 +35,6 @@ import { ModifyProgramProgress } from "./ModifyProgramProgress";
 import { RateProgramResults } from "@/components/program-builder/shared/RateProgramResults";
 import type { IProgramScore } from "@/components/program-builder/utils/score-program";
 import { toast } from "sonner";
-import Link from "next/link";
 import { type Operation } from "fast-json-patch";
 import posthog from "posthog-js";
 import { useUserContext } from "@/contexts/UserContext";
@@ -45,129 +44,9 @@ import {
     AttachmentPreview,
     AttachmentInfo,
 } from "@/components/ai-elements/attachments";
+import { AgentGenerationError } from "./AgentGenerationError";
+import { parseUserMessageWithSpreadsheets, truncateFilename } from "./helpers";
 
-/** Parses user message text to extract spreadsheet blocks for display-only rendering. */
-function parseUserMessageWithSpreadsheets(text: string): {
-    displayText: string;
-    spreadsheetLabels: string[];
-} {
-    const labels: string[] = [];
-    const blockRegex = /\[Attached spreadsheet: ([^\]]+)\]\n[\s\S]*?(?=\n\n\[Attached spreadsheet: [^\]]+\]\n|$)/g;
-    let match;
-    while ((match = blockRegex.exec(text)) !== null) {
-        labels.push(match[1].trim());
-    }
-    const displayText = text
-        .replace(/\[Attached spreadsheet: [^\]]+\]\n[\s\S]*?(?=\n\n\[Attached spreadsheet: [^\]]+\]\n|$)/g, "")
-        .replace(/\n\n+/g, "\n\n")
-        .trim();
-    return { displayText, spreadsheetLabels: labels };
-}
-
-/** Truncates long filenames with ellipsis while keeping the extension visible. */
-function truncateFilename(filename: string, maxBaseLength = 24): string {
-    const lastDot = filename.lastIndexOf(".");
-    const base = lastDot >= 0 ? filename.slice(0, lastDot) : filename;
-    const ext = lastDot >= 0 ? filename.slice(lastDot) : "";
-    if (base.length <= maxBaseLength) return filename;
-    return base.slice(0, maxBaseLength) + "..." + ext;
-}
-
-/** buildWeek tool result shape: full week of routines plus aggregate counts, optional error. */
-interface IBuildWeekOutput {
-    routines?: THevyRoutine[];
-    totalDays?: number;
-    routineCount?: number;
-    exerciseCount?: number;
-    setCount?: number;
-    error?: string;
-    message?: string;
-}
-
-/** Simple progress indicator for buildWeek: single \"building\" → \"complete\" state. */
-const BuildProgress: React.FC<{
-    totalDays: number;
-    isBuilding: boolean;
-}> = ({ totalDays, isBuilding }) => {
-    if (totalDays <= 0) return null;
-
-    return (
-        <div className="w-full pb-4">
-            <div className="flex flex-col gap-2 p-4 bg-muted/50 rounded-lg border border-border">
-                <p className="font-medium text-sm text-foreground">
-                    {isBuilding ? "Building your program..." : "Program built successfully!"}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                    {`Weeks includes ${totalDays} training day${totalDays === 1 ? "" : "s"}.`}
-                </p>
-            </div>
-        </div>
-    );
-};
-
-/** Error banner with retry and "Explore Programs" link when build fails. */
-const GenerationError: React.FC<{
-    error: Error | null;
-    onRetry: () => void;
-    retryCount: number;
-    maxRetries: number;
-    completedDays: number;
-    totalDays: number;
-}> = ({ error, onRetry, retryCount, maxRetries, completedDays, totalDays }) => {
-    if (!error) return null;
-
-    const canRetry = retryCount < maxRetries;
-    const hasPartialProgress = completedDays > 0;
-
-    return (
-        <div className="mx-auto w-full max-w-3xl px-2 sm:px-4 md:px-6 pt-2">
-            <div className="flex flex-col gap-3 p-3 sm:p-4 bg-muted/40 dark:bg-muted/20 rounded-lg border border-red-200/80 dark:border-red-800/80">
-                <div className="flex items-start gap-2 sm:gap-3">
-                    <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-                    <div className="flex flex-col gap-1 min-w-0">
-                        <p className="font-medium text-base text-red-700 dark:text-red-300">
-                            Workout generation failed
-                        </p>
-                        <p className="text-sm text-red-600 dark:text-red-400">
-                            {hasPartialProgress
-                                ? `Generated ${completedDays} of ${totalDays} days before encountering an error.`
-                                : "Something went wrong while building your program."
-                            }
-                        </p>
-                        {retryCount > 0 && (
-                            <p className="text-xs text-red-500 dark:text-red-500 mt-1">
-                                Retry attempt {retryCount} of {maxRetries} failed
-                            </p>
-                        )}
-                    </div>
-                </div>
-                <div className="flex flex-col flex-wrap items-center justify-center sm:flex-row gap-2 mt-2 sm:mt-1">
-                    {canRetry && (
-                        <Button
-                            size="sm"
-                            onClick={onRetry}
-                            className="w-full sm:w-auto rounded-full border-0 bg-red-600 px-4 text-white hover:bg-red-700"
-                        >
-                            <RefreshCw className="w-4 h-4 mr-2" />
-                            Try Again
-                        </Button>
-                    )}
-                    <Link href="/programs">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full sm:w-auto rounded-full border-border/80 text-muted-foreground hover:bg-muted/50"
-                        >
-                            Explore Programs
-                        </Button>
-                    </Link>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-/** Props: messages/setMessages, program state (hevyProgram, applyPatchWithUndo), filter handlers (programLength, daysPerWeek, exclude, health), sendMessage, isBuilding, loading/error/retry, status. */
 interface IProps {
     messages: UIMessage<unknown, UIDataTypes, UITools>[];
     setMessages: (messages: UIMessage<unknown, UIDataTypes, UITools>[] | ((messages: UIMessage<unknown, UIDataTypes, UITools>[]) => UIMessage<unknown, UIDataTypes, UITools>[])) => void;
@@ -194,7 +73,6 @@ interface IProps {
         parts?: never;
         messageId?: string;
     }, options?: ChatRequestOptions) => Promise<void>;
-
     handleProgramLength: (value: ""|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12") => void;
     handleDaysPerWeek: (value: string) => void;
     handleExcludeEquipment: (value: IOption[]) => void;
@@ -247,6 +125,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
 
     const TIMEOUT_MS = 120000; // No progress for this long during build triggers onTimeoutError
     const lastProgressTimestampRef = useRef<number>(0);
+    const prevIsBuildingRef = useRef(false);
     const timeoutCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
     // Collect buildWeek output from messages (single call expected)
@@ -281,14 +160,14 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         };
     }, [messages, daysPerWeek]);
 
-    // Update progress timestamp when we first receive routines
     useEffect(() => {
-        if (allRoutines.length > 0) {
+        const buildJustStarted = isBuilding && !prevIsBuildingRef.current;
+        prevIsBuildingRef.current = isBuilding;
+
+        if (buildJustStarted) {
             lastProgressTimestampRef.current = Date.now();
         }
-    }, [allRoutines.length]);
 
-    useEffect(() => {
         // Timeout: every 5s while building, if no progress (no routines) for TIMEOUT_MS then onTimeoutError
         if (timeoutCheckIntervalRef.current) {
             clearInterval(timeoutCheckIntervalRef.current);
@@ -322,13 +201,6 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
             }
         };
     }, [isBuilding, error, totalDays, allRoutines.length, onTimeoutError]);
-
-    // Reset timeout timestamp when building starts
-    useEffect(() => {
-        if (isBuilding) {
-            lastProgressTimestampRef.current = Date.now();
-        }
-    }, [isBuilding]);
 
     useEffect(() => {
         // After stream finishes: duplicate week 1 across all weeks, merge modifyProgram patches after buildWeek, one commit
@@ -736,10 +608,16 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                 </ul>
                                                             </div>
                                                         ) : (
-                                                            <BuildProgress
-                                                                totalDays={totalDays}
-                                                                isBuilding={isBuilding}
-                                                            />
+                                                            <div className="w-full pb-4">
+                                                                <div className="flex flex-col gap-2 p-4 bg-muted/50 rounded-lg border border-border">
+                                                                    <p className="font-medium text-sm text-foreground">
+                                                                        {isBuilding ? "Building your program..." : "Program built successfully!"}
+                                                                    </p>
+                                                                    <p className="text-sm text-muted-foreground">
+                                                                        {`Weeks includes ${totalDays} training day${totalDays === 1 ? "" : "s"}.`}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
                                                         )}
                                                     </ToolContent>
                                                 </Tool>
@@ -865,7 +743,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
 
              {/* Show error UI as next assistant message when generation fails */}
              {error && (
-                <GenerationError
+                <AgentGenerationError
                     error={error}
                     onRetry={onRetry}
                     retryCount={retryCount}
