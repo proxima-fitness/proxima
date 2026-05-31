@@ -49,7 +49,7 @@ import { useProgramRequestState } from "./use-program-request-state";
 import { readAnonymousChatMessages, useBuildProgramChat } from "./use-build-program-chat";
 import { isValidShareId } from "./initial-prompt";
 import type { User } from "@supabase/supabase-js";
-import { useChatHistory } from "@/api/hooks";
+import { useChatHistory, useChatIds } from "@/api/hooks";
 import { Operation } from "fast-json-patch";
 import posthog from "posthog-js";
 
@@ -89,24 +89,46 @@ export function BuildProgram() {
     const resume = searchParams.get("resume") ?? "";
     const empty = searchParams.get("empty") ?? "";
     const search = searchParams.get("search") ?? "";
-    const chatId = searchParams.get("chat") ?? "";
+    const urlChatId = searchParams.get("chat") ?? "";
+    const [assignedChatId, setAssignedChatId] = useState<string | null>(null);
+    const chatId = urlChatId || assignedChatId || "";
 
     const [sharedProgramLoadAttempted, setSharedProgramLoadAttempted] = useState(
         () => !isValidShareId(shareId),
     );
 
+    const { data: chatIds } = useChatIds(user);
+
+    const [sendConfirmedChatId, setSendConfirmedChatId] = useState<string | null>(null);
+
+    const handleSendInsertConfirmed = useCallback((id: string) => {
+        setSendConfirmedChatId(id);
+        setAssignedChatId(id);
+    }, []);
+
+    const sidebarRowKnown = Boolean(chatId && chatIds?.some((chat) => chat.id === chatId));
+    const sendPathConfirmed = Boolean(chatId && sendConfirmedChatId === chatId);
+    const chatRowConfirmed = Boolean(user && chatId && (sidebarRowKnown || sendPathConfirmed));
+
+    const chatHistoryFetchEnabled = chatRowConfirmed;
+
     const {
         data: chatHistoryData,
         isPending: chatHistoryPending,
         isSuccess: chatHistorySuccess,
-    } = useChatHistory(user, chatId);
+    } = useChatHistory(user, chatId, { enabled: chatHistoryFetchEnabled });
 
-    const chatHistoryLoading = Boolean(chatId && user && chatHistoryPending);
+    const chatHistoryLoading = Boolean(chatId && user && chatRowConfirmed && chatHistoryPending);
 
-    const chatSessionKey = chatId ? `chat-${chatId}` : user ? "logged-in" : "anonymous";
-
-    const shellKey =
-        chatId && user ? `${chatSessionKey}-${chatHistorySuccess ? "ready" : "pending"}` : chatSessionKey;
+    // Sidebar resume: remount when DB history loads. In-page / home first send: stable shell (no remount on mint).
+    const useSidebarHistoryRemount = Boolean(user && chatId && sidebarRowKnown && !sendPathConfirmed);
+    const shellKey = useSidebarHistoryRemount
+        ? `chat-${chatId}-${chatHistorySuccess ? "ready" : "pending"}`
+        : user
+          ? "logged-in-session"
+          : chatId
+            ? `chat-${chatId}`
+            : "anonymous";
 
     const chatInitialMessages = useMemo(() => {
         if (chatId && chatHistorySuccess && chatHistoryData != null) {
@@ -291,6 +313,7 @@ export function BuildProgram() {
             isChatHidden={isChatHidden}
             mobileTab={mobileTab}
             setMobileTab={setMobileTab}
+            onSendInsertConfirmed={handleSendInsertConfirmed}
         />
     );
 }
@@ -323,6 +346,7 @@ interface IBuildProgramShellProps {
     isChatHidden: boolean;
     mobileTab: string;
     setMobileTab: (tab: string) => void;
+    onSendInsertConfirmed: (chatId: string) => void;
 }
 
 function BuildProgramShell({
@@ -353,6 +377,7 @@ function BuildProgramShell({
     isChatHidden,
     mobileTab,
     setMobileTab,
+    onSendInsertConfirmed,
 }: IBuildProgramShellProps) {
     const { clearChatRef } = useBuildProgramActions();
     const queryClient = useQueryClient();
@@ -366,6 +391,8 @@ function BuildProgramShell({
         setMobileTab,
         initialMessages,
         sharedProgramLoadAttempted,
+        onSendInsertConfirmed,
+        chatId,
     });
 
     const {

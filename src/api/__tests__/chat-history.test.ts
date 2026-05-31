@@ -113,41 +113,33 @@ describe("upsertChatHistoryTurn", () => {
 });
 
 describe("ensureChatSessionOnSend", () => {
-    const router = { replace: vi.fn() };
-
     beforeEach(() => {
         vi.clearAllMocks();
         resetChatHistorySessionForTests();
-        router.replace.mockReset();
     });
 
-    it("mints chat id, replaces URL, and inserts once", async () => {
+    it("mints chat id and inserts once (no router — URL synced by caller)", async () => {
         mockMaybeSingle.mockResolvedValueOnce({ data: null, error: null });
         mockSingle.mockResolvedValueOnce({ data: { id: chatId }, error: null });
 
-        const message = userMessage("Build me a program");
         const first = await ensureChatSessionOnSend({
             user: testUser,
             chatId: "",
-            userMessage: message,
-            router,
+            firstUserText: "Build me a program",
         });
 
         expect(first).toEqual({ chatId: expect.any(String), confirmed: true });
-        expect(router.replace).toHaveBeenCalledWith(`/build-program?chat=${first.chatId}`);
         expect(mockInsert).toHaveBeenCalledTimes(1);
 
         mockMaybeSingle.mockResolvedValueOnce({ data: { id: first.chatId }, error: null });
         const second = await ensureChatSessionOnSend({
             user: testUser,
             chatId: first.chatId,
-            userMessage: userMessage("Second message"),
-            router,
+            firstUserText: "Second message",
         });
 
         expect(second.confirmed).toBe(true);
         expect(mockInsert).toHaveBeenCalledTimes(1);
-        expect(router.replace).toHaveBeenCalledTimes(1);
     });
 });
 

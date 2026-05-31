@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import { useChat } from "@ai-sdk/react";
 import {
     DefaultChatTransport,
@@ -11,12 +12,15 @@ import {
 import posthog from "posthog-js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { User } from "@supabase/supabase-js";
+import { ensureChatSessionOnSend } from "@/api/chat-history";
+import { setBuildProgramChatSearchParam } from "@/lib/build-program-url";
 import { recordLlmRequest } from "@/api/feature-limits";
 import {
     CHAT_MESSAGES_KEY,
     LONG_PROMPT_PLACEHOLDER,
 } from "@/assets/constants/ui-constants";
 import {
+    getMessageText,
     getTextFromChatMessage,
     isMessageAboutProgram,
 } from "@/components/program-builder/utils/helpers";
@@ -50,6 +54,10 @@ export interface IUseBuildProgramChatOptions {
     initialMessages: TChatMessage[];
     /** True once shared-program fetch finished or was not needed (no valid `shareId`). */
     sharedProgramLoadAttempted: boolean;
+    /** Called in send handler when first insert confirms (fetch gate — Sub-plan 2). */
+    onSendInsertConfirmed?: (chatId: string) => void;
+    /** Effective chat id (URL or assigned on first send before history sync). */
+    chatId: string;
 }
 
 export interface IProps {
@@ -166,14 +174,17 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         setMobileTab,
         initialMessages,
         sharedProgramLoadAttempted,
+        onSendInsertConfirmed,
+        chatId,
     } = options;
 
+    const router = useRouter();
+    const pathname = usePathname();
     const queryClient = useQueryClient();
     const searchParams = useSearchParams();
 
     const search = searchParams.get("search") ?? "";
     const shareId = searchParams.get("shareId") ?? "";
-    const chatId = searchParams.get("chat") ?? "";
 
     const {
         daysPerWeek,
@@ -204,6 +215,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     const lastAtomicBuildCommitKeyRef = useRef<string | null>(null);
     const appliedModifyProgramKeysRef = useRef<Set<string>>(new Set());
     const hasAutoSwitchedToProgramAfterFirstBuildRef = useRef(false);
+    const insertFailToastShownForChatIds = useRef(new Set<string>());
 
     const resetChatSessionRefs = useCallback(() => {
         lastAtomicBuildCommitKeyRef.current = null;
@@ -232,18 +244,41 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     const isLoading = status === "submitted" || status === "streaming";
 
     const sendMessageWithContext = useCallback<SendMessageWithContext>(
-        (message, sendOptions) => {
-            if (message == null) return Promise.resolve();
+        async (message, sendOptions) => {
+            if (message == null) return;
 
             incrementLlmRequests(undefined, {
                 onError: (err) => console.error("Failed to record LLM usage", err),
             });
 
+            const hadChatIdAtSend = Boolean(chatId);
+            let sessionChatId = chatId;
+
+            if (user) {
+                const firstUserText = getMessageText(message);
+                if (firstUserText.trim()) {
+                    const session = await ensureChatSessionOnSend({
+                        user,
+                        chatId,
+                        firstUserText,
+                    });
+                    sessionChatId = session.chatId;
+
+                    if (session.confirmed) {
+                        onSendInsertConfirmed?.(session.chatId);
+                        void queryClient.invalidateQueries({ queryKey: ["chat-ids", user.id] });
+                    } else if (!insertFailToastShownForChatIds.current.has(session.chatId)) {
+                        insertFailToastShownForChatIds.current.add(session.chatId);
+                        toast.error("Couldn't save this chat yet. Your message will still send.");
+                    }
+                }
+            }
+
             const messageText = getTextFromChatMessage(message);
             const contextBody = buildMessageContextBody({
                 messageText,
                 hevyProgram,
-                chatId,
+                chatId: sessionChatId,
                 daysPerWeek: programRequest.daysPerWeek,
                 programLength: programRequest.programLength,
                 excludeAreas: programRequest.excludeAreas,
@@ -256,15 +291,27 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
                 peakWeek: programRequest.peakWeek,
             });
 
-            return sendMessage(message, {
+            const sendPromise = sendMessage(message, {
                 ...sendOptions,
                 body: { ...contextBody, ...sendOptions?.body },
             });
+
+            if (sessionChatId && !hadChatIdAtSend) {
+                setBuildProgramChatSearchParam(router, pathname, searchParams, sessionChatId);
+            }
+
+            return sendPromise;
         },
         [
             sendMessage,
-            hevyProgram,
+            user,
+            router,
+            pathname,
+            searchParams,
             chatId,
+            hevyProgram,
+            onSendInsertConfirmed,
+            queryClient,
             programRequest.daysPerWeek,
             programRequest.programLength,
             programRequest.excludeAreas,
@@ -280,7 +327,8 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     );
 
     const trySendInitialPrompt = useCallback(() => {
-        if (chatId) return;
+        // Sidebar resume (`?chat=` only) must not auto-send; home flow keeps `search` + optional pre-minted `chat`.
+        if (chatId && !search.trim()) return;
 
         const isLongPromptPlaceholder = search === LONG_PROMPT_PLACEHOLDER;
         const messageText = resolveInitialPromptText(search);

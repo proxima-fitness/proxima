@@ -32,8 +32,7 @@ declare global {
     interface IEnsureChatSessionOnSendInput {
         user: import("@supabase/supabase-js").User | null | undefined;
         chatId: string;
-        userMessage: TChatMessage;
-        router: IChatHistoryRouter;
+        firstUserText: string;
     }
 
     interface IEnsureChatSessionOnSendResult {

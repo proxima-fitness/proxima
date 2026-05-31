@@ -269,12 +269,18 @@ export const useFollowingMyProfile = (id: string, user: User | undefined | null)
  *
  * @param user - The authenticated user
  * @param chatId - The chat ID
+ * @param options.enabled - When false, skips fetch (e.g. until send-time insert confirms — Sub-plan 2 gate)
  */
-export const useChatHistory = (user: User | undefined | null, chatId: string) => {
+export const useChatHistory = (
+    user: User | undefined | null,
+    chatId: string,
+    options?: { enabled?: boolean },
+) => {
+    const gateEnabled = options?.enabled ?? true;
     return useQuery({
         queryKey: ['chat-history', user?.id, chatId],
         queryFn: () => getChatHistoryById(user, chatId),
-        enabled: !!user && !!chatId,
+        enabled: !!user && !!chatId && gateEnabled,
     });
 };
 

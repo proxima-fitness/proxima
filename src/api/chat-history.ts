@@ -3,9 +3,9 @@ import { supabase } from ".";
 import { CHAT_MESSAGES_KEY } from "@/assets/constants/ui-constants";
 import { getMessageText } from "@/components/program-builder/utils/helpers";
 import { v4 as uuidv4 } from "uuid";
+import { buildBuildProgramHref } from "@/lib/build-program-url";
 
 const MAX_CHAT_TITLE_LENGTH = 200;
-const BUILD_PROGRAM_PATH = "/build-program";
 
 /** Tracks send-time inserts for the current browser session (insert-once per chatId). */
 const sessionInsertedChatIds = new Set<string>();
@@ -246,24 +246,29 @@ export const linkChatToProgram = async (
     }
 };
 
+/** Minimal user `UIMessage` for send-time insert (full thread synced on `onFinish`). */
+function userMessageFromText(text: string): TChatMessage {
+    const trimmed = text.trim();
+    return {
+        id: uuidv4(),
+        role: "user",
+        parts: [{ type: "text", text: trimmed }],
+    };
+}
+
 /**
- * Mint client chat id + URL on first send, insert-once with `[userMessage]` + frozen title.
+ * Mint client chat id + URL on first send, insert-once with first user text + frozen title.
  */
 export const ensureChatSessionOnSend = async ({
     user,
     chatId: existingChatId,
-    userMessage,
-    router,
+    firstUserText,
 }: IEnsureChatSessionOnSendInput): Promise<IEnsureChatSessionOnSendResult> => {
     if (!user) {
         return { chatId: existingChatId, confirmed: false };
     }
 
     const chatId = existingChatId || uuidv4();
-
-    if (!existingChatId) {
-        router.replace(`${BUILD_PROGRAM_PATH}?chat=${chatId}`);
-    }
 
     if (sessionInsertedChatIds.has(chatId)) {
         return { chatId, confirmed: true };
@@ -274,6 +279,11 @@ export const ensureChatSessionOnSend = async ({
         return { chatId, confirmed: true };
     }
 
+    if (!firstUserText.trim()) {
+        return { chatId, confirmed: false };
+    }
+
+    const userMessage = userMessageFromText(firstUserText);
     const title = deriveChatTitleFromMessages([userMessage]);
     const result = await postChatHistory(user, chatId, [userMessage], title, null);
 
@@ -298,7 +308,7 @@ export const migrateAnonymousThreadToChat = async ({
     }
 
     const chatId = uuidv4();
-    router.replace(`${BUILD_PROGRAM_PATH}?chat=${chatId}`);
+    router.replace(buildBuildProgramHref({ chatId }));
 
     const title = deriveChatTitleFromMessages(messages);
     const result = await postChatHistory(user, chatId, messages, title, null);

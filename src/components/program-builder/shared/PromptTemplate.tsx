@@ -38,10 +38,14 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMicTranscription } from "@/hooks/use-mic-transcription";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-
-const PENDING_ATTACHMENTS_KEY = "pending-attachments";
-const PENDING_INITIAL_PROMPT_KEY = "pending-initial-prompt";
-const LONG_PROMPT_PLACEHOLDER = "__long_prompt__";
+import { v4 as uuidv4 } from "uuid";
+import { useUserContext } from "@/contexts/UserContext";
+import { buildBuildProgramHref } from "@/lib/build-program-url";
+import {
+    LONG_PROMPT_PLACEHOLDER,
+    PENDING_ATTACHMENTS_KEY,
+    PENDING_INITIAL_PROMPT_KEY,
+} from "@/assets/constants/ui-constants";
 /** Max chars for search in URL; above this, prompt is stored in sessionStorage to avoid 431. */
 const MAX_SEARCH_URL_LENGTH = 1800;
 import { suggestionGroups, quickTriggerSuggestionChips } from "@/assets/constants/suggestions";
@@ -367,24 +371,27 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
 
 /** Landing prompt: input, suggestions, and navigation to build-program (URL or sessionStorage for long prompts). */
 export const PromptTemplate: React.FC = () => {
-
     const router = useRouter();
+    const { user } = useUserContext();
 
-    // const goToFilters = (search: string) => {
-    //     router.push(`/program-filters?search=${encodeURIComponent(search)}`);
-    // };
-    /** Navigate to build-program; long prompts go to sessionStorage and URL gets placeholder. */
-    const goToProgramBuilder = (search: string) => {
-        if (search.length > MAX_SEARCH_URL_LENGTH) {
+    /** One hop: optional pre-minted `chat` (logged-in) + `search` so build-program does not re-route mid-request. */
+    const goToProgramBuilder = (prompt: string) => {
+        let searchParam = prompt;
+        if (prompt.length > MAX_SEARCH_URL_LENGTH) {
             try {
-                sessionStorage.setItem(PENDING_INITIAL_PROMPT_KEY, search);
+                sessionStorage.setItem(PENDING_INITIAL_PROMPT_KEY, prompt);
             } catch {
                 // quota or other; fall back to truncation
             }
-            router.push(`/build-program?search=${encodeURIComponent(LONG_PROMPT_PLACEHOLDER)}`);
-        } else {
-            router.push(`/build-program?search=${encodeURIComponent(search)}`);
+            searchParam = LONG_PROMPT_PLACEHOLDER;
         }
+
+        router.push(
+            buildBuildProgramHref({
+                chatId: user ? uuidv4() : undefined,
+                search: searchParam,
+            }),
+        );
     };
 
     const [search, setSearch] = useState<string>("");
