@@ -42,6 +42,8 @@ interface IProps {
     handleIsEditExercise: (isEditExercise: boolean) => void;
     /** Duplicate a week to one or more target weeks. */
     handleDuplicateWeek: (fromWeekIndex: number, toWeekIndexes: number[]) => void;
+    /** Delete a week and reindex remaining weeks. */
+    handleDeleteWeek: (folder_id: number) => void;
     /** Duplicate a day to a target week and day slots. */
     handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;
     /** Open/close add exercise dialog. */
@@ -99,6 +101,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
         isEditExercise,
         handleIsEditExercise,
         handleDuplicateWeek,
+        handleDeleteWeek,
         handleDuplicateDay,
         handleOpenAddExerciseDialog,
         handleOpenAddNoteDialog,
@@ -151,16 +154,15 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
         };
     }, [isMobile, numberOfWeeks]);
 
+    const maxWeekIndex = Math.max(0, numberOfWeeks - 1);
+    const activeWeekIndex = Math.min(currentWeekIndex, maxWeekIndex);
+
     const handlePreviousWeek = () => {
-        if (currentWeekIndex > 0) {
-            setCurrentWeekIndex(currentWeekIndex - 1);
-        }
+        setCurrentWeekIndex((prev) => Math.max(0, prev - 1));
     };
 
     const handleNextWeek = () => {
-        if (currentWeekIndex < numberOfWeeks - 1) {
-            setCurrentWeekIndex(currentWeekIndex + 1);
-        }
+        setCurrentWeekIndex((prev) => Math.min(maxWeekIndex, prev + 1));
     };
 
     const handleScrollLeft = () => {
@@ -198,42 +200,43 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                             <div className="flex flex-row items-center justify-between px-4 py-1 h-9 border-b shrink-0 w-full max-w-full">
                                 <Button
                                     onClick={ handlePreviousWeek }
-                                    disabled={ currentWeekIndex === 0 }
+                                    disabled={ activeWeekIndex === 0 }
                                     variant="ghost"
                                     size="icon"
-                                    className={ `size-9 shrink-0 rounded-full ${currentWeekIndex === 0 ? "opacity-50 cursor-not-allowed" : ""}` }
+                                    className={ `size-9 shrink-0 rounded-full ${activeWeekIndex === 0 ? "opacity-50 cursor-not-allowed" : ""}` }
                                     aria-label="Previous week"
                                 >
                                     <ChevronLeft className="h-5 w-5" />
                                 </Button>
                                 <div className="text-sm font-semibold shrink-0">
-                                    Week { currentWeekIndex + 1 } / { numberOfWeeks }
+                                    Week { activeWeekIndex + 1 } / { numberOfWeeks }
                                 </div>
                                 <Button
                                     onClick={ handleNextWeek }
-                                    disabled={ currentWeekIndex >= numberOfWeeks - 1 }
+                                    disabled={ activeWeekIndex >= maxWeekIndex }
                                     variant="ghost"
                                     size="icon"
-                                    className={ `size-9 shrink-0 rounded-full ${currentWeekIndex >= numberOfWeeks - 1 ? "opacity-50 cursor-not-allowed" : ""}` }
+                                    className={ `size-9 shrink-0 rounded-full ${activeWeekIndex >= maxWeekIndex ? "opacity-50 cursor-not-allowed" : ""}` }
                                     aria-label="Next week"
                                 >
                                     <ChevronRight className="h-5 w-5" />
                                 </Button>
                             </div>
                             <div className="overflow-y-auto overflow-x-hidden flex-1 w-full max-w-full">
-                                { numberOfWeeksArr[currentWeekIndex] !== undefined && (
+                                { numberOfWeeksArr[activeWeekIndex] !== undefined && (
                                     <HevyColumn
-                                        key={ `Week ${currentWeekIndex + 1}` }
-                                        title={ `Week ${currentWeekIndex + 1}` }
+                                        key={ `Week ${activeWeekIndex + 1}` }
+                                        title={ `Week ${activeWeekIndex + 1}` }
                                         programLength={ numberOfWeeks }
                                         hevyProgram={ hevyProgram }
-                                        folder_id={ currentWeekIndex }
+                                        folder_id={ activeWeekIndex }
                                         setHevyProgram={ setHevyProgram }
                                         handleAddDay={ handleAddDay }
                                         handleDeleteDay={ handleDeleteDay }
                                         handleEditTitle={ handleEditTitle }
                                         handleIsEditExercise={ handleIsEditExercise }
                                         handleDuplicateWeek={ handleDuplicateWeek }
+                                        handleDeleteWeek={ handleDeleteWeek }
                                         handleDuplicateDay={ handleDuplicateDay }
                                         handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
                                         handleOpenAddNoteDialog={ handleOpenAddNoteDialog }
@@ -270,6 +273,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                                         handleEditTitle={ handleEditTitle }
                                         handleIsEditExercise={ handleIsEditExercise }
                                         handleDuplicateWeek={ handleDuplicateWeek }
+                                        handleDeleteWeek={ handleDeleteWeek }
                                         handleDuplicateDay={ handleDuplicateDay }
                                         handleOpenAddExerciseDialog={ handleOpenAddExerciseDialog }
                                         handleOpenAddNoteDialog={ handleOpenAddNoteDialog }

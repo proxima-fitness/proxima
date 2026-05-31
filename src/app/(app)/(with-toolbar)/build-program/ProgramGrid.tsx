@@ -22,6 +22,7 @@ export interface IProps {
     isEditExercise: boolean;
     handleIsEditExercise: (isEditExercise: boolean) => void;
     handleDuplicateWeek: (fromWeekIndex: number, toWeekIndexes: number[]) => void;
+    handleDeleteWeek: (folder_id: number) => void;
     handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;
     handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
     handleOpenAddNoteDialog: (addNoteDialog: THevyDialog) => void;
@@ -52,6 +53,7 @@ function ProgramGridInner({
     isEditExercise,
     handleIsEditExercise,
     handleDuplicateWeek,
+    handleDeleteWeek,
     handleDuplicateDay,
     handleOpenAddExerciseDialog,
     handleOpenAddNoteDialog,
@@ -91,6 +93,7 @@ function ProgramGridInner({
             isEditExercise,
             handleIsEditExercise,
             handleDuplicateWeek,
+            handleDeleteWeek,
             handleDuplicateDay,
             handleOpenAddExerciseDialog,
             handleOpenAddNoteDialog,
@@ -122,6 +125,7 @@ function ProgramGridInner({
             isEditExercise,
             handleIsEditExercise,
             handleDuplicateWeek,
+            handleDeleteWeek,
             handleDuplicateDay,
             handleOpenAddExerciseDialog,
             handleOpenAddNoteDialog,

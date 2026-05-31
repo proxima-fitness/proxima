@@ -161,6 +161,18 @@ const handleDeleteDay = useCallback((id: string) => {
     });
 }, [setHevyProgram]);
 
+const handleDeleteWeek = useCallback((folder_id: number) => {
+    setHevyProgram((prev) => {
+        const withoutWeek = prev.filter((day) => day.folder_id !== folder_id);
+        const reindexed = withoutWeek.map((day) =>
+            day.folder_id > folder_id
+                ? { ...day, folder_id: day.folder_id - 1 }
+                : day
+        );
+        return reorderHevy(reindexed);
+    });
+}, [setHevyProgram]);
+
 const handleEditTitle = useCallback((id: string, title: string) => {
     setHevyProgram((prev) =>
         prev.map((day) => (day.id === id ? { ...day, title } : day))
@@ -342,6 +354,7 @@ const handleEditExercise = useCallback((editExercise: THevyDialog) => {
             isEditExercise={isEditExercise}
             handleIsEditExercise={handleIsEditExercise}
             handleDuplicateWeek={handleDuplicateWeek}
+            handleDeleteWeek={handleDeleteWeek}
             handleDuplicateDay={handleDuplicateDay}
             handleOpenAddExerciseDialog={handleOpenAddExerciseDialog}
             handleOpenAddNoteDialog={handleOpenAddNoteDialog}

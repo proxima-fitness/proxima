@@ -99,7 +99,7 @@ export const StepButton: React.FC = () => {
 /*
  * TODO(hevy-sync): Re-enable when Hevy sync / PUT is ready. Paste back into StepButton:
  *
- * import { SyncToHevyDialog } from "./SyncToHevyDialog";
+ * import { ConfirmDialog } from "@/components/ConfirmDialog";
  * import { useHevySuccessConfetti } from "./useHevySuccessConfetti";
  * import { toast } from "sonner";
  *
@@ -141,11 +141,18 @@ export const StepButton: React.FC = () => {
  *                 <span className="sm:hidden">Sync</span>
  *                 <RefreshCw className="h-4 w-4 shrink-0" />
  *             </Button>
- *             <SyncToHevyDialog
+ *             <ConfirmDialog
  *                 open={openSyncDialog}
  *                 onOpenChange={setOpenSyncDialog}
+ *                 title="Update program in Hevy?"
+ *                 description="This will modify the current program in Hevy and cannot be undone."
+ *                 confirmLabel="Confirm"
+ *                 confirmLoadingLabel="Updating…"
+ *                 confirmVariant="default"
+ *                 confirmClassName="bg-lightSecondary text-white hover:bg-lightSecondary/90"
+ *                 isConfirmLoading={isSyncing}
+ *                 closeOnConfirm={false}
  *                 onConfirm={handleSyncConfirm}
- *                 isSyncing={isSyncing}
  *             />
  *             {confettiOverlay}
  *         </>

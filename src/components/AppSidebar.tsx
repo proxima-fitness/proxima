@@ -66,7 +66,7 @@ import { useTheme } from "next-themes";
 import { proxima_logo, proxima_logo_white_full_text } from "public";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { NewChatConfirmDialog } from "@/components/NewChatConfirmDialog";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { authenticatedNavLinks, navLinks, navIdToUrl } from "@/assets/constants/nav-links";
 import { useBuildProgramActions } from "@/contexts/BuildProgramActionsContext";
 
@@ -500,10 +500,13 @@ export function AppSidebar() {
                 openConnectHevyDialog={openConnectHevyDialog}
                 handleOpenConnectHevyDialog={setOpenConnectHevyDialog}
             />
-            <NewChatConfirmDialog
+            <ConfirmDialog
                 open={showNewChatConfirm}
                 onOpenChange={setShowNewChatConfirm}
-                onContinue={handleNewChatContinue}
+                title="Start new chat?"
+                description="Your current chat and program draft will be deleted. Sign in first to save it."
+                confirmLabel="Continue"
+                onConfirm={handleNewChatContinue}
             />
         </>
     );

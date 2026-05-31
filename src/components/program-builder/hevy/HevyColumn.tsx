@@ -8,11 +8,12 @@
 
 import { useState } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { BookOpen, CopyIcon, Plus, PlusIcon } from "lucide-react";
+import { BookOpen, CopyIcon, Plus, PlusIcon, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropIndicator } from "@/components/program-builder/shared/DropIndicator";
 import { HevyDayCard } from "./HevyDayCard";
 import { HevyDuplicateWeek } from "./HevyDuplicateWeek";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { IOption } from "@/components/ui/multi-select";
 import { reorderHevy } from "../utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -44,6 +45,8 @@ interface IProps {
     handleIsEditExercise: (isEditExercise: boolean) => void;
     /** Duplicates this week to one or more target week indexes. */
     handleDuplicateWeek: (fromWeekIndex: number, toWeekIndexes: number[]) => void;
+    /** Deletes this week and reindexes remaining weeks. */
+    handleDeleteWeek: (folder_id: number) => void;
     /** Duplicates a day to a target week and selected day slots. */
     handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;
     /** Opens the add/edit exercise dialog for a given week/day. */
@@ -86,6 +89,7 @@ export const HevyColumn: React.FC<IProps> = (props) => {
         handleEditTitle,
         handleIsEditExercise,
         handleDuplicateWeek,
+        handleDeleteWeek,
         handleDuplicateDay,
         handleOpenAddExerciseDialog,
         handleDeleteExercise,
@@ -102,6 +106,7 @@ export const HevyColumn: React.FC<IProps> = (props) => {
     const [active, setActive] = useState(false);
 
     const [duplicateWeekOpen, setDuplicateWeekOpen] = useState(false);
+    const [deleteWeekOpen, setDeleteWeekOpen] = useState(false);
     const [routineDialogOpen, setRoutineDialogOpen] = useState(false);
 
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -246,6 +251,19 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                                     <p>Duplicate Week</p>
                                 </TooltipContent>
                             </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger className="">
+                                    <div
+                                        onClick={ () => setDeleteWeekOpen(true) }
+                                        className="[&_svg]:w-4 [&_svg]:h-4 sm:[&_svg]:w-5 sm:[&_svg]:h-5"
+                                    >
+                                        <Trash2 />
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-gray-600 text-white dark:text-offWhite rounded-lg">
+                                    <p>Delete Week</p>
+                                </TooltipContent>
+                            </Tooltip>
                         </TooltipProvider>
                     </div>
                 </div>
@@ -322,6 +340,14 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                 duplicateWeekOpen={ duplicateWeekOpen }
                 setDuplicateWeekOpen={ setDuplicateWeekOpen }
                 handleDuplicateWeek={ handleDuplicateWeek }
+            />
+            <ConfirmDialog
+                open={ deleteWeekOpen }
+                onOpenChange={ setDeleteWeekOpen }
+                title={ `Delete Week ${folder_id + 1}?` }
+                description="All days and exercises in this week will be permanently removed. This cannot be undone."
+                confirmLabel="Delete"
+                onConfirm={ () => handleDeleteWeek(folder_id) }
             />
             { routineDialogOpen &&
                 <HevyAddRoutineDialog

@@ -12,15 +12,8 @@
  * Uses global types THevyRoutine. Used by: program-builder/shared/Prompt.tsx, profile/ProfileContent.tsx.
  */
 
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Redo2Icon, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -59,7 +52,6 @@ export const ResumeDraftBanner: React.FC = () => {
             localStorage.removeItem(PROMPT_KEY);
         }
         setHevyRoutine(undefined);
-        setClearDialogOpen(false);
     };
 
     if (!hevyRoutine) {
@@ -99,34 +91,15 @@ export const ResumeDraftBanner: React.FC = () => {
                     </Button>
                 </div>
             </div>
-            <Dialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
-                <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
-                    <DialogHeader className="pb-2">
-                        <DialogTitle>Clear program and chat?</DialogTitle>
-                        <DialogDescription>
-                            This will permanently remove your program draft and your current chat. Sign in first if you want to save your work.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter className="flex flex-row gap-2 justify-end">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            className="w-full sm:w-auto"
-                            onClick={() => setClearDialogOpen(false)}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="destructive"
-                            className="w-full sm:w-auto"
-                            onClick={handleClearProgram}
-                        >
-                            Clear
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            <ConfirmDialog
+                open={clearDialogOpen}
+                onOpenChange={setClearDialogOpen}
+                title="Clear program and chat?"
+                description="This will permanently remove your program draft and your current chat. Sign in first if you want to save your work."
+                confirmLabel="Clear"
+                onConfirm={handleClearProgram}
+                preventAutoFocus
+            />
         </div>
     );
 };
