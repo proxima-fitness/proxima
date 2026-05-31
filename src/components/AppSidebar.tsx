@@ -197,6 +197,7 @@ export function AppSidebar() {
                                     <SidebarMenuButton
                                         tooltip="New Chat"
                                         onClick={handleNewChatClick}
+                                        disabled={!!user}
                                     >
                                         <MessageSquarePlus className="shrink-0" />
                                         <span className="font-main">New Chat</span>
