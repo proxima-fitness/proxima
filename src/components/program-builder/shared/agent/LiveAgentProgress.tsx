@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, memo } from "react";
-import type { ChatStatus, UIDataTypes, UIMessage, UITools } from "ai";
+import type { ChatStatus } from "ai";
 import {
   ChainOfThought,
   ChainOfThoughtContent,
@@ -39,7 +39,7 @@ const TOOL_META: Record<string, { label: string; icon: LucideIcon }> = {
 };
 
 function deriveSteps(
-  messages: UIMessage<unknown, UIDataTypes, UITools>[],
+  messages: TChatMessage[],
   status: ChatStatus | undefined
 ): IStep[] {
   const lastMessage = messages[messages.length - 1];
@@ -94,14 +94,14 @@ function deriveSteps(
 }
 
 interface ILiveAgentProgressProps {
-  messages: UIMessage<unknown, UIDataTypes, UITools>[];
+  messages: TChatMessage[];
   status?: ChatStatus;
   isLoading: boolean;
   className?: string;
 }
 
 function isStreamingFinalText(
-  messages: UIMessage<unknown, UIDataTypes, UITools>[],
+  messages: TChatMessage[],
   status: ChatStatus | undefined
 ): boolean {
   if (status !== "streaming") return false;

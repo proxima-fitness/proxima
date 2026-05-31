@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import type { RefObject } from "react";
-import type { ChatStatus, FileUIPart, UIDataTypes, UIMessage, UITools } from "ai";
+import type { ChatStatus, FileUIPart } from "ai";
 import type { Operation } from "fast-json-patch";
 import { Agent } from "@/components/program-builder/shared/agent/Agent";
 import { Spinner } from "@/components/ui/spinner";
@@ -15,11 +15,11 @@ export interface IProps {
     hevyProgram: THevyRoutine[];
     applyPatchWithUndo: (newDocument: THevyRoutine[], inversePatch: Operation[], recordUndo?: boolean) => void;
     programRequest: ProgramRequest;
-    messages: UIMessage<unknown, UIDataTypes, UITools>[];
+    messages: TChatMessage[];
     setMessages: (
         messages:
-            | UIMessage<unknown, UIDataTypes, UITools>[]
-            | ((msgs: UIMessage<unknown, UIDataTypes, UITools>[]) => UIMessage<unknown, UIDataTypes, UITools>[]),
+            | TChatMessage[]
+            | ((msgs: TChatMessage[]) => TChatMessage[]),
     ) => void;
     sendMessageWithContext: Parameters<typeof Agent>[0]["sendMessageWithContext"];
     isBuilding: boolean;

@@ -31,6 +31,7 @@ import {
 import { PROFANITY_ERROR_MESSAGE, PROFILE_PICTURE_NSFW_THRESHOLD, PROFILE_PICTURE_NSFW_MESSAGE } from "@/assets/constants/ui-constants";
 import { useProfilePictureContext } from "@/contexts/ProfilePictureContext";
 import { cn } from "@/lib/utils";
+import { v4 as uuidv4 } from "uuid";
 
 interface IEditProfileProps {
     user: User;
@@ -172,7 +173,7 @@ function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditPro
         const file = files[0];
         setUploadingPhoto(true);
         try {
-            const name = crypto.randomUUID();
+            const name = uuidv4();
             await postTmpImage(name, file);
             const imageUrl = getTmpPublicUrl(name);
 

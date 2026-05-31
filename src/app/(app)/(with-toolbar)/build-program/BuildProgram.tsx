@@ -13,6 +13,7 @@
  */
 
 import { useState, useEffect, useMemo, useReducer, useCallback, useRef, type RefObject } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { ImperativePanelHandle } from "react-resizable-panels";
 
@@ -45,7 +46,6 @@ import { ToolbarPortalButtons } from "@/components/program-builder/shared/Toolba
 import { BuildProgramToolbarTitle } from "@/components/program-builder/shared/BuildProgramToolbarTitle";
 import { editorReducer } from "./editor-reducer";
 import { useProgramRequestState } from "./use-program-request-state";
-import type { UIDataTypes, UIMessage, UITools } from "ai";
 import { readAnonymousChatMessages, useBuildProgramChat } from "./use-build-program-chat";
 import { isValidShareId } from "./initial-prompt";
 import type { User } from "@supabase/supabase-js";
@@ -267,6 +267,7 @@ export function BuildProgram() {
             chatHistoryLoading={chatHistoryLoading}
             initialMessages={chatInitialMessages}
             user={user}
+            chatId={chatId}
             search={search}
             resume={resume}
             hevyProgram={hevyProgram}
@@ -296,8 +297,9 @@ export function BuildProgram() {
 
 interface IBuildProgramShellProps {
     chatHistoryLoading: boolean;
-    initialMessages: UIMessage<unknown, UIDataTypes, UITools>[];
+    initialMessages: TChatMessage[];
     user: User | null;
+    chatId: string;
     search: string;
     resume: string;
     hevyProgram: THevyRoutine[];
@@ -327,6 +329,7 @@ function BuildProgramShell({
     chatHistoryLoading,
     initialMessages,
     user,
+    chatId,
     search,
     resume,
     hevyProgram,
@@ -434,13 +437,21 @@ function BuildProgramShell({
                 }
             }
 
-            const chatResult = await postChatHistory(user, messages, title, String(programId));
-            if (chatResult.success !== true) {
-                toast.error("Program saved but chat history could not be saved.");
-                console.error("Chat history save failed.", chatResult.error);
-            } else {
+            const saveChatId = chatId ?? uuidv4();
+            const chatResult = await postChatHistory(
+                user,
+                saveChatId,
+                messages,
+                title,
+                String(programId),
+            );
+            if ("success" in chatResult && chatResult.success) {
                 toast.success("Program and chat saved.");
                 queryClient.invalidateQueries({ queryKey: ["chat-ids", user.id] });
+            } else {
+                const detail = "error" in chatResult ? chatResult.error : "Unknown error";
+                toast.error("Program saved but chat history could not be saved.");
+                console.error("Chat history save failed.", detail);
             }
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Save failed.");
@@ -448,7 +459,7 @@ function BuildProgramShell({
         } finally {
             setIsSaving(false);
         }
-    }, [user, hevyProgram.length, messages, orderedProgram, programRequest.request, search, queryClient]);
+    }, [user, hevyProgram.length, messages, orderedProgram, programRequest.request, search, queryClient, chatId]);
 
     const localStorageDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const DEBOUNCE_MS = 500;

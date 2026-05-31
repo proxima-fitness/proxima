@@ -16,7 +16,7 @@ import { useMemo, useCallback, useState, useRef, useLayoutEffect } from "react"
 import type { RefObject } from "react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { IOption } from "@/components/ui/multi-select"
-import { type ChatStatus, FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai"
+import { type ChatStatus, FileUIPart, ChatRequestOptions, type CreateUIMessage } from "ai"
 import type { IQuestion } from "@/components/ui/questions"
 import { equipmentOptions, healthIssuesOptions } from "@/assets/constants/form-options"
 import { quickModifyProgramSuggestionChips } from "@/assets/constants/suggestions"
@@ -27,25 +27,30 @@ import { Navbar } from "./Navbar"
 import { MessageBubbles } from "./MessageBubbles"
 import { LiveAgentProgress } from "./LiveAgentProgress"
 
-export type SendMessageWithContext = (message?: (Omit<UIMessage<unknown, UIDataTypes, UITools>, "id" | "role"> & {
-    id?: string;
-    role?: "system" | "user" | "assistant";
-} & {
-    text?: never;
-    files?: never;
-    messageId?: string;
-}) | {
-    text: string;
-    files?: FileList | FileUIPart[];
-    metadata?: unknown;
-    parts?: never;
-    messageId?: string;
-} | {
-    files: FileList | FileUIPart[];
-    metadata?: unknown;
-    parts?: never;
-    messageId?: string;
-}, options?: ChatRequestOptions) => Promise<void>;
+export type TChatSendMessageParam =
+    | (CreateUIMessage<TChatMessage> & {
+          text?: never;
+          files?: never;
+          messageId?: string;
+      })
+    | {
+          text: string;
+          files?: FileList | FileUIPart[];
+          metadata?: unknown;
+          parts?: never;
+          messageId?: string;
+      }
+    | {
+          files: FileList | FileUIPart[];
+          metadata?: unknown;
+          parts?: never;
+          messageId?: string;
+      };
+
+export type SendMessageWithContext = (
+    message?: TChatSendMessageParam,
+    options?: ChatRequestOptions,
+) => Promise<void>;
 
 /** Props for the agent container (navbar, messages, chat input, and all filter/program/send state). */
 interface IProps {
@@ -108,8 +113,8 @@ interface IProps {
     handleProgramTitle: (value: string) => void;
     handleExplore: () => void;
     // AI agent state (lifted from Agent into parent)
-    messages: UIMessage<unknown, UIDataTypes, UITools>[];
-    setMessages: (messages: UIMessage<unknown, UIDataTypes, UITools>[] | ((messages: UIMessage<unknown, UIDataTypes, UITools>[]) => UIMessage<unknown, UIDataTypes, UITools>[])) => void;
+    messages: TChatMessage[];
+    setMessages: (messages: TChatMessage[] | ((messages: TChatMessage[]) => TChatMessage[])) => void;
     sendMessageWithContext: SendMessageWithContext;
     isBuilding: boolean;
     handleIsBuilding: (isBuilding: boolean) => void;
@@ -204,7 +209,8 @@ export const Agent: React.FC<IProps> = (props) => {
         const lastMessage = messages[messages.length - 1]
         if (!lastMessage || lastMessage.role !== "assistant" || !lastMessage.parts?.length) return null
         const part = lastMessage.parts.find(
-            (p) => typeof p === "object" && p !== null && "type" in p && (p as { type: string }).type === "tool-getMoreInfoQuestions"
+            (p) =>
+                typeof p === "object" && p !== null && "type" in p && (p as { type: string }).type === "tool-getMoreInfoQuestions",
         )
         const toolOutput = part && "output" in part ? (part as { output?: { questions?: IQuestion[]; userRequest?: string } }).output : undefined
         if (!toolOutput?.questions || !Array.isArray(toolOutput.questions)) return null

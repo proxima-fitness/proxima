@@ -7,9 +7,6 @@ import {
     DefaultChatTransport,
     type ChatStatus,
     type FileUIPart,
-    type UIDataTypes,
-    type UIMessage,
-    type UITools,
 } from "ai";
 import posthog from "posthog-js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -32,12 +29,12 @@ import {
     shouldDeferInitialSend,
 } from "./initial-prompt";
 import type { useProgramRequestState } from "./use-program-request-state";
+import { logChatHistoryOnFinishSpike } from "./chat-history-spike";
 
 // ---------------------------------------------------------------------------
 // Types & constants
 // ---------------------------------------------------------------------------
 
-type BuildProgramChatMessage = UIMessage<unknown, UIDataTypes, UITools>;
 type ProgramRequestState = ReturnType<typeof useProgramRequestState>;
 
 const chatTransport = new DefaultChatTransport({ api: "/api/chat" });
@@ -50,17 +47,17 @@ export interface IUseBuildProgramChatOptions {
     isMobile: boolean;
     setMobileTab: (tab: string) => void;
     /** Snapshot for keyed remount (chat history or anonymous restore). */
-    initialMessages: BuildProgramChatMessage[];
+    initialMessages: TChatMessage[];
     /** True once shared-program fetch finished or was not needed (no valid `shareId`). */
     sharedProgramLoadAttempted: boolean;
 }
 
 export interface IProps {
-    messages: BuildProgramChatMessage[];
+    messages: TChatMessage[];
     setMessages: (
         messages:
-            | BuildProgramChatMessage[]
-            | ((msgs: BuildProgramChatMessage[]) => BuildProgramChatMessage[]),
+            | TChatMessage[]
+            | ((msgs: TChatMessage[]) => TChatMessage[]),
     ) => void;
     sendMessageWithContext: SendMessageWithContext;
     clearMessages: () => void;
@@ -87,7 +84,7 @@ export interface IProps {
 // ---------------------------------------------------------------------------
 
 /** Anonymous session restore — read once at `useChat` init when `!chatId && !user`. */
-export function readAnonymousChatMessages(): UIMessage[] {
+export function readAnonymousChatMessages(): TChatMessage[] {
     if (typeof window === "undefined") return [];
 
     try {
@@ -95,7 +92,7 @@ export function readAnonymousChatMessages(): UIMessage[] {
         if (!stored) return [];
 
         const parsed = JSON.parse(stored);
-        return Array.isArray(parsed) && parsed.length > 0 ? (parsed as UIMessage[]) : [];
+        return Array.isArray(parsed) && parsed.length > 0 ? (parsed as TChatMessage[]) : [];
     } catch {
         return [];
     }
@@ -214,9 +211,10 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         hasAutoSwitchedToProgramAfterFirstBuildRef.current = false;
     }, []);
 
-    const { messages, sendMessage, setMessages, status, stop, error } = useChat({
+    const { messages, sendMessage, setMessages, status, stop, error } = useChat<TChatMessage>({
         transport: chatTransport,
         messages: initialMessages,
+        onFinish: logChatHistoryOnFinishSpike,
         onError: (err) => {
             console.error("Chat error:", err);
             setGenerationError(err);

@@ -16,7 +16,8 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { Copy, ThumbsUp, ThumbsDown, Pencil, Trash, FileText } from "lucide-react"
-import { type ChatStatus, FileUIPart, ChatRequestOptions, UIDataTypes, UIMessage, UITools } from "ai";
+import { type ChatStatus, FileUIPart, ChatRequestOptions } from "ai";
+import type { TChatSendMessageParam } from "./Agent";
 import type { IQuestion } from "@/components/ui/questions";
 import { IOption } from "@/components/ui/multi-select";
 import {
@@ -48,31 +49,13 @@ import { AgentGenerationError } from "./AgentGenerationError";
 import { parseUserMessageWithSpreadsheets, truncateFilename } from "./helpers";
 
 interface IProps {
-    messages: UIMessage<unknown, UIDataTypes, UITools>[];
-    setMessages: (messages: UIMessage<unknown, UIDataTypes, UITools>[] | ((messages: UIMessage<unknown, UIDataTypes, UITools>[]) => UIMessage<unknown, UIDataTypes, UITools>[])) => void;
+    messages: TChatMessage[];
+    setMessages: (messages: TChatMessage[] | ((messages: TChatMessage[]) => TChatMessage[])) => void;
     daysPerWeek: string;
     programLength: string;
     excludeEquipment: IOption[];
     healthIssues: IOption[];
-    sendMessage: (message?: (Omit<UIMessage<unknown, UIDataTypes, UITools>, "id" | "role"> & {
-        id?: string;
-        role?: "system" | "user" | "assistant";
-    } & {
-        text?: never;
-        files?: never;
-        messageId?: string;
-    }) | {
-        text: string;
-        files?: FileList | FileUIPart[];
-        metadata?: unknown;
-        parts?: never;
-        messageId?: string;
-    } | {
-        files: FileList | FileUIPart[];
-        metadata?: unknown;
-        parts?: never;
-        messageId?: string;
-    }, options?: ChatRequestOptions) => Promise<void>;
+    sendMessage: (message?: TChatSendMessageParam, options?: ChatRequestOptions) => Promise<void>;
     handleProgramLength: (value: ""|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12") => void;
     handleDaysPerWeek: (value: string) => void;
     handleExcludeEquipment: (value: IOption[]) => void;
