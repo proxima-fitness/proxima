@@ -63,6 +63,22 @@ export function createChatNavigationLatch(urlChatIdAtMount: string): IChatNaviga
     };
 }
 
+/** True on sidebar New Chat (`?empty=true` without `?chat=`). */
+export function isExplicitNewChatArrival(params: { empty: string; urlChatId: string }): boolean {
+    return params.empty === "true" && !params.urlChatId;
+}
+
+/** Clear stale sidebar latch so session mint does not remount the shell. */
+export function resetChatNavigationLatchForArrival(
+    params: { empty: string; urlChatId: string },
+    latch: IChatNavigationLatch,
+): IChatNavigationLatch {
+    if (isExplicitNewChatArrival(params)) {
+        return createChatNavigationLatch("");
+    }
+    return latch;
+}
+
 /** Derive during render; assign `next` back to a ref (no effect). */
 export function advanceChatNavigationLatch(
     chatId: string,

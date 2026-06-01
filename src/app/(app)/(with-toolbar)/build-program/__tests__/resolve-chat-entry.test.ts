@@ -4,6 +4,7 @@ import {
     advanceChatNavigationLatch,
     buildShellKey,
     createChatNavigationLatch,
+    resetChatNavigationLatchForArrival,
     isBareBuildProgramArrival,
     isChatNavigationArrivalAtMount,
     shouldRedirectBareBuildProgramToEmpty,
@@ -314,6 +315,41 @@ describe("advanceChatNavigationLatch", () => {
         latch = step.next;
         step = advanceChatNavigationLatch(chatB, latch);
         expect(step.chatNavigationArrival).toBe(true);
+    });
+
+    it("A3′: New Chat clears stale latch so session mint keeps send-path shell", () => {
+        const chatA = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+        const mintedId = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+
+        let latch = createChatNavigationLatch(chatA);
+        expect(latch.latched).toBe(true);
+
+        latch = resetChatNavigationLatchForArrival({ empty: "true", urlChatId: "" }, latch);
+        expect(latch.latched).toBe(false);
+
+        let step = advanceChatNavigationLatch("", latch);
+        latch = step.next;
+        expect(step.chatNavigationArrival).toBe(false);
+
+        step = advanceChatNavigationLatch(mintedId, latch);
+        expect(step.chatNavigationArrival).toBe(false);
+
+        const plan = resolveChatEntryPlan(
+            baseInput({
+                user: loggedInUser,
+                chatId: mintedId,
+                sendPathConfirmed: true,
+                chatNavigationArrival: step.chatNavigationArrival,
+            }),
+        );
+        expect(
+            buildShellKey(plan, {
+                chatId: mintedId,
+                user: loggedInUser,
+                chatHistorySuccess: false,
+                chatNavigationArrival: step.chatNavigationArrival,
+            }),
+        ).toBe("logged-in-session");
     });
 });
 

@@ -52,6 +52,7 @@ import {
     advanceChatNavigationLatch,
     buildShellKey,
     createChatNavigationLatch,
+    resetChatNavigationLatchForArrival,
     isBareBuildProgramArrival,
     parseBuildProgramArrival,
     shouldRedirectBareBuildProgramToEmpty,
@@ -115,6 +116,10 @@ export function BuildProgram() {
     );
 
     const chatNavLatchRef = useRef(createChatNavigationLatch(urlChatId));
+    chatNavLatchRef.current = resetChatNavigationLatchForArrival(
+        { empty, urlChatId },
+        chatNavLatchRef.current,
+    );
     const { chatNavigationArrival, next: chatNavLatchNext } = advanceChatNavigationLatch(
         chatId,
         chatNavLatchRef.current,
