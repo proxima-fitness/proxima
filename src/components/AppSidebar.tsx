@@ -174,6 +174,8 @@ export function AppSidebar() {
         isTestUser(user) &&
         ((!isMobile && state !== "collapsed") || (isMobile && openMobile));
 
+    const showRecentChats = isMobile || state !== "collapsed";
+
     return (
         <>
             <Sidebar collapsible="icon">
@@ -265,7 +267,7 @@ export function AppSidebar() {
                                             No recent chats
                                         </span>
                                     </SidebarMenuItem>
-                                ) : state === "collapsed" ? (
+                                ) : !showRecentChats ? (
                                     null
                                 ) : (
                                     recentChats.map((chat) => {
