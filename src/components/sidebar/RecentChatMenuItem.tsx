@@ -48,7 +48,7 @@ export function RecentChatMenuItem({
                     className="flex min-w-0 flex-1 items-center gap-2"
                     onClick={onNavigate}
                 >
-                    <span className="min-w-0 flex-1 truncate font-main">{displayTitle}</span>
+                    <span className="min-w-0 flex-1 truncate font-third">{displayTitle}</span>
                 </Link>
             </SidebarMenuButton>
             <DropdownMenu>
@@ -59,7 +59,7 @@ export function RecentChatMenuItem({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent side="right" align="start" className="min-w-36">
                     <DropdownMenuItem
-                        className="cursor-pointer font-main"
+                        className="cursor-pointer font-third"
                         onSelect={(e) => {
                             e.preventDefault();
                             onPinToggle(chat, !chat.pinned);
@@ -78,7 +78,7 @@ export function RecentChatMenuItem({
                         )}
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                        className="cursor-pointer font-main"
+                        className="cursor-pointer font-third"
                         onSelect={(e) => {
                             e.preventDefault();
                             onRename(chat);

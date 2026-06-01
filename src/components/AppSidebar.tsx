@@ -213,7 +213,7 @@ export function AppSidebar() {
         if (!user) {
             return (
                 <SidebarMenuItem>
-                    <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
+                    <span className="px-2 py-1.5 text-sm text-muted-foreground font-third group-data-[collapsible=icon]:hidden">
                         No recent chats
                     </span>
                 </SidebarMenuItem>
@@ -222,7 +222,7 @@ export function AppSidebar() {
         if (chatIdsLoading) {
             return (
                 <SidebarMenuItem>
-                    <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
+                    <span className="px-2 py-1.5 text-sm text-muted-foreground font-third group-data-[collapsible=icon]:hidden">
                         Loading…
                     </span>
                 </SidebarMenuItem>
@@ -231,7 +231,7 @@ export function AppSidebar() {
         if (chatIdsError) {
             return (
                 <SidebarMenuItem>
-                    <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
+                    <span className="px-2 py-1.5 text-sm text-muted-foreground font-third group-data-[collapsible=icon]:hidden">
                         Couldn&apos;t load chats
                     </span>
                 </SidebarMenuItem>
@@ -243,7 +243,7 @@ export function AppSidebar() {
         if (recentChats.length === 0) {
             return (
                 <SidebarMenuItem>
-                    <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
+                    <span className="px-2 py-1.5 text-sm text-muted-foreground font-third group-data-[collapsible=icon]:hidden">
                         {pinnedChats.length > 0 ? "No other recent chats" : "No recent chats"}
                     </span>
                 </SidebarMenuItem>
@@ -302,7 +302,7 @@ export function AppSidebar() {
                                         onClick={handleNewChatClick}
                                     >
                                         <MessageSquarePlus className="shrink-0" />
-                                        <span className="font-main">New Chat</span>
+                                        <span className="font-third">New Chat</span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             </SidebarMenu>
@@ -325,7 +325,7 @@ export function AppSidebar() {
                                                             className={cn("shrink-0", isPricing && "text-lightGold")}
                                                         />
                                                     )}
-                                                    <span className={cn("font-main", isPricing && "dark:text-lightGold")}>
+                                                    <span className={cn("font-third", isPricing && "dark:text-lightGold")}>
                                                         {nav.title}
                                                     </span>
                                                 </Link>
@@ -395,7 +395,7 @@ export function AppSidebar() {
                                                     {getInitials(userFullName ?? "") ?? userFullName?.charAt(0) ?? "U"}
                                                 </AvatarFallback>
                                             </Avatar>
-                                            <span className="font-main truncate group-data-[collapsible=icon]:hidden">
+                                            <span className="font-third truncate group-data-[collapsible=icon]:hidden">
                                                 {userFullName || "User"}
                                             </span>
                                         </SidebarMenuButton>
@@ -549,7 +549,7 @@ export function AppSidebar() {
                                                 <LogIn className="h-4 w-4" />
                                             </AvatarFallback>
                                         </Avatar>
-                                        <span className="font-main group-data-[collapsible=icon]:hidden">Log in</span>
+                                        <span className="font-third group-data-[collapsible=icon]:hidden">Log in</span>
                                     </Link>
                                 </SidebarMenuButton>
                             )}
