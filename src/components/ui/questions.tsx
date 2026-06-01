@@ -668,6 +668,13 @@ export function Questions({
     Array.isArray(v) ? v.length > 0 : typeof v === "string" && v.length > 0
   )
 
+  const handleClearAll = React.useCallback(() => {
+    setAnswers({})
+    setOtherTexts({})
+    setVisibleIndex(0)
+    containerRef.current?.scrollTo({ top: 0, behavior: "smooth" })
+  }, [])
+
   if (questions.length === 0) return null
 
   return (
@@ -785,6 +792,18 @@ export function Questions({
 
       {/* Footer */}
       {!isCollapsed && <div className="flex items-center justify-end gap-2 border-t px-4 py-3">
+        {hasSelections && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClearAll}
+            disabled={isLoading || isBuilding}
+            className="rounded-full"
+            aria-label="Reset selections"
+          >
+            Reset
+          </Button>
+        )}
         {hasSelections ? (
           <TooltipProvider delayDuration={0}>
             <Tooltip>
@@ -803,21 +822,21 @@ export function Questions({
                 </span>
               </TooltipTrigger>
               <TooltipContent className="bg-lightSecondary text-white">
-                De-select options to skip this questionnaire.
+                Reset selections to skip this questionnaire.
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         ) : (
-<Button
-          variant="ghost"
-          size="sm"
-          onClick={onSkip}
-          disabled={isLoading || isBuilding}
-          className="rounded-full"
-          aria-label="Skip questionnaire"
-        >
-          Skip
-        </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onSkip}
+            disabled={isLoading || isBuilding}
+            className="rounded-full"
+            aria-label="Skip questionnaire"
+          >
+            Skip
+          </Button>
         )}
         <Button
           size="sm"
