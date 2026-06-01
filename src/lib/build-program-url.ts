@@ -8,7 +8,7 @@ export interface IBuildProgramUrlRouter {
 }
 
 /** Single navigation target for build-program (chat + search preserved together). */
-export function buildBuildProgramHref(options: { chatId?: string; search?: string }): string {
+export function buildBuildProgramHref(options: { chatId?: string; search?: string } = {}): string {
     const params = new URLSearchParams();
     if (options.chatId) {
         params.set("chat", options.chatId);
@@ -16,8 +16,26 @@ export function buildBuildProgramHref(options: { chatId?: string; search?: strin
     if (options.search != null && options.search !== "") {
         params.set("search", options.search);
     }
+    const hasChatOrSearch = Boolean(options.chatId || (options.search != null && options.search !== ""));
+    if (!hasChatOrSearch) {
+        params.set("empty", "true");
+    }
     const qs = params.toString();
-    return qs ? `${BUILD_PROGRAM_PATH}?${qs}` : BUILD_PROGRAM_PATH;
+    return qs ? `${BUILD_PROGRAM_PATH}?${qs}` : `${BUILD_PROGRAM_PATH}?empty=true`;
+}
+
+/**
+ * Remove `search` from the current build-program URL (prevents reload double auto-send).
+ */
+export function stripSearchFromBuildProgramUrl(
+    router: IBuildProgramUrlRouter,
+    pathname: string,
+    searchParams: ReadonlyURLSearchParams,
+): void {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("search");
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
 }
 
 /**
@@ -32,6 +50,25 @@ export function setBuildProgramChatSearchParam(
 ): void {
     const params = new URLSearchParams(searchParams.toString());
     params.set("chat", chatId);
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+}
+
+/**
+ * Session mint: set `chat` and strip `search` in one replace (A9/A10 flash).
+ */
+export function applyBuildProgramMintUrlUpdate(
+    router: IBuildProgramUrlRouter,
+    pathname: string,
+    searchParams: ReadonlyURLSearchParams,
+    chatId: string,
+    options: { stripSearch?: boolean } = {},
+): void {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("chat", chatId);
+    if (options.stripSearch) {
+        params.delete("search");
+    }
     const qs = params.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
 }

@@ -22,7 +22,7 @@ import { BuildProgramMobileLayout } from "./BuildProgramMobileLayout";
 import { BuildProgramChatPanel } from "./BuildProgramChatPanel";
 import { MessageSquare } from "lucide-react";
 
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { appendOrderToHevyRoutines } from "@/components/program-builder/utils/format-responses";
 import { ProgramEditor } from "./ProgramEditor";
 import { Button } from "@/components/ui/button";
@@ -41,13 +41,27 @@ import {
     isSaveProgramToSupabaseSuccess,
     saveProgramToSupabase,
 } from "@/components/program-builder/api/hevy";
-import { postChatHistory } from "@/api/chat-history";
+import { isChatSessionInsertConfirmed, postChatHistory } from "@/api/chat-history";
 import { ToolbarPortalButtons } from "@/components/program-builder/shared/ToolbarPortalButtons";
 import { BuildProgramToolbarTitle } from "@/components/program-builder/shared/BuildProgramToolbarTitle";
 import { editorReducer } from "./editor-reducer";
 import { useProgramRequestState } from "./use-program-request-state";
 import { readAnonymousChatMessages, useBuildProgramChat } from "./use-build-program-chat";
 import { isValidShareId } from "./initial-prompt";
+import {
+    advanceChatNavigationLatch,
+    buildShellKey,
+    createChatNavigationLatch,
+    isBareBuildProgramArrival,
+    parseBuildProgramArrival,
+    shouldRedirectBareBuildProgramToEmpty,
+    resolveChatEntryPlan,
+    resolveInitialMessages,
+    resolveChatHistoryFetchEnabled,
+    resolveSendPathConfirmed,
+    resolveSidebarRowKnown,
+    type IChatEntryPlan,
+} from "./resolve-chat-entry";
 import type { User } from "@supabase/supabase-js";
 import { useChatHistory, useChatIds } from "@/api/hooks";
 import { Operation } from "fast-json-patch";
@@ -82,76 +96,36 @@ function deriveChatTitle(): string {
  */
 export function BuildProgram() {
     const { user } = useUserContext();
+    const router = useRouter();
     logPageView(user?.id);
     const searchParams = useSearchParams();
 
-    const shareId = searchParams.get("shareId") ?? "";
-    const resume = searchParams.get("resume") ?? "";
-    const empty = searchParams.get("empty") ?? "";
-    const search = searchParams.get("search") ?? "";
-    const urlChatId = searchParams.get("chat") ?? "";
-    const [assignedChatId, setAssignedChatId] = useState<string | null>(null);
-    const chatId = urlChatId || assignedChatId || "";
+    const arrival = parseBuildProgramArrival(searchParams);
+    const { urlChatId, search, shareId, empty, resume } = arrival;
+    const chatId = urlChatId;
+    const isBareArrival = isBareBuildProgramArrival({ urlChatId, search, shareId, empty, resume });
+
+    const sawNonBareArrivalRef = useRef(!isBareArrival);
+    if (!isBareArrival) {
+        sawNonBareArrivalRef.current = true;
+    }
+    const shouldBareRedirectToEmpty = shouldRedirectBareBuildProgramToEmpty(
+        isBareArrival,
+        sawNonBareArrivalRef.current,
+    );
+
+    const chatNavLatchRef = useRef(createChatNavigationLatch(urlChatId));
+    const { chatNavigationArrival, next: chatNavLatchNext } = advanceChatNavigationLatch(
+        chatId,
+        chatNavLatchRef.current,
+    );
+    chatNavLatchRef.current = chatNavLatchNext;
+    const programHydrateChatId = chatNavigationArrival ? chatId : "";
 
     const [sharedProgramLoadAttempted, setSharedProgramLoadAttempted] = useState(
         () => !isValidShareId(shareId),
     );
 
-    const { data: chatIds } = useChatIds(user);
-
-    const [sendConfirmedChatId, setSendConfirmedChatId] = useState<string | null>(null);
-
-    const handleSendInsertConfirmed = useCallback((id: string) => {
-        setSendConfirmedChatId(id);
-        setAssignedChatId(id);
-    }, []);
-
-    const sidebarRowKnown = Boolean(chatId && chatIds?.some((chat) => chat.id === chatId));
-    const sendPathConfirmed = Boolean(chatId && sendConfirmedChatId === chatId);
-    const chatRowConfirmed = Boolean(user && chatId && (sidebarRowKnown || sendPathConfirmed));
-
-    const chatHistoryFetchEnabled = chatRowConfirmed;
-
-    const {
-        data: chatHistoryData,
-        isPending: chatHistoryPending,
-        isSuccess: chatHistorySuccess,
-    } = useChatHistory(user, chatId, { enabled: chatHistoryFetchEnabled });
-
-    const chatHistoryLoading = Boolean(chatId && user && chatRowConfirmed && chatHistoryPending);
-
-    // Sidebar resume: remount when DB history loads. In-page / home first send: stable shell (no remount on mint).
-    const useSidebarHistoryRemount = Boolean(user && chatId && sidebarRowKnown && !sendPathConfirmed);
-    const shellKey = useSidebarHistoryRemount
-        ? `chat-${chatId}-${chatHistorySuccess ? "ready" : "pending"}`
-        : user
-          ? "logged-in-session"
-          : chatId
-            ? `chat-${chatId}`
-            : "anonymous";
-
-    const chatInitialMessages = useMemo(() => {
-        if (chatId && chatHistorySuccess && chatHistoryData != null) {
-            return Array.isArray(chatHistoryData[0]) ? chatHistoryData[0] : [];
-        }
-        if (!chatId && !user) {
-            return readAnonymousChatMessages();
-        }
-        return [];
-    }, [chatId, user, chatHistorySuccess, chatHistoryData]);
-
-    const [sidebarPosition, setSidebarPosition] = useState<"left" | "right">("left");
-    const [sidebarSize, setSidebarSize] = useState(28);
-    const sidebarPanelRef = useRef<ImperativePanelHandle>(null);
-    const lastSidebarSizeRef = useRef(28);
-    const saveSidebarSize = useDebouncedCallback((size: number) => {
-        localStorage.setItem(SIDEBAR_SIZE_KEY, size.toString());
-    }, 200);
-    const [isChatHidden, setIsChatHidden] = useState(false);
-    const [mobileTab, setMobileTab] = useState<string>("chat");
-
-    /*************************************************************************************/
-    /*** STATE FOR THE PROGRAM BUILDER (reducer for atomic undo + stable handleUndo) ***/
     const [{ hevyProgram, undoStack }, dispatchEditor] = useReducer(editorReducer, {
         hevyProgram: [],
         undoStack: [],
@@ -167,6 +141,83 @@ export function BuildProgram() {
         },
         [],
     );
+
+    const { data: chatIds } = useChatIds(user);
+
+    const sidebarRowKnown = resolveSidebarRowKnown(chatId, chatIds);
+    const sendPathConfirmed = resolveSendPathConfirmed(chatId, isChatSessionInsertConfirmed(chatId));
+    const chatHistoryFetchEnabled = resolveChatHistoryFetchEnabled({
+        user,
+        chatId,
+        sidebarRowKnown,
+        sendPathConfirmed,
+        chatNavigationArrival,
+    });
+
+    const {
+        data: chatHistoryData,
+        isPending: chatHistoryPending,
+        isSuccess: chatHistorySuccess,
+    } = useChatHistory(user, chatId, { enabled: chatHistoryFetchEnabled });
+
+    const chatEntryPlan = useMemo(
+        () =>
+            resolveChatEntryPlan({
+                user,
+                chatId,
+                search,
+                shareId,
+                sidebarRowKnown,
+                sendPathConfirmed,
+                chatNavigationArrival,
+                sharedProgramLoadAttempted,
+                hevyProgramLength: hevyProgram.length,
+                chatHistorySuccess,
+            }),
+        [
+            user,
+            chatId,
+            search,
+            shareId,
+            sidebarRowKnown,
+            sendPathConfirmed,
+            chatNavigationArrival,
+            sharedProgramLoadAttempted,
+            hevyProgram.length,
+            chatHistorySuccess,
+        ],
+    );
+
+    const chatHistoryLoading = Boolean(chatId && user && chatEntryPlan.enableHistoryFetch && chatHistoryPending);
+
+    const shellKey = buildShellKey(chatEntryPlan, {
+        chatId,
+        user,
+        chatHistorySuccess,
+        chatNavigationArrival,
+    });
+
+    const chatInitialMessages = useMemo(
+        () =>
+            resolveInitialMessages(chatEntryPlan, {
+                chatHistoryData,
+                anonymousMessages: readAnonymousChatMessages(),
+            }),
+        [chatEntryPlan, chatHistoryData],
+    );
+
+    const [sidebarPosition, setSidebarPosition] = useState<"left" | "right">("left");
+    const [sidebarSize, setSidebarSize] = useState(28);
+    const sidebarPanelRef = useRef<ImperativePanelHandle>(null);
+    const lastSidebarSizeRef = useRef(28);
+    const saveSidebarSize = useDebouncedCallback((size: number) => {
+        localStorage.setItem(SIDEBAR_SIZE_KEY, size.toString());
+    }, 200);
+    const [isChatHidden, setIsChatHidden] = useState(false);
+    const [mobileTab, setMobileTab] = useState<string>("chat");
+
+    /*************************************************************************************/
+    /*** STATE FOR THE PROGRAM BUILDER (reducer for atomic undo + stable handleUndo) ***/
     const applyPatchWithUndo = useCallback(
         (newDocument: THevyRoutine[], inversePatch: Operation[], recordUndo = true) => {
             if (!recordUndo) {
@@ -208,6 +259,11 @@ export function BuildProgram() {
     }, []);
 
     useEffect(() => {
+        if (shouldBareRedirectToEmpty) {
+            router.replace("/build-program?empty=true");
+            return;
+        }
+
         setHevyProgram([]);
         setSharedProgramLoadAttempted(!isValidShareId(shareId));
 
@@ -236,7 +292,7 @@ export function BuildProgram() {
         if (empty === "true") {
             setHevyProgram(appendOrderToHevyRoutines(emptyHevyProgram));
         }
-    }, [resume, shareId, empty, setHevyProgram]);
+    }, [shouldBareRedirectToEmpty, resume, shareId, empty, programHydrateChatId, router, setHevyProgram]);
 
     const toggleSidebarPosition = useCallback(() => {
         setSidebarPosition((prev) => {
@@ -313,7 +369,7 @@ export function BuildProgram() {
             isChatHidden={isChatHidden}
             mobileTab={mobileTab}
             setMobileTab={setMobileTab}
-            onSendInsertConfirmed={handleSendInsertConfirmed}
+            chatEntryPlan={chatEntryPlan}
         />
     );
 }
@@ -346,7 +402,7 @@ interface IBuildProgramShellProps {
     isChatHidden: boolean;
     mobileTab: string;
     setMobileTab: (tab: string) => void;
-    onSendInsertConfirmed: (chatId: string) => void;
+    chatEntryPlan: IChatEntryPlan;
 }
 
 function BuildProgramShell({
@@ -377,7 +433,7 @@ function BuildProgramShell({
     isChatHidden,
     mobileTab,
     setMobileTab,
-    onSendInsertConfirmed,
+    chatEntryPlan,
 }: IBuildProgramShellProps) {
     const { clearChatRef } = useBuildProgramActions();
     const queryClient = useQueryClient();
@@ -391,8 +447,8 @@ function BuildProgramShell({
         setMobileTab,
         initialMessages,
         sharedProgramLoadAttempted,
-        onSendInsertConfirmed,
         chatId,
+        chatEntryPlan,
     });
 
     const {

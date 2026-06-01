@@ -15,6 +15,11 @@ export function resetChatHistorySessionForTests() {
     sessionInsertedChatIds.clear();
 }
 
+/** Send-path insert confirmed this browser session (fetch gate input for resolver). */
+export function isChatSessionInsertConfirmed(chatId: string): boolean {
+    return chatId !== "" && sessionInsertedChatIds.has(chatId);
+}
+
 /**
  * First user message text, trimmed, capped at 200 chars.
  */
@@ -192,6 +197,53 @@ export const updateChatHistory = async (
         return { success: false, error: "Error updating chat history" };
     }
 };
+
+/**
+ * `onFinish` handler — skip abort/error turns; upsert full thread when logged in.
+ */
+export async function persistChatHistoryAfterTurn({
+    user,
+    chatId,
+    messages,
+    isAbort,
+    isError,
+}: {
+    user: User | null | undefined;
+    chatId: string;
+    messages: TChatMessage[];
+    isAbort: boolean;
+    isError: boolean;
+}): Promise<"success" | "skipped" | "failed"> {
+    const skipReason =
+        isAbort ? "isAbort" :
+        isError ? "isError" :
+        !user ? "no-user" :
+        !chatId ? "no-chat-id" :
+        messages.length === 0 ? "empty-messages" :
+        null;
+
+    console.info("[chat-history-upsert] onFinish", {
+        action: skipReason ? "skip" : "upsert",
+        skipReason,
+        chatId: chatId || null,
+        userId: user?.id ?? null,
+        messageCount: messages.length,
+        roles: messages.map((m) => m.role),
+        isAbort,
+        isError,
+    });
+
+    if (skipReason) return "skipped";
+
+    const result = await upsertChatHistoryTurn({ user, chatId, messages });
+    if ("error" in result || ("success" in result && !result.success)) {
+        console.error("[chat-history-upsert] failed:", "error" in result ? result.error : result);
+        return "failed";
+    }
+
+    console.info("[chat-history-upsert] success", { chatId, messageCount: messages.length });
+    return "success";
+}
 
 /**
  * Persists a completed turn — update if row exists, else insert with client id.

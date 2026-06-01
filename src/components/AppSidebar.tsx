@@ -140,11 +140,14 @@ export function AppSidebar() {
         }
         clearChat();
         closeMobileSidebar();
-        router.push("/build-program");
+        router.push("/build-program?empty=true");
     }, [clearChat, closeMobileSidebar, router]);
 
     const handleNewChatClick = () => {
-        if (user) return; // Logged in: do nothing
+        if (user) {
+            startNewChat();
+            return;
+        }
         const hasProgress =
             typeof window !== "undefined" &&
             (!!localStorage.getItem(CHAT_MESSAGES_KEY) ||
@@ -197,7 +200,6 @@ export function AppSidebar() {
                                     <SidebarMenuButton
                                         tooltip="New Chat"
                                         onClick={handleNewChatClick}
-                                        disabled={!!user}
                                     >
                                         <MessageSquarePlus className="shrink-0" />
                                         <span className="font-main">New Chat</span>

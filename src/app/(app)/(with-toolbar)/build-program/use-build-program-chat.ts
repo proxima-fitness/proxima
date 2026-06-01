@@ -12,8 +12,11 @@ import {
 import posthog from "posthog-js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { User } from "@supabase/supabase-js";
-import { ensureChatSessionOnSend } from "@/api/chat-history";
-import { setBuildProgramChatSearchParam } from "@/lib/build-program-url";
+import { ensureChatSessionOnSend, persistChatHistoryAfterTurn } from "@/api/chat-history";
+import {
+    applyBuildProgramMintUrlUpdate,
+    stripSearchFromBuildProgramUrl,
+} from "@/lib/build-program-url";
 import { recordLlmRequest } from "@/api/feature-limits";
 import {
     CHAT_MESSAGES_KEY,
@@ -30,10 +33,10 @@ import {
     inferProgramRequestFromPrompt,
     readPendingAttachmentFileParts,
     resolveInitialPromptText,
-    shouldDeferInitialSend,
 } from "./initial-prompt";
+import type { IChatEntryPlan } from "./resolve-chat-entry";
+import { resolvePersistChatId, shouldRunAutoSend } from "./resolve-chat-entry";
 import type { useProgramRequestState } from "./use-program-request-state";
-import { logChatHistoryOnFinishSpike } from "./chat-history-spike";
 
 // ---------------------------------------------------------------------------
 // Types & constants
@@ -54,10 +57,10 @@ export interface IUseBuildProgramChatOptions {
     initialMessages: TChatMessage[];
     /** True once shared-program fetch finished or was not needed (no valid `shareId`). */
     sharedProgramLoadAttempted: boolean;
-    /** Called in send handler when first insert confirms (fetch gate — Sub-plan 2). */
-    onSendInsertConfirmed?: (chatId: string) => void;
-    /** Effective chat id (URL or assigned on first send before history sync). */
+    /** Effective chat id from URL (`?chat=`). */
     chatId: string;
+    /** Arrival bootstrap plan from `resolveChatEntryPlan`. */
+    chatEntryPlan: IChatEntryPlan;
 }
 
 export interface IProps {
@@ -174,8 +177,8 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         setMobileTab,
         initialMessages,
         sharedProgramLoadAttempted,
-        onSendInsertConfirmed,
         chatId,
+        chatEntryPlan,
     } = options;
 
     const router = useRouter();
@@ -185,6 +188,9 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
 
     const search = searchParams.get("search") ?? "";
     const shareId = searchParams.get("shareId") ?? "";
+
+    /** Minted id until URL `?chat=` propagates (send handler only — not render). */
+    const pendingMintChatIdRef = useRef("");
 
     const {
         daysPerWeek,
@@ -210,7 +216,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     const [retryCount, setRetryCount] = useState(0);
     const [isBuilding, setIsBuilding] = useState(false);
 
-    const initialSearchOccurred = useRef(false);
+    const lastHandledSearchRef = useRef("");
     /** Survives MessageBubbles unmount when switching mobile tabs (Radix Tabs). */
     const lastAtomicBuildCommitKeyRef = useRef<string | null>(null);
     const appliedModifyProgramKeysRef = useRef<Set<string>>(new Set());
@@ -226,7 +232,22 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     const { messages, sendMessage, setMessages, status, stop, error } = useChat<TChatMessage>({
         transport: chatTransport,
         messages: initialMessages,
-        onFinish: logChatHistoryOnFinishSpike,
+        onFinish: ({ messages: finishedMessages, isAbort, isError }) => {
+            const persistChatId = resolvePersistChatId(chatId, pendingMintChatIdRef.current);
+            void persistChatHistoryAfterTurn({
+                user,
+                chatId: persistChatId,
+                messages: finishedMessages,
+                isAbort,
+                isError,
+            }).then((result) => {
+                if (result === "success" && user && persistChatId) {
+                    void queryClient.invalidateQueries({
+                        queryKey: ["chat-history", user.id, persistChatId],
+                    });
+                }
+            });
+        },
         onError: (err) => {
             console.error("Chat error:", err);
             setGenerationError(err);
@@ -237,6 +258,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
 
     const clearMessages = useCallback(() => {
         resetChatSessionRefs();
+        pendingMintChatIdRef.current = "";
         setMessages([]);
     }, [resetChatSessionRefs, setMessages]);
 
@@ -263,9 +285,9 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
                         firstUserText,
                     });
                     sessionChatId = session.chatId;
+                    pendingMintChatIdRef.current = session.chatId;
 
                     if (session.confirmed) {
-                        onSendInsertConfirmed?.(session.chatId);
                         void queryClient.invalidateQueries({ queryKey: ["chat-ids", user.id] });
                     } else if (!insertFailToastShownForChatIds.current.has(session.chatId)) {
                         insertFailToastShownForChatIds.current.add(session.chatId);
@@ -297,7 +319,9 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             });
 
             if (sessionChatId && !hadChatIdAtSend) {
-                setBuildProgramChatSearchParam(router, pathname, searchParams, sessionChatId);
+                applyBuildProgramMintUrlUpdate(router, pathname, searchParams, sessionChatId, {
+                    stripSearch: Boolean(search.trim()),
+                });
             }
 
             return sendPromise;
@@ -305,12 +329,12 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         [
             sendMessage,
             user,
+            search,
             router,
             pathname,
             searchParams,
             chatId,
             hevyProgram,
-            onSendInsertConfirmed,
             queryClient,
             programRequest.daysPerWeek,
             programRequest.programLength,
@@ -327,25 +351,24 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     );
 
     const trySendInitialPrompt = useCallback(() => {
-        // Sidebar resume (`?chat=` only) must not auto-send; home flow keeps `search` + optional pre-minted `chat`.
-        if (chatId && !search.trim()) return;
-
-        const isLongPromptPlaceholder = search === LONG_PROMPT_PLACEHOLDER;
-        const messageText = resolveInitialPromptText(search);
-
-        if (!messageText.trim() || initialSearchOccurred.current) return;
-
         if (
-            shouldDeferInitialSend({
+            !shouldRunAutoSend(chatEntryPlan, {
+                search,
                 shareId,
                 hevyProgramLength: hevyProgram.length,
                 sharedProgramLoadAttempted,
+                lastHandledSearch: lastHandledSearchRef.current,
             })
         ) {
             return;
         }
 
-        initialSearchOccurred.current = true;
+        const isLongPromptPlaceholder = search === LONG_PROMPT_PLACEHOLDER;
+        const messageText = resolveInitialPromptText(search);
+
+        if (!messageText.trim()) return;
+
+        lastHandledSearchRef.current = search.trim();
         clearLongPromptFromSessionStorage(isLongPromptPlaceholder);
 
         const files = readPendingAttachmentFileParts();
@@ -367,20 +390,35 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             ? { text: messageText, files }
             : { text: messageText };
 
-        sendMessageWithContext(payload);
+        void sendMessageWithContext(payload);
+
+        const trimmedSearch = search.trim();
+        if (trimmedSearch) {
+            if (chatId) {
+                applyBuildProgramMintUrlUpdate(router, pathname, searchParams, chatId, {
+                    stripSearch: true,
+                });
+            } else if (!user) {
+                stripSearchFromBuildProgramUrl(router, pathname, searchParams);
+            }
+        }
 
         posthog?.capture?.("sent_first_prompt_to_ai", {
             search: messageText.slice(0, 200),
             user: user?.id ?? "user_id_unknown",
         });
     }, [
-        chatId,
+        chatEntryPlan,
         search,
         shareId,
+        chatId,
+        user,
         hevyProgram.length,
         sharedProgramLoadAttempted,
         sendMessageWithContext,
-        user?.id,
+        router,
+        pathname,
+        searchParams,
         daysPerWeek,
         programLength,
         excludeAreas,

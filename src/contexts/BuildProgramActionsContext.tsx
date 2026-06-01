@@ -23,7 +23,7 @@ export function BuildProgramActionsProvider({ children }: { children: ReactNode 
             clearChatRef,
             clearChat: () => clearChatRef.current?.(),
         }),
-        []
+        [],
     );
 
     return <BuildProgramActionsContext.Provider value={value}>{children}</BuildProgramActionsContext.Provider>;

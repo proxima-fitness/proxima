@@ -40,6 +40,7 @@ import {
     deriveChatTitleFromMessages,
     ensureChatSessionOnSend,
     linkChatToProgram,
+    persistChatHistoryAfterTurn,
     resetChatHistorySessionForTests,
     upsertChatHistoryTurn,
 } from "@/api/chat-history";
@@ -55,6 +56,14 @@ function userMessage(text: string): TChatMessage {
     };
 }
 
+function assistantMessage(text: string, id = "a1"): TChatMessage {
+    return {
+        id,
+        role: "assistant",
+        parts: [{ type: "text", text }],
+    };
+}
+
 describe("deriveChatTitleFromMessages", () => {
     it("uses first user message trimmed and capped at 200 chars", () => {
         const longText = "a".repeat(250);
@@ -65,9 +74,7 @@ describe("deriveChatTitleFromMessages", () => {
     it("returns Untitled when no user message or empty text", () => {
         expect(deriveChatTitleFromMessages([])).toBe("Untitled");
         expect(
-            deriveChatTitleFromMessages([
-                { id: "a1", role: "assistant", parts: [{ type: "text", text: "Hi" }] },
-            ]),
+            deriveChatTitleFromMessages([assistantMessage("Hi")]),
         ).toBe("Untitled");
         expect(deriveChatTitleFromMessages([userMessage("   ")])).toBe("Untitled");
     });
@@ -85,7 +92,7 @@ describe("upsertChatHistoryTurn", () => {
         mockEqSecond.mockReturnValueOnce({ eq: mockEqSecond });
         mockUpdate.mockReturnValueOnce({ eq: mockEqFirst });
 
-        const messages = [userMessage("Hello"), { id: "a1", role: "assistant", parts: [{ type: "text", text: "Hi" }] }];
+        const messages = [userMessage("Hello"), assistantMessage("Hi")];
         const result = await upsertChatHistoryTurn({ user: testUser, chatId, messages });
 
         expect(result).toEqual({ success: true, id: chatId });
@@ -156,5 +163,98 @@ describe("linkChatToProgram", () => {
         expect(result).toEqual({ success: true, id: chatId });
         expect(mockUpdate).toHaveBeenCalledWith({ program_id: "42" });
         expect(mockInsert).not.toHaveBeenCalled();
+    });
+});
+
+describe("persistChatHistoryAfterTurn", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        resetChatHistorySessionForTests();
+    });
+
+    it("skips abort and error turns", async () => {
+        await persistChatHistoryAfterTurn({
+            user: testUser,
+            chatId,
+            messages: [userMessage("hi")],
+            isAbort: true,
+            isError: false,
+        });
+        await persistChatHistoryAfterTurn({
+            user: testUser,
+            chatId,
+            messages: [userMessage("hi")],
+            isAbort: false,
+            isError: true,
+        });
+        expect(mockFrom).not.toHaveBeenCalled();
+        expect(await persistChatHistoryAfterTurn({
+            user: testUser,
+            chatId,
+            messages: [userMessage("hi")],
+            isAbort: true,
+            isError: false,
+        })).toBe("skipped");
+        expect(await persistChatHistoryAfterTurn({
+            user: testUser,
+            chatId,
+            messages: [userMessage("hi")],
+            isAbort: false,
+            isError: true,
+        })).toBe("skipped");
+    });
+
+    it("upserts when turn completes for logged-in user", async () => {
+        mockMaybeSingle.mockResolvedValueOnce({ data: { id: chatId }, error: null });
+        mockEqSecond.mockReturnValueOnce({ maybeSingle: mockMaybeSingle, single: mockSingle });
+        mockEqSecond.mockReturnValueOnce({ eq: mockEqSecond });
+        mockUpdate.mockReturnValueOnce({ eq: mockEqFirst });
+
+        await persistChatHistoryAfterTurn({
+            user: testUser,
+            chatId,
+            messages: [userMessage("hi")],
+            isAbort: false,
+            isError: false,
+        });
+
+        expect(mockUpdate).toHaveBeenCalled();
+    });
+
+    it("updates full thread on follow-up turn", async () => {
+        mockMaybeSingle.mockResolvedValueOnce({ data: { id: chatId }, error: null });
+        mockEqSecond.mockReturnValueOnce({ maybeSingle: mockMaybeSingle, single: mockSingle });
+        mockEqSecond.mockReturnValueOnce({ eq: mockEqSecond });
+        mockUpdate.mockReturnValueOnce({ eq: mockEqFirst });
+
+        const turnOne = [userMessage("Hello"), assistantMessage("Hi")];
+        const turnTwo = [
+            ...turnOne,
+            userMessage("Follow up"),
+            assistantMessage("Sure", "a2"),
+        ];
+
+        expect(await persistChatHistoryAfterTurn({
+            user: testUser,
+            chatId,
+            messages: turnOne,
+            isAbort: false,
+            isError: false,
+        })).toBe("success");
+
+        mockMaybeSingle.mockResolvedValueOnce({ data: { id: chatId }, error: null });
+        mockEqSecond.mockReturnValueOnce({ maybeSingle: mockMaybeSingle, single: mockSingle });
+        mockEqSecond.mockReturnValueOnce({ eq: mockEqSecond });
+        mockUpdate.mockReturnValueOnce({ eq: mockEqFirst });
+
+        expect(await persistChatHistoryAfterTurn({
+            user: testUser,
+            chatId,
+            messages: turnTwo,
+            isAbort: false,
+            isError: false,
+        })).toBe("success");
+
+        expect(mockUpdate).toHaveBeenLastCalledWith({ conversation: turnTwo });
     });
 });

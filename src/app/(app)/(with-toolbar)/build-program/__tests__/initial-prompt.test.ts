@@ -10,8 +10,8 @@ import {
     isValidShareId,
     readPendingAttachmentFileParts,
     resolveInitialPromptText,
-    shouldDeferInitialSend,
 } from "../initial-prompt";
+import { shouldDeferInitialSend } from "../resolve-chat-entry";
 
 function createSessionStorageMock() {
     const store = new Map<string, string>();

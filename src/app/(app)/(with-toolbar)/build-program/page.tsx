@@ -17,11 +17,11 @@ export const metadata = {
     description: "Edit your custom program",
 };
 
-/** Build-program page; client builder with skeleton fallback. */
+/** Build-program page; client builder with skeleton fallback. Bare-arrival redirect lives in BuildProgram (client). */
 export default function BuildProgramPage() {
     return (
-        <div className={ `bg-white sm:bg-extraLightGray dark:bg-extraDarkGray flex flex-col flex-1 min-h-0 overflow-hidden` }>
-            <Suspense fallback={ <BuildProgramSkeletonSSR /> }>
+        <div className="bg-white sm:bg-extraLightGray dark:bg-extraDarkGray flex flex-col flex-1 min-h-0 overflow-hidden">
+            <Suspense fallback={<BuildProgramSkeletonSSR />}>
                 <BuildProgram />
             </Suspense>
         </div>

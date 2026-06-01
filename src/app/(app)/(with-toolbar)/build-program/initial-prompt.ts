@@ -91,17 +91,3 @@ export function inferProgramRequestFromPrompt(text: string, target: IProgramRequ
         if (inferred.length > 0) target.setHealthIssues(inferred);
     }
 }
-
-export interface IShouldDeferInitialSendArgs {
-    shareId: string;
-    hevyProgramLength: number;
-    sharedProgramLoadAttempted: boolean;
-}
-
-export function shouldDeferInitialSend({
-    shareId,
-    hevyProgramLength,
-    sharedProgramLoadAttempted,
-}: IShouldDeferInitialSendArgs): boolean {
-    return isValidShareId(shareId) && hevyProgramLength === 0 && !sharedProgramLoadAttempted;
-}
