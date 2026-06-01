@@ -11,7 +11,13 @@ declare global {
         title: string;
         user_id?: string;
         program_id: string | null;
+        pinned?: boolean;
     };
+
+    type TChatListItem = Pick<
+        TChatHistory,
+        "id" | "created_at" | "title" | "program_id" | "pinned"
+    >;
 
     /** Minimal router surface for chat URL updates (`useRouter()` satisfies this). */
     interface IChatHistoryRouter {

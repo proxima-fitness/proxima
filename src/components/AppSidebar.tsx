@@ -60,6 +60,7 @@ import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { getInitials } from "@/utils/general/helpers";
 import { cn } from "@/lib/utils";
 import { useCallback, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { DeleteAccountDialog } from "@/components/header/DeleteAccountDialog";
 import { ConnectHevyDialog } from "@/components/header/ConnectHevyDialog";
 import { useTheme } from "next-themes";
@@ -67,8 +68,10 @@ import { proxima_logo, proxima_logo_white_full_text } from "public";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { RecentChatMenuItem } from "@/components/sidebar/RecentChatMenuItem";
 import { authenticatedNavLinks, navLinks, navIdToUrl } from "@/assets/constants/nav-links";
 import { useBuildProgramActions } from "@/contexts/BuildProgramActionsContext";
+import { setChatPinned, updateChatTitle } from "@/api/chat-history";
 
 const CHAT_MESSAGES_KEY = "messages";
 const HEVY_PROGRAM_IN_PROGRESS_KEY = "hevy-program-in-progress";
@@ -114,6 +117,9 @@ export function AppSidebar() {
     const [openDeleteAccountDialog, setOpenDeleteAccountDialog] = useState(false);
     const [openConnectHevyDialog, setOpenConnectHevyDialog] = useState(false);
     const [showNewChatConfirm, setShowNewChatConfirm] = useState(false);
+    const [renameDraft, setRenameDraft] = useState<{ chatId: string; title: string } | null>(null);
+    const [isRenaming, setIsRenaming] = useState(false);
+    const queryClient = useQueryClient();
     const router = useRouter();
     const { clearChat } = useBuildProgramActions();
 
@@ -122,7 +128,14 @@ export function AppSidebar() {
         if (isMobile) setOpenMobile(false);
     }, [isMobile, setOpenMobile]);
     const { data: chatIds, isLoading: chatIdsLoading, isError: chatIdsError } = useChatIds(user);
-    const recentChats = (chatIds ?? []).slice(0, RECENTS_LIMIT);
+    const pinnedChats = useMemo(
+        () => (chatIds ?? []).filter((chat) => chat.pinned),
+        [chatIds],
+    );
+    const recentChats = useMemo(
+        () => (chatIds ?? []).filter((chat) => !chat.pinned).slice(0, RECENTS_LIMIT),
+        [chatIds],
+    );
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const selectedChatId =
@@ -161,6 +174,91 @@ export function AppSidebar() {
 
     const handleNewChatContinue = () => {
         startNewChat();
+    };
+
+    const handleRenameChat = useCallback((chat: TChatListItem) => {
+        setRenameDraft({
+            chatId: chat.id,
+            title: chat.title?.trim() || "Untitled chat",
+        });
+    }, []);
+
+    const handleRenameConfirm = useCallback(async () => {
+        if (!user || !renameDraft) return;
+        const trimmed = renameDraft.title.trim();
+        if (!trimmed) return;
+
+        setIsRenaming(true);
+        const result = await updateChatTitle(user, renameDraft.chatId, trimmed);
+        setIsRenaming(false);
+
+        if ("success" in result && result.success) {
+            void queryClient.invalidateQueries({ queryKey: ["chat-ids", user.id] });
+            setRenameDraft(null);
+        }
+    }, [renameDraft, queryClient, user]);
+
+    const handlePinToggle = useCallback(
+        async (chat: TChatListItem, pinned: boolean) => {
+            if (!user) return;
+            const result = await setChatPinned(user, chat.id, pinned);
+            if ("success" in result && result.success) {
+                void queryClient.invalidateQueries({ queryKey: ["chat-ids", user.id] });
+            }
+        },
+        [queryClient, user],
+    );
+
+    const renderChatList = () => {
+        if (!user) {
+            return (
+                <SidebarMenuItem>
+                    <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
+                        No recent chats
+                    </span>
+                </SidebarMenuItem>
+            );
+        }
+        if (chatIdsLoading) {
+            return (
+                <SidebarMenuItem>
+                    <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
+                        Loading…
+                    </span>
+                </SidebarMenuItem>
+            );
+        }
+        if (chatIdsError) {
+            return (
+                <SidebarMenuItem>
+                    <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
+                        Couldn&apos;t load chats
+                    </span>
+                </SidebarMenuItem>
+            );
+        }
+        if (!showRecentChats) {
+            return null;
+        }
+        if (recentChats.length === 0) {
+            return (
+                <SidebarMenuItem>
+                    <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
+                        {pinnedChats.length > 0 ? "No other recent chats" : "No recent chats"}
+                    </span>
+                </SidebarMenuItem>
+            );
+        }
+        return recentChats.map((chat) => (
+            <RecentChatMenuItem
+                key={chat.id}
+                chat={chat}
+                isActive={chat.id === selectedChatId}
+                onNavigate={closeMobileSidebar}
+                onRename={handleRenameChat}
+                onPinToggle={handlePinToggle}
+            />
+        ));
     };
 
     const sidebarNavLinks = user ? authenticatedNavLinks : navLinks;
@@ -239,69 +337,30 @@ export function AppSidebar() {
                         </SidebarGroupContent>
                     </SidebarGroup>
 
+                    {user && pinnedChats.length > 0 && showRecentChats && (
+                        <SidebarGroup>
+                            <SidebarGroupLabel>Pinned</SidebarGroupLabel>
+                            <SidebarGroupContent>
+                                <SidebarMenu>
+                                    {pinnedChats.map((chat) => (
+                                        <RecentChatMenuItem
+                                            key={chat.id}
+                                            chat={chat}
+                                            isActive={chat.id === selectedChatId}
+                                            onNavigate={closeMobileSidebar}
+                                            onRename={handleRenameChat}
+                                            onPinToggle={handlePinToggle}
+                                        />
+                                    ))}
+                                </SidebarMenu>
+                            </SidebarGroupContent>
+                        </SidebarGroup>
+                    )}
+
                     <SidebarGroup>
                         <SidebarGroupLabel>Recents</SidebarGroupLabel>
                         <SidebarGroupContent>
-                            <SidebarMenu>
-                                {!user ? (
-                                    <SidebarMenuItem>
-                                        <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
-                                            No recent chats
-                                        </span>
-                                    </SidebarMenuItem>
-                                ) : chatIdsLoading ? (
-                                    <SidebarMenuItem>
-                                        <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
-                                            Loading…
-                                        </span>
-                                    </SidebarMenuItem>
-                                ) : chatIdsError ? (
-                                    <SidebarMenuItem>
-                                        <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
-                                            Couldn&apos;t load chats
-                                        </span>
-                                    </SidebarMenuItem>
-                                ) : recentChats.length === 0 ? (
-                                    <SidebarMenuItem>
-                                        <span className="px-2 py-1.5 text-sm text-muted-foreground font-main group-data-[collapsible=icon]:hidden">
-                                            No recent chats
-                                        </span>
-                                    </SidebarMenuItem>
-                                ) : !showRecentChats ? (
-                                    null
-                                ) : (
-                                    recentChats.map((chat) => {
-                                        const displayTitle = chat.title?.trim() || "Untitled chat";
-                                        const href = `/build-program?chat=${encodeURIComponent(chat.id)}${
-                                            chat.program_id
-                                                ? `&shareId=${encodeURIComponent(chat.program_id)}`
-                                                : ""
-                                        }`;
-                                        const isActive = chat.id === selectedChatId;
-                                        return (
-                                            <SidebarMenuItem key={chat.id}>
-                                                <SidebarMenuButton
-                                                    asChild
-                                                    tooltip={displayTitle}
-                                                    className={cn(
-                                                        isActive && "bg-accent text-accent-foreground"
-                                                    )}
-                                                >
-                                                    <Link
-                                                        href={href}
-                                                        className="flex min-w-0 flex-1 items-center gap-2"
-                                                        onClick={closeMobileSidebar}
-                                                    >
-                                                        <span className="min-w-0 flex-1 truncate font-main">
-                                                            {displayTitle}
-                                                        </span>
-                                                    </Link>
-                                                </SidebarMenuButton>
-                                            </SidebarMenuItem>
-                                        );
-                                    })
-                                )}
-                            </SidebarMenu>
+                            <SidebarMenu>{renderChatList()}</SidebarMenu>
                         </SidebarGroupContent>
                     </SidebarGroup>
 
@@ -511,6 +570,27 @@ export function AppSidebar() {
                 description="Your current chat and program draft will be deleted. Sign in first to save it."
                 confirmLabel="Continue"
                 onConfirm={handleNewChatContinue}
+            />
+            <ConfirmDialog
+                open={renameDraft !== null}
+                onOpenChange={(open) => {
+                    if (!open && !isRenaming) setRenameDraft(null);
+                }}
+                title="Rename chat"
+                confirmLabel="Save"
+                confirmLoadingLabel="Saving…"
+                confirmVariant="default"
+                confirmClassName="bg-lightSecondary text-white hover:bg-lightSecondary/90"
+                isConfirmLoading={isRenaming}
+                closeOnConfirm={false}
+                confirmDisabled={!renameDraft?.title.trim()}
+                inputPlaceholder="Untitled chat"
+                inputValue={renameDraft?.title ?? ""}
+                onInputChange={(title) =>
+                    setRenameDraft((prev) => (prev ? { ...prev, title } : prev))
+                }
+                inputMaxLength={200}
+                onConfirm={() => void handleRenameConfirm()}
             />
         </>
     );

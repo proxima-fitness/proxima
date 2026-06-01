@@ -31,3 +31,7 @@ _Avoid_: URL update, chat creation (implementation)
 **Empty program template**:
 The pre-seeded `emptyHevyProgram` grid shown when the user explicitly starts a blank program. Allowed only for New Chat (`?empty=true`) and bare `/build-program` redirect — not for home prompt (`?search=`) or other dispatch arrivals.
 _Avoid_: Empty grid (ambiguous — an empty grid may be correct without the template)
+
+**Sign-in migration**:
+Post-arrival auth effect that persists an anonymous thread from `CHAT_MESSAGES_KEY` (or in-memory messages) to Supabase, assigns `?chat=`, and clears anon localStorage. Behaves like session mint for shell/hydrate — not chat navigation.
+_Avoid_: Auth transition (too broad), login flow

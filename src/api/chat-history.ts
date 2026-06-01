@@ -96,7 +96,7 @@ export const getChatIds = async (user: User | undefined | null) => {
     try {
         const { data: chatId, error: chatIdError } = await supabase
             .from("chat_history")
-            .select("id, created_at, title, program_id")
+            .select("id, created_at, title, program_id, pinned")
             .order("created_at", { ascending: false })
             .eq("user_id", user.id);
 
@@ -111,6 +111,7 @@ export const getChatIds = async (user: User | undefined | null) => {
                 created_at: chat.created_at,
                 title: chat.title,
                 program_id: chat.program_id,
+                pinned: chat.pinned === true,
             })) ?? []
         );
     } catch (error) {
@@ -265,6 +266,69 @@ export const upsertChatHistoryTurn = async ({
 
     const resolvedTitle = title ?? deriveChatTitleFromMessages(messages);
     return postChatHistory(user, chatId, messages, resolvedTitle, null);
+};
+
+/**
+ * Updates the display title for a chat history row.
+ */
+export const updateChatTitle = async (
+    user: User | undefined | null,
+    chatId: string,
+    title: string,
+): Promise<TChatHistoryWriteResult | { error: string }> => {
+    const trimmed = title.trim();
+    if (!user || !chatId || !trimmed) {
+        return { error: "Missing required fields" };
+    }
+
+    try {
+        const { error } = await supabase
+            .from("chat_history")
+            .update({ title: trimmed.slice(0, MAX_CHAT_TITLE_LENGTH) })
+            .eq("user_id", user.id)
+            .eq("id", chatId);
+
+        if (error) {
+            console.error("Error updating chat title:", error);
+            return { success: false, error: error.message ?? "Error updating chat title" };
+        }
+
+        return { success: true, id: chatId };
+    } catch (error) {
+        console.error("Error updating chat title:", error);
+        return { success: false, error: "Error updating chat title" };
+    }
+};
+
+/**
+ * Pins or unpins a chat history row.
+ */
+export const setChatPinned = async (
+    user: User | undefined | null,
+    chatId: string,
+    pinned: boolean,
+): Promise<TChatHistoryWriteResult | { error: string }> => {
+    if (!user || !chatId) {
+        return { error: "Missing required fields" };
+    }
+
+    try {
+        const { error } = await supabase
+            .from("chat_history")
+            .update({ pinned })
+            .eq("user_id", user.id)
+            .eq("id", chatId);
+
+        if (error) {
+            console.error("Error updating chat pinned state:", error);
+            return { success: false, error: error.message ?? "Error updating chat pinned state" };
+        }
+
+        return { success: true, id: chatId };
+    } catch (error) {
+        console.error("Error updating chat pinned state:", error);
+        return { success: false, error: "Error updating chat pinned state" };
+    }
 };
 
 /**
