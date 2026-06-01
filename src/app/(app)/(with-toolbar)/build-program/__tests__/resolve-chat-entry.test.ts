@@ -317,6 +317,32 @@ describe("advanceChatNavigationLatch", () => {
         expect(step.chatNavigationArrival).toBe(true);
     });
 
+    it("New Chat then first sidebar pick latches when row is known", () => {
+        const chatA = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
+        let latch = resetChatNavigationLatchForArrival(
+            { empty: "true", urlChatId: "" },
+            createChatNavigationLatch(chatA),
+        );
+        let step = advanceChatNavigationLatch("", latch);
+        latch = step.next;
+        expect(step.chatNavigationArrival).toBe(false);
+
+        step = advanceChatNavigationLatch(chatA, latch, { sidebarRowKnown: true });
+        expect(step.chatNavigationArrival).toBe(true);
+
+        const plan = resolveChatEntryPlan(
+            baseInput({
+                user: loggedInUser,
+                chatId: chatA,
+                sidebarRowKnown: true,
+                chatNavigationArrival: step.chatNavigationArrival,
+            }),
+        );
+        expect(plan.enableHistoryFetch).toBe(true);
+        expect(plan.historyBootstrap).toBe("db-wait");
+    });
+
     it("A3′: New Chat clears stale latch so session mint keeps send-path shell", () => {
         const chatA = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
         const mintedId = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
@@ -331,7 +357,7 @@ describe("advanceChatNavigationLatch", () => {
         latch = step.next;
         expect(step.chatNavigationArrival).toBe(false);
 
-        step = advanceChatNavigationLatch(mintedId, latch);
+        step = advanceChatNavigationLatch(mintedId, latch, { sidebarRowKnown: false });
         expect(step.chatNavigationArrival).toBe(false);
 
         const plan = resolveChatEntryPlan(

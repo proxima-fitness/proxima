@@ -79,14 +79,25 @@ export function resetChatNavigationLatchForArrival(
     return latch;
 }
 
+export interface IAdvanceChatNavigationLatchOptions {
+    /** Chat id appears in sidebar list — distinguishes sidebar pick from session mint. */
+    sidebarRowKnown?: boolean;
+}
+
 /** Derive during render; assign `next` back to a ref (no effect). */
 export function advanceChatNavigationLatch(
     chatId: string,
     latch: IChatNavigationLatch,
+    options?: IAdvanceChatNavigationLatchOptions,
 ): { chatNavigationArrival: boolean; next: IChatNavigationLatch } {
     let latched = latch.latched;
-    if (!latched && chatId && latch.prevChatId && latch.prevChatId !== chatId) {
-        latched = true;
+    if (!latched && chatId) {
+        if (latch.prevChatId && latch.prevChatId !== chatId) {
+            latched = true;
+        } else if (!latch.prevChatId && options?.sidebarRowKnown) {
+            // New Chat reset clears prevChatId; first sidebar pick must still latch.
+            latched = true;
+        }
     }
     return {
         chatNavigationArrival: latched,

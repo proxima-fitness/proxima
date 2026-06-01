@@ -115,6 +115,9 @@ export function BuildProgram() {
         sawNonBareArrivalRef.current,
     );
 
+    const { data: chatIds } = useChatIds(user);
+    const sidebarRowKnown = resolveSidebarRowKnown(chatId, chatIds);
+
     const chatNavLatchRef = useRef(createChatNavigationLatch(urlChatId));
     chatNavLatchRef.current = resetChatNavigationLatchForArrival(
         { empty, urlChatId },
@@ -123,6 +126,7 @@ export function BuildProgram() {
     const { chatNavigationArrival, next: chatNavLatchNext } = advanceChatNavigationLatch(
         chatId,
         chatNavLatchRef.current,
+        { sidebarRowKnown },
     );
     chatNavLatchRef.current = chatNavLatchNext;
     const programHydrateChatId = chatNavigationArrival ? chatId : "";
@@ -146,10 +150,6 @@ export function BuildProgram() {
         },
         [],
     );
-
-    const { data: chatIds } = useChatIds(user);
-
-    const sidebarRowKnown = resolveSidebarRowKnown(chatId, chatIds);
     const sendPathConfirmed = resolveSendPathConfirmed(chatId, isChatSessionInsertConfirmed(chatId));
     const chatHistoryFetchEnabled = resolveChatHistoryFetchEnabled({
         user,
