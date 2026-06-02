@@ -50,3 +50,22 @@ export function formatWeight(
 export function getWeightUnit(isInLbs: boolean): "lbs" | "kg" {
     return isInLbs ? "lbs" : "kg";
 }
+
+/**
+ * Parse a user-entered display weight back to kg for storage.
+ *
+ * Mirrors {@link formatWeight}: rounds to the nearest quarter-unit in the
+ * user's display unit, then converts lbs → kg when `isInLbs` is true.
+ *
+ * @param displayValue - Raw input string in the user's preferred unit
+ * @param isInLbs - Whether the input is expressed in pounds
+ * @returns Weight in kg, or `null` when blank or non-positive
+ */
+export function parseWeight(displayValue: string, isInLbs: boolean): number | null {
+    const trimmed = displayValue.trim();
+    if (trimmed === "") return null;
+    const parsed = Number(trimmed);
+    if (Number.isNaN(parsed) || parsed <= 0) return null;
+    const roundedDisplay = Math.round(parsed * 4) / 4;
+    return isInLbs ? roundedDisplay * LBS_TO_KG : roundedDisplay;
+}

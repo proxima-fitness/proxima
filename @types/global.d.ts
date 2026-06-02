@@ -300,13 +300,15 @@ type THevyDialog = {
 type THevyAddExercise = {
     selectedExercise: THevyExerciseTemplate;
     repTypeValue: "reps" | "reps_range" | "distance_meters" | "duration_seconds" | "custom_metric";
-    intensityValue: "rpe" | "weight_kg";
     reps: number[] | null; // DATA for fixed reps / distance / time / custom (not rep range)
     /** Per-set rep range start when `repTypeValue` is `"reps_range"`. */
     repRangeStart?: number[] | null;
     /** Per-set rep range end when `repTypeValue` is `"reps_range"`. */
     repRangeEnd?: number[] | null;
-    intensityData: number[] | null; // DATA for any intensity that is not a range
+    /** Per-set kg, index-aligned with `setTypes`. All blank → `null`. */
+    weightKg: (number | null)[] | null;
+    /** Per-set RPE, index-aligned with `setTypes`. All blank → `null`. */
+    rpe: (number | null)[] | null;
     setTypes: ("normal" | "warmup" | "dropset" | "failure")[];
     restSeconds: string | null;
 }

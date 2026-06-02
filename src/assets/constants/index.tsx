@@ -168,8 +168,6 @@ export const repMaxes = ["1","2","3","4","5","6","7","8","9","10","11","12","13"
 export const durations = ["0","10","20","30","40","50","60","70","80","90","100","110","120","130","140","150","160","170", "180"];
 /** Hevy-specific repetition measurement types for export. */
 export const hevy_rep_types = [{label: "Reps", value: "reps"}, {label: "Rep Range", value: "reps_range"}, {label: "Distance (m)", value: "distance_meters"}, {label: "Time (s)", value: "duration_seconds"}, { label: "Custom Metric", value: "custom_metric"}];
-/** Hevy-specific intensity types (RPE and load) for export. */
-export const hevy_intensities = [{label: "RPE", value: "rpe"}, {label: "Weight (kg)", value: "weight_kg"}];
 /** Internal repetition measurement types supported by the program builder. */
 export const rep_types = [{label: "Reps", value: "reps"},{label: "Reps Max", value: "reps_max"},{label: "Reps Range", value: "reps_range"},{label: "Time", value: "time_taken"},{label: "Time Range", value:"time_range"},{label: "AMRAP", value: "amrap"}];
 /** Intensity scales such as RPE, percentage of 1RM, and weights. */

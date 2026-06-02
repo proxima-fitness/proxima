@@ -13,7 +13,13 @@ import { shortEnglishHumanizer } from "@/assets/constants";
 import { MAIN_DISCOUNT_CODE, MAIN_DISCOUNT_PERCENT } from "@/assets/constants/ui-constants";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { routineNotesForExport } from "@/lib/proximaExportAttribution";
-import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
+import { formatWeight } from "@/lib/weightUtils";
+import {
+    HEVY_PRESCRIPTION_EMPTY,
+    PDF_PRESCRIPTION_EMPTY_STYLE,
+    formatHevyRepRange,
+    repRangesEqual,
+} from "./hevyPrescriptionDisplay";
 import { Document, Font, Image, Page, Text, View } from "@react-pdf/renderer";
 import { icon_background_white } from "public";
 
@@ -22,18 +28,6 @@ Font.register({
   family: 'Russo One',
   src: '/fonts/RussoOne-Regular.ttf',
 });
-
-const repRangesEqual = (
-    a: THevyRepRange | null | undefined,
-    b: THevyRepRange | null | undefined,
-): boolean => {
-    if (a == null || b == null) {
-        return a === b;
-    }
-    return a.start === b.start && a.end === b.end;
-};
-
-const formatHevyRepRange = (rr: THevyRepRange): string => `${rr.start}-${rr.end}`;
 
 /** Props for the PDF document. */
 interface IProps {
@@ -258,7 +252,17 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                 alignItems: "center",
                                             } }
                                         >
-                                            <Text>Intensity</Text>
+                                            <Text>{isInLbs ? "Lbs" : "Kg"}</Text>
+                                        </View>
+                                        <View
+                                            style={ {
+                                                display: "flex",
+                                                flexDirection: "row",
+                                                justifyContent: "center",
+                                                alignItems: "center",
+                                            } }
+                                        >
+                                            <Text>RPE</Text>
                                         </View>
                                     </View>
                                 </View>
@@ -308,7 +312,13 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                     <Text
                                                         style={ { display: "flex", flexDirection: "column" } }
                                                     >
-                                                        { exercise.sets.length }
+                                                        { exercise.sets.length > 0 ? (
+                                                            exercise.sets.length
+                                                        ) : (
+                                                            <Text style={ PDF_PRESCRIPTION_EMPTY_STYLE }>
+                                                                {HEVY_PRESCRIPTION_EMPTY}
+                                                            </Text>
+                                                        ) }
                                                     </Text>
                                                     <Text>
                                                         { exercise.sets[0] &&
@@ -337,15 +347,28 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                                         </Text>
                                                                     );
                                                                 }
+                                                                const labels = sets.map((set) =>
+                                                                    set.rep_range != null
+                                                                        ? formatHevyRepRange(set.rep_range)
+                                                                        : set.reps !== null && set.reps > 0
+                                                                          ? String(set.reps)
+                                                                          : null,
+                                                                );
+                                                                if (labels.every((label) => label == null)) {
+                                                                    return (
+                                                                        <Text style={ PDF_PRESCRIPTION_EMPTY_STYLE }>
+                                                                            {HEVY_PRESCRIPTION_EMPTY}
+                                                                        </Text>
+                                                                    );
+                                                                }
                                                                 return sets.map((set, index) => {
-                                                                    const label =
-                                                                        set.rep_range != null
-                                                                            ? formatHevyRepRange(set.rep_range)
-                                                                            : set.reps !== null && set.reps > 0
-                                                                              ? String(set.reps)
-                                                                              : null;
+                                                                    const label = labels[index];
                                                                     if (label == null) {
-                                                                        return null;
+                                                                        return (
+                                                                            <Text key={ index } style={ PDF_PRESCRIPTION_EMPTY_STYLE }>
+                                                                                {HEVY_PRESCRIPTION_EMPTY}
+                                                                            </Text>
+                                                                        );
                                                                     }
                                                                     return (
                                                                         <Text
@@ -357,6 +380,19 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                                     );
                                                                 });
                                                             })()}
+                                                        { exercise.sets.length > 0 &&
+                                                            !exercise.sets.some(
+                                                                (s) =>
+                                                                    s.rep_range != null ||
+                                                                    (s.reps !== null && s.reps > 0) ||
+                                                                    (s.distance_meters !== null && s.distance_meters > 0) ||
+                                                                    (s.duration_seconds !== null && s.duration_seconds > 0) ||
+                                                                    (s.custom_metric !== null && s.custom_metric > 0),
+                                                            ) && (
+                                                                <Text style={ PDF_PRESCRIPTION_EMPTY_STYLE }>
+                                                                    {HEVY_PRESCRIPTION_EMPTY}
+                                                                </Text>
+                                                            ) }
                                                         { exercise.sets[0] && exercise.sets[0].distance_meters !== null && exercise.sets[0].distance_meters > 0 && (
                                                                 exercise.sets.every((reps, i, arr) => reps.distance_meters === arr[0].distance_meters) ? (
                                                                     <Text>{exercise.sets[0].distance_meters} m</Text>
@@ -386,28 +422,72 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                             )}
                                                     </Text>
                                                     <Text style={ { display: "flex", flexDirection: "column" } }>
-                                                        { exercise.sets[0] && exercise.sets[0].weight_kg !== null && exercise.sets[0].weight_kg > 0 && (
-                                                            exercise.sets.every((intensity, i, arr) => intensity.weight_kg === arr[0].weight_kg) ? (
-                                                                <Text>{formatWeight(exercise.sets[0].weight_kg, isInLbs, "kg")} {getWeightUnit(isInLbs)}</Text>
-                                                            ) : (
-                                                                exercise.sets.map((set, index) => (
-                                                                    <Text key={ index } style={ { color: set.type === "warmup" ? "#FFFFFF" : "#000000", backgroundColor: set.type === "warmup" ? "#cbd5e1" : "#f8f8f8", paddingHorizontal: "4px", borderRadius: "4px" } }>{ formatWeight(set.weight_kg ?? 0, isInLbs, "kg") } {getWeightUnit(isInLbs)}</Text>
-                                                                ))
-                                                            )
-                                                        )}
-                                                        { exercise.sets.some((set) => set.rpe != null && set.rpe > 0) && (
-                                                            (() => {
-                                                                const rpeValues = exercise.sets.map((s) => s.rpe).filter((r): r is number => r != null && r > 0);
-                                                                const allSameRpe = rpeValues.length > 0 && rpeValues.every((v) => v === rpeValues[0]);
-                                                                return allSameRpe ? (
-                                                                    <Text>{rpeValues[0]} RPE</Text>
-                                                                ) : (
-                                                                    exercise.sets.map((set, index) => (
-                                                                        <Text key={ index } style={ { display: "flex", flexDirection: "column", color: set.type === "warmup" ? "#FFFFFF" : "#000000", backgroundColor: set.type === "warmup" ? "#cbd5e1" : "#f8f8f8", paddingHorizontal: "4px", borderRadius: "4px" } }>{ set.rpe != null && set.rpe > 0 ? `${set.rpe} RPE` : "" }</Text>
-                                                                    ))
+                                                        { (() => {
+                                                            const sets = exercise.sets;
+                                                            const weightValues = sets.map((set) =>
+                                                                set.weight_kg != null && set.weight_kg > 0
+                                                                    ? formatWeight(set.weight_kg, isInLbs, "kg")
+                                                                    : null,
+                                                            );
+                                                            const prescribed = weightValues.filter((v): v is string => v != null);
+                                                            if (prescribed.length === 0) {
+                                                                return (
+                                                                    <Text style={ PDF_PRESCRIPTION_EMPTY_STYLE }>
+                                                                        {HEVY_PRESCRIPTION_EMPTY}
+                                                                    </Text>
                                                                 );
-                                                            })()
-                                                        )}
+                                                            }
+                                                            const firstVal = weightValues[0];
+                                                            if (firstVal != null && weightValues.every((v) => v === firstVal)) {
+                                                                return <Text>{firstVal}</Text>;
+                                                            }
+                                                            return sets.map((set, index) => {
+                                                                const value = weightValues[index];
+                                                                if (value == null) {
+                                                                    return (
+                                                                        <Text key={ index } style={ PDF_PRESCRIPTION_EMPTY_STYLE }>
+                                                                            {HEVY_PRESCRIPTION_EMPTY}
+                                                                        </Text>
+                                                                    );
+                                                                }
+                                                                return (
+                                                                    <Text key={ index } style={ { color: set.type === "warmup" ? "#FFFFFF" : "#000000", backgroundColor: set.type === "warmup" ? "#cbd5e1" : "#f8f8f8", paddingHorizontal: "4px", borderRadius: "4px" } }>{ value }</Text>
+                                                                );
+                                                            });
+                                                        })() }
+                                                    </Text>
+                                                    <Text style={ { display: "flex", flexDirection: "column" } }>
+                                                        { (() => {
+                                                            const sets = exercise.sets;
+                                                            const rpeValues = sets.map((s) =>
+                                                                s.rpe != null && s.rpe > 0 ? s.rpe : null,
+                                                            );
+                                                            const prescribed = rpeValues.filter((v): v is number => v != null);
+                                                            if (prescribed.length === 0) {
+                                                                return (
+                                                                    <Text style={ PDF_PRESCRIPTION_EMPTY_STYLE }>
+                                                                        {HEVY_PRESCRIPTION_EMPTY}
+                                                                    </Text>
+                                                                );
+                                                            }
+                                                            const firstRpe = rpeValues[0];
+                                                            if (firstRpe != null && rpeValues.every((v) => v === firstRpe)) {
+                                                                return <Text>{firstRpe} RPE</Text>;
+                                                            }
+                                                            return sets.map((set, index) => {
+                                                                const value = rpeValues[index];
+                                                                if (value == null) {
+                                                                    return (
+                                                                        <Text key={ index } style={ PDF_PRESCRIPTION_EMPTY_STYLE }>
+                                                                            {HEVY_PRESCRIPTION_EMPTY}
+                                                                        </Text>
+                                                                    );
+                                                                }
+                                                                return (
+                                                                    <Text key={ index } style={ { color: set.type === "warmup" ? "#FFFFFF" : "#000000", backgroundColor: set.type === "warmup" ? "#cbd5e1" : "#f8f8f8", paddingHorizontal: "4px", borderRadius: "4px" } }>{ value } RPE</Text>
+                                                                );
+                                                            });
+                                                        })() }
                                                     </Text>
                                                 </View>
                                             </View>

@@ -28,6 +28,7 @@ import { HevyDuplicateDay } from "./HevyDuplicateDay";
 import { IOption } from "@/components/ui/multi-select";
 import { convertHevyExerciseIntoHevyAddExercise } from "../utils";
 import { useTheme } from "next-themes";
+import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 
 /** Props for a single day card within a week column. */
 interface IProps {
@@ -102,6 +103,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
     } = props;
 
     const { resolvedTheme } = useTheme();
+    const { isInLbs } = usePoundsOrKgContext();
     const [duplicateDayOpen, setDuplicateDayOpen] = useState(false);
     const [editTitleOpen, setEditTitleOpen] = useState(false);
     const [currentTitle, setCurrentTitle] = useState(day.title ?? "");
@@ -191,7 +193,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                 <Card
                     tabIndex={ 0 }
                     onClick={ handleFocus }
-                    className={`border-[3px] border-gray-100 ${resolvedTheme === "dark" ? "border-extraDarkGray bg-extraDarkGray shadow-xl shadow-black/20" : "border-gray-100 bg-lightGray shadow-lg shadow-gray-200/50"} dark:border-extraDarkGray dark:bg-extraDarkGray dark:shadow-xl dark:shadow-black/20 focus:dark:border-lightSecondary focus:border-gray-300 w-full max-w-full group py-4 sm:pt-2 px-1 sm:px-0 sm:min-w-[320px] sm:max-w-[320px] md:min-w-[340px] md:max-w-[340px] lg:min-w-[400px] lg:max-w-[400px] my-2 box-border`}>
+                    className={`border-[3px] border-gray-100 ${resolvedTheme === "dark" ? "border-extraDarkGray bg-extraDarkGray shadow-xl shadow-black/20" : "border-gray-100 bg-lightGray shadow-lg shadow-gray-200/50"} dark:border-extraDarkGray dark:bg-extraDarkGray dark:shadow-xl dark:shadow-black/20 focus:dark:border-lightSecondary focus:border-gray-300 w-full max-w-full group py-4 sm:pt-2 px-1 sm:px-0 sm:min-w-[360px] sm:max-w-[360px] md:min-w-[385px] md:max-w-[385px] lg:min-w-[450px] lg:max-w-[450px] my-2 box-border`}>
                     <div className="flex flex-row justify-between items-center px-3 py-1">
                         <div className="font-main text-lg flex flex-row whitespace-nowrap">
                             Day {day.order}
@@ -296,14 +298,17 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                             </div>
                         </div>
                         <div className="text-center flex flex-row items-center justify-end max-w-[50%] w-[50%] dark:text-offWhite">
-                            <div className="min-w-[33%] flex flex-col justify-center items-center">
+                            <div className="min-w-[25%] flex flex-col justify-center items-center">
                                 Sets
                             </div>
-                            <div className="min-w-[33%] flex flex-col justify-center items-center">
+                            <div className="min-w-[25%] flex flex-col justify-center items-center">
                                 Reps
                             </div>
-                            <div className="min-w-[33%] flex flex-col justify-center items-center h-full whitespace-nowrap">
-                                Intensity
+                            <div className="min-w-[25%] flex flex-col justify-center items-center whitespace-nowrap">
+                                {isInLbs ? "Lbs" : "Kg"}
+                            </div>
+                            <div className="min-w-[25%] flex flex-col justify-center items-center h-full whitespace-nowrap">
+                                RPE
                             </div>
                         </div>
                     </div>

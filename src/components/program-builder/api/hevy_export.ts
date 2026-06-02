@@ -294,10 +294,14 @@ export const generateHevySets = (exercise: TSavedWorkoutExercise): THevySets[] =
     for (let i = 0; i < maxSets; i++) {
         const rr = exercise.reps_range?.[i];
         const hasRepRange = rr != null && Array.isArray(rr) && rr.length >= 2;
+        const weight = exercise.weights?.[i];
+        const rpeVal = exercise?.rpe
+            ? (exercise.rpe[i] ?? null)
+            : (exercise?.rpe_range?.[i]?.[1] ?? null);
         sets.push({
             index: i,
             type: "normal", // Assuming all sets are normal
-            weight_kg: exercise.weights?.[i] || 0,
+            weight_kg: weight == null || weight <= 0 ? null : weight,
             reps: hasRepRange
                 ? null
                 : exercise?.reps
@@ -305,7 +309,7 @@ export const generateHevySets = (exercise: TSavedWorkoutExercise): THevySets[] =
                   : null,
             distance_meters: 0, // No distance tracking by default
             duration_seconds: exercise?.time_taken ? exercise.time_taken?.[i] || 0 : exercise?.time_range && exercise.time_range?.[i]?.[1] || 0,
-            rpe: exercise?.rpe ? (exercise.rpe[i] ?? null) : (exercise?.rpe_range?.[i]?.[1] ?? null),
+            rpe: rpeVal == null || rpeVal <= 0 ? null : rpeVal,
             custom_metric: 0, // Placeholder for custom metric
             rep_range: hasRepRange ? { start: rr[0], end: rr[1] } : null,
         });

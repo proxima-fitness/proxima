@@ -657,9 +657,19 @@ export const addExerciseToProgramCreatorExerciseConverter = async (addExercise: 
 
 };
 
+const normalizeSetIntensityValue = (value: number | null | undefined): number | null => {
+    if (value == null || value <= 0) return null;
+    return value;
+};
+
+const intensityAtSetIndex = (
+    arr: (number | null)[] | null | undefined,
+    setIndex: number,
+): number | null => normalizeSetIntensityValue(arr?.[setIndex]);
+
 /**
  * Converts a Hevy-flavored add-exercise form state (THevyAddExercise) into an
- * array of THevySets. Maps the rep-type and intensity-type discriminator values
+ * array of THevySets. Maps rep-type and independent per-set weight/RPE arrays
  * to the correct set fields.
  *
  * @param addExercise - Hevy add-exercise form state
@@ -673,11 +683,11 @@ export const hevyAddExerciseToHevySetsConverter = (addExercise: THevyAddExercise
         return Array.from({ length: n }, (_, setIndex) => ({
             index: setIndex,
             type: addExercise.setTypes[setIndex],
-            weight_kg: addExercise.intensityValue === "weight_kg" ? addExercise.intensityData?.[setIndex] ?? null : null,
+            weight_kg: intensityAtSetIndex(addExercise.weightKg, setIndex),
             reps: null,
             distance_meters: null,
             duration_seconds: null,
-            rpe: addExercise.intensityValue === "rpe" ? addExercise.intensityData?.[setIndex] ?? null : null,
+            rpe: intensityAtSetIndex(addExercise.rpe, setIndex),
             custom_metric: null,
             rep_range: {
                 start: starts[setIndex] ?? 0,
@@ -691,11 +701,11 @@ export const hevyAddExerciseToHevySetsConverter = (addExercise: THevyAddExercise
         return {
             index: setIndex,
             type: addExercise.setTypes[setIndex],
-            weight_kg: addExercise.intensityValue === "weight_kg" ? addExercise.intensityData?.[setIndex] ?? null : null,
+            weight_kg: intensityAtSetIndex(addExercise.weightKg, setIndex),
             reps: addExercise.repTypeValue === "reps" ? rep ?? null : null,
             distance_meters: addExercise.repTypeValue === "distance_meters" ? rep ?? null : null,
             duration_seconds: addExercise.repTypeValue === "duration_seconds" ? rep ?? null : null,
-            rpe: addExercise.intensityValue === "rpe" ? addExercise.intensityData?.[setIndex] ?? null : null,
+            rpe: intensityAtSetIndex(addExercise.rpe, setIndex),
             custom_metric: addExercise.repTypeValue === "custom_metric" ? rep ?? null : null,
             rep_range: addExercise.repTypeValue === "reps_range" ? {
                 start: addExercise.repRangeStart?.[setIndex] ?? 0,
@@ -705,10 +715,18 @@ export const hevyAddExerciseToHevySetsConverter = (addExercise: THevyAddExercise
     });
 };
 
+const mapPerSetIntensityField = (
+    sets: THevySets[],
+    getter: (set: THevySets) => number | null | undefined,
+): (number | null)[] | null => {
+    const values = sets.map((set) => normalizeSetIntensityValue(getter(set)));
+    return values.every((value) => value === null) ? null : values;
+};
+
 /**
  * Reverse-maps a persisted THevyExercise back into the THevyAddExercise form
  * state so an existing exercise can be loaded into the edit dialog. Infers
- * the rep-type and intensity-type discriminators from the first set's values.
+ * the rep-type discriminator from the first set's values.
  *
  * @param exercise - The Hevy exercise to convert
  * @param customExercises - Optional user-created exercise templates to search
@@ -734,15 +752,8 @@ export const convertHevyExerciseIntoHevyAddExercise = async (exercise: THevyExer
       repTypeValue = "custom_metric";
     }
 
-    // Hevy exercises use either absolute weight or RPE for intensity — never both.
-    const intensityValue: THevyAddExercise["intensityValue"] =
-      (firstSet?.weight_kg ?? 0) > 0 ? "weight_kg" : "rpe";
-
-    const rawIntensityValues = exercise.sets.map(set => intensityValue === "weight_kg" ? set.weight_kg : set.rpe);
-    const filteredIntensityData = rawIntensityValues.filter(
-        (val): val is number => val !== null && val !== undefined
-    );
-    const intensityData: number[] | null = filteredIntensityData.length > 0 ? filteredIntensityData : null;
+    const weightKg = mapPerSetIntensityField(exercise.sets, (set) => set.weight_kg);
+    const rpe = mapPerSetIntensityField(exercise.sets, (set) => set.rpe);
 
     // Get the exercise template data: use provided list or fetch via getHevyExercises()
     let exerciseTemplate: THevyExerciseTemplate | undefined;
@@ -765,11 +776,11 @@ export const convertHevyExerciseIntoHevyAddExercise = async (exercise: THevyExer
         return {
             selectedExercise: exerciseTemplate,
             repTypeValue: "reps_range",
-            intensityValue,
             reps: null,
             repRangeStart,
             repRangeEnd,
-            intensityData,
+            weightKg,
+            rpe,
             restSeconds: exercise.rest_seconds,
             setTypes: exercise.sets.map(set => (set.type) as ("normal" | "warmup" | "dropset" | "failure")),
         };
@@ -793,9 +804,9 @@ export const convertHevyExerciseIntoHevyAddExercise = async (exercise: THevyExer
     return {
         selectedExercise: exerciseTemplate,
         repTypeValue,
-        intensityValue,
         reps,
-        intensityData,
+        weightKg,
+        rpe,
         restSeconds: exercise.rest_seconds,
         setTypes: exercise.sets.map(set => (set.type) as ("normal" | "warmup" | "dropset" | "failure")),
     };
