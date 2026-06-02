@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import { hevy_logo, hevy_logo_black, google_sheets_logo_icon } from "public";
-import { Crown, FileText, Table } from "lucide-react";
+import { Crown, Dumbbell, FileText, Table } from "lucide-react";
 
 /** Export destinations available for generated programs. */
 export const exportOptions = [
@@ -26,6 +26,19 @@ export const exportOptions = [
         ),
         subtitle: "Upload your program to Hevy so you can train from the app",
         brand: true,
+    },
+    {
+        id: "volm",
+        name: "VOLM",
+        icon: (
+            <div className="flex items-center gap-2">
+                <Dumbbell className="h-6 w-6 shrink-0" />
+                <span className="font-third text-base font-semibold">VOLM</span>
+            </div>
+        ),
+        subtitle: "Upload your program to VOLM so you can train from the app",
+        brand: true,
+        disabled: true,
     },
     {
         id: "pdf",

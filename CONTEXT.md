@@ -35,3 +35,7 @@ _Avoid_: Empty grid (ambiguous — an empty grid may be correct without the temp
 **Sign-in migration**:
 Post-arrival auth orchestration (derived bootstrap + `useMutation`, no new effects) that persists an anonymous thread from `CHAT_MESSAGES_KEY` (or in-memory messages) to Supabase, assigns `?chat=`, and clears anon localStorage. Behaves like session mint for shell/hydrate — not chat navigation.
 _Avoid_: Auth transition (too broad), login flow
+
+**Chat-program connection**:
+Associating a saved program with a chat row by setting `program_id` on the chat. Triggered only on explicit Save when a chat session exists (`?chat=`); optional — program Save does not require chat.
+_Avoid_: Link chat to program (reversed direction), save chat
