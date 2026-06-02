@@ -420,17 +420,33 @@ export const connectChatToSavedProgram = async ({
     queryClient,
 }: IConnectChatToSavedProgramInput): Promise<TConnectChatToSavedProgramResult> => {
     if (!persistChatId) {
+        console.log("[chat-program-connect] skipped — no chat session", { programId });
         return "skipped";
     }
 
     const result = await linkProgramToChat(user, persistChatId, programId);
     if ("success" in result && result.success) {
+        console.log("[chat-program-connect] linked", {
+            chatId: persistChatId,
+            programId,
+        });
         if (user && queryClient) {
             void queryClient.invalidateQueries({ queryKey: ["chat-ids", user.id] });
         }
         return "linked";
     }
 
+    let errorDetail = "Unknown error";
+    if ("error" in result && typeof result.error === "string") {
+        errorDetail = result.error;
+    } else if ("success" in result && result.success === false) {
+        errorDetail = result.error;
+    }
+    console.error("[chat-program-connect] failed", {
+        chatId: persistChatId,
+        programId,
+        error: errorDetail,
+    });
     return "failed";
 };
 
