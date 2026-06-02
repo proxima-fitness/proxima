@@ -16,10 +16,12 @@ const mockEqFirst = vi.fn(() => ({ eq: mockEqSecond }));
 const mockSelect = vi.fn(() => ({ eq: mockEqFirst }));
 const mockUpdate = vi.fn(() => ({ eq: mockEqFirst }));
 const mockInsert = vi.fn(() => ({ select: vi.fn(() => ({ single: mockSingle })) }));
+const mockDelete = vi.fn(() => ({ eq: mockEqFirst }));
 const mockFrom = vi.fn(() => ({
     select: mockSelect,
     insert: mockInsert,
     update: mockUpdate,
+    delete: mockDelete,
 }));
 
 vi.mock("@/api/index", () => ({
@@ -36,14 +38,25 @@ vi.mock("@/components/program-builder/utils/helpers", () => ({
     },
 }));
 
+const mockApplyBuildProgramMintUrlUpdate = vi.fn();
+
+vi.mock("@/lib/build-program-url", () => ({
+    applyBuildProgramMintUrlUpdate: (...args: unknown[]) =>
+        mockApplyBuildProgramMintUrlUpdate(...args),
+}));
+
 import {
     deriveChatTitleFromMessages,
+    deleteChatHistory,
     ensureChatSessionOnSend,
+    isChatSessionInsertConfirmed,
     linkChatToProgram,
+    migrateAnonymousThreadToChat,
     persistChatHistoryAfterTurn,
     resetChatHistorySessionForTests,
     upsertChatHistoryTurn,
 } from "@/api/chat-history";
+import { CHAT_MESSAGES_KEY } from "@/assets/constants/ui-constants";
 
 const testUser = { id: "user-1" } as User;
 const chatId = "11111111-1111-4111-8111-111111111111";
@@ -147,6 +160,87 @@ describe("ensureChatSessionOnSend", () => {
 
         expect(second.confirmed).toBe(true);
         expect(mockInsert).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe("migrateAnonymousThreadToChat", () => {
+    const replace = vi.fn();
+    const router = { replace };
+    const pathname = "/build-program";
+    const searchParams = new URLSearchParams(
+        "resume=true&search=build+me+a+program",
+    ) as unknown as import("next/navigation").ReadonlyURLSearchParams;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        resetChatHistorySessionForTests();
+        localStorage.clear();
+        localStorage.setItem(CHAT_MESSAGES_KEY, JSON.stringify([userMessage("Anon thread")]));
+    });
+
+    it("inserts full thread, mints URL preserving resume, clears localStorage", async () => {
+        mockSingle.mockResolvedValueOnce({ data: { id: chatId }, error: null });
+
+        const messages = [userMessage("Anon thread"), assistantMessage("Sure")];
+        const result = await migrateAnonymousThreadToChat({
+            user: testUser,
+            messages,
+            router,
+            pathname,
+            searchParams,
+        });
+
+        expect(result.confirmed).toBe(true);
+        expect(result.messages).toEqual(messages);
+        expect(result.chatId).toEqual(expect.any(String));
+        expect(isChatSessionInsertConfirmed(result.chatId)).toBe(true);
+        expect(mockInsert).toHaveBeenCalledWith(
+            expect.objectContaining({
+                user_id: testUser.id,
+                title: "Anon thread",
+                program_id: null,
+            }),
+        );
+        expect(mockApplyBuildProgramMintUrlUpdate).toHaveBeenCalledWith(
+            router,
+            pathname,
+            searchParams,
+            result.chatId,
+            { stripSearch: true },
+        );
+        expect(localStorage.getItem(CHAT_MESSAGES_KEY)).toBeNull();
+    });
+
+    it("on insert failure retains localStorage and skips URL mint", async () => {
+        mockSingle.mockResolvedValueOnce({ data: null, error: { message: "fail" } });
+
+        const messages = [userMessage("Anon thread")];
+        const result = await migrateAnonymousThreadToChat({
+            user: testUser,
+            messages,
+            router,
+            pathname,
+            searchParams,
+        });
+
+        expect(result.confirmed).toBe(false);
+        expect(mockApplyBuildProgramMintUrlUpdate).not.toHaveBeenCalled();
+        expect(localStorage.getItem(CHAT_MESSAGES_KEY)).not.toBeNull();
+    });
+});
+
+describe("deleteChatHistory", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it("deletes row for authenticated user", async () => {
+        mockEqSecond.mockReturnValueOnce({ eq: mockEqSecond });
+
+        const result = await deleteChatHistory(testUser, chatId);
+
+        expect(result).toEqual({ success: true, id: chatId });
+        expect(mockDelete).toHaveBeenCalled();
     });
 });
 

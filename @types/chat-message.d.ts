@@ -50,6 +50,14 @@ declare global {
         user: import("@supabase/supabase-js").User | null | undefined;
         messages: TChatMessage[];
         router: IChatHistoryRouter;
+        pathname: string;
+        searchParams: import("next/navigation").ReadonlyURLSearchParams;
+    }
+
+    interface IMigrateAnonymousThreadToChatResult {
+        chatId: string;
+        confirmed: boolean;
+        messages: TChatMessage[];
     }
 }
 

@@ -3,7 +3,7 @@ import { supabase } from ".";
 import { CHAT_MESSAGES_KEY } from "@/assets/constants/ui-constants";
 import { getMessageText } from "@/components/program-builder/utils/helpers";
 import { v4 as uuidv4 } from "uuid";
-import { buildBuildProgramHref } from "@/lib/build-program-url";
+import { applyBuildProgramMintUrlUpdate } from "@/lib/build-program-url";
 
 const MAX_CHAT_TITLE_LENGTH = 200;
 
@@ -332,6 +332,36 @@ export const setChatPinned = async (
 };
 
 /**
+ * Deletes a chat history row for the authenticated user.
+ */
+export const deleteChatHistory = async (
+    user: User | undefined | null,
+    chatId: string,
+): Promise<TChatHistoryWriteResult | { error: string }> => {
+    if (!user || !chatId) {
+        return { error: "Missing required fields" };
+    }
+
+    try {
+        const { error } = await supabase
+            .from("chat_history")
+            .delete()
+            .eq("user_id", user.id)
+            .eq("id", chatId);
+
+        if (error) {
+            console.error("Error deleting chat history:", error);
+            return { success: false, error: error.message ?? "Error deleting chat history" };
+        }
+
+        return { success: true, id: chatId };
+    } catch (error) {
+        console.error("Error deleting chat history:", error);
+        return { success: false, error: "Error deleting chat history" };
+    }
+};
+
+/**
  * Links an existing chat row to a saved program (`program_id` only).
  */
 export const linkChatToProgram = async (
@@ -418,24 +448,27 @@ export const migrateAnonymousThreadToChat = async ({
     user,
     messages,
     router,
-}: IMigrateAnonymousThreadToChatInput): Promise<IEnsureChatSessionOnSendResult> => {
+    pathname,
+    searchParams,
+}: IMigrateAnonymousThreadToChatInput): Promise<IMigrateAnonymousThreadToChatResult> => {
     if (!user || messages.length === 0) {
-        return { chatId: "", confirmed: false };
+        return { chatId: "", confirmed: false, messages: [] };
     }
 
     const chatId = uuidv4();
-    router.replace(buildBuildProgramHref({ chatId }));
-
     const title = deriveChatTitleFromMessages(messages);
     const result = await postChatHistory(user, chatId, messages, title, null);
 
     if ("success" in result && result.success) {
         sessionInsertedChatIds.add(chatId);
+        applyBuildProgramMintUrlUpdate(router, pathname, searchParams, chatId, {
+            stripSearch: Boolean(searchParams.get("search")?.trim()),
+        });
         if (typeof window !== "undefined") {
             localStorage.removeItem(CHAT_MESSAGES_KEY);
         }
-        return { chatId, confirmed: true };
+        return { chatId, confirmed: true, messages };
     }
 
-    return { chatId, confirmed: false };
+    return { chatId, confirmed: false, messages };
 };

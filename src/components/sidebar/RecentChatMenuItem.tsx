@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { EllipsisVertical, Pencil, Pin, PinOff } from "lucide-react";
+import { EllipsisVertical, Pencil, Pin, PinOff, Trash2 } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -21,6 +22,7 @@ interface IRecentChatMenuItemProps {
     onNavigate: () => void;
     onRename: (chat: TChatListItem) => void;
     onPinToggle: (chat: TChatListItem, pinned: boolean) => void;
+    onDelete: (chat: TChatListItem) => void;
 }
 
 export function RecentChatMenuItem({
@@ -29,6 +31,7 @@ export function RecentChatMenuItem({
     onNavigate,
     onRename,
     onPinToggle,
+    onDelete,
 }: IRecentChatMenuItemProps) {
     const displayTitle = chat.title?.trim() || "Untitled chat";
     const href = `/build-program?chat=${encodeURIComponent(chat.id)}${
@@ -86,6 +89,17 @@ export function RecentChatMenuItem({
                     >
                         <Pencil className="h-4 w-4 mr-2" />
                         Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                        className="cursor-pointer font-third text-destructive focus:text-destructive"
+                        onSelect={(e) => {
+                            e.preventDefault();
+                            onDelete(chat);
+                        }}
+                    >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>

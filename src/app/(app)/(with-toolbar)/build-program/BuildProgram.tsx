@@ -117,6 +117,7 @@ export function BuildProgram() {
 
     const { data: chatIds } = useChatIds(user);
     const sidebarRowKnown = resolveSidebarRowKnown(chatId, chatIds);
+    const sendPathConfirmed = resolveSendPathConfirmed(chatId, isChatSessionInsertConfirmed(chatId));
 
     const chatNavLatchRef = useRef(createChatNavigationLatch(urlChatId));
     chatNavLatchRef.current = resetChatNavigationLatchForArrival(
@@ -126,7 +127,7 @@ export function BuildProgram() {
     const { chatNavigationArrival, next: chatNavLatchNext } = advanceChatNavigationLatch(
         chatId,
         chatNavLatchRef.current,
-        { sidebarRowKnown },
+        { sidebarRowKnown, sendPathConfirmed },
     );
     chatNavLatchRef.current = chatNavLatchNext;
     const programHydrateChatId = chatNavigationArrival ? chatId : "";
@@ -150,7 +151,6 @@ export function BuildProgram() {
         },
         [],
     );
-    const sendPathConfirmed = resolveSendPathConfirmed(chatId, isChatSessionInsertConfirmed(chatId));
     const chatHistoryFetchEnabled = resolveChatHistoryFetchEnabled({
         user,
         chatId,
@@ -165,6 +165,8 @@ export function BuildProgram() {
         isSuccess: chatHistorySuccess,
     } = useChatHistory(user, chatId, { enabled: chatHistoryFetchEnabled });
 
+    const [anonSnapshot] = useState(() => readAnonymousChatMessages());
+
     const chatEntryPlan = useMemo(
         () =>
             resolveChatEntryPlan({
@@ -178,6 +180,7 @@ export function BuildProgram() {
                 sharedProgramLoadAttempted,
                 hevyProgramLength: hevyProgram.length,
                 chatHistorySuccess,
+                anonSnapshotLength: anonSnapshot.length,
             }),
         [
             user,
@@ -190,6 +193,7 @@ export function BuildProgram() {
             sharedProgramLoadAttempted,
             hevyProgram.length,
             chatHistorySuccess,
+            anonSnapshot.length,
         ],
     );
 
@@ -206,9 +210,9 @@ export function BuildProgram() {
         () =>
             resolveInitialMessages(chatEntryPlan, {
                 chatHistoryData,
-                anonymousMessages: readAnonymousChatMessages(),
+                anonymousMessages: anonSnapshot,
             }),
-        [chatEntryPlan, chatHistoryData],
+        [chatEntryPlan, chatHistoryData, anonSnapshot],
     );
 
     const [sidebarPosition, setSidebarPosition] = useState<"left" | "right">("left");
@@ -375,6 +379,7 @@ export function BuildProgram() {
             mobileTab={mobileTab}
             setMobileTab={setMobileTab}
             chatEntryPlan={chatEntryPlan}
+            anonSnapshot={anonSnapshot}
         />
     );
 }
@@ -408,6 +413,7 @@ interface IBuildProgramShellProps {
     mobileTab: string;
     setMobileTab: (tab: string) => void;
     chatEntryPlan: IChatEntryPlan;
+    anonSnapshot: TChatMessage[];
 }
 
 function BuildProgramShell({
@@ -439,6 +445,7 @@ function BuildProgramShell({
     mobileTab,
     setMobileTab,
     chatEntryPlan,
+    anonSnapshot,
 }: IBuildProgramShellProps) {
     const { clearChatRef } = useBuildProgramActions();
     const queryClient = useQueryClient();
@@ -454,6 +461,7 @@ function BuildProgramShell({
         sharedProgramLoadAttempted,
         chatId,
         chatEntryPlan,
+        anonSnapshot,
     });
 
     const {
@@ -475,6 +483,7 @@ function BuildProgramShell({
         onTimeoutError: handleTimeoutError,
         onBuildComplete,
         trySendInitialPrompt,
+        tryRunSignInMigration,
         lastAtomicBuildCommitKeyRef,
         appliedModifyProgramKeysRef,
     } = chat;
@@ -482,8 +491,11 @@ function BuildProgramShell({
     clearChatRef.current = clearMessages;
 
     useEffect(() => {
-        trySendInitialPrompt();
-    }, [trySendInitialPrompt, sharedProgramLoadAttempted]);
+        void (async () => {
+            await tryRunSignInMigration();
+            trySendInitialPrompt();
+        })();
+    }, [tryRunSignInMigration, trySendInitialPrompt, sharedProgramLoadAttempted]);
 
     const handleSave = useCallback(async () => {
         if (!user) {

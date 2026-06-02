@@ -94,6 +94,7 @@ function baseInput(overrides: Partial<Parameters<typeof resolveChatEntryPlan>[0]
         sharedProgramLoadAttempted: true,
         hevyProgramLength: 0,
         chatHistorySuccess: false,
+        anonSnapshotLength: 0,
         ...overrides,
     };
 }
@@ -238,11 +239,19 @@ describe("resolveChatEntryPlan — arrival matrix", () => {
         expect(plan.autoSend).toBe("when-search-ready");
     });
 
-    // A11 — Sign-in redirect (?resume=true via login) — bootstrap like resume
-    it("A11: sign-in redirect resume — empty until migration (SP5)", () => {
+    // A11 — Sign-in redirect (?resume=true via login) — anon snapshot bootstrap until migration
+    it("A11: sign-in redirect resume — sign-in-migration-local when anon snapshot present", () => {
+        const plan = resolveChatEntryPlan(
+            baseInput({ user: loggedInUser, anonSnapshotLength: 2 }),
+        );
+        expect(plan.historyBootstrap).toBe("sign-in-migration-local");
+        expect(plan.sessionOnFirstSend).toBe("mint-and-insert");
+        expect(plan.shellStability).toBe("send-path-stable");
+    });
+
+    it("A11: logged-in without anon snapshot — empty bootstrap", () => {
         const plan = resolveChatEntryPlan(baseInput({ user: loggedInUser }));
         expect(plan.historyBootstrap).toBe("empty");
-        expect(plan.sessionOnFirstSend).toBe("mint-and-insert");
     });
 
     // A12 — Shared link external (?shareId= from ShareDialog)
@@ -365,6 +374,36 @@ describe("advanceChatNavigationLatch", () => {
                 user: loggedInUser,
                 chatId: mintedId,
                 sendPathConfirmed: true,
+                chatNavigationArrival: step.chatNavigationArrival,
+            }),
+        );
+        expect(
+            buildShellKey(plan, {
+                chatId: mintedId,
+                user: loggedInUser,
+                chatHistorySuccess: false,
+                chatNavigationArrival: step.chatNavigationArrival,
+            }),
+        ).toBe("logged-in-session");
+    });
+
+    it("sign-in migration mint with sidebarRowKnown same render does not latch (A11)", () => {
+        const mintedId = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+        const latch = createChatNavigationLatch("");
+
+        const step = advanceChatNavigationLatch(mintedId, latch, {
+            sidebarRowKnown: true,
+            sendPathConfirmed: true,
+        });
+
+        expect(step.chatNavigationArrival).toBe(false);
+
+        const plan = resolveChatEntryPlan(
+            baseInput({
+                user: loggedInUser,
+                chatId: mintedId,
+                sendPathConfirmed: true,
+                sidebarRowKnown: true,
                 chatNavigationArrival: step.chatNavigationArrival,
             }),
         );
@@ -544,6 +583,15 @@ describe("resolveInitialMessages", () => {
         ).toEqual([userMsg]);
     });
 
+    it("returns anon snapshot when sign-in-migration-local", () => {
+        const plan = resolveChatEntryPlan(
+            baseInput({ user: loggedInUser, anonSnapshotLength: 1 }),
+        );
+        expect(
+            resolveInitialMessages(plan, { chatHistoryData: null, anonymousMessages: [userMsg] }),
+        ).toEqual([userMsg]);
+    });
+
     it("returns empty for db-wait and empty bootstrap", () => {
         const waitPlan = resolveChatEntryPlan(
             baseInput({
@@ -645,6 +693,22 @@ describe("shouldRunAutoSend", () => {
                 lastHandledSearch: "",
             }),
         ).toBe(true);
+    });
+
+    it("blocks D1 while sign-in migration is pending", () => {
+        const plan = resolveChatEntryPlan(
+            baseInput({ user: loggedInUser, search: "build program" }),
+        );
+        expect(
+            shouldRunAutoSend(plan, {
+                search: "build program",
+                shareId: "",
+                hevyProgramLength: 0,
+                sharedProgramLoadAttempted: true,
+                lastHandledSearch: "",
+                signInMigrationPending: true,
+            }),
+        ).toBe(false);
     });
 });
 

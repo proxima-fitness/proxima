@@ -71,7 +71,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { RecentChatMenuItem } from "@/components/sidebar/RecentChatMenuItem";
 import { authenticatedNavLinks, navLinks, navIdToUrl } from "@/assets/constants/nav-links";
 import { useBuildProgramActions } from "@/contexts/BuildProgramActionsContext";
-import { setChatPinned, updateChatTitle } from "@/api/chat-history";
+import { deleteChatHistory, setChatPinned, updateChatTitle } from "@/api/chat-history";
 
 const CHAT_MESSAGES_KEY = "messages";
 const HEVY_PROGRAM_IN_PROGRESS_KEY = "hevy-program-in-progress";
@@ -119,6 +119,8 @@ export function AppSidebar() {
     const [showNewChatConfirm, setShowNewChatConfirm] = useState(false);
     const [renameDraft, setRenameDraft] = useState<{ chatId: string; title: string } | null>(null);
     const [isRenaming, setIsRenaming] = useState(false);
+    const [deleteDraft, setDeleteDraft] = useState<TChatListItem | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
     const queryClient = useQueryClient();
     const router = useRouter();
     const { clearChat } = useBuildProgramActions();
@@ -209,6 +211,33 @@ export function AppSidebar() {
         [queryClient, user],
     );
 
+    const handleDeleteChat = useCallback((chat: TChatListItem) => {
+        setDeleteDraft(chat);
+    }, []);
+
+    const handleDeleteConfirm = useCallback(async () => {
+        if (!user || !deleteDraft) return;
+
+        setIsDeleting(true);
+        const result = await deleteChatHistory(user, deleteDraft.id);
+        setIsDeleting(false);
+
+        if ("success" in result && result.success) {
+            void queryClient.invalidateQueries({ queryKey: ["chat-ids", user.id] });
+            void queryClient.removeQueries({
+                queryKey: ["chat-history", user.id, deleteDraft.id],
+            });
+
+            if (deleteDraft.id === selectedChatId) {
+                clearChat();
+                closeMobileSidebar();
+                router.push("/build-program?empty=true");
+            }
+
+            setDeleteDraft(null);
+        }
+    }, [clearChat, closeMobileSidebar, deleteDraft, queryClient, router, selectedChatId, user]);
+
     const renderChatList = () => {
         if (!user) {
             return (
@@ -257,6 +286,7 @@ export function AppSidebar() {
                 onNavigate={closeMobileSidebar}
                 onRename={handleRenameChat}
                 onPinToggle={handlePinToggle}
+                onDelete={handleDeleteChat}
             />
         ));
     };
@@ -350,6 +380,7 @@ export function AppSidebar() {
                                             onNavigate={closeMobileSidebar}
                                             onRename={handleRenameChat}
                                             onPinToggle={handlePinToggle}
+                                            onDelete={handleDeleteChat}
                                         />
                                     ))}
                                 </SidebarMenu>
@@ -591,6 +622,19 @@ export function AppSidebar() {
                 }
                 inputMaxLength={200}
                 onConfirm={() => void handleRenameConfirm()}
+            />
+            <ConfirmDialog
+                open={deleteDraft !== null}
+                onOpenChange={(open) => {
+                    if (!open && !isDeleting) setDeleteDraft(null);
+                }}
+                title="Delete chat?"
+                description="This will permanently delete this chat history. This cannot be undone."
+                confirmLabel="Delete"
+                confirmLoadingLabel="Deleting…"
+                isConfirmLoading={isDeleting}
+                closeOnConfirm={false}
+                onConfirm={() => void handleDeleteConfirm()}
             />
         </>
     );

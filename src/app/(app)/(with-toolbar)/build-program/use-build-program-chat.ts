@@ -12,7 +12,7 @@ import {
 import posthog from "posthog-js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { User } from "@supabase/supabase-js";
-import { ensureChatSessionOnSend, persistChatHistoryAfterTurn } from "@/api/chat-history";
+import { ensureChatSessionOnSend, migrateAnonymousThreadToChat, persistChatHistoryAfterTurn } from "@/api/chat-history";
 import {
     applyBuildProgramMintUrlUpdate,
     stripSearchFromBuildProgramUrl,
@@ -61,6 +61,8 @@ export interface IUseBuildProgramChatOptions {
     chatId: string;
     /** Arrival bootstrap plan from `resolveChatEntryPlan`. */
     chatEntryPlan: IChatEntryPlan;
+    /** Lazy anon snapshot from parent (`CHAT_MESSAGES_KEY` at mount). */
+    anonSnapshot: TChatMessage[];
 }
 
 export interface IProps {
@@ -86,6 +88,7 @@ export interface IProps {
     onTimeoutError: () => void;
     onBuildComplete: () => void;
     trySendInitialPrompt: () => void;
+    tryRunSignInMigration: () => Promise<void>;
     lastAtomicBuildCommitKeyRef: React.RefObject<string | null>;
     appliedModifyProgramKeysRef: React.RefObject<Set<string>>;
 }
@@ -179,6 +182,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         sharedProgramLoadAttempted,
         chatId,
         chatEntryPlan,
+        anonSnapshot,
     } = options;
 
     const router = useRouter();
@@ -212,11 +216,32 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         },
     });
 
+    const signInMigrationMutation = useMutation({
+        mutationFn: (thread: TChatMessage[]) =>
+            migrateAnonymousThreadToChat({
+                user: user!,
+                messages: thread,
+                router,
+                pathname,
+                searchParams,
+            }),
+        onSuccess: (result) => {
+            if (result.confirmed && user) {
+                void queryClient.invalidateQueries({ queryKey: ["chat-ids", user.id] });
+            } else if (!result.confirmed && !migrationFailToastShownRef.current) {
+                migrationFailToastShownRef.current = true;
+                toast.error("Couldn't save your chat yet. Messages are still here.");
+            }
+        },
+    });
+
     const [generationError, setGenerationError] = useState<Error | null>(null);
     const [retryCount, setRetryCount] = useState(0);
     const [isBuilding, setIsBuilding] = useState(false);
 
     const lastHandledSearchRef = useRef("");
+    const migrationAttemptedRef = useRef(false);
+    const migrationFailToastShownRef = useRef(false);
     /** Survives MessageBubbles unmount when switching mobile tabs (Radix Tabs). */
     const lastAtomicBuildCommitKeyRef = useRef<string | null>(null);
     const appliedModifyProgramKeysRef = useRef<Set<string>>(new Set());
@@ -350,6 +375,21 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         ],
     );
 
+    const tryRunSignInMigration = useCallback(async () => {
+        if (!user || chatId || migrationAttemptedRef.current) return;
+
+        const thread = messages.length > 0 ? messages : anonSnapshot;
+        if (thread.length === 0) return;
+
+        migrationAttemptedRef.current = true;
+        const trimmedSearch = search.trim();
+        if (trimmedSearch) {
+            lastHandledSearchRef.current = trimmedSearch;
+        }
+
+        await signInMigrationMutation.mutateAsync(thread);
+    }, [user, chatId, messages, anonSnapshot, search, signInMigrationMutation]);
+
     const trySendInitialPrompt = useCallback(() => {
         if (
             !shouldRunAutoSend(chatEntryPlan, {
@@ -358,6 +398,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
                 hevyProgramLength: hevyProgram.length,
                 sharedProgramLoadAttempted,
                 lastHandledSearch: lastHandledSearchRef.current,
+                signInMigrationPending: signInMigrationMutation.isPending,
             })
         ) {
             return;
@@ -429,6 +470,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         setExcludeAreas,
         setExcludeEquipment,
         setHealthIssues,
+        signInMigrationMutation.isPending,
     ]);
 
     const handleSubmit = useCallback(
@@ -499,6 +541,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         onTimeoutError: handleTimeoutError,
         onBuildComplete,
         trySendInitialPrompt,
+        tryRunSignInMigration,
         lastAtomicBuildCommitKeyRef,
         appliedModifyProgramKeysRef,
     };

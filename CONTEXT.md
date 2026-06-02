@@ -33,5 +33,5 @@ The pre-seeded `emptyHevyProgram` grid shown when the user explicitly starts a b
 _Avoid_: Empty grid (ambiguous — an empty grid may be correct without the template)
 
 **Sign-in migration**:
-Post-arrival auth effect that persists an anonymous thread from `CHAT_MESSAGES_KEY` (or in-memory messages) to Supabase, assigns `?chat=`, and clears anon localStorage. Behaves like session mint for shell/hydrate — not chat navigation.
+Post-arrival auth orchestration (derived bootstrap + `useMutation`, no new effects) that persists an anonymous thread from `CHAT_MESSAGES_KEY` (or in-memory messages) to Supabase, assigns `?chat=`, and clears anon localStorage. Behaves like session mint for shell/hydrate — not chat navigation.
 _Avoid_: Auth transition (too broad), login flow

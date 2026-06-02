@@ -2,7 +2,12 @@ import type { User } from "@supabase/supabase-js";
 import type { ReadonlyURLSearchParams } from "next/navigation";
 import { isValidShareId } from "./initial-prompt";
 
-export type THistoryBootstrap = "db-wait" | "db-ready" | "anonymous-local" | "empty";
+export type THistoryBootstrap =
+    | "db-wait"
+    | "db-ready"
+    | "anonymous-local"
+    | "sign-in-migration-local"
+    | "empty";
 export type TAutoSendPolicy = "never" | "when-search-ready" | "deferred-until-share-loaded";
 export type TShellStability = "sidebar-resume-remount" | "send-path-stable";
 export type TSessionOnFirstSend = "mint-and-insert" | "ensure-existing" | "anonymous-only";
@@ -35,6 +40,8 @@ export interface IResolveChatEntryPlanInput {
     sharedProgramLoadAttempted: boolean;
     hevyProgramLength: number;
     chatHistorySuccess: boolean;
+    /** Lazy anon snapshot from `CHAT_MESSAGES_KEY` (sign-in migration bootstrap). */
+    anonSnapshotLength: number;
 }
 
 export interface IBuildShellKeyContext {
@@ -82,6 +89,8 @@ export function resetChatNavigationLatchForArrival(
 export interface IAdvanceChatNavigationLatchOptions {
     /** Chat id appears in sidebar list — distinguishes sidebar pick from session mint. */
     sidebarRowKnown?: boolean;
+    /** Send-path insert confirmed — session mint / sign-in migration must not latch. */
+    sendPathConfirmed?: boolean;
 }
 
 /** Derive during render; assign `next` back to a ref (no effect). */
@@ -94,7 +103,7 @@ export function advanceChatNavigationLatch(
     if (!latched && chatId) {
         if (latch.prevChatId && latch.prevChatId !== chatId) {
             latched = true;
-        } else if (!latch.prevChatId && options?.sidebarRowKnown) {
+        } else if (!latch.prevChatId && options?.sidebarRowKnown && !options?.sendPathConfirmed) {
             // New Chat reset clears prevChatId; first sidebar pick must still latch.
             latched = true;
         }
@@ -117,6 +126,8 @@ export interface IShouldRunAutoSendContext {
     sharedProgramLoadAttempted: boolean;
     /** Trimmed `search` param already consumed by D1 in this shell lifetime. */
     lastHandledSearch: string;
+    /** Sign-in migration insert in flight — D1 must wait. */
+    signInMigrationPending?: boolean;
 }
 
 export function parseBuildProgramArrival(
@@ -194,6 +205,7 @@ export function resolveChatEntryPlan(input: IResolveChatEntryPlanInput): IChatEn
         sharedProgramLoadAttempted,
         hevyProgramLength,
         chatHistorySuccess,
+        anonSnapshotLength,
     } = input;
 
     const enableHistoryFetch = resolveChatHistoryFetchEnabled({
@@ -218,6 +230,8 @@ export function resolveChatEntryPlan(input: IResolveChatEntryPlanInput): IChatEn
     let historyBootstrap: THistoryBootstrap;
     if (enableHistoryFetch) {
         historyBootstrap = chatHistorySuccess ? "db-ready" : "db-wait";
+    } else if (!chatId && user && anonSnapshotLength > 0 && !sendPathConfirmed) {
+        historyBootstrap = "sign-in-migration-local";
     } else if (!chatId && !user) {
         // Home prompt (?search=) needs a fresh thread; restore anon local only for bare new chat.
         historyBootstrap = search.trim() ? "empty" : "anonymous-local";
@@ -274,13 +288,17 @@ export function resolveInitialMessages(
         const row = Array.isArray(ctx.chatHistoryData[0]) ? ctx.chatHistoryData[0] : ctx.chatHistoryData;
         return Array.isArray(row) ? (row as TChatMessage[]) : [];
     }
-    if (plan.historyBootstrap === "anonymous-local") {
+    if (
+        plan.historyBootstrap === "anonymous-local" ||
+        plan.historyBootstrap === "sign-in-migration-local"
+    ) {
         return ctx.anonymousMessages;
     }
     return [];
 }
 
 export function shouldRunAutoSend(plan: IChatEntryPlan, ctx: IShouldRunAutoSendContext): boolean {
+    if (ctx.signInMigrationPending) return false;
     if (plan.autoSend === "never") return false;
     const trimmedSearch = ctx.search.trim();
     if (!trimmedSearch) return false;
