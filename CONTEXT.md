@@ -36,6 +36,18 @@ _Avoid_: Empty grid (ambiguous — an empty grid may be correct without the temp
 Post-arrival auth orchestration (derived bootstrap + `useMutation`, no new effects) that persists an anonymous thread from `CHAT_MESSAGES_KEY` (or in-memory messages) to Supabase, assigns `?chat=`, and clears anon localStorage. Behaves like session mint for shell/hydrate — not chat navigation.
 _Avoid_: Auth transition (too broad), login flow
 
+**Program builder New mode**:
+Building a fresh program on `/build-program` without `edit=true` in the arrival URL. Primary CTA is **Export** (no toolbar Save). Persisting the program to the profile and **chat-program connection** happen as part of a successful export flow (Hevy first; other export destinations later).
+_Avoid_: New chat (that is a sidebar action), create mode
+
+**Program builder Edit mode**:
+Editing an already-saved program (`edit=true` and integration flag, e.g. `hevy=true`). Primary CTA is **Sync/Save** — push changes to the integrated app and write a new program version to the DB. Out of scope for chat-history v1.
+_Avoid_: Edit exercise (grid UI), modify mode
+
+**Implicit save (New mode)**:
+Persisting the program to `programs` (and subscriber) without a separate Save button — triggered by export, not a standalone Save action.
+_Avoid_: Auto-save, background save
+
 **Chat-program connection**:
-Associating a saved program with a chat row by setting `program_id` on the chat. Triggered only on explicit Save when a chat session exists (`?chat=`); optional — program Save does not require chat.
+Associating a saved program with a chat row by setting `program_id` on the chat. In **New mode**, runs after implicit save on export when a chat session exists (persist chat id from URL or session mint). Optional — export/save to profile does not require chat. **Edit mode** connect policy deferred.
 _Avoid_: Link chat to program (reversed direction), save chat

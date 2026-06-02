@@ -93,6 +93,19 @@ export interface IAdvanceChatNavigationLatchOptions {
     sidebarRowKnown?: boolean;
     /** Send-path insert confirmed — session mint / sign-in migration must not latch. */
     sendPathConfirmed?: boolean;
+    /** `shareId` query param — sidebar resume with linked program. */
+    shareId?: string;
+}
+
+/** Reset grid + load program from URL (not in-session mint / AI draft only). */
+export function shouldHydrateProgramFromUrl(params: {
+    chatId: string;
+    shareId: string;
+    resume: string;
+    empty: string;
+}): boolean {
+    if (params.resume === "true" || params.empty === "true") return true;
+    return Boolean(params.chatId && isValidShareId(params.shareId));
 }
 
 /** Derive during render; assign `next` back to a ref (no effect). */
@@ -107,6 +120,13 @@ export function advanceChatNavigationLatch(
             latched = true;
         } else if (!latch.prevChatId && options?.sidebarRowKnown && !options?.sendPathConfirmed) {
             // New Chat reset clears prevChatId; first sidebar pick must still latch.
+            latched = true;
+        } else if (
+            options?.sidebarRowKnown &&
+            options?.shareId &&
+            isValidShareId(options.shareId)
+        ) {
+            // Sidebar row with linked program (`?chat=&shareId=`) — including same chat after session mint.
             latched = true;
         }
     }

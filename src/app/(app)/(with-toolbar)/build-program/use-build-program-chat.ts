@@ -87,6 +87,8 @@ export interface IProps {
     onBuildComplete: () => void;
     trySendInitialPrompt: () => void;
     tryRunSignInMigration: () => Promise<void>;
+    /** URL `?chat=` or pending session-mint id (same as send / onFinish persistence). */
+    getPersistChatId: () => string;
     lastAtomicBuildCommitKeyRef: React.RefObject<string | null>;
     appliedModifyProgramKeysRef: React.RefObject<Set<string>>;
 }
@@ -524,6 +526,11 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         setMobileTab("program");
     }, [isMobile, setMobileTab]);
 
+    const getPersistChatId = useCallback(
+        () => resolvePersistChatId(chatId, pendingMintChatIdRef.current),
+        [chatId],
+    );
+
     return {
         messages,
         setMessages,
@@ -544,6 +551,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         onBuildComplete,
         trySendInitialPrompt,
         tryRunSignInMigration,
+        getPersistChatId,
         lastAtomicBuildCommitKeyRef,
         appliedModifyProgramKeysRef,
     };
