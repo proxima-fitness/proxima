@@ -10,7 +10,12 @@
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
-import { formatWeight } from "@/lib/weightUtils";
+import {
+    renderRepsColumn,
+    renderRpeColumn,
+    renderSetsCount,
+    renderWeightColumn,
+} from "./hevyPrescriptionDisplay";
 import { InfoIcon, LinkIcon, NotebookTextIcon, TimerIcon, Trash2Icon, XIcon } from "lucide-react";
 import { HevyExerciseGif } from "./HevyExerciseGif";
 import { HevyExerciseDetailsDialog } from "./HevyExerciseDetailsDialog";
@@ -64,27 +69,6 @@ const getSupersetColor = (supersetId: number | null | undefined): string | null 
     }
     return SUPERSET_COLORS[supersetId % SUPERSET_COLORS.length];
 };
-
-const repRangesEqual = (
-    a: THevyRepRange | null | undefined,
-    b: THevyRepRange | null | undefined,
-): boolean => {
-    if (a == null || b == null) {
-        return a === b;
-    }
-    return a.start === b.start && a.end === b.end;
-};
-
-const formatHevyRepRange = (rr: THevyRepRange): string => `${rr.start}-${rr.end}`;
-
-const setTypeBadgeClass = (setType: string): string =>
-    setType === "warmup"
-        ? "text-white bg-gray-300 px-1 rounded-sm"
-        : setType === "dropset"
-          ? "text-white bg-[#33bbcf] px-1 rounded-sm"
-          : setType === "failure"
-            ? "text-white bg-[#01579B] px-1 rounded-sm"
-            : "";
 
 /** Normalizes CRLF and literal "\\n" sequences (e.g. from serialized AI copy) for multiline display. */
 const normalizeMultilineExerciseText = (s: string): string =>
@@ -224,128 +208,17 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                         </div>
                                     </div>
                                     <div className={`text-center flex flex-row items-center justify-end max-w-[50%] w-[50%] ${isSelected ? 'text-white' : 'dark:text-offWhite'}`}>
-                                        <div className="min-w-[25%] flex flex-col justify-center items-center">
-                                            {sets.length}
+                                        <div className="min-w-[25%] flex flex-col justify-center items-center gap-0.5">
+                                            {renderSetsCount(sets, { selected: isSelected })}
                                         </div>
-                                        <div className="min-w-[25%] flex flex-col justify-center items-center">
-                                            {sets[0] &&
-                                                sets.some(
-                                                    (s) =>
-                                                        s.rep_range != null ||
-                                                        (s.reps !== null && s.reps > 0),
-                                                ) &&
-                                                (() => {
-                                                    const first = sets[0];
-                                                    const allSameType = sets.every((s) => s.type === first.type);
-                                                    const allRange =
-                                                        sets.every((s) => s.rep_range != null) &&
-                                                        sets.every((s) => repRangesEqual(s.rep_range, first.rep_range));
-                                                    const allFixed =
-                                                        sets.every((s) => s.rep_range == null) &&
-                                                        sets.every((s) => s.reps !== null && s.reps > 0) &&
-                                                        sets.every((s) => s.reps === first.reps);
-                                                    if (allSameType && (allRange || allFixed)) {
-                                                        return (
-                                                            <div className="flex flex-row">
-                                                                {allRange && first.rep_range
-                                                                    ? formatHevyRepRange(first.rep_range)
-                                                                    : first.reps}
-                                                            </div>
-                                                        );
-                                                    }
-                                                    return sets.map((set, index) => {
-                                                        const label =
-                                                            set.rep_range != null
-                                                                ? formatHevyRepRange(set.rep_range)
-                                                                : set.reps !== null && set.reps > 0
-                                                                  ? String(set.reps)
-                                                                  : null;
-                                                        if (label == null) {
-                                                            return null;
-                                                        }
-                                                        return (
-                                                            <div
-                                                                key={index}
-                                                                className={`flex flex-row ${setTypeBadgeClass(set.type)}`}
-                                                            >
-                                                                {label}
-                                                            </div>
-                                                        );
-                                                    });
-                                                })()}
-                                            {sets[0] && sets[0].distance_meters !== null && sets[0].distance_meters > 0 && (
-                                                (sets.every((reps, i, arr) => reps.distance_meters === arr[0].distance_meters) && sets.every((reps, i, arr) => reps.type === arr[0].type)) ? (
-                                                    <div className="flex flex-row">{sets[0].distance_meters} m</div>
-                                                ) : (
-                                                    sets.map((set, index) => (
-                                                        <div key={index} className={`flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
-                                                            {set.distance_meters} m
-                                                        </div>
-                                                    ))
-                                                )
-                                            )}
-                                            {sets[0] && sets[0].duration_seconds !== null && sets[0].duration_seconds > 0 && (
-                                                (sets.every((reps, i, arr) => reps.duration_seconds === arr[0].duration_seconds) && sets.every((reps, i, arr) => reps.type === arr[0].type)) ? (
-                                                    <div className="flex flex-row">{sets[0].duration_seconds} s</div>
-                                                ) : (
-                                                    sets.map((set, index) => (
-                                                        <div key={index} className={`flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
-                                                            {set.duration_seconds} s
-                                                        </div>
-                                                    ))
-                                                )
-                                            )}
-                                            {sets[0] && sets[0].custom_metric !== null && sets[0].custom_metric > 0 && (
-                                                (sets.every((reps, i, arr) => reps.custom_metric === arr[0].custom_metric) && sets.every((reps, i, arr) => reps.type === arr[0].type)) ? (
-                                                    <div className="flex flex-row">{sets[0].custom_metric}</div>
-                                                ) : (
-                                                    sets.map((set, index) => (
-                                                        <div key={index} className={`flex flex-row ${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
-                                                            {set.custom_metric}
-                                                        </div>
-                                                    ))
-                                                )
-                                            )}
+                                        <div className="min-w-[25%] flex flex-col justify-center items-center gap-0.5">
+                                            {renderRepsColumn(sets, { selected: isSelected })}
                                         </div>
-                                        <div className="min-w-[25%] flex flex-col justify-center items-center h-full">
-                                            {sets[0] && sets[0].weight_kg !== null && sets[0].weight_kg > 0 && (
-                                                sets.every((set) => set.weight_kg === sets[0].weight_kg) ? (
-                                                    <div>{ formatWeight(sets[0].weight_kg, isInLbs, "kg") }</div>
-                                                ) : (
-                                                    sets.map((set, index) => {
-                                                        if (set.weight_kg == null || set.weight_kg <= 0) {
-                                                            return null;
-                                                        }
-                                                        return (
-                                                            <div key={index} className={setTypeBadgeClass(set.type)}>
-                                                                { formatWeight(set.weight_kg, isInLbs, "kg") }
-                                                            </div>
-                                                        );
-                                                    })
-                                                )
-                                            )}
+                                        <div className="min-w-[25%] flex flex-col justify-center items-center h-full gap-0.5">
+                                            {renderWeightColumn(sets, isInLbs, { selected: isSelected })}
                                         </div>
-                                        <div className="min-w-[25%] flex flex-col justify-center items-center h-full">
-                                            {sets.some((set) => set.rpe != null && set.rpe > 0) && (
-                                                (() => {
-                                                    const rpeValues = sets.map((s) => s.rpe).filter((r): r is number => r != null && r > 0);
-                                                    const allSameRpe = rpeValues.length > 0 && rpeValues.every((v) => v === rpeValues[0]);
-                                                    return allSameRpe ? (
-                                                        <div>{rpeValues[0]}</div>
-                                                    ) : (
-                                                        sets.map((set, index) => {
-                                                            if (set.rpe == null || set.rpe <= 0) {
-                                                                return null;
-                                                            }
-                                                            return (
-                                                                <div key={index} className={setTypeBadgeClass(set.type)}>
-                                                                    {set.rpe}
-                                                                </div>
-                                                            );
-                                                        })
-                                                    );
-                                                })()
-                                            )}
+                                        <div className="min-w-[25%] flex flex-col justify-center items-center h-full gap-0.5">
+                                            {renderRpeColumn(sets, { selected: isSelected })}
                                         </div>
                                     </div>
                                     </div>
