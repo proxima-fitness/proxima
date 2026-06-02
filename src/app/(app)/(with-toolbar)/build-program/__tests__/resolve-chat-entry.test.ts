@@ -11,6 +11,7 @@ import {
     parseBuildProgramArrival,
     resolveChatEntryPlan,
     resolveInitialMessages,
+    resolveExportPersistChatId,
     resolvePersistChatId,
     resolveSendPathConfirmed,
     resolveSidebarRowKnown,
@@ -79,6 +80,20 @@ describe("resolvePersistChatId", () => {
 
     it("falls back to pending mint before URL propagates", () => {
         expect(resolvePersistChatId("", "mint-id")).toBe("mint-id");
+    });
+});
+
+describe("resolveExportPersistChatId", () => {
+    it("uses registered getter when it returns an id", () => {
+        expect(resolveExportPersistChatId(() => "from-ref", "url-id")).toBe("from-ref");
+    });
+
+    it("falls back to URL when getter is missing", () => {
+        expect(resolveExportPersistChatId(null, "url-id")).toBe("url-id");
+    });
+
+    it("falls back to URL when getter returns empty", () => {
+        expect(resolveExportPersistChatId(() => "", "url-id")).toBe("url-id");
     });
 });
 

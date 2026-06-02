@@ -98,12 +98,17 @@ function deriveChatTitle(): string {
 export function BuildProgram() {
     const { user } = useUserContext();
     const router = useRouter();
+    const { getPersistChatIdRef } = useBuildProgramActions();
     logPageView(user?.id);
     const searchParams = useSearchParams();
 
     const arrival = parseBuildProgramArrival(searchParams);
     const { urlChatId, search, shareId, empty, resume } = arrival;
     const chatId = urlChatId;
+
+    /** URL-only fallback until shell registers getter with mint ref (export reads this ref). */
+    const getPersistChatIdFromUrl = useCallback(() => chatId, [chatId]);
+    getPersistChatIdRef.current = getPersistChatIdFromUrl;
     const isBareArrival = isBareBuildProgramArrival({ urlChatId, search, shareId, empty, resume });
     const explicitNewChat = isExplicitNewChatArrival({ empty, urlChatId });
 

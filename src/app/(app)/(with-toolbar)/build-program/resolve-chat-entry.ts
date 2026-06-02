@@ -180,6 +180,14 @@ export function resolvePersistChatId(urlChatId: string, pendingMintChatId: strin
     return urlChatId || pendingMintChatId;
 }
 
+/** Export/save paths: registered getter (URL + mint ref) when set, else `?chat=` from URL. */
+export function resolveExportPersistChatId(
+    fromRegisteredGetter: (() => string) | null | undefined,
+    urlChatId: string,
+): string {
+    return fromRegisteredGetter?.() || urlChatId;
+}
+
 export function resolveChatHistoryFetchEnabled(input: {
     user: User | null;
     chatId: string;

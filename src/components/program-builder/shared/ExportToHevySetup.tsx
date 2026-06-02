@@ -7,6 +7,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { resolveExportPersistChatId } from "@/app/(app)/(with-toolbar)/build-program/resolve-chat-entry";
 import { useHevySuccessConfetti } from "./useHevySuccessConfetti";
 import { connectChatToSavedProgram } from "@/api/chat-history";
 import { useBuildProgramActions } from "@/contexts/BuildProgramActionsContext";
@@ -81,6 +83,8 @@ interface IExportToHevySetupProps {
 export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadStateChange, hevyRoutines: hevyRoutinesProp, skipUsageTracking = false, onExportSuccess }) => {
     const { user } = useUserContext();
     const { getPersistChatIdRef } = useBuildProgramActions();
+    const searchParams = useSearchParams();
+    const urlChatId = searchParams.get("chat") ?? "";
     const queryClient = useQueryClient();
     const { data: hevyApiKey } = useHevySecret(user);
     const { data: featureLimits } = useMyFeatureLimits(user);
@@ -193,19 +197,39 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
     };
 
     const tryConnectChatAfterProgramSave = async (savedProgramId: number) => {
-        const getPersistChatId = getPersistChatIdRef.current;
-        if (!getPersistChatId) return;
+        const persistChatId = resolveExportPersistChatId(getPersistChatIdRef.current, urlChatId);
+
+        console.info(`${HEVY_EXPORT_LOG_PREFIX} chat_program_connect_attempt`, {
+            programId: savedProgramId,
+            chatId: persistChatId || null,
+            urlChatId: urlChatId || null,
+            hasRegisteredGetter: Boolean(getPersistChatIdRef.current),
+        });
+
+        if (!persistChatId) {
+            console.info(`${HEVY_EXPORT_LOG_PREFIX} chat_program_connect_skipped`, {
+                programId: savedProgramId,
+                reason: "no_persist_chat_id",
+            });
+            return;
+        }
 
         const connectResult = await connectChatToSavedProgram({
             user,
-            persistChatId: getPersistChatId(),
+            persistChatId,
             programId: String(savedProgramId),
             queryClient,
         });
-        if (connectResult === "failed") {
+        if (connectResult === "linked") {
+            console.info(`${HEVY_EXPORT_LOG_PREFIX} chat_program_connect_linked`, {
+                programId: savedProgramId,
+                chatId: persistChatId,
+            });
+        } else if (connectResult === "failed") {
             toast.warning("Program saved, but chat connection failed.");
             console.error(`${HEVY_EXPORT_LOG_PREFIX} chat_program_connect_failed`, {
                 programId: savedProgramId,
+                chatId: persistChatId,
             });
         }
     };
