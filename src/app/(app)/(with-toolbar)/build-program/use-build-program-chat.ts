@@ -72,6 +72,8 @@ export interface IProps {
     ) => void;
     sendMessageWithContext: SendMessageWithContext;
     clearMessages: () => void;
+    /** URL `?chat=` or mint ref until URL propagates (persist/connect paths). */
+    getPersistChatId: () => string;
     handleSubmit: (text: string, files?: FileUIPart[]) => void;
     handleStop: () => void;
     isBuilding: boolean;
@@ -524,10 +526,16 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         setMobileTab("program");
     }, [isMobile, setMobileTab]);
 
+    const getPersistChatId = useCallback(
+        () => resolvePersistChatId(chatId, pendingMintChatIdRef.current),
+        [chatId],
+    );
+
     return {
         messages,
         setMessages,
         clearMessages,
+        getPersistChatId,
         sendMessageWithContext,
         handleSubmit,
         handleStop,

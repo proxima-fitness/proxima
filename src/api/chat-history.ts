@@ -1,4 +1,5 @@
 import { User } from "@supabase/supabase-js";
+import type { QueryClient } from "@tanstack/react-query";
 import { supabase } from ".";
 import { CHAT_MESSAGES_KEY } from "@/assets/constants/ui-constants";
 import { getMessageText } from "@/components/program-builder/utils/helpers";
@@ -363,6 +364,7 @@ export const deleteChatHistory = async (
 
 /**
  * Links an existing chat row to a saved program (`program_id` only).
+ * Fails when no row matches (Supabase update otherwise reports success).
  */
 export const linkProgramToChat = async (
     user: User | undefined | null,
@@ -374,15 +376,21 @@ export const linkProgramToChat = async (
     }
 
     try {
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from("chat_history")
             .update({ program_id: programId })
             .eq("user_id", user.id)
-            .eq("id", chatId);
+            .eq("id", chatId)
+            .select("id")
+            .maybeSingle();
 
         if (error) {
             console.error("Error linking chat to program:", error);
             return { success: false, error: error.message ?? "Error linking chat to program" };
+        }
+
+        if (!data) {
+            return { success: false, error: "Chat row not found" };
         }
 
         return { success: true, id: chatId };
@@ -390,6 +398,40 @@ export const linkProgramToChat = async (
         console.error("Error linking chat to program:", error);
         return { success: false, error: "Error linking chat to program" };
     }
+};
+
+export type TConnectChatToSavedProgramResult = "linked" | "skipped" | "failed";
+
+export interface IConnectChatToSavedProgramInput {
+    user: User | undefined | null;
+    persistChatId: string;
+    programId: string;
+    queryClient?: QueryClient;
+}
+
+/**
+ * Links chat row to saved program when a persist chat id exists.
+ * Invalidates sidebar chat list on success; does not rewrite conversation.
+ */
+export const connectChatToSavedProgram = async ({
+    user,
+    persistChatId,
+    programId,
+    queryClient,
+}: IConnectChatToSavedProgramInput): Promise<TConnectChatToSavedProgramResult> => {
+    if (!persistChatId) {
+        return "skipped";
+    }
+
+    const result = await linkProgramToChat(user, persistChatId, programId);
+    if ("success" in result && result.success) {
+        if (user && queryClient) {
+            void queryClient.invalidateQueries({ queryKey: ["chat-ids", user.id] });
+        }
+        return "linked";
+    }
+
+    return "failed";
 };
 
 /** Minimal user `UIMessage` for send-time insert (full thread synced on `onFinish`). */

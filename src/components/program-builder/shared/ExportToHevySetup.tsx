@@ -8,6 +8,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useHevySuccessConfetti } from "./useHevySuccessConfetti";
+import { connectChatToSavedProgram } from "@/api/chat-history";
+import { useBuildProgramActions } from "@/contexts/BuildProgramActionsContext";
 import { useUserContext } from "@/contexts/UserContext";
 import { useHevySecret, useMyFeatureLimits } from "@/api/hooks";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -78,6 +80,7 @@ interface IExportToHevySetupProps {
 /** Step 1: API key connect/edit. Step 2: upload program from localStorage with one-folder vs per-week option. */
 export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadStateChange, hevyRoutines: hevyRoutinesProp, skipUsageTracking = false, onExportSuccess }) => {
     const { user } = useUserContext();
+    const { getPersistChatIdRef } = useBuildProgramActions();
     const queryClient = useQueryClient();
     const { data: hevyApiKey } = useHevySecret(user);
     const { data: featureLimits } = useMyFeatureLimits(user);
@@ -189,6 +192,24 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
         }
     };
 
+    const tryConnectChatAfterProgramSave = async (savedProgramId: number) => {
+        const getPersistChatId = getPersistChatIdRef.current;
+        if (!getPersistChatId) return;
+
+        const connectResult = await connectChatToSavedProgram({
+            user,
+            persistChatId: getPersistChatId(),
+            programId: String(savedProgramId),
+            queryClient,
+        });
+        if (connectResult === "failed") {
+            toast.warning("Program saved, but chat connection failed.");
+            console.error(`${HEVY_EXPORT_LOG_PREFIX} chat_program_connect_failed`, {
+                programId: savedProgramId,
+            });
+        }
+    };
+
     const handleUploadProgram = async (exportToOneFolderMode: boolean) => {
 
         if (typeof window === "undefined") return;
@@ -264,6 +285,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                         toast.warning(`${skipped.exerciseName}: ${skipped.reason}`);
                     }
                 }
+                await tryConnectChatAfterProgramSave(programId);
             } else {
                 supabaseSaveFailed = true;
                 const detail = getSaveProgramToSupabaseFailureDetail(supabaseResult);
@@ -355,6 +377,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                             toast.warning(`${skipped.exerciseName}: ${skipped.reason}`);
                         }
                     }
+                    await tryConnectChatAfterProgramSave(programId);
                 } else {
                     const detail = getSaveProgramToSupabaseFailureDetail(retryResult);
                     console.error(`${HEVY_EXPORT_LOG_PREFIX} supabase_program_save_failed`, detail, retryResult);

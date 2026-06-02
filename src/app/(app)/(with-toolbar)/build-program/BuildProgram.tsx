@@ -40,7 +40,7 @@ import {
     isSaveProgramToSupabaseSuccess,
     saveProgramToSupabase,
 } from "@/components/program-builder/api/hevy";
-import { isChatSessionInsertConfirmed, linkProgramToChat } from "@/api/chat-history";
+import { connectChatToSavedProgram, isChatSessionInsertConfirmed } from "@/api/chat-history";
 import { ToolbarPortalButtons } from "@/components/program-builder/shared/ToolbarPortalButtons";
 import { BuildProgramToolbarTitle } from "@/components/program-builder/shared/BuildProgramToolbarTitle";
 import { editorReducer } from "./editor-reducer";
@@ -444,7 +444,7 @@ function BuildProgramShell({
     setMobileTab,
     chatEntryPlan,
 }: IBuildProgramShellProps) {
-    const { clearChatRef } = useBuildProgramActions();
+    const { clearChatRef, getPersistChatIdRef } = useBuildProgramActions();
     const queryClient = useQueryClient();
     const [isSaving, setIsSaving] = useState(false);
 
@@ -464,6 +464,7 @@ function BuildProgramShell({
         messages,
         setMessages,
         clearMessages,
+        getPersistChatId,
         sendMessageWithContext,
         handleSubmit,
         handleStop,
@@ -485,6 +486,7 @@ function BuildProgramShell({
     } = chat;
 
     clearChatRef.current = clearMessages;
+    getPersistChatIdRef.current = getPersistChatId;
 
     useEffect(() => {
         void (async () => {
@@ -528,20 +530,17 @@ function BuildProgramShell({
                 }
             }
 
-            if (chatId) {
-                const chatResult = await linkProgramToChat(
-                    user,
-                    chatId,
-                    String(programId),
-                );
-                if ("success" in chatResult && chatResult.success) {
-                    toast.success("Program saved and connected to chat.");
-                    queryClient.invalidateQueries({ queryKey: ["chat-ids", user.id] });
-                } else {
-                    const detail = "error" in chatResult ? chatResult.error : "Unknown error";
-                    toast.warning("Program saved, but chat connection failed.");
-                    console.error("Chat link failed.", detail);
-                }
+            const connectResult = await connectChatToSavedProgram({
+                user,
+                persistChatId: getPersistChatId(),
+                programId: String(programId),
+                queryClient,
+            });
+            if (connectResult === "linked") {
+                toast.success("Program saved and connected to chat.");
+            } else if (connectResult === "failed") {
+                toast.warning("Program saved, but chat connection failed.");
+                console.error("Chat link failed.");
             } else {
                 toast.success("Program saved.");
             }
@@ -551,7 +550,7 @@ function BuildProgramShell({
         } finally {
             setIsSaving(false);
         }
-    }, [user, hevyProgram.length, orderedProgram, programRequest.request, search, queryClient, chatId]);
+    }, [user, hevyProgram.length, orderedProgram, programRequest.request, search, queryClient, getPersistChatId]);
 
     const localStorageDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const DEBOUNCE_MS = 500;

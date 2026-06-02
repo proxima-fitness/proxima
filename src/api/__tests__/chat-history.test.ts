@@ -6,7 +6,8 @@ const mockSingle = vi.fn();
 
 type MockFilterBuilder =
     | { maybeSingle: typeof mockMaybeSingle; single: typeof mockSingle }
-    | { eq: Mock<() => MockFilterBuilder> };
+    | { eq: Mock<() => MockFilterBuilder> }
+    | { select: Mock<() => { maybeSingle: typeof mockMaybeSingle }> };
 
 const mockEqSecond: Mock<() => MockFilterBuilder> = vi.fn(() => ({
     maybeSingle: mockMaybeSingle,
@@ -46,6 +47,7 @@ vi.mock("@/lib/build-program-url", () => ({
 }));
 
 import {
+    connectChatToSavedProgram,
     deriveChatTitleFromMessages,
     deleteChatHistory,
     ensureChatSessionOnSend,
@@ -266,13 +268,24 @@ describe("deleteChatHistory", () => {
     });
 });
 
+function mockLinkProgramUpdateChain(data: { id: string } | null) {
+    const mockSelectAfterUpdate = vi.fn(() => ({ maybeSingle: mockMaybeSingle }));
+    mockEqSecond.mockImplementation(() => ({ select: mockSelectAfterUpdate }));
+    mockMaybeSingle.mockResolvedValue({ data, error: null });
+}
+
 describe("linkProgramToChat", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mockEqSecond.mockImplementation(() => ({
+            maybeSingle: mockMaybeSingle,
+            single: mockSingle,
+        }));
+        mockMaybeSingle.mockReset();
     });
 
-    it("updates program_id only", async () => {
-        mockEqSecond.mockReturnValueOnce({ eq: mockEqSecond });
+    it("updates program_id only when a row matches", async () => {
+        mockLinkProgramUpdateChain({ id: chatId });
 
         const result = await linkProgramToChat(testUser, chatId, "42");
 
@@ -280,12 +293,71 @@ describe("linkProgramToChat", () => {
         expect(mockUpdate).toHaveBeenCalledWith({ program_id: "42" });
         expect(mockInsert).not.toHaveBeenCalled();
     });
+
+    it("fails when update matches zero rows", async () => {
+        mockLinkProgramUpdateChain(null);
+
+        const result = await linkProgramToChat(testUser, chatId, "42");
+
+        expect(result).toEqual({ success: false, error: "Chat row not found" });
+    });
+});
+
+describe("connectChatToSavedProgram", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockEqSecond.mockImplementation(() => ({
+            maybeSingle: mockMaybeSingle,
+            single: mockSingle,
+        }));
+        mockMaybeSingle.mockReset();
+    });
+
+    it("skips when persist chat id is empty", async () => {
+        const result = await connectChatToSavedProgram({
+            user: testUser,
+            persistChatId: "",
+            programId: "42",
+        });
+
+        expect(result).toBe("skipped");
+        expect(mockFrom).not.toHaveBeenCalled();
+    });
+
+    it("returns linked when linkProgramToChat succeeds", async () => {
+        mockLinkProgramUpdateChain({ id: chatId });
+
+        const result = await connectChatToSavedProgram({
+            user: testUser,
+            persistChatId: chatId,
+            programId: "42",
+        });
+
+        expect(result).toBe("linked");
+    });
+
+    it("returns failed when linkProgramToChat matches no row", async () => {
+        mockLinkProgramUpdateChain(null);
+
+        const result = await connectChatToSavedProgram({
+            user: testUser,
+            persistChatId: chatId,
+            programId: "42",
+        });
+
+        expect(result).toBe("failed");
+    });
 });
 
 describe("persistChatHistoryAfterTurn", () => {
     beforeEach(() => {
         vi.clearAllMocks();
         resetChatHistorySessionForTests();
+        mockEqSecond.mockImplementation(() => ({
+            maybeSingle: mockMaybeSingle,
+            single: mockSingle,
+        }));
+        mockMaybeSingle.mockReset();
     });
 
     it("skips abort and error turns", async () => {
