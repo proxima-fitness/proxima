@@ -61,8 +61,6 @@ export interface IUseBuildProgramChatOptions {
     chatId: string;
     /** Arrival bootstrap plan from `resolveChatEntryPlan`. */
     chatEntryPlan: IChatEntryPlan;
-    /** Lazy anon snapshot from parent (`CHAT_MESSAGES_KEY` at mount). */
-    anonSnapshot: TChatMessage[];
 }
 
 export interface IProps {
@@ -182,7 +180,6 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         sharedProgramLoadAttempted,
         chatId,
         chatEntryPlan,
-        anonSnapshot,
     } = options;
 
     const router = useRouter();
@@ -378,7 +375,12 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     const tryRunSignInMigration = useCallback(async () => {
         if (!user || chatId || migrationAttemptedRef.current) return;
 
-        const thread = messages.length > 0 ? messages : anonSnapshot;
+        const isExplicitNewChat =
+            searchParams.get("empty") === "true" && !searchParams.get("chat");
+        if (isExplicitNewChat) return;
+
+        const thread =
+            messages.length > 0 ? messages : readAnonymousChatMessages();
         if (thread.length === 0) return;
 
         migrationAttemptedRef.current = true;
@@ -388,7 +390,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         }
 
         await signInMigrationMutation.mutateAsync(thread);
-    }, [user, chatId, messages, anonSnapshot, search, signInMigrationMutation]);
+    }, [user, chatId, messages, search, searchParams, signInMigrationMutation]);
 
     const trySendInitialPrompt = useCallback(() => {
         if (

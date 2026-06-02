@@ -54,6 +54,7 @@ import {
     createChatNavigationLatch,
     resetChatNavigationLatchForArrival,
     isBareBuildProgramArrival,
+    isExplicitNewChatArrival,
     parseBuildProgramArrival,
     shouldRedirectBareBuildProgramToEmpty,
     resolveChatEntryPlan,
@@ -105,6 +106,7 @@ export function BuildProgram() {
     const { urlChatId, search, shareId, empty, resume } = arrival;
     const chatId = urlChatId;
     const isBareArrival = isBareBuildProgramArrival({ urlChatId, search, shareId, empty, resume });
+    const explicitNewChat = isExplicitNewChatArrival({ empty, urlChatId });
 
     const sawNonBareArrivalRef = useRef(!isBareArrival);
     if (!isBareArrival) {
@@ -165,8 +167,6 @@ export function BuildProgram() {
         isSuccess: chatHistorySuccess,
     } = useChatHistory(user, chatId, { enabled: chatHistoryFetchEnabled });
 
-    const [anonSnapshot] = useState(() => readAnonymousChatMessages());
-
     const chatEntryPlan = useMemo(
         () =>
             resolveChatEntryPlan({
@@ -180,7 +180,8 @@ export function BuildProgram() {
                 sharedProgramLoadAttempted,
                 hevyProgramLength: hevyProgram.length,
                 chatHistorySuccess,
-                anonSnapshotLength: anonSnapshot.length,
+                anonLocalMessageCount: readAnonymousChatMessages().length,
+                explicitNewChat,
             }),
         [
             user,
@@ -193,7 +194,7 @@ export function BuildProgram() {
             sharedProgramLoadAttempted,
             hevyProgram.length,
             chatHistorySuccess,
-            anonSnapshot.length,
+            explicitNewChat,
         ],
     );
 
@@ -210,9 +211,9 @@ export function BuildProgram() {
         () =>
             resolveInitialMessages(chatEntryPlan, {
                 chatHistoryData,
-                anonymousMessages: anonSnapshot,
+                anonymousMessages: readAnonymousChatMessages(),
             }),
-        [chatEntryPlan, chatHistoryData, anonSnapshot],
+        [chatEntryPlan, chatHistoryData],
     );
 
     const [sidebarPosition, setSidebarPosition] = useState<"left" | "right">("left");
@@ -379,7 +380,6 @@ export function BuildProgram() {
             mobileTab={mobileTab}
             setMobileTab={setMobileTab}
             chatEntryPlan={chatEntryPlan}
-            anonSnapshot={anonSnapshot}
         />
     );
 }
@@ -413,7 +413,6 @@ interface IBuildProgramShellProps {
     mobileTab: string;
     setMobileTab: (tab: string) => void;
     chatEntryPlan: IChatEntryPlan;
-    anonSnapshot: TChatMessage[];
 }
 
 function BuildProgramShell({
@@ -445,7 +444,6 @@ function BuildProgramShell({
     mobileTab,
     setMobileTab,
     chatEntryPlan,
-    anonSnapshot,
 }: IBuildProgramShellProps) {
     const { clearChatRef } = useBuildProgramActions();
     const queryClient = useQueryClient();
@@ -461,7 +459,6 @@ function BuildProgramShell({
         sharedProgramLoadAttempted,
         chatId,
         chatEntryPlan,
-        anonSnapshot,
     });
 
     const {

@@ -227,6 +227,28 @@ describe("migrateAnonymousThreadToChat", () => {
         expect(mockApplyBuildProgramMintUrlUpdate).not.toHaveBeenCalled();
         expect(localStorage.getItem(CHAT_MESSAGES_KEY)).not.toBeNull();
     });
+
+    it("skips insert and URL mint when send-path already set ?chat=", async () => {
+        const existingChatId = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
+        window.history.pushState({}, "", `/build-program?chat=${existingChatId}`);
+
+        const messages = [userMessage("Anon thread")];
+        const result = await migrateAnonymousThreadToChat({
+            user: testUser,
+            messages,
+            router,
+            pathname,
+            searchParams,
+        });
+
+        expect(result).toEqual({
+            chatId: existingChatId,
+            confirmed: false,
+            messages,
+        });
+        expect(mockInsert).not.toHaveBeenCalled();
+        expect(mockApplyBuildProgramMintUrlUpdate).not.toHaveBeenCalled();
+    });
 });
 
 describe("deleteChatHistory", () => {

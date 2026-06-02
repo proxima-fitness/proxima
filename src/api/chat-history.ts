@@ -444,6 +444,11 @@ export const ensureChatSessionOnSend = async ({
 /**
  * Sign-in backfill: persist in-memory anon thread, assign URL, clear localStorage.
  */
+function readBuildProgramChatIdFromLocation(): string {
+    if (typeof window === "undefined") return "";
+    return new URLSearchParams(window.location.search).get("chat") ?? "";
+}
+
 export const migrateAnonymousThreadToChat = async ({
     user,
     messages,
@@ -455,11 +460,21 @@ export const migrateAnonymousThreadToChat = async ({
         return { chatId: "", confirmed: false, messages: [] };
     }
 
+    const existingChatId = readBuildProgramChatIdFromLocation();
+    if (existingChatId) {
+        return { chatId: existingChatId, confirmed: false, messages };
+    }
+
     const chatId = uuidv4();
     const title = deriveChatTitleFromMessages(messages);
     const result = await postChatHistory(user, chatId, messages, title, null);
 
     if ("success" in result && result.success) {
+        const mintedDuringInsert = readBuildProgramChatIdFromLocation();
+        if (mintedDuringInsert && mintedDuringInsert !== chatId) {
+            return { chatId: mintedDuringInsert, confirmed: false, messages };
+        }
+
         sessionInsertedChatIds.add(chatId);
         applyBuildProgramMintUrlUpdate(router, pathname, searchParams, chatId, {
             stripSearch: Boolean(searchParams.get("search")?.trim()),

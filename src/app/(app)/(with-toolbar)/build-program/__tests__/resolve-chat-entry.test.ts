@@ -94,7 +94,8 @@ function baseInput(overrides: Partial<Parameters<typeof resolveChatEntryPlan>[0]
         sharedProgramLoadAttempted: true,
         hevyProgramLength: 0,
         chatHistorySuccess: false,
-        anonSnapshotLength: 0,
+        anonLocalMessageCount: 0,
+        explicitNewChat: false,
         ...overrides,
     };
 }
@@ -188,6 +189,14 @@ describe("resolveChatEntryPlan — arrival matrix", () => {
         expect(plan.sessionOnFirstSend).toBe("mint-and-insert");
     });
 
+    it("A3′: explicit new chat ignores stale anon snapshot (no sign-in migration bootstrap)", () => {
+        const plan = resolveChatEntryPlan(
+            baseInput({ user: loggedInUser, anonLocalMessageCount: 3, explicitNewChat: true }),
+        );
+        expect(plan.historyBootstrap).toBe("empty");
+        expect(plan.enableHistoryFetch).toBe(false);
+    });
+
     // A4 — Shared program (?shareId=, no search)
     it("A4: shared program only — never auto-send until user chats", () => {
         const plan = resolveChatEntryPlan(
@@ -242,7 +251,7 @@ describe("resolveChatEntryPlan — arrival matrix", () => {
     // A11 — Sign-in redirect (?resume=true via login) — anon snapshot bootstrap until migration
     it("A11: sign-in redirect resume — sign-in-migration-local when anon snapshot present", () => {
         const plan = resolveChatEntryPlan(
-            baseInput({ user: loggedInUser, anonSnapshotLength: 2 }),
+            baseInput({ user: loggedInUser, anonLocalMessageCount: 2 }),
         );
         expect(plan.historyBootstrap).toBe("sign-in-migration-local");
         expect(plan.sessionOnFirstSend).toBe("mint-and-insert");
@@ -585,7 +594,7 @@ describe("resolveInitialMessages", () => {
 
     it("returns anon snapshot when sign-in-migration-local", () => {
         const plan = resolveChatEntryPlan(
-            baseInput({ user: loggedInUser, anonSnapshotLength: 1 }),
+            baseInput({ user: loggedInUser, anonLocalMessageCount: 1 }),
         );
         expect(
             resolveInitialMessages(plan, { chatHistoryData: null, anonymousMessages: [userMsg] }),

@@ -40,8 +40,10 @@ export interface IResolveChatEntryPlanInput {
     sharedProgramLoadAttempted: boolean;
     hevyProgramLength: number;
     chatHistorySuccess: boolean;
-    /** Lazy anon snapshot from `CHAT_MESSAGES_KEY` (sign-in migration bootstrap). */
-    anonSnapshotLength: number;
+    /** Count of messages in `CHAT_MESSAGES_KEY` (caller reads localStorage each render). */
+    anonLocalMessageCount: number;
+    /** Sidebar New Chat (`?empty=true` without `?chat=`) — skip sign-in migration bootstrap. */
+    explicitNewChat: boolean;
 }
 
 export interface IBuildShellKeyContext {
@@ -205,7 +207,8 @@ export function resolveChatEntryPlan(input: IResolveChatEntryPlanInput): IChatEn
         sharedProgramLoadAttempted,
         hevyProgramLength,
         chatHistorySuccess,
-        anonSnapshotLength,
+        anonLocalMessageCount,
+        explicitNewChat,
     } = input;
 
     const enableHistoryFetch = resolveChatHistoryFetchEnabled({
@@ -230,7 +233,13 @@ export function resolveChatEntryPlan(input: IResolveChatEntryPlanInput): IChatEn
     let historyBootstrap: THistoryBootstrap;
     if (enableHistoryFetch) {
         historyBootstrap = chatHistorySuccess ? "db-ready" : "db-wait";
-    } else if (!chatId && user && anonSnapshotLength > 0 && !sendPathConfirmed) {
+    } else if (
+        !chatId &&
+        user &&
+        anonLocalMessageCount > 0 &&
+        !sendPathConfirmed &&
+        !explicitNewChat
+    ) {
         historyBootstrap = "sign-in-migration-local";
     } else if (!chatId && !user) {
         // Home prompt (?search=) needs a fresh thread; restore anon local only for bare new chat.
