@@ -5,7 +5,6 @@ import {
     buildShellKey,
     createChatNavigationLatch,
     resetChatNavigationLatchForArrival,
-    shouldHydrateProgramFromUrl,
     isBareBuildProgramArrival,
     isChatNavigationArrivalAtMount,
     shouldRedirectBareBuildProgramToEmpty,
@@ -303,30 +302,6 @@ describe("resolveChatEntryPlan — arrival matrix", () => {
     });
 });
 
-describe("shouldHydrateProgramFromUrl", () => {
-    it("hydrates when chat and valid shareId", () => {
-        expect(
-            shouldHydrateProgramFromUrl({
-                chatId: chatId,
-                shareId: "12",
-                resume: "",
-                empty: "",
-            }),
-        ).toBe(true);
-    });
-
-    it("skips hydrate for chat-only session mint", () => {
-        expect(
-            shouldHydrateProgramFromUrl({
-                chatId: chatId,
-                shareId: "",
-                resume: "",
-                empty: "",
-            }),
-        ).toBe(false);
-    });
-});
-
 describe("isChatNavigationArrivalAtMount", () => {
     it("is true when chat param present at arrival", () => {
         expect(isChatNavigationArrivalAtMount(chatId)).toBe(true);
@@ -357,20 +332,6 @@ describe("advanceChatNavigationLatch", () => {
         let step = advanceChatNavigationLatch(chatA, latch);
         latch = step.next;
         step = advanceChatNavigationLatch(chatB, latch);
-        expect(step.chatNavigationArrival).toBe(true);
-    });
-
-    it("sidebar resume same chat with shareId latches after session mint", () => {
-        let latch = createChatNavigationLatch("");
-        let step = advanceChatNavigationLatch(chatA, latch, { sendPathConfirmed: true });
-        latch = step.next;
-        expect(step.chatNavigationArrival).toBe(false);
-
-        step = advanceChatNavigationLatch(chatA, latch, {
-            sidebarRowKnown: true,
-            sendPathConfirmed: true,
-            shareId: "42",
-        });
         expect(step.chatNavigationArrival).toBe(true);
     });
 

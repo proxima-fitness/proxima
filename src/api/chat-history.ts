@@ -374,24 +374,15 @@ export const linkProgramToChat = async (
     }
 
     try {
-        const { data, error } = await supabase
+        const { error } = await supabase
             .from("chat_history")
             .update({ program_id: programId })
             .eq("user_id", user.id)
-            .eq("id", chatId)
-            .select("id")
-            .maybeSingle();
+            .eq("id", chatId);
 
         if (error) {
             console.error("Error linking chat to program:", error);
             return { success: false, error: error.message ?? "Error linking chat to program" };
-        }
-
-        if (!data) {
-            return {
-                success: false,
-                error: "No chat row found for this session. Send a message first, then export again.",
-            };
         }
 
         return { success: true, id: chatId };

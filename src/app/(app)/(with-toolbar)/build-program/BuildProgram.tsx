@@ -40,8 +40,7 @@ import {
     isSaveProgramToSupabaseSuccess,
     saveProgramToSupabase,
 } from "@/components/program-builder/api/hevy";
-import { isChatSessionInsertConfirmed } from "@/api/chat-history";
-import { linkSavedProgramToChat } from "@/lib/link-saved-program-to-chat";
+import { isChatSessionInsertConfirmed, linkProgramToChat } from "@/api/chat-history";
 import { ToolbarPortalButtons } from "@/components/program-builder/shared/ToolbarPortalButtons";
 import { BuildProgramToolbarTitle } from "@/components/program-builder/shared/BuildProgramToolbarTitle";
 import { editorReducer } from "./editor-reducer";
@@ -62,7 +61,6 @@ import {
     resolveChatHistoryFetchEnabled,
     resolveSendPathConfirmed,
     resolveSidebarRowKnown,
-    shouldHydrateProgramFromUrl,
     type IChatEntryPlan,
 } from "./resolve-chat-entry";
 import type { User } from "@supabase/supabase-js";
@@ -130,7 +128,7 @@ export function BuildProgram() {
     const { chatNavigationArrival, next: chatNavLatchNext } = advanceChatNavigationLatch(
         chatId,
         chatNavLatchRef.current,
-        { sidebarRowKnown, sendPathConfirmed, shareId },
+        { sidebarRowKnown, sendPathConfirmed },
     );
     chatNavLatchRef.current = chatNavLatchNext;
     const programHydrateChatId = chatNavigationArrival ? chatId : "";
@@ -275,17 +273,13 @@ export function BuildProgram() {
             return;
         }
 
-        if (!shouldHydrateProgramFromUrl({ chatId, shareId, resume, empty })) {
-            return;
-        }
-
         setHevyProgram([]);
         setSharedProgramLoadAttempted(!isValidShareId(shareId));
 
         const fetchSharedProgram = async () => {
             try {
                 const sharedProgram = await getSharedProgram(Number(shareId));
-                if (sharedProgram?.length) {
+                if (sharedProgram) {
                     setHevyProgram(appendOrderToHevyRoutines(sharedProgram));
                 }
             } finally {
@@ -301,24 +295,13 @@ export function BuildProgram() {
         }
 
         if (isValidShareId(shareId)) {
-            void fetchSharedProgram();
-        } else {
-            setSharedProgramLoadAttempted(true);
+            fetchSharedProgram();
         }
 
         if (empty === "true") {
             setHevyProgram(appendOrderToHevyRoutines(emptyHevyProgram));
         }
-    }, [
-        shouldBareRedirectToEmpty,
-        chatId,
-        resume,
-        shareId,
-        empty,
-        programHydrateChatId,
-        router,
-        setHevyProgram,
-    ]);
+    }, [shouldBareRedirectToEmpty, resume, shareId, empty, programHydrateChatId, router, setHevyProgram]);
 
     const toggleSidebarPosition = useCallback(() => {
         setSidebarPosition((prev) => {
@@ -461,7 +444,7 @@ function BuildProgramShell({
     setMobileTab,
     chatEntryPlan,
 }: IBuildProgramShellProps) {
-    const { clearChatRef, getPersistChatIdRef } = useBuildProgramActions();
+    const { clearChatRef } = useBuildProgramActions();
     const queryClient = useQueryClient();
     const [isSaving, setIsSaving] = useState(false);
 
@@ -497,13 +480,11 @@ function BuildProgramShell({
         onBuildComplete,
         trySendInitialPrompt,
         tryRunSignInMigration,
-        getPersistChatId,
         lastAtomicBuildCommitKeyRef,
         appliedModifyProgramKeysRef,
     } = chat;
 
     clearChatRef.current = clearMessages;
-    getPersistChatIdRef.current = getPersistChatId;
 
     useEffect(() => {
         void (async () => {
@@ -547,19 +528,22 @@ function BuildProgramShell({
                 }
             }
 
-            const linkResult = await linkSavedProgramToChat({
-                user,
-                persistChatId: getPersistChatId(),
-                programId,
-                queryClient,
-            });
-            if (linkResult.linked) {
-                toast.success("Program saved and connected to chat.");
-            } else if ("skipped" in linkResult && linkResult.skipped) {
-                toast.success("Program saved.");
+            if (chatId) {
+                const chatResult = await linkProgramToChat(
+                    user,
+                    chatId,
+                    String(programId),
+                );
+                if ("success" in chatResult && chatResult.success) {
+                    toast.success("Program saved and connected to chat.");
+                    queryClient.invalidateQueries({ queryKey: ["chat-ids", user.id] });
+                } else {
+                    const detail = "error" in chatResult ? chatResult.error : "Unknown error";
+                    toast.warning("Program saved, but chat connection failed.");
+                    console.error("Chat link failed.", detail);
+                }
             } else {
-                toast.warning("Program saved, but chat connection failed.");
-                console.error("Chat link failed.", "error" in linkResult ? linkResult.error : "Unknown error");
+                toast.success("Program saved.");
             }
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Save failed.");
@@ -567,7 +551,7 @@ function BuildProgramShell({
         } finally {
             setIsSaving(false);
         }
-    }, [user, hevyProgram.length, orderedProgram, programRequest.request, search, queryClient, getPersistChatId]);
+    }, [user, hevyProgram.length, orderedProgram, programRequest.request, search, queryClient, chatId]);
 
     const localStorageDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const DEBOUNCE_MS = 500;

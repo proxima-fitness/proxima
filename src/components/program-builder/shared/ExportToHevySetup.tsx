@@ -41,7 +41,6 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { deFlattenHevyRoutine } from "../utils";
 import posthog from "posthog-js";
-import { linkSavedProgramToChat } from "@/lib/link-saved-program-to-chat";
 
 const TOTAL_STEPS = 2;
 
@@ -74,18 +73,10 @@ interface IExportToHevySetupProps {
     skipUsageTracking?: boolean;
     /** Called after a successful Hevy upload (e.g. to increment program saves). */
     onExportSuccess?: () => void;
-    /** When set (build-program), links saved program to chat after Supabase save (option A — before Hevy upload). */
-    getPersistChatId?: () => string;
 }
 
 /** Step 1: API key connect/edit. Step 2: upload program from localStorage with one-folder vs per-week option. */
-export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({
-    onUploadStateChange,
-    hevyRoutines: hevyRoutinesProp,
-    skipUsageTracking = false,
-    onExportSuccess,
-    getPersistChatId,
-}) => {
+export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadStateChange, hevyRoutines: hevyRoutinesProp, skipUsageTracking = false, onExportSuccess }) => {
     const { user } = useUserContext();
     const queryClient = useQueryClient();
     const { data: hevyApiKey } = useHevySecret(user);
@@ -261,24 +252,6 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({
 
         setIsUploading(true);
 
-        const tryConnectChatAfterSave = async (savedProgramId: number) => {
-            if (!getPersistChatId) return;
-
-            const linkResult = await linkSavedProgramToChat({
-                user,
-                persistChatId: getPersistChatId(),
-                programId: savedProgramId,
-                queryClient,
-            });
-            if (linkResult.linked === false && "error" in linkResult) {
-                toast.warning("Program saved, but chat connection failed.");
-                console.error(
-                    `${HEVY_EXPORT_LOG_PREFIX} chat_program_connect_failed`,
-                    linkResult.error,
-                );
-            }
-        };
-
         try {
             let programId: number | undefined;
             let supabaseSaveFailed = false;
@@ -286,7 +259,6 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({
             const supabaseResult = await saveProgramToSupabase(hevyRoutines, prompt, request, user.id);
             if (isSaveProgramToSupabaseSuccess(supabaseResult)) {
                 programId = supabaseResult.id;
-                await tryConnectChatAfterSave(supabaseResult.id);
                 if (supabaseResult.skippedExercises?.length) {
                     for (const skipped of supabaseResult.skippedExercises) {
                         toast.warning(`${skipped.exerciseName}: ${skipped.reason}`);
@@ -378,7 +350,6 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({
                 if (isSaveProgramToSupabaseSuccess(retryResult)) {
                     programId = retryResult.id;
                     supabaseSaveFailed = false;
-                    await tryConnectChatAfterSave(retryResult.id);
                     if (retryResult.skippedExercises?.length) {
                         for (const skipped of retryResult.skippedExercises) {
                             toast.warning(`${skipped.exerciseName}: ${skipped.reason}`);

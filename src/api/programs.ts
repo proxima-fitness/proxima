@@ -351,20 +351,23 @@ export const getSharedProgram = async (shareId: number): Promise<THevyRoutine[] 
             )
             .eq('id', shareId)
             .order('nthWeek', { referencedTable: 'schedule_workouts', ascending: true })
-            .order('nthDay', { referencedTable: 'schedule_workouts', ascending: true })
-            .maybeSingle();
+            .order('nthDay', { referencedTable: 'schedule_workouts', ascending: true });
 
-        if (error) {
-            console.error('Error fetching program details:', error);
-            return undefined;
-        }
+            if (error) {
+                console.error('Error fetching program details:', error);
+            } else if (data && data.length > 0 ) {
+                const programDetails = data as unknown as TProgramDetails[];
+                if (programDetails && programDetails[0]?.schedule_workouts) {
+                    // Sort schedule workouts by week and day
+                    const sortedWorkoutsByWeek = sortWorkouts(programDetails[0].schedule_workouts);
 
-        const programRow = data as unknown as TProgramDetails | null;
-        if (programRow?.schedule_workouts?.length) {
-            const sortedWorkoutsByWeek = sortWorkouts(programRow.schedule_workouts);
-            const convertedRoutines = await convertToHevyRoutine(sortedWorkoutsByWeek);
-            return convertedRoutines as unknown as THevyRoutine[];
-        }
+                    // Convert schedule to Hevy routines
+                    const convertedRoutines = await convertToHevyRoutine(sortedWorkoutsByWeek);
+
+
+                    return convertedRoutines as unknown as THevyRoutine[];
+                }
+            }
     } catch (error: unknown) {
         console.error(`Error fetching shared program: ${error}`);
         return [];

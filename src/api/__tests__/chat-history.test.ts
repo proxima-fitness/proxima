@@ -8,11 +8,9 @@ type MockFilterBuilder =
     | { maybeSingle: typeof mockMaybeSingle; single: typeof mockSingle }
     | { eq: Mock<() => MockFilterBuilder> };
 
-const mockSelectAfterEq = vi.fn(() => ({ maybeSingle: mockMaybeSingle }));
 const mockEqSecond: Mock<() => MockFilterBuilder> = vi.fn(() => ({
     maybeSingle: mockMaybeSingle,
     single: mockSingle,
-    select: mockSelectAfterEq,
 }));
 const mockEqFirst = vi.fn(() => ({ eq: mockEqSecond }));
 const mockSelect = vi.fn(() => ({ eq: mockEqFirst }));
@@ -271,28 +269,16 @@ describe("deleteChatHistory", () => {
 describe("linkProgramToChat", () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        mockMaybeSingle.mockReset();
     });
 
-    it("updates program_id only when a row matches", async () => {
-        mockMaybeSingle.mockResolvedValue({ data: { id: chatId }, error: null });
+    it("updates program_id only", async () => {
+        mockEqSecond.mockReturnValueOnce({ eq: mockEqSecond });
 
         const result = await linkProgramToChat(testUser, chatId, "42");
 
         expect(result).toEqual({ success: true, id: chatId });
         expect(mockUpdate).toHaveBeenCalledWith({ program_id: "42" });
         expect(mockInsert).not.toHaveBeenCalled();
-    });
-
-    it("fails when update matches zero rows", async () => {
-        mockMaybeSingle.mockResolvedValue({ data: null, error: null });
-
-        const result = await linkProgramToChat(testUser, chatId, "42");
-
-        expect(result).toEqual({
-            success: false,
-            error: "No chat row found for this session. Send a message first, then export again.",
-        });
     });
 });
 
@@ -336,6 +322,8 @@ describe("persistChatHistoryAfterTurn", () => {
 
     it("upserts when turn completes for logged-in user", async () => {
         mockMaybeSingle.mockResolvedValueOnce({ data: { id: chatId }, error: null });
+        mockEqSecond.mockReturnValueOnce({ maybeSingle: mockMaybeSingle, single: mockSingle });
+        mockEqSecond.mockReturnValueOnce({ eq: mockEqSecond });
         mockUpdate.mockReturnValueOnce({ eq: mockEqFirst });
 
         await persistChatHistoryAfterTurn({
@@ -351,6 +339,8 @@ describe("persistChatHistoryAfterTurn", () => {
 
     it("updates full thread on follow-up turn", async () => {
         mockMaybeSingle.mockResolvedValueOnce({ data: { id: chatId }, error: null });
+        mockEqSecond.mockReturnValueOnce({ maybeSingle: mockMaybeSingle, single: mockSingle });
+        mockEqSecond.mockReturnValueOnce({ eq: mockEqSecond });
         mockUpdate.mockReturnValueOnce({ eq: mockEqFirst });
 
         const turnOne = [userMessage("Hello"), assistantMessage("Hi")];
@@ -369,6 +359,8 @@ describe("persistChatHistoryAfterTurn", () => {
         })).toBe("success");
 
         mockMaybeSingle.mockResolvedValueOnce({ data: { id: chatId }, error: null });
+        mockEqSecond.mockReturnValueOnce({ maybeSingle: mockMaybeSingle, single: mockSingle });
+        mockEqSecond.mockReturnValueOnce({ eq: mockEqSecond });
         mockUpdate.mockReturnValueOnce({ eq: mockEqFirst });
 
         expect(await persistChatHistoryAfterTurn({

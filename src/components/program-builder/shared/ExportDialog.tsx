@@ -25,7 +25,6 @@ import { ExportToHevySetup } from "./ExportToHevySetup";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { useUserContext } from "@/contexts/UserContext";
 import { useMyFeatureLimits } from "@/api/hooks";
-import { useBuildProgramActions } from "@/contexts/BuildProgramActionsContext";
 
 /** Props for the export destination modal. */
 interface IProps {
@@ -42,7 +41,6 @@ export const ExportDialog: React.FC<IProps> = (props) => {
     const { open, onOpenChange, programId } = props;
     const { isInLbs } = usePoundsOrKgContext();
     const { user } = useUserContext();
-    const { getPersistChatId } = useBuildProgramActions();
     const { data: featureLimits } = useMyFeatureLimits(user);
 
     const [selectedExportId, setSelectedExportId] = useState<string | null>(null);
@@ -186,10 +184,7 @@ export const ExportDialog: React.FC<IProps> = (props) => {
                             Back
                         </Button>
                         <div className="w-full px-4 py-4 sm:px-6 sm:py-5 md:px-8 md:py-6 lg:px-10 lg:py-6">
-                            <ExportToHevySetup
-                                onUploadStateChange={setHevyUploading}
-                                getPersistChatId={getPersistChatId}
-                            />
+                            <ExportToHevySetup onUploadStateChange={setHevyUploading} />
                         </div>
                     </div>
                 )}
