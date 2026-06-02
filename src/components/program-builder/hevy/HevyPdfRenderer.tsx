@@ -13,7 +13,7 @@ import { shortEnglishHumanizer } from "@/assets/constants";
 import { MAIN_DISCOUNT_CODE, MAIN_DISCOUNT_PERCENT } from "@/assets/constants/ui-constants";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { routineNotesForExport } from "@/lib/proximaExportAttribution";
-import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
+import { formatWeight } from "@/lib/weightUtils";
 import { Document, Font, Image, Page, Text, View } from "@react-pdf/renderer";
 import { icon_background_white } from "public";
 
@@ -258,7 +258,17 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                 alignItems: "center",
                                             } }
                                         >
-                                            <Text>Intensity</Text>
+                                            <Text>{isInLbs ? "Lbs" : "Kg"}</Text>
+                                        </View>
+                                        <View
+                                            style={ {
+                                                display: "flex",
+                                                flexDirection: "row",
+                                                justifyContent: "center",
+                                                alignItems: "center",
+                                            } }
+                                        >
+                                            <Text>RPE</Text>
                                         </View>
                                     </View>
                                 </View>
@@ -387,14 +397,21 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                     </Text>
                                                     <Text style={ { display: "flex", flexDirection: "column" } }>
                                                         { exercise.sets[0] && exercise.sets[0].weight_kg !== null && exercise.sets[0].weight_kg > 0 && (
-                                                            exercise.sets.every((intensity, i, arr) => intensity.weight_kg === arr[0].weight_kg) ? (
-                                                                <Text>{formatWeight(exercise.sets[0].weight_kg, isInLbs, "kg")} {getWeightUnit(isInLbs)}</Text>
+                                                            exercise.sets.every((set) => set.weight_kg === exercise.sets[0].weight_kg) ? (
+                                                                <Text>{formatWeight(exercise.sets[0].weight_kg, isInLbs, "kg")}</Text>
                                                             ) : (
-                                                                exercise.sets.map((set, index) => (
-                                                                    <Text key={ index } style={ { color: set.type === "warmup" ? "#FFFFFF" : "#000000", backgroundColor: set.type === "warmup" ? "#cbd5e1" : "#f8f8f8", paddingHorizontal: "4px", borderRadius: "4px" } }>{ formatWeight(set.weight_kg ?? 0, isInLbs, "kg") } {getWeightUnit(isInLbs)}</Text>
-                                                                ))
+                                                                exercise.sets.map((set, index) => {
+                                                                    if (set.weight_kg == null || set.weight_kg <= 0) {
+                                                                        return null;
+                                                                    }
+                                                                    return (
+                                                                        <Text key={ index } style={ { color: set.type === "warmup" ? "#FFFFFF" : "#000000", backgroundColor: set.type === "warmup" ? "#cbd5e1" : "#f8f8f8", paddingHorizontal: "4px", borderRadius: "4px" } }>{ formatWeight(set.weight_kg, isInLbs, "kg") }</Text>
+                                                                    );
+                                                                })
                                                             )
                                                         )}
+                                                    </Text>
+                                                    <Text style={ { display: "flex", flexDirection: "column" } }>
                                                         { exercise.sets.some((set) => set.rpe != null && set.rpe > 0) && (
                                                             (() => {
                                                                 const rpeValues = exercise.sets.map((s) => s.rpe).filter((r): r is number => r != null && r > 0);
@@ -402,9 +419,14 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                                                 return allSameRpe ? (
                                                                     <Text>{rpeValues[0]} RPE</Text>
                                                                 ) : (
-                                                                    exercise.sets.map((set, index) => (
-                                                                        <Text key={ index } style={ { display: "flex", flexDirection: "column", color: set.type === "warmup" ? "#FFFFFF" : "#000000", backgroundColor: set.type === "warmup" ? "#cbd5e1" : "#f8f8f8", paddingHorizontal: "4px", borderRadius: "4px" } }>{ set.rpe != null && set.rpe > 0 ? `${set.rpe} RPE` : "" }</Text>
-                                                                    ))
+                                                                    exercise.sets.map((set, index) => {
+                                                                        if (set.rpe == null || set.rpe <= 0) {
+                                                                            return null;
+                                                                        }
+                                                                        return (
+                                                                            <Text key={ index } style={ { color: set.type === "warmup" ? "#FFFFFF" : "#000000", backgroundColor: set.type === "warmup" ? "#cbd5e1" : "#f8f8f8", paddingHorizontal: "4px", borderRadius: "4px" } }>{ set.rpe } RPE</Text>
+                                                                        );
+                                                                    })
                                                                 );
                                                             })()
                                                         )}

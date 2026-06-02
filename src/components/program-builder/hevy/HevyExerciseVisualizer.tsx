@@ -4,13 +4,13 @@
  * @module HevyExerciseVisualizer
  * Renders the list of exercises for one day: each row shows thumbnail, title, sets/reps/intensity, superset styling,
  * and tooltip/actions (reason, notes, rest, details, add note, delete). Supports edit mode for superset selection (checkboxes).
- * Depends on: HevyExerciseGif, HevyExerciseDetailsDialog, formatWeight/getWeightUnit, Tooltip.
+ * Depends on: HevyExerciseGif, HevyExerciseDetailsDialog, formatWeight, Tooltip.
  * Used by: HevyDayCard.
  */
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
-import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
+import { formatWeight } from "@/lib/weightUtils";
 import { InfoIcon, LinkIcon, NotebookTextIcon, TimerIcon, Trash2Icon, XIcon } from "lucide-react";
 import { HevyExerciseGif } from "./HevyExerciseGif";
 import { HevyExerciseDetailsDialog } from "./HevyExerciseDetailsDialog";
@@ -224,10 +224,10 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                         </div>
                                     </div>
                                     <div className={`text-center flex flex-row items-center justify-end max-w-[50%] w-[50%] ${isSelected ? 'text-white' : 'dark:text-offWhite'}`}>
-                                        <div className="min-w-[33%] flex flex-col justify-center items-center">
+                                        <div className="min-w-[25%] flex flex-col justify-center items-center">
                                             {sets.length}
                                         </div>
-                                        <div className="min-w-[33%] flex flex-col justify-center items-center">
+                                        <div className="min-w-[25%] flex flex-col justify-center items-center">
                                             {sets[0] &&
                                                 sets.some(
                                                     (s) =>
@@ -307,30 +307,42 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                                 )
                                             )}
                                         </div>
-                                        <div className="min-w-[33%] flex flex-col justify-center items-center h-full">
+                                        <div className="min-w-[25%] flex flex-col justify-center items-center h-full">
                                             {sets[0] && sets[0].weight_kg !== null && sets[0].weight_kg > 0 && (
-                                                sets.every((intensity, i, arr) => intensity.weight_kg === arr[0].weight_kg) ? (
-                                                    <div>{ formatWeight(sets[0].weight_kg, isInLbs, "kg") } {getWeightUnit(isInLbs)}</div>
+                                                sets.every((set) => set.weight_kg === sets[0].weight_kg) ? (
+                                                    <div>{ formatWeight(sets[0].weight_kg, isInLbs, "kg") }</div>
                                                 ) : (
-                                                    sets.map((set, index) => (
-                                                        <div key={index} className={`${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
-                                                            { formatWeight(set.weight_kg ?? 0, isInLbs, "kg") } {getWeightUnit(isInLbs)}
-                                                        </div>
-                                                    ))
+                                                    sets.map((set, index) => {
+                                                        if (set.weight_kg == null || set.weight_kg <= 0) {
+                                                            return null;
+                                                        }
+                                                        return (
+                                                            <div key={index} className={setTypeBadgeClass(set.type)}>
+                                                                { formatWeight(set.weight_kg, isInLbs, "kg") }
+                                                            </div>
+                                                        );
+                                                    })
                                                 )
                                             )}
+                                        </div>
+                                        <div className="min-w-[25%] flex flex-col justify-center items-center h-full">
                                             {sets.some((set) => set.rpe != null && set.rpe > 0) && (
                                                 (() => {
                                                     const rpeValues = sets.map((s) => s.rpe).filter((r): r is number => r != null && r > 0);
                                                     const allSameRpe = rpeValues.length > 0 && rpeValues.every((v) => v === rpeValues[0]);
                                                     return allSameRpe ? (
-                                                        <div>{rpeValues[0]} RPE</div>
+                                                        <div>{rpeValues[0]}</div>
                                                     ) : (
-                                                        sets.map((set, index) => (
-                                                            <div key={index} className={`${set.type === "warmup" ? "text-white bg-gray-300 px-1 rounded-sm" : set.type === "dropset" ? "text-white bg-[#33bbcf] px-1 rounded-sm" : set.type === "failure" ? "text-white bg-[#01579B] px-1 rounded-sm" : ""}`}>
-                                                                {set.rpe != null && set.rpe > 0 ? `${set.rpe} RPE` : ""}
-                                                            </div>
-                                                        ))
+                                                        sets.map((set, index) => {
+                                                            if (set.rpe == null || set.rpe <= 0) {
+                                                                return null;
+                                                            }
+                                                            return (
+                                                                <div key={index} className={setTypeBadgeClass(set.type)}>
+                                                                    {set.rpe}
+                                                                </div>
+                                                            );
+                                                        })
                                                     );
                                                 })()
                                             )}
