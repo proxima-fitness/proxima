@@ -364,7 +364,7 @@ export const deleteChatHistory = async (
 /**
  * Links an existing chat row to a saved program (`program_id` only).
  */
-export const linkChatToProgram = async (
+export const linkProgramToChat = async (
     user: User | undefined | null,
     chatId: string,
     programId: string,

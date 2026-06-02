@@ -50,7 +50,7 @@ import {
     deleteChatHistory,
     ensureChatSessionOnSend,
     isChatSessionInsertConfirmed,
-    linkChatToProgram,
+    linkProgramToChat,
     migrateAnonymousThreadToChat,
     persistChatHistoryAfterTurn,
     resetChatHistorySessionForTests,
@@ -266,7 +266,7 @@ describe("deleteChatHistory", () => {
     });
 });
 
-describe("linkChatToProgram", () => {
+describe("linkProgramToChat", () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });
@@ -274,7 +274,7 @@ describe("linkChatToProgram", () => {
     it("updates program_id only", async () => {
         mockEqSecond.mockReturnValueOnce({ eq: mockEqSecond });
 
-        const result = await linkChatToProgram(testUser, chatId, "42");
+        const result = await linkProgramToChat(testUser, chatId, "42");
 
         expect(result).toEqual({ success: true, id: chatId });
         expect(mockUpdate).toHaveBeenCalledWith({ program_id: "42" });
