@@ -65,11 +65,11 @@ Push builder changes to the user's existing Hevy program — empty removed routi
 _Avoid_: Export (New mode only), upload, DELETE
 
 **Sync completion (Edit mode)**:
-After Sync finishes with zero failed operations, re-fetch the program from Hevy and replace builder state. Refresh `initialFolderId`, `initialRoutineIds`, and `initialHevyProgram` from the new pull; clear edit dirty state.
-_Avoid_: Post-sync cache, keep local state
+After Sync finishes with zero failed operations, show a success toast, invalidate the `useHevyPrograms` React Query cache, then navigate. Toolbar Sync goes to the profile page. Leave-guard **Save and Continue** goes to the user's original destination. The builder is not refreshed in place — the next Edit entry loads fresh routines from a refetched profile fetch.
+_Avoid_: Post-sync cache, keep local state, in-builder reload, confetti
 
 **Sync dialog**:
-Confirmation shown before an explicit Sync (toolbar button), with a summary of pending changes — how many routines will be emptied, updated, and added. On confirm, run Sync with inline progress — same rate-limit retry and countdown pattern as Export upload. If any operations fail after retries, show toasts and offer Sync rollback in the progress UI.
+Dedicated `SyncDialog` for Edit mode — confirmation with empty / update / add counts, inline progress with rate-limit retry (same pattern as Export), and **Rollback to previous version** when operations fail. Leave-guard **Save and Continue** opens the same dialog in progress-only mode (counts already shown in the leave dialog). Toolbar Sync uses the full confirm step first.
 _Avoid_: Export dialog, save dialog
 
 **Sync pipeline**:
@@ -109,7 +109,7 @@ Full routine snapshot of active (non-`[Removed]`) routines fetched from Hevy whe
 _Avoid_: hevy-program-in-progress (Edit path), backup file, raw folder pull
 
 **Edit session**:
-An in-progress Edit-mode builder load tied to one Hevy program (edit scope). Hevy account is source of truth for v1; Supabase program vault is not updated on Sync.
+An in-progress Edit-mode builder load tied to one Hevy program (edit scope). Hevy account is source of truth for v1; Supabase program vault is not updated on Sync. Session state (`initialHevyProgram`, `initialRoutineIds`, `initialFolderId`, working routines, edit dirty state) lives in an `EditSessionProvider` while Edit arrival is active.
 _Avoid_: Draft (ambiguous with New-mode localStorage draft), edit state
 
 **Builder draft**:
@@ -117,7 +117,7 @@ The in-progress program persisted in `hevy-program-in-progress` for resume in Ne
 _Avoid_: Edit session payload, New draft vs Edit draft
 
 **Edit navigation guard**:
-When the user has unsaved Edit-mode changes and tries to leave the builder — including switching New ↔ Edit in the mode menu — block navigation and show a dialog with **Save and Continue** (Sync to Hevy, then navigate on success), **Discard** (drop changes and navigate), and **Cancel** (stay in builder). Tab close or refresh uses the browser `beforeunload` prompt when dirty; it cannot offer Sync. Edit mode never resumes from `hevy-program-in-progress`; the next Edit entry always pulls latest from Hevy.
+When the user has unsaved Edit-mode changes and tries to leave the builder — including switching New ↔ Edit in the mode menu — block in-app navigation and show a dialog with a Sync change summary (empty / update / add counts), **Save and Continue** (run Sync progress immediately, then navigate to the user's original destination on success), **Discard** (drop local changes and navigate without touching Hevy or invalidating cached profile data), and **Cancel** (stay in builder). Implemented via `useEditLeaveGuard()` (`beforeunload` + `guardNavigation()` on documented exit points: sidebar, breadcrumbs, mode menu, etc.). Tab close or refresh uses the browser `beforeunload` prompt when dirty; it cannot offer Sync. Edit mode never resumes from `hevy-program-in-progress`; the next Edit entry always loads from the profile routines fetch.
 _Avoid_: Unsaved changes warning (too generic)
 
 **Initial folder ID**:
@@ -125,16 +125,16 @@ The Hevy routine folder ID captured when the user opens a Hevy program for editi
 _Avoid_: hevyRoutineFolderId, folder_id (week index)
 
 **Sync rollback**:
-Restore the user's Hevy account to the initial Hevy program after a failed or partial Sync. Diff current Hevy state against the initial snapshot; reverse changes surgically — PUT restored routines, POST routines that were emptied, empty routines that were created during the failed Sync. Each rollback operation retries with exponential backoff until complete (same discipline as Export upload). User-triggered only via **Rollback to previous version** in the Sync progress UI when one or more Sync operations failed. After a successful rollback, re-fetch from Hevy and replace builder state (same as Sync completion).
-_Avoid_: Undo, revert changes, re-POST duplicates, DELETE
+Restore the user's Hevy account to the initial Hevy program after a failed or partial Sync. Diff current Hevy state against the initial snapshot; reverse changes surgically — PUT restored routines, POST routines that were emptied, empty routines that were created during the failed Sync. Each rollback operation retries with exponential backoff until complete (same discipline as Export upload). User-triggered only via **Rollback to previous version** in the Sync progress UI when one or more Sync operations failed. After a successful rollback, invalidate `useHevyPrograms` and navigate to the profile page.
+_Avoid_: Undo, revert changes, re-POST duplicates, DELETE, in-builder reload
 
 **Hevy reload (Edit mode)**:
-After a successful Sync, re-fetch the program from the Hevy API and replace builder state. Edit entry from the dashboard always loads fresh from Hevy — never from `hevy-program-in-progress`.
-_Avoid_: Baseline advance, cache sync state, resume draft
+After a successful Sync, invalidate `useHevyPrograms` and leave the builder for the profile page. After a successful rollback, same pattern. Edit entry loads routines passed from the profile fetch — not from `hevy-program-in-progress`.
+_Avoid_: Baseline advance, in-builder reload, resume draft
 
 **Edit arrival**:
-Entering the builder to modify an existing Hevy program — via `/build-program?edit=true&hevy=true&folder={initialFolderId}`. Routines are fetched from the Hevy API for that folder on mount; not seeded through `localStorage`.
-_Avoid_: Resume, hevy-program-in-progress (Edit path)
+Entering the builder to modify an existing Hevy program — via `/build-program?edit=true&hevy=true&folder={initialFolderId}`. On Edit click from the profile (My Hevy Programs grid or blind-spot Hevy program picker), refetch `useHevyPrograms`, then pass the selected program's routines through router navigation state. Optional query params (e.g. `search=` for stall-analysis dispatch) compose with Edit arrival. The build-program page hydrates from navigation state and does not fetch routines on mount. If navigation state is missing (refresh, direct URL), redirect to the profile page. Not seeded through `localStorage`.
+_Avoid_: Resume, hevy-program-in-progress (Edit path), build-program fetch
 
 **Edit mode menu**:
 The breadcrumb New/Edit switch. Edit is only selectable when the builder is already on an Edit arrival (`folder` param present). Entering Edit from New is via My Hevy Programs on the dashboard, not the mode menu.
@@ -151,3 +151,11 @@ _Avoid_: isDirty (implementation), unsaved flag
 **Program versioning**:
 Future capability to track Proxima/Supabase program history over time. Out of scope for v1 Edit Sync; deferred until Hevy-only Sync is stable.
 _Avoid_: Save, sync
+
+**Hevy sync module**:
+Edit-mode Sync and rollback logic lives in `hevy_sync.ts` with colocated tests. `hevy.ts` retains HTTP primitives (`putRoutine`, `postRoutine`, `defaultPut`, etc.).
+_Avoid_: syncProgramToHevy in hevy.ts, export sync
+
+**Edit navigation hook**:
+Shared `useNavigateToEditHevyProgram()` used by profile entry points (My Hevy Programs grid, blind-spot Hevy picker). Refetches `useHevyPrograms`, passes routines via router state, and navigates to Edit arrival with `folder` and optional extra query params.
+_Avoid_: navigateToEditHevyProgram helper, inline edit push
