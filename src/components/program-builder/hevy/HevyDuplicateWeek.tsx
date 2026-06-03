@@ -91,17 +91,7 @@ export const HevyDuplicateWeek: React.FC<IProps> = (props) => {
                         })}
                     </span>
                 </DialogDescription>
-                <span className="flex flex-col gap-2 border-t border-border/40 pt-4 sm:flex-row sm:justify-stretch">
-                    <span className="flex w-full items-center justify-center">
-                        <Button
-                            onClick={ () => setDuplicateWeekOpen(false) }
-                            variant="outline"
-                            className="h-11 w-full rounded-full border-border/80 sm:h-12"
-                            aria-label="Cancel duplicate week"
-                        >
-                            Cancel
-                        </Button>
-                    </span>
+                <span className="flex flex-col gap-2 border-t border-border/40 pt-4 sm:flex-row-reverse sm:justify-stretch">
                     <span className="flex w-full items-center justify-center">
                         <Button
                             onClick={ () => {
@@ -116,6 +106,16 @@ export const HevyDuplicateWeek: React.FC<IProps> = (props) => {
                             aria-label="Duplicate week"
                         >
                             Duplicate
+                        </Button>
+                    </span>
+                    <span className="flex w-full items-center justify-center">
+                        <Button
+                            onClick={ () => setDuplicateWeekOpen(false) }
+                            variant="outline"
+                            className="h-11 w-full rounded-full border-border/80 sm:h-12"
+                            aria-label="Cancel duplicate week"
+                        >
+                            Cancel
                         </Button>
                     </span>
                 </span>
