@@ -67,7 +67,9 @@ export const StepButton: React.FC = () => {
                             </Button>
                         </span>
                     </TooltipTrigger>
-                    <TooltipContent>Sync coming soon...</TooltipContent>
+                    <TooltipContent className="bg-lightSecondary text-white">
+                        Sync coming soon...
+                    </TooltipContent>
                 </Tooltip>
             </TooltipProvider>
         );
