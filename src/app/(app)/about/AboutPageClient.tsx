@@ -78,7 +78,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                                     <h2 className="font-main text-2xl ss:text-3xl dark:text-white  text-black mb-2">
                                         JACK HANLON
                                     </h2>
-                                    <p className="font-second text-lightSecondary text-lg font-semibold mb-4">
+                                    <p className="font-tertiary text-lightSecondary text-lg font-semibold mb-4">
                                         FOUNDER
                                     </p>
                                     <p className={`text-md pr-4 max-sm:pl-4 pb-4 text-black font-third text-left text-gray-700 dark:text-offWhite`}>

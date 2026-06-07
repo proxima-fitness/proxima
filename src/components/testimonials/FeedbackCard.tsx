@@ -41,7 +41,7 @@ export const FeedbackCard: React.FC<IProps> = (props) => {
             className="flex justify-around flex-col px-6 rounded-[20px] max-w-[370px] m-6 feedback-card"
         >
             <img src={ (quotes as any).src } alt="double_quotes" className="w-[42.6px] h-[27.6px] object-contain" />
-            <div className="font-second font-normal text-[16px] leading-[32.4px] text-white py-4">
+            <div className="font-tertiary font-normal text-[16px] leading-[32.4px] text-white py-4">
                 {content}
                 <div className="flex flex-row py-4">
                     <div>
@@ -65,10 +65,10 @@ export const FeedbackCard: React.FC<IProps> = (props) => {
             <div className="flex flex-row">
                 <img src={ img } alt={ name } className="w-[48px] h-[48px] rounded-full" />
                 <div className="flex flex-col ml-4">
-                    <h4 className="font-second font-semibold text-[20px] leading-[32px] text-white">
+                    <h4 className="font-tertiary font-semibold text-[20px] leading-[32px] text-white">
                         {name}
                     </h4>
-                    <p className="font-second font-normal text-[16px] leading-[24px] text-dimWhite">
+                    <p className="font-tertiary font-normal text-[16px] leading-[24px] text-dimWhite">
                         {title}
                     </p>
                 </div>

@@ -23,7 +23,7 @@ export const CredibilityBand: React.FC = () => {
     return (
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4 md:gap-6">
             <div className="flex flex-col items-center gap-4">
-                <span className="font-second text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:text-xs">
+                <span className="font-tertiary text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:text-xs">
                     Integrated with
                 </span>
                 <a
@@ -45,7 +45,7 @@ export const CredibilityBand: React.FC = () => {
                 </a>
             </div>
             <div className="flex flex-col items-center gap-4">
-                <span className="font-second text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:text-xs">
+                <span className="font-tertiary text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:text-xs">
                     Backed by
                 </span>
                 <a
@@ -61,13 +61,13 @@ export const CredibilityBand: React.FC = () => {
                 </a>
             </div>
             <div className="flex flex-col items-center gap-4">
-                <span className="font-second text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:text-xs">
+                <span className="font-tertiary text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:text-xs">
                     Featured on
                 </span>
                 <ProductHunt />
             </div>
             <div className="col-span-2 flex flex-col items-center gap-4 md:col-span-1">
-                <span className="font-second text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:text-xs">
+                <span className="font-tertiary text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:text-xs">
                     Join 2,000+ athletes
                 </span>
                 <AvatarStack

@@ -75,10 +75,14 @@ module.exports = {
   				'Exo',
   				'sans-serif'
   			],
-  			third: [
-  				'Inter',
-  				'sans-serif'
-  			]
+			third: [
+				'Inter',
+				'sans-serif'
+			],
+			tertiary: [
+				'Inter',
+				'sans-serif'
+			]
   		},
   		borderRadius: {
   			lg: 'var(--radius)',

@@ -20,9 +20,9 @@ const styles = {
     heading2WhiteSection: "font-main font-semibold xs:text-[48px] text-[40px] text-black xs:leading-[76.8px] leading-[66.8px] md:pl-[100px] text-center md:text-left w-full",
     heading2Programs: "font-main font-semibold xs:text-[48px] text-[40px] text-black xs:leading-[76.8px] leading-[66.8px]  text-center md:text-center w-full",
 
-    paragraphHero: "font-second font-normal text-dimWhite ss:text-[15px] text-[14px] leading-[30.8px]",
-    paragraph: "font-second font-normal ss:text-[18px] text-[14px] leading-[30.8px]",
-    paragraphWhiteSection: "font-second font-normal text-slate-600 ss:text-[18px] text-[14px] leading-[30.8px]",
+    paragraphHero: "font-tertiary font-normal text-dimWhite ss:text-[15px] text-[14px] leading-[30.8px]",
+    paragraph: "font-tertiary font-normal ss:text-[18px] text-[14px] leading-[30.8px]",
+    paragraphWhiteSection: "font-tertiary font-normal text-slate-600 ss:text-[18px] text-[14px] leading-[30.8px]",
 
     flexCenter: "flex justify-center items-center",
     flexStart: "flex justify-center items-start",
