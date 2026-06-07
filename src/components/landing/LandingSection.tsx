@@ -1,6 +1,6 @@
 /**
  * @module LandingSection
- * Shared section shell for homepage bands — teal tint or white surfaces with consistent padding.
+ * Shared section shell for homepage bands - teal tint or white surfaces with consistent padding.
  */
 
 import { cn } from "@/lib/utils";

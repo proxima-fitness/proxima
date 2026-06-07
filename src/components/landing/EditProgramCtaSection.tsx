@@ -2,7 +2,7 @@
 
 /**
  * @module EditProgramCtaSection
- * Secondary Edit arrival CTA — routes to /profile for program selection.
+ * Secondary Edit arrival CTA - routes to /profile for program selection.
  */
 
 import Link from "next/link";
@@ -29,7 +29,7 @@ export const EditProgramCtaSection: React.FC = () => {
                 onClick={handleClick}
                 className="inline-flex shrink-0 items-center gap-2 rounded-full bg-lightSecondary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-lightSecondary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
-                Go to profile
+                Get started
                 <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
         </div>

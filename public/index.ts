@@ -44,6 +44,8 @@ import star from "./Star.svg";
 import starGold from "./StarGold.svg";
 import twitter from "./twitter.svg";
 import reddit from "./reddit.svg";
+import light_builder from "./light-builder.webp";
+import dark_builder from "./dark-builder.webp";
 import qr_code from "./qr-code.svg";
 import quotes from "./quotes.svg";
 import proxima_logo_black from "./proxima_logo_black.svg";
@@ -66,7 +68,6 @@ import pwa_flow_2 from "./pwa-flow-2.webp";
 import pwa_flow_3 from "./pwa-flow-3.webp";
 import pwa_flow_4 from "./pwa-flow-4.webp";
 import hero from "./hero.webp";
-import hero_product_preview from "./hero-product-preview.webp";
 
 export {
     qr_code,
@@ -79,6 +80,8 @@ export {
     apple,
     proxima_logo,
     proxima_logo_white_full_text,
+    light_builder,
+    dark_builder,
     proxima_logo_black,
     arnold,
     arrow_up,
@@ -126,5 +129,4 @@ export {
     jack_small,
     icon_background_white,
     hero,
-    hero_product_preview,
 }

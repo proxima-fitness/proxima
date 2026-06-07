@@ -21,7 +21,7 @@ const pwaSteps = [
 export const PwaSection: React.FC = () => {
   return (
     <div>
-      <div className={`${layout.sectionInfoCentered} px-6 sm:px-0`}>
+      <div className={layout.sectionInfoCentered}>
         <h2 className="w-full text-center font-tertiary text-3xl font-semibold text-foreground sm:text-4xl">
           A Coaching Companion{" "}
           <span className="text-lightSecondary">In Your Pocket</span>
@@ -31,7 +31,7 @@ export const PwaSection: React.FC = () => {
         </p>
       </div>
 
-      <div className="mt-8 flex gap-4 overflow-x-auto px-6 [scrollbar-width:none] snap-x snap-mandatory sm:hidden [&::-webkit-scrollbar]:hidden">
+      <div className="-mx-6 mt-8 flex gap-4 overflow-x-auto px-6 scroll-px-6 [scrollbar-width:none] snap-x snap-mandatory sm:hidden [&::-webkit-scrollbar]:hidden">
         {pwaSteps.map((step, i) => (
           <figure key={i} className="flex w-[75%] shrink-0 snap-center flex-col items-center gap-2">
             <img
