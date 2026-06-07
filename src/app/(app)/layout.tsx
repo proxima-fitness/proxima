@@ -124,7 +124,7 @@ export default function RootLayout({
                                 <PoundsOrKgProvider>
                                     <BuildProgramActionsProvider>
                                     <AppSidebarDynamic />
-                                    <div className="flex-1 min-w-0 bg-primary">
+                                    <div className="flex-1 min-w-0 bg-background">
                                         <MobileSidebarHeader />
                                         <main id="main">
                                             <PostHogClientProvider>

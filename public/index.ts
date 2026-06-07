@@ -66,6 +66,7 @@ import pwa_flow_2 from "./pwa-flow-2.webp";
 import pwa_flow_3 from "./pwa-flow-3.webp";
 import pwa_flow_4 from "./pwa-flow-4.webp";
 import hero from "./hero.webp";
+import hero_product_preview from "./hero-product-preview.webp";
 
 export {
     qr_code,
@@ -125,4 +126,5 @@ export {
     jack_small,
     icon_background_white,
     hero,
+    hero_product_preview,
 }

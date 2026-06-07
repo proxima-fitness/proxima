@@ -12,18 +12,16 @@ module.exports = {
   theme: {
   	extend: {
   		colors: {
-  			primary: '#00040f',
-  			// secondary: '#00f6ff',
+  			primary: '#1c1917',
   			offWhite: 'oklch(70.8% 0 0)',
   			lightSecondary: '#33bbcf',
-  			// Slightly darker for light mode (e.g. text-lightSecondaryDark dark:text-lightSecondary)
   			secondary: '#2a9ba8',
   			lightGold: '#fbbf24',
-  			extraLightGray: '#fafafa',
-  			lightGray: '#f5f5f5',
-  			darkGray: '#171717',
-  			extraDarkGray: '#0a0a0a',
-  			blueGray: '#262626',
+  			extraLightGray: '#fafaf9',
+  			lightGray: '#f5f5f4',
+  			darkGray: '#292524',
+  			extraDarkGray: '#1c1917',
+  			blueGray: '#44403c',
   			dimWhite: 'rgba(255, 255, 255, 0.7)',
   			dimBlue: 'rgba(9, 151, 124, 0.1)',
   			background: 'hsl(var(--background))',

@@ -5,7 +5,7 @@
  * @module PwaSection
  * @description Feature section that explains users can install the site as a PWA and use it like an app, with a 4-step visual flow.
  * @dependsOn Shared layout and typography styles, pwa-flow-1–4 image assets from public.
- * @usedBy Home page below the Prompt to surface "install as app" without a separate route.
+ * @usedBy Home page, wrapped in LandingSection.
  */
 
 import { pwa_flow_1, pwa_flow_2, pwa_flow_3, pwa_flow_4 } from "public";
@@ -20,50 +20,46 @@ const pwaSteps = [
 
 export const PwaSection: React.FC = () => {
   return (
-    <section
-      id="pwa"
-      className={`${layout.sectionTop} pt-10 pb-12`}
-    >
+    <div>
       <div className={`${layout.sectionInfoCentered} px-6 sm:px-0`}>
-        <h2 className="font-main font-semibold xs:text-[48px] text-[28px] text-black dark:text-white xs:leading-[76.8px] leading-[66.8px] text-center w-full">
-         A Coaching Companion{" "}<span style={{ color: "#33bbcf" }}>In Your Pocket</span>
+        <h2 className="w-full text-center font-tertiary text-3xl font-semibold text-foreground sm:text-4xl">
+          A Coaching Companion{" "}
+          <span className="text-lightSecondary">In Your Pocket</span>
         </h2>
-        <p className="font-second font-normal text-slate-600 dark:text-gray-400 ss:text-[18px] text-[14px] leading-[30.8px] max-w-[560px] mt-4 text-center mx-auto">
-            Add Proxima as an App to your home screen for quick access
+        <p className="mx-auto mt-4 max-w-[560px] text-center font-tertiary text-[14px] font-normal leading-[30.8px] text-muted-foreground ss:text-[18px]">
+          Add Proxima as an App to your home screen for quick access
         </p>
       </div>
 
-      {/* Mobile: scroll-snap carousel */}
-      <div className="sm:hidden mt-8 overflow-x-auto snap-x snap-mandatory flex gap-4 px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="mt-8 flex gap-4 overflow-x-auto px-6 [scrollbar-width:none] snap-x snap-mandatory sm:hidden [&::-webkit-scrollbar]:hidden">
         {pwaSteps.map((step, i) => (
-          <figure key={i} className="snap-center shrink-0 w-[75%] flex flex-col items-center gap-2">
+          <figure key={i} className="flex w-[75%] shrink-0 snap-center flex-col items-center gap-2">
             <img
               src={step.src}
               alt={step.alt}
-              className="rounded-lg shadow-md max-w-[220px] mx-auto h-auto object-contain"
+              className="mx-auto h-auto max-w-[220px] rounded-lg border border-black/5 object-contain shadow-sm dark:border-white/10"
             />
-            <figcaption className="text-sm font-medium text-black dark:text-white text-center">
+            <figcaption className="text-center text-sm font-medium text-foreground">
               {step.label}
             </figcaption>
           </figure>
         ))}
       </div>
 
-      {/* Desktop: flex grid */}
-      <div className="hidden sm:flex flex-wrap justify-center gap-6 mt-8 px-4">
+      <div className="mt-8 hidden flex-wrap justify-center gap-6 px-4 sm:flex">
         {pwaSteps.map((step, i) => (
           <figure key={i} className="flex flex-col items-center gap-2">
             <img
               src={step.src}
               alt={step.alt}
-              className="rounded-lg shadow-md max-w-[260px] w-full h-auto object-contain"
+              className="h-auto w-full max-w-[260px] rounded-lg border border-black/5 object-contain shadow-sm dark:border-white/10"
             />
-            <figcaption className="text-sm font-medium text-black dark:text-white">
+            <figcaption className="text-sm font-medium text-foreground">
               {step.label}
             </figcaption>
           </figure>
         ))}
       </div>
-    </section>
+    </div>
   );
 };

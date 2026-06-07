@@ -4,9 +4,17 @@ Marketing site and logged-in app for Proxima Fitness — AI workout program buil
 
 ## Language
 
+**Integrated training coach**:
+Proxima's product role on the web — an AI agent that builds and advises on workout programs inside the builder (`/build-program`), not a separate mobile app or static marketing site. The home page (`/`) exists to start **New arrival**; ongoing coaching happens in the builder.
+_Avoid_: Personal trainer app, Proxima app (deprecated marketing surface), landing page product
+
 **Arrival**:
 How the user landed on `/build-program` (URL params + navigation source). Determines program hydration and chat session bootstrap.
 _Avoid_: Entry point (ambiguous), route, landing
+
+**New arrival**:
+Entering the builder to create a program — typically from the home prompt with a `search=` dispatch (attachments optional). Homepage primary conversion. Distinct from Edit arrival, `?empty=true`, bare `/build-program` redirect, and chat navigation.
+_Avoid_: Build program, home prompt (implementation-shaped)
 
 **Dispatch**:
 An event that calls the LLM send path (`sendMessageWithContext`). May happen zero or more times after an arrival.
