@@ -85,7 +85,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                             Your Integrated <span className="text-secondary dark:text-lightSecondary">Training Coach</span>
                         </div>
                         <div className="text-lg font-normal px-12 max-sm:text-sm max-sm:px-2 text-muted-foreground">
-                            Describe your goals. Get a science-backed program. Track in your fitness app.
+                            Describe your goals. Get a program. Track in your app. Evolve with your coach.
                         </div>
                     </div>
                     <div className="w-full max-w-3xl max-sm:px-2">
