@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 interface IConfirmDialogProps {
@@ -39,6 +40,8 @@ interface IConfirmDialogProps {
     inputValue?: string;
     onInputChange?: (value: string) => void;
     inputMaxLength?: number;
+    inputMultiline?: boolean;
+    inputRows?: number;
 }
 
 export function ConfirmDialog({
@@ -61,6 +64,8 @@ export function ConfirmDialog({
     inputValue,
     onInputChange,
     inputMaxLength,
+    inputMultiline = false,
+    inputRows = 4,
 }: IConfirmDialogProps) {
     const hasInput = inputValue !== undefined && onInputChange !== undefined;
     const handleCancel = () => {
@@ -93,20 +98,33 @@ export function ConfirmDialog({
                                 {inputLabel}
                             </Label>
                         )}
-                        <Input
-                            id="confirm-dialog-input"
-                            value={inputValue}
-                            onChange={(e) => onInputChange(e.target.value)}
-                            placeholder={inputPlaceholder}
-                            maxLength={inputMaxLength}
-                            disabled={isConfirmLoading}
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter" && !confirmDisabled && !isConfirmLoading) {
-                                    e.preventDefault();
-                                    handleConfirm();
-                                }
-                            }}
-                        />
+                        {inputMultiline ? (
+                            <Textarea
+                                id="confirm-dialog-input"
+                                value={inputValue}
+                                onChange={(e) => onInputChange(e.target.value)}
+                                placeholder={inputPlaceholder}
+                                maxLength={inputMaxLength}
+                                rows={inputRows}
+                                disabled={isConfirmLoading}
+                                className="resize-none"
+                            />
+                        ) : (
+                            <Input
+                                id="confirm-dialog-input"
+                                value={inputValue}
+                                onChange={(e) => onInputChange(e.target.value)}
+                                placeholder={inputPlaceholder}
+                                maxLength={inputMaxLength}
+                                disabled={isConfirmLoading}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" && !confirmDisabled && !isConfirmLoading) {
+                                        e.preventDefault();
+                                        handleConfirm();
+                                    }
+                                }}
+                            />
+                        )}
                     </div>
                 )}
                 <DialogFooter className="sm:justify-end gap-2">
