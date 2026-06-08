@@ -2,24 +2,20 @@
 
 import { useState, useCallback, memo } from "react";
 import {
-    addDay,
-    addDayNotes,
     addExercise,
     addExerciseNote,
     addRoutineAsDay,
     createSuperset,
-    deleteDay,
     deleteExercise,
-    deleteWeek,
     duplicateDay,
     duplicateWeek,
     editExerciseFromDialog,
-    editTitle,
     getNextSupersetId,
     removeFromSuperset,
 } from "@/components/program-builder/mutations/handlers";
 import { IOption } from "@/components/ui/multi-select";
 import { toast } from "sonner";
+import { useProgramMutation } from "@/contexts/ProgramMutationContext";
 import { ProgramGrid } from "./ProgramGrid";
 
 interface IProps {
@@ -30,6 +26,7 @@ interface IProps {
 
 function ProgramEditorInner(props: IProps) {
     const { orderedProgram, setHevyProgram, isMobile } = props;
+    const { runMutation } = useProgramMutation();
 
     const [addExerciseDialog, setAddExerciseDialog] = useState<THevyDialog>({ folder_id: 0, dayOrder: 0, isOpen: false });
     const [addNoteDialog, setAddNoteDialog] = useState<THevyDialog>({ folder_id: 0, dayOrder: 0, isOpen: false });
@@ -72,27 +69,39 @@ function ProgramEditorInner(props: IProps) {
         setAddExerciseNoteDialog(addExerciseNoteDialog);
     }, []);
 
-    const handleAddDay = useCallback((folder_id: number) => {
-        setHevyProgram((prev) => {
-            const next = addDay(prev, folder_id);
-            if (next === prev) {
-                toast.error("Maximum 7 days per week");
-            }
-            return next;
-        });
-    }, [setHevyProgram]);
+    const handleAddDay = useCallback(
+        (folder_id: number) => {
+            runMutation("add_day", { folderIds: [folder_id] });
+        },
+        [runMutation],
+    );
 
-    const handleDeleteDay = useCallback((id: string) => {
-        setHevyProgram((prev) => deleteDay(prev, id));
-    }, [setHevyProgram]);
+    const handleDeleteDay = useCallback(
+        (id: string) => {
+            runMutation("delete_day", { dayId: id });
+        },
+        [runMutation],
+    );
 
-    const handleDeleteWeek = useCallback((folder_id: number) => {
-        setHevyProgram((prev) => deleteWeek(prev, folder_id));
-    }, [setHevyProgram]);
+    const handleDeleteWeek = useCallback(
+        (folder_id: number) => {
+            runMutation("delete_week", { folderIds: [folder_id] });
+        },
+        [runMutation],
+    );
 
-    const handleEditTitle = useCallback((id: string, title: string) => {
-        setHevyProgram((prev) => editTitle(prev, id, title));
-    }, [setHevyProgram]);
+    const handleEditTitle = useCallback(
+        (id: string, title: string) => {
+            const day = orderedProgram.find((routine) => routine.id === id);
+            if (!day) return;
+            runMutation("edit_day_title", {
+                folderIds: [Number(day.folder_id)],
+                dayOrder: Number(day.order),
+                title,
+            });
+        },
+        [orderedProgram, runMutation],
+    );
 
     const handleDeleteExercise = useCallback((folder_id: number, dayOrder: number, exerciseIndex: number) => {
         setHevyProgram((prev) => deleteExercise(prev, [folder_id], dayOrder, exerciseIndex));
@@ -112,9 +121,16 @@ function ProgramEditorInner(props: IProps) {
         });
     }, [setHevyProgram]);
 
-    const handleAddRoutineNote = useCallback((folder_id: number, dayOrder: number, prompt: string) => {
-        setHevyProgram((prev) => addDayNotes(prev, [folder_id], dayOrder, prompt));
-    }, [setHevyProgram]);
+    const handleAddRoutineNote = useCallback(
+        (folder_id: number, dayOrder: number, prompt: string) => {
+            runMutation("add_day_notes", {
+                folderIds: [folder_id],
+                dayOrder,
+                notes: prompt,
+            });
+        },
+        [runMutation],
+    );
 
     const handleAddExerciseNote = useCallback((
         folder_id: number,
