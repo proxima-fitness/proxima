@@ -357,6 +357,7 @@ describe("advanceChatNavigationLatch", () => {
             { empty: "true", urlChatId: "" },
             createChatNavigationLatch(chatA),
         );
+        expect(latch.pendingSidebarPick).toBe(true);
         let step = advanceChatNavigationLatch("", latch);
         latch = step.next;
         expect(step.chatNavigationArrival).toBe(false);
@@ -374,6 +375,88 @@ describe("advanceChatNavigationLatch", () => {
         );
         expect(plan.enableHistoryFetch).toBe(true);
         expect(plan.historyBootstrap).toBe("db-wait");
+    });
+
+    it("New Chat then sidebar pick latches when sidebar list loads after URL", () => {
+        const chatA = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
+        let latch = resetChatNavigationLatchForArrival(
+            { empty: "true", urlChatId: "" },
+            createChatNavigationLatch(chatA),
+        );
+        let step = advanceChatNavigationLatch("", latch);
+        latch = step.next;
+
+        step = advanceChatNavigationLatch(chatA, latch, { sidebarRowKnown: false });
+        expect(step.chatNavigationArrival).toBe(false);
+        latch = step.next;
+
+        step = advanceChatNavigationLatch(chatA, latch, {
+            sidebarRowKnown: true,
+            hasEmptyParam: false,
+        });
+        expect(step.chatNavigationArrival).toBe(true);
+
+        const plan = resolveChatEntryPlan(
+            baseInput({
+                user: loggedInUser,
+                chatId: chatA,
+                sidebarRowKnown: true,
+                chatNavigationArrival: step.chatNavigationArrival,
+            }),
+        );
+        expect(plan.enableHistoryFetch).toBe(true);
+        expect(plan.historyBootstrap).toBe("db-wait");
+    });
+
+    it("New Chat then sidebar pick latches for session-confirmed chat when list loads late", () => {
+        const chatA = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
+        let latch = resetChatNavigationLatchForArrival(
+            { empty: "true", urlChatId: "" },
+            createChatNavigationLatch(chatA),
+        );
+        let step = advanceChatNavigationLatch("", latch);
+        latch = step.next;
+
+        step = advanceChatNavigationLatch(chatA, latch, {
+            sidebarRowKnown: false,
+            sendPathConfirmed: true,
+        });
+        latch = step.next;
+
+        step = advanceChatNavigationLatch(chatA, latch, {
+            sidebarRowKnown: true,
+            sendPathConfirmed: true,
+            hasEmptyParam: false,
+        });
+        expect(step.chatNavigationArrival).toBe(true);
+    });
+
+    it("New Chat session mint does not latch when sidebar list catches up", () => {
+        const mintedId = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+
+        let latch = resetChatNavigationLatchForArrival(
+            { empty: "true", urlChatId: "" },
+            createChatNavigationLatch(""),
+        );
+        let step = advanceChatNavigationLatch("", latch);
+        latch = step.next;
+
+        step = advanceChatNavigationLatch(mintedId, latch, {
+            sidebarRowKnown: false,
+            hasEmptyParam: true,
+        });
+        expect(step.chatNavigationArrival).toBe(false);
+        expect(step.next.pendingSidebarPick).toBe(false);
+        latch = step.next;
+
+        step = advanceChatNavigationLatch(mintedId, latch, {
+            sidebarRowKnown: true,
+            sendPathConfirmed: true,
+            hasEmptyParam: true,
+        });
+        expect(step.chatNavigationArrival).toBe(false);
     });
 
     it("A3′: New Chat clears stale latch so session mint keeps send-path shell", () => {

@@ -63,12 +63,15 @@ export interface IChatNavigationLatch {
     /** Sidebar / pre-mint arrival — not session mint. */
     latched: boolean;
     prevChatId: string;
+    /** Set after New Chat reset; cleared on sidebar latch or session mint. */
+    pendingSidebarPick?: boolean;
 }
 
 export function createChatNavigationLatch(urlChatIdAtMount: string): IChatNavigationLatch {
     return {
         latched: isChatNavigationArrivalAtMount(urlChatIdAtMount),
         prevChatId: urlChatIdAtMount,
+        pendingSidebarPick: false,
     };
 }
 
@@ -83,7 +86,7 @@ export function resetChatNavigationLatchForArrival(
     latch: IChatNavigationLatch,
 ): IChatNavigationLatch {
     if (isExplicitNewChatArrival(params)) {
-        return createChatNavigationLatch("");
+        return { latched: false, prevChatId: "", pendingSidebarPick: true };
     }
     return latch;
 }
@@ -93,6 +96,8 @@ export interface IAdvanceChatNavigationLatchOptions {
     sidebarRowKnown?: boolean;
     /** Send-path insert confirmed — session mint / sign-in migration must not latch. */
     sendPathConfirmed?: boolean;
+    /** `?empty=true` still in URL — session mint on New Chat page, not sidebar navigation. */
+    hasEmptyParam?: boolean;
 }
 
 /** Derive during render; assign `next` back to a ref (no effect). */
@@ -102,17 +107,36 @@ export function advanceChatNavigationLatch(
     options?: IAdvanceChatNavigationLatchOptions,
 ): { chatNavigationArrival: boolean; next: IChatNavigationLatch } {
     let latched = latch.latched;
+    let pendingSidebarPick = latch.pendingSidebarPick ?? false;
+
+    if (pendingSidebarPick && chatId && options?.hasEmptyParam) {
+        pendingSidebarPick = false;
+    }
+
     if (!latched && chatId) {
         if (latch.prevChatId && latch.prevChatId !== chatId) {
             latched = true;
         } else if (!latch.prevChatId && options?.sidebarRowKnown && !options?.sendPathConfirmed) {
             // New Chat reset clears prevChatId; first sidebar pick must still latch.
             latched = true;
+        } else if (
+            pendingSidebarPick &&
+            options?.sidebarRowKnown &&
+            !options?.hasEmptyParam &&
+            latch.prevChatId === chatId
+        ) {
+            // Sidebar list loaded after URL already had ?chat= (post–New Chat pick).
+            latched = true;
         }
     }
+
+    if (latched) {
+        pendingSidebarPick = false;
+    }
+
     return {
         chatNavigationArrival: latched,
-        next: { latched, prevChatId: chatId },
+        next: { latched, prevChatId: chatId, pendingSidebarPick },
     };
 }
 

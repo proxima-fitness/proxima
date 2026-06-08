@@ -133,7 +133,7 @@ export function BuildProgram() {
     const { chatNavigationArrival, next: chatNavLatchNext } = advanceChatNavigationLatch(
         chatId,
         chatNavLatchRef.current,
-        { sidebarRowKnown, sendPathConfirmed },
+        { sidebarRowKnown, sendPathConfirmed, hasEmptyParam: empty === "true" },
     );
     chatNavLatchRef.current = chatNavLatchNext;
     const programHydrateChatId = chatNavigationArrival ? chatId : "";
