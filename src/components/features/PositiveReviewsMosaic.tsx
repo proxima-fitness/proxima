@@ -7,7 +7,6 @@
  * @usedBy Home page, wrapped in LandingSection.
  */
 
-import { BuildProgramCtaButton } from "@/components/landing/BuildProgramCtaButton";
 import { reddit } from "public";
 import { layout } from "../../style";
 
@@ -114,8 +113,6 @@ export const PositiveReviewsMosaic: React.FC = () => {
           <RedditReviewCard key={item.author} author={item.author} quote={item.quote} />
         ))}
       </div>
-
-      <BuildProgramCtaButton source="reddit_reviews" className="mt-10 flex justify-center px-6 sm:px-0" />
     </div>
   );
 };
