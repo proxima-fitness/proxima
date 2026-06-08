@@ -54,9 +54,9 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                                 <img
                                     src={(light_builder as any).src}
                                     alt=""
-                                    className="absolute inset-0 h-full w-full scale-105 object-cover object-center opacity-75 blur-sm dark:hidden"
-                                    loading="lazy"
-                                    fetchPriority="low"
+                                    className="absolute inset-0 h-full w-full scale-105 object-cover object-center opacity-75 blur-sm dark:hidden xl:hidden"
+                                    loading="eager"
+                                    fetchPriority="high"
                                     decoding="async"
                                     onError={() => setShowLightPreview(false)}
                                 />
@@ -65,15 +65,21 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                                 <img
                                     src={(dark_builder as any).src}
                                     alt=""
-                                    className="absolute inset-0 hidden h-full w-full scale-105 object-cover object-center opacity-55 blur-md dark:block"
-                                    loading="lazy"
-                                    fetchPriority="low"
+                                    className="absolute inset-0 hidden h-full w-full scale-105 object-cover object-center opacity-55 blur-md dark:block xl:dark:hidden"
+                                    loading="eager"
+                                    fetchPriority="high"
                                     decoding="async"
                                     onError={() => setShowDarkPreview(false)}
                                 />
                             )}
                         </>
                     )}
+                    <div className="absolute inset-0 hidden xl:block dark:xl:hidden">
+                        <div className="absolute left-1/2 top-1/2 z-0 h-[95%] w-[95%] -translate-x-1/2 -translate-y-1/2 rounded-full white__gradient" />
+                    </div>
+                    <div className="absolute inset-0 hidden dark:xl:block">
+                        <div className="absolute left-1/2 top-1/2 z-0 h-[95%] w-[95%] -translate-x-1/2 -translate-y-1/2 rounded-full white__gradient_dark" />
+                    </div>
                     <div className="absolute inset-0 bg-linear-to-b from-background/35 via-background/15 to-extraLightGray/45 dark:from-darkGray/55 dark:via-darkGray/25 dark:to-extraDarkGray/65" />
                 </div>
                 <div className="flex flex-col items-center justify-center gap-12 w-full relative z-10">
