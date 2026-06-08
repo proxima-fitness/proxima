@@ -71,6 +71,14 @@ export default [
             match: true,
           },
         },
+        {
+          selector: 'typeAlias',
+          format: ['PascalCase'],
+          custom: {
+            regex: '^T[A-Z]',
+            match: true,
+          },
+        },
       ],
       '@typescript-eslint/no-unused-vars': [
         'error',
