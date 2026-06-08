@@ -130,7 +130,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                     ? 'bg-lightSecondary text-white'
                     : isEvenRow
                         ? 'bg-white dark:bg-darkGray'
-                        : 'bg-extraLightGray dark:bg-[#1a2332]';
+                        : 'bg-extraLightGray dark:bg-midDarkGray';
 
                 const rowProps = {
                     onClick: (e: React.MouseEvent) => editHandler(e as unknown as React.MouseEvent<HTMLButtonElement>, Number(folder_id), Number(day.order), i, exercise),
