@@ -22,24 +22,33 @@ export const YouTubeReviewSection: React.FC = () => {
     };
 
     return (
-        <div className="grid gap-8 md:grid-cols-2 md:items-center md:gap-12">
-            <div className="flex flex-col gap-3 text-center md:text-left">
+        <div className="grid gap-golden md:grid-cols-2 md:items-center md:gap-[2.618rem]">
+            <div className="flex flex-col text-center md:text-left">
                 <p className="font-tertiary text-xs font-semibold tracking-[0.12em] text-secondary dark:text-lightSecondary">
-                    Featured review
+                    Featured Review
                 </p>
-                <figure className="flex flex-col gap-2">
+                <figure className="mt-4 flex flex-col">
                     <blockquote>
-                        <h2 className="font-tertiary text-3xl font-semibold text-foreground sm:text-4xl">
-                            &ldquo;Nothing here would raise an eyebrow from a coach.&rdquo;
+                        <h2 className="font-tertiary text-3xl font-semibold leading-[1.15] tracking-tight text-foreground sm:text-4xl">
+                            &ldquo;Definitely worth trying out.&rdquo;
                         </h2>
                     </blockquote>
-                    <figcaption className="font-tertiary text-base text-muted-foreground">
-                        - Alex Chen
+                    <figcaption className="mt-goldenSm font-tertiary text-base text-muted-foreground">
+                        &mdash; Alex Chen, Former Provincial Powerlifter
                     </figcaption>
                 </figure>
-                <p className="font-tertiary text-base text-muted-foreground">
-                    Former provincial powerlifter Alex Chen tested Proxima against a $160 coaching program - watch his full breakdown.
+                <p className="mt-[2.618rem] max-w-xl font-tertiary text-base leading-relaxed text-muted-foreground md:max-w-lg">
+                    After paying $160/mo for a nationally-ranked powerlifting coach, Alex Chen put Proxima&apos;s $9.99/mo AI Coach to the test.
                 </p>
+                {!playing ? (
+                    <button
+                        type="button"
+                        onClick={handlePlay}
+                        className="mt-golden self-start text-left font-tertiary text-base font-semibold text-secondary transition-colors hover:text-secondary/80 dark:text-lightSecondary dark:hover:text-lightSecondary/80"
+                    >
+                        Watch his full breakdown &rarr;
+                    </button>
+                ) : null}
             </div>
             <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border/60 bg-black/5 shadow-sm dark:bg-black/20">
                 {playing ? (
