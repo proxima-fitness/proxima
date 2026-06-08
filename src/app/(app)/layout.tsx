@@ -39,8 +39,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-    title: 'Proxima Fitness | Agentic Workout Builder',
-    description: 'Proxima Fitness is an Agentic Workout Builder. This is the Proxima Landing page, where you can sign in to the Proxima Web builder and get started building programs right away.',
+    title: 'Proxima Fitness | Integrated Training Coach',
+    description: 'Describe your goals, get a tailored program, track in your fitness app, and evolve with your integrated training coach.',
     manifest: "/manifest.webmanifest",
     icons: {
         icon: "/favicon.svg", // Use SVG favicon

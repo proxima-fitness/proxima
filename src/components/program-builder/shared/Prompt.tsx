@@ -18,6 +18,7 @@ import {
 import { PromptTemplate } from "./PromptTemplate";
 import { ResumeDraftBanner } from "../ResumeDraftBanner";
 import posthog from "posthog-js";
+import { ChevronDown } from "lucide-react";
 
 /** Props for the landing prompt section. */
 interface IProps {
@@ -88,11 +89,21 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                             Describe your goals. Get a program. Track in your app. Evolve with your coach.
                         </div>
                     </div>
-                    <div className="w-full max-w-3xl max-sm:px-2">
+                    <div className="w-full max-w-3xl max-sm:px-2 flex flex-col items-center gap-3">
                         <ResumeDraftBanner />
                         <PromptTemplate />
+                        <p className="text-center font-tertiary text-[0.618rem] text-muted-foreground max-sm:px-2 text-xs sm:text-sm">
+                            Start free · Pro from $9.99/mo · Cancel anytime
+                        </p>
                     </div>
                 </div>
+                <a
+                    href="#how-it-works"
+                    className="absolute bottom-[max(2rem,env(safe-area-inset-bottom))] left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                    See how it works
+                    <ChevronDown className="h-5 w-5" aria-hidden />
+                </a>
             </div>
         </>
     );

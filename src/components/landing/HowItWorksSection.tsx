@@ -1,9 +1,12 @@
+"use client";
+
 /**
  * @module HowItWorksSection
  * Four-step homepage explainer: build, track, and ongoing integrated coaching.
  */
 
 import { Dumbbell, LayoutGrid, MessageSquare, TrendingUp, type LucideIcon } from "lucide-react";
+import { BuildProgramCtaButton } from "./BuildProgramCtaButton";
 
 interface IHowItWorksStep {
     title: string;
@@ -63,6 +66,7 @@ export const HowItWorksSection: React.FC = () => {
                     );
                 })}
             </div>
+            <BuildProgramCtaButton source="how_it_works" className="mt-10 flex justify-center" />
         </div>
     );
 };

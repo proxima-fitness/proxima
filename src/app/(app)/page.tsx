@@ -32,22 +32,23 @@ export default async function Page() {
     return (
         <>
             <Prompt userData={user} />
-            <LandingSection variant="white">
-                <YouTubeReviewSection />
-            </LandingSection>
             <LandingSection variant="tint">
                 <CredibilityBand />
             </LandingSection>
             <LandingSection variant="white">
+                <YouTubeReviewSection />
+            </LandingSection>
+            <LandingSection id="how-it-works" variant="tint">
                 <HowItWorksSection />
             </LandingSection>
-            <LandingSection id="reddit-reviews" variant="tint">
+            <LandingSection id="reddit-reviews" variant="white">
                 <PositiveReviewsMosaic />
             </LandingSection>
-            <LandingSection variant="white">
+
+            <LandingSection variant="tint">
                 <EditProgramCtaSection />
             </LandingSection>
-            <LandingSection id="pwa" variant="tint">
+            <LandingSection id="pwa" variant="white">
                 <PwaSection />
             </LandingSection>
         </>
