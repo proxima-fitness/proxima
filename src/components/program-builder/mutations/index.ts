@@ -1,6 +1,7 @@
 export { applyOperation, applyOperationById, applyOperations, applyOperationsLoose } from "./apply";
 export { programMutationCatalog, programMutationCatalogById, agentExposedMutations } from "./catalog";
 export { defineProgramMutation } from "./defineProgramMutation";
+export { programMutationRegistry, runProgramMutation } from "./registry";
 export {
     addDay,
     addDayNotes,
@@ -61,8 +62,10 @@ export {
     type TApplyBatchFailure,
     type TApplyBatchResult,
     type TApplyBatchSuccess,
+    type TCommitWithUndoOptions,
     type TMutationResult,
     type TMutationSuccess,
     type TProgramMutationDefinition,
+    type TProgramMutationRunContext,
     type TValidationFailure,
 } from "./types";

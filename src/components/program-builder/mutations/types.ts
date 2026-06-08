@@ -48,3 +48,13 @@ export type TApplyBatchFailure = {
 };
 
 export type TApplyBatchResult = TApplyBatchSuccess | TApplyBatchFailure;
+
+export type TCommitWithUndoOptions = {
+    recordUndo?: boolean;
+};
+
+export type TProgramMutationRunContext = {
+    program: THevyRoutine[];
+    commitWithUndo: (next: THevyRoutine[], options?: TCommitWithUndoOptions) => void;
+    isAgentStreaming: boolean;
+};
