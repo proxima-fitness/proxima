@@ -147,12 +147,16 @@ export function BuildProgram() {
         undoStack: [],
     });
 
+    const setProgramFromHydrate = useCallback((program: THevyRoutine[]) => {
+        dispatchEditor({ type: "REPLACE_PROGRAM", program });
+    }, []);
+
     const setHevyProgram = useCallback(
         (value: THevyRoutine[] | ((prev: THevyRoutine[]) => THevyRoutine[])) => {
             if (typeof value === "function") {
-                dispatchEditor({ type: "UPDATE_PROGRAM", updater: value });
+                dispatchEditor({ type: "COMMIT_PROGRAM", updater: value, recordUndo: true });
             } else {
-                dispatchEditor({ type: "REPLACE_PROGRAM", program: value });
+                dispatchEditor({ type: "COMMIT_PROGRAM", program: value, recordUndo: true });
             }
         },
         [],
@@ -234,15 +238,11 @@ export function BuildProgram() {
     /*** STATE FOR THE PROGRAM BUILDER (reducer for atomic undo + stable handleUndo) ***/
     const applyPatchWithUndo = useCallback(
         (newDocument: THevyRoutine[], inversePatch: Operation[], recordUndo = true) => {
-            if (!recordUndo) {
-                dispatchEditor({ type: "REPLACE_PROGRAM", program: newDocument });
+            if (!recordUndo || inversePatch.length === 0) {
+                dispatchEditor({ type: "COMMIT_PROGRAM", program: newDocument, recordUndo: false });
                 return;
             }
-            if (inversePatch.length === 0) {
-                dispatchEditor({ type: "REPLACE_PROGRAM", program: newDocument });
-                return;
-            }
-            dispatchEditor({ type: "APPLY_PATCH", newDocument, inversePatch });
+            dispatchEditor({ type: "COMMIT_PROGRAM", program: newDocument, recordUndo: true });
         },
         [],
     );
@@ -278,14 +278,14 @@ export function BuildProgram() {
             return;
         }
 
-        setHevyProgram([]);
+        setProgramFromHydrate([]);
         setSharedProgramLoadAttempted(!isValidShareId(shareId));
 
         const fetchSharedProgram = async () => {
             try {
                 const sharedProgram = await getSharedProgram(Number(shareId));
                 if (sharedProgram) {
-                    setHevyProgram(appendOrderToHevyRoutines(sharedProgram));
+                    setProgramFromHydrate(appendOrderToHevyRoutines(sharedProgram));
                 }
             } finally {
                 setSharedProgramLoadAttempted(true);
@@ -295,7 +295,7 @@ export function BuildProgram() {
         if (resume === "true") {
             const program = localStorage.getItem("hevy-program-in-progress");
             if (program) {
-                setHevyProgram(appendOrderToHevyRoutines(JSON.parse(program)));
+                setProgramFromHydrate(appendOrderToHevyRoutines(JSON.parse(program)));
             }
         }
 
@@ -304,9 +304,9 @@ export function BuildProgram() {
         }
 
         if (empty === "true") {
-            setHevyProgram(appendOrderToHevyRoutines(emptyHevyProgram));
+            setProgramFromHydrate(appendOrderToHevyRoutines(emptyHevyProgram));
         }
-    }, [shouldBareRedirectToEmpty, resume, shareId, empty, programHydrateChatId, router, setHevyProgram]);
+    }, [shouldBareRedirectToEmpty, resume, shareId, empty, programHydrateChatId, router, setProgramFromHydrate]);
 
     const toggleSidebarPosition = useCallback(() => {
         setSidebarPosition((prev) => {

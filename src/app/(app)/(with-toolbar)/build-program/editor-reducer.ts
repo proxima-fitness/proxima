@@ -1,53 +1,75 @@
+/** Max undo snapshots retained; oldest dropped on overflow. */
+export const UNDO_STACK_CAP = 100;
 
-import { applyPatch, type Operation } from "fast-json-patch";
-import { toast } from "sonner";
-
-/** Editor state: program + undo stack for atomic transitions and stable handleUndo */
-type TEditorState = {
+/** Editor state: program + snapshot undo stack. */
+export type TEditorState = {
     hevyProgram: THevyRoutine[];
-    undoStack: Operation[][];
+    undoStack: THevyRoutine[][];
 };
 
-type TEditorAction =
-    | { type: "APPLY_PATCH"; newDocument: THevyRoutine[]; inversePatch: Operation[] }
+export type TEditorAction =
+    | {
+          type: "COMMIT_PROGRAM";
+          program?: THevyRoutine[];
+          updater?: (prev: THevyRoutine[]) => THevyRoutine[];
+          recordUndo?: boolean;
+      }
     | { type: "UNDO" }
-    | { type: "REPLACE_PROGRAM"; program: THevyRoutine[] }
-    | { type: "UPDATE_PROGRAM"; updater: (prev: THevyRoutine[]) => THevyRoutine[] };
+    | { type: "REPLACE_PROGRAM"; program: THevyRoutine[] };
 
+function pushUndoSnapshot(stack: THevyRoutine[][], snapshot: THevyRoutine[]): THevyRoutine[][] {
+    const nextStack = [...stack, structuredClone(snapshot)];
+    if (nextStack.length <= UNDO_STACK_CAP) {
+        return nextStack;
+    }
+    return nextStack.slice(nextStack.length - UNDO_STACK_CAP);
+}
 
-/** Editor reducer: handles atomic transitions and stable handleUndo */
+function resolveNextProgram(
+    state: TEditorState,
+    action: Extract<TEditorAction, { type: "COMMIT_PROGRAM" }>,
+): THevyRoutine[] {
+    if (action.updater) {
+        return action.updater(state.hevyProgram);
+    }
+    if (action.program) {
+        return action.program;
+    }
+    return state.hevyProgram;
+}
+
+/** Editor reducer: snapshot undo and program commits. */
 export function editorReducer(state: TEditorState, action: TEditorAction): TEditorState {
     switch (action.type) {
-        case "APPLY_PATCH":
-            return {
-                hevyProgram: action.newDocument,
-                undoStack: [...state.undoStack, action.inversePatch],
-            };
-        case "UNDO": {
-            if (state.undoStack.length === 0) return state;
-            const inversePatch = state.undoStack[state.undoStack.length - 1];
-            try {
-                const result = applyPatch(
-                    state.hevyProgram as object,
-                    inversePatch,
-                    true,
-                    false
-                ) as { newDocument: THevyRoutine[] };
-                return {
-                    hevyProgram: result.newDocument as THevyRoutine[],
-                    undoStack: state.undoStack.slice(0, -1),
-                };
-            } catch (e) {
-                toast.error("Undo failed.");
-                console.error("Undo failed.", e);
+        case "COMMIT_PROGRAM": {
+            const nextProgram = resolveNextProgram(state, action);
+            if (nextProgram === state.hevyProgram) {
                 return state;
             }
+
+            const recordUndo = action.recordUndo ?? true;
+            if (!recordUndo) {
+                return { ...state, hevyProgram: nextProgram };
+            }
+
+            return {
+                hevyProgram: nextProgram,
+                undoStack: pushUndoSnapshot(state.undoStack, state.hevyProgram),
+            };
+        }
+        case "UNDO": {
+            if (state.undoStack.length === 0) {
+                return state;
+            }
+            const snapshot = state.undoStack[state.undoStack.length - 1];
+            return {
+                hevyProgram: structuredClone(snapshot),
+                undoStack: state.undoStack.slice(0, -1),
+            };
         }
         case "REPLACE_PROGRAM":
-            return { ...state, hevyProgram: action.program };
-        case "UPDATE_PROGRAM":
-            return { ...state, hevyProgram: action.updater(state.hevyProgram) };
+            return { hevyProgram: action.program, undoStack: [] };
         default:
             return state;
     }
-};
+}
