@@ -111,7 +111,7 @@ Space the same lift type on non-consecutive days. Adjust if the user explicitly 
 
 ## When applying
 
-- Before **buildWeek** or when building **mutateProgram** patches: ensure **each powerlifting training routine** has **at least two compound exercises** that fit the main + secondary definition (unless the user explicitly asked for something different). **Do not** use Romanian Deadlift as a secondary compound unless the user explicitly requested RDL; prefer **Deadlift (Barbell)** for hinge compounds.
+- Before **buildWeek** or when building **mutateProgram** operations: ensure **each powerlifting training routine** has **at least two compound exercises** that fit the main + secondary definition (unless the user explicitly asked for something different). **Do not** use Romanian Deadlift as a secondary compound unless the user explicitly requested RDL; prefer **Deadlift (Barbell)** for hinge compounds.
 - Do **not** reduce a day to a single compound in a powerlifting program without clear user intent.
 - Keep squat/bench/deadlift emphasis and recovery (frequency/placement) in mind.
 - Match day names to the split (e.g. "Squat", "Bench", "Lower", "Upper").
