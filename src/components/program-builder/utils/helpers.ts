@@ -683,6 +683,35 @@ function buildFlatPartIndexByKey(messages: UIMessage[]): Map<string, number> {
 }
 
 /**
+ * Ensures every routine has an exercises array and every exercise has a sets array
+ * (null slots dropped). Prevents grid render crashes after mutate/hydrate gaps.
+ */
+export const normalizeProgramForGrid = (routines: THevyRoutine[]): THevyRoutine[] => {
+    let mutated = false;
+    const next = routines.map((routine) => {
+        let routineChanged = routine.exercises === undefined;
+        const exercises = (routine.exercises ?? []).map((exercise) => {
+            const sets = (exercise.sets ?? []).filter((s): s is THevySets => s != null);
+            if (exercise.sets === undefined || sets.length !== (exercise.sets?.length ?? 0)) {
+                routineChanged = true;
+                mutated = true;
+                return { ...exercise, sets };
+            }
+            return exercise;
+        });
+        if (routineChanged) {
+            return { ...routine, exercises };
+        }
+        return routine;
+    });
+    return mutated ? next : routines;
+};
+
+/** Grid shape normalization then rep_range coercion for commit/hydrate paths. */
+export const normalizeProgramState = (routines: THevyRoutine[]): THevyRoutine[] =>
+    normalizeRepRanges(normalizeProgramForGrid(routines));
+
+/**
  * Coerces degenerate rep_range objects (start === end) to null across an entire
  * program, setting reps to the fixed value when it wasn't already set.
  * rep_range supersedes reps in the UI, so {start:5,end:5} would display "5-5".

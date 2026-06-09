@@ -29,14 +29,14 @@ export const setTypeBadgeClass = (setType: string): string =>
             ? "text-white bg-[#01579B] px-1 rounded-sm"
             : "";
 
-type PrescriptionDisplayOptions = {
+type TPrescriptionDisplayOptions = {
     selected?: boolean;
 };
 
 export function HevyPrescriptionEmpty({
     className,
     selected,
-}: PrescriptionDisplayOptions & { className?: string }) {
+}: TPrescriptionDisplayOptions & { className?: string }) {
     return (
         <div
             className={cn(
@@ -52,15 +52,19 @@ export function HevyPrescriptionEmpty({
 }
 
 /** One dash when every slot in a column is unprescribed (even if other columns use per-set rows). */
-const renderColumnAllEmpty = (options?: PrescriptionDisplayOptions) => (
+const renderColumnAllEmpty = (options?: TPrescriptionDisplayOptions) => (
     <HevyPrescriptionEmpty selected={options?.selected} />
 );
 
-export function renderSetsCount(sets: THevySets[], options?: PrescriptionDisplayOptions) {
-    if (sets.length === 0) {
+export function renderSetsCount(
+    sets: THevySets[] | undefined | null,
+    options?: TPrescriptionDisplayOptions,
+) {
+    const safeSets = sets ?? [];
+    if (safeSets.length === 0) {
         return <HevyPrescriptionEmpty selected={options?.selected} />;
     }
-    return sets.length;
+    return safeSets.length;
 }
 
 const repLabelForSet = (set: THevySets): string | null => {
@@ -83,26 +87,30 @@ const exerciseHasRepMetric = (sets: THevySets[]): boolean =>
             (s.custom_metric !== null && s.custom_metric > 0),
     );
 
-export function renderRepsColumn(sets: THevySets[], options?: PrescriptionDisplayOptions) {
+export function renderRepsColumn(
+    sets: THevySets[] | undefined | null,
+    options?: TPrescriptionDisplayOptions,
+) {
     const selected = options?.selected;
-    if (sets.length === 0) {
+    const safeSets = sets ?? [];
+    if (safeSets.length === 0) {
         return <HevyPrescriptionEmpty selected={selected} />;
     }
 
-    const first = sets[0];
+    const first = safeSets[0];
     if (
-        sets.some(
+        safeSets.some(
             (s) => s.rep_range != null || (s.reps !== null && s.reps > 0),
         )
     ) {
-        const allSameType = sets.every((s) => s.type === first.type);
+        const allSameType = safeSets.every((s) => s.type === first.type);
         const allRange =
-            sets.every((s) => s.rep_range != null) &&
-            sets.every((s) => repRangesEqual(s.rep_range, first.rep_range));
+            safeSets.every((s) => s.rep_range != null) &&
+            safeSets.every((s) => repRangesEqual(s.rep_range, first.rep_range));
         const allFixed =
-            sets.every((s) => s.rep_range == null) &&
-            sets.every((s) => s.reps !== null && s.reps > 0) &&
-            sets.every((s) => s.reps === first.reps);
+            safeSets.every((s) => s.rep_range == null) &&
+            safeSets.every((s) => s.reps !== null && s.reps > 0) &&
+            safeSets.every((s) => s.reps === first.reps);
         if (allSameType && (allRange || allFixed)) {
             const label =
                 allRange && first.rep_range
@@ -115,11 +123,11 @@ export function renderRepsColumn(sets: THevySets[], options?: PrescriptionDispla
             }
             return <div className="flex flex-row">{label}</div>;
         }
-        const labels = sets.map(repLabelForSet);
+        const labels = safeSets.map(repLabelForSet);
         if (labels.every((label) => label == null)) {
             return renderColumnAllEmpty(options);
         }
-        return sets.map((set, index) => {
+        return safeSets.map((set, index) => {
             const label = labels[index];
             if (label == null) {
                 return (
@@ -138,17 +146,17 @@ export function renderRepsColumn(sets: THevySets[], options?: PrescriptionDispla
         });
     }
 
-    if (sets[0] && sets[0].distance_meters !== null && sets[0].distance_meters > 0) {
+    if (safeSets[0] && safeSets[0].distance_meters !== null && safeSets[0].distance_meters > 0) {
         if (
-            sets.every((s) => s.distance_meters === sets[0].distance_meters) &&
-            sets.every((s) => s.type === sets[0].type)
+            safeSets.every((s) => s.distance_meters === safeSets[0].distance_meters) &&
+            safeSets.every((s) => s.type === safeSets[0].type)
         ) {
-            return <div className="flex flex-row">{sets[0].distance_meters} m</div>;
+            return <div className="flex flex-row">{safeSets[0].distance_meters} m</div>;
         }
-        if (sets.every((s) => s.distance_meters == null || s.distance_meters <= 0)) {
+        if (safeSets.every((s) => s.distance_meters == null || s.distance_meters <= 0)) {
             return renderColumnAllEmpty(options);
         }
-        return sets.map((set, index) => {
+        return safeSets.map((set, index) => {
             if (set.distance_meters == null || set.distance_meters <= 0) {
                 return (
                     <HevyPrescriptionEmpty
@@ -166,17 +174,17 @@ export function renderRepsColumn(sets: THevySets[], options?: PrescriptionDispla
         });
     }
 
-    if (sets[0] && sets[0].duration_seconds !== null && sets[0].duration_seconds > 0) {
+    if (safeSets[0] && safeSets[0].duration_seconds !== null && safeSets[0].duration_seconds > 0) {
         if (
-            sets.every((s) => s.duration_seconds === sets[0].duration_seconds) &&
-            sets.every((s) => s.type === sets[0].type)
+            safeSets.every((s) => s.duration_seconds === safeSets[0].duration_seconds) &&
+            safeSets.every((s) => s.type === safeSets[0].type)
         ) {
-            return <div className="flex flex-row">{sets[0].duration_seconds} s</div>;
+            return <div className="flex flex-row">{safeSets[0].duration_seconds} s</div>;
         }
-        if (sets.every((s) => s.duration_seconds == null || s.duration_seconds <= 0)) {
+        if (safeSets.every((s) => s.duration_seconds == null || s.duration_seconds <= 0)) {
             return renderColumnAllEmpty(options);
         }
-        return sets.map((set, index) => {
+        return safeSets.map((set, index) => {
             if (set.duration_seconds == null || set.duration_seconds <= 0) {
                 return (
                     <HevyPrescriptionEmpty
@@ -194,17 +202,17 @@ export function renderRepsColumn(sets: THevySets[], options?: PrescriptionDispla
         });
     }
 
-    if (sets[0] && sets[0].custom_metric !== null && sets[0].custom_metric > 0) {
+    if (safeSets[0] && safeSets[0].custom_metric !== null && safeSets[0].custom_metric > 0) {
         if (
-            sets.every((s) => s.custom_metric === sets[0].custom_metric) &&
-            sets.every((s) => s.type === sets[0].type)
+            safeSets.every((s) => s.custom_metric === safeSets[0].custom_metric) &&
+            safeSets.every((s) => s.type === safeSets[0].type)
         ) {
-            return <div className="flex flex-row">{sets[0].custom_metric}</div>;
+            return <div className="flex flex-row">{safeSets[0].custom_metric}</div>;
         }
-        if (sets.every((s) => s.custom_metric == null || s.custom_metric <= 0)) {
+        if (safeSets.every((s) => s.custom_metric == null || s.custom_metric <= 0)) {
             return renderColumnAllEmpty(options);
         }
-        return sets.map((set, index) => {
+        return safeSets.map((set, index) => {
             if (set.custom_metric == null || set.custom_metric <= 0) {
                 return (
                     <HevyPrescriptionEmpty
@@ -222,7 +230,7 @@ export function renderRepsColumn(sets: THevySets[], options?: PrescriptionDispla
         });
     }
 
-    if (!exerciseHasRepMetric(sets)) {
+    if (!exerciseHasRepMetric(safeSets)) {
         return renderColumnAllEmpty(options);
     }
 
@@ -237,16 +245,17 @@ const weightDisplayValue = (set: THevySets, isInLbs: boolean): string | null => 
 };
 
 export function renderWeightColumn(
-    sets: THevySets[],
+    sets: THevySets[] | undefined | null,
     isInLbs: boolean,
-    options?: PrescriptionDisplayOptions,
+    options?: TPrescriptionDisplayOptions,
 ) {
     const selected = options?.selected;
-    if (sets.length === 0) {
+    const safeSets = sets ?? [];
+    if (safeSets.length === 0) {
         return <HevyPrescriptionEmpty selected={selected} />;
     }
 
-    const values = sets.map((s) => weightDisplayValue(s, isInLbs));
+    const values = safeSets.map((s) => weightDisplayValue(s, isInLbs));
     const prescribed = values.filter((v): v is string => v != null);
     if (prescribed.length === 0) {
         return renderColumnAllEmpty(options);
@@ -259,7 +268,7 @@ export function renderWeightColumn(
         return <div>{firstVal}</div>;
     }
 
-    return sets.map((set, index) => {
+    return safeSets.map((set, index) => {
         const value = values[index];
         if (value == null) {
             return (
@@ -278,13 +287,17 @@ export function renderWeightColumn(
     });
 }
 
-export function renderRpeColumn(sets: THevySets[], options?: PrescriptionDisplayOptions) {
+export function renderRpeColumn(
+    sets: THevySets[] | undefined | null,
+    options?: TPrescriptionDisplayOptions,
+) {
     const selected = options?.selected;
-    if (sets.length === 0) {
+    const safeSets = sets ?? [];
+    if (safeSets.length === 0) {
         return <HevyPrescriptionEmpty selected={selected} />;
     }
 
-    const rpeValues = sets.map((s) =>
+    const rpeValues = safeSets.map((s) =>
         s.rpe != null && s.rpe > 0 ? s.rpe : null,
     );
     const prescribed = rpeValues.filter((v): v is number => v != null);
@@ -299,7 +312,7 @@ export function renderRpeColumn(sets: THevySets[], options?: PrescriptionDisplay
         return <div>{firstRpe}</div>;
     }
 
-    return sets.map((set, index) => {
+    return safeSets.map((set, index) => {
         const value = rpeValues[index];
         if (value == null) {
             return (

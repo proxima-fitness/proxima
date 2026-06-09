@@ -23,7 +23,7 @@ import { MessageSquare } from "lucide-react";
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { appendOrderToHevyRoutines } from "@/components/program-builder/utils/format-responses";
-import { normalizeRepRanges } from "@/components/program-builder/utils/helpers";
+import { normalizeProgramState } from "@/components/program-builder/utils/helpers";
 import { ProgramEditor } from "./ProgramEditor";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -150,13 +150,13 @@ export function BuildProgram() {
     });
 
     const setProgramFromHydrate = useCallback((program: THevyRoutine[]) => {
-        dispatchEditor({ type: "REPLACE_PROGRAM", program });
+        dispatchEditor({ type: "REPLACE_PROGRAM", program: normalizeProgramState(program) });
     }, []);
 
     const commitWithUndo = useCallback((next: THevyRoutine[], options?: TCommitWithUndoOptions) => {
         dispatchEditor({
             type: "COMMIT_PROGRAM",
-            program: normalizeRepRanges(next),
+            program: normalizeProgramState(next),
             recordUndo: options?.recordUndo ?? true,
         });
     }, []);
@@ -168,7 +168,7 @@ export function BuildProgram() {
                     type: "COMMIT_PROGRAM",
                     updater: (prev) => {
                         const next = value(prev);
-                        return next === prev ? prev : normalizeRepRanges(next);
+                        return next === prev ? prev : normalizeProgramState(next);
                     },
                     recordUndo: true,
                 });
@@ -663,7 +663,7 @@ function BuildProgramShell({
         <ProgramEditor orderedProgram={orderedProgram} isMobile={isMobile} />
     );
 
-    const hasProgramContent = hevyProgram.some((r) => r.exercises.length > 0);
+    const hasProgramContent = hevyProgram.some((r) => (r.exercises ?? []).length > 0);
 
     return (
         <ProgramMutationProvider

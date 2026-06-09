@@ -398,7 +398,7 @@ export const getNumberRoutineFolders = (routines: THevyRoutine[]): number => {
 };
 
 /** One row per set (or one row for identical sets) for CSV export. Column names are stable for imports (e.g. Google Sheets). */
-export type HevyCsvRow = {
+export type THevyCsvRow = {
     week: number;
     day: string;
     routine_title: string;
@@ -419,8 +419,10 @@ export type HevyCsvRow = {
     actual_weight: number | null;
 };
 
+type THevyCsvDataColumn = keyof Omit<THevyCsvRow, "week" | "day">;
+
 /** Data-only columns for CSV (no week/day). Order used for header and data rows. */
-const HEVY_CSV_DATA_COLUMNS: (keyof Omit<HevyCsvRow, "week" | "day">)[] = [
+const HEVY_CSV_DATA_COLUMNS: THevyCsvDataColumn[] = [
     "routine_title",
     "routine_notes",
     "exercise_title",
@@ -440,10 +442,14 @@ const HEVY_CSV_DATA_COLUMNS: (keyof Omit<HevyCsvRow, "week" | "day">)[] = [
 ];
 
 /** Human-readable header labels for CSV export. Keys not present use the column key. */
-const HEVY_CSV_HEADER_LABELS: Partial<Record<(typeof HEVY_CSV_DATA_COLUMNS)[number], string>> = {
+const HEVY_CSV_HEADER_LABELS: Partial<Record<THevyCsvDataColumn, string>> = {
     actual_rpe: "Actual RPE",
     actual_weight: "Actual Weight",
 };
+
+function hevyCsvHeaderLabel(column: THevyCsvDataColumn): string {
+    return HEVY_CSV_HEADER_LABELS[column] ?? column;
+}
 
 /**
  * Returns true when all sets in an exercise share identical rep metric, type,
@@ -478,8 +484,8 @@ function canCollapseExerciseSets(sets: THevySets[]): boolean {
  * @param routines - Flat array of Hevy routines spanning the full program
  * @returns Array of HevyCsvRow objects ready for serialization
  */
-export const hevyRoutinesToCsvRows = (routines: THevyRoutine[]): HevyCsvRow[] => {
-    const rows: HevyCsvRow[] = [];
+export const hevyRoutinesToCsvRows = (routines: THevyRoutine[]): THevyCsvRow[] => {
+    const rows: THevyCsvRow[] = [];
     for (const routine of routines) {
         const week = routine.folder_id + 1;
         const day = routine.order ?? "";
@@ -543,7 +549,7 @@ export const hevyRoutinesToCsvRows = (routines: THevyRoutine[]): HevyCsvRow[] =>
 };
 
 /** Converts a single CSV row object into an ordered array of string cell values. */
-function rowToDataCells(row: HevyCsvRow): string[] {
+function rowToDataCells(row: THevyCsvRow): string[] {
     return HEVY_CSV_DATA_COLUMNS.map((key) => {
         const v = row[key];
         if (v === null || v === undefined) return "";
@@ -569,7 +575,7 @@ export function hevyRoutinesToCsvWithWeekAndDayTitles(routines: THevyRoutine[]):
     if (rows.length === 0) return "";
 
     const numCols = HEVY_CSV_DATA_COLUMNS.length;
-    const byWeek = new Map<number, HevyCsvRow[]>();
+    const byWeek = new Map<number, THevyCsvRow[]>();
     for (const row of rows) {
         const list = byWeek.get(row.week) ?? [];
         list.push(row);
@@ -580,7 +586,7 @@ export function hevyRoutinesToCsvWithWeekAndDayTitles(routines: THevyRoutine[]):
 
     for (const week of weeks) {
         const weekRows = byWeek.get(week) ?? [];
-        const byDay = new Map<string, HevyCsvRow[]>();
+        const byDay = new Map<string, THevyCsvRow[]>();
         for (const row of weekRows) {
             const list = byDay.get(row.day) ?? [];
             list.push(row);
@@ -598,9 +604,7 @@ export function hevyRoutinesToCsvWithWeekAndDayTitles(routines: THevyRoutine[]):
             const dayTitleRow = emptyRow(numCols);
             dayTitleRow[0] = `Day ${day}`;
             csvRows.push(dayTitleRow);
-            csvRows.push(
-                HEVY_CSV_DATA_COLUMNS.map((key) => HEVY_CSV_HEADER_LABELS[key] ?? key)
-            );
+            csvRows.push(HEVY_CSV_DATA_COLUMNS.map(hevyCsvHeaderLabel));
             for (const row of dayRows) {
                 csvRows.push(rowToDataCells(row));
             }
@@ -739,7 +743,8 @@ export const convertHevyExerciseIntoHevyAddExercise = async (exercise: THevyExer
     // Infer repTypeValue from the first set: Hevy sets store exactly one non-null
     // rep-metric field. We check in priority order (distance > duration > custom)
     // because "reps" is the most common and serves as the default fallback.
-    const firstSet = exercise.sets[0];
+    const sets = exercise.sets ?? [];
+    const firstSet = sets[0];
 
     let repTypeValue: THevyAddExercise["repTypeValue"] = "reps";
     if (firstSet?.rep_range != null) {
@@ -752,8 +757,8 @@ export const convertHevyExerciseIntoHevyAddExercise = async (exercise: THevyExer
       repTypeValue = "custom_metric";
     }
 
-    const weightKg = mapPerSetIntensityField(exercise.sets, (set) => set.weight_kg);
-    const rpe = mapPerSetIntensityField(exercise.sets, (set) => set.rpe);
+    const weightKg = mapPerSetIntensityField(sets, (set) => set.weight_kg);
+    const rpe = mapPerSetIntensityField(sets, (set) => set.rpe);
 
     // Get the exercise template data: use provided list or fetch via getHevyExercises()
     let exerciseTemplate: THevyExerciseTemplate | undefined;
@@ -771,8 +776,8 @@ export const convertHevyExerciseIntoHevyAddExercise = async (exercise: THevyExer
     }
 
     if (repTypeValue === "reps_range") {
-        const repRangeStart = exercise.sets.map((s) => s.rep_range?.start ?? 0);
-        const repRangeEnd = exercise.sets.map((s) => s.rep_range?.end ?? 0);
+        const repRangeStart = sets.map((s) => s.rep_range?.start ?? 0);
+        const repRangeEnd = sets.map((s) => s.rep_range?.end ?? 0);
         return {
             selectedExercise: exerciseTemplate,
             repTypeValue: "reps_range",
@@ -782,11 +787,11 @@ export const convertHevyExerciseIntoHevyAddExercise = async (exercise: THevyExer
             weightKg,
             rpe,
             restSeconds: exercise.rest_seconds,
-            setTypes: exercise.sets.map(set => (set.type) as ("normal" | "warmup" | "dropset" | "failure")),
+            setTypes: sets.map(set => (set.type) as ("normal" | "warmup" | "dropset" | "failure")),
         };
     }
 
-    const rawReps = exercise.sets.map(set => {
+    const rawReps = sets.map(set => {
         switch (repTypeValue) {
             case "reps":
             return set.reps;
@@ -808,7 +813,7 @@ export const convertHevyExerciseIntoHevyAddExercise = async (exercise: THevyExer
         weightKg,
         rpe,
         restSeconds: exercise.rest_seconds,
-        setTypes: exercise.sets.map(set => (set.type) as ("normal" | "warmup" | "dropset" | "failure")),
+        setTypes: sets.map(set => (set.type) as ("normal" | "warmup" | "dropset" | "failure")),
     };
 };
 
