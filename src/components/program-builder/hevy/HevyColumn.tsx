@@ -2,7 +2,7 @@
  * @module HevyColumn
  * One week column in the Hevy program builder: header (week title, duplicate week), drop zone for day cards,
  * drag-and-drop reorder, Add Day dropdown (empty day or add Hevy routine), and HevyDuplicateWeek / HevyAddRoutineDialog.
- * Depends on: HevyDayCard, HevyDuplicateWeek, HevyAddRoutineDialog, DropIndicator, reorderHevy.
+ * Depends on: HevyDayCard, HevyDuplicateWeek, HevyAddRoutineDialog, DropIndicator.
  * Used by: HevyRoutine (one per week).
  */
 
@@ -15,9 +15,9 @@ import { HevyDayCard } from "./HevyDayCard";
 import { HevyDuplicateWeek } from "./HevyDuplicateWeek";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { IOption } from "@/components/ui/multi-select";
-import { reorderHevy } from "../utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { HevyAddRoutineDialog } from "./HevyAddRoutineDialog";
+import { useProgramMutation } from "@/contexts/ProgramMutationContext";
 
 /** Props for a single week column in the program builder. */
 interface IProps {
@@ -29,8 +29,6 @@ interface IProps {
     programLength: number;
     /** Flat list of all days (routines); this column filters by folder_id. */
     hevyProgram: THevyRoutine[];
-    /** Updater for the full program when days are reordered or added. */
-    setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
     /** Adds an empty day to this week. */
     handleAddDay: (folder_id: number) => void;
     /** Opens the add-note dialog for a day. */
@@ -81,7 +79,6 @@ export const HevyColumn: React.FC<IProps> = (props) => {
         hevyProgram,
         folder_id,
         programLength,
-        setHevyProgram,
         handleAddDay,
         handleOpenAddNoteDialog,
         handleOpenAddExerciseNoteDialog,
@@ -102,6 +99,8 @@ export const HevyColumn: React.FC<IProps> = (props) => {
         hevyExercises,
         isMobile = false,
     } = props;
+
+    const { runMutation } = useProgramMutation();
 
     const [active, setActive] = useState(false);
 
@@ -141,27 +140,11 @@ export const HevyColumn: React.FC<IProps> = (props) => {
         const before = element.dataset.before || "-1";
 
         if (before !== cardId) {
-            let copy = [...hevyProgram];
-
-            let cardToTransfer = copy.find((c) => c.id === cardId);
-            if (!cardToTransfer) return;
-            cardToTransfer = { ...cardToTransfer, folder_id };
-
-            copy = copy.filter((c) => c.id !== cardId);
-
-            const moveToBack = before === "-1";
-
-            if (moveToBack) {
-                copy.push(cardToTransfer);
-            } else {
-                const insertAtIndex = copy.findIndex((el) => el.id === before);
-                if (insertAtIndex === undefined) return;
-
-                copy.splice(insertAtIndex, 0, cardToTransfer);
-            }
-
-            copy = reorderHevy(copy);
-            setHevyProgram(copy);
+            runMutation("reorder_day_in_week", {
+                folderId: folder_id,
+                dayId: cardId,
+                beforeDayId: before === "-1" ? null : before,
+            });
         }
     };
 

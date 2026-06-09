@@ -667,7 +667,7 @@ function BuildProgramShell({
     );
 
     const routineContent = (
-        <ProgramEditor orderedProgram={orderedProgram} setHevyProgram={setHevyProgram} isMobile={isMobile} />
+        <ProgramEditor orderedProgram={orderedProgram} isMobile={isMobile} />
     );
 
     const hasProgramContent = hevyProgram.some((r) => r.exercises.length > 0);

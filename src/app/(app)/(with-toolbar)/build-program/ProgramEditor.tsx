@@ -1,25 +1,18 @@
 "use client";
 
 import { useState, useCallback, memo } from "react";
-import {
-    addExerciseFormToInsertPayload,
-    addRoutineAsDay,
-    duplicateDay,
-    duplicateWeek,
-} from "@/components/program-builder/mutations/handlers";
+import { addExerciseFormToInsertPayload } from "@/components/program-builder/mutations/handlers";
 import { IOption } from "@/components/ui/multi-select";
-import { toast } from "sonner";
 import { useProgramMutation } from "@/contexts/ProgramMutationContext";
 import { ProgramGrid } from "./ProgramGrid";
 
 interface IProps {
     orderedProgram: THevyRoutine[];
-    setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
     isMobile: boolean;
 }
 
 function ProgramEditorInner(props: IProps) {
-    const { orderedProgram, setHevyProgram, isMobile } = props;
+    const { orderedProgram, isMobile } = props;
     const { runMutation } = useProgramMutation();
 
     const [addExerciseDialog, setAddExerciseDialog] = useState<THevyDialog>({ folder_id: 0, dayOrder: 0, isOpen: false });
@@ -32,21 +25,30 @@ function ProgramEditorInner(props: IProps) {
         setIsEditExercise(isEditExercise);
     }, []);
 
-    const handleDuplicateWeek = useCallback((fromWeekIndex: number, toWeekIndexes: number[]) => {
-        setHevyProgram((prev) => duplicateWeek(prev, fromWeekIndex, toWeekIndexes));
-    }, [setHevyProgram]);
+    const handleDuplicateWeek = useCallback(
+        (fromWeekIndex: number, toWeekIndexes: number[]) => {
+            runMutation("duplicate_week", { fromWeekIndex, toWeekIndexes });
+        },
+        [runMutation],
+    );
 
-    const handleDuplicateDay = useCallback((
-        fromWeekOrder: number,
-        fromDayOrder: number,
-        toWeekOrder: number,
-        toDayOrderArray: IOption[],
-    ) => {
-        const toDayOrders = toDayOrderArray.map((day) => Number(day.value)).sort((a, b) => a - b);
-        setHevyProgram((prev) =>
-            duplicateDay(prev, fromWeekOrder, fromDayOrder, toWeekOrder, toDayOrders),
-        );
-    }, [setHevyProgram]);
+    const handleDuplicateDay = useCallback(
+        (
+            fromWeekOrder: number,
+            fromDayOrder: number,
+            toWeekOrder: number,
+            toDayOrderArray: IOption[],
+        ) => {
+            const toDayOrders = toDayOrderArray.map((day) => Number(day.value)).sort((a, b) => a - b);
+            runMutation("duplicate_day", {
+                fromWeekIndex: fromWeekOrder,
+                fromDayOrder,
+                toWeekIndex: toWeekOrder,
+                toDayOrders,
+            });
+        },
+        [runMutation],
+    );
 
     const handleOpenAddExerciseDialog = useCallback((addExerciseDialog: THevyDialog) => {
         if (addExerciseDialog.isOpen === false) {
@@ -124,15 +126,19 @@ function ProgramEditorInner(props: IProps) {
         [orderedProgram, runMutation],
     );
 
-    const handleAddRoutineAsDay = useCallback((routine: THevyRoutine, folder_id: number) => {
-        setHevyProgram((prev) => {
-            const next = addRoutineAsDay(prev, routine, folder_id);
-            if (next === prev) {
-                toast.error("Maximum 7 days per week");
-            }
-            return next;
-        });
-    }, [setHevyProgram]);
+    const handleAddRoutineAsDay = useCallback(
+        (routine: THevyRoutine, folder_id: number) => {
+            runMutation("add_routine_as_day", {
+                folderIds: [folder_id],
+                routine: {
+                    exercises: routine.exercises,
+                    title: routine.title ?? "",
+                    notes: routine.notes ?? "",
+                },
+            });
+        },
+        [runMutation],
+    );
 
     const handleAddRoutineNote = useCallback(
         (folder_id: number, dayOrder: number, prompt: string) => {
@@ -189,7 +195,6 @@ function ProgramEditorInner(props: IProps) {
     return (
         <ProgramGrid
             orderedProgram={orderedProgram}
-            setHevyProgram={setHevyProgram}
             isMobile={isMobile}
             addExerciseDialog={addExerciseDialog}
             addNoteDialog={addNoteDialog}

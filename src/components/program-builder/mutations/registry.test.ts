@@ -124,6 +124,25 @@ describe("runProgramMutation", () => {
         expect(commitWithUndo.mock.calls[0][0][0].exercises[1].supersets_id).toBe(0);
     });
 
+    it("reorder_day_in_week commits via registry", () => {
+        const program = [
+            makeDay({ id: "1", order: "1", title: "Day 1" }),
+            makeDay({ id: "2", order: "2", title: "Day 2" }),
+        ];
+        const commitWithUndo = vi.fn();
+
+        const result = runProgramMutation(
+            "reorder_day_in_week",
+            { folderId: 0, dayId: "2", beforeDayId: "1" },
+            { program, commitWithUndo, isAgentStreaming: false },
+        );
+
+        expect(isValidationFailure(result)).toBe(false);
+        expect(commitWithUndo).toHaveBeenCalledOnce();
+        expect(commitWithUndo.mock.calls[0][0][0].order).toBe("1");
+        expect(commitWithUndo.mock.calls[0][0][1].order).toBe("2");
+    });
+
     it("returns failure for unknown operation id", () => {
         const commitWithUndo = vi.fn();
 

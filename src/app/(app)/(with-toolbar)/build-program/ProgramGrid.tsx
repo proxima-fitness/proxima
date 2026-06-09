@@ -14,7 +14,6 @@ import type { IOption } from "@/components/ui/multi-select";
 
 export interface IProps {
     orderedProgram: THevyRoutine[];
-    setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
     isMobile: boolean;
     addExerciseDialog: THevyDialog;
     addNoteDialog: THevyDialog;
@@ -44,7 +43,6 @@ export interface IProps {
 
 function ProgramGridInner({
     orderedProgram,
-    setHevyProgram,
     isMobile,
     addExerciseDialog,
     addNoteDialog,
@@ -83,7 +81,6 @@ function ProgramGridInner({
     const routineProps = useMemo(
         () => ({
             hevyProgram: orderedProgram,
-            setHevyProgram,
             isMobile,
             addExerciseDialog,
             addNoteDialog,
@@ -114,7 +111,6 @@ function ProgramGridInner({
         }),
         [
             orderedProgram,
-            setHevyProgram,
             isMobile,
             addExerciseDialog,
             addNoteDialog,
