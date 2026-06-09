@@ -100,7 +100,8 @@ export const HevyColumn: React.FC<IProps> = (props) => {
         isMobile = false,
     } = props;
 
-    const { runMutation } = useProgramMutation();
+    const { runMutation, isAgentStreaming } = useProgramMutation();
+    const mutationsLocked = isAgentStreaming;
 
     const [active, setActive] = useState(false);
 
@@ -224,8 +225,9 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                             <Tooltip>
                                 <TooltipTrigger className="">
                                     <div
-                                        onClick={ () => handleDuplicateWeekOpen(true) }
-                                        className="[&_svg]:w-4 [&_svg]:h-4 sm:[&_svg]:w-5 sm:[&_svg]:h-5"
+                                        onClick={ () => { if (!mutationsLocked) handleDuplicateWeekOpen(true); } }
+                                        className={`[&_svg]:w-4 [&_svg]:h-4 sm:[&_svg]:w-5 sm:[&_svg]:h-5 ${mutationsLocked ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                                        aria-disabled={mutationsLocked}
                                     >
                                         <CopyIcon />
                                     </div>
@@ -237,8 +239,9 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                             <Tooltip>
                                 <TooltipTrigger className="">
                                     <div
-                                        onClick={ () => setDeleteWeekOpen(true) }
-                                        className="[&_svg]:w-4 [&_svg]:h-4 sm:[&_svg]:w-5 sm:[&_svg]:h-5"
+                                        onClick={ () => { if (!mutationsLocked) setDeleteWeekOpen(true); } }
+                                        className={`[&_svg]:w-4 [&_svg]:h-4 sm:[&_svg]:w-5 sm:[&_svg]:h-5 ${mutationsLocked ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                                        aria-disabled={mutationsLocked}
                                     >
                                         <Trash2 />
                                     </div>
@@ -252,9 +255,9 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                 </div>
             </div>
             <div
-                onDrop={ handleDragEnd }
-                onDragOver={ handleDragOver }
-                onDragLeave={ handleDragLeave }
+                onDrop={ mutationsLocked ? undefined : handleDragEnd }
+                onDragOver={ mutationsLocked ? undefined : handleDragOver }
+                onDragLeave={ mutationsLocked ? undefined : handleDragLeave }
                 className={ `h-full w-full max-w-full gap-4 transition-colors max-sm:overflow-x-hidden ${
                     active ?  "bg-gray-200 dark:bg-darkGray" : "bg-white dark:bg-darkGray"
                 }` }
@@ -291,8 +294,9 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                     <DropdownMenu open={ dropdownOpen } onOpenChange={ () => setDropdownOpen(false) }>
                         <DropdownMenuTrigger asChild>
                             <Button
-                                onClick={ () => setDropdownOpen(true) }
-                                className="mb-4 h-12 w-44 rounded-full bg-lightSecondary font-semibold uppercase text-white hover:bg-lightSecondary/90"
+                                onClick={ () => { if (!mutationsLocked) setDropdownOpen(true); } }
+                                disabled={mutationsLocked}
+                                className="mb-4 h-12 w-44 rounded-full bg-lightSecondary font-semibold uppercase text-white hover:bg-lightSecondary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                                 aria-label="Add day to week">
                                 <PlusIcon />
                                 Add Day
@@ -301,14 +305,16 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                         <DropdownMenuContent>
                             <DropdownMenuItem
                                 className="cursor-pointer"
-                                onClick={ () => handleAddDay(folder_id) }
+                                disabled={mutationsLocked}
+                                onClick={ () => { if (!mutationsLocked) handleAddDay(folder_id); } }
                             >
                             <Plus className="w-4 h-4 mr-2" />
                             Add Empty Day
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 className="cursor-pointer"
-                                onClick={ () => { setRoutineDialogOpen(true); setDropdownOpen(false); } }
+                                disabled={mutationsLocked}
+                                onClick={ () => { if (!mutationsLocked) { setRoutineDialogOpen(true); setDropdownOpen(false); } } }
                             >
                             <BookOpen className="w-4 h-4 mr-2" />
                             Add Hevy Routine

@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { DialogBadge } from "@/components/ui/dialog-badge";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useProgramMutation } from "@/contexts/ProgramMutationContext";
 
 /** Props for the duplicate-week dialog. */
 interface IProps {
@@ -37,6 +38,9 @@ export const HevyDuplicateWeek: React.FC<IProps> = (props) => {
         setDuplicateWeekOpen,
         handleDuplicateWeek,
     } = props;
+
+    const { isAgentStreaming } = useProgramMutation();
+    const mutationsLocked = isAgentStreaming;
 
     const [selectedWeeks, setSelectedWeeks] = useState<boolean[]>(Array(programLength).fill(false));
 
@@ -95,6 +99,7 @@ export const HevyDuplicateWeek: React.FC<IProps> = (props) => {
                     <span className="flex w-full items-center justify-center">
                         <Button
                             onClick={ () => {
+                                if (mutationsLocked) return;
                                 handleDuplicateWeek(
                                     folder_id,
                                     toWeekIndexes(),
@@ -102,7 +107,8 @@ export const HevyDuplicateWeek: React.FC<IProps> = (props) => {
                                 setDuplicateWeekOpen(false);
                                 }
                             }
-                            className="h-11 w-full rounded-full bg-lightSecondary text-white hover:bg-lightSecondary/90 sm:h-12"
+                            disabled={mutationsLocked}
+                            className="h-11 w-full rounded-full bg-lightSecondary text-white hover:bg-lightSecondary/90 sm:h-12 disabled:opacity-50 disabled:cursor-not-allowed"
                             aria-label="Duplicate week"
                         >
                             Duplicate

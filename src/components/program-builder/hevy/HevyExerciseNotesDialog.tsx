@@ -25,6 +25,7 @@ import {
     FormItem,
     FormMessage,
   } from "@/components/ui/form";
+import { useProgramMutation } from "@/contexts/ProgramMutationContext";
 
 /** Props for the add exercise note dialog. */
 interface IProps {
@@ -47,6 +48,9 @@ export const HevyExerciseNotesDialog: React.FC<IProps> = (props) => {
         handleOpenAddExerciseNoteDialog,
     } = props;
 
+    const { isAgentStreaming } = useProgramMutation();
+    const mutationsLocked = isAgentStreaming;
+
     const formSchema = z.object({
         prompt: z.string().min(0, {
             message: "Please add your note here",
@@ -63,6 +67,7 @@ export const HevyExerciseNotesDialog: React.FC<IProps> = (props) => {
     });
 
     const onSubmit = (values: z.infer<typeof formSchema>) => {
+        if (mutationsLocked) return;
         handleAddExerciseNote(addExerciseNoteDialog.folder_id, addExerciseNoteDialog.dayOrder, addExerciseNoteDialog?.exerciseIndex ?? 0, values.prompt);
         handleOpenAddExerciseNoteDialog({folder_id: 0, dayOrder: 0, isOpen: false});
     };
@@ -93,7 +98,8 @@ export const HevyExerciseNotesDialog: React.FC<IProps> = (props) => {
                                     />
                                 <Button
                                     type="submit"
-                                    className="h-10 w-auto rounded-full bg-lightSecondary px-5 text-white hover:bg-lightSecondary/90"
+                                    disabled={mutationsLocked}
+                                    className="h-10 w-auto rounded-full bg-lightSecondary px-5 text-white hover:bg-lightSecondary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <SparklesIcon /> Add Note
                                 </Button>

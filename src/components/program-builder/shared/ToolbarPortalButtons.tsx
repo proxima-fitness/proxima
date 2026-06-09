@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 
 interface IToolbarPortalButtonsProps {
     canUndo: boolean;
+    undoDisabled?: boolean;
     onUndo: () => void;
     onSave: () => void;
     saveDisabled: boolean;
@@ -20,6 +21,7 @@ interface IToolbarPortalButtonsProps {
  */
 function ToolbarPortalButtonsInner({
     canUndo,
+    undoDisabled = false,
     onUndo,
     // onSave,
     // saveDisabled,
@@ -42,7 +44,8 @@ function ToolbarPortalButtonsInner({
             <Button
                 size="sm"
                 onClick={onUndo}
-                className="gap-2 rounded-full bg-lightGold hover:bg-lightGold/80 text-black h-9 px-4"
+                disabled={undoDisabled}
+                className="gap-2 rounded-full bg-lightGold hover:bg-lightGold/80 text-black h-9 px-4 disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 <Undo2 className="h-4 w-4" />
                 Undo

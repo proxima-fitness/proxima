@@ -515,6 +515,11 @@ function BuildProgramShell({
     clearChatRef.current = clearMessages;
     getPersistChatIdRef.current = getPersistChatId;
 
+    const onUndo = useCallback(() => {
+        if (status === "streaming") return;
+        handleUndo();
+    }, [status, handleUndo]);
+
     useEffect(() => {
         void (async () => {
             await tryRunSignInMigration();
@@ -685,7 +690,8 @@ function BuildProgramShell({
             />
             <ToolbarPortalButtons
                 canUndo={undoStackLength > 0}
-                onUndo={handleUndo}
+                undoDisabled={status === "streaming"}
+                onUndo={onUndo}
                 onSave={handleSave}
                 saveDisabled={!user || hevyProgram.length === 0 || messages.length === 0}
                 isSaving={isSaving}

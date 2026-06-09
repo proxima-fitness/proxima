@@ -26,6 +26,7 @@ import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogT
 import { useUserContext } from "@/contexts/UserContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { useProgramMutation } from "@/contexts/ProgramMutationContext";
 
 /** Props for the add/edit exercise dialog. */
 interface IProps {
@@ -60,6 +61,8 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 
     const isMobile = useIsMobile();
     const { isInLbs } = usePoundsOrKgContext();
+    const { isAgentStreaming } = useProgramMutation();
+    const mutationsLocked = isAgentStreaming;
     const weightUnit = getWeightUnit(isInLbs);
 
     const emptyPerSetArray = (length: number) => Array.from({ length }, () => null as number | null);
@@ -223,6 +226,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
 
 
     const handleSave = async () => {
+        if (mutationsLocked) return;
         if (!selectedExercise || selectedExercise.title === "") {
             toast.error("Please select an exercise");
             return;
@@ -565,7 +569,8 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
             <span className="flex w-full items-center justify-center">
                 <Button
                     onClick={ () => handleSave() }
-                    className="h-11 w-full rounded-full bg-lightSecondary text-white hover:bg-lightSecondary/90 sm:h-12"
+                    disabled={mutationsLocked}
+                    className="h-11 w-full rounded-full bg-lightSecondary text-white hover:bg-lightSecondary/90 sm:h-12 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {isEditExercise ? "Edit" : "Add"}
                 </Button>
