@@ -628,8 +628,12 @@ export function describeProgramOperation(operation: TAgentProgramOperation): str
             return weeks ? `Add day to week ${weeks}` : "Add day";
         case "delete_week":
             return weeks ? `Delete week ${weeks}` : "Delete week";
-        case "create_superset":
-            return `Week${weeks ? ` ${weeks}` : ""} day ${operation.dayOrder}: create superset (exercises ${operation.exerciseIndexes.map((i) => i + 1).join(", ")})`;
+        case "create_superset": {
+            const indexes =
+                operation.exerciseIndexes?.map((i) => i + 1).join(", ") ?? "…";
+            const day = operation.dayOrder ?? "?";
+            return `Week${weeks ? ` ${weeks}` : ""} day ${day}: create superset (exercises ${indexes})`;
+        }
         case "remove_from_superset":
             return `Week${weeks ? ` ${weeks}` : ""} day ${operation.dayOrder}: remove exercise ${operation.exerciseIndex + 1} from superset`;
         case "swap_exercise_template": {
@@ -998,8 +1002,6 @@ export const tryCommitAtomicBuildWeekAndMutations = (
         doc = result.program;
     }
 
-    doc = normalizeRepRanges(doc);
-
     commitWithUndo(doc, { recordUndo: hevyProgram.length > 0 });
     snap.mutateKeys.forEach((k) => appliedMutateProgramKeysRef.current.add(k));
     lastAtomicCommitKeyRef.current = commitKey;
@@ -1060,7 +1062,7 @@ export const applyMutateProgramFromMessages = (
         return false;
     }
 
-    commitWithUndo(normalizeRepRanges(result.program), { recordUndo: hevyProgram.length > 0 });
+    commitWithUndo(result.program, { recordUndo: hevyProgram.length > 0 });
     pendingKeys.forEach((k) => appliedKeysRef.current.add(k));
     return true;
 };

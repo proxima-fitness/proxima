@@ -752,9 +752,10 @@ export function updateSet(
             ...day,
             exercises: day.exercises.map((exercise, index) => {
                 if (index !== exerciseIndex) return exercise;
+                if (exercise == null) return exercise;
                 return {
                     ...exercise,
-                    sets: exercise.sets.map((existingSet, existingSetIndex) =>
+                    sets: (exercise.sets ?? []).map((existingSet, existingSetIndex) =>
                         existingSetIndex === setIndex ? { ...existingSet, ...set } : existingSet,
                     ),
                 };

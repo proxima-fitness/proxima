@@ -612,11 +612,11 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                     Building {buildInput.totalDays ?? buildInput.routines.length} day{(buildInput.totalDays ?? buildInput.routines.length) === 1 ? "" : "s"}:
                                                                 </p>
                                                                 <ul className="list-none space-y-1 text-sm text-muted-foreground">
-                                                                    {buildInput.routines.map((r, ri) => (
+                                                                    {buildInput.routines.filter(Boolean).map((r, ri) => (
                                                                         <li key={ri} className="flex items-baseline gap-1.5">
                                                                             <span className="w-2 h-2 rounded-full shrink-0 bg-foreground/30 mt-1.5" />
                                                                             <span>
-                                                                                <span className="text-foreground font-medium">{r.title ?? `Day ${ri + 1}`}</span>
+                                                                                <span className="text-foreground font-medium">{r?.title ?? `Day ${ri + 1}`}</span>
                                                                                 {r.exercises?.length ? (
                                                                                     <span className="text-muted-foreground"> — {r.exercises.length} exercise{r.exercises.length === 1 ? "" : "s"}</span>
                                                                                 ) : null}

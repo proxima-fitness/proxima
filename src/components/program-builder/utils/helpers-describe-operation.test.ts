@@ -70,6 +70,18 @@ describe("describeProgramOperation", () => {
         );
     });
 
+    it("does not throw when create_superset exerciseIndexes is missing (streaming partial input)", () => {
+        const operation = {
+            op: "create_superset",
+            folderIds: [0],
+            dayOrder: 1,
+        } as TAgentProgramOperation;
+
+        expect(describeProgramOperation(operation)).toBe(
+            "Week 1 day 1: create superset (exercises …)",
+        );
+    });
+
     it("describes insert_exercise with template id when title omitted", () => {
         const operation = {
             op: "insert_exercise",

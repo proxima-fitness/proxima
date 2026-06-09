@@ -9,6 +9,7 @@ import {
     editExercise,
     editExerciseFromDialog,
     swapExerciseTemplate,
+    updateSet,
 } from "./handlers";
 import { applyOperation } from "./apply";
 import { resolveExercisePayload } from "./resolveExercisePayload";
@@ -222,6 +223,26 @@ describe("swapExerciseTemplate", () => {
         expect(isValidationFailure(result)).toBe(true);
         if (!isValidationFailure(result)) return;
         expect(result.reason).toContain("No exercise matched from_exercise_template_id MISSING");
+    });
+});
+
+describe("updateSet", () => {
+    it("does not throw when exercise slot at index is undefined", () => {
+        const program = [
+            makeDay({
+                exercises: [
+                    makeExercise(),
+                    undefined as unknown as THevyExercise,
+                ],
+            }),
+        ];
+
+        expect(() =>
+            updateSet(program, [0], 1, 1, 0, { reps: 10 }),
+        ).not.toThrow();
+
+        const next = updateSet(program, [0], 1, 1, 0, { reps: 10 });
+        expect(next[0].exercises[1]).toBeUndefined();
     });
 });
 
