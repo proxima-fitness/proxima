@@ -21,7 +21,7 @@ import { ProductHunt } from "@/components/program-builder/shared/ProductHunt";
 
 export const CredibilityBand: React.FC = () => {
     return (
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-4 md:gap-6">
+        <div className="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-6">
             <div className="flex flex-col items-center gap-4">
                 <span className="font-tertiary text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:text-xs">
                     Integrated with
@@ -66,9 +66,10 @@ export const CredibilityBand: React.FC = () => {
                 </span>
                 <ProductHunt />
             </div>
-            <div className="col-span-2 flex flex-col items-center gap-4 md:col-span-1">
-                <span className="font-tertiary text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:text-xs">
-                    Join 2,000+ athletes
+            <div className="flex flex-col items-center gap-4">
+                <span className="font-tertiary whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:text-xs">
+                    <span className="sm:hidden">2,000+ athletes</span>
+                    <span className="hidden sm:inline">Join 2,000+ athletes</span>
                 </span>
                 <AvatarStack
                     avatars={[

@@ -241,6 +241,27 @@
     filter: brightness(0) invert(1);
   }
 
+  .reddit-reviews-carousel .slick-dots {
+    bottom: -28px;
+  }
+
+  .reddit-reviews-carousel .slick-dots li button:before {
+    color: rgba(24, 10, 10, 0.35);
+    opacity: 1;
+  }
+
+  .reddit-reviews-carousel .slick-dots li.slick-active button:before {
+    color: #33bbcf;
+  }
+
+  .dark .reddit-reviews-carousel .slick-dots li button:before {
+    color: rgba(255, 255, 255, 0.35);
+  }
+
+  .dark .reddit-reviews-carousel .slick-dots li.slick-active button:before {
+    color: #33bbcf;
+  }
+
   .feedback-container .feedback-card:last-child {
     margin-right: 0px;
   }
