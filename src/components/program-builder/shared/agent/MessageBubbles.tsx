@@ -1,6 +1,6 @@
 /**
  * @module MessageBubbles
- * Renders chat messages (user + assistant), tool outputs (buildWeek, modifyProgram), build progress, error/retry UI, and applies program updates from tool results. After the stream finishes, duplicates week 1 across all weeks and merges modifyProgram patches into one apply (atomic commit via applyPatchWithUndo). Drives timeout/retry logic.
+ * Renders chat messages (user + assistant), tool outputs (buildWeek, mutateProgram), build progress, error/retry UI, and applies program updates from tool results. After the stream finishes, duplicates week 1 across all weeks and merges post-buildWeek mutateProgram ops into one atomic commit. Drives timeout/retry logic.
  * Depends on: message, tool, reasoning, attachments, ModifyProgramProgress, applyModifyProgramPatchesFromMessages, helpers. Used by: Agent.
  */
 /* eslint-disable @next/next/no-img-element */
@@ -21,9 +21,10 @@ import type { TChatSendMessageParam } from "./Agent";
 import type { IQuestion } from "@/components/ui/questions";
 import { IOption } from "@/components/ui/multi-select";
 import {
-    applyModifyProgramPatchesFromMessages,
+    applyStandaloneProgramEditsFromMessages,
     getModifyProgramObjectivesByRoutine,
-    tryCommitAtomicBuildWeekAndMergedPatches,
+    getMutateProgramObjectives,
+    tryCommitAtomicBuildWeekAndMutations,
 } from "@/components/program-builder/utils/helpers";
 import {
     Reasoning,
@@ -36,7 +37,7 @@ import { ModifyProgramProgress } from "./ModifyProgramProgress";
 import { RateProgramResults } from "@/components/program-builder/shared/RateProgramResults";
 import type { IProgramScore } from "@/components/program-builder/utils/score-program";
 import { toast } from "sonner";
-import { type Operation } from "fast-json-patch";
+import type { TCommitWithUndoOptions } from "@/components/program-builder/mutations/types";
 import posthog from "posthog-js";
 import { useUserContext } from "@/contexts/UserContext";
 import {
@@ -72,10 +73,11 @@ interface IProps {
     maxRetries: number;
     onTimeoutError: () => void;
     hevyProgram: THevyRoutine[];
-    applyPatchWithUndo: (newDocument: THevyRoutine[], inversePatch: Operation[], recordUndo?: boolean) => void;
+    commitWithUndo: (next: THevyRoutine[], options?: TCommitWithUndoOptions) => void;
     onBuildComplete?: () => void;
     lastAtomicBuildCommitKeyRef: RefObject<string | null>;
     appliedModifyProgramKeysRef: RefObject<Set<string>>;
+    appliedMutateProgramKeysRef: RefObject<Set<string>>;
 }
 
 /** Renders message list, build/modify progress, applies tool results to hevyProgram, and handles timeout/retry. */
@@ -97,10 +99,11 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         maxRetries,
         onTimeoutError,
         hevyProgram,
-        applyPatchWithUndo,
+        commitWithUndo,
         onBuildComplete,
         lastAtomicBuildCommitKeyRef,
         appliedModifyProgramKeysRef,
+        appliedMutateProgramKeysRef,
     } = props;
 
     const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
@@ -186,17 +189,17 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     }, [isBuilding, error, totalDays, allRoutines.length, onTimeoutError]);
 
     useEffect(() => {
-        // After stream finishes: duplicate week 1 across all weeks, merge modifyProgram patches after buildWeek, one commit
+        // After stream finishes: duplicate week 1, merge post-buildWeek mutateProgram ops, one commit
         const programLengthFromUi = programLength ? Number(programLength) : undefined;
         const weeksFallback = programLengthFromUi ?? 1;
-        const result = tryCommitAtomicBuildWeekAndMergedPatches(
+        const result = tryCommitAtomicBuildWeekAndMutations(
             messages,
             status,
             programLengthFromUi,
             hevyProgram,
-            appliedModifyProgramKeysRef,
+            appliedMutateProgramKeysRef,
             lastAtomicBuildCommitKeyRef,
-            applyPatchWithUndo
+            commitWithUndo
         );
         if (result.committed) {
             handleIsBuilding(false);
@@ -212,28 +215,37 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         status,
         programLength,
         hevyProgram,
-        applyPatchWithUndo,
+        commitWithUndo,
         handleIsBuilding,
         onBuildComplete,
         user,
         totalDays,
         allRoutines.length,
-        appliedModifyProgramKeysRef,
+        appliedMutateProgramKeysRef,
         lastAtomicBuildCommitKeyRef,
     ]);
 
     useEffect(() => {
-        // Apply modifyProgram patches from messages; skip already-applied; commit via applyPatchWithUndo (atomic)
-        const modified = applyModifyProgramPatchesFromMessages(
+        const modified = applyStandaloneProgramEditsFromMessages(
             messages,
+            status,
             hevyProgram,
             appliedModifyProgramKeysRef,
-            applyPatchWithUndo
+            appliedMutateProgramKeysRef,
+            commitWithUndo,
         );
         if (modified) {
             posthog?.capture?.("modified_a_program", { user: user?.id ?? "user_id_unknown" });
         }
-    }, [messages, hevyProgram, applyPatchWithUndo, user, appliedModifyProgramKeysRef]);
+    }, [
+        messages,
+        status,
+        hevyProgram,
+        commitWithUndo,
+        user,
+        appliedModifyProgramKeysRef,
+        appliedMutateProgramKeysRef,
+    ]);
 
     return (
 
@@ -607,14 +619,14 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                             );
                                         }
                                         case "tool-modifyProgram": {
-                                            type ModifyProgramPart = {
+                                            type TModifyProgramPart = {
                                                 type: "tool-modifyProgram";
                                                 state?: string;
                                                 input?: { patch?: Array<{ op: string; path: string; value?: unknown }> };
                                                 output?: { patch?: Array<{ op: string; path: string; value?: unknown }>; error?: string };
                                                 errorText?: string;
                                             };
-                                            const modifyPart = part as unknown as ModifyProgramPart;
+                                            const modifyPart = part as unknown as TModifyProgramPart;
                                             const patch = modifyPart.output?.patch ?? modifyPart.input?.patch;
                                             const objectivesByRoutine = getModifyProgramObjectivesByRoutine(patch, hevyProgram);
                                             const isComplete =
@@ -662,14 +674,82 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 </Tool>
                                             );
                                         }
+                                        case "tool-mutateProgram": {
+                                            type TMutateProgramPart = {
+                                                type: "tool-mutateProgram";
+                                                state?: string;
+                                                input?: { operations?: Array<{ op: string }> };
+                                                output?: {
+                                                    operations?: Array<{ op: string }>;
+                                                    error?: string;
+                                                    failures?: Array<{ index: number; op: string; reason: string }>;
+                                                };
+                                                errorText?: string;
+                                            };
+                                            const mutatePart = part as unknown as TMutateProgramPart;
+                                            const operations =
+                                                mutatePart.output?.operations ?? mutatePart.input?.operations;
+                                            const objectivesByRoutine = getMutateProgramObjectives(
+                                                operations as Parameters<typeof getMutateProgramObjectives>[0],
+                                            );
+                                            const isComplete =
+                                                mutatePart.state === "output-available" &&
+                                                Boolean(mutatePart.output?.operations?.length);
+                                            const isError = mutatePart.state === "output-error" || Boolean(mutatePart.output?.error);
+                                            const errorText =
+                                                mutatePart.errorText ??
+                                                mutatePart.output?.failures
+                                                    ?.map((f) => `[${f.index}] ${f.op}: ${f.reason}`)
+                                                    .join("; ");
+                                            const toolState: ToolPart["state"] = isError
+                                                ? "output-error"
+                                                : isComplete
+                                                    ? "output-available"
+                                                    : "input-available";
+
+                                            if (isError) {
+                                                return (
+                                                    <Tool key={`${message.id}-${index}-mutate-error`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
+                                                        <ToolHeader type="tool-mutateProgram" state={toolState} title="Mutate program" />
+                                                        <ToolContent>
+                                                            <div className="flex items-center gap-2 pb-4 bg-muted/50 rounded-lg border border-border">
+                                                                <span className="w-2.5 h-2.5 rounded-full shrink-0 bg-red-500" />
+                                                                <span className="text-sm text-muted-foreground">
+                                                                    {errorText || "Program mutation failed"}
+                                                                </span>
+                                                            </div>
+                                                        </ToolContent>
+                                                    </Tool>
+                                                );
+                                            }
+
+                                            const mutateInFlight = !isComplete;
+
+                                            return (
+                                                <Tool key={`${message.id}-${index}-mutate`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
+                                                    <ToolHeader type="tool-mutateProgram" state={toolState} title="Mutate program" />
+                                                    <ToolContent>
+                                                        {mutateInFlight && operations?.length ? (
+                                                            <p className="text-sm text-muted-foreground px-3 pb-1">
+                                                                Applying {operations.length} operation{operations.length === 1 ? "" : "s"}…
+                                                            </p>
+                                                        ) : null}
+                                                        <ModifyProgramProgress
+                                                            objectivesByRoutine={objectivesByRoutine}
+                                                            status={isComplete ? "complete" : "processing"}
+                                                        />
+                                                    </ToolContent>
+                                                </Tool>
+                                            );
+                                        }
                                         case "tool-rateProgram": {
-                                            type RateProgramPart = {
+                                            type TRateProgramPart = {
                                                 type: "tool-rateProgram";
                                                 state?: ToolPart["state"];
                                                 output?: { score?: IProgramScore; error?: string; message?: string };
                                                 errorText?: string;
                                             };
-                                            const ratePart = part as unknown as RateProgramPart;
+                                            const ratePart = part as unknown as TRateProgramPart;
                                             const out = ratePart.output;
                                             const hasScore = Boolean(out?.score && !out?.error);
                                             const toolState: ToolPart["state"] = out?.error

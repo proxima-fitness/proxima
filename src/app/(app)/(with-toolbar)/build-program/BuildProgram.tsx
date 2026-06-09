@@ -68,7 +68,6 @@ import {
 } from "./resolve-chat-entry";
 import type { User } from "@supabase/supabase-js";
 import { useChatHistory, useChatIds } from "@/api/hooks";
-import { Operation } from "fast-json-patch";
 import posthog from "posthog-js";
 
 /** Logged-in only; module guard avoids duplicate capture under Strict Mode remount. */
@@ -254,14 +253,6 @@ export function BuildProgram() {
 
     /*************************************************************************************/
     /*** STATE FOR THE PROGRAM BUILDER (reducer for atomic undo + stable handleUndo) ***/
-    const applyPatchWithUndo = useCallback(
-        (newDocument: THevyRoutine[], inversePatch: Operation[], recordUndo = true) => {
-            commitWithUndo(newDocument, {
-                recordUndo: recordUndo && inversePatch.length > 0,
-            });
-        },
-        [commitWithUndo],
-    );
     const orderedProgram = useMemo(
         () => appendOrderToHevyRoutines(hevyProgram) as THevyRoutine[],
         [hevyProgram],
@@ -383,7 +374,6 @@ export function BuildProgram() {
             commitWithUndo={commitWithUndo}
             setProgramFromHydrate={setProgramFromHydrate}
             orderedProgram={orderedProgram}
-            applyPatchWithUndo={applyPatchWithUndo}
             programRequest={programRequest}
             isMobile={isMobile}
             sharedProgramLoadAttempted={sharedProgramLoadAttempted}
@@ -418,7 +408,6 @@ interface IBuildProgramShellProps {
     commitWithUndo: (next: THevyRoutine[], options?: TCommitWithUndoOptions) => void;
     setProgramFromHydrate: (program: THevyRoutine[]) => void;
     orderedProgram: THevyRoutine[];
-    applyPatchWithUndo: (newDocument: THevyRoutine[], inversePatch: Operation[], recordUndo?: boolean) => void;
     programRequest: ReturnType<typeof useProgramRequestState>;
     isMobile: boolean;
     sharedProgramLoadAttempted: boolean;
@@ -451,7 +440,6 @@ function BuildProgramShell({
     commitWithUndo,
     setProgramFromHydrate,
     orderedProgram,
-    applyPatchWithUndo,
     programRequest,
     isMobile,
     sharedProgramLoadAttempted,
@@ -510,6 +498,7 @@ function BuildProgramShell({
         tryRunSignInMigration,
         lastAtomicBuildCommitKeyRef,
         appliedModifyProgramKeysRef,
+        appliedMutateProgramKeysRef,
     } = chat;
 
     clearChatRef.current = clearMessages;
@@ -626,7 +615,7 @@ function BuildProgramShell({
         search,
         hevyProgram,
         setHevyProgram,
-        applyPatchWithUndo,
+        commitWithUndo,
         programRequest,
         messages,
         setMessages,
@@ -646,6 +635,7 @@ function BuildProgramShell({
         onBuildComplete,
         lastAtomicBuildCommitKeyRef,
         appliedModifyProgramKeysRef,
+        appliedMutateProgramKeysRef,
         chatHistoryLoading,
     } as const;
 

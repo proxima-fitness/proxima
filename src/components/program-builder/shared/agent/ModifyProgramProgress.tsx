@@ -93,7 +93,7 @@ export const ModifyProgramProgress: React.FC<IProps> = ({
                                 )}
                             />
                             <span className="text-sm text-muted-foreground">
-                                {isComplete ? "Patch applied" : "Applying patch…"}
+                                {isComplete ? "Changes applied" : "Applying changes…"}
                             </span>
                         </div>
                     )}

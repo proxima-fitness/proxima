@@ -27,7 +27,7 @@ import {
     getTextFromChatMessage,
     isMessageAboutProgram,
 } from "@/components/program-builder/utils/helpers";
-import type { SendMessageWithContext } from "@/components/program-builder/shared/agent/Agent";
+import type { TSendMessageWithContext } from "@/components/program-builder/shared/agent/Agent";
 import {
     clearLongPromptFromSessionStorage,
     inferProgramRequestFromPrompt,
@@ -42,7 +42,7 @@ import type { useProgramRequestState } from "./use-program-request-state";
 // Types & constants
 // ---------------------------------------------------------------------------
 
-type ProgramRequestState = ReturnType<typeof useProgramRequestState>;
+type TProgramRequestState = ReturnType<typeof useProgramRequestState>;
 
 const chatTransport = new DefaultChatTransport({ api: "/api/chat" });
 const MAX_RETRIES = 2;
@@ -50,7 +50,7 @@ const MAX_RETRIES = 2;
 export interface IUseBuildProgramChatOptions {
     user: User | null;
     hevyProgram: THevyRoutine[];
-    programRequest: ProgramRequestState;
+    programRequest: TProgramRequestState;
     isMobile: boolean;
     setMobileTab: (tab: string) => void;
     /** Snapshot for keyed remount (chat history or anonymous restore). */
@@ -70,7 +70,7 @@ export interface IProps {
             | TChatMessage[]
             | ((msgs: TChatMessage[]) => TChatMessage[]),
     ) => void;
-    sendMessageWithContext: SendMessageWithContext;
+    sendMessageWithContext: TSendMessageWithContext;
     clearMessages: () => void;
     /** URL `?chat=` or mint ref until URL propagates (persist/connect paths). */
     getPersistChatId: () => string;
@@ -91,6 +91,7 @@ export interface IProps {
     tryRunSignInMigration: () => Promise<void>;
     lastAtomicBuildCommitKeyRef: React.RefObject<string | null>;
     appliedModifyProgramKeysRef: React.RefObject<Set<string>>;
+    appliedMutateProgramKeysRef: React.RefObject<Set<string>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -244,12 +245,14 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     /** Survives MessageBubbles unmount when switching mobile tabs (Radix Tabs). */
     const lastAtomicBuildCommitKeyRef = useRef<string | null>(null);
     const appliedModifyProgramKeysRef = useRef<Set<string>>(new Set());
+    const appliedMutateProgramKeysRef = useRef<Set<string>>(new Set());
     const hasAutoSwitchedToProgramAfterFirstBuildRef = useRef(false);
     const insertFailToastShownForChatIds = useRef(new Set<string>());
 
     const resetChatSessionRefs = useCallback(() => {
         lastAtomicBuildCommitKeyRef.current = null;
         appliedModifyProgramKeysRef.current.clear();
+        appliedMutateProgramKeysRef.current.clear();
         hasAutoSwitchedToProgramAfterFirstBuildRef.current = false;
     }, []);
 
@@ -289,7 +292,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     const activeError = generationError || error || null;
     const isLoading = status === "submitted" || status === "streaming";
 
-    const sendMessageWithContext = useCallback<SendMessageWithContext>(
+    const sendMessageWithContext = useCallback<TSendMessageWithContext>(
         async (message, sendOptions) => {
             if (message == null) return;
 
@@ -554,5 +557,6 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         tryRunSignInMigration,
         lastAtomicBuildCommitKeyRef,
         appliedModifyProgramKeysRef,
+        appliedMutateProgramKeysRef,
     };
 }

@@ -33,7 +33,7 @@ const TOOL_META: Record<string, { label: string; icon: LucideIcon }> = {
   "tool-getMoreInfoQuestions": { label: "Gathering info", icon: ListChecksIcon },
   "tool-planProgram": { label: "Planning program structure", icon: ListChecksIcon },
   "tool-buildWeek": { label: "Building training week", icon: HammerIcon },
-  "tool-modifyProgram": { label: "Modifying program", icon: WrenchIcon },
+  "tool-mutateProgram": { label: "Mutating program", icon: WrenchIcon },
   "tool-rateProgram": { label: "Rating program", icon: Award },
   text: { label: "Writing response", icon: PenLineIcon },
 };
