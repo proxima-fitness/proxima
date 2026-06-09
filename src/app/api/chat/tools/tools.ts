@@ -12,8 +12,10 @@
  *  - planProgram - structured multi-week plan (duration, blocks, progression) before buildWeek
  *  - getCurrentProgram - returns the program snapshot from the request (may be stale mid-turn)
  *  - buildWeek - constructs a full week of THevyRoutine days in one call (titles resolved from hevy_exercise_templates by ID)
- *  - modifyProgram - applies RFC 6902 JSON Patch edits to the program
+ *  - mutateProgram - applies typed registry operation batches to the program
  *  - rateProgram - scores the current bodybuilding program (heuristic report card)
+ *
+ * Note: modifyProgram (JSON Patch) is retained in code for legacy client apply only; not exposed to the agent.
  *
  * Depends on: ai, zod, @/components/program-builder/api/hevy, @/assets/constants
  * Used by: /api/chat/route.ts (passed to ToolLoopAgent)
@@ -23,6 +25,12 @@ import { z } from 'zod';
 import { getHevyExercises } from '@/components/program-builder/api/hevy';
 import { sampleQuestions } from '@/assets/constants';
 import { scoreProgramForBodybuilding } from '@/components/program-builder/utils/score-program';
+import {
+    applyOperations,
+    buildMutateProgramToolDescription,
+    mutateProgramInputSchema,
+} from '@/components/program-builder/mutations';
+import { isApplyBatchFailure } from '@/components/program-builder/mutations/types';
 import { tool } from 'ai';
 
 /** Request-scoped flag: set after first successful buildWeek so the agent cannot call buildWeek twice in one chat turn. */
@@ -86,7 +94,7 @@ export const planProgramInputSchema = z
     });
 
 const VALID_PATCH_OPS = ['add', 'remove', 'replace', 'move', 'copy', 'test'] as const;
-type ValidPatchOp = (typeof VALID_PATCH_OPS)[number];
+type TValidPatchOp = (typeof VALID_PATCH_OPS)[number];
 
 /**
  * When the model merges the JSON Pointer into `op` (e.g. `replaceRegistry/24/exercises/...`),
@@ -119,9 +127,9 @@ export function repairJsonPatchOperationForTest(raw: unknown): unknown {
 }
 
 /** Coerce LLM typos/hallucinations (e.g. "replace_seconds") to a valid JSON Patch op. */
-function canonicalizePatchOp(val: unknown): ValidPatchOp {
+function canonicalizePatchOp(val: unknown): TValidPatchOp {
     const s = typeof val === 'string' ? val.toLowerCase().trim() : '';
-    if (VALID_PATCH_OPS.includes(s as ValidPatchOp)) return s as ValidPatchOp;
+    if (VALID_PATCH_OPS.includes(s as TValidPatchOp)) return s as TValidPatchOp;
     if (s.startsWith('replace')) return 'replace';
     if (s.startsWith('add')) return 'add';
     if (s.startsWith('remove') || s.startsWith('remov')) return 'remove';
@@ -419,7 +427,7 @@ export function getTools({
     const planProgramTool = tool({
         description:
             'Submit a structured multi-week training plan before calling buildWeek. Use questionnaire answers, program builder context (days/week, length), and your judgment. ' +
-            'This does not create routines; it anchors periodization for later modifyProgram patches. Call once per new program.',
+            'This does not create routines; it anchors periodization for later mutateProgram batches. Call once per new program.',
         inputSchema: planProgramInputSchema,
         execute: async (input) => {
             const plan = input;
@@ -438,7 +446,7 @@ export function getTools({
             const o = output as { summary?: string };
             return {
                 type: 'text' as const,
-                value: `Plan recorded: ${o.summary ?? 'OK'}. Proceed with getExerciseList, then call buildWeek exactly once (all days in that call), then apply periodization with modifyProgram only; do not call buildWeek again after it succeeds.`,
+                value: `Plan recorded: ${o.summary ?? 'OK'}. Proceed with getExerciseList, then call buildWeek exactly once (all days in that call), then apply periodization with mutateProgram; do not call buildWeek again after it succeeds.`,
             };
         },
     });
@@ -476,7 +484,7 @@ export function getTools({
     const buildWeekTool = tool({
         description:
             'Builds an entire week of routines/days for the workout program in a SINGLE tool invocation (all training days in one payload). ' +
-            'Call **buildWeek at most once** per user request to generate that week; after it succeeds, use **modifyProgram** only for any changes (never a second buildWeek to fix or tweak). ' +
+            'Call **buildWeek at most once** per user request to generate that week; after it succeeds, use **mutateProgram** for any changes (never a second buildWeek to fix or tweak). ' +
             'Provide all days in order (Day 1, Day 2, …) so the UI can duplicate the first week across the remaining weeks. ' +
             'IMPORTANT: Always provide a valid JSON object with the required fields. ' +
             'For rep-based exercises, **prefer rep_range** (e.g. {start:8, end:12}) over a fixed reps value. Set reps as a fallback alongside rep_range. ' +
@@ -579,7 +587,7 @@ export function getTools({
                     return {
                         error: 'buildWeek already completed',
                         message:
-                            'Week already built in this turn. Use modifyProgram for all edits (reps, RPE, rest, titles, periodization). Do not call buildWeek again.',
+                            'Week already built in this turn. Use mutateProgram for all edits (reps, RPE, rest, titles, periodization). Do not call buildWeek again.',
                     };
                 }
 
@@ -727,43 +735,61 @@ export function getTools({
 
             return {
                 type: 'text' as const,
-                value: `Week complete (${output.totalDays} days): ${titles || 'No routine titles'} (${output.exerciseCount} exercises, ${output.setCount} sets). Do not call buildWeek again; use modifyProgram for any changes.`,
+                value: `Week complete (${output.totalDays} days): ${titles || 'No routine titles'} (${output.exerciseCount} exercises, ${output.setCount} sets). Do not call buildWeek again; use mutateProgram for any changes.`,
             };
         },
     });
 
     /**
-     * Title: modifyProgramTool
-     * Description: JSON Patch (RFC 6902). Two use cases; see tool description.
+     * Title: mutateProgramTool
+     * Description: Typed registry operation batch with server preflight via applyOperations.
      * @returns { Tool }
      */
-    const modifyProgramTool = tool({
-        description:
-            'JSON Patch on the program. **(1) Edit existing grid:** **getCurrentProgram** first (paths match real order). **(2) After buildWeek:** do not rely on **getCurrentProgram**; patch the **full** routines doc (**totalDays × programLength**) via **planProgram**, **buildWeek**, and **routineIndex = (w - 1) × totalDays + (d - 1)** (build-program skill). Prefer **one** merged patch, paths ascending. ' +
-            'Root = **THevyRoutine[]**; indices **/0…/N-1** (e.g. 6×8 weeks → 48). Each op must use **op** (verb only) and **path** (JSON Pointer starting with /) as **separate** fields—never embed the pointer in **op**. End paths on a property name; put scalars in **value** (not in the path). Many ops OK. Examples: /0/title, /0/exercises/1, /0/exercises/0/sets/2/reps.',
-        inputSchema: modifyProgramInputSchema,
-        execute: async ({ patch }) => {
+    const mutateProgramTool = tool({
+        description: buildMutateProgramToolDescription(),
+        inputSchema: mutateProgramInputSchema,
+        execute: async ({ operations }) => {
             try {
-                return { patch };
+                const result = applyOperations(hevyProgram ?? [], operations);
+                if (isApplyBatchFailure(result)) {
+                    return {
+                        error: 'Program mutation batch failed',
+                        failures: result.failures,
+                    };
+                }
+                return { operations };
             } catch (error) {
-                console.error('Error in modifyProgramTool:', error);
+                console.error('Error in mutateProgramTool:', error);
                 return {
-                    error: 'Failed to prepare patch',
-                    message: error instanceof Error ? error.message : 'Unknown error',
+                    error: 'Failed to validate mutation batch',
+                    failures: [
+                        {
+                            index: 0,
+                            op: operations[0]?.op ?? 'unknown',
+                            reason: error instanceof Error ? error.message : 'Unknown error',
+                        },
+                    ],
                 };
             }
         },
-
         toModelOutput: async ({ output }) => {
-            if (output.error) {
+            if (output && typeof output === 'object' && 'error' in output && output.error) {
+                const o = output as {
+                    error: string;
+                    failures?: Array<{ index: number; op: string; reason: string }>;
+                };
+                const failureLines =
+                    o.failures?.map((f) => `[${f.index}] ${f.op}: ${f.reason}`).join('; ') ??
+                    'Unknown validation error';
                 return {
                     type: 'text' as const,
-                    value: `Error: ${output.message || 'Failed to prepare patch'}`,
+                    value: `Mutation batch rejected: ${failureLines}`,
                 };
             }
+            const o = output as { operations?: unknown[] };
             return {
                 type: 'text' as const,
-                value: `Modify program patch (${output.patch?.length ?? 0} operations) will be applied on the client.`,
+                value: `Mutation batch validated (${o.operations?.length ?? 0} operations) will be applied on the client.`,
             };
         },
     });
@@ -819,7 +845,7 @@ export function getTools({
         planProgram: planProgramTool,
         getCurrentProgram: getCurrentProgramTool,
         buildWeek: buildWeekTool,
-        modifyProgram: modifyProgramTool,
+        mutateProgram: mutateProgramTool,
         rateProgram: rateProgramTool,
         loadSkill: loadSkillTool,
         readFile: readFileTool,

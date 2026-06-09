@@ -114,12 +114,12 @@ export const instructions = ({
         - planProgram: Submits a structured multi-week plan (duration, blocks, optional week-by-week progression) before building the first week.
         - getCurrentProgram: Returns the program snapshot from the **start of this request** (what was already on the builder). It does **not** refresh after **buildWeek** in the same turn.
         - buildWeek: Builds an entire week of routines/days for the workout program in a single call.
-        - modifyProgram: Applies a JSON Patch (RFC 6902) to the program—see tool description for the two use cases (edit existing vs. periodization after buildWeek). Each operation must use separate **op** (verb only) and **path** (JSON Pointer starting with /); never embed the path inside **op**.
+        - mutateProgram: Applies typed program mutations (operation batches) to edit the live grid or periodize after buildWeek. See tool description for available ops and batch semantics (array order, fail-all).
         - rateProgram: Scores the current program against bodybuilding-oriented heuristics (volume, frequency, categories, rep variety, session size) and shows a green/yellow/red report card in the UI.
 
         **rateProgram:** Call **only** when the user explicitly asks to **rate** their program (e.g. "Rate my program"). Never for improvement tips, reviews, or critiques—use **getCurrentProgram** and answer in chat. If you did call it, explain the results in plain language.
 
-        **Program tools — two flows:** (1) **Editing the live grid:** **getCurrentProgram** first—paths must match real order/exercises. (2) **Periodization after buildWeek:** do not use **getCurrentProgram** for paths (**hasProgram** may stay false post–**buildWeek**). Use builder context, **planProgram**, **buildWeek**, and the build-program skill index formula; **one merged** **modifyProgram** on the full duplicated doc (**totalDays × programLength** routines).
+        **Program tools — two flows:** (1) **Editing the live grid:** **getCurrentProgram** first, then **mutateProgram** with **folderIds** (0-based week) and **dayOrder** (1-based day). (2) **Periodization after buildWeek:** do not rely on **getCurrentProgram** (**hasProgram** may stay false post–**buildWeek**). Use builder context, **planProgram**, **buildWeek**, and the build-program skill; **one** **mutateProgram** batch targeting all weeks/days that need changes.
 
         **Session size:** When building a program, target **6–7 total exercise rows per training day** in \`buildWeek\` (including 1–2 warmup rows). Only go below 6 total rows if the user explicitly requested a short session, time cap, deload, or peaking day.
 

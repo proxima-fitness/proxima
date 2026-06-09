@@ -1,3 +1,10 @@
+export {
+    agentProgramOperationSchema,
+    buildMutateProgramToolDescription,
+    mutateProgramInputSchema,
+    type TAgentProgramOperation,
+    type TMutateProgramInput,
+} from "./agentSchema";
 export { applyOperation, applyOperationById, applyOperations, applyOperationsLoose } from "./apply";
 export { programMutationCatalog, programMutationCatalogById, agentExposedMutations } from "./catalog";
 export { defineProgramMutation } from "./defineProgramMutation";
