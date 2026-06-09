@@ -29,6 +29,7 @@ import { IOption } from "@/components/ui/multi-select";
 import { convertHevyExerciseIntoHevyAddExercise } from "../utils";
 import { useTheme } from "next-themes";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
+import { useProgramMutation } from "@/contexts/ProgramMutationContext";
 
 /** Props for a single day card within a week column. */
 interface IProps {
@@ -104,6 +105,8 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
 
     const { resolvedTheme } = useTheme();
     const { isInLbs } = usePoundsOrKgContext();
+    const { isAgentStreaming } = useProgramMutation();
+    const mutationsLocked = isAgentStreaming;
     const [duplicateDayOpen, setDuplicateDayOpen] = useState(false);
     const [editTitleOpen, setEditTitleOpen] = useState(false);
     const [currentTitle, setCurrentTitle] = useState(day.title ?? "");
@@ -132,6 +135,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
+            if (mutationsLocked) return;
             if (focusedCardId !== day.id) return;
             if (!(event.metaKey || event.ctrlKey)) return;
             const key = event.key.toLowerCase();
@@ -152,7 +156,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
 
         document.addEventListener("keydown", handleKeyDown);
         return () => document.removeEventListener("keydown", handleKeyDown);
-    }, [day.id, day.order, focusedCardId, folder_id, handleDeleteDay, handleOpenAddNoteDialog]);
+    }, [day.id, day.order, focusedCardId, folder_id, handleDeleteDay, handleOpenAddNoteDialog, mutationsLocked]);
 
     const toggleExerciseSelection = (exerciseIndex: number) => {
         if (selectedExercises.includes(exerciseIndex)) {
@@ -185,9 +189,9 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                 initial={ isMobile ? { opacity: 0 } : false }
                 animate={ isMobile ? { opacity: 1 } : undefined }
                 transition={ isMobile ? { duration: 0.2 } : undefined }
-                draggable="true"
-                onDragStart={ (e: DragEvent) => handleDragStart(e, cardVal) }
-                className="cursor-grab rounded active:cursor-grabbing gap-4 w-full max-w-full"
+                draggable={ !mutationsLocked }
+                onDragStart={ mutationsLocked ? undefined : (e: DragEvent) => handleDragStart(e, cardVal) }
+                className={`rounded active:cursor-grabbing gap-4 w-full max-w-full ${mutationsLocked ? "cursor-default" : "cursor-grab"}`}
                 style={ isMobile ? undefined : { opacity: 1, visibility: 'visible' } }
             >
                 <Card
@@ -202,6 +206,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                             { editTitleOpen ?
                                 <Input
                                     value={ currentTitle }
+                                    disabled={mutationsLocked}
                                     onInput={ (event) => setCurrentTitle(String(event.currentTarget.value)) }
                                     onBlur={ (event) => {
                                         handleEditTitle(day.id, String(event.currentTarget.value));
@@ -247,8 +252,9 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                             }
                             <DropdownMenu open={ dropdownOpen } onOpenChange={ () => setDropdownOpen(false) }>
                                 <DropdownMenuTrigger
-                                    onClick={ () => setDropdownOpen(true) }
-                                    className="cursor-pointer opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-active:opacity-100"
+                                    onClick={ () => { if (!mutationsLocked) setDropdownOpen(true); } }
+                                    disabled={mutationsLocked}
+                                    className={`opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-active:opacity-100 ${mutationsLocked ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                                     asChild
                                 >
                                     <EllipsisIcon />
@@ -256,21 +262,23 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                 <DropdownMenuContent align="start" side="bottom">
                                     <DropdownMenuItem
                                         className="cursor-pointer bg-red-500 text-white hover:bg-red-500"
+                                        disabled={mutationsLocked}
                                         onClick={ () => {
+                                            if (mutationsLocked) return;
                                             handleDeleteDay(day.id);
                                             } }>
                                         Delete Day
                                         <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={ () => { setEditTitleOpen(true); setDropdownOpen(false) } } className="cursor-pointer">
+                                    <DropdownMenuItem disabled={mutationsLocked} onClick={ () => { if (mutationsLocked) return; setEditTitleOpen(true); setDropdownOpen(false); } } className="cursor-pointer">
                                         Edit Title
                                         <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={ () => { handleOpenAddNoteDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true }); setDropdownOpen(false) } } className="cursor-pointer">
+                                    <DropdownMenuItem disabled={mutationsLocked} onClick={ () => { if (mutationsLocked) return; handleOpenAddNoteDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true }); setDropdownOpen(false); } } className="cursor-pointer">
                                         Add Note
                                         <DropdownMenuShortcut>⌘P</DropdownMenuShortcut>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={ () => { setDuplicateDayOpen(true); setDropdownOpen(false) } } className="cursor-pointer">
+                                    <DropdownMenuItem disabled={mutationsLocked} onClick={ () => { if (mutationsLocked) return; setDuplicateDayOpen(true); setDropdownOpen(false); } } className="cursor-pointer">
                                         Duplicate Day
                                         <DropdownMenuShortcut>⌘Y</DropdownMenuShortcut>
                                     </DropdownMenuItem>
@@ -327,11 +335,12 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                         />
                     </div>
                     <div
-                        className="flex items-center justify-center px-3 py-2"
+                        className={`flex items-center justify-center px-3 py-2 ${mutationsLocked ? "opacity-50 cursor-not-allowed" : ""}`}
                         onClick={ () => {
+                            if (mutationsLocked) return;
                             handleOpenAddExerciseDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true});
                          } }>
-                        <Button variant="ghost" className="mt-1 w-full rounded-full font-bold uppercase h-9 sm:h-12 text-sm sm:text-base hover:bg-gray-200 dark:hover:bg-darkGray text-black dark:text-white" aria-label="Add exercise to this day"><PlusIcon />Add Exercise</Button>
+                        <Button variant="ghost" disabled={mutationsLocked} className="mt-1 w-full rounded-full font-bold uppercase h-9 sm:h-12 text-sm sm:text-base hover:bg-gray-200 dark:hover:bg-darkGray text-black dark:text-white disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Add exercise to this day"><PlusIcon />Add Exercise</Button>
                     </div>
                     <div className="flex flex-row justify-between items-center px-3">
                         {editMode ? (
@@ -350,7 +359,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                 <div className="flex space-x-3">
                                     <button
                                         onClick={createSuperset}
-                                        disabled={selectedExercises.length < 2}
+                                        disabled={mutationsLocked || selectedExercises.length < 2}
                                         className={`flex-1 py-1.5 sm:py-2 text-sm sm:text-base rounded-full font-medium
                                             ${selectedExercises.length < 2 ? 'bg-lightSecondary opacity-50 text-white' : 'bg-lightSecondary text-white hover:bg-black'}`}
                                         aria-label="Create superset"
@@ -372,9 +381,10 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                         ) : (
                             <Button
                                 variant="ghost"
-                                disabled={!day.exercises || day.exercises.length < 2}
+                                disabled={mutationsLocked || !day.exercises || day.exercises.length < 2}
                                 className="mt-1 w-full rounded-full font-bold bg-lightGray dark:bg-darkGray text-lightSecondary disabled:text-gray-500 uppercase hover:text-lightSecondary hover:bg-gray-200 h-9 sm:h-12 text-sm sm:text-base border-2 border-lightSecondary dark:border-darkGray disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-lightGray dark:disabled:hover:bg-darkGray disabled:border-gray-300 dark:disabled:border-gray-600"
                                 onClick={() => {
+                                    if (mutationsLocked) return;
                                     if (day.exercises && day.exercises.length >= 2) {
                                         setEditMode(true);
                                     }

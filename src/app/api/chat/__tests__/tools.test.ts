@@ -20,14 +20,118 @@ vi.mock("@/components/program-builder/api/hevy", () => ({
 }));
 
 import { getHevyExercises } from "@/components/program-builder/api/hevy";
+import { mutateProgramInputSchema } from "@/components/program-builder/mutations";
 import {
     getTools,
-    modifyProgramInputSchema,
     planProgramInputSchema,
-    repairJsonPatchOperationForTest,
 } from "@/app/api/chat/tools/tools";
 
+const minimalHevyProgram = [
+    {
+        id: "1",
+        folder_id: 0,
+        order: "1",
+        title: "Push",
+        notes: "",
+        created_at: "",
+        updated_at: "",
+        exercises: [
+            {
+                index: 0,
+                title: "Bench Press (Barbell)",
+                notes: "",
+                rest_seconds: "90",
+                exercise_template_id: "ex-1",
+                supersets_id: null,
+                sets: [
+                    {
+                        index: 0,
+                        type: "normal",
+                        reps: 8,
+                        weight_kg: null,
+                        rpe: 7,
+                        distance_meters: null,
+                        duration_seconds: null,
+                        custom_metric: null,
+                        rep_range: { start: 8, end: 12 },
+                    },
+                ],
+            },
+        ],
+    },
+] as THevyRoutine[];
+
 describe("chat tools.ts", () => {
+    it("exposes readProgram and mutateProgram but not modifyProgram or getCurrentProgram", () => {
+        const tools = getTools({});
+        expect(tools).toHaveProperty("readProgram");
+        expect(tools).toHaveProperty("mutateProgram");
+        expect(tools).not.toHaveProperty("modifyProgram");
+        expect(tools).not.toHaveProperty("getCurrentProgram");
+    });
+
+    describe("readProgram tool execute", () => {
+        it("returns full program snapshot without purpose filtering", async () => {
+            const programWithNotes = [
+                {
+                    ...minimalHevyProgram[0],
+                    notes: "day notes",
+                    exercises: [
+                        {
+                            ...minimalHevyProgram[0].exercises[0],
+                            notes: "exercise notes",
+                            reason: "Main lift",
+                        },
+                    ],
+                },
+            ] as THevyRoutine[];
+
+            const tools = getTools({ hevyProgram: programWithNotes });
+            const readProgram = tools.readProgram as {
+                execute: (args: Record<string, never>) => Promise<{ hevyProgram: THevyRoutine[] }>;
+            };
+
+            const output = await readProgram.execute({});
+            expect(output.hevyProgram).toHaveLength(1);
+            expect(output.hevyProgram[0].notes).toBe("day notes");
+            expect(output.hevyProgram[0].exercises[0].notes).toBe("exercise notes");
+            expect(output.hevyProgram[0].exercises[0].reason).toBe("Main lift");
+        });
+
+        it("toModelOutput returns full program JSON for the agent", async () => {
+            const programWithNotes = [
+                {
+                    ...minimalHevyProgram[0],
+                    notes: "day notes",
+                    exercises: [
+                        {
+                            ...minimalHevyProgram[0].exercises[0],
+                            title: "Barbell Bench Press",
+                            exercise_template_id: "bench-bb",
+                            notes: "exercise notes",
+                            reason: "Main lift",
+                        },
+                    ],
+                },
+            ] as THevyRoutine[];
+
+            const tools = getTools({ hevyProgram: programWithNotes });
+            const readProgram = tools.readProgram as {
+                execute: (args: Record<string, never>) => Promise<{ hevyProgram: THevyRoutine[] }>;
+                toModelOutput: (args: { output: { hevyProgram: THevyRoutine[] } }) => Promise<{ value: string }>;
+            };
+
+            const output = await readProgram.execute({});
+            const modelOutput = await readProgram.toModelOutput({ output });
+
+            expect(modelOutput.value).toContain("Barbell Bench Press");
+            expect(modelOutput.value).toContain("bench-bb");
+            expect(modelOutput.value).toContain("exercise notes");
+            expect(modelOutput.value).toContain("Main lift");
+            expect(modelOutput.value).toContain('"folder_id":0');
+        });
+    });
+
     describe("buildWeek tool execute", () => {
         const minimalRoutine = {
             dayNumber: 1,
@@ -237,7 +341,7 @@ describe("chat tools.ts", () => {
                 routines: [minimalRoutine],
             })) as { error?: string; message?: string };
             expect(second.error).toBe("buildWeek already completed");
-            expect(second.message).toContain("modifyProgram");
+            expect(second.message).toContain("mutateProgram");
         });
 
         it("does not lock the guard when the first buildWeek fails", async () => {
@@ -387,37 +491,76 @@ describe("chat tools.ts", () => {
         });
     });
 
-    describe("modifyProgramInputSchema", () => {
-        it("parses when path was merged into op (replaceRegistry/…)", () => {
-            const malformed = {
-                patch: [
-                    {
-                        op: "replaceRegistry/24/exercises/1/sets/0/rep_range",
-                        value: null,
-                    },
-                ],
-            };
-            const repaired = repairJsonPatchOperationForTest(malformed.patch[0]);
-            expect(repaired).toEqual({
-                op: "replaceRegistry",
-                path: "/24/exercises/1/sets/0/rep_range",
-                value: null,
+    describe("mutateProgramInputSchema", () => {
+        it("accepts edit_day_title", () => {
+            const parsed = mutateProgramInputSchema.safeParse({
+                operations: [{ op: "edit_day_title", folderIds: [0], dayOrder: 1, title: "Pull" }],
             });
-
-            const parsed = modifyProgramInputSchema.safeParse(malformed);
             expect(parsed.success).toBe(true);
-            if (parsed.success) {
-                expect(parsed.data.patch[0].op).toBe("replace");
-                expect(parsed.data.patch[0].path).toBe("/24/exercises/1/sets/0/rep_range");
-                expect(parsed.data.patch[0].value).toBeNull();
-            }
         });
 
-        it("leaves well-formed operations unchanged", () => {
-            const parsed = modifyProgramInputSchema.safeParse({
-                patch: [{ op: "replace", path: "/0/title", value: "Push" }],
+        it("rejects human-only duplicate_week", () => {
+            const parsed = mutateProgramInputSchema.safeParse({
+                operations: [{ op: "duplicate_week", fromWeekIndex: 0, toWeekIndexes: [1] }],
             });
-            expect(parsed.success).toBe(true);
+            expect(parsed.success).toBe(false);
+        });
+    });
+
+    describe("mutateProgram tool execute", () => {
+        type TMutateProgramTestTool = {
+            execute: (args: { operations: unknown[] }) => Promise<unknown>;
+            toModelOutput: (args: { output: unknown }) => PromiseLike<{ value: string }>;
+        };
+
+        it("returns operations on successful preflight", async () => {
+            const tools = getTools({ hevyProgram: minimalHevyProgram });
+            const mutateProgram = tools.mutateProgram as unknown as TMutateProgramTestTool;
+
+            const operations = [
+                { op: "edit_day_title" as const, folderIds: [0], dayOrder: 1, title: "Upper Push" },
+            ];
+            const output = (await mutateProgram.execute({ operations })) as {
+                error?: string;
+                operations?: typeof operations;
+                failures?: unknown[];
+            };
+
+            expect(output.error).toBeUndefined();
+            expect(output.operations).toEqual(operations);
+            expect(output.failures).toBeUndefined();
+        });
+
+        it("returns indexed failures when preflight fails", async () => {
+            const sevenDayProgram = Array.from({ length: 7 }, (_, index) => ({
+                id: String(index + 1),
+                folder_id: 0,
+                order: String(index + 1),
+                title: `Day ${index + 1}`,
+                notes: "",
+                created_at: "",
+                updated_at: "",
+                exercises: [],
+            })) as THevyRoutine[];
+
+            const tools = getTools({ hevyProgram: sevenDayProgram });
+            const mutateProgram = tools.mutateProgram as unknown as TMutateProgramTestTool;
+
+            const output = (await mutateProgram.execute({
+                operations: [{ op: "add_day", folderIds: [0] }],
+            })) as {
+                error?: string;
+                failures?: Array<{ index: number; op: string; reason: string }>;
+            };
+
+            expect(output.error).toBe("Program mutation batch failed");
+            expect(output.failures).toHaveLength(1);
+            expect(output.failures![0].index).toBe(0);
+            expect(output.failures![0].op).toBe("add_day");
+            expect(output.failures![0].reason).toContain("Maximum 7 days");
+
+            const modelOutput = await mutateProgram.toModelOutput({ output });
+            expect(modelOutput.value).toContain("[0] add_day:");
         });
     });
 });

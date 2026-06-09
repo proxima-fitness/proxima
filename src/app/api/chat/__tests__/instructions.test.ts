@@ -14,16 +14,21 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("4");
             expect(prompt).toContain("8");
             expect(prompt).toContain("planProgram");
-            expect(prompt).toContain("getCurrentProgram");
+            expect(prompt).toContain("readProgram");
+            expect(prompt).not.toContain('purpose "edit"');
+            expect(prompt).not.toContain('purpose "analyze"');
+            expect(prompt).not.toContain("getCurrentProgram");
             expect(prompt).toContain("buildWeek");
-            expect(prompt).toContain("modifyProgram");
+            expect(prompt).toContain("mutateProgram");
+            expect(prompt).not.toContain("modifyProgram");
             expect(prompt).toContain("getMoreInfoQuestions");
             expect(prompt).toContain("Mandatory skill loading");
             expect(prompt).toContain("loadSkill");
             expect(prompt).toContain("build-program");
+            expect(prompt).toContain("mutate-program");
             expect(prompt).toContain("first message");
             expect(prompt).toContain("two flows");
-            expect(prompt).toContain("periodization");
+            expect(prompt).toContain("Periodization after buildWeek");
         });
 
         it("includes workflow when program is non-empty", () => {
@@ -36,7 +41,10 @@ describe("chat instructions.ts", () => {
             });
 
             expect(prompt).toContain("planProgram");
-            expect(prompt).toContain("getCurrentProgram");
+            expect(prompt).toContain("readProgram");
+            expect(prompt).not.toContain('purpose "edit"');
+            expect(prompt).not.toContain('purpose "analyze"');
+            expect(prompt).not.toContain("getCurrentProgram");
             expect(prompt).toContain("buildWeek");
             expect(prompt).toContain("3");
             expect(prompt).toContain("4");

@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import MultiSelect, { IOption } from "@/components/ui/multi-select";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useProgramMutation } from "@/contexts/ProgramMutationContext";
 
 /** Props for the duplicate-day dialog. */
 interface IProps {
@@ -42,6 +43,9 @@ export const HevyDuplicateDay: React.FC<IProps> = (props) => {
         setDuplicateDayOpen,
         handleDuplicateDay,
     } = props;
+
+    const { isAgentStreaming } = useProgramMutation();
+    const mutationsLocked = isAgentStreaming;
 
     const programLengthArray = Array.from({ length: programLength }, (_, index) => index + 1);
     const daysArray = Array.from({length: 7 }, (_, index) => index + 1);
@@ -96,10 +100,12 @@ export const HevyDuplicateDay: React.FC<IProps> = (props) => {
                         <span className="flex w-full items-center justify-center">
                             <Button
                                 onClick={ () => {
+                                    if (mutationsLocked) return;
                                     handleDuplicateDay(folder_id, Number(day.order), Number(selectedWeek) - 1, selectedDays);
                                     setDuplicateDayOpen(false);
                                 } }
-                                className="h-11 w-full rounded-full bg-lightSecondary text-white hover:bg-lightSecondary/90 sm:h-12"
+                                disabled={mutationsLocked}
+                                className="h-11 w-full rounded-full bg-lightSecondary text-white hover:bg-lightSecondary/90 sm:h-12 disabled:opacity-50 disabled:cursor-not-allowed"
                                 aria-label="Duplicate day to selected week"
                             >
                                 Duplicate

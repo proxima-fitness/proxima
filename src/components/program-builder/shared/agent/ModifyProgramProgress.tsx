@@ -1,7 +1,7 @@
 /**
  * @module ModifyProgramProgress
- * Compact progress list for "modify program" tool: per-routine objectives with expand/collapse and week separators.
- * Depends on: TModifyProgramRoutineObjective. Used by: MessageBubbles (modifyProgram tool UI).
+ * Compact progress list for mutateProgram tool: objectives with expand/collapse.
+ * Depends on: TModifyProgramRoutineObjective. Used by: MessageBubbles (mutateProgram tool UI).
  */
 "use client";
 
@@ -10,9 +10,9 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { TModifyProgramRoutineObjective } from "@/components/program-builder/utils/helpers";
 
-/** Props for the modify-program progress list. */
+/** Props for the mutate-program progress list. */
 export interface IProps {
-    /** Per-routine objectives (label + details) from modifyProgram tool. */
+    /** Per-routine objectives (label + details) from mutateProgram tool. */
     objectivesByRoutine: TModifyProgramRoutineObjective[];
     /** Whether modification is still processing or complete. */
     status: "processing" | "complete";
@@ -93,7 +93,7 @@ export const ModifyProgramProgress: React.FC<IProps> = ({
                                 )}
                             />
                             <span className="text-sm text-muted-foreground">
-                                {isComplete ? "Patch applied" : "Applying patch…"}
+                                {isComplete ? "Changes applied" : "Applying changes…"}
                             </span>
                         </div>
                     )}

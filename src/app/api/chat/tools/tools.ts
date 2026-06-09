@@ -10,9 +10,9 @@
  *  - getExerciseList - fetches and filters available Hevy exercises
  *  - getMoreInfoQuestions - opens the pre-build questionnaire UI
  *  - planProgram - structured multi-week plan (duration, blocks, progression) before buildWeek
- *  - getCurrentProgram - returns the program snapshot from the request (may be stale mid-turn)
+ *  - readProgram - on-demand full program snapshot from the request
  *  - buildWeek - constructs a full week of THevyRoutine days in one call (titles resolved from hevy_exercise_templates by ID)
- *  - modifyProgram - applies RFC 6902 JSON Patch edits to the program
+ *  - mutateProgram - applies typed registry operation batches to the program
  *  - rateProgram - scores the current bodybuilding program (heuristic report card)
  *
  * Depends on: ai, zod, @/components/program-builder/api/hevy, @/assets/constants
@@ -23,6 +23,22 @@ import { z } from 'zod';
 import { getHevyExercises } from '@/components/program-builder/api/hevy';
 import { sampleQuestions } from '@/assets/constants';
 import { scoreProgramForBodybuilding } from '@/components/program-builder/utils/score-program';
+import {
+    applyOperations,
+    buildMutateProgramToolDescription,
+    mutateProgramInputSchema,
+    type TAgentProgramOperation,
+} from '@/components/program-builder/mutations';
+import {
+    resolveExercisePayload,
+    resolveSwapTemplateTo,
+} from '@/components/program-builder/mutations/resolveExercisePayload';
+import type {
+    TInsertExercisePayload,
+    TSwapExerciseTemplateMinimalTo,
+} from '@/components/program-builder/mutations/schemas';
+import { isApplyBatchFailure } from '@/components/program-builder/mutations/types';
+import { readProgramInputSchema, formatReadProgramForModel, readProgramSnapshot } from './read-program';
 import { tool } from 'ai';
 
 /** Request-scoped flag: set after first successful buildWeek so the agent cannot call buildWeek twice in one chat turn. */
@@ -85,98 +101,6 @@ export const planProgramInputSchema = z
         }
     });
 
-const VALID_PATCH_OPS = ['add', 'remove', 'replace', 'move', 'copy', 'test'] as const;
-type ValidPatchOp = (typeof VALID_PATCH_OPS)[number];
-
-/**
- * When the model merges the JSON Pointer into `op` (e.g. `replaceRegistry/24/exercises/...`),
- * `path` is missing and validation fails. Split at the first `/` when `path` is absent/empty.
- * Exported for tests.
- */
-export function repairJsonPatchOperationForTest(raw: unknown): unknown {
-    if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
-        return raw;
-    }
-    const o = raw as Record<string, unknown>;
-    const pathVal = o.path;
-    if (typeof pathVal === 'string' && pathVal.trim() !== '') {
-        return raw;
-    }
-    const opVal = o.op;
-    if (typeof opVal !== 'string' || !opVal.includes('/')) {
-        return raw;
-    }
-    const slash = opVal.indexOf('/');
-    if (slash <= 0) {
-        return raw;
-    }
-    const pathPart = opVal.slice(slash);
-    if (!pathPart.startsWith('/')) {
-        return raw;
-    }
-    const prefix = opVal.slice(0, slash);
-    return { ...o, op: prefix, path: pathPart };
-}
-
-/** Coerce LLM typos/hallucinations (e.g. "replace_seconds") to a valid JSON Patch op. */
-function canonicalizePatchOp(val: unknown): ValidPatchOp {
-    const s = typeof val === 'string' ? val.toLowerCase().trim() : '';
-    if (VALID_PATCH_OPS.includes(s as ValidPatchOp)) return s as ValidPatchOp;
-    if (s.startsWith('replace')) return 'replace';
-    if (s.startsWith('add')) return 'add';
-    if (s.startsWith('remove') || s.startsWith('remov')) return 'remove';
-    if (s.startsWith('move')) return 'move';
-    if (s.startsWith('copy')) return 'copy';
-    if (s.startsWith('test')) return 'test';
-    return 'replace';
-}
-
-/**
- * JSON Patch operation schema (RFC 6902). Paths are JSON Pointers; document root is the THevyRoutine[] array.
- * `op` is coerced so typos like "replace_seconds" become "replace". Malformed ops that embed the path are repaired via preprocess.
- */
-const jsonPatchOperationSchema = z.preprocess(
-    repairJsonPatchOperationForTest,
-    z
-        .object({
-            op: z
-                .string()
-                .transform(canonicalizePatchOp)
-                .describe(
-                    'RFC 6902 verb only: add, remove, replace, move, copy, or test. Must not contain `/` or JSON Pointer segments—put the pointer in `path`, not here.',
-                ),
-            path: z
-                .string()
-                .describe(
-                    'JSON Pointer to the target (e.g. /0/title, /0/exercises/1/sets/0/reps). Starts with /. If it contains `/`, it belongs in this field, not in `op`. Never append values to the path (e.g. /0/.../rpe:7 is wrong; use /0/.../rpe and put 7 in value).',
-                ),
-            value: z.unknown().optional().describe('Value for add, replace, test. Do NOT include for move, copy, or remove.'),
-            from: z
-                .string()
-                .optional()
-                .describe(
-                    'JSON Pointer for move/copy source (REQUIRED for move and copy operations — e.g. { "op": "move", "from": "/0/exercises/2", "path": "/0/exercises/0" })',
-                ),
-        })
-        .superRefine((op, ctx) => {
-            if ((op.op === 'move' || op.op === 'copy') && (!op.from || op.from.trim() === '')) {
-                ctx.addIssue({
-                    code: 'custom',
-                    message: `"from" is required for "${op.op}" operations (RFC 6902). Provide the source JSON Pointer in "from".`,
-                    path: ['from'],
-                });
-            }
-        }),
-);
-
-/** Same input as modifyProgram tool — exported for tests. */
-export const modifyProgramInputSchema = z.object({
-    patch: z
-        .array(jsonPatchOperationSchema)
-        .min(1)
-        .describe('Array of JSON Patch operations (add, remove, replace, move, copy, test). At least one operation required.'),
-});
-
 /**
  * Factory that creates the complete tool set for the chat agent. Captures
  * user-specific exclusion filters and the current program in a closure so
@@ -185,7 +109,7 @@ export const modifyProgramInputSchema = z.object({
  * @param props.excludeAreas - Comma-separated muscle groups to exclude from exercise selection.
  * @param props.excludeEquipment - Comma-separated equipment types to exclude.
  * @param props.healthIssues - Comma-separated health considerations for exercise filtering.
- * @param props.hevyProgram - The user's current Hevy routines (request-body snapshot for getCurrentProgram).
+ * @param props.hevyProgram - The user's current Hevy routines (request-body snapshot for readProgram).
  * @returns An object mapping tool names to Vercel AI SDK tool descriptors.
  */
 export function getTools({
@@ -419,7 +343,7 @@ export function getTools({
     const planProgramTool = tool({
         description:
             'Submit a structured multi-week training plan before calling buildWeek. Use questionnaire answers, program builder context (days/week, length), and your judgment. ' +
-            'This does not create routines; it anchors periodization for later modifyProgram patches. Call once per new program.',
+            'This does not create routines; it anchors periodization for later mutateProgram batches. Call once per new program.',
         inputSchema: planProgramInputSchema,
         execute: async (input) => {
             const plan = input;
@@ -438,32 +362,30 @@ export function getTools({
             const o = output as { summary?: string };
             return {
                 type: 'text' as const,
-                value: `Plan recorded: ${o.summary ?? 'OK'}. Proceed with getExerciseList, then call buildWeek exactly once (all days in that call), then apply periodization with modifyProgram only; do not call buildWeek again after it succeeds.`,
+                value: `Plan recorded: ${o.summary ?? 'OK'}. Proceed with getExerciseList, then call buildWeek exactly once (all days in that call), then apply periodization with mutateProgram; do not call buildWeek again after it succeeds.`,
             };
         },
     });
 
     /**
-     * Title: getCurrentProgramTool
-     * Description: Tool to check if a program currently exists before creating a new one or modifying an existing one.
-     * @returns { Tool }
+     * Title: readProgramTool
+     * Description: On-demand read of the program snapshot from request start.
      */
-    const getCurrentProgramTool = tool({
+    const readProgramTool = tool({
         description:
-            'Program JSON **as of request start** (does not refresh after **buildWeek** in the same turn; may stay empty right after a new build). ' +
-            'Use for **editing** an existing grid (accurate paths/order). ' +
-            'For **post-buildWeek periodization**, do not use this for paths; use builder context, **planProgram**, **buildWeek** output, and the build-program skill index formula.',
-        inputSchema: z.object({
-            reason: z.string().optional().describe('Optional reason for checking the current program state'),
+            'Returns the full **hevyProgram** snapshot from the **start of this request** (does not refresh after **buildWeek** in the same turn). ' +
+            'Includes day notes, exercise notes, exercise reason, sets, and structure. Call when you need the current program — not on every turn. ' +
+            'Sorted by folder_id (week, 0-based) then order (day, 1-based). Use folder_id + dayOrder for **mutateProgram** targeting. ' +
+            'For **post-buildWeek periodization**, do not use this for targeting; use **buildWeek** output, **planProgram**, and **folderIds** + **dayOrder**.',
+        inputSchema: readProgramInputSchema,
+        execute: async () => ({
+            hevyProgram: readProgramSnapshot(hevyProgram),
         }),
-        execute: async () => {
-
+        toModelOutput: async ({ output }) => {
+            const o = output as { hevyProgram?: THevyRoutine[] };
             return {
-            currentProgram: hevyProgram,
-            hasProgram: hevyProgram && hevyProgram.length > 0,
-            message: hevyProgram && hevyProgram.length > 0
-                ? 'A program currently exists in JSON format. You can modify it or create a new one based on user requests. Always return programs in JSON format as a THevyRoutine[] array.'
-                : 'No program currently exists. Create a new program based on user requests. Always return programs in JSON format as a THevyRoutine[] array.',
+                type: 'text' as const,
+                value: formatReadProgramForModel(o.hevyProgram ?? []),
             };
         },
     });
@@ -476,7 +398,7 @@ export function getTools({
     const buildWeekTool = tool({
         description:
             'Builds an entire week of routines/days for the workout program in a SINGLE tool invocation (all training days in one payload). ' +
-            'Call **buildWeek at most once** per user request to generate that week; after it succeeds, use **modifyProgram** only for any changes (never a second buildWeek to fix or tweak). ' +
+            'Call **buildWeek at most once** per user request to generate that week; after it succeeds, use **mutateProgram** for any changes (never a second buildWeek to fix or tweak). ' +
             'Provide all days in order (Day 1, Day 2, …) so the UI can duplicate the first week across the remaining weeks. ' +
             'IMPORTANT: Always provide a valid JSON object with the required fields. ' +
             'For rep-based exercises, **prefer rep_range** (e.g. {start:8, end:12}) over a fixed reps value. Set reps as a fallback alongside rep_range. ' +
@@ -579,7 +501,7 @@ export function getTools({
                     return {
                         error: 'buildWeek already completed',
                         message:
-                            'Week already built in this turn. Use modifyProgram for all edits (reps, RPE, rest, titles, periodization). Do not call buildWeek again.',
+                            'Week already built in this turn. Use mutateProgram for all edits (reps, RPE, rest, titles, periodization). Do not call buildWeek again.',
                     };
                 }
 
@@ -727,43 +649,106 @@ export function getTools({
 
             return {
                 type: 'text' as const,
-                value: `Week complete (${output.totalDays} days): ${titles || 'No routine titles'} (${output.exerciseCount} exercises, ${output.setCount} sets). Do not call buildWeek again; use modifyProgram for any changes.`,
+                value: `Week complete (${output.totalDays} days): ${titles || 'No routine titles'} (${output.exerciseCount} exercises, ${output.setCount} sets). Do not call buildWeek again; use mutateProgram for any changes.`,
             };
         },
     });
 
     /**
-     * Title: modifyProgramTool
-     * Description: JSON Patch (RFC 6902). Two use cases; see tool description.
+     * Title: mutateProgramTool
+     * Description: Typed registry operation batch with server preflight via applyOperations.
      * @returns { Tool }
      */
-    const modifyProgramTool = tool({
-        description:
-            'JSON Patch on the program. **(1) Edit existing grid:** **getCurrentProgram** first (paths match real order). **(2) After buildWeek:** do not rely on **getCurrentProgram**; patch the **full** routines doc (**totalDays × programLength**) via **planProgram**, **buildWeek**, and **routineIndex = (w - 1) × totalDays + (d - 1)** (build-program skill). Prefer **one** merged patch, paths ascending. ' +
-            'Root = **THevyRoutine[]**; indices **/0…/N-1** (e.g. 6×8 weeks → 48). Each op must use **op** (verb only) and **path** (JSON Pointer starting with /) as **separate** fields—never embed the pointer in **op**. End paths on a property name; put scalars in **value** (not in the path). Many ops OK. Examples: /0/title, /0/exercises/1, /0/exercises/0/sets/2/reps.',
-        inputSchema: modifyProgramInputSchema,
-        execute: async ({ patch }) => {
+    const mutateProgramTool = tool({
+        description: buildMutateProgramToolDescription(),
+        inputSchema: mutateProgramInputSchema,
+        execute: async ({ operations }) => {
             try {
-                return { patch };
+                await ensureExerciseIdToTitleMap();
+
+                const resolvedOperations: TAgentProgramOperation[] = [];
+                for (let index = 0; index < operations.length; index++) {
+                    const operation = operations[index];
+                    if (operation.op === 'insert_exercise' || operation.op === 'edit_exercise') {
+                        const resolved = resolveExercisePayload(operation.exercise, exerciseIdToTitle);
+                        if (resolved.ok === false) {
+                            return {
+                                error: 'Program mutation batch failed',
+                                failures: [{ index, op: operation.op, reason: resolved.reason }],
+                            };
+                        }
+                        resolvedOperations.push({ ...operation, exercise: resolved.payload });
+                    } else if (operation.op === 'swap_exercise_template') {
+                        if (operation.preserve_sets === false) {
+                            const resolved = resolveExercisePayload(
+                                operation.to as TInsertExercisePayload,
+                                exerciseIdToTitle,
+                            );
+                            if (resolved.ok === false) {
+                                return {
+                                    error: 'Program mutation batch failed',
+                                    failures: [{ index, op: operation.op, reason: resolved.reason }],
+                                };
+                            }
+                            resolvedOperations.push({ ...operation, to: resolved.payload });
+                        } else {
+                            const resolved = resolveSwapTemplateTo(
+                                operation.to as TSwapExerciseTemplateMinimalTo,
+                                exerciseIdToTitle,
+                            );
+                            if (resolved.ok === false) {
+                                return {
+                                    error: 'Program mutation batch failed',
+                                    failures: [{ index, op: operation.op, reason: resolved.reason }],
+                                };
+                            }
+                            resolvedOperations.push({ ...operation, to: resolved.payload });
+                        }
+                    } else {
+                        resolvedOperations.push(operation);
+                    }
+                }
+
+                const result = applyOperations(hevyProgram ?? [], resolvedOperations);
+                if (isApplyBatchFailure(result)) {
+                    return {
+                        error: 'Program mutation batch failed',
+                        failures: result.failures,
+                    };
+                }
+                return { operations: resolvedOperations };
             } catch (error) {
-                console.error('Error in modifyProgramTool:', error);
+                console.error('Error in mutateProgramTool:', error);
                 return {
-                    error: 'Failed to prepare patch',
-                    message: error instanceof Error ? error.message : 'Unknown error',
+                    error: 'Failed to validate mutation batch',
+                    failures: [
+                        {
+                            index: 0,
+                            op: operations[0]?.op ?? 'unknown',
+                            reason: error instanceof Error ? error.message : 'Unknown error',
+                        },
+                    ],
                 };
             }
         },
-
         toModelOutput: async ({ output }) => {
-            if (output.error) {
+            if (output && typeof output === 'object' && 'error' in output && output.error) {
+                const o = output as {
+                    error: string;
+                    failures?: Array<{ index: number; op: string; reason: string }>;
+                };
+                const failureLines =
+                    o.failures?.map((f) => `[${f.index}] ${f.op}: ${f.reason}`).join('; ') ??
+                    'Unknown validation error';
                 return {
                     type: 'text' as const,
-                    value: `Error: ${output.message || 'Failed to prepare patch'}`,
+                    value: `Mutation batch rejected: ${failureLines}`,
                 };
             }
+            const o = output as { operations?: unknown[] };
             return {
                 type: 'text' as const,
-                value: `Modify program patch (${output.patch?.length ?? 0} operations) will be applied on the client.`,
+                value: `Mutation batch validated (${o.operations?.length ?? 0} operations) will be applied on the client.`,
             };
         },
     });
@@ -772,8 +757,8 @@ export function getTools({
         description:
             'Heuristic report card (volume, frequency, categories, rep variety, session size). ' +
             'Call only when the user explicitly asks to rate their program (same intent as the "Rate my program" chip). ' +
-            'Do not call for "how do I improve", generic review, or critique—use getCurrentProgram and reply in chat. ' +
-            'Uses the program JSON from this request (same snapshot as getCurrentProgram).',
+            'Do not call for "how do I improve", generic review, or critique—use readProgram and reply in chat. ' +
+            'Uses the same request-start snapshot as readProgram.',
         inputSchema: z.object({
             reason: z.string().optional().describe('Short note on why the rating was requested'),
         }),
@@ -817,9 +802,9 @@ export function getTools({
         getExerciseList: getExerciseListTool,
         getMoreInfoQuestions: getMoreInfoQuestionsTool,
         planProgram: planProgramTool,
-        getCurrentProgram: getCurrentProgramTool,
+        readProgram: readProgramTool,
         buildWeek: buildWeekTool,
-        modifyProgram: modifyProgramTool,
+        mutateProgram: mutateProgramTool,
         rateProgram: rateProgramTool,
         loadSkill: loadSkillTool,
         readFile: readFileTool,

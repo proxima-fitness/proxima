@@ -3,18 +3,18 @@
 import { memo } from "react";
 import type { RefObject } from "react";
 import type { ChatStatus, FileUIPart } from "ai";
-import type { Operation } from "fast-json-patch";
 import { Agent } from "@/components/program-builder/shared/agent/Agent";
 import { Spinner } from "@/components/ui/spinner";
 import type { useProgramRequestState } from "./use-program-request-state";
+import type { TCommitWithUndoOptions } from "@/components/program-builder/mutations/types";
 
-type ProgramRequest = ReturnType<typeof useProgramRequestState>;
+type TProgramRequest = ReturnType<typeof useProgramRequestState>;
 
 export interface IProps {
     search: string;
     hevyProgram: THevyRoutine[];
-    applyPatchWithUndo: (newDocument: THevyRoutine[], inversePatch: Operation[], recordUndo?: boolean) => void;
-    programRequest: ProgramRequest;
+    commitWithUndo: (next: THevyRoutine[], options?: TCommitWithUndoOptions) => void;
+    programRequest: TProgramRequest;
     messages: TChatMessage[];
     setMessages: (
         messages:
@@ -36,7 +36,7 @@ export interface IProps {
     handleStop: () => void;
     onBuildComplete?: () => void;
     lastAtomicBuildCommitKeyRef: RefObject<string | null>;
-    appliedModifyProgramKeysRef: RefObject<Set<string>>;
+    appliedMutateProgramKeysRef: RefObject<Set<string>>;
 
     sidebarPosition: "left" | "right";
     onTogglePosition: () => void;
@@ -50,7 +50,7 @@ export interface IProps {
 function BuildProgramChatPanelInner({
     search,
     hevyProgram,
-    applyPatchWithUndo,
+    commitWithUndo,
     programRequest,
     messages,
     setMessages,
@@ -69,7 +69,7 @@ function BuildProgramChatPanelInner({
     handleStop,
     onBuildComplete,
     lastAtomicBuildCommitKeyRef,
-    appliedModifyProgramKeysRef,
+    appliedMutateProgramKeysRef,
     sidebarPosition,
     onTogglePosition,
     onToggleExpand,
@@ -91,7 +91,7 @@ function BuildProgramChatPanelInner({
         <Agent
             search={search}
             hevyProgram={hevyProgram}
-            applyPatchWithUndo={applyPatchWithUndo}
+            commitWithUndo={commitWithUndo}
             sex={programRequest.sex}
             age={programRequest.age}
             daysPerWeek={programRequest.daysPerWeek}
@@ -155,7 +155,7 @@ function BuildProgramChatPanelInner({
             handleStop={handleStop}
             onBuildComplete={onBuildComplete}
             lastAtomicBuildCommitKeyRef={lastAtomicBuildCommitKeyRef}
-            appliedModifyProgramKeysRef={appliedModifyProgramKeysRef}
+            appliedMutateProgramKeysRef={appliedMutateProgramKeysRef}
             sidebarPosition={sidebarPosition}
             onTogglePosition={onTogglePosition}
             onToggleExpand={onToggleExpand}

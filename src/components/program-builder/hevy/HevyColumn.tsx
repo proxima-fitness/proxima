@@ -2,7 +2,7 @@
  * @module HevyColumn
  * One week column in the Hevy program builder: header (week title, duplicate week), drop zone for day cards,
  * drag-and-drop reorder, Add Day dropdown (empty day or add Hevy routine), and HevyDuplicateWeek / HevyAddRoutineDialog.
- * Depends on: HevyDayCard, HevyDuplicateWeek, HevyAddRoutineDialog, DropIndicator, reorderHevy.
+ * Depends on: HevyDayCard, HevyDuplicateWeek, HevyAddRoutineDialog, DropIndicator.
  * Used by: HevyRoutine (one per week).
  */
 
@@ -15,9 +15,9 @@ import { HevyDayCard } from "./HevyDayCard";
 import { HevyDuplicateWeek } from "./HevyDuplicateWeek";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { IOption } from "@/components/ui/multi-select";
-import { reorderHevy } from "../utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { HevyAddRoutineDialog } from "./HevyAddRoutineDialog";
+import { useProgramMutation } from "@/contexts/ProgramMutationContext";
 
 /** Props for a single week column in the program builder. */
 interface IProps {
@@ -29,8 +29,6 @@ interface IProps {
     programLength: number;
     /** Flat list of all days (routines); this column filters by folder_id. */
     hevyProgram: THevyRoutine[];
-    /** Updater for the full program when days are reordered or added. */
-    setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
     /** Adds an empty day to this week. */
     handleAddDay: (folder_id: number) => void;
     /** Opens the add-note dialog for a day. */
@@ -81,7 +79,6 @@ export const HevyColumn: React.FC<IProps> = (props) => {
         hevyProgram,
         folder_id,
         programLength,
-        setHevyProgram,
         handleAddDay,
         handleOpenAddNoteDialog,
         handleOpenAddExerciseNoteDialog,
@@ -102,6 +99,9 @@ export const HevyColumn: React.FC<IProps> = (props) => {
         hevyExercises,
         isMobile = false,
     } = props;
+
+    const { runMutation, isAgentStreaming } = useProgramMutation();
+    const mutationsLocked = isAgentStreaming;
 
     const [active, setActive] = useState(false);
 
@@ -141,27 +141,11 @@ export const HevyColumn: React.FC<IProps> = (props) => {
         const before = element.dataset.before || "-1";
 
         if (before !== cardId) {
-            let copy = [...hevyProgram];
-
-            let cardToTransfer = copy.find((c) => c.id === cardId);
-            if (!cardToTransfer) return;
-            cardToTransfer = { ...cardToTransfer, folder_id };
-
-            copy = copy.filter((c) => c.id !== cardId);
-
-            const moveToBack = before === "-1";
-
-            if (moveToBack) {
-                copy.push(cardToTransfer);
-            } else {
-                const insertAtIndex = copy.findIndex((el) => el.id === before);
-                if (insertAtIndex === undefined) return;
-
-                copy.splice(insertAtIndex, 0, cardToTransfer);
-            }
-
-            copy = reorderHevy(copy);
-            setHevyProgram(copy);
+            runMutation("reorder_day_in_week", {
+                folderId: folder_id,
+                dayId: cardId,
+                beforeDayId: before === "-1" ? null : before,
+            });
         }
     };
 
@@ -241,8 +225,9 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                             <Tooltip>
                                 <TooltipTrigger className="">
                                     <div
-                                        onClick={ () => handleDuplicateWeekOpen(true) }
-                                        className="[&_svg]:w-4 [&_svg]:h-4 sm:[&_svg]:w-5 sm:[&_svg]:h-5"
+                                        onClick={ () => { if (!mutationsLocked) handleDuplicateWeekOpen(true); } }
+                                        className={`[&_svg]:w-4 [&_svg]:h-4 sm:[&_svg]:w-5 sm:[&_svg]:h-5 ${mutationsLocked ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                                        aria-disabled={mutationsLocked}
                                     >
                                         <CopyIcon />
                                     </div>
@@ -254,8 +239,9 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                             <Tooltip>
                                 <TooltipTrigger className="">
                                     <div
-                                        onClick={ () => setDeleteWeekOpen(true) }
-                                        className="[&_svg]:w-4 [&_svg]:h-4 sm:[&_svg]:w-5 sm:[&_svg]:h-5"
+                                        onClick={ () => { if (!mutationsLocked) setDeleteWeekOpen(true); } }
+                                        className={`[&_svg]:w-4 [&_svg]:h-4 sm:[&_svg]:w-5 sm:[&_svg]:h-5 ${mutationsLocked ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                                        aria-disabled={mutationsLocked}
                                     >
                                         <Trash2 />
                                     </div>
@@ -269,9 +255,9 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                 </div>
             </div>
             <div
-                onDrop={ handleDragEnd }
-                onDragOver={ handleDragOver }
-                onDragLeave={ handleDragLeave }
+                onDrop={ mutationsLocked ? undefined : handleDragEnd }
+                onDragOver={ mutationsLocked ? undefined : handleDragOver }
+                onDragLeave={ mutationsLocked ? undefined : handleDragLeave }
                 className={ `h-full w-full max-w-full gap-4 transition-colors max-sm:overflow-x-hidden ${
                     active ?  "bg-gray-200 dark:bg-darkGray" : "bg-white dark:bg-darkGray"
                 }` }
@@ -308,8 +294,9 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                     <DropdownMenu open={ dropdownOpen } onOpenChange={ () => setDropdownOpen(false) }>
                         <DropdownMenuTrigger asChild>
                             <Button
-                                onClick={ () => setDropdownOpen(true) }
-                                className="mb-4 h-12 w-44 rounded-full bg-lightSecondary font-semibold uppercase text-white hover:bg-lightSecondary/90"
+                                onClick={ () => { if (!mutationsLocked) setDropdownOpen(true); } }
+                                disabled={mutationsLocked}
+                                className="mb-4 h-12 w-44 rounded-full bg-lightSecondary font-semibold uppercase text-white hover:bg-lightSecondary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                                 aria-label="Add day to week">
                                 <PlusIcon />
                                 Add Day
@@ -318,14 +305,16 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                         <DropdownMenuContent>
                             <DropdownMenuItem
                                 className="cursor-pointer"
-                                onClick={ () => handleAddDay(folder_id) }
+                                disabled={mutationsLocked}
+                                onClick={ () => { if (!mutationsLocked) handleAddDay(folder_id); } }
                             >
                             <Plus className="w-4 h-4 mr-2" />
                             Add Empty Day
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 className="cursor-pointer"
-                                onClick={ () => { setRoutineDialogOpen(true); setDropdownOpen(false); } }
+                                disabled={mutationsLocked}
+                                onClick={ () => { if (!mutationsLocked) { setRoutineDialogOpen(true); setDropdownOpen(false); } } }
                             >
                             <BookOpen className="w-4 h-4 mr-2" />
                             Add Hevy Routine

@@ -152,6 +152,14 @@ _Avoid_: Mode toggle, program picker
 The chat agent has the same program-building tools in Edit mode as in New mode. Agent mutations update working builder state and set edit dirty state; the user Syncs to push changes to Hevy.
 _Avoid_: Read-only chat, constrained edit tools
 
+**Template swap**:
+Replacing one exercise template with another across some or all days and weeks of a program — e.g. barbell → dumbbell for every occurrence. Preserves existing sets and rest when the swap is equipment-only; distinct from editing a single slot’s prescription (reps, RPE, rest) or replacing one day’s exercise with new set targets.
+_Avoid_: Exercise edit (ambiguous — may mean one slot or program-wide), variation change (too vague)
+
+**Program mutation batch**:
+One ordered set of program changes the agent applies atomically in a single turn for one logical edit. Fail-all: if any change is invalid, none apply.
+_Avoid_: Patch, JSON edit
+
 **Edit dirty state**:
 Whether the current Edit session has unsaved builder changes. Set by any mutation (grid edit, agent patch, undo); cleared on successful Sync, Discard, or fresh Hevy load. Drives the navigation guard. Page refresh shows a browser `beforeunload` warning when dirty; if the user proceeds, unsaved Edit state is lost and the next Edit entry reloads from Hevy.
 _Avoid_: isDirty (implementation), unsaved flag

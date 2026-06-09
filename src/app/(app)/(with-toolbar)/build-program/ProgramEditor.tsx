@@ -1,19 +1,19 @@
 "use client";
 
 import { useState, useCallback, memo } from "react";
-import { hevyAddExerciseToHevySetsConverter, reorderHevy, sortHevyByOrder } from "@/components/program-builder/utils";
+import { addExerciseFormToInsertPayload } from "@/components/program-builder/mutations/handlers";
 import { IOption } from "@/components/ui/multi-select";
-import { toast } from "sonner";
+import { useProgramMutation } from "@/contexts/ProgramMutationContext";
 import { ProgramGrid } from "./ProgramGrid";
 
 interface IProps {
     orderedProgram: THevyRoutine[];
-    setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
     isMobile: boolean;
 }
 
 function ProgramEditorInner(props: IProps) {
-    const { orderedProgram, setHevyProgram, isMobile } = props;
+    const { orderedProgram, isMobile } = props;
+    const { runMutation } = useProgramMutation();
 
     const [addExerciseDialog, setAddExerciseDialog] = useState<THevyDialog>({ folder_id: 0, dayOrder: 0, isOpen: false });
     const [addNoteDialog, setAddNoteDialog] = useState<THevyDialog>({ folder_id: 0, dayOrder: 0, isOpen: false });
@@ -22,331 +22,179 @@ function ProgramEditorInner(props: IProps) {
     const [focusedCardId, setFocusedCardId] = useState<string>("");
 
     const handleIsEditExercise = useCallback((isEditExercise: boolean) => {
-    setIsEditExercise(isEditExercise);
-}, []);
+        setIsEditExercise(isEditExercise);
+    }, []);
 
-// // Duplicates the selected week to other selected weeks
-const handleDuplicateWeek = useCallback((fromWeekIndex: number, toWeekIndexes: number[]) => {
-    setHevyProgram((prev) => {
-        const filteredPrev = prev.filter((day) => !toWeekIndexes.includes(day.folder_id));
-        const daysToCopy = prev.filter((day) => day.folder_id === fromWeekIndex);
-        let maxId = Math.max(...prev.map((d) => Number(d.id)));
-        const newDays = toWeekIndexes.flatMap((week) =>
-            daysToCopy.map((day) => ({
-                ...day,
-                id: String(++maxId),
-                folder_id: week,
-            })),
-        );
-        return reorderHevy([...filteredPrev, ...newDays]);
-    });
-}, [setHevyProgram]);
+    const handleDuplicateWeek = useCallback(
+        (fromWeekIndex: number, toWeekIndexes: number[]) => {
+            runMutation("duplicate_week", { fromWeekIndex, toWeekIndexes });
+        },
+        [runMutation],
+    );
 
-// Duplicates the selected day to other days in the program on the selected week
-const handleDuplicateDay = useCallback((fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayOrderArray: IOption[]) => {
-    const toDayOrders = toDayOrderArray.map((day) => Number(day.value)).sort((a, b) => a - b);
-    setHevyProgram((prev) => {
-        const dayToCopy = prev.find((day) => Number(day.folder_id) === fromWeekOrder && Number(day.order) === fromDayOrder);
+    const handleDuplicateDay = useCallback(
+        (
+            fromWeekOrder: number,
+            fromDayOrder: number,
+            toWeekOrder: number,
+            toDayOrderArray: IOption[],
+        ) => {
+            const toDayOrders = toDayOrderArray.map((day) => Number(day.value)).sort((a, b) => a - b);
+            runMutation("duplicate_day", {
+                fromWeekIndex: fromWeekOrder,
+                fromDayOrder,
+                toWeekIndex: toWeekOrder,
+                toDayOrders,
+            });
+        },
+        [runMutation],
+    );
 
-        if (!dayToCopy) return prev;
-
-        const existingDaysInTargetWeek = prev.filter((day) => Number(day.folder_id) === toWeekOrder);
-        const maxExistingOrderinTargetWeek = Math.max(...existingDaysInTargetWeek.map((day) => Number(day.order)), 0);
-
-        let newId = Math.max(...prev.map((day) => Number(day.id)), 0) + 1;
-        let updatedDays = [...prev];
-
-        const maxToDayOrder = Math.max(...toDayOrders);
-
-        if (maxToDayOrder > maxExistingOrderinTargetWeek) {
-            for (let i = maxExistingOrderinTargetWeek + 1; i <= maxToDayOrder; i++) {
-                if (
-                    !existingDaysInTargetWeek.some((day) => Number(day.order) === i) &&
-                    !toDayOrders.includes(i)
-                ) {
-                    updatedDays.push({
-                        id: String(newId++),
-                        folder_id: toWeekOrder,
-                        order: String(i),
-                        exercises: [],
-                        title: "",
-                        notes: "",
-                    });
-                }
-            }
+    const handleOpenAddExerciseDialog = useCallback((addExerciseDialog: THevyDialog) => {
+        if (addExerciseDialog.isOpen === false) {
+            setIsEditExercise(false);
         }
+        setAddExerciseDialog(addExerciseDialog);
+    }, []);
 
-        // Remove days that are going to be replaced
-        updatedDays = updatedDays.filter((day) => !(day.folder_id === toWeekOrder && toDayOrders.includes(Number(day.order))));
+    const handleOpenAddNoteDialog = useCallback((addNoteDialog: THevyDialog) => {
+        setAddNoteDialog(addNoteDialog);
+    }, []);
 
-        // Add new days in their place
-        const newDays = toDayOrders.map((dayOrder) => ({
-            ...dayToCopy,
-            id: String(newId++),
-            folder_id: toWeekOrder,
-            order: String(dayOrder),
-        }));
+    const handleOpenAddExerciseNoteDialog = useCallback((addExerciseNoteDialog: THevyDialog) => {
+        setAddExerciseNoteDialog(addExerciseNoteDialog);
+    }, []);
 
-        return sortHevyByOrder([...newDays,...updatedDays]);
-    });
-}, [setHevyProgram]);
-
-// State for opening the Add Exercise Dialog with the correct week and day
-const handleOpenAddExerciseDialog = useCallback((addExerciseDialog: THevyDialog) => {
-    if (addExerciseDialog.isOpen === false) {
-        setIsEditExercise(false);
-    }
-    setAddExerciseDialog(addExerciseDialog);
-}, []);
-
-// State for opening the Add Note Dialog with the correct week and day
-const handleOpenAddNoteDialog = useCallback((addNoteDialog: THevyDialog) => {
-    setAddNoteDialog(addNoteDialog);
-}, []);
-
-// State for opening the Add Exercise Note Dialog with the correct week and day
-const handleOpenAddExerciseNoteDialog = useCallback((addExerciseNoteDialog: THevyDialog) => {
-    setAddExerciseNoteDialog(addExerciseNoteDialog);
-}, []);
-
-// // Will re-generate the currently selected day based on a prompt
-// const handleGenerateDay = async (folder_id: number, dayOrder:number, prompt: string) => {
-//     const response = await aiRequest(1, prompt);
-//     if (response === undefined) {
-//         toast.error("Error generating day");
-//         return;
-//     }
-
-//     const parsedResponse = JSON.parse(response);
-//     // const oneDayRoutine = await buildHevyProgram(parsedResponse,1,1,"","","");
-//     if (oneDayRoutine) {
-//         setHevyProgram((prevProgram) =>
-//             prevProgram.map((routine) =>
-//                 routine.folder_id === folder_id && routine.order === dayOrder.toString()
-//                     ? { exercises: oneDayRoutine[0].exercises, id: routine.id, folder_id, order: dayOrder.toString(), title: oneDayRoutine[0].title ?? routine.title, notes: "" }
-//                     : routine
-//             )
-//         );
-//     }
-// };
-
-
-// Adds an empty day to the selected week
-const handleAddDay = useCallback((folder_id: number) => {
-    setHevyProgram((prev) => {
-        const daysInFolder = prev.filter((day) => day.folder_id === folder_id);
-        if (daysInFolder.length >= 7) {
-            toast.error("Maximum 7 days per week");
-            return prev;
-        }
-        const nthDayOrder = daysInFolder.length + 1;
-        const maxId = Math.max(...prev.map((d) => Number(d.id)));
-        const newEmptyDay: THevyRoutine = {
-            id: String(maxId + 1),
-            folder_id,
-            order: String(nthDayOrder),
-            exercises: [],
-            title: "",
-            notes: "",
-        };
-        return [...prev, newEmptyDay];
-    });
-}, [setHevyProgram]);
-
-const handleDeleteDay = useCallback((id: string) => {
-    setHevyProgram((prev) => {
-        let newDays = prev.filter((day) => day.id !== id);
-        newDays = reorderHevy(newDays);
-        return newDays;
-    });
-}, [setHevyProgram]);
-
-const handleDeleteWeek = useCallback((folder_id: number) => {
-    setHevyProgram((prev) => {
-        const withoutWeek = prev.filter((day) => day.folder_id !== folder_id);
-        const reindexed = withoutWeek.map((day) =>
-            day.folder_id > folder_id
-                ? { ...day, folder_id: day.folder_id - 1 }
-                : day
-        );
-        return reorderHevy(reindexed);
-    });
-}, [setHevyProgram]);
-
-const handleEditTitle = useCallback((id: string, title: string) => {
-    setHevyProgram((prev) =>
-        prev.map((day) => (day.id === id ? { ...day, title } : day))
+    const handleAddDay = useCallback(
+        (folder_id: number) => {
+            runMutation("add_day", { folderIds: [folder_id] });
+        },
+        [runMutation],
     );
-}, [setHevyProgram]);
 
-const handleDeleteExercise = useCallback((folder_id: number, dayOrder: number, exerciseIndex: number) => {
-    setHevyProgram((prev) =>
-        prev.map((day) => {
-            if (Number(day.folder_id) === folder_id && Number(day.order) === dayOrder) {
-                return {
-                    ...day,
-                    exercises: day.exercises.filter((_, index) => index !== exerciseIndex),
-                };
+    const handleDeleteDay = useCallback(
+        (id: string) => {
+            runMutation("delete_day", { dayId: id });
+        },
+        [runMutation],
+    );
+
+    const handleDeleteWeek = useCallback(
+        (folder_id: number) => {
+            runMutation("delete_week", { folderIds: [folder_id] });
+        },
+        [runMutation],
+    );
+
+    const handleEditTitle = useCallback(
+        (id: string, title: string) => {
+            const day = orderedProgram.find((routine) => routine.id === id);
+            if (!day) return;
+            runMutation("edit_day_title", {
+                folderIds: [Number(day.folder_id)],
+                dayOrder: Number(day.order),
+                title,
+            });
+        },
+        [orderedProgram, runMutation],
+    );
+
+    const handleDeleteExercise = useCallback(
+        (folder_id: number, dayOrder: number, exerciseIndex: number) => {
+            runMutation("delete_exercise", {
+                folderIds: [folder_id],
+                dayOrder,
+                exerciseIndex,
+            });
+        },
+        [runMutation],
+    );
+
+    const handleAddExercise = useCallback(
+        async (folder_id: number, dayOrder: number, exercise: THevyAddExercise) => {
+            const day = orderedProgram.find(
+                (routine) =>
+                    Number(routine.folder_id) === folder_id && Number(routine.order) === dayOrder,
+            );
+            runMutation("insert_exercise", {
+                folderIds: [folder_id],
+                dayOrder,
+                exerciseIndex: day?.exercises.length ?? 0,
+                exercise: addExerciseFormToInsertPayload(exercise),
+            });
+        },
+        [orderedProgram, runMutation],
+    );
+
+    const handleAddRoutineAsDay = useCallback(
+        (routine: THevyRoutine, folder_id: number) => {
+            runMutation("add_routine_as_day", {
+                folderIds: [folder_id],
+                routine: {
+                    exercises: routine.exercises,
+                    title: routine.title ?? "",
+                    notes: routine.notes ?? "",
+                },
+            });
+        },
+        [runMutation],
+    );
+
+    const handleAddRoutineNote = useCallback(
+        (folder_id: number, dayOrder: number, prompt: string) => {
+            runMutation("add_day_notes", {
+                folderIds: [folder_id],
+                dayOrder,
+                notes: prompt,
+            });
+        },
+        [runMutation],
+    );
+
+    const handleAddExerciseNote = useCallback(
+        (folder_id: number, dayOrder: number, exerciseIndex: number, prompt: string) => {
+            runMutation("add_exercise_notes", {
+                folderIds: [folder_id],
+                dayOrder,
+                exerciseIndex,
+                notes: prompt,
+            });
+        },
+        [runMutation],
+    );
+
+    const handleCreateSuperset = useCallback(
+        (dayId: string, selectedExercises: number[]) => {
+            runMutation("create_superset", { dayId, exerciseIndexes: selectedExercises });
+        },
+        [runMutation],
+    );
+
+    const handleRemoveFromSuperset = useCallback(
+        (dayId: string, exerciseIndex: number) => {
+            runMutation("remove_from_superset", { dayId, exerciseIndex });
+        },
+        [runMutation],
+    );
+
+    const handleEditExercise = useCallback(
+        (editExerciseDialog: THevyDialog) => {
+            if (editExerciseDialog.editExercise) {
+                runMutation("edit_exercise", {
+                    folderIds: [editExerciseDialog.folder_id],
+                    dayOrder: editExerciseDialog.dayOrder,
+                    exerciseIndex: editExerciseDialog.exerciseIndex ?? 0,
+                    exercise: addExerciseFormToInsertPayload(editExerciseDialog.editExercise),
+                });
             }
-            return day;
-        })
+            setIsEditExercise(false);
+        },
+        [runMutation],
     );
-}, [setHevyProgram]);
-
-const handleAddExercise = useCallback(async (folder_id: number, dayOrder: number, exercise: THevyAddExercise) => {
-    const sets = hevyAddExerciseToHevySetsConverter(exercise);
-    setHevyProgram((prev) =>
-        prev.map((day) => {
-            if (Number(day.folder_id) === folder_id && Number(day.order) === dayOrder) {
-                return {
-                    ...day,
-                    exercises: [
-                        ...day.exercises,
-                        {
-                            index: day.exercises.length + 1,
-                            title: exercise?.selectedExercise?.title ?? "",
-                            notes: "",
-                            exercise_template_id: exercise?.selectedExercise?.id ?? "",
-                            supersets_id: null,
-                            sets,
-                            rest_seconds: exercise?.restSeconds ?? null,
-                        },
-                    ],
-                };
-            }
-            return day;
-        })
-    );
-}, [setHevyProgram]);
-
-const handleAddRoutineAsDay = useCallback((routine: THevyRoutine, folder_id: number) => {
-    setHevyProgram((prev) => {
-        const daysInFolder = prev.filter((day) => day.folder_id === folder_id);
-        if (daysInFolder.length >= 7) {
-            toast.error("Maximum 7 days per week");
-            return prev;
-        }
-        const nthDayOrder = daysInFolder.length + 1;
-        const maxId = Math.max(...prev.map((d) => Number(d.id)));
-        const newEmptyDay: THevyRoutine = {
-            id: String(maxId + 1),
-            folder_id,
-            order: String(nthDayOrder),
-            exercises: routine.exercises,
-            title: routine.title ?? "",
-            notes: routine.notes ?? "",
-        };
-        return [...prev, newEmptyDay];
-    });
-}, [setHevyProgram]);
-
-const handleAddRoutineNote = useCallback((folder_id: number, dayOrder: number, prompt: string) => {
-    setHevyProgram((prev) =>
-        prev.map((day) => {
-            if (Number(day.folder_id) === folder_id && Number(day.order) === dayOrder) {
-                return { ...day, notes: prompt };
-            }
-            return day;
-        })
-    );
-}, [setHevyProgram]);
-
-const handleAddExerciseNote = useCallback((folder_id: number, dayOrder: number, exerciseIndex: number, prompt: string) => {
-    setHevyProgram((prev) =>
-        prev.map((day) => {
-            if (Number(day.folder_id) === folder_id && Number(day.order) === dayOrder) {
-                return {
-                    ...day,
-                    exercises: day.exercises.map((exercise, index) =>
-                        index === exerciseIndex ? { ...exercise, notes: prompt } : exercise
-                    ),
-                };
-            }
-            return day;
-        })
-    );
-}, [setHevyProgram]);
-
-const getNextSupersetId = useCallback((day: THevyRoutine) => {
-    const currentSupersetIds = Array.from(new Set(
-        day.exercises
-            .filter((e) => e.supersets_id !== null)
-            .map((e) => e.supersets_id)
-    )).sort((a, b) => (a || 0) - (b || 0));
-    let nextId = 0;
-    for (const currentId of currentSupersetIds) {
-        if (currentId !== nextId) return nextId;
-        nextId++;
-    }
-    return nextId;
-}, []);
-
-const handleCreateSuperset = useCallback((dayId: string, selectedExercises: number[]) => {
-    if (selectedExercises.length < 2) return;
-    setHevyProgram((prev) =>
-        prev.map((routine) => {
-            if (routine.id !== dayId) return routine;
-            const nextSupersetId = getNextSupersetId(routine);
-            return {
-                ...routine,
-                exercises: routine.exercises.map((exercise, index) =>
-                    selectedExercises.includes(index) ? { ...exercise, supersets_id: nextSupersetId } : exercise
-                ),
-            };
-        })
-    );
-}, [getNextSupersetId, setHevyProgram]);
-
-const handleRemoveFromSuperset = useCallback((dayId: string, exerciseIndex: number) => {
-    setHevyProgram((prev) =>
-        prev.map((routine) => {
-            if (routine.id !== dayId) return routine;
-            return {
-                ...routine,
-                exercises: routine.exercises.map((exercise, index) =>
-                    index === exerciseIndex ? { ...exercise, supersets_id: null } : exercise
-                ),
-            };
-        })
-    );
-}, [setHevyProgram]);
-
-const handleEditExercise = useCallback((editExercise: THevyDialog) => {
-    if (editExercise.editExercise) {
-        const sets = hevyAddExerciseToHevySetsConverter(editExercise.editExercise);
-        setHevyProgram((prev) =>
-            prev.map((day) => {
-                if (Number(day.folder_id) !== editExercise.folder_id || Number(day.order) !== editExercise.dayOrder) {
-                    return day;
-                }
-                return {
-                    ...day,
-                    exercises: day.exercises.map((exercise, index) =>
-                        index === editExercise.exerciseIndex
-                            ? {
-                                  ...exercise,
-                                  index: day.exercises.length + 1,
-                                  title: editExercise?.editExercise?.selectedExercise?.title ?? "",
-                                  notes: exercise?.notes ?? "",
-                                  reason: exercise?.reason ?? "",
-                                  exercise_template_id: editExercise?.editExercise?.selectedExercise?.id ?? "",
-                                  supersets_id: exercise?.supersets_id ?? null,
-                                  sets,
-                                  rest_seconds: editExercise?.editExercise?.restSeconds ?? null,
-                              }
-                            : exercise
-                    ),
-                };
-            })
-        );
-    }
-    setIsEditExercise(false);
-}, [setHevyProgram]);
 
     return (
         <ProgramGrid
             orderedProgram={orderedProgram}
-            setHevyProgram={setHevyProgram}
             isMobile={isMobile}
             addExerciseDialog={addExerciseDialog}
             addNoteDialog={addNoteDialog}
@@ -367,7 +215,6 @@ const handleEditExercise = useCallback((editExercise: THevyDialog) => {
             handleAddRoutineAsDay={handleAddRoutineAsDay}
             handleAddRoutineNote={handleAddRoutineNote}
             handleAddExerciseNote={handleAddExerciseNote}
-            getNextSupersetId={getNextSupersetId}
             handleCreateSuperset={handleCreateSuperset}
             handleRemoveFromSuperset={handleRemoveFromSuperset}
             handleEditExercise={handleEditExercise}

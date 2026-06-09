@@ -12,20 +12,21 @@
  * 3. **Schema conversion** – Converts between the Proxima schedule format
  *    (TScheduleWorkouts) and the Hevy routine format (THevyRoutine), including
  *    set generation with support for reps, ranges, time, RPE, and AMRAP.
- * 4. **JSON Patch helpers** – Human-readable description of patch operations
- *    and safe application of AI-generated patches to the live program state
- *    with undo support (via fast-json-patch).
+ * 4. **Program mutation helpers** – Human-readable operation summaries and client-side
+ *    apply of agent mutateProgram tool results with undo support.
  *
- * Depends on: compromise (NLP), fuse.js (fuzzy), fast-json-patch, sonner (toasts), ai (UIMessage)
+ * Depends on: compromise (NLP), fuse.js (fuzzy), sonner (toasts), ai (UIMessage)
  * Used by: Agent chat (Chat.tsx), ProgramEditor, useChat hooks
  */
 
 import { UIMessage } from "ai";
 import nlp from "compromise";
-import { applyPatch, compare, validate as validatePatch, type Operation } from "fast-json-patch";
 import Fuse from "fuse.js";
 import { toast } from "sonner";
 import type { IOption } from "@/components/ui/multi-select";
+import { applyOperations } from "@/components/program-builder/mutations/apply";
+import type { TAgentProgramOperation } from "@/components/program-builder/mutations/agentSchema";
+import { isApplyBatchFailure, type TCommitWithUndoOptions } from "@/components/program-builder/mutations/types";
 
 
 
@@ -574,170 +575,11 @@ export const generateHevySets = (exercise: TSavedWorkoutExercise): THevySets[] =
     return sets;
 };
 
-/** Shape of the AI modifyProgram tool's JSON output (patch array or error). */
-interface IModifyProgramOutput {
-    patch?: Array<{ op: string; path: string; value?: unknown; from?: string }>;
+/** Shape of the AI mutateProgram tool's JSON output (operations batch or error). */
+export interface IMutateProgramOutput {
+    operations?: TAgentProgramOperation[];
     error?: string;
-    message?: string;
-}
-
-/** Patch operation shape for describePatchOperation */
-export type PatchOperationForDescribe = { op: string; path: string; value?: unknown; from?: string };
-
-/**
- * Formats a patch operation value for display in human-readable change summaries.
- *
- * @param value - The JSON Patch operation value (any type)
- * @returns A quoted string for strings, stringified primitives, or JSON for objects
- */
-function formatOpValue(value: unknown): string {
-    if (value === undefined || value === null) return "";
-    if (typeof value === "string") return `'${value}'`;
-    if (typeof value === "number" || typeof value === "boolean") return String(value);
-    try {
-        return JSON.stringify(value);
-    } catch {
-        return String(value);
-    }
-}
-
-/**
- * Builds a human-readable sentence for a simple field-level patch operation.
- *
- * @param opType - JSON Patch verb ("replace", "add", "remove", etc.)
- * @param fieldName - The field being changed (e.g. "title", "notes")
- * @param value - Pre-formatted display string for the new value
- * @returns Human-friendly description like "Set title to 'Push Day'"
- */
-function formatSimpleFieldOp(opType: string, fieldName: string, value: string): string {
-    if (opType === "replace") return `Set ${fieldName} to ${value}`;
-    if (opType === "add") return `Add ${fieldName} ${value}`;
-    return `${opType} ${fieldName}`;
-}
-
-/**
- * Parses a JSON Patch path segment as a 1-based display index, or "?" if not numeric.
- *
- * @param seg - A single path segment from a JSON Patch path (e.g. "0", "exercises")
- * @returns 1-based numeric index for display, or "?" when the segment isn't a number
- */
-function parseSegmentNum(seg: string): number | "?" {
-    const n = parseInt(seg, 10);
-    return Number.isNaN(n) ? "?" : n + 1;
-}
-
-/** Configuration for rendering set-level property changes in human-readable form. */
-type SetPropConfig =
-    | { label: string; suffix?: string; fallback: string }
-    | { replaceText: string; fallback: string };
-
-/** Maps THevySets property names to display labels and units for change descriptions. */
-const SET_PROP_DESCRIPTIONS: Record<string, SetPropConfig> = {
-    reps: { label: "reps", fallback: "reps" },
-    weight: { label: "weight", fallback: "weight" },
-    weight_kg: { label: "weight", suffix: " kg", fallback: "weight" },
-    duration: { label: "duration", fallback: "duration" },
-    duration_seconds: { label: "duration", suffix: " s", fallback: "duration" },
-    rpe: { label: "RPE", fallback: "RPE" },
-    type: { label: "type", fallback: "set type" },
-    distance_meters: { label: "distance", suffix: " m", fallback: "distance" },
-    custom_metric: { label: "custom metric", fallback: "custom metric" },
-    index: { replaceText: "Updated", fallback: "set index" },
-};
-
-/**
- * Returns the value at a JSON Pointer path (RFC 6901) in the document.
- * Used to read the "old" value when describing a replace operation.
- *
- * @param doc - Root document (e.g. THevyRoutine[] for program)
- * @param path - JSON Pointer string (e.g. /0/exercises/1/sets/2/reps)
- * @returns The value at path, or undefined if path is invalid or missing
- */
-function getValueAtPath(doc: unknown, path: string): unknown {
-    if (typeof path !== "string" || !path.startsWith("/")) return undefined;
-    const segments = path.slice(1).split("/").filter(Boolean);
-    let current: unknown = doc;
-    for (const seg of segments) {
-        if (current === undefined || current === null) return undefined;
-        const key = /^\d+$/.test(seg) ? parseInt(seg, 10) : seg;
-        current = Array.isArray(current) || typeof current === "object"
-            ? (current as Record<string, unknown>)[key as string]
-            : undefined;
-    }
-    return current;
-}
-
-/**
- * Returns a short human-readable description of a single JSON Patch operation
- * (e.g. "Set title to 'Push Day'", "Exercise 2, Set 1: Set reps to 10").
- */
-export function describePatchOperation(op: PatchOperationForDescribe, hevyProgram?: THevyRoutine[]): string {
-    const { op: opType, path, value } = op;
-    if (typeof path !== "string" || !path.startsWith("/")) return "Updated program";
-    const segments = path.slice(1).split("/").filter(Boolean);
-    const withinRoutine = segments.slice(1);
-    if (segments.length <= 1 || withinRoutine.length === 0) return "Updated program";
-
-    if (withinRoutine[0] === "title") {
-        return formatSimpleFieldOp(opType, "title", formatOpValue(value));
-    }
-    if (withinRoutine[0] === "notes") {
-        return formatSimpleFieldOp(opType, "notes", formatOpValue(value));
-    }
-
-    if (withinRoutine[0] !== "exercises" || withinRoutine.length < 2) return "Updated program";
-
-    const routineIndex = parseInt(segments[0], 10);
-    const exerciseNum = parseSegmentNum(withinRoutine[1]);
-    const exerciseLabel = ((): string => {
-        if (!hevyProgram?.length || Number.isNaN(routineIndex)) return `Exercise ${exerciseNum}`;
-        const exerciseIndex = parseInt(withinRoutine[1], 10);
-        if (Number.isNaN(exerciseIndex)) return `Exercise ${exerciseNum}`;
-        const title = hevyProgram[routineIndex]?.exercises?.[exerciseIndex]?.title;
-        return (typeof title === "string" && title) ? title : `Exercise ${exerciseNum}`;
-    })();
-
-    if (withinRoutine.length === 2) {
-        if (opType === "add") return `Add exercise ${exerciseNum}`;
-        if (opType === "remove") return `Remove exercise ${exerciseNum}`;
-        return `${opType} exercise ${exerciseNum}`;
-    }
-    if (withinRoutine[2] === "name" || withinRoutine[2] === "title") {
-        const v = formatOpValue(value);
-        return opType === "replace"
-            ? `${exerciseLabel}: Set name to ${v}`
-            : `${opType} exercise ${exerciseNum} name`;
-    }
-    if (withinRoutine[2] !== "sets" || withinRoutine.length < 4) {
-        return `${exerciseLabel}: Updated`;
-    }
-
-    const setNum = parseSegmentNum(withinRoutine[3]);
-    const v = formatOpValue(value);
-    const setProp = withinRoutine[4];
-    const config = setProp !== undefined ? SET_PROP_DESCRIPTIONS[setProp] : undefined;
-
-    if (config) {
-        if ("replaceText" in config) {
-            return opType === "replace"
-                ? `${exerciseLabel}, Set ${setNum}: ${config.replaceText}`
-                : `${opType} ${config.fallback}`;
-        }
-        if (opType === "replace") {
-            const oldVal = hevyProgram ? getValueAtPath(hevyProgram, path) : undefined;
-            const oldStr = oldVal === undefined || oldVal === null ? "—" : String(oldVal);
-            return `${exerciseLabel}, Set ${setNum}: ${config.label} ${oldStr} → ${v}${config.suffix ?? ""}`;
-        }
-        return `${opType} ${config.fallback}`;
-    }
-
-    const propLabel = (setProp ?? "").replace(/_/g, " ");
-    if (opType === "replace" && v) {
-        const oldVal = hevyProgram ? getValueAtPath(hevyProgram, path) : undefined;
-        const oldStr = oldVal === undefined || oldVal === null ? "—" : String(oldVal);
-        return `${exerciseLabel}, Set ${setNum}: ${propLabel} ${oldStr} → ${v}`;
-    }
-    return `${exerciseLabel}, Set ${setNum}: Updated`;
+    failures?: Array<{ index: number; op: string; reason: string }>;
 }
 
 export type TModifyProgramRoutineObjective = {
@@ -749,121 +591,96 @@ export type TModifyProgramRoutineObjective = {
     folder_id?: number;
 };
 
-/**
- * Groups patch operations by routine index and returns one entry per routine
- * with a summary label and full list of human-readable change descriptions.
- * When hevyProgram is provided, labels use "Week X Day Y" for clarity.
- *
- * @param patch - Array of JSON Patch operations from the AI modifyProgram tool
- * @param hevyProgram - Optional current program state, used to resolve Week/Day labels
- * @returns Per-routine summary objects with change counts and human-readable details
- */
-export function getModifyProgramObjectivesByRoutine(
-    patch: Array<{ op: string; path: string; value?: unknown; from?: string }> | undefined,
-    hevyProgram?: THevyRoutine[]
-): TModifyProgramRoutineObjective[] {
-    if (!patch || !Array.isArray(patch) || patch.length === 0) return [];
+/** Short human-readable label for one registry operation (mutateProgram UI). */
+export function describeProgramOperation(operation: TAgentProgramOperation): string {
+    const weeks =
+        "folderIds" in operation && Array.isArray(operation.folderIds)
+            ? operation.folderIds.map((id) => id + 1).join(", ")
+            : null;
 
-    const byRoutine = new Map<number, string[]>();
-    for (const op of patch) {
-        const path = op.path;
-        if (typeof path !== "string" || !path.startsWith("/")) continue;
-        const segments = path.slice(1).split("/").filter(Boolean);
-        const routineIndex = segments.length > 0 ? parseInt(segments[0], 10) : 0;
-        if (Number.isNaN(routineIndex)) continue;
-        const list = byRoutine.get(routineIndex) ?? [];
-        list.push(describePatchOperation(op, hevyProgram));
-        byRoutine.set(routineIndex, list);
+    switch (operation.op) {
+        case "edit_day_title":
+            return `Week${weeks ? ` ${weeks}` : ""} day ${operation.dayOrder}: rename to "${operation.title}"`;
+        case "add_day_notes":
+            return `Week${weeks ? ` ${weeks}` : ""} day ${operation.dayOrder}: set day notes`;
+        case "insert_exercise":
+            return `Week${weeks ? ` ${weeks}` : ""} day ${operation.dayOrder}: insert "${operation.exercise.title ?? operation.exercise.exercise_template_id}" at index ${operation.exerciseIndex}`;
+        case "edit_exercise":
+            return `Week${weeks ? ` ${weeks}` : ""} day ${operation.dayOrder}: replace exercise ${operation.exerciseIndex + 1}`;
+        case "delete_exercise":
+            return `Week${weeks ? ` ${weeks}` : ""} day ${operation.dayOrder}: remove exercise ${operation.exerciseIndex + 1}`;
+        case "update_set":
+            return `Week${weeks ? ` ${weeks}` : ""} day ${operation.dayOrder}: update set ${operation.setIndex + 1} on exercise ${operation.exerciseIndex + 1}`;
+        case "add_exercise_notes":
+            return `Week${weeks ? ` ${weeks}` : ""} day ${operation.dayOrder}: set exercise ${operation.exerciseIndex + 1} notes`;
+        case "delete_day":
+            return `Delete day ${operation.dayId}`;
+        case "add_day":
+            return `Add day to week ${operation.folderIds[0] + 1}`;
+        case "delete_week":
+            return `Delete week ${operation.folderIds[0] + 1}`;
+        case "create_superset":
+            return `Create superset on day ${operation.dayId} (exercises ${operation.exerciseIndexes.map((i) => i + 1).join(", ")})`;
+        case "remove_from_superset":
+            return `Remove exercise ${operation.exerciseIndex + 1} from superset on day ${operation.dayId}`;
+        case "swap_exercise_template": {
+            const scope =
+                operation.folderIds || operation.dayOrder
+                    ? ` (scoped${weeks ? ` weeks ${weeks}` : ""}${operation.dayOrder ? ` day ${operation.dayOrder}` : ""})`
+                    : " (all weeks/days)";
+            const to = operation.to;
+            const toTitle =
+                to?.title ??
+                (to && "exercise_template_id" in to ? String(to.exercise_template_id) : "…");
+            return `Swap ${operation.from_exercise_template_id} → ${toTitle}${scope}`;
+        }
+        default: {
+            const unknownOp: never = operation;
+            return unknownOp;
+        }
     }
-
-    const routineIndices = Array.from(byRoutine.keys()).sort((a, b) => a - b);
-    return routineIndices.map((routineIndex) => {
-        const details = byRoutine.get(routineIndex) ?? [];
-        const count = details.length;
-        const label = count === 1 ? "1 change" : `${count} changes`;
-        const routine = hevyProgram?.[routineIndex];
-
-        const routineLabel = `Week ${routine?.folder_id != null ? routine.folder_id + 1 : "?"} Day ${routine?.order ?? "?"}: ${label}`
-        return {
-            routineIndex,
-            routineLabel,
-            count,
-            details,
-            folder_id: routine?.folder_id,
-        };
-    });
 }
 
-/**
- * Collects unapplied modifyProgram tool results from messages, validates and applies
- * all pending patches in sequence in memory, then commits once with a single inverse
- * (one undo step even if the model emitted multiple modifyProgram tool calls).
- * Intended to be called from a useEffect when messages or hevyProgram change.
- *
- * @param messages - Chat message history containing tool-modifyProgram parts
- * @param hevyProgram - Current program state to apply patches against
- * @param appliedKeysRef - Mutable set of already-applied patch keys (prevents double-apply)
- * @param applyPatchWithUndo - Callback to commit patched program; pass `recordUndo: false` for initial chat generation from an empty program (no undo stack entry).
- * @returns true if at least one patch was successfully applied, false otherwise
- */
+/** Progress list shape for mutateProgram tool UI (single summary group). */
+export function getMutateProgramObjectives(
+    operations: TAgentProgramOperation[] | undefined,
+): TModifyProgramRoutineObjective[] {
+    if (!operations?.length) return [];
+    const details = operations.map(describeProgramOperation);
+    const label = details.length === 1 ? "1 change" : `${details.length} changes`;
+    return [
+        {
+            routineIndex: 0,
+            routineLabel: label,
+            count: details.length,
+            details,
+        },
+    ];
+}
 
-const VALID_PATCH_OPS = new Set<string>(["add", "remove", "replace", "move", "copy", "test"]);
+function getLastSuccessfulBuildWeekFlatIndex(messages: UIMessage[]): number {
+    const segment = getAssistantMessagesSinceLastUser(messages);
+    const flat = flattenAssistantParts(segment);
+    let lastBwIdx = -1;
+    for (let i = 0; i < flat.length; i++) {
+        const { part } = flat[i];
+        if (part.type !== "tool-buildWeek") continue;
+        const out = (part as { output?: { routines?: THevyRoutine[]; error?: string } }).output;
+        if (out?.routines && !out?.error) lastBwIdx = i;
+    }
+    return lastBwIdx;
+}
 
-/** Coerce invalid op (e.g. "replace_seconds") to a valid JSON Patch op so fast-json-patch does not throw. */
-const normalizePatchOps = (ops: Operation[]): Operation[] => {
-    return ops.map(op => {
-        const opStr = typeof op.op === "string" ? op.op : "replace";
-        const canonical = VALID_PATCH_OPS.has(opStr) ? opStr : "replace";
-        return { ...op, op: canonical } as Operation;
-    });
-};
-
-/**
- * Strips spurious `:value` suffixes from the last segment of each operation's
- * `path` (and `from`). LLMs occasionally emit paths like
- * `/0/exercises/3/sets/1/rpe:7` instead of `/0/exercises/3/sets/1/rpe`.
- */
-const normalizePatchPaths = (ops: Operation[]): Operation[] => {
-    const COLON_SUFFIX = /^([a-zA-Z_][a-zA-Z0-9_]*):(.+)$/;
-
-    const fixPath = (p: string): string => {
-        const segments = p.split("/");
-        const last = segments[segments.length - 1];
-        const match = last.match(COLON_SUFFIX);
-        if (match) {
-            segments[segments.length - 1] = match[1];
-            return segments.join("/");
-        }
-        return p;
-    };
-
-    return ops.map(op => {
-        const fixed = { ...op, path: fixPath(op.path) };
-        if ("from" in fixed && typeof fixed.from === "string") {
-            fixed.from = fixPath(fixed.from);
-        }
-        return fixed;
-    });
-};
-
-/**
- * Coerces `move` ops that are missing a `from` pointer to `remove` ops.
- * This handles the LLM anti-pattern of emitting `{ op:"move", path, value:null }`
- * when the intent was to delete an element — RFC 6902 requires `from` on move.
- * `copy` without `from` is not guessable and is left as-is (validatePatch will reject it).
- */
-const normalizeMoveWithoutFrom = (ops: Operation[]): Operation[] =>
-    ops.map(op => {
-        if (op.op === "move" && (!("from" in op) || !(op as { from?: string }).from)) {
-            const { path } = op;
-            return { op: "remove", path } as Operation;
-        }
-        return op;
-    });
-
-/** Normalizes LLM JSON Patch ops before validate/apply (op coercion + path cleanup + move→remove coercion). */
-export const prepareModifyPatchOperations = (ops: Operation[]): Operation[] =>
-    normalizeMoveWithoutFrom(normalizePatchOps(normalizePatchPaths(ops)));
+function buildFlatPartIndexByKey(messages: UIMessage[]): Map<string, number> {
+    const segment = getAssistantMessagesSinceLastUser(messages);
+    const flat = flattenAssistantParts(segment);
+    const indexByKey = new Map<string, number>();
+    for (let i = 0; i < flat.length; i++) {
+        const { messageId, partIndex } = flat[i];
+        indexByKey.set(`${messageId}-${partIndex}`, i);
+    }
+    return indexByKey;
+}
 
 /**
  * Coerces degenerate rep_range objects (start === end) to null across an entire
@@ -916,12 +733,12 @@ const flattenAssistantParts = (segment: UIMessage[]): TFlatPart[] => {
     return out;
 };
 
-/** Snapshot of the last successful buildWeek in the current turn plus merged modifyProgram patches after it. */
-export interface IMergedBuildModifySnapshot {
+/** Snapshot of the last successful buildWeek in the current turn plus merged mutateProgram ops after it. */
+export interface IMergedBuildMutateSnapshot {
     baseWeekRoutines: THevyRoutine[];
     totalDays: number;
-    mergedPatch: Operation[];
-    modifyKeys: string[];
+    mergedOperations: TAgentProgramOperation[];
+    mutateKeys: string[];
     /** From the newest successful `tool-planProgram` before the last `tool-buildWeek`, when present. */
     durationWeeksFromPlan?: number;
 }
@@ -943,17 +760,18 @@ function getDurationWeeksFromPlanBeforeBuildWeek(flat: TFlatPart[], lastBuildWee
     return undefined;
 }
 
-/** Weeks to duplicate for atomic build: prefer plan so modifyProgram paths stay valid; else UI; else 1. */
+/** Weeks to duplicate for atomic build: prefer plan so mutate ops stay valid; else UI; else 1. */
 export const resolveEffectiveWeeksForAtomicCommit = (
-    snap: IMergedBuildModifySnapshot,
+    snap: IMergedBuildMutateSnapshot,
     programLengthFromUi?: number
 ): number => Math.max(1, snap.durationWeeksFromPlan ?? programLengthFromUi ?? 1);
 
 /**
  * Finds the last successful buildWeek in the current assistant turn and concatenates
- * all modifyProgram patches that appear after it (mega-patch for periodization).
+ * all mutateProgram operations that appear after it (one batch for periodization).
+ * Ops apply in message order; client does not reorder.
  */
-export const getMergedBuildAndModifySnapshot = (messages: UIMessage[]): IMergedBuildModifySnapshot | null => {
+export const getMergedBuildAndMutateSnapshot = (messages: UIMessage[]): IMergedBuildMutateSnapshot | null => {
     const segment = getAssistantMessagesSinceLastUser(messages);
     const flat = flattenAssistantParts(segment);
     let lastBwIdx = -1;
@@ -975,24 +793,24 @@ export const getMergedBuildAndModifySnapshot = (messages: UIMessage[]): IMergedB
 
     const durationWeeksFromPlan = getDurationWeeksFromPlanBeforeBuildWeek(flat, lastBwIdx);
 
-    const mergedPatch: Operation[] = [];
-    const modifyKeys: string[] = [];
+    const mergedOperations: TAgentProgramOperation[] = [];
+    const mutateKeys: string[] = [];
 
     for (let i = lastBwIdx + 1; i < flat.length; i++) {
         const { messageId, partIndex, part } = flat[i];
-        if (part.type !== "tool-modifyProgram") continue;
-        const toolOutput = (part as { output?: IModifyProgramOutput }).output;
-        const patch = toolOutput?.patch;
-        if (!patch || !Array.isArray(patch) || toolOutput?.error) continue;
-        mergedPatch.push(...prepareModifyPatchOperations(patch as Operation[]));
-        modifyKeys.push(`${messageId}-${partIndex}`);
+        if (part.type !== "tool-mutateProgram") continue;
+        const toolOutput = (part as { output?: IMutateProgramOutput }).output;
+        const operations = toolOutput?.operations;
+        if (!operations?.length || toolOutput?.error) continue;
+        mergedOperations.push(...operations);
+        mutateKeys.push(`${messageId}-${partIndex}`);
     }
 
     return {
         baseWeekRoutines: routines,
         totalDays,
-        mergedPatch,
-        modifyKeys,
+        mergedOperations,
+        mutateKeys,
         durationWeeksFromPlan,
     };
 };
@@ -1028,7 +846,7 @@ export const buildFullProgramFromFirstWeek = (
  * Stable key for idempotent atomic commit of a build+modify turn (avoids duplicate setState in Strict Mode).
  */
 export const getAtomicBuildCommitKey = (
-    snapshot: IMergedBuildModifySnapshot,
+    snapshot: IMergedBuildMutateSnapshot,
     messages: UIMessage[],
     effectiveWeeks: number
 ): string => {
@@ -1040,35 +858,31 @@ export const getAtomicBuildCommitKey = (
         }
     }
     const tailIds = messages.slice(lastUserIdx + 1).map((m) => m.id ?? "");
-    return `${tailIds.join("|")}|${snapshot.baseWeekRoutines.length}|${snapshot.mergedPatch.length}|${snapshot.modifyKeys.join(",")}|${effectiveWeeks}`;
+    return `${tailIds.join("|")}|${snapshot.baseWeekRoutines.length}|${snapshot.mergedOperations.length}|${snapshot.mutateKeys.join(",")}|${effectiveWeeks}`;
 };
 
-export type ChatStatusForAtomic = "streaming" | "ready" | (string & {});
+export type TChatStatusForAtomic = "streaming" | "ready" | (string & {});
 
 /**
  * When the assistant turn includes a successful buildWeek, duplicates week 1 across all weeks,
- * applies all modifyProgram patches after that buildWeek in one shot, and commits via applyPatchWithUndo.
+ * applies all mutateProgram operations after that buildWeek in one shot, and commits.
  * Only runs when status is ready (stream finished).
  * When the program was empty, commits with `recordUndo: false` so the user cannot undo back to an empty grid.
  *
- * Duplication week count prefers **planProgram.durationWeeks** from the same turn (matches model patch indices), then **programLengthFromUi**.
+ * Duplication week count prefers **planProgram.durationWeeks** from the same turn, then **programLengthFromUi**.
  */
-export const tryCommitAtomicBuildWeekAndMergedPatches = (
+export const tryCommitAtomicBuildWeekAndMutations = (
     messages: UIMessage[],
-    status: ChatStatusForAtomic | undefined,
+    status: TChatStatusForAtomic | undefined,
     programLengthFromUi: number | undefined,
     hevyProgram: THevyRoutine[],
-    appliedModifyProgramKeysRef: React.RefObject<Set<string>>,
+    appliedMutateProgramKeysRef: React.RefObject<Set<string>>,
     lastAtomicCommitKeyRef: React.RefObject<string | null>,
-    applyPatchWithUndo: (
-        newDocument: THevyRoutine[],
-        inversePatch: Operation[],
-        recordUndo?: boolean
-    ) => void
+    commitWithUndo: (next: THevyRoutine[], options?: TCommitWithUndoOptions) => void,
 ): { committed: boolean; effectiveWeeks?: number } => {
     if (status === "streaming") return { committed: false };
 
-    const snap = getMergedBuildAndModifySnapshot(messages);
+    const snap = getMergedBuildAndMutateSnapshot(messages);
     if (!snap) return { committed: false };
 
     const effectiveWeeks = resolveEffectiveWeeksForAtomicCommit(snap, programLengthFromUi);
@@ -1077,7 +891,7 @@ export const tryCommitAtomicBuildWeekAndMergedPatches = (
         programLengthFromUi != null &&
         snap.durationWeeksFromPlan !== programLengthFromUi
     ) {
-        console.warn("[tryCommitAtomicBuildWeekAndMergedPatches] planProgram.durationWeeks differs from UI programLength", {
+        console.warn("[tryCommitAtomicBuildWeekAndMutations] planProgram.durationWeeks differs from UI programLength", {
             durationWeeksFromPlan: snap.durationWeeksFromPlan,
             programLengthFromUi,
             effectiveWeeks,
@@ -1087,103 +901,82 @@ export const tryCommitAtomicBuildWeekAndMergedPatches = (
     const commitKey = getAtomicBuildCommitKey(snap, messages, effectiveWeeks);
     if (lastAtomicCommitKeyRef.current === commitKey) return { committed: false };
 
-    const base = buildFullProgramFromFirstWeek(snap.baseWeekRoutines, snap.totalDays, effectiveWeeks);
-    let doc = base;
+    let doc = buildFullProgramFromFirstWeek(snap.baseWeekRoutines, snap.totalDays, effectiveWeeks);
 
-    if (snap.mergedPatch.length > 0) {
-        const err = validatePatch(snap.mergedPatch, doc as object);
-        if (err) {
-            toast.error("Program modification failed: patch is invalid for duplicated program.");
-            console.error("Atomic build patch validation failed", err);
+    if (snap.mergedOperations.length > 0) {
+        const result = applyOperations(doc, snap.mergedOperations);
+        if (isApplyBatchFailure(result)) {
+            const reason = result.failures[0]?.reason ?? "Program modification failed.";
+            toast.error(reason);
+            console.error("Atomic build mutate batch failed", result.failures);
             return { committed: false };
         }
-        try {
-            const result = applyPatch(doc as object, snap.mergedPatch, true, false) as { newDocument: THevyRoutine[] };
-            doc = result.newDocument as THevyRoutine[];
-        } catch (e) {
-            toast.error("Program modification failed: could not apply patch.");
-            console.error(e);
-            return { committed: false };
-        }
+        doc = result.program;
     }
 
     doc = normalizeRepRanges(doc);
 
-    const inversePatch = compare(doc as object, hevyProgram as object);
-    const recordUndo = hevyProgram.length > 0;
-    applyPatchWithUndo(doc, inversePatch, recordUndo);
-    snap.modifyKeys.forEach((k) => appliedModifyProgramKeysRef.current.add(k));
+    commitWithUndo(doc, { recordUndo: hevyProgram.length > 0 });
+    snap.mutateKeys.forEach((k) => appliedMutateProgramKeysRef.current.add(k));
     lastAtomicCommitKeyRef.current = commitKey;
     return { committed: true, effectiveWeeks };
 };
 
-export const applyModifyProgramPatchesFromMessages = (
+/**
+ * Applies standalone mutateProgram tool batches (live-grid edits). Skips parts after
+ * buildWeek in the same turn (handled by atomic commit in 2c). Fail-all batch semantics.
+ */
+export const applyMutateProgramFromMessages = (
     messages: UIMessage[],
+    status: TChatStatusForAtomic | undefined,
     hevyProgram: THevyRoutine[],
     appliedKeysRef: React.RefObject<Set<string>>,
-    applyPatchWithUndo: (
-        newDocument: THevyRoutine[],
-        inversePatch: Operation[],
-        recordUndo?: boolean
-    ) => void
+    commitWithUndo: (next: THevyRoutine[], options?: TCommitWithUndoOptions) => void,
 ): boolean => {
+    if (status === "streaming") return false;
+    if (!hevyProgram?.length) return false;
 
-    if (!hevyProgram || hevyProgram.length === 0) return false;
+    const lastBuildWeekIdx = getLastSuccessfulBuildWeekFlatIndex(messages);
+    const flatIndexByKey = buildFlatPartIndexByKey(messages);
 
-    const toApply: { key: string; patch: IModifyProgramOutput["patch"] }[] = [];
+    const pendingKeys: string[] = [];
+    const mergedOperations: TAgentProgramOperation[] = [];
 
     for (const message of messages) {
         const parts = message.parts ?? [];
         for (let partIndex = 0; partIndex < parts.length; partIndex++) {
             const part = parts[partIndex];
-            if (part.type !== "tool-modifyProgram") continue;
-
-            const toolOutput = (part as { output?: IModifyProgramOutput }).output;
-            const patch = toolOutput?.patch;
-            if (!patch || !Array.isArray(patch) || patch.length === 0 || toolOutput?.error) continue;
+            if (part.type !== "tool-mutateProgram") continue;
 
             const key = `${message.id ?? partIndex}-${partIndex}`;
             if (appliedKeysRef.current.has(key)) continue;
 
-            toApply.push({ key, patch });
+            const flatIdx = flatIndexByKey.get(key);
+            if (flatIdx != null && lastBuildWeekIdx >= 0 && flatIdx > lastBuildWeekIdx) {
+                continue;
+            }
+
+            const toolOutput = (part as { output?: IMutateProgramOutput }).output;
+            const operations = toolOutput?.operations;
+            if (!operations?.length || toolOutput?.error) continue;
+
+            pendingKeys.push(key);
+            mergedOperations.push(...operations);
         }
     }
 
-    let simulation: THevyRoutine[] = hevyProgram;
-    const keysSucceeded: string[] = [];
+    if (mergedOperations.length === 0) return false;
 
-    for (const { key, patch } of toApply) {
-        const patchOps = prepareModifyPatchOperations(patch as Operation[]);
-        const err = validatePatch(patchOps, simulation as object);
-        if (err) {
-            toast.error("Program modification failed: patch is invalid for current program.");
-            console.error("Program modification failed: patch is invalid for current program", err);
-            appliedKeysRef.current.add(key);
-            break;
-        }
-
-        try {
-            const result = applyPatch(
-                simulation as object,
-                patchOps,
-                true,
-                false
-            ) as { newDocument: THevyRoutine[] };
-            simulation = result.newDocument as THevyRoutine[];
-            keysSucceeded.push(key);
-        } catch {
-            toast.error("Program modification failed: could not apply patch.");
-            appliedKeysRef.current.add(key);
-            break;
-        }
+    const result = applyOperations(hevyProgram, mergedOperations);
+    if (isApplyBatchFailure(result)) {
+        const reason = result.failures[0]?.reason ?? "Program modification failed.";
+        toast.error(reason);
+        console.error("mutateProgram batch failed", result.failures);
+        pendingKeys.forEach((k) => appliedKeysRef.current.add(k));
+        return false;
     }
 
-    if (keysSucceeded.length === 0) return false;
-
-    simulation = normalizeRepRanges(simulation);
-
-    const inversePatch = compare(simulation as object, hevyProgram as object);
-    applyPatchWithUndo(simulation, inversePatch, true);
-    keysSucceeded.forEach((k) => appliedKeysRef.current.add(k));
+    commitWithUndo(normalizeRepRanges(result.program), { recordUndo: hevyProgram.length > 0 });
+    pendingKeys.forEach((k) => appliedKeysRef.current.add(k));
     return true;
-}
+};

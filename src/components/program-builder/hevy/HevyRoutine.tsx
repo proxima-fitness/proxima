@@ -26,8 +26,6 @@ import { useEffect, useRef, useState } from "react";
 interface IProps {
     /** Flat list of all days (routines) in the program. */
     hevyProgram: THevyRoutine[];
-    /** Updater for the full program. */
-    setHevyProgram: React.Dispatch<React.SetStateAction<THevyRoutine[]>>;
     /** When true, single-week view with prev/next; when false, horizontal scroll of all weeks. */
     isMobile: boolean;
     /** State for the add/edit exercise dialog. */
@@ -82,8 +80,6 @@ interface IProps {
     handleAddRoutineNote: (folder_id: number, dayOrder: number, prompt: string) => void;
     /** Add a note to an exercise. */
     handleAddExerciseNote: (folder_id: number, dayOrder: number, exerciseIndex: number, prompt: string) => void;
-    /** Returns next superset id for a day (used when creating supersets). */
-    getNextSupersetId: (day: THevyRoutine) => number;
 }
 
 /**
@@ -93,7 +89,6 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
 
     const {
         hevyProgram,
-        setHevyProgram,
         isMobile,
         addExerciseDialog,
         addNoteDialog,
@@ -230,7 +225,6 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                                         programLength={ numberOfWeeks }
                                         hevyProgram={ hevyProgram }
                                         folder_id={ activeWeekIndex }
-                                        setHevyProgram={ setHevyProgram }
                                         handleAddDay={ handleAddDay }
                                         handleDeleteDay={ handleDeleteDay }
                                         handleEditTitle={ handleEditTitle }
@@ -267,7 +261,6 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                                         programLength={ numberOfWeeks }
                                         hevyProgram={ hevyProgram }
                                         folder_id={ index }
-                                        setHevyProgram={ setHevyProgram }
                                         handleAddDay={ handleAddDay }
                                         handleDeleteDay={ handleDeleteDay }
                                         handleEditTitle={ handleEditTitle }

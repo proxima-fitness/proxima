@@ -9,29 +9,28 @@ allowedTools:
   - getExerciseList
   - getMoreInfoQuestions
   - buildWeek
-  - getCurrentProgram
-  - modifyProgram
+  - mutateProgram
 ---
 
 # Build Program
 
-## Program generation (buildWeek and modifyProgram)
+## Program generation (buildWeek and mutateProgram)
 
-**Questionnaire first (new program):** When the user wants to **create** a new workout program (including the **first** message in a new chat), you **must** send a short **visible** reply, then call **getMoreInfoQuestions** before **planProgram**, **getExerciseList**, **buildWeek**, or **modifyProgram**. Stop and wait until they finish the questionnaire or send an explicit go-ahead (e.g. "Build my program"). Do not skip the questionnaire to start planning or building.
+**Questionnaire first (new program):** When the user wants to **create** a new workout program (including the **first** message in a new chat), you **must** send a short **visible** reply, then call **getMoreInfoQuestions** before **planProgram**, **getExerciseList**, **buildWeek**, or **mutateProgram**. Stop and wait until they finish the questionnaire or send an explicit go-ahead (e.g. "Build my program"). Do not skip the questionnaire to start planning or building.
 
-After **getExerciseList**, call **buildWeek exactly once** per user request to generate the new program week template (all training days in that single tool call). Do **not** call buildWeek again after it succeeds. Use **modifyProgram** for every post-build change (reps, RPE, rest, titles, notes, and multi-week periodization); never a second buildWeek to fix or tweak the week.
+After **getExerciseList**, call **buildWeek exactly once** per user request to generate the new program week template (all training days in that single tool call). Do **not** call buildWeek again after it succeeds. Use **mutateProgram** for every post-build change (reps, RPE, rest, titles, notes, and multi-week periodization); never a second buildWeek to fix or tweak the week.
 
 ## Checklist
 
 **STOP — Questionnaire Gate.** If this is a new program request, you **must** call **getMoreInfoQuestions** and then **terminate your response**. Do not perform any internal reasoning about exercise selection, do not call **getExerciseList**, and do not call **planProgram** until the user has actually provided the data. Treat the questionnaire as a **gate** that must be unlocked by a fresh user message.
 
-- [ ] **New program:** Brief visible message, then **getMoreInfoQuestions** immediately. Do **not** call **planProgram**, **getExerciseList**, **buildWeek**, or **modifyProgram** until the questionnaire is done or the user clearly continues (e.g. "Build my program"). Then proceed with the steps below.
+- [ ] **New program:** Brief visible message, then **getMoreInfoQuestions** immediately. Do **not** call **planProgram**, **getExerciseList**, **buildWeek**, or **mutateProgram** until the questionnaire is done or the user clearly continues (e.g. "Build my program"). Then proceed with the steps below.
 - [ ] **planProgram** once: structured plan for the full mesocycle (duration, blocks, optional week-by-week progression table). Use questionnaire answers, program builder context (days/week, weeks), and loaded resources (powerlifting/bodybuilding/hyrox/crossfit/weight-loss) where relevant.
 - [ ] getExerciseList with user requirements (respect program builder context for days per week / program length if available).
 - [ ] Select exercises from the returned list (id: title). Use only IDs that appear in the list.
 - [ ] **buildWeek** once: one week only (week 1 template). `routines.length` = totalDays; `dayNumber` 1..N in order. Align structure with **planProgram** (stable exercise choices within blocks when the plan says so).
-- [ ] **Periodization (modifyProgram) after buildWeek:** Do **not** rely on **getCurrentProgram** for patch paths; the request snapshot may still be empty even though **buildWeek** succeeded. Compute paths for the **full** duplicated program: `totalDays × programLength` routines (see **Routine index math** below), using **planProgram**, **buildWeek** output, and program builder context.
-- [ ] **modifyProgram**: Prefer **one** call with a **single patch array** that applies all periodization (per-week RPE, reps, rest, notes, block-boundary exercise swaps). If you draft edits per week mentally, **concatenate** all operations into one patch list in **ascending path order** (see below) before calling the tool once.
+- [ ] **Periodization (mutateProgram) after buildWeek:** Do **not** rely on **readProgram** for targeting; the request snapshot may still be empty even though **buildWeek** succeeded. Target the **full** duplicated program (`totalDays × programLength` routines) using **folderIds** + **dayOrder** (see **Multi-week targeting** below), **planProgram**, **buildWeek** output, and program builder context.
+- [ ] **mutateProgram**: Prefer **one** call with a **single operations array** that applies all periodization (per-week RPE, reps, rest, notes, block-boundary exercise swaps). Use **swap_exercise_template** for post-build equipment retargets (e.g. dumbbell-only) without re-specifying sets. If you draft edits per week mentally, **concatenate** all operations into one batch before calling the tool once.
 - [ ] After success: brief summary (max 5 bullets).
 
 ## Tool dependency rule
@@ -48,6 +47,7 @@ After **getExerciseList**, call **buildWeek exactly once** per user request to g
 - Pick warmups that match the session (e.g. shoulder-friendly activation before pressing, hip/ankle prep before squats, light pulling before heavy pulls). Use **set `type` `"normal"`**, **low RPE (about 3–5)**, and **moderate reps (about 10–15)** with a sensible `rep_range`; these are standalone prep movements, not warmup sets on the main lift.
 - If the questionnaire or context mentions **injury, pain, or a movement limitation**, use **two** warmup exercises when helpful, biased toward **low-load mobility or activation** for the affected area (still only IDs from **getExerciseList**).
 - In each warmup exercise’s **`reason`**, tie the choice to the day’s demands and any stated limitation in the same short prose style as other exercises.
+- For post-**buildWeek** warmups on duplicated weeks, use **mutateProgram** **insert_exercise** at **exerciseIndex: 0** with the correct **folderIds** + **dayOrder** per week.
 
 ## Session size (exercise rows per day)
 
@@ -60,19 +60,21 @@ After **getExerciseList**, call **buildWeek exactly once** per user request to g
 
 ## Target RPE and stimulus (hypertrophy programs)
 
-- **Every working set** on bodybuilding/hypertrophy programs must include a **numeric target `rpe`** on each set row in **buildWeek** / **modifyProgram** (warmup exercises and intentional easy work: **~3–5 RPE** as already described). This makes prescriptions auditable and powers program **stimulus** checks in the scorecard.
+- **Every working set** on bodybuilding/hypertrophy programs must include a **numeric target `rpe`** on each set row in **buildWeek** / **mutateProgram** (warmup exercises and intentional easy work: **~3–5 RPE** as already described). This makes prescriptions auditable and powers program **stimulus** checks in the scorecard.
 - **Do not** imply that “more sets always equals more growth” without effort context. In **`reason`** text, when natural, tie weekly set choices to **hard-set quality** (e.g. primary compounds ~1–2 RIR / ~7–8.5 RPE; isolations can be somewhat harder) and to the user’s phase.
 - **Deload or easy weeks:** Reduce stimulus by **fewer working sets**, **lower target RPE**, or both—say so in **`reason`**, **`notes`**, or routine **`notes`** so reduced stimulus is **intentional** (not misread as missing intensity). See `.agents/skills/build-program/resources/stimulus-and-volume.md` for the shared vocabulary.
 
-## Routine index math (JSON Patch paths)
+## Multi-week targeting (mutateProgram)
 
-Paths are zero-based into the **full** duplicated program array `/0` … `/N-1`.
+The client duplicates week 1 across all program weeks. Periodization ops target specific weeks/days — **not** flat routine-index paths.
 
-For **week** `w` (1-based) and **day** `d` (1-based within the week):
+- **folderIds:** 0-based week index. Week 1 → `[0]`, week W → `[W - 1]`. One op can list multiple weeks: `folderIds: [0, 1, 2, 3]`.
+- **dayOrder:** 1-based day within the week (matches **buildWeek** `dayNumber`).
+- For **week** `w` (1-based) and **day** `d` (1-based): `folderIds: [w - 1]`, `dayOrder: d`.
 
-`routineIndex = (w - 1) × daysPerWeek + (d - 1)`
+Example: 4 days/week, week 3, day 2 → `folderIds: [2]`, `dayOrder: 2`.
 
-Example: 4 days/week, week 3, day 2 → index `(3-1)×4 + (2-1) = 9` → paths start with `/9/...`.
+**Batch order:** **insert_exercise** before **update_set** / index-based ops on the same day. Prefer **update_set** for RPE/reps/rest periodization. See **mutateProgram** tool description for op fields.
 
 ## Program types
 
@@ -93,9 +95,9 @@ When the user wants **CrossFit**, **CrossFit-style**, **GPP**, a **WOD** or **me
 - **Tool input**: buildWeek expects a JSON object, not a string. Pass the structured object to the tool, not a stringified JSON.
 - **routines.length**: Must exactly equal totalDays; mismatches return a validation error from the tool.
 - **First week only**: The client duplicates the first week across all weeks. Build only one week in a single buildWeek call; do not emit multiple weeks in buildWeek.
-- **getCurrentProgram vs periodization**: After **buildWeek**, **getCurrentProgram** may still report no program; it reflects the request-time snapshot, not the new week. For multi-week patches, use the index formula and **modifyProgram** anyway; do not wait on **hasProgram**.
-- **Patch safety**: Prefer **`replace`** for periodization (RPE, reps, rest, titles). Avoid **`add` / `remove` / `move`** in bulk-generated patches unless you order operations carefully; they shift indices and break later paths.
-- **Merged patch vs modify-program skill**: The modify-program skill tells end users "one patch, one call." For **this** multi-week generation flow, you may think in per-week terms, but you must deliver **one merged patch** to the client in a single modifyProgram call when possible.
+- **readProgram vs periodization**: After **buildWeek**, **readProgram** may still return an empty snapshot (request-start staleness). For multi-week **mutateProgram**, use **buildWeek** output + **planProgram** + **folderIds** / **dayOrder**; do not wait on **readProgram**.
+- **Operation batch safety**: Prefer **update_set** / **edit_day_title** for periodization (RPE, reps, rest, titles). Avoid bulk **insert_exercise** / **delete_exercise** unless you order operations carefully; they shift **exerciseIndex** for later ops on the same day.
+- **Merged batch vs mutate-program skill**: The mutate-program skill says "one batch, one call." For **this** multi-week generation flow, you may think in per-week terms, but you must deliver **one merged operations array** in a single **mutateProgram** call when possible.
 
 ## Rep ranges
 
@@ -103,8 +105,7 @@ When the user wants **CrossFit**, **CrossFit-style**, **GPP**, a **WOD** or **me
 
 - Use `rep_range` for all hypertrophy/bodybuilding sets and most strength accessories where a true range is intended (e.g. 8-12, 10-15). When you provide `rep_range`, also set `reps` as a fallback (typically the upper bound of the range, e.g. `12`).
 - **Fixed-rep rule:** When the prescription is a single fixed rep count (e.g. 5x5, triples, doubles, singles, AMRAP-style sets), set `rep_range` to **null** and only use `reps`. **NEVER** emit a degenerate `rep_range` where `start === end` (e.g. `{start: 5, end: 5}`). That will display as "5-5" in the UI which is incorrect. Instead use `rep_range: null, reps: 5`.
-- When periodizing via **modifyProgram**, patch `rep_range` (e.g. `/0/exercises/0/sets/0/rep_range`) with the full `{start, end}` object, not just `start` or `end` individually. To change from a range to fixed reps, patch `rep_range` to `null` and patch `reps` to the fixed value.
-- When nulling **`rep_range`**, each operation must still be a normal JSON Patch object: **`op`**, **`path`** (ending in `/rep_range`), **`value`** — do not invent composite **`op`** strings that embed the path (see modify-program skill).
+- When periodizing via **mutateProgram**, use **update_set** with the full `{start, end}` **rep_range** object, not just `start` or `end` individually. To change from a range to fixed reps, set **rep_range** to **null** and **reps** to the fixed value in the same or follow-up **update_set** op.
 
 ## buildWeek shape
 

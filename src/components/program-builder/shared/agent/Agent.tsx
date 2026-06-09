@@ -47,7 +47,7 @@ export type TChatSendMessageParam =
           messageId?: string;
       };
 
-export type SendMessageWithContext = (
+export type TSendMessageWithContext = (
     message?: TChatSendMessageParam,
     options?: ChatRequestOptions,
 ) => Promise<void>;
@@ -61,10 +61,9 @@ interface IProps {
     onToggleHide?: () => void;
     isExpanded: boolean;
     hevyProgram: THevyRoutine[];
-    applyPatchWithUndo: (
-        newDocument: THevyRoutine[],
-        inversePatch: import("fast-json-patch").Operation[],
-        recordUndo?: boolean
+    commitWithUndo: (
+        next: THevyRoutine[],
+        options?: import("@/components/program-builder/mutations/types").TCommitWithUndoOptions,
     ) => void;
     sex: string;
     age: string;
@@ -115,7 +114,7 @@ interface IProps {
     // AI agent state (lifted from Agent into parent)
     messages: TChatMessage[];
     setMessages: (messages: TChatMessage[] | ((messages: TChatMessage[]) => TChatMessage[])) => void;
-    sendMessageWithContext: SendMessageWithContext;
+    sendMessageWithContext: TSendMessageWithContext;
     isBuilding: boolean;
     handleIsBuilding: (isBuilding: boolean) => void;
     isLoading: boolean;
@@ -131,7 +130,7 @@ interface IProps {
     handleStop: () => void;
     onBuildComplete?: () => void;
     lastAtomicBuildCommitKeyRef: RefObject<string | null>;
-    appliedModifyProgramKeysRef: RefObject<Set<string>>;
+    appliedMutateProgramKeysRef: RefObject<Set<string>>;
 }
 
 /** Renders Navbar, conversation area (empty state or MessageBubbles), loading status, and Chat. */
@@ -144,7 +143,7 @@ export const Agent: React.FC<IProps> = (props) => {
         onToggleHide,
         isExpanded,
         hevyProgram,
-        applyPatchWithUndo,
+        commitWithUndo,
         daysPerWeek,
         programLength,
         excludeEquipment,
@@ -180,7 +179,7 @@ export const Agent: React.FC<IProps> = (props) => {
         handleStop,
         onBuildComplete,
         lastAtomicBuildCommitKeyRef,
-        appliedModifyProgramKeysRef,
+        appliedMutateProgramKeysRef,
     } = props;
 
     const chatFooterRef = useRef<HTMLDivElement>(null);
@@ -379,7 +378,7 @@ export const Agent: React.FC<IProps> = (props) => {
                             messages={messages}
                             setMessages={setMessages}
                             hevyProgram={hevyProgram}
-                            applyPatchWithUndo={applyPatchWithUndo}
+                            commitWithUndo={commitWithUndo}
                             daysPerWeek={daysPerWeek}
                             programLength={programLength}
                             excludeEquipment={excludeEquipment}
@@ -401,7 +400,7 @@ export const Agent: React.FC<IProps> = (props) => {
                             onTimeoutError={onTimeoutError}
                             onBuildComplete={onBuildComplete}
                             lastAtomicBuildCommitKeyRef={lastAtomicBuildCommitKeyRef}
-                            appliedModifyProgramKeysRef={appliedModifyProgramKeysRef}
+                            appliedMutateProgramKeysRef={appliedMutateProgramKeysRef}
                             />
                         )}
                         <LiveAgentProgress

@@ -23,6 +23,7 @@ import { MessageSquare } from "lucide-react";
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { appendOrderToHevyRoutines } from "@/components/program-builder/utils/format-responses";
+import { normalizeRepRanges } from "@/components/program-builder/utils/helpers";
 import { ProgramEditor } from "./ProgramEditor";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -34,6 +35,7 @@ import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUserContext } from "@/contexts/UserContext";
+import { ProgramMutationProvider } from "@/contexts/ProgramMutationContext";
 import { useBuildProgramActions } from "@/contexts/BuildProgramActionsContext";
 import {
     getSaveProgramToSupabaseFailureDetail,
@@ -44,6 +46,7 @@ import { connectChatToSavedProgram, isChatSessionInsertConfirmed } from "@/api/c
 import { ToolbarPortalButtons } from "@/components/program-builder/shared/ToolbarPortalButtons";
 import { BuildProgramToolbarTitle } from "@/components/program-builder/shared/BuildProgramToolbarTitle";
 import { editorReducer } from "./editor-reducer";
+import type { TCommitWithUndoOptions } from "@/components/program-builder/mutations/types";
 import { useProgramRequestState } from "./use-program-request-state";
 import { readAnonymousChatMessages, useBuildProgramChat } from "./use-build-program-chat";
 import { isValidShareId } from "./initial-prompt";
@@ -65,7 +68,6 @@ import {
 } from "./resolve-chat-entry";
 import type { User } from "@supabase/supabase-js";
 import { useChatHistory, useChatIds } from "@/api/hooks";
-import { Operation } from "fast-json-patch";
 import posthog from "posthog-js";
 
 /** Logged-in only; module guard avoids duplicate capture under Strict Mode remount. */
@@ -147,15 +149,34 @@ export function BuildProgram() {
         undoStack: [],
     });
 
+    const setProgramFromHydrate = useCallback((program: THevyRoutine[]) => {
+        dispatchEditor({ type: "REPLACE_PROGRAM", program });
+    }, []);
+
+    const commitWithUndo = useCallback((next: THevyRoutine[], options?: TCommitWithUndoOptions) => {
+        dispatchEditor({
+            type: "COMMIT_PROGRAM",
+            program: normalizeRepRanges(next),
+            recordUndo: options?.recordUndo ?? true,
+        });
+    }, []);
+
     const setHevyProgram = useCallback(
         (value: THevyRoutine[] | ((prev: THevyRoutine[]) => THevyRoutine[])) => {
             if (typeof value === "function") {
-                dispatchEditor({ type: "UPDATE_PROGRAM", updater: value });
+                dispatchEditor({
+                    type: "COMMIT_PROGRAM",
+                    updater: (prev) => {
+                        const next = value(prev);
+                        return next === prev ? prev : normalizeRepRanges(next);
+                    },
+                    recordUndo: true,
+                });
             } else {
-                dispatchEditor({ type: "REPLACE_PROGRAM", program: value });
+                commitWithUndo(value);
             }
         },
-        [],
+        [commitWithUndo],
     );
     const chatHistoryFetchEnabled = resolveChatHistoryFetchEnabled({
         user,
@@ -232,20 +253,6 @@ export function BuildProgram() {
 
     /*************************************************************************************/
     /*** STATE FOR THE PROGRAM BUILDER (reducer for atomic undo + stable handleUndo) ***/
-    const applyPatchWithUndo = useCallback(
-        (newDocument: THevyRoutine[], inversePatch: Operation[], recordUndo = true) => {
-            if (!recordUndo) {
-                dispatchEditor({ type: "REPLACE_PROGRAM", program: newDocument });
-                return;
-            }
-            if (inversePatch.length === 0) {
-                dispatchEditor({ type: "REPLACE_PROGRAM", program: newDocument });
-                return;
-            }
-            dispatchEditor({ type: "APPLY_PATCH", newDocument, inversePatch });
-        },
-        [],
-    );
     const orderedProgram = useMemo(
         () => appendOrderToHevyRoutines(hevyProgram) as THevyRoutine[],
         [hevyProgram],
@@ -278,14 +285,14 @@ export function BuildProgram() {
             return;
         }
 
-        setHevyProgram([]);
+        setProgramFromHydrate([]);
         setSharedProgramLoadAttempted(!isValidShareId(shareId));
 
         const fetchSharedProgram = async () => {
             try {
                 const sharedProgram = await getSharedProgram(Number(shareId));
                 if (sharedProgram) {
-                    setHevyProgram(appendOrderToHevyRoutines(sharedProgram));
+                    setProgramFromHydrate(appendOrderToHevyRoutines(sharedProgram));
                 }
             } finally {
                 setSharedProgramLoadAttempted(true);
@@ -295,7 +302,7 @@ export function BuildProgram() {
         if (resume === "true") {
             const program = localStorage.getItem("hevy-program-in-progress");
             if (program) {
-                setHevyProgram(appendOrderToHevyRoutines(JSON.parse(program)));
+                setProgramFromHydrate(appendOrderToHevyRoutines(JSON.parse(program)));
             }
         }
 
@@ -304,9 +311,9 @@ export function BuildProgram() {
         }
 
         if (empty === "true") {
-            setHevyProgram(appendOrderToHevyRoutines(emptyHevyProgram));
+            setProgramFromHydrate(appendOrderToHevyRoutines(emptyHevyProgram));
         }
-    }, [shouldBareRedirectToEmpty, resume, shareId, empty, programHydrateChatId, router, setHevyProgram]);
+    }, [shouldBareRedirectToEmpty, resume, shareId, empty, programHydrateChatId, router, setProgramFromHydrate]);
 
     const toggleSidebarPosition = useCallback(() => {
         setSidebarPosition((prev) => {
@@ -364,8 +371,9 @@ export function BuildProgram() {
             resume={resume}
             hevyProgram={hevyProgram}
             setHevyProgram={setHevyProgram}
+            commitWithUndo={commitWithUndo}
+            setProgramFromHydrate={setProgramFromHydrate}
             orderedProgram={orderedProgram}
-            applyPatchWithUndo={applyPatchWithUndo}
             programRequest={programRequest}
             isMobile={isMobile}
             sharedProgramLoadAttempted={sharedProgramLoadAttempted}
@@ -397,8 +405,9 @@ interface IBuildProgramShellProps {
     resume: string;
     hevyProgram: THevyRoutine[];
     setHevyProgram: (value: THevyRoutine[] | ((prev: THevyRoutine[]) => THevyRoutine[])) => void;
+    commitWithUndo: (next: THevyRoutine[], options?: TCommitWithUndoOptions) => void;
+    setProgramFromHydrate: (program: THevyRoutine[]) => void;
     orderedProgram: THevyRoutine[];
-    applyPatchWithUndo: (newDocument: THevyRoutine[], inversePatch: Operation[], recordUndo?: boolean) => void;
     programRequest: ReturnType<typeof useProgramRequestState>;
     isMobile: boolean;
     sharedProgramLoadAttempted: boolean;
@@ -428,8 +437,9 @@ function BuildProgramShell({
     resume,
     hevyProgram,
     setHevyProgram,
+    commitWithUndo,
+    setProgramFromHydrate,
     orderedProgram,
-    applyPatchWithUndo,
     programRequest,
     isMobile,
     sharedProgramLoadAttempted,
@@ -487,11 +497,16 @@ function BuildProgramShell({
         trySendInitialPrompt,
         tryRunSignInMigration,
         lastAtomicBuildCommitKeyRef,
-        appliedModifyProgramKeysRef,
+        appliedMutateProgramKeysRef,
     } = chat;
 
     clearChatRef.current = clearMessages;
     getPersistChatIdRef.current = getPersistChatId;
+
+    const onUndo = useCallback(() => {
+        if (status === "streaming") return;
+        handleUndo();
+    }, [status, handleUndo]);
 
     useEffect(() => {
         void (async () => {
@@ -599,7 +614,7 @@ function BuildProgramShell({
         search,
         hevyProgram,
         setHevyProgram,
-        applyPatchWithUndo,
+        commitWithUndo,
         programRequest,
         messages,
         setMessages,
@@ -618,7 +633,7 @@ function BuildProgramShell({
         handleStop,
         onBuildComplete,
         lastAtomicBuildCommitKeyRef,
-        appliedModifyProgramKeysRef,
+        appliedMutateProgramKeysRef,
         chatHistoryLoading,
     } as const;
 
@@ -645,20 +660,26 @@ function BuildProgramShell({
     );
 
     const routineContent = (
-        <ProgramEditor orderedProgram={orderedProgram} setHevyProgram={setHevyProgram} isMobile={isMobile} />
+        <ProgramEditor orderedProgram={orderedProgram} isMobile={isMobile} />
     );
 
     const hasProgramContent = hevyProgram.some((r) => r.exercises.length > 0);
 
     return (
-        <>
+        <ProgramMutationProvider
+            program={hevyProgram}
+            commitWithUndo={commitWithUndo}
+            setProgramFromHydrate={setProgramFromHydrate}
+            isAgentStreaming={status === "streaming"}
+        >
             <BuildProgramToolbarTitle
                 value={programRequest.programTitle}
                 onChange={programRequest.handleProgramTitle}
             />
             <ToolbarPortalButtons
                 canUndo={undoStackLength > 0}
-                onUndo={handleUndo}
+                undoDisabled={status === "streaming"}
+                onUndo={onUndo}
                 onSave={handleSave}
                 saveDisabled={!user || hevyProgram.length === 0 || messages.length === 0}
                 isSaving={isSaving}
@@ -698,6 +719,6 @@ function BuildProgramShell({
                 chatPanel={mobileChatPanel}
                 routineContent={routineContent}
             />
-        </>
+        </ProgramMutationProvider>
     );
 }

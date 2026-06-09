@@ -21,6 +21,7 @@ import { HevyExerciseGif } from "./HevyExerciseGif";
 import { HevyExerciseDetailsDialog } from "./HevyExerciseDetailsDialog";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useState } from "react";
+import { useProgramMutation } from "@/contexts/ProgramMutationContext";
 
 /** Props for the exercise list within a day card. */
 interface IProps {
@@ -93,9 +94,12 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
 
     const { isInLbs } = usePoundsOrKgContext();
     const isSm = useMediaQuery("(min-width: 640px)");
+    const { isAgentStreaming } = useProgramMutation();
+    const mutationsLocked = isAgentStreaming;
     const [detailsExercise, setDetailsExercise] = useState<THevyExerciseTemplate | undefined>(undefined);
 
     const editHandler = (e: React.MouseEvent<HTMLButtonElement>, folder_id: number, dayOrder: number, i: number, exercise: THevyExercise) => {
+        if (mutationsLocked) return;
         if (editMode) {
             e.stopPropagation();
             toggleExerciseSelection(i);
@@ -133,8 +137,8 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                         : 'bg-extraLightGray dark:bg-midDarkGray';
 
                 const rowProps = {
-                    onClick: (e: React.MouseEvent) => editHandler(e as unknown as React.MouseEvent<HTMLButtonElement>, Number(folder_id), Number(day.order), i, exercise),
-                    className: `w-full min-h-14 border-gray-200 cursor-pointer appearance-none p-0 m-0 text-left font-inherit focus:outline-hidden focus-visible:ring-2 focus-visible:ring-lightSecondary focus-visible:ring-inset ${rowBackgroundClass} ${supersetColor && !isSelected ? 'border-r-4' : ''}`,
+                    onClick: mutationsLocked ? undefined : (e: React.MouseEvent) => editHandler(e as unknown as React.MouseEvent<HTMLButtonElement>, Number(folder_id), Number(day.order), i, exercise),
+                    className: `w-full min-h-14 border-gray-200 appearance-none p-0 m-0 text-left font-inherit focus:outline-hidden focus-visible:ring-2 focus-visible:ring-lightSecondary focus-visible:ring-inset ${mutationsLocked ? "cursor-default" : "cursor-pointer"} ${rowBackgroundClass} ${supersetColor && !isSelected ? 'border-r-4' : ''}`,
                     style: supersetColor && !isSelected ? borderStyle : {},
                 };
 
@@ -146,6 +150,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                         onKeyDown={(e) => {
                                             if (e.key === "Enter" || e.key === " ") {
                                                 e.preventDefault();
+                                                if (mutationsLocked) return;
                                                 if (editMode) {
                                                     toggleExerciseSelection(i);
                                                 } else {
@@ -158,9 +163,11 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
+                                                    if (mutationsLocked) return;
                                                     removeFromSuperset(i);
                                                 }}
-                                                className="text-black w-full pt-2 hover:text-red-500"
+                                                disabled={mutationsLocked}
+                                                className="text-black w-full pt-2 hover:text-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                                 title="Remove from superset"
                                                 aria-label="Remove from superset"
                                             >
@@ -183,7 +190,8 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                                     <input
                                                         type="checkbox"
                                                         checked={isSelected}
-                                                        onChange={() => toggleExerciseSelection(i)}
+                                                        disabled={mutationsLocked}
+                                                        onChange={() => { if (!mutationsLocked) toggleExerciseSelection(i); }}
                                                         className="w-4 h-4 accent-white"
                                                     />
                                                 </div>
@@ -192,9 +200,10 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             )}
                                             {!editMode && (
                                                 <Trash2Icon
-                                                    className="block sm:hidden size-4"
+                                                    className={`block sm:hidden size-4 ${mutationsLocked ? "opacity-50 cursor-not-allowed" : ""}`}
                                                     onClick={(event) => {
                                                         event.stopPropagation();
+                                                        if (mutationsLocked) return;
                                                         handleDeleteExercise(Number(folder_id), Number(day.order), i);
                                                     }}
                                                 />
@@ -288,8 +297,12 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                         </button>
                                         <button
                                             type="button"
-                                            className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 text-sm text-foreground"
-                                            onClick={() => handleOpenAddExerciseNoteDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), exerciseIndex: i, isOpen: true})}
+                                            className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 text-sm text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                                            disabled={mutationsLocked}
+                                            onClick={() => {
+                                                if (mutationsLocked) return;
+                                                handleOpenAddExerciseNoteDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), exerciseIndex: i, isOpen: true});
+                                            }}
                                             aria-label="Add note to exercise"
                                         >
                                             <NotebookTextIcon className="shrink-0 size-5" />
@@ -297,8 +310,10 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                         </button>
                                         <button
                                             type="button"
-                                            className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 text-sm text-foreground"
+                                            className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 text-sm text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                                            disabled={mutationsLocked}
                                             onClick={() => {
+                                                if (mutationsLocked) return;
                                                 handleDeleteExercise(Number(folder_id), Number(day.order), i);
                                             }}
                                             aria-label="Delete exercise"

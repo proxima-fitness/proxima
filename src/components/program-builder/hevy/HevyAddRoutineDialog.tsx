@@ -15,6 +15,7 @@ import { useUserContext } from "@/contexts/UserContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Loader2 } from "lucide-react";
 import { HevyRoutineCard } from "./HevyRoutineCard";
+import { useProgramMutation } from "@/contexts/ProgramMutationContext";
 
 /** Props for the add routine-as-day dialog. */
 interface IProps {
@@ -37,11 +38,14 @@ export const HevyAddRoutineDialog: React.FC<IProps> = (props) => {
 
     const { user } = useUserContext();
     const { data: hevyApiKey } = useHevySecret(user);
+    const { isAgentStreaming } = useProgramMutation();
+    const mutationsLocked = isAgentStreaming;
 
     const { data: hevyRoutines, isLoading: isLoadingHevyRoutines } = useHevyRoutines(user, hevyApiKey);
     const isMobile = useIsMobile();
 
     const handleAddRoutine = (routine: THevyRoutine) => {
+        if (mutationsLocked) return;
         handleAddRoutineAsDay(routine, folder_id);
         setRoutineDialogOpen(false);
     };
