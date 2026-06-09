@@ -33,7 +33,7 @@ export function formatReadProgramForModel(program: THevyRoutine[]): string {
     return (
         `Program snapshot (${program.length} routines). ` +
         "Sorted by folder_id (week, 0-based) then order (day, 1-based). " +
-        "Use folder_id + order as mutateProgram folderIds + dayOrder.\n\n" +
+        "For mutateProgram: folderIds: [folder_id], dayOrder: order (folderIds is an array).\n\n" +
         JSON.stringify(payload)
     );
 }

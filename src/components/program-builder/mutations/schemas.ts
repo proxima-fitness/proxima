@@ -2,6 +2,20 @@ import { z } from "zod";
 
 const folderIdsSchema = z.array(z.number().int().nonnegative()).min(1);
 const singleFolderIdsSchema = z.array(z.number().int().nonnegative()).length(1);
+
+const SINGLE_FOLDER_ID_OPS = new Set(["add_day", "delete_week", "add_routine_as_day"]);
+
+/** Agents often send folderId / folder_id (from readProgram) instead of folderIds: [n]. */
+export function normalizeAgentOperationInput(val: unknown): unknown {
+    if (typeof val !== "object" || val === null) return val;
+    const obj = val as Record<string, unknown>;
+    if (typeof obj.op !== "string" || !SINGLE_FOLDER_ID_OPS.has(obj.op)) return val;
+    if (obj.folderIds !== undefined) return val;
+    const weekIndex = obj.folderId ?? obj.folder_id;
+    if (typeof weekIndex !== "number") return val;
+    const { folderId: _f, folder_id: _g, ...rest } = obj;
+    return { ...rest, folderIds: [weekIndex] };
+}
 const dayOrderSchema = z.number().int().min(1);
 const exerciseIndexSchema = z.number().int().nonnegative();
 const setIndexSchema = z.number().int().nonnegative();

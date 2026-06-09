@@ -2,8 +2,9 @@
 name: build-program
 description: >-
   Workflow for creating a new workout program. Load this skill when the user
-  wants to create, build, make, or generate a workout program, training program,
-  or exercise routine.
+  wants to create, build, or generate a new workout program, training program,
+  or exercise routine from scratch. Do not use for shortening/lengthening an
+  existing program on the grid — use mutate-program instead.
 allowedTools:
   - planProgram
   - getExerciseList
@@ -90,6 +91,7 @@ When the user wants **CrossFit**, **CrossFit-style**, **GPP**, a **WOD** or **me
 
 ## Gotchas
 
+- **Program length on existing grid:** If the user already has routines and asks to change duration (e.g. "make it 2 weeks", "8 weeks → 2 weeks"), load **mutate-program** and **delete_week** — never **planProgram** / **buildWeek**. **planProgram.durationWeeks** and builder **programLength** describe the plan/template; they do not remove weeks from the live grid.
 - **exercise_template_id**: Must be an exact ID from the getExerciseList result (must exist in `hevy_exercise_templates`). Invented or unknown IDs cause **buildWeek** to return an error.
 - **Exercise title (per exercise)**: Must be the **same title** as in getExerciseList for that ID. The server **auto-corrects** the title from the database when you pass `exercise_template_id`, so mismatches do not break the build, but you should still copy **id** and **title** exactly from the list for clarity and to avoid invalid IDs.
 - **Tool input**: buildWeek expects a JSON object, not a string. Pass the structured object to the tool, not a stringified JSON.

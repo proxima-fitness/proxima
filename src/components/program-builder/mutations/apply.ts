@@ -2,6 +2,7 @@ import type { z } from "zod";
 
 import { programMutationCatalogById } from "./catalog";
 import type { TProgramOperation } from "./schemas";
+import { normalizeAgentOperationInput } from "./schemas";
 import {
     isValidationFailure,
     mutationFailure,
@@ -24,12 +25,13 @@ function parseMutationOperation<TSchema extends z.ZodType>(
 ):
     | { ok: true; data: z.infer<TSchema> }
     | { ok: false; reason: string } {
-    const mistake = detectCommonMutationFieldMistakes(operation);
+    const normalized = normalizeAgentOperationInput(operation) as Record<string, unknown>;
+    const mistake = detectCommonMutationFieldMistakes(normalized);
     if (mistake) {
         return { ok: false, reason: mistake };
     }
 
-    const parsed = schema.safeParse(operation);
+    const parsed = schema.safeParse(normalized);
     if (!parsed.success) {
         return { ok: false, reason: formatMutationSchemaError(parsed.error) };
     }

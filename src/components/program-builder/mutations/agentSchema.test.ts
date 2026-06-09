@@ -59,6 +59,27 @@ describe("mutateProgramInputSchema", () => {
         expect(parsed.success).toBe(false);
     });
 
+    it("coerces delete_week folderId to folderIds (agent maps readProgram folder_id)", () => {
+        const parsed = mutateProgramInputSchema.safeParse({
+            operations: [
+                { op: "delete_week", folderId: 7 },
+                { op: "delete_week", folderId: 6 },
+                { op: "delete_week", folderId: 5 },
+                { op: "delete_week", folderId: 4 },
+                { op: "delete_week", folderId: 3 },
+            ],
+        });
+        expect(parsed.success).toBe(true);
+        if (!parsed.success) return;
+        expect(parsed.data.operations).toEqual([
+            { op: "delete_week", folderIds: [7] },
+            { op: "delete_week", folderIds: [6] },
+            { op: "delete_week", folderIds: [5] },
+            { op: "delete_week", folderIds: [4] },
+            { op: "delete_week", folderIds: [3] },
+        ]);
+    });
+
     it("includes every agent-exposed op id", () => {
         const exposedIds = agentExposedMutations.map((m) => m.id);
         expect(exposedIds).toContain("insert_exercise");

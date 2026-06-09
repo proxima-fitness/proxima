@@ -342,8 +342,8 @@ export function getTools({
      */
     const planProgramTool = tool({
         description:
-            'Submit a structured multi-week training plan before calling buildWeek. Use questionnaire answers, program builder context (days/week, length), and your judgment. ' +
-            'This does not create routines; it anchors periodization for later mutateProgram batches. Call once per new program.',
+            'Submit a structured multi-week training plan before calling buildWeek on a **new** program. Use questionnaire answers, program builder context (days/week, length), and your judgment. ' +
+            'This does not create routines and does **not** shorten an existing program on the grid — for that use **mutateProgram** **delete_week**. Call once per new program only.',
         inputSchema: planProgramInputSchema,
         execute: async (input) => {
             const plan = input;
@@ -375,7 +375,7 @@ export function getTools({
         description:
             'Returns the full **hevyProgram** snapshot from the **start of this request** (does not refresh after **buildWeek** in the same turn). ' +
             'Includes day notes, exercise notes, exercise reason, sets, and structure. Call when you need the current program — not on every turn. ' +
-            'Sorted by folder_id (week, 0-based) then order (day, 1-based). Use folder_id + dayOrder for **mutateProgram** targeting. ' +
+            'Sorted by folder_id (week, 0-based) then order (day, 1-based). For **mutateProgram**: folderIds: [folder_id], dayOrder: order. ' +
             'For **post-buildWeek periodization**, do not use this for targeting; use **buildWeek** output, **planProgram**, and **folderIds** + **dayOrder**.',
         inputSchema: readProgramInputSchema,
         execute: async () => ({

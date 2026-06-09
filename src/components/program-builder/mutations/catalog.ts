@@ -186,14 +186,17 @@ export const programMutationCatalog: TProgramMutationDefinition[] = [
     }),
     defineProgramMutation({
         id: "add_day",
-        description: "Append an empty day to a week.",
+        description:
+            "Append an empty day to a week. Args: folderIds: [weekIndex] (0-based, same as routine folder_id).",
         schema: addDaySchema,
         run: (program, args) =>
             weekFullResult(program, addDay(program, args.folderIds[0])),
     }),
     defineProgramMutation({
         id: "delete_week",
-        description: "Remove a week and reindex later weeks.",
+        description:
+            "Remove one week and reindex later weeks. Args: folderIds: [weekIndex] (0-based). " +
+            "One op per week; when shortening, delete highest weekIndex first (e.g. 8→4 wk: [7], [6], [5], [4]).",
         schema: deleteWeekSchema,
         run: (program, args) =>
             mutationSuccess(deleteWeek(program, args.folderIds[0])),

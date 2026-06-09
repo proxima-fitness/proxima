@@ -3,7 +3,8 @@ name: mutate-program
 description: >-
   Workflow for modifying an existing workout program. Load this skill when the
   user wants to change, edit, update, swap, rename, or remove exercises, sets,
-  reps, or days in their existing program.
+  reps, days, or program length (e.g. "make it 2 weeks", "shorten to 4 weeks",
+  "change from 8 to 2 weeks") in their existing program.
 allowedTools:
   - getExerciseList
   - readProgram
@@ -78,8 +79,16 @@ When the user's program or requested changes are **powerlifting-focused** (squat
 
 When the user's program or requested changes are **bodybuilding- or hypertrophy-focused** (aesthetic focus, muscle building, PPL, upper/lower, bro split, or training by muscle group), use `readFile` to load `.agents/skills/mutate-program/resources/bodybuilding.md` and apply that knowledge when building the **operations** batch (e.g. preserve volume landmarks, exercise categories per muscle, rep ranges, and session structure as in the resource).
 
+## Change program length (weeks)
+
+**Existing program on the grid:** use **readProgram** + **mutateProgram** only. Do **not** call **planProgram** or **buildWeek** — those are for **new** program creation, not trimming/lengthening a live program.
+
+- **Shorter program:** one **delete_week** per removed week. Use **folderIds: [weekIndex]** (0-based, same as routine `folder_id`). Emit one op per week; delete **highest index first** so reindexing stays correct (8→2 weeks: `[7]`, `[6]`, `[5]`, `[4]`, `[3]`, `[2]` — keeps weeks 0 and 1).
+- **Longer program:** agent cannot add whole weeks via **mutateProgram** (no **duplicate_week**). Tell the user to increase program length in the builder UI, then rebuild or duplicate weeks manually.
+
 ## Gotchas
 
+- **folderIds vs folder_id:** **readProgram** returns `folder_id` on each routine. **mutateProgram** expects **folderIds** as an array — week 3 → `folderIds: [2]`, never `folderId: 2`.
 - **Program shape**: The live program is all routines across all weeks. Length N = **daysPerWeek × programLength** (e.g. 6×8 = 48). Target days with **folderIds** + **dayOrder**, not flat routine-index math.
 - **Program-wide changes**: To change every occurrence (e.g. rename all "Push" to "Chest"), include **folderIds** for each week (or one op with all relevant **folderIds**) and the same **dayOrder**. Do not edit only the first week.
 - **One batch, one call**: Pass a single **operations** array to **mutateProgram**. Do not split by week or make multiple **mutateProgram** calls for one logical edit.

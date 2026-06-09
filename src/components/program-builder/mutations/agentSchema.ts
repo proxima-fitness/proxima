@@ -12,6 +12,7 @@ import {
     editDayTitleSchema,
     editExerciseSchema,
     insertExerciseSchema,
+    normalizeAgentOperationInput,
     swapExerciseTemplateSchema,
     removeFromSupersetSchema,
     updateSetSchema,
@@ -39,7 +40,7 @@ export type TAgentProgramOperation = z.infer<typeof agentProgramOperationSchema>
 /** Same input as mutateProgram tool — exported for tests. */
 export const mutateProgramInputSchema = z.object({
     operations: z
-        .array(agentProgramOperationSchema)
+        .array(z.preprocess(normalizeAgentOperationInput, agentProgramOperationSchema))
         .min(1)
         .describe(
             "Ordered batch of program mutations. Operations run in array order; fail-all if any op is invalid.",
@@ -57,7 +58,8 @@ export function buildMutateProgramToolDescription(): string {
     return (
         "Apply typed mutations to the workout program. Send an **operations** array; ops run in order. " +
         "**Fail-all:** if any operation is invalid, the entire batch is rejected and nothing is applied. " +
-        "Target days with **folderIds** (0-based week index) and **dayOrder** (1-based day within week).\n\n" +
+        "Target days with **folderIds** (0-based week index, always an array e.g. `[0]`) and **dayOrder** (1-based day within week). " +
+        "readProgram shows `folder_id` on each routine — map to **folderIds: [folder_id]**, not `folderId`.\n\n" +
         "Available operations:\n" +
         operationDocs
     );
