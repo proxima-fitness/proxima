@@ -497,7 +497,6 @@ function BuildProgramShell({
         trySendInitialPrompt,
         tryRunSignInMigration,
         lastAtomicBuildCommitKeyRef,
-        appliedModifyProgramKeysRef,
         appliedMutateProgramKeysRef,
     } = chat;
 
@@ -634,7 +633,6 @@ function BuildProgramShell({
         handleStop,
         onBuildComplete,
         lastAtomicBuildCommitKeyRef,
-        appliedModifyProgramKeysRef,
         appliedMutateProgramKeysRef,
         chatHistoryLoading,
     } as const;

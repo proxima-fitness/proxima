@@ -15,8 +15,6 @@
  *  - mutateProgram - applies typed registry operation batches to the program
  *  - rateProgram - scores the current bodybuilding program (heuristic report card)
  *
- * Note: modifyProgram (JSON Patch) is retained in code for legacy client apply only; not exposed to the agent.
- *
  * Depends on: ai, zod, @/components/program-builder/api/hevy, @/assets/constants
  * Used by: /api/chat/route.ts (passed to ToolLoopAgent)
  */
@@ -92,98 +90,6 @@ export const planProgramInputSchema = z
             }
         }
     });
-
-const VALID_PATCH_OPS = ['add', 'remove', 'replace', 'move', 'copy', 'test'] as const;
-type TValidPatchOp = (typeof VALID_PATCH_OPS)[number];
-
-/**
- * When the model merges the JSON Pointer into `op` (e.g. `replaceRegistry/24/exercises/...`),
- * `path` is missing and validation fails. Split at the first `/` when `path` is absent/empty.
- * Exported for tests.
- */
-export function repairJsonPatchOperationForTest(raw: unknown): unknown {
-    if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
-        return raw;
-    }
-    const o = raw as Record<string, unknown>;
-    const pathVal = o.path;
-    if (typeof pathVal === 'string' && pathVal.trim() !== '') {
-        return raw;
-    }
-    const opVal = o.op;
-    if (typeof opVal !== 'string' || !opVal.includes('/')) {
-        return raw;
-    }
-    const slash = opVal.indexOf('/');
-    if (slash <= 0) {
-        return raw;
-    }
-    const pathPart = opVal.slice(slash);
-    if (!pathPart.startsWith('/')) {
-        return raw;
-    }
-    const prefix = opVal.slice(0, slash);
-    return { ...o, op: prefix, path: pathPart };
-}
-
-/** Coerce LLM typos/hallucinations (e.g. "replace_seconds") to a valid JSON Patch op. */
-function canonicalizePatchOp(val: unknown): TValidPatchOp {
-    const s = typeof val === 'string' ? val.toLowerCase().trim() : '';
-    if (VALID_PATCH_OPS.includes(s as TValidPatchOp)) return s as TValidPatchOp;
-    if (s.startsWith('replace')) return 'replace';
-    if (s.startsWith('add')) return 'add';
-    if (s.startsWith('remove') || s.startsWith('remov')) return 'remove';
-    if (s.startsWith('move')) return 'move';
-    if (s.startsWith('copy')) return 'copy';
-    if (s.startsWith('test')) return 'test';
-    return 'replace';
-}
-
-/**
- * JSON Patch operation schema (RFC 6902). Paths are JSON Pointers; document root is the THevyRoutine[] array.
- * `op` is coerced so typos like "replace_seconds" become "replace". Malformed ops that embed the path are repaired via preprocess.
- */
-const jsonPatchOperationSchema = z.preprocess(
-    repairJsonPatchOperationForTest,
-    z
-        .object({
-            op: z
-                .string()
-                .transform(canonicalizePatchOp)
-                .describe(
-                    'RFC 6902 verb only: add, remove, replace, move, copy, or test. Must not contain `/` or JSON Pointer segments—put the pointer in `path`, not here.',
-                ),
-            path: z
-                .string()
-                .describe(
-                    'JSON Pointer to the target (e.g. /0/title, /0/exercises/1/sets/0/reps). Starts with /. If it contains `/`, it belongs in this field, not in `op`. Never append values to the path (e.g. /0/.../rpe:7 is wrong; use /0/.../rpe and put 7 in value).',
-                ),
-            value: z.unknown().optional().describe('Value for add, replace, test. Do NOT include for move, copy, or remove.'),
-            from: z
-                .string()
-                .optional()
-                .describe(
-                    'JSON Pointer for move/copy source (REQUIRED for move and copy operations — e.g. { "op": "move", "from": "/0/exercises/2", "path": "/0/exercises/0" })',
-                ),
-        })
-        .superRefine((op, ctx) => {
-            if ((op.op === 'move' || op.op === 'copy') && (!op.from || op.from.trim() === '')) {
-                ctx.addIssue({
-                    code: 'custom',
-                    message: `"from" is required for "${op.op}" operations (RFC 6902). Provide the source JSON Pointer in "from".`,
-                    path: ['from'],
-                });
-            }
-        }),
-);
-
-/** Same input as modifyProgram tool — exported for tests. */
-export const modifyProgramInputSchema = z.object({
-    patch: z
-        .array(jsonPatchOperationSchema)
-        .min(1)
-        .describe('Array of JSON Patch operations (add, remove, replace, move, copy, test). At least one operation required.'),
-});
 
 /**
  * Factory that creates the complete tool set for the chat agent. Captures

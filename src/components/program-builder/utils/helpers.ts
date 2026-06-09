@@ -12,17 +12,15 @@
  * 3. **Schema conversion** – Converts between the Proxima schedule format
  *    (TScheduleWorkouts) and the Hevy routine format (THevyRoutine), including
  *    set generation with support for reps, ranges, time, RPE, and AMRAP.
- * 4. **JSON Patch helpers** – Human-readable description of patch operations
- *    and safe application of AI-generated patches to the live program state
- *    with undo support (via fast-json-patch).
+ * 4. **Program mutation helpers** – Human-readable operation summaries and client-side
+ *    apply of agent mutateProgram tool results with undo support.
  *
- * Depends on: compromise (NLP), fuse.js (fuzzy), fast-json-patch, sonner (toasts), ai (UIMessage)
+ * Depends on: compromise (NLP), fuse.js (fuzzy), sonner (toasts), ai (UIMessage)
  * Used by: Agent chat (Chat.tsx), ProgramEditor, useChat hooks
  */
 
 import { UIMessage } from "ai";
 import nlp from "compromise";
-import { applyPatch, validate as validatePatch, type Operation } from "fast-json-patch";
 import Fuse from "fuse.js";
 import { toast } from "sonner";
 import type { IOption } from "@/components/ui/multi-select";
@@ -577,177 +575,11 @@ export const generateHevySets = (exercise: TSavedWorkoutExercise): THevySets[] =
     return sets;
 };
 
-/** Shape of the AI modifyProgram tool's JSON output (patch array or error). */
-interface IModifyProgramOutput {
-    patch?: Array<{ op: string; path: string; value?: unknown; from?: string }>;
-    error?: string;
-    message?: string;
-}
-
 /** Shape of the AI mutateProgram tool's JSON output (operations batch or error). */
 export interface IMutateProgramOutput {
     operations?: TAgentProgramOperation[];
     error?: string;
     failures?: Array<{ index: number; op: string; reason: string }>;
-}
-
-/** Patch operation shape for describePatchOperation */
-export type TPatchOperationForDescribe = { op: string; path: string; value?: unknown; from?: string };
-
-/**
- * Formats a patch operation value for display in human-readable change summaries.
- *
- * @param value - The JSON Patch operation value (any type)
- * @returns A quoted string for strings, stringified primitives, or JSON for objects
- */
-function formatOpValue(value: unknown): string {
-    if (value === undefined || value === null) return "";
-    if (typeof value === "string") return `'${value}'`;
-    if (typeof value === "number" || typeof value === "boolean") return String(value);
-    try {
-        return JSON.stringify(value);
-    } catch {
-        return String(value);
-    }
-}
-
-/**
- * Builds a human-readable sentence for a simple field-level patch operation.
- *
- * @param opType - JSON Patch verb ("replace", "add", "remove", etc.)
- * @param fieldName - The field being changed (e.g. "title", "notes")
- * @param value - Pre-formatted display string for the new value
- * @returns Human-friendly description like "Set title to 'Push Day'"
- */
-function formatSimpleFieldOp(opType: string, fieldName: string, value: string): string {
-    if (opType === "replace") return `Set ${fieldName} to ${value}`;
-    if (opType === "add") return `Add ${fieldName} ${value}`;
-    return `${opType} ${fieldName}`;
-}
-
-/**
- * Parses a JSON Patch path segment as a 1-based display index, or "?" if not numeric.
- *
- * @param seg - A single path segment from a JSON Patch path (e.g. "0", "exercises")
- * @returns 1-based numeric index for display, or "?" when the segment isn't a number
- */
-function parseSegmentNum(seg: string): number | "?" {
-    const n = parseInt(seg, 10);
-    return Number.isNaN(n) ? "?" : n + 1;
-}
-
-/** Configuration for rendering set-level property changes in human-readable form. */
-type TSetPropConfig =
-    | { label: string; suffix?: string; fallback: string }
-    | { replaceText: string; fallback: string };
-
-/** Maps THevySets property names to display labels and units for change descriptions. */
-const SET_PROP_DESCRIPTIONS: Record<string, TSetPropConfig> = {
-    reps: { label: "reps", fallback: "reps" },
-    weight: { label: "weight", fallback: "weight" },
-    weight_kg: { label: "weight", suffix: " kg", fallback: "weight" },
-    duration: { label: "duration", fallback: "duration" },
-    duration_seconds: { label: "duration", suffix: " s", fallback: "duration" },
-    rpe: { label: "RPE", fallback: "RPE" },
-    type: { label: "type", fallback: "set type" },
-    distance_meters: { label: "distance", suffix: " m", fallback: "distance" },
-    custom_metric: { label: "custom metric", fallback: "custom metric" },
-    index: { replaceText: "Updated", fallback: "set index" },
-};
-
-/**
- * Returns the value at a JSON Pointer path (RFC 6901) in the document.
- * Used to read the "old" value when describing a replace operation.
- *
- * @param doc - Root document (e.g. THevyRoutine[] for program)
- * @param path - JSON Pointer string (e.g. /0/exercises/1/sets/2/reps)
- * @returns The value at path, or undefined if path is invalid or missing
- */
-function getValueAtPath(doc: unknown, path: string): unknown {
-    if (typeof path !== "string" || !path.startsWith("/")) return undefined;
-    const segments = path.slice(1).split("/").filter(Boolean);
-    let current: unknown = doc;
-    for (const seg of segments) {
-        if (current === undefined || current === null) return undefined;
-        const key = /^\d+$/.test(seg) ? parseInt(seg, 10) : seg;
-        current = Array.isArray(current) || typeof current === "object"
-            ? (current as Record<string, unknown>)[key as string]
-            : undefined;
-    }
-    return current;
-}
-
-/**
- * Returns a short human-readable description of a single JSON Patch operation
- * (e.g. "Set title to 'Push Day'", "Exercise 2, Set 1: Set reps to 10").
- */
-export function describePatchOperation(op: TPatchOperationForDescribe, hevyProgram?: THevyRoutine[]): string {
-    const { op: opType, path, value } = op;
-    if (typeof path !== "string" || !path.startsWith("/")) return "Updated program";
-    const segments = path.slice(1).split("/").filter(Boolean);
-    const withinRoutine = segments.slice(1);
-    if (segments.length <= 1 || withinRoutine.length === 0) return "Updated program";
-
-    if (withinRoutine[0] === "title") {
-        return formatSimpleFieldOp(opType, "title", formatOpValue(value));
-    }
-    if (withinRoutine[0] === "notes") {
-        return formatSimpleFieldOp(opType, "notes", formatOpValue(value));
-    }
-
-    if (withinRoutine[0] !== "exercises" || withinRoutine.length < 2) return "Updated program";
-
-    const routineIndex = parseInt(segments[0], 10);
-    const exerciseNum = parseSegmentNum(withinRoutine[1]);
-    const exerciseLabel = ((): string => {
-        if (!hevyProgram?.length || Number.isNaN(routineIndex)) return `Exercise ${exerciseNum}`;
-        const exerciseIndex = parseInt(withinRoutine[1], 10);
-        if (Number.isNaN(exerciseIndex)) return `Exercise ${exerciseNum}`;
-        const title = hevyProgram[routineIndex]?.exercises?.[exerciseIndex]?.title;
-        return (typeof title === "string" && title) ? title : `Exercise ${exerciseNum}`;
-    })();
-
-    if (withinRoutine.length === 2) {
-        if (opType === "add") return `Add exercise ${exerciseNum}`;
-        if (opType === "remove") return `Remove exercise ${exerciseNum}`;
-        return `${opType} exercise ${exerciseNum}`;
-    }
-    if (withinRoutine[2] === "name" || withinRoutine[2] === "title") {
-        const v = formatOpValue(value);
-        return opType === "replace"
-            ? `${exerciseLabel}: Set name to ${v}`
-            : `${opType} exercise ${exerciseNum} name`;
-    }
-    if (withinRoutine[2] !== "sets" || withinRoutine.length < 4) {
-        return `${exerciseLabel}: Updated`;
-    }
-
-    const setNum = parseSegmentNum(withinRoutine[3]);
-    const v = formatOpValue(value);
-    const setProp = withinRoutine[4];
-    const config = setProp !== undefined ? SET_PROP_DESCRIPTIONS[setProp] : undefined;
-
-    if (config) {
-        if ("replaceText" in config) {
-            return opType === "replace"
-                ? `${exerciseLabel}, Set ${setNum}: ${config.replaceText}`
-                : `${opType} ${config.fallback}`;
-        }
-        if (opType === "replace") {
-            const oldVal = hevyProgram ? getValueAtPath(hevyProgram, path) : undefined;
-            const oldStr = oldVal === undefined || oldVal === null ? "—" : String(oldVal);
-            return `${exerciseLabel}, Set ${setNum}: ${config.label} ${oldStr} → ${v}${config.suffix ?? ""}`;
-        }
-        return `${opType} ${config.fallback}`;
-    }
-
-    const propLabel = (setProp ?? "").replace(/_/g, " ");
-    if (opType === "replace" && v) {
-        const oldVal = hevyProgram ? getValueAtPath(hevyProgram, path) : undefined;
-        const oldStr = oldVal === undefined || oldVal === null ? "—" : String(oldVal);
-        return `${exerciseLabel}, Set ${setNum}: ${propLabel} ${oldStr} → ${v}`;
-    }
-    return `${exerciseLabel}, Set ${setNum}: Updated`;
 }
 
 export type TModifyProgramRoutineObjective = {
@@ -838,122 +670,6 @@ function buildFlatPartIndexByKey(messages: UIMessage[]): Map<string, number> {
     }
     return indexByKey;
 }
-
-/**
- * Groups patch operations by routine index and returns one entry per routine
- * with a summary label and full list of human-readable change descriptions.
- * When hevyProgram is provided, labels use "Week X Day Y" for clarity.
- *
- * @param patch - Array of JSON Patch operations from the AI modifyProgram tool
- * @param hevyProgram - Optional current program state, used to resolve Week/Day labels
- * @returns Per-routine summary objects with change counts and human-readable details
- */
-export function getModifyProgramObjectivesByRoutine(
-    patch: Array<{ op: string; path: string; value?: unknown; from?: string }> | undefined,
-    hevyProgram?: THevyRoutine[]
-): TModifyProgramRoutineObjective[] {
-    if (!patch || !Array.isArray(patch) || patch.length === 0) return [];
-
-    const byRoutine = new Map<number, string[]>();
-    for (const op of patch) {
-        const path = op.path;
-        if (typeof path !== "string" || !path.startsWith("/")) continue;
-        const segments = path.slice(1).split("/").filter(Boolean);
-        const routineIndex = segments.length > 0 ? parseInt(segments[0], 10) : 0;
-        if (Number.isNaN(routineIndex)) continue;
-        const list = byRoutine.get(routineIndex) ?? [];
-        list.push(describePatchOperation(op, hevyProgram));
-        byRoutine.set(routineIndex, list);
-    }
-
-    const routineIndices = Array.from(byRoutine.keys()).sort((a, b) => a - b);
-    return routineIndices.map((routineIndex) => {
-        const details = byRoutine.get(routineIndex) ?? [];
-        const count = details.length;
-        const label = count === 1 ? "1 change" : `${count} changes`;
-        const routine = hevyProgram?.[routineIndex];
-
-        const routineLabel = `Week ${routine?.folder_id != null ? routine.folder_id + 1 : "?"} Day ${routine?.order ?? "?"}: ${label}`
-        return {
-            routineIndex,
-            routineLabel,
-            count,
-            details,
-            folder_id: routine?.folder_id,
-        };
-    });
-}
-
-/**
- * Collects unapplied modifyProgram tool results from messages, validates and applies
- * all pending patches in sequence in memory, then commits once with a single inverse
- * (one undo step even if the model emitted multiple modifyProgram tool calls).
- * Intended to be called from a useEffect when messages or hevyProgram change.
- *
- * @param messages - Chat message history containing tool-modifyProgram parts
- * @param hevyProgram - Current program state to apply patches against
- * @param appliedKeysRef - Mutable set of already-applied patch keys (prevents double-apply)
- * @param applyPatchWithUndo - Callback to commit patched program; pass `recordUndo: false` for initial chat generation from an empty program (no undo stack entry).
- * @returns true if at least one patch was successfully applied, false otherwise
- */
-
-const VALID_PATCH_OPS = new Set<string>(["add", "remove", "replace", "move", "copy", "test"]);
-
-/** Coerce invalid op (e.g. "replace_seconds") to a valid JSON Patch op so fast-json-patch does not throw. */
-const normalizePatchOps = (ops: Operation[]): Operation[] => {
-    return ops.map(op => {
-        const opStr = typeof op.op === "string" ? op.op : "replace";
-        const canonical = VALID_PATCH_OPS.has(opStr) ? opStr : "replace";
-        return { ...op, op: canonical } as Operation;
-    });
-};
-
-/**
- * Strips spurious `:value` suffixes from the last segment of each operation's
- * `path` (and `from`). LLMs occasionally emit paths like
- * `/0/exercises/3/sets/1/rpe:7` instead of `/0/exercises/3/sets/1/rpe`.
- */
-const normalizePatchPaths = (ops: Operation[]): Operation[] => {
-    const COLON_SUFFIX = /^([a-zA-Z_][a-zA-Z0-9_]*):(.+)$/;
-
-    const fixPath = (p: string): string => {
-        const segments = p.split("/");
-        const last = segments[segments.length - 1];
-        const match = last.match(COLON_SUFFIX);
-        if (match) {
-            segments[segments.length - 1] = match[1];
-            return segments.join("/");
-        }
-        return p;
-    };
-
-    return ops.map(op => {
-        const fixed = { ...op, path: fixPath(op.path) };
-        if ("from" in fixed && typeof fixed.from === "string") {
-            fixed.from = fixPath(fixed.from);
-        }
-        return fixed;
-    });
-};
-
-/**
- * Coerces `move` ops that are missing a `from` pointer to `remove` ops.
- * This handles the LLM anti-pattern of emitting `{ op:"move", path, value:null }`
- * when the intent was to delete an element — RFC 6902 requires `from` on move.
- * `copy` without `from` is not guessable and is left as-is (validatePatch will reject it).
- */
-const normalizeMoveWithoutFrom = (ops: Operation[]): Operation[] =>
-    ops.map(op => {
-        if (op.op === "move" && (!("from" in op) || !(op as { from?: string }).from)) {
-            const { path } = op;
-            return { op: "remove", path } as Operation;
-        }
-        return op;
-    });
-
-/** Normalizes LLM JSON Patch ops before validate/apply (op coercion + path cleanup + move→remove coercion). */
-export const prepareModifyPatchOperations = (ops: Operation[]): Operation[] =>
-    normalizeMoveWithoutFrom(normalizePatchOps(normalizePatchPaths(ops)));
 
 /**
  * Coerces degenerate rep_range objects (start === end) to null across an entire
@@ -1195,72 +911,6 @@ export const tryCommitAtomicBuildWeekAndMutations = (
     return { committed: true, effectiveWeeks };
 };
 
-export const applyModifyProgramPatchesFromMessages = (
-    messages: UIMessage[],
-    hevyProgram: THevyRoutine[],
-    appliedKeysRef: React.RefObject<Set<string>>,
-    commitWithUndo: (next: THevyRoutine[], options?: TCommitWithUndoOptions) => void,
-): boolean => {
-
-    if (!hevyProgram || hevyProgram.length === 0) return false;
-
-    const toApply: { key: string; patch: IModifyProgramOutput["patch"] }[] = [];
-
-    for (const message of messages) {
-        const parts = message.parts ?? [];
-        for (let partIndex = 0; partIndex < parts.length; partIndex++) {
-            const part = parts[partIndex];
-            if (part.type !== "tool-modifyProgram") continue;
-
-            const toolOutput = (part as { output?: IModifyProgramOutput }).output;
-            const patch = toolOutput?.patch;
-            if (!patch || !Array.isArray(patch) || patch.length === 0 || toolOutput?.error) continue;
-
-            const key = `${message.id ?? partIndex}-${partIndex}`;
-            if (appliedKeysRef.current.has(key)) continue;
-
-            toApply.push({ key, patch });
-        }
-    }
-
-    let simulation: THevyRoutine[] = hevyProgram;
-    const keysSucceeded: string[] = [];
-
-    for (const { key, patch } of toApply) {
-        const patchOps = prepareModifyPatchOperations(patch as Operation[]);
-        const err = validatePatch(patchOps, simulation as object);
-        if (err) {
-            toast.error("Program modification failed: patch is invalid for current program.");
-            console.error("Program modification failed: patch is invalid for current program", err);
-            appliedKeysRef.current.add(key);
-            break;
-        }
-
-        try {
-            const result = applyPatch(
-                simulation as object,
-                patchOps,
-                true,
-                false
-            ) as { newDocument: THevyRoutine[] };
-            simulation = result.newDocument as THevyRoutine[];
-            keysSucceeded.push(key);
-        } catch {
-            toast.error("Program modification failed: could not apply patch.");
-            appliedKeysRef.current.add(key);
-            break;
-        }
-    }
-
-    if (keysSucceeded.length === 0) return false;
-
-    simulation = normalizeRepRanges(simulation);
-
-    commitWithUndo(simulation, { recordUndo: true });
-    keysSucceeded.forEach((k) => appliedKeysRef.current.add(k));
-    return true;
-};
-
 /**
  * Applies standalone mutateProgram tool batches (live-grid edits). Skips parts after
  * buildWeek in the same turn (handled by atomic commit in 2c). Fail-all batch semantics.
@@ -1318,29 +968,4 @@ export const applyMutateProgramFromMessages = (
     commitWithUndo(normalizeRepRanges(result.program), { recordUndo: hevyProgram.length > 0 });
     pendingKeys.forEach((k) => appliedKeysRef.current.add(k));
     return true;
-};
-
-/** Applies legacy modifyProgram patches and mutateProgram ops when stream is idle. */
-export const applyStandaloneProgramEditsFromMessages = (
-    messages: UIMessage[],
-    status: TChatStatusForAtomic | undefined,
-    hevyProgram: THevyRoutine[],
-    appliedModifyProgramKeysRef: React.RefObject<Set<string>>,
-    appliedMutateProgramKeysRef: React.RefObject<Set<string>>,
-    commitWithUndo: (next: THevyRoutine[], options?: TCommitWithUndoOptions) => void,
-): boolean => {
-    const patchApplied = applyModifyProgramPatchesFromMessages(
-        messages,
-        hevyProgram,
-        appliedModifyProgramKeysRef,
-        commitWithUndo,
-    );
-    const mutateApplied = applyMutateProgramFromMessages(
-        messages,
-        status,
-        hevyProgram,
-        appliedMutateProgramKeysRef,
-        commitWithUndo,
-    );
-    return patchApplied || mutateApplied;
 };

@@ -1,7 +1,7 @@
 /**
  * @module ModifyProgramProgress
- * Compact progress list for "modify program" tool: per-routine objectives with expand/collapse and week separators.
- * Depends on: TModifyProgramRoutineObjective. Used by: MessageBubbles (modifyProgram tool UI).
+ * Compact progress list for mutateProgram tool: objectives with expand/collapse.
+ * Depends on: TModifyProgramRoutineObjective. Used by: MessageBubbles (mutateProgram tool UI).
  */
 "use client";
 
@@ -12,7 +12,7 @@ import type { TModifyProgramRoutineObjective } from "@/components/program-builde
 
 /** Props for the modify-program progress list. */
 export interface IProps {
-    /** Per-routine objectives (label + details) from modifyProgram tool. */
+    /** Per-routine objectives (label + details) from mutateProgram tool. */
     objectivesByRoutine: TModifyProgramRoutineObjective[];
     /** Whether modification is still processing or complete. */
     status: "processing" | "complete";

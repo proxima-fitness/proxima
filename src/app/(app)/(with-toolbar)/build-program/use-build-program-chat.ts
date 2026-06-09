@@ -90,7 +90,6 @@ export interface IProps {
     trySendInitialPrompt: () => void;
     tryRunSignInMigration: () => Promise<void>;
     lastAtomicBuildCommitKeyRef: React.RefObject<string | null>;
-    appliedModifyProgramKeysRef: React.RefObject<Set<string>>;
     appliedMutateProgramKeysRef: React.RefObject<Set<string>>;
 }
 
@@ -244,14 +243,12 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     const migrationFailToastShownRef = useRef(false);
     /** Survives MessageBubbles unmount when switching mobile tabs (Radix Tabs). */
     const lastAtomicBuildCommitKeyRef = useRef<string | null>(null);
-    const appliedModifyProgramKeysRef = useRef<Set<string>>(new Set());
     const appliedMutateProgramKeysRef = useRef<Set<string>>(new Set());
     const hasAutoSwitchedToProgramAfterFirstBuildRef = useRef(false);
     const insertFailToastShownForChatIds = useRef(new Set<string>());
 
     const resetChatSessionRefs = useCallback(() => {
         lastAtomicBuildCommitKeyRef.current = null;
-        appliedModifyProgramKeysRef.current.clear();
         appliedMutateProgramKeysRef.current.clear();
         hasAutoSwitchedToProgramAfterFirstBuildRef.current = false;
     }, []);
@@ -556,7 +553,6 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         trySendInitialPrompt,
         tryRunSignInMigration,
         lastAtomicBuildCommitKeyRef,
-        appliedModifyProgramKeysRef,
         appliedMutateProgramKeysRef,
     };
 }

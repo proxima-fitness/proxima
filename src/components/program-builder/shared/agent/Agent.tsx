@@ -130,7 +130,6 @@ interface IProps {
     handleStop: () => void;
     onBuildComplete?: () => void;
     lastAtomicBuildCommitKeyRef: RefObject<string | null>;
-    appliedModifyProgramKeysRef: RefObject<Set<string>>;
     appliedMutateProgramKeysRef: RefObject<Set<string>>;
 }
 
@@ -180,7 +179,6 @@ export const Agent: React.FC<IProps> = (props) => {
         handleStop,
         onBuildComplete,
         lastAtomicBuildCommitKeyRef,
-        appliedModifyProgramKeysRef,
         appliedMutateProgramKeysRef,
     } = props;
 
@@ -402,7 +400,6 @@ export const Agent: React.FC<IProps> = (props) => {
                             onTimeoutError={onTimeoutError}
                             onBuildComplete={onBuildComplete}
                             lastAtomicBuildCommitKeyRef={lastAtomicBuildCommitKeyRef}
-                            appliedModifyProgramKeysRef={appliedModifyProgramKeysRef}
                             appliedMutateProgramKeysRef={appliedMutateProgramKeysRef}
                             />
                         )}

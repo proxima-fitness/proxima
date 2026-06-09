@@ -1,7 +1,7 @@
 /**
  * @module MessageBubbles
  * Renders chat messages (user + assistant), tool outputs (buildWeek, mutateProgram), build progress, error/retry UI, and applies program updates from tool results. After the stream finishes, duplicates week 1 across all weeks and merges post-buildWeek mutateProgram ops into one atomic commit. Drives timeout/retry logic.
- * Depends on: message, tool, reasoning, attachments, ModifyProgramProgress, applyModifyProgramPatchesFromMessages, helpers. Used by: Agent.
+ * Depends on: message, tool, reasoning, attachments, ModifyProgramProgress, helpers. Used by: Agent.
  */
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useRef, useMemo, useState, type RefObject } from "react";
@@ -21,8 +21,7 @@ import type { TChatSendMessageParam } from "./Agent";
 import type { IQuestion } from "@/components/ui/questions";
 import { IOption } from "@/components/ui/multi-select";
 import {
-    applyStandaloneProgramEditsFromMessages,
-    getModifyProgramObjectivesByRoutine,
+    applyMutateProgramFromMessages,
     getMutateProgramObjectives,
     tryCommitAtomicBuildWeekAndMutations,
 } from "@/components/program-builder/utils/helpers";
@@ -76,7 +75,6 @@ interface IProps {
     commitWithUndo: (next: THevyRoutine[], options?: TCommitWithUndoOptions) => void;
     onBuildComplete?: () => void;
     lastAtomicBuildCommitKeyRef: RefObject<string | null>;
-    appliedModifyProgramKeysRef: RefObject<Set<string>>;
     appliedMutateProgramKeysRef: RefObject<Set<string>>;
 }
 
@@ -102,7 +100,6 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         commitWithUndo,
         onBuildComplete,
         lastAtomicBuildCommitKeyRef,
-        appliedModifyProgramKeysRef,
         appliedMutateProgramKeysRef,
     } = props;
 
@@ -226,11 +223,10 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     ]);
 
     useEffect(() => {
-        const modified = applyStandaloneProgramEditsFromMessages(
+        const modified = applyMutateProgramFromMessages(
             messages,
             status,
             hevyProgram,
-            appliedModifyProgramKeysRef,
             appliedMutateProgramKeysRef,
             commitWithUndo,
         );
@@ -243,7 +239,6 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         hevyProgram,
         commitWithUndo,
         user,
-        appliedModifyProgramKeysRef,
         appliedMutateProgramKeysRef,
     ]);
 
@@ -614,62 +609,6 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                 </div>
                                                             </div>
                                                         )}
-                                                    </ToolContent>
-                                                </Tool>
-                                            );
-                                        }
-                                        case "tool-modifyProgram": {
-                                            type TModifyProgramPart = {
-                                                type: "tool-modifyProgram";
-                                                state?: string;
-                                                input?: { patch?: Array<{ op: string; path: string; value?: unknown }> };
-                                                output?: { patch?: Array<{ op: string; path: string; value?: unknown }>; error?: string };
-                                                errorText?: string;
-                                            };
-                                            const modifyPart = part as unknown as TModifyProgramPart;
-                                            const patch = modifyPart.output?.patch ?? modifyPart.input?.patch;
-                                            const objectivesByRoutine = getModifyProgramObjectivesByRoutine(patch, hevyProgram);
-                                            const isComplete =
-                                                modifyPart.state === "output-available" && modifyPart.output?.patch;
-                                            const isError = modifyPart.state === "output-error";
-                                            const errorText = modifyPart.errorText;
-                                            const toolState: ToolPart["state"] = isError
-                                                ? "output-error"
-                                                : isComplete
-                                                    ? "output-available"
-                                                    : "input-available";
-
-                                            if (isError) {
-                                                return (
-                                                    <Tool key={`${message.id}-${index}-modify-error`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
-                                                        <ToolHeader type="tool-modifyProgram" state={toolState} title="Modify program" />
-                                                        <ToolContent>
-                                                            <div className="flex items-center gap-2 pb-4 bg-muted/50 rounded-lg border border-border">
-                                                                <span className="w-2.5 h-2.5 rounded-full shrink-0 bg-red-500" />
-                                                                <span className="text-sm text-muted-foreground">
-                                                                    {errorText || "Program modification failed"}
-                                                                </span>
-                                                            </div>
-                                                        </ToolContent>
-                                                    </Tool>
-                                                );
-                                            }
-
-                                            const modifyInFlight = !isComplete;
-
-                                            return (
-                                                <Tool key={`${message.id}-${index}-modify`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
-                                                    <ToolHeader type="tool-modifyProgram" state={toolState} title="Modify program" />
-                                                    <ToolContent>
-                                                        {modifyInFlight && modifyPart.input?.patch?.length && (
-                                                            <p className="text-sm text-muted-foreground px-3 pb-1">
-                                                                Applying {modifyPart.input.patch.length} change{modifyPart.input.patch.length === 1 ? "" : "s"}…
-                                                            </p>
-                                                        )}
-                                                        <ModifyProgramProgress
-                                                            objectivesByRoutine={objectivesByRoutine}
-                                                            status={isComplete ? "complete" : "processing"}
-                                                        />
                                                     </ToolContent>
                                                 </Tool>
                                             );
