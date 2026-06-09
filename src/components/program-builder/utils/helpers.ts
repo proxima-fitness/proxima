@@ -628,9 +628,10 @@ export function describeProgramOperation(operation: TAgentProgramOperation): str
                 operation.folderIds || operation.dayOrder
                     ? ` (scoped${weeks ? ` weeks ${weeks}` : ""}${operation.dayOrder ? ` day ${operation.dayOrder}` : ""})`
                     : " (all weeks/days)";
+            const to = operation.to;
             const toTitle =
-                operation.to.title ??
-                ("exercise_template_id" in operation.to ? operation.to.exercise_template_id : "exercise");
+                to?.title ??
+                (to && "exercise_template_id" in to ? String(to.exercise_template_id) : "…");
             return `Swap ${operation.from_exercise_template_id} → ${toTitle}${scope}`;
         }
         default: {
