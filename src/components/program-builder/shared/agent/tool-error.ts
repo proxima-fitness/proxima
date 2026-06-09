@@ -1,7 +1,15 @@
+import { v4 as uuidv4 } from "uuid";
+
+import { createClient } from "@/utils/supabase/client";
+
 export type TToolErrorContext = {
     errorText?: string;
     output?: unknown;
 };
+
+export type TSubmitToolErrorResult =
+    | { ok: true }
+    | { ok: false; message: string };
 
 const FRIENDLY_ERROR_CODES: Record<string, string> = {
     "Failed to build week": "Something went wrong while building your program.",
@@ -233,4 +241,50 @@ export function summarizeToolError(tool: string, ctx: TToolErrorContext): string
     }
 
     return DEFAULT_SUMMARY;
+}
+
+export function buildDeveloperToolErrorFeedback(
+    tool: string,
+    ctx: TToolErrorContext,
+    chatId: string,
+): string {
+    const resolvedChatId = chatId.trim() || "unknown";
+    const summary = summarizeToolError(tool, ctx);
+    const payload = buildToolErrorPayload(tool, ctx);
+
+    return [
+        "Tool error report",
+        `Chat ID: ${resolvedChatId}`,
+        `Tool: ${tool}`,
+        `Summary: ${summary}`,
+        "",
+        payload,
+    ].join("\n");
+}
+
+export async function submitToolErrorToDeveloper(
+    tool: string,
+    ctx: TToolErrorContext,
+    chatId: string,
+): Promise<TSubmitToolErrorResult> {
+    try {
+        const supabase = createClient();
+        const { error } = await supabase.from("feedback").insert([
+            {
+                id: uuidv4(),
+                feedback: buildDeveloperToolErrorFeedback(tool, ctx, chatId),
+            },
+        ]);
+
+        if (error) {
+            return { ok: false, message: error.message || "Failed to send error to developer." };
+        }
+
+        return { ok: true };
+    } catch (err) {
+        return {
+            ok: false,
+            message: err instanceof Error ? err.message : "Failed to send error to developer.",
+        };
+    }
 }

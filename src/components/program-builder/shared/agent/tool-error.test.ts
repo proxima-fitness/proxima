@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { buildToolErrorPayload, summarizeToolError } from "./tool-error";
+import {
+    buildDeveloperToolErrorFeedback,
+    buildToolErrorPayload,
+    summarizeToolError,
+} from "./tool-error";
 
 describe("buildToolErrorPayload", () => {
     it("serializes tool, errorText, and output for clipboard", () => {
@@ -17,6 +21,33 @@ describe("buildToolErrorPayload", () => {
                 failures: [{ index: 0, op: "add_day", reason: "Maximum 7 days per week" }],
             },
         });
+    });
+});
+
+describe("buildDeveloperToolErrorFeedback", () => {
+    it("includes chatId, tool, summary, and JSON payload", () => {
+        const ctx = {
+            errorText: "batch rejected",
+            output: {
+                error: "Program mutation batch failed",
+                failures: [{ index: 0, op: "add_day", reason: "Maximum 7 days per week" }],
+            },
+        };
+        const chatId = "11111111-1111-4111-8111-111111111111";
+
+        const feedback = buildDeveloperToolErrorFeedback("mutateProgram", ctx, chatId);
+
+        expect(feedback).toContain("Tool error report");
+        expect(feedback).toContain(`Chat ID: ${chatId}`);
+        expect(feedback).toContain("Tool: mutateProgram");
+        expect(feedback).toContain("Summary: We couldn't apply that change: Maximum 7 days per week");
+        expect(feedback).toContain(buildToolErrorPayload("mutateProgram", ctx));
+    });
+
+    it("uses unknown when chatId is empty", () => {
+        const feedback = buildDeveloperToolErrorFeedback("buildWeek", { errorText: "timeout" }, "  ");
+
+        expect(feedback).toContain("Chat ID: unknown");
     });
 });
 

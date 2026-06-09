@@ -39,6 +39,7 @@ import type { IProgramScore } from "@/components/program-builder/utils/score-pro
 import { toast } from "sonner";
 import type { TCommitWithUndoOptions } from "@/components/program-builder/mutations/types";
 import posthog from "posthog-js";
+import { useBuildProgramActions } from "@/contexts/BuildProgramActionsContext";
 import { useUserContext } from "@/contexts/UserContext";
 import {
     Attachments,
@@ -83,6 +84,8 @@ interface IProps {
 export const MessageBubbles: React.FC<IProps> = (props) => {
 
     const { user } = useUserContext();
+    const { getPersistChatIdRef } = useBuildProgramActions();
+    const resolvePersistChatId = () => getPersistChatIdRef.current?.() ?? "";
     const {
         messages,
         setMessages,
@@ -585,6 +588,9 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                         <ToolHeader type="tool-buildWeek" state={toolState} title="Build week" />
                                                         <ToolContent>
                                                             <ToolErrorPanel
+                                                                tool="buildWeek"
+                                                                errorCtx={errorCtx}
+                                                                getChatId={resolvePersistChatId}
                                                                 summary={summarizeToolError("buildWeek", errorCtx)}
                                                                 copyPayload={buildToolErrorPayload("buildWeek", errorCtx)}
                                                             />
@@ -673,6 +679,9 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                         <ToolHeader type="tool-mutateProgram" state={toolState} title="Mutate program" />
                                                         <ToolContent>
                                                             <ToolErrorPanel
+                                                                tool="mutateProgram"
+                                                                errorCtx={errorCtx}
+                                                                getChatId={resolvePersistChatId}
                                                                 summary={summarizeToolError("mutateProgram", errorCtx)}
                                                                 copyPayload={buildToolErrorPayload("mutateProgram", errorCtx)}
                                                             />
@@ -727,6 +736,9 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                         <ToolHeader type="tool-rateProgram" state={toolState} title="Rate program" />
                                                         <ToolContent>
                                                             <ToolErrorPanel
+                                                                tool="rateProgram"
+                                                                errorCtx={errorCtx}
+                                                                getChatId={resolvePersistChatId}
                                                                 summary={summarizeToolError("rateProgram", errorCtx)}
                                                                 copyPayload={buildToolErrorPayload("rateProgram", errorCtx)}
                                                             />
