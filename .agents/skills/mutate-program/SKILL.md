@@ -29,7 +29,7 @@ Use registry operation ids only — field details live in the **mutateProgram** 
 
 - **folderIds:** 0-based week index (`folder_id` on each routine). Week 1 → `[0]`, week W → `[W - 1]`. Multiple weeks: `[0, 1, 2, …]`. Always an **array** — never `folderId`.
 - **dayOrder:** 1-based day within the week (`order` on the routine).
-- **exerciseIndex:** 0-based index in that day’s `exercises[]`. Use `exercises.length` to append.
+- **exerciseIndex:** **required** on every **insert_exercise** (0-based). Empty day → `0`. Append → `exercises.length` from **readProgram**. Multi-insert batch → rising indices (`0`, `1`, `2`…) as ops accumulate.
 - **setIndex:** 0-based index on that exercise’s sets (for **update_set** only).
 - **set.index** (inside `exercise` on **insert_exercise** / **edit_exercise**): **1-based** (1, 2, 3…). Do **not** copy `sets` verbatim from **readProgram** — snapshot indices may be 0-based.
 
@@ -55,7 +55,7 @@ When the user wants a day type (e.g. "make day 1 a Back Day"): **readProgram**, 
 2. **insert_exercise** once per movement — one `exercise` per op. Keep existing warmups unless replacing them.
 3. Target **6–7 total exercise rows** per day (including 1–2 warmups) unless the user asked for a short session.
 
-Multi-insert in one batch: ops apply in order on an accumulating program — use rising **exerciseIndex** values (`1`, then `2`, then `3` after a warmup at index 0), not the same index repeatedly.
+Multi-insert in one batch: ops apply in order on an accumulating program — use rising **exerciseIndex** values (`0` on empty day, then `1`, `2`, …), not the same index repeatedly.
 
 ```json
 {
@@ -65,7 +65,7 @@ Multi-insert in one batch: ops apply in order on an accumulating program — use
       "op": "insert_exercise",
       "folderIds": [0],
       "dayOrder": 1,
-      "exerciseIndex": 1,
+      "exerciseIndex": 0,
       "exercise": {
         "exercise_template_id": "TEMPLATE_ID",
         "rest_seconds": "90",
@@ -179,6 +179,7 @@ When the user's program or requested changes are **bodybuilding- or hypertrophy-
 - **One exercise per insert_exercise:** Never pass `exercises: [...]`. Each new row needs its own `{ "op": "insert_exercise", "exercise": { … } }`.
 - **Nested objects, not JSON strings:** Any object field (`exercise`, `to`, `set`, etc.) must be a nested object in the tool call — never stringify it.
 - **set.index is 1-based in payloads:** `exerciseIndex` / `setIndex` are 0-based for targeting; `set.index` inside `exercise.sets[]` starts at 1.
+- **Never omit exerciseIndex:** Omitting it fails validation — not the same as UI append. Always pass an explicit number.
 - **Supersets:** **create_superset** / **remove_from_superset** / **delete_day** all use **folderIds** + **dayOrder** — never `dayId`.
 - **Program shape**: The live program is all routines across all weeks. Length N = **daysPerWeek × programLength** (e.g. 6×8 = 48). Target days with **folderIds** + **dayOrder**, not flat routine-index math.
 - **Program-wide changes**: To change every occurrence (e.g. rename all "Push" to "Chest"), include **folderIds** for each week (or one op with all relevant **folderIds**) and the same **dayOrder**. Do not edit only the first week.
