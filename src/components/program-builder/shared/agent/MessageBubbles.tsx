@@ -30,8 +30,9 @@ import {
     ReasoningContent,
     ReasoningTrigger,
 } from "@/components/ai-elements/reasoning";
-import { Tool, ToolContent, ToolHeader } from "@/components/ai-elements/tool";
-import type { ToolPart } from "@/components/ai-elements/tool";
+import { Tool, ToolContent, ToolErrorPanel, ToolHeader } from "@/components/ai-elements/tool";
+import type { TToolPart } from "@/components/ai-elements/tool";
+import { buildToolErrorPayload, summarizeToolError } from "./tool-error";
 import { ModifyProgramProgress } from "./ModifyProgramProgress";
 import { RateProgramResults } from "@/components/program-builder/shared/RateProgramResults";
 import type { IProgramScore } from "@/components/program-builder/utils/score-program";
@@ -524,7 +525,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 userRequest?: string;
                                                 message?: string;
                                             };
-                                            const toolState = (part as { state?: ToolPart["state"] }).state ?? "output-available";
+                                            const toolState = (part as { state?: TToolPart["state"] }).state ?? "output-available";
                                             const hasQuestions =
                                                 toolOutput?.questions != null && Array.isArray(toolOutput.questions);
                                             const isInFlight =
@@ -561,15 +562,36 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                             const buildPart = part as {
                                                 input?: { totalDays?: number; routines?: Array<{ title?: string; exercises?: Array<{ title?: string }> }> };
                                                 output?: IBuildWeekOutput;
-                                                state?: ToolPart["state"];
+                                                state?: TToolPart["state"];
+                                                errorText?: string;
                                             };
                                             const toolOutput = buildPart.output;
-                                            const toolState: ToolPart["state"] =
-                                                toolOutput?.routines && !toolOutput?.error
+                                            const buildHasError = Boolean(toolOutput?.error);
+                                            const toolState: TToolPart["state"] = buildHasError
+                                                ? "output-error"
+                                                : toolOutput?.routines && !toolOutput?.error
                                                     ? "output-available"
                                                     : isBuilding
                                                         ? "input-available"
                                                         : "input-streaming";
+
+                                            if (buildHasError) {
+                                                const errorCtx = {
+                                                    errorText: buildPart.errorText,
+                                                    output: toolOutput,
+                                                };
+                                                return (
+                                                    <Tool key={`${message.id}-${index}-build-error`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
+                                                        <ToolHeader type="tool-buildWeek" state={toolState} title="Build week" />
+                                                        <ToolContent>
+                                                            <ToolErrorPanel
+                                                                summary={summarizeToolError("buildWeek", errorCtx)}
+                                                                copyPayload={buildToolErrorPayload("buildWeek", errorCtx)}
+                                                            />
+                                                        </ToolContent>
+                                                    </Tool>
+                                                );
+                                            }
 
                                             const buildInput = buildPart.input;
                                             const isInFlight = toolState === "input-available" || toolState === "input-streaming";
@@ -635,28 +657,25 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 mutatePart.state === "output-available" &&
                                                 Boolean(mutatePart.output?.operations?.length);
                                             const isError = mutatePart.state === "output-error" || Boolean(mutatePart.output?.error);
-                                            const errorText =
-                                                mutatePart.errorText ??
-                                                mutatePart.output?.failures
-                                                    ?.map((f) => `[${f.index}] ${f.op}: ${f.reason}`)
-                                                    .join("; ");
-                                            const toolState: ToolPart["state"] = isError
+                                            const toolState: TToolPart["state"] = isError
                                                 ? "output-error"
                                                 : isComplete
                                                     ? "output-available"
                                                     : "input-available";
 
                                             if (isError) {
+                                                const errorCtx = {
+                                                    errorText: mutatePart.errorText,
+                                                    output: mutatePart.output,
+                                                };
                                                 return (
                                                     <Tool key={`${message.id}-${index}-mutate-error`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
                                                         <ToolHeader type="tool-mutateProgram" state={toolState} title="Mutate program" />
                                                         <ToolContent>
-                                                            <div className="flex items-center gap-2 pb-4 bg-muted/50 rounded-lg border border-border">
-                                                                <span className="w-2.5 h-2.5 rounded-full shrink-0 bg-red-500" />
-                                                                <span className="text-sm text-muted-foreground">
-                                                                    {errorText || "Program mutation failed"}
-                                                                </span>
-                                                            </div>
+                                                            <ToolErrorPanel
+                                                                summary={summarizeToolError("mutateProgram", errorCtx)}
+                                                                copyPayload={buildToolErrorPayload("mutateProgram", errorCtx)}
+                                                            />
                                                         </ToolContent>
                                                     </Tool>
                                                 );
@@ -684,27 +703,33 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                         case "tool-rateProgram": {
                                             type TRateProgramPart = {
                                                 type: "tool-rateProgram";
-                                                state?: ToolPart["state"];
+                                                state?: TToolPart["state"];
                                                 output?: { score?: IProgramScore; error?: string; message?: string };
                                                 errorText?: string;
                                             };
                                             const ratePart = part as unknown as TRateProgramPart;
                                             const out = ratePart.output;
                                             const hasScore = Boolean(out?.score && !out?.error);
-                                            const toolState: ToolPart["state"] = out?.error
+                                            const rateHasError = Boolean(out?.error) || ratePart.state === "output-error";
+                                            const toolState: TToolPart["state"] = rateHasError
                                                 ? "output-error"
                                                 : hasScore
                                                     ? "output-available"
                                                     : (ratePart.state ?? "input-available");
 
-                                            if (out?.error) {
+                                            if (rateHasError) {
+                                                const errorCtx = {
+                                                    errorText: ratePart.errorText,
+                                                    output: out,
+                                                };
                                                 return (
                                                     <Tool key={`${message.id}-${index}-rate-error`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
                                                         <ToolHeader type="tool-rateProgram" state={toolState} title="Rate program" />
                                                         <ToolContent>
-                                                            <p className="text-destructive text-sm px-3 pb-3">
-                                                                {out.message ?? "Could not rate this program."}
-                                                            </p>
+                                                            <ToolErrorPanel
+                                                                summary={summarizeToolError("rateProgram", errorCtx)}
+                                                                copyPayload={buildToolErrorPayload("rateProgram", errorCtx)}
+                                                            />
                                                         </ToolContent>
                                                     </Tool>
                                                 );

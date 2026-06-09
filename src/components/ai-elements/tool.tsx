@@ -23,7 +23,12 @@
 import type { DynamicToolUIPart, ToolUIPart } from "ai";
 import type { ComponentProps, ReactNode } from "react";
 
+import {
+  buildToolErrorPayload,
+  summarizeToolError,
+} from "@/components/program-builder/shared/agent/tool-error";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
@@ -35,10 +40,12 @@ import {
   ChevronDownIcon,
   CircleIcon,
   ClockIcon,
+  CopyIcon,
   WrenchIcon,
   XCircleIcon,
 } from "lucide-react";
-import { isValidElement } from "react";
+import { isValidElement, useCallback } from "react";
+import { toast } from "sonner";
 
 import { CodeBlock } from "./code-block";
 
@@ -46,16 +53,16 @@ import { CodeBlock } from "./code-block";
  * Props for the root `Tool` container, which wraps a single tool call
  * in a bordered, collapsible panel.
  */
-export type ToolProps = ComponentProps<typeof Collapsible>;
+export type TToolProps = ComponentProps<typeof Collapsible>;
 
-export const Tool = ({ className, ...props }: ToolProps) => (
+export const Tool = ({ className, ...props }: TToolProps) => (
   <Collapsible
     className={cn("group not-prose mb-4 w-full rounded-md border", className)}
     {...props}
   />
 );
 
-export type ToolPart = ToolUIPart | DynamicToolUIPart;
+export type TToolPart = ToolUIPart | DynamicToolUIPart;
 
 /**
  * Props for the tool header row.
@@ -63,7 +70,7 @@ export type ToolPart = ToolUIPart | DynamicToolUIPart;
  * - For static tools, `type` and `state` come from `ToolUIPart`.
  * - For dynamic tools, `toolName` provides a human-friendly label.
  */
-export type ToolHeaderProps = {
+export type TToolHeaderProps = {
   title?: string;
   className?: string;
 } & (
@@ -75,7 +82,7 @@ export type ToolHeaderProps = {
     }
 );
 
-const statusLabels: Record<ToolPart["state"], string> = {
+const statusLabels: Record<TToolPart["state"], string> = {
   "approval-requested": "Awaiting Approval",
   "approval-responded": "Responded",
   "input-available": "Running",
@@ -85,7 +92,7 @@ const statusLabels: Record<ToolPart["state"], string> = {
   "output-error": "Error",
 };
 
-const statusIcons: Record<ToolPart["state"], ReactNode> = {
+const statusIcons: Record<TToolPart["state"], ReactNode> = {
   "approval-requested": <ClockIcon className="size-4 text-yellow-600" />,
   "approval-responded": <CheckCircleIcon className="size-4 text-blue-600" />,
   "input-available": <ClockIcon className="size-4 animate-pulse" />,
@@ -95,7 +102,7 @@ const statusIcons: Record<ToolPart["state"], ReactNode> = {
   "output-error": <XCircleIcon className="size-4 text-red-600" />,
 };
 
-export const getStatusBadge = (status: ToolPart["state"]) => (
+export const getStatusBadge = (status: TToolPart["state"]) => (
   <Badge className="gap-1.5 rounded-full text-xs" variant="secondary">
     {statusIcons[status]}
     {statusLabels[status]}
@@ -109,7 +116,7 @@ export const ToolHeader = ({
   state,
   toolName,
   ...props
-}: ToolHeaderProps) => {
+}: TToolHeaderProps) => {
   const derivedName =
     type === "dynamic-tool" ? toolName : type.split("-").slice(1).join("-");
 
@@ -131,9 +138,9 @@ export const ToolHeader = ({
   );
 };
 
-export type ToolContentProps = ComponentProps<typeof CollapsibleContent>;
+export type TToolContentProps = ComponentProps<typeof CollapsibleContent>;
 
-export const ToolContent = ({ className, ...props }: ToolContentProps) => (
+export const ToolContent = ({ className, ...props }: TToolContentProps) => (
   <CollapsibleContent
     className={cn(
       "data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 space-y-4  text-popover-foreground outline-none data-[state=closed]:animate-out data-[state=open]:animate-in",
@@ -149,11 +156,11 @@ export const ToolContent = ({ className, ...props }: ToolContentProps) => (
  * - `input` is the raw tool input payload, typically an object that
  *   will be pretty-printed as JSON.
  */
-export type ToolInputProps = ComponentProps<"div"> & {
-  input: ToolPart["input"];
+export type TToolInputProps = ComponentProps<"div"> & {
+  input: TToolPart["input"];
 };
 
-export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
+export const ToolInput = ({ className, input, ...props }: TToolInputProps) => (
   <div className={cn("space-y-2 overflow-hidden", className)} {...props}>
     <h4 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
       Parameters
@@ -164,6 +171,49 @@ export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
   </div>
 );
 
+export type TToolErrorPanelProps = ComponentProps<"div"> & {
+  summary: string;
+  copyPayload: string;
+};
+
+export const ToolErrorPanel = ({
+  className,
+  summary,
+  copyPayload,
+  ...props
+}: TToolErrorPanelProps) => {
+  const handleCopy = useCallback(() => {
+    void navigator.clipboard.writeText(copyPayload).then(() => {
+      toast.success("Error details copied");
+    });
+  }, [copyPayload]);
+
+  return (
+    <div
+      className={cn(
+        "flex flex-col gap-3 p-4 pb-4 bg-muted/50 rounded-lg border border-border",
+        className
+      )}
+      {...props}
+    >
+      <div className="flex items-start gap-2">
+        <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-red-500" />
+        <p className="min-w-0 text-sm text-muted-foreground">{summary}</p>
+      </div>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="w-fit rounded-full"
+        onClick={handleCopy}
+      >
+        <CopyIcon className="mr-2 size-4" />
+        Copy error
+      </Button>
+    </div>
+  );
+};
+
 /**
  * Props for the tool output section.
  *
@@ -172,19 +222,32 @@ export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
  * - `errorText` provides a human-readable description when the tool
  *   failed.
  */
-export type ToolOutputProps = ComponentProps<"div"> & {
-  output: ToolPart["output"];
-  errorText: ToolPart["errorText"];
+export type TToolOutputProps = ComponentProps<"div"> & {
+  output: TToolPart["output"];
+  errorText: TToolPart["errorText"];
+  tool?: string;
 };
 
 export const ToolOutput = ({
   className,
   output,
   errorText,
+  tool = "tool",
   ...props
-}: ToolOutputProps) => {
+}: TToolOutputProps) => {
   if (!(output || errorText)) {
     return null;
+  }
+
+  if (errorText) {
+    const summary = summarizeToolError(tool, { errorText, output });
+    const copyPayload = buildToolErrorPayload(tool, { errorText, output });
+
+    return (
+      <div className={cn("space-y-2", className)} {...props}>
+        <ToolErrorPanel summary={summary} copyPayload={copyPayload} />
+      </div>
+    );
   }
 
   let Output = <div>{output as ReactNode}</div>;
@@ -200,17 +263,9 @@ export const ToolOutput = ({
   return (
     <div className={cn("space-y-2", className)} {...props}>
       <h4 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
-        {errorText ? "Error" : "Result"}
+        Result
       </h4>
-      <div
-        className={cn(
-          "overflow-x-auto rounded-md text-xs [&_table]:w-full",
-          errorText
-            ? "bg-destructive/10 text-destructive"
-            : "bg-muted/50 text-foreground"
-        )}
-      >
-        {errorText && <div>{errorText}</div>}
+      <div className="overflow-x-auto rounded-md bg-muted/50 text-xs text-foreground [&_table]:w-full">
         {Output}
       </div>
     </div>
