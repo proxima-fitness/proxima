@@ -241,25 +241,25 @@
     filter: brightness(0) invert(1);
   }
 
-  .reddit-reviews-carousel .slick-dots {
-    bottom: -28px;
-  }
-
-  .reddit-reviews-carousel .slick-dots li button:before {
-    color: rgba(24, 10, 10, 0.35);
+  .reddit-reviews-carousel .slick-prev:before,
+  .reddit-reviews-carousel .slick-next:before {
+    color: rgba(24, 10, 10, 0.75);
     opacity: 1;
   }
 
-  .reddit-reviews-carousel .slick-dots li.slick-active button:before {
-    color: #33bbcf;
+  .reddit-reviews-carousel .slick-prev:hover:before,
+  .reddit-reviews-carousel .slick-next:hover:before {
+    color: rgba(24, 10, 10, 1);
   }
 
-  .dark .reddit-reviews-carousel .slick-dots li button:before {
-    color: rgba(255, 255, 255, 0.35);
+  .dark .reddit-reviews-carousel .slick-prev:before,
+  .dark .reddit-reviews-carousel .slick-next:before {
+    color: rgba(255, 255, 255, 0.85);
   }
 
-  .dark .reddit-reviews-carousel .slick-dots li.slick-active button:before {
-    color: #33bbcf;
+  .dark .reddit-reviews-carousel .slick-prev:hover:before,
+  .dark .reddit-reviews-carousel .slick-next:hover:before {
+    color: rgba(255, 255, 255, 1);
   }
 
   .feedback-container .feedback-card:last-child {
