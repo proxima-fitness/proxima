@@ -229,7 +229,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
                 void queryClient.invalidateQueries({ queryKey: ["chat-ids", user.id] });
             } else if (!result.confirmed && !migrationFailToastShownRef.current) {
                 migrationFailToastShownRef.current = true;
-                toast.error("Couldn't save your chat yet. Messages are still here.");
+                toast.warning("Couldn't save your chat yet. Messages are still here.");
             }
         },
     });
@@ -315,7 +315,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
                         void queryClient.invalidateQueries({ queryKey: ["chat-ids", user.id] });
                     } else if (!insertFailToastShownForChatIds.current.has(session.chatId)) {
                         insertFailToastShownForChatIds.current.add(session.chatId);
-                        toast.error("Couldn't save this chat yet. Your message will still send.");
+                        toast.warning("Couldn't save this chat yet. Your message will still send.");
                     }
                 }
             }
