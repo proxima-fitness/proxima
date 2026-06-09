@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export { normalizeAgentOperationInput } from "./normalizeAgentInput";
+import { normalizeHevyApiRoutineForAddDay } from "./normalizeHevyApiRoutine";
 
 const folderIdsSchema = z
     .array(z.number().int().nonnegative())
@@ -238,11 +239,14 @@ export const reorderDayInWeekSchema = z.object({
 export const addRoutineAsDaySchema = z.object({
     op: z.literal("add_routine_as_day"),
     folderIds: singleFolderIdsSchema,
-    routine: z.object({
-        exercises: z.array(hevyExerciseSchema),
-        title: z.string(),
-        notes: z.string(),
-    }),
+    routine: z.preprocess(
+        normalizeHevyApiRoutineForAddDay,
+        z.object({
+            exercises: z.array(hevyExerciseSchema),
+            title: z.string(),
+            notes: z.string(),
+        }),
+    ),
 });
 
 export type TAddRoutineAsDayRoutine = z.infer<typeof addRoutineAsDaySchema>["routine"];
