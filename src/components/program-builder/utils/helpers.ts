@@ -616,9 +616,9 @@ export function describeProgramOperation(operation: TAgentProgramOperation): str
         case "delete_day":
             return `Delete day ${operation.dayId}`;
         case "add_day":
-            return `Add day to week ${operation.folderIds[0] + 1}`;
+            return weeks ? `Add day to week ${weeks}` : "Add day";
         case "delete_week":
-            return `Delete week ${operation.folderIds[0] + 1}`;
+            return weeks ? `Delete week ${weeks}` : "Delete week";
         case "create_superset":
             return `Create superset on day ${operation.dayId} (exercises ${operation.exerciseIndexes.map((i) => i + 1).join(", ")})`;
         case "remove_from_superset":

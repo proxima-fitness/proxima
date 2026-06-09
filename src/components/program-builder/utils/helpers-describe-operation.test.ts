@@ -44,6 +44,18 @@ describe("describeProgramOperation", () => {
             "Swap BENCH_BB → … (all weeks/days)",
         );
     });
+
+    it("does not throw when delete_week folderIds is missing (streaming partial input)", () => {
+        const operation = { op: "delete_week" } as TAgentProgramOperation;
+
+        expect(describeProgramOperation(operation)).toBe("Delete week");
+    });
+
+    it("does not throw when add_day folderIds is missing (streaming partial input)", () => {
+        const operation = { op: "add_day" } as TAgentProgramOperation;
+
+        expect(describeProgramOperation(operation)).toBe("Add day");
+    });
 });
 
 describe("getMutateProgramObjectives", () => {
