@@ -15,6 +15,7 @@ import {
     insertExercise,
     removeFromSuperset,
     reorderDayInWeek,
+    swapExerciseTemplate,
     updateSet,
 } from "./handlers";
 import {
@@ -30,10 +31,12 @@ import {
     duplicateWeekSchema,
     editDayTitleSchema,
     editExerciseSchema,
+    insertExercisePayloadSchema,
     insertExerciseSchema,
     removeFromSupersetSchema,
     reorderDayInWeekSchema,
-    toHevyAddExercise,
+    swapExerciseTemplateMinimalToSchema,
+    swapExerciseTemplateSchema,
     toHevyExercise,
     updateSetSchema,
 } from "./schemas";
@@ -69,7 +72,8 @@ export const programMutationCatalog: TProgramMutationDefinition[] = [
     }),
     defineProgramMutation({
         id: "edit_exercise",
-        description: "Replace an exercise using add-exercise dialog shape.",
+        description:
+            "Replace an exercise at a 0-based index using grid payload (exercise_template_id, sets[], rest_seconds, optional title/reason) — same shape as insert_exercise.",
         schema: editExerciseSchema,
         run: (program, args) =>
             mutationSuccess(
@@ -78,9 +82,43 @@ export const programMutationCatalog: TProgramMutationDefinition[] = [
                     args.folderIds,
                     args.dayOrder,
                     args.exerciseIndex,
-                    toHevyAddExercise(args.exercise),
+                    args.exercise,
                 ),
             ),
+    }),
+    defineProgramMutation({
+        id: "swap_exercise_template",
+        description:
+            "Bulk-replace exercises matching from_exercise_template_id. Omit folderIds/dayOrder for all weeks/days. preserve_sets (default true) keeps sets/rest/notes; false replaces full exercise from to payload.",
+        schema: swapExerciseTemplateSchema,
+        run: (program, args) => {
+            const preserveSets = args.preserve_sets ?? true;
+            const toParsed = preserveSets
+                ? swapExerciseTemplateMinimalToSchema.safeParse(args.to)
+                : insertExercisePayloadSchema.safeParse(args.to);
+            if (!toParsed.success) {
+                return mutationFailure(
+                    toParsed.error.issues.map((issue) => issue.message).join("; "),
+                );
+            }
+
+            const { program: nextProgram, matchCount } = swapExerciseTemplate(
+                program,
+                args.from_exercise_template_id,
+                toParsed.data,
+                {
+                    folderIds: args.folderIds,
+                    dayOrder: args.dayOrder,
+                    preserveSets,
+                },
+            );
+            if (matchCount === 0) {
+                return mutationFailure(
+                    `No exercise matched from_exercise_template_id ${args.from_exercise_template_id}`,
+                );
+            }
+            return mutationSuccess(nextProgram);
+        },
     }),
     defineProgramMutation({
         id: "delete_exercise",

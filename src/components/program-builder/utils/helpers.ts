@@ -604,7 +604,7 @@ export function describeProgramOperation(operation: TAgentProgramOperation): str
         case "add_day_notes":
             return `Week${weeks ? ` ${weeks}` : ""} day ${operation.dayOrder}: set day notes`;
         case "insert_exercise":
-            return `Week${weeks ? ` ${weeks}` : ""} day ${operation.dayOrder}: insert "${operation.exercise.title}" at index ${operation.exerciseIndex}`;
+            return `Week${weeks ? ` ${weeks}` : ""} day ${operation.dayOrder}: insert "${operation.exercise.title ?? operation.exercise.exercise_template_id}" at index ${operation.exerciseIndex}`;
         case "edit_exercise":
             return `Week${weeks ? ` ${weeks}` : ""} day ${operation.dayOrder}: replace exercise ${operation.exerciseIndex + 1}`;
         case "delete_exercise":
@@ -623,6 +623,16 @@ export function describeProgramOperation(operation: TAgentProgramOperation): str
             return `Create superset on day ${operation.dayId} (exercises ${operation.exerciseIndexes.map((i) => i + 1).join(", ")})`;
         case "remove_from_superset":
             return `Remove exercise ${operation.exerciseIndex + 1} from superset on day ${operation.dayId}`;
+        case "swap_exercise_template": {
+            const scope =
+                operation.folderIds || operation.dayOrder
+                    ? ` (scoped${weeks ? ` weeks ${weeks}` : ""}${operation.dayOrder ? ` day ${operation.dayOrder}` : ""})`
+                    : " (all weeks/days)";
+            const toTitle =
+                operation.to.title ??
+                ("exercise_template_id" in operation.to ? operation.to.exercise_template_id : "exercise");
+            return `Swap ${operation.from_exercise_template_id} → ${toTitle}${scope}`;
+        }
         default: {
             const unknownOp: never = operation;
             return unknownOp;

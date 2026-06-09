@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { readProgramSnapshot, sortProgramRoutines } from "./read-program";
+import { formatReadProgramForModel, readProgramSnapshot, sortProgramRoutines } from "./read-program";
 
 const sampleProgram = (): THevyRoutine[] => [
     {
@@ -74,5 +74,19 @@ describe("readProgramSnapshot", () => {
 
     it("returns empty array for undefined program", () => {
         expect(readProgramSnapshot(undefined)).toEqual([]);
+    });
+});
+
+describe("formatReadProgramForModel", () => {
+    it("includes full exercise fields in JSON for the agent", () => {
+        const formatted = formatReadProgramForModel(sampleProgram());
+        expect(formatted).toContain("Bench");
+        expect(formatted).toContain("ex-1");
+        expect(formatted).toContain("bench notes");
+        expect(formatted).toContain("Main press");
+    });
+
+    it("returns empty message when program has no routines", () => {
+        expect(formatReadProgramForModel([])).toContain("empty");
     });
 });

@@ -25,6 +25,7 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("Mandatory skill loading");
             expect(prompt).toContain("loadSkill");
             expect(prompt).toContain("build-program");
+            expect(prompt).toContain("mutate-program");
             expect(prompt).toContain("first message");
             expect(prompt).toContain("two flows");
             expect(prompt).toContain("Periodization after buildWeek");

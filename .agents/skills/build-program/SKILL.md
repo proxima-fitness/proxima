@@ -30,7 +30,7 @@ After **getExerciseList**, call **buildWeek exactly once** per user request to g
 - [ ] Select exercises from the returned list (id: title). Use only IDs that appear in the list.
 - [ ] **buildWeek** once: one week only (week 1 template). `routines.length` = totalDays; `dayNumber` 1..N in order. Align structure with **planProgram** (stable exercise choices within blocks when the plan says so).
 - [ ] **Periodization (mutateProgram) after buildWeek:** Do **not** rely on **readProgram** for targeting; the request snapshot may still be empty even though **buildWeek** succeeded. Target the **full** duplicated program (`totalDays × programLength` routines) using **folderIds** + **dayOrder** (see **Multi-week targeting** below), **planProgram**, **buildWeek** output, and program builder context.
-- [ ] **mutateProgram**: Prefer **one** call with a **single operations array** that applies all periodization (per-week RPE, reps, rest, notes, block-boundary exercise swaps). If you draft edits per week mentally, **concatenate** all operations into one batch before calling the tool once.
+- [ ] **mutateProgram**: Prefer **one** call with a **single operations array** that applies all periodization (per-week RPE, reps, rest, notes, block-boundary exercise swaps). Use **swap_exercise_template** for post-build equipment retargets (e.g. dumbbell-only) without re-specifying sets. If you draft edits per week mentally, **concatenate** all operations into one batch before calling the tool once.
 - [ ] After success: brief summary (max 5 bullets).
 
 ## Tool dependency rule
@@ -97,7 +97,7 @@ When the user wants **CrossFit**, **CrossFit-style**, **GPP**, a **WOD** or **me
 - **First week only**: The client duplicates the first week across all weeks. Build only one week in a single buildWeek call; do not emit multiple weeks in buildWeek.
 - **readProgram vs periodization**: After **buildWeek**, **readProgram** may still return an empty snapshot (request-start staleness). For multi-week **mutateProgram**, use **buildWeek** output + **planProgram** + **folderIds** / **dayOrder**; do not wait on **readProgram**.
 - **Operation batch safety**: Prefer **update_set** / **edit_day_title** for periodization (RPE, reps, rest, titles). Avoid bulk **insert_exercise** / **delete_exercise** unless you order operations carefully; they shift **exerciseIndex** for later ops on the same day.
-- **Merged batch vs modify-program skill**: The modify-program skill says "one batch, one call." For **this** multi-week generation flow, you may think in per-week terms, but you must deliver **one merged operations array** in a single **mutateProgram** call when possible.
+- **Merged batch vs mutate-program skill**: The mutate-program skill says "one batch, one call." For **this** multi-week generation flow, you may think in per-week terms, but you must deliver **one merged operations array** in a single **mutateProgram** call when possible.
 
 ## Rep ranges
 

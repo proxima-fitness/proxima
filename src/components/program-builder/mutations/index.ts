@@ -30,6 +30,7 @@ export {
     insertExercise,
     removeFromSuperset,
     reorderDayInWeek,
+    swapExerciseTemplate,
     updateSet,
 } from "./handlers";
 export {
@@ -45,12 +46,15 @@ export {
     duplicateWeekSchema,
     editDayTitleSchema,
     editExerciseSchema,
+    insertExercisePayloadSchema,
     insertExerciseSchema,
     programOperationSchema,
     removeFromSupersetSchema,
     reorderDayInWeekSchema,
+    swapExerciseTemplateSchema,
     updateSetSchema,
     type TInsertExercisePayload,
+    type TSwapExerciseTemplateMinimalTo,
     type TProgramOperation,
 } from "./schemas";
 export {

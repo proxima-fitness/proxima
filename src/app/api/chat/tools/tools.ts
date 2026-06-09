@@ -27,9 +27,18 @@ import {
     applyOperations,
     buildMutateProgramToolDescription,
     mutateProgramInputSchema,
+    type TAgentProgramOperation,
 } from '@/components/program-builder/mutations';
+import {
+    resolveExercisePayload,
+    resolveSwapTemplateTo,
+} from '@/components/program-builder/mutations/resolveExercisePayload';
+import type {
+    TInsertExercisePayload,
+    TSwapExerciseTemplateMinimalTo,
+} from '@/components/program-builder/mutations/schemas';
 import { isApplyBatchFailure } from '@/components/program-builder/mutations/types';
-import { readProgramInputSchema, readProgramSnapshot } from './read-program';
+import { readProgramInputSchema, formatReadProgramForModel, readProgramSnapshot } from './read-program';
 import { tool } from 'ai';
 
 /** Request-scoped flag: set after first successful buildWeek so the agent cannot call buildWeek twice in one chat turn. */
@@ -374,13 +383,9 @@ export function getTools({
         }),
         toModelOutput: async ({ output }) => {
             const o = output as { hevyProgram?: THevyRoutine[] };
-            const count = o.hevyProgram?.length ?? 0;
             return {
                 type: 'text' as const,
-                value:
-                    count > 0
-                        ? `Program snapshot (${count} routines). Use folder_id + dayOrder for mutateProgram targeting.`
-                        : 'Program snapshot is empty (no routines on the builder at request start).',
+                value: formatReadProgramForModel(o.hevyProgram ?? []),
             };
         },
     });
@@ -659,14 +664,59 @@ export function getTools({
         inputSchema: mutateProgramInputSchema,
         execute: async ({ operations }) => {
             try {
-                const result = applyOperations(hevyProgram ?? [], operations);
+                await ensureExerciseIdToTitleMap();
+
+                const resolvedOperations: TAgentProgramOperation[] = [];
+                for (let index = 0; index < operations.length; index++) {
+                    const operation = operations[index];
+                    if (operation.op === 'insert_exercise' || operation.op === 'edit_exercise') {
+                        const resolved = resolveExercisePayload(operation.exercise, exerciseIdToTitle);
+                        if (resolved.ok === false) {
+                            return {
+                                error: 'Program mutation batch failed',
+                                failures: [{ index, op: operation.op, reason: resolved.reason }],
+                            };
+                        }
+                        resolvedOperations.push({ ...operation, exercise: resolved.payload });
+                    } else if (operation.op === 'swap_exercise_template') {
+                        if (operation.preserve_sets === false) {
+                            const resolved = resolveExercisePayload(
+                                operation.to as TInsertExercisePayload,
+                                exerciseIdToTitle,
+                            );
+                            if (resolved.ok === false) {
+                                return {
+                                    error: 'Program mutation batch failed',
+                                    failures: [{ index, op: operation.op, reason: resolved.reason }],
+                                };
+                            }
+                            resolvedOperations.push({ ...operation, to: resolved.payload });
+                        } else {
+                            const resolved = resolveSwapTemplateTo(
+                                operation.to as TSwapExerciseTemplateMinimalTo,
+                                exerciseIdToTitle,
+                            );
+                            if (resolved.ok === false) {
+                                return {
+                                    error: 'Program mutation batch failed',
+                                    failures: [{ index, op: operation.op, reason: resolved.reason }],
+                                };
+                            }
+                            resolvedOperations.push({ ...operation, to: resolved.payload });
+                        }
+                    } else {
+                        resolvedOperations.push(operation);
+                    }
+                }
+
+                const result = applyOperations(hevyProgram ?? [], resolvedOperations);
                 if (isApplyBatchFailure(result)) {
                     return {
                         error: 'Program mutation batch failed',
                         failures: result.failures,
                     };
                 }
-                return { operations };
+                return { operations: resolvedOperations };
             } catch (error) {
                 console.error('Error in mutateProgramTool:', error);
                 return {

@@ -12,7 +12,7 @@ import {
     sortHevyByOrder,
 } from "@/components/program-builder/utils/format-responses";
 
-import type { TInsertExercisePayload } from "./schemas";
+import type { TInsertExercisePayload, TSwapExerciseTemplateMinimalTo } from "./schemas";
 import { toHevySet } from "./schemas";
 
 
@@ -547,16 +547,16 @@ export function removeFromSuperset(
 // --- Exercise edit ---
 
 /**
- * Replace an exercise's template, sets, and rest from the add-exercise form.
+ * Replace an exercise from a grid-shaped insert payload.
  *
- * Preserves notes, reason, and superset membership on the existing record.
- * Rebuilds sets from the form via hevyAddExerciseToHevySetsConverter.
+ * Preserves notes and superset membership on the existing record.
+ * Overwrites template, title, sets, rest, and reason from the payload.
  *
  * @param program - Current program snapshot.
  * @param folderIds - Week indices (`folder_id` values) to match.
  * @param dayOrder - Day order within each matched week (1-based).
  * @param exerciseIndex - Zero-based index of the exercise to replace.
- * @param exercise - Add-exercise dialog form state for the replacement.
+ * @param payload - Grid-shaped exercise fields and sets (same as insert_exercise).
  * @returns Updated program with the exercise replaced on matching days.
  */
 export function editExercise(
@@ -564,9 +564,9 @@ export function editExercise(
     folderIds: number[],
     dayOrder: number,
     exerciseIndex: number,
-    exercise: THevyAddExercise,
+    payload: TInsertExercisePayload,
 ): THevyRoutine[] {
-    const sets = hevyAddExerciseToHevySetsConverter(exercise);
+    const sets = payload.sets.map(toHevySet);
     return program.map((day) => {
         if (!folderIds.includes(Number(day.folder_id)) || Number(day.order) !== dayOrder) {
             return day;
@@ -576,15 +576,14 @@ export function editExercise(
             exercises: day.exercises.map((existingExercise, index) =>
                 index === exerciseIndex
                     ? {
-                          ...existingExercise,
-                          index: day.exercises.length + 1,
-                          title: exercise?.selectedExercise?.title ?? "",
-                          notes: existingExercise?.notes ?? "",
-                          reason: existingExercise?.reason ?? "",
-                          exercise_template_id: exercise?.selectedExercise?.id ?? "",
-                          supersets_id: existingExercise?.supersets_id ?? null,
+                          index: existingExercise.index,
+                          title: payload.title ?? "",
+                          notes: existingExercise.notes ?? "",
+                          exercise_template_id: payload.exercise_template_id,
+                          supersets_id: existingExercise.supersets_id ?? null,
                           sets,
-                          rest_seconds: exercise?.restSeconds ?? null,
+                          rest_seconds: payload.rest_seconds ?? null,
+                          ...(payload.reason !== undefined ? { reason: payload.reason } : {}),
                       }
                     : existingExercise,
             ),
@@ -595,8 +594,7 @@ export function editExercise(
 /**
  * Apply an in-progress edit from THevyDialog state.
  *
- * Resolves week, day, and exercise index from the dialog and delegates to
- * editExercise.
+ * Converts dialog form state to grid payload, then delegates to editExercise.
  *
  * @param program - Current program snapshot.
  * @param editExerciseDialog - Dialog state carrying location and form payload.
@@ -613,8 +611,89 @@ export function editExerciseFromDialog(
         [editExerciseDialog.folder_id],
         editExerciseDialog.dayOrder,
         editExerciseDialog.exerciseIndex ?? 0,
-        editExerciseDialog.editExercise,
+        addExerciseFormToInsertPayload(editExerciseDialog.editExercise),
     );
+}
+
+
+// --- Exercise template swap ---
+
+function isDayInSwapScope(
+    day: THevyRoutine,
+    folderIds: number[] | undefined,
+    dayOrder: number | undefined,
+): boolean {
+    if (folderIds !== undefined && !folderIds.includes(Number(day.folder_id))) {
+        return false;
+    }
+    if (dayOrder !== undefined && Number(day.order) !== dayOrder) {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Replace every exercise matching `from_exercise_template_id` within optional scope.
+ *
+ * When `preserveSets` is true (default): keeps sets, rest, and notes; replaces template,
+ * title, and reason (only when provided in `to`). When false: replaces sets and rest from
+ * full insert payload; notes always preserved.
+ *
+ * @returns Updated program and count of matched exercises (zero matches is a caller error).
+ */
+export function swapExerciseTemplate(
+    program: THevyRoutine[],
+    fromExerciseTemplateId: string,
+    to: TSwapExerciseTemplateMinimalTo | TInsertExercisePayload,
+    options: {
+        folderIds?: number[];
+        dayOrder?: number;
+        preserveSets?: boolean;
+    } = {},
+): { program: THevyRoutine[]; matchCount: number } {
+    const preserveSets = options.preserveSets ?? true;
+    let matchCount = 0;
+
+    const nextProgram = program.map((day) => {
+        if (!isDayInSwapScope(day, options.folderIds, options.dayOrder)) {
+            return day;
+        }
+
+        return {
+            ...day,
+            exercises: day.exercises.map((exercise) => {
+                if (exercise.exercise_template_id !== fromExerciseTemplateId) {
+                    return exercise;
+                }
+
+                matchCount++;
+
+                if (preserveSets) {
+                    const minimalTo = to as TSwapExerciseTemplateMinimalTo;
+                    return {
+                        ...exercise,
+                        exercise_template_id: minimalTo.exercise_template_id,
+                        title: minimalTo.title ?? exercise.title,
+                        ...(minimalTo.reason !== undefined ? { reason: minimalTo.reason } : {}),
+                    };
+                }
+
+                const fullTo = to as TInsertExercisePayload;
+                return {
+                    index: exercise.index,
+                    title: fullTo.title ?? "",
+                    notes: exercise.notes ?? "",
+                    exercise_template_id: fullTo.exercise_template_id,
+                    supersets_id: exercise.supersets_id ?? null,
+                    sets: fullTo.sets.map(toHevySet),
+                    rest_seconds: fullTo.rest_seconds ?? null,
+                    ...(fullTo.reason !== undefined ? { reason: fullTo.reason } : {}),
+                };
+            }),
+        };
+    });
+
+    return { program: nextProgram, matchCount };
 }
 
 

@@ -12,6 +12,7 @@ import {
     editDayTitleSchema,
     editExerciseSchema,
     insertExerciseSchema,
+    swapExerciseTemplateSchema,
     removeFromSupersetSchema,
     updateSetSchema,
 } from "./schemas";
@@ -20,6 +21,7 @@ import {
 export const agentProgramOperationSchema = z.discriminatedUnion("op", [
     insertExerciseSchema,
     editExerciseSchema,
+    swapExerciseTemplateSchema,
     deleteExerciseSchema,
     updateSetSchema,
     editDayTitleSchema,

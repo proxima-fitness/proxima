@@ -1,5 +1,5 @@
 ---
-name: modify-program
+name: mutate-program
 description: >-
   Workflow for modifying an existing workout program. Load this skill when the
   user wants to change, edit, update, swap, rename, or remove exercises, sets,
@@ -10,13 +10,15 @@ allowedTools:
   - mutateProgram
 ---
 
-# Modify Program
+# Mutate Program
 
 ## Checklist
 
 - [ ] **readProgram** when you need the current program (weeks, days, exercises, sets, notes, reason). `hevyProgram.length` = N total routines (all weeks).
 - [ ] Build **one operations array** with all registry ops for the requested change.
-- [ ] For edits affecting every week/day occurrence: include **folderIds** (and matching **dayOrder**) for each week that needs the change—or one op with multiple **folderIds** when the change is identical.
+- [ ] **Equipment / template swaps** (dumbbell-only, barbell → dumbbell, variation replace across program): use **`swap_exercise_template`** — one op per `from_exercise_template_id`; omit **folderIds** / **dayOrder** to hit every week and day.
+- [ ] **Positional edits with new sets** (one slot, new prescription): use **`edit_exercise`** with grid payload (same shape as **insert_exercise**).
+- [ ] For other edits affecting every week/day occurrence: include **folderIds** (and matching **dayOrder**) for each week—or one op with multiple **folderIds** when the change is identical.
 - [ ] Call **mutateProgram** once with the full **operations** array.
 
 ## Targeting (mutateProgram)
@@ -37,6 +39,28 @@ Operations run in **array order** (fail-all if any op is invalid):
 1. **insert_exercise** (especially warmups at **exerciseIndex: 0**) before **update_set** / **edit_exercise** / **delete_exercise** on the same day.
 2. **delete_exercise** / inserts at higher **exerciseIndex** before lower-index updates when indices would shift.
 3. Prefer **update_set** and **edit_day_title** for periodization-style tweaks; use **insert_exercise** / **delete_exercise** only when structure changes.
+4. **swap_exercise_template** before many positional **edit_exercise** calls when only the exercise template (equipment/variation) changes and sets/rest should stay.
+
+## Template swap vs positional edit
+
+| Goal | Op |
+|------|-----|
+| Replace all barbell bench with dumbbell bench (sets/rest unchanged) | **swap_exercise_template** |
+| Change one exercise slot to a different movement **and** new sets/reps | **edit_exercise** |
+| Tweak RPE/reps/rest on existing template | **update_set** |
+
+**Dumbbell-only example** — after **readProgram**, one batch (omit **folderIds** / **dayOrder** for program-wide):
+
+```json
+{
+  "operations": [
+    { "op": "swap_exercise_template", "from_exercise_template_id": "SQUAT_BB", "to": { "exercise_template_id": "DCFF3E9F", "reason": "Dumbbell-only." } },
+    { "op": "swap_exercise_template", "from_exercise_template_id": "BENCH_BB", "to": { "exercise_template_id": "3601968B" } }
+  ]
+}
+```
+
+Do **not** emit nine **edit_exercise** ops re-specifying every set when **swap_exercise_template** suffices.
 
 ## Warmup exercises
 
@@ -50,9 +74,9 @@ Operations run in **array order** (fail-all if any op is invalid):
 
 ## Program types
 
-When the user's program or requested changes are **powerlifting-focused** (squat, bench, deadlift, or "like" a known powerlifting program such as Starting Strength, 5/3/1, Texas Method, GZCL, Sheiko, etc.), use `readFile` to load `.agents/skills/modify-program/resources/powerlifting.md` and apply that knowledge when building the **operations** batch (e.g. preserve SBD emphasis, recovery, and style).
+When the user's program or requested changes are **powerlifting-focused** (squat, bench, deadlift, or "like" a known powerlifting program such as Starting Strength, 5/3/1, Texas Method, GZCL, Sheiko, etc.), use `readFile` to load `.agents/skills/mutate-program/resources/powerlifting.md` and apply that knowledge when building the **operations** batch (e.g. preserve SBD emphasis, recovery, and style).
 
-When the user's program or requested changes are **bodybuilding- or hypertrophy-focused** (aesthetic focus, muscle building, PPL, upper/lower, bro split, or training by muscle group), use `readFile` to load `.agents/skills/modify-program/resources/bodybuilding.md` and apply that knowledge when building the **operations** batch (e.g. preserve volume landmarks, exercise categories per muscle, rep ranges, and session structure as in the resource).
+When the user's program or requested changes are **bodybuilding- or hypertrophy-focused** (aesthetic focus, muscle building, PPL, upper/lower, bro split, or training by muscle group), use `readFile` to load `.agents/skills/mutate-program/resources/bodybuilding.md` and apply that knowledge when building the **operations** batch (e.g. preserve volume landmarks, exercise categories per muscle, rep ranges, and session structure as in the resource).
 
 ## Gotchas
 

@@ -5,7 +5,21 @@ vi.mock("@/components/program-builder/api/hevy", () => ({
 }));
 
 import { agentExposedMutations } from "./catalog";
+import { applyOperationById } from "./apply";
 import { mutateProgramInputSchema } from "./agentSchema";
+import { isValidationFailure } from "./types";
+
+const makeSet = () => ({
+    index: 1,
+    type: "normal" as const,
+    weight_kg: null,
+    reps: 8,
+    distance_meters: null,
+    duration_seconds: null,
+    rpe: 8,
+    custom_metric: null,
+    rep_range: null,
+});
 
 describe("mutateProgramInputSchema", () => {
     it("accepts edit_day_title", () => {
@@ -49,7 +63,149 @@ describe("mutateProgramInputSchema", () => {
         const exposedIds = agentExposedMutations.map((m) => m.id);
         expect(exposedIds).toContain("insert_exercise");
         expect(exposedIds).toContain("update_set");
+        expect(exposedIds).toContain("swap_exercise_template");
         expect(exposedIds).not.toContain("duplicate_week");
-        expect(exposedIds).toHaveLength(12);
+        expect(exposedIds).toHaveLength(13);
+    });
+
+    it("accepts minimal swap_exercise_template", () => {
+        const parsed = mutateProgramInputSchema.safeParse({
+            operations: [
+                {
+                    op: "swap_exercise_template",
+                    from_exercise_template_id: "BENCH_BB",
+                    to: { exercise_template_id: "3601968B" },
+                },
+            ],
+        });
+        expect(parsed.success).toBe(true);
+    });
+
+    it("accepts swap_exercise_template with preserve_sets false and full to payload", () => {
+        const parsed = mutateProgramInputSchema.safeParse({
+            operations: [
+                {
+                    op: "swap_exercise_template",
+                    from_exercise_template_id: "BENCH_BB",
+                    preserve_sets: false,
+                    to: {
+                        exercise_template_id: "3601968B",
+                        title: "DB Bench",
+                        sets: [makeSet()],
+                    },
+                },
+            ],
+        });
+        expect(parsed.success).toBe(true);
+    });
+
+    it("accepts grid-shaped edit_exercise", () => {
+        const parsed = mutateProgramInputSchema.safeParse({
+            operations: [
+                {
+                    op: "edit_exercise",
+                    folderIds: [0],
+                    dayOrder: 1,
+                    exerciseIndex: 0,
+                    exercise: {
+                        exercise_template_id: "bench-1",
+                        title: "Bench Press",
+                        rest_seconds: "90",
+                        sets: [makeSet()],
+                    },
+                },
+            ],
+        });
+        expect(parsed.success).toBe(true);
+    });
+
+    it("accepts edit_exercise with omitted title", () => {
+        const parsed = mutateProgramInputSchema.safeParse({
+            operations: [
+                {
+                    op: "edit_exercise",
+                    folderIds: [0],
+                    dayOrder: 1,
+                    exerciseIndex: 0,
+                    exercise: {
+                        exercise_template_id: "bench-1",
+                        sets: [makeSet()],
+                    },
+                },
+            ],
+        });
+        expect(parsed.success).toBe(true);
+    });
+
+    it("rejects dialog-shaped edit_exercise payload", () => {
+        const parsed = mutateProgramInputSchema.safeParse({
+            operations: [
+                {
+                    op: "edit_exercise",
+                    folderIds: [0],
+                    dayOrder: 1,
+                    exerciseIndex: 0,
+                    exercise: {
+                        selectedExercise: { id: "bench-1", title: "Bench Press" },
+                        repTypeValue: "reps",
+                        reps: [8, 8, 8],
+                        setTypes: ["normal", "normal", "normal"],
+                        restSeconds: "90",
+                    },
+                },
+            ],
+        });
+        expect(parsed.success).toBe(false);
+    });
+
+    it("rejects operation key instead of op", () => {
+        const parsed = mutateProgramInputSchema.safeParse({
+            operations: [
+                {
+                    operation: "edit_exercise",
+                    folderIds: [0],
+                    dayOrder: 1,
+                    exerciseIndex: 0,
+                    exercise: {
+                        exercise_template_id: "bench-1",
+                        sets: [makeSet()],
+                    },
+                },
+            ],
+        });
+
+        expect(parsed.success).toBe(false);
+        if (parsed.success) return;
+
+        const result = applyOperationById([], "edit_exercise", {
+            operation: "edit_exercise",
+            folderIds: [0],
+            dayOrder: 1,
+            exerciseIndex: 0,
+            exercise: {
+                exercise_template_id: "bench-1",
+                sets: [makeSet()],
+            },
+        });
+
+        expect(isValidationFailure(result)).toBe(true);
+        if (!isValidationFailure(result)) return;
+        expect(result.reason).toBe("Expected field 'op', received 'operation'");
+    });
+
+    it("rejects new_exercise key instead of exercise", () => {
+        const result = applyOperationById([], "edit_exercise", {
+            folderIds: [0],
+            dayOrder: 1,
+            exerciseIndex: 0,
+            new_exercise: {
+                exercise_template_id: "bench-1",
+                sets: [makeSet()],
+            },
+        });
+
+        expect(isValidationFailure(result)).toBe(true);
+        if (!isValidationFailure(result)) return;
+        expect(result.reason).toBe("Expected field 'exercise', received 'new_exercise'");
     });
 });

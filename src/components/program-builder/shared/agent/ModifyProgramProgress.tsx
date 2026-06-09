@@ -10,7 +10,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { TModifyProgramRoutineObjective } from "@/components/program-builder/utils/helpers";
 
-/** Props for the modify-program progress list. */
+/** Props for the mutate-program progress list. */
 export interface IProps {
     /** Per-routine objectives (label + details) from mutateProgram tool. */
     objectivesByRoutine: TModifyProgramRoutineObjective[];

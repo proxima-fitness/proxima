@@ -1,3 +1,5 @@
+import type { z } from "zod";
+
 import { programMutationCatalogById } from "./catalog";
 import type { TProgramOperation } from "./schemas";
 import {
@@ -6,10 +8,33 @@ import {
     type TApplyBatchResult,
     type TMutationResult,
 } from "./types";
+import {
+    detectCommonMutationFieldMistakes,
+    formatMutationSchemaError,
+} from "./validationErrors";
 
 function stripOpField<T extends { op: string }>(operation: T): Omit<T, "op"> {
     const { op: _op, ...args } = operation;
     return args;
+}
+
+function parseMutationOperation<TSchema extends z.ZodType>(
+    operation: Record<string, unknown>,
+    schema: TSchema,
+):
+    | { ok: true; data: z.infer<TSchema> }
+    | { ok: false; reason: string } {
+    const mistake = detectCommonMutationFieldMistakes(operation);
+    if (mistake) {
+        return { ok: false, reason: mistake };
+    }
+
+    const parsed = schema.safeParse(operation);
+    if (!parsed.success) {
+        return { ok: false, reason: formatMutationSchemaError(parsed.error) };
+    }
+
+    return { ok: true, data: parsed.data };
 }
 
 export function applyOperation(program: THevyRoutine[], operation: TProgramOperation): TMutationResult {
@@ -18,9 +43,9 @@ export function applyOperation(program: THevyRoutine[], operation: TProgramOpera
         return mutationFailure(`Unknown operation: ${operation.op}`);
     }
 
-    const parsed = mutation.schema.safeParse(operation);
-    if (!parsed.success) {
-        return mutationFailure(parsed.error.issues.map((issue) => issue.message).join("; "));
+    const parsed = parseMutationOperation(operation as Record<string, unknown>, mutation.schema);
+    if (parsed.ok === false) {
+        return mutationFailure(parsed.reason);
     }
 
     return mutation.run(program, parsed.data);
@@ -36,9 +61,9 @@ export function applyOperationById(
         return mutationFailure(`Unknown operation: ${op}`);
     }
 
-    const parsed = mutation.schema.safeParse({ op, ...args });
-    if (!parsed.success) {
-        return mutationFailure(parsed.error.issues.map((issue) => issue.message).join("; "));
+    const parsed = parseMutationOperation({ op, ...args }, mutation.schema);
+    if (parsed.ok === false) {
+        return mutationFailure(parsed.reason);
     }
 
     return mutation.run(program, parsed.data);

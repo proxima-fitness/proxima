@@ -43,9 +43,9 @@ export function toHevySet(set: TZodHevySet): THevySets {
     };
 }
 
-const insertExercisePayloadSchema = z.object({
+export const insertExercisePayloadSchema = z.object({
     exercise_template_id: z.string().min(1),
-    title: z.string(),
+    title: z.string().optional(),
     notes: z.string().optional(),
     rest_seconds: z.string().nullable().optional(),
     sets: z.array(hevySetSchema).min(1),
@@ -54,47 +54,6 @@ const insertExercisePayloadSchema = z.object({
 });
 
 export type TInsertExercisePayload = z.infer<typeof insertExercisePayloadSchema>;
-
-const hevyExerciseTemplateSchema = z.object({
-    id: z.string(),
-    title: z.string(),
-    type: z.string(),
-    primary_muscle_group: z.string(),
-    secondary_muscle_groups: z.array(z.string()),
-    is_custom: z.boolean(),
-    equipment: z.string(),
-    normalized_title: z.string(),
-    gif_id: z.string(),
-    instructions: z.array(z.string()),
-});
-
-const hevyAddExerciseSchema = z.object({
-    selectedExercise: hevyExerciseTemplateSchema,
-    repTypeValue: z.enum(["reps", "reps_range", "distance_meters", "duration_seconds", "custom_metric"]),
-    reps: z.array(z.number()).nullable(),
-    repRangeStart: z.array(z.number()).nullable().optional(),
-    repRangeEnd: z.array(z.number()).nullable().optional(),
-    weightKg: z.array(z.number().nullable()).nullable(),
-    rpe: z.array(z.number().nullable()).nullable(),
-    setTypes: z.array(z.enum(["normal", "warmup", "dropset", "failure"])),
-    restSeconds: z.string().nullable(),
-});
-
-export type THevyAddExerciseInput = z.infer<typeof hevyAddExerciseSchema>;
-
-export function toHevyAddExercise(input: THevyAddExerciseInput): THevyAddExercise {
-    return {
-        selectedExercise: input.selectedExercise,
-        repTypeValue: input.repTypeValue,
-        reps: input.reps ?? null,
-        repRangeStart: input.repRangeStart,
-        repRangeEnd: input.repRangeEnd,
-        weightKg: input.weightKg ?? null,
-        rpe: input.rpe ?? null,
-        setTypes: input.setTypes,
-        restSeconds: input.restSeconds ?? null,
-    };
-}
 
 const hevyExerciseSchema = z.object({
     index: z.number(),
@@ -121,6 +80,25 @@ export function toHevyExercise(exercise: TZodHevyExercise): THevyExercise {
         ...(exercise.reason !== undefined ? { reason: exercise.reason } : {}),
     };
 }
+
+export const swapExerciseTemplateMinimalToSchema = z.object({
+    exercise_template_id: z.string().min(1),
+    title: z.string().optional(),
+    reason: z.string().optional(),
+});
+
+export type TSwapExerciseTemplateMinimalTo = z.infer<typeof swapExerciseTemplateMinimalToSchema>;
+
+export const swapExerciseTemplateSchema = z.object({
+    op: z.literal("swap_exercise_template"),
+    from_exercise_template_id: z.string().min(1),
+    folderIds: folderIdsSchema.optional(),
+    dayOrder: dayOrderSchema.optional(),
+    preserve_sets: z.boolean().optional(),
+    to: z.record(z.string(), z.unknown()),
+});
+
+export type TSwapExerciseTemplateArgs = Omit<z.infer<typeof swapExerciseTemplateSchema>, "op">;
 
 export const addDaySchema = z.object({
     op: z.literal("add_day"),
@@ -164,7 +142,7 @@ export const editExerciseSchema = z.object({
     folderIds: folderIdsSchema,
     dayOrder: dayOrderSchema,
     exerciseIndex: exerciseIndexSchema,
-    exercise: hevyAddExerciseSchema,
+    exercise: insertExercisePayloadSchema,
 });
 
 export const deleteExerciseSchema = z.object({
@@ -246,6 +224,7 @@ export const programOperationSchema = z.discriminatedUnion("op", [
     deleteWeekSchema,
     insertExerciseSchema,
     editExerciseSchema,
+    swapExerciseTemplateSchema,
     deleteExerciseSchema,
     updateSetSchema,
     addExerciseNotesSchema,

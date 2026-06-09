@@ -1,6 +1,10 @@
 import { programMutationCatalogById } from "./catalog";
 import { isValidationFailure, mutationFailure, type TMutationResult } from "./types";
 import type { TProgramMutationRunContext } from "./types";
+import {
+    detectCommonMutationFieldMistakes,
+    formatMutationSchemaError,
+} from "./validationErrors";
 
 const STREAMING_FAILURE = "Can't edit the program while the assistant is responding.";
 
@@ -24,7 +28,8 @@ export function runProgramMutation(
 
     const parsed = mutation.schema.safeParse({ op: id, ...args });
     if (!parsed.success) {
-        return mutationFailure(parsed.error.issues.map((issue) => issue.message).join("; "));
+        const mistake = detectCommonMutationFieldMistakes({ op: id, ...args });
+        return mutationFailure(mistake ?? formatMutationSchemaError(parsed.error));
     }
 
     const result = mutation.run(ctx.program, parsed.data);

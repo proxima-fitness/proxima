@@ -184,7 +184,7 @@ function ProgramEditorInner(props: IProps) {
                     folderIds: [editExerciseDialog.folder_id],
                     dayOrder: editExerciseDialog.dayOrder,
                     exerciseIndex: editExerciseDialog.exerciseIndex ?? 0,
-                    exercise: editExerciseDialog.editExercise,
+                    exercise: addExerciseFormToInsertPayload(editExerciseDialog.editExercise),
                 });
             }
             setIsEditExercise(false);

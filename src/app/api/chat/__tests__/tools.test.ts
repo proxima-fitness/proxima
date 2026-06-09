@@ -97,6 +97,39 @@ describe("chat tools.ts", () => {
             expect(output.hevyProgram[0].exercises[0].notes).toBe("exercise notes");
             expect(output.hevyProgram[0].exercises[0].reason).toBe("Main lift");
         });
+
+        it("toModelOutput returns full program JSON for the agent", async () => {
+            const programWithNotes = [
+                {
+                    ...minimalHevyProgram[0],
+                    notes: "day notes",
+                    exercises: [
+                        {
+                            ...minimalHevyProgram[0].exercises[0],
+                            title: "Barbell Bench Press",
+                            exercise_template_id: "bench-bb",
+                            notes: "exercise notes",
+                            reason: "Main lift",
+                        },
+                    ],
+                },
+            ] as THevyRoutine[];
+
+            const tools = getTools({ hevyProgram: programWithNotes });
+            const readProgram = tools.readProgram as {
+                execute: (args: Record<string, never>) => Promise<{ hevyProgram: THevyRoutine[] }>;
+                toModelOutput: (args: { output: { hevyProgram: THevyRoutine[] } }) => Promise<{ value: string }>;
+            };
+
+            const output = await readProgram.execute({});
+            const modelOutput = await readProgram.toModelOutput({ output });
+
+            expect(modelOutput.value).toContain("Barbell Bench Press");
+            expect(modelOutput.value).toContain("bench-bb");
+            expect(modelOutput.value).toContain("exercise notes");
+            expect(modelOutput.value).toContain("Main lift");
+            expect(modelOutput.value).toContain('"folder_id":0');
+        });
     });
 
     describe("buildWeek tool execute", () => {
