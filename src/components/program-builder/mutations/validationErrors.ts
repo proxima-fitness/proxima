@@ -20,6 +20,13 @@ export function detectCommonMutationFieldMistakes(raw: Record<string, unknown>):
         }
     }
 
+    if (op === "insert_exercise" && raw.exerciseIndex === undefined) {
+        return (
+            "insert_exercise requires exerciseIndex (0-based). Empty day → 0; " +
+            "append → exercises.length from readProgram; multi-insert batch → rising indices (0, 1, 2…)"
+        );
+    }
+
     if (op === "edit_exercise" || op === "insert_exercise") {
         if ("new_exercise" in raw && !("exercise" in raw)) {
             return "Expected field 'exercise', received 'new_exercise'";

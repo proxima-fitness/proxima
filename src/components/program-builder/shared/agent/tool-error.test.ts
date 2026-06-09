@@ -120,6 +120,18 @@ describe("summarizeToolError", () => {
         expect(summary).not.toContain('"invalid_type"');
     });
 
+    it("humanizes missing exerciseIndex SDK validation errors", () => {
+        const sdkError =
+            'Invalid input for tool mutateProgram: Type validation failed: Value: {"operations":[{"op":"insert_exercise","folderIds":[0],"dayOrder":1}]}.' +
+            ' Error message: [{"expected":"number","code":"invalid_type","path":["operations",0,"exerciseIndex"],"message":"Invalid input: expected number, received undefined"}]';
+
+        const summary = summarizeToolError("mutateProgram", { errorText: sdkError });
+
+        expect(summary).toBe(
+            "We couldn't apply that change: insert_exercise requires exerciseIndex (0-based). Empty day → 0; append → exercises.length from readProgram",
+        );
+    });
+
     it("humanizes stringified nested object SDK validation errors", () => {
         const sdkError =
             'Invalid input for tool mutateProgram: Type validation failed: Value: {"operations":[{"op":"update_set","set":"{\\"rpe\\":9}"}]}.' +

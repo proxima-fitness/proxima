@@ -76,6 +76,12 @@ function humanizeZodIssue(issue: TZodIssue): string {
     }
 
     if (message.includes("expected number, received undefined")) {
+        if (field === "exerciseIndex") {
+            return (
+                "insert_exercise requires exerciseIndex (0-based). Empty day → 0; " +
+                "append → exercises.length from readProgram"
+            );
+        }
         return field
             ? `A required number (${field}) was missing.`
             : "A required number was missing from the request.";

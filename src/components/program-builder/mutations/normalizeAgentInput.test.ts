@@ -162,6 +162,22 @@ describe("normalizeAgentOperationInput", () => {
         expect(result.reason).toContain("JSON string");
     });
 
+    it("rejects insert_exercise without exerciseIndex", () => {
+        const result = applyOperationById([], "insert_exercise", {
+            folderIds: [0],
+            dayOrder: 1,
+            exercise: {
+                exercise_template_id: "ex-1",
+                sets: [{ index: 1, type: "normal", reps: 8 }],
+            },
+        });
+
+        expect(isValidationFailure(result)).toBe(true);
+        if (!isValidationFailure(result)) return;
+        expect(result.reason).toContain("exerciseIndex");
+        expect(result.reason).toContain("Empty day");
+    });
+
     it("rejects exercises array with a clear mistake message", () => {
         const result = applyOperationById([], "insert_exercise", {
             folderIds: [0],
