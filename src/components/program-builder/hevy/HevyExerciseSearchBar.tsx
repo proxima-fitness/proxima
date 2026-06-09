@@ -101,7 +101,9 @@ export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
                 const normalizedQuery = appliedSearchBarFilter.toLowerCase();
                 const fuse = new Fuse(filteredItems, options);
                 const fuseResults  = fuse?.search(normalizedQuery);
-                filteredItems = fuseResults?.map(result => result?.item);
+                filteredItems = (fuseResults?.map((result) => result?.item) ?? []).filter(
+                    (item): item is THevyExerciseTemplate => item != null,
+                );
             }
             setFilteredItems(filteredItems);
     }, [appliedSearchBarFilter, items]);
@@ -119,6 +121,7 @@ export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
         } = props;
 
         const item = data.filteredItems[index];
+        if (!item) return null;
         const muscleLabel = formatHevyPrimaryMuscleGroupLabel(item.primary_muscle_group);
         const showMetaRow = muscleLabel.length > 0 || item.is_custom === true;
 

@@ -27,7 +27,7 @@ export const HevyRoutineCard: React.FC<IProps> = (props) => {
         <Card className={`w-full bg-lightGray dark:bg-extraDarkGray cursor-pointer`} onClick={ () => { handleAddRoutine(routine); toast.success(` ${routine.title} added to day`); } }>
             <CardHeader>
                 <CardTitle>{ routine.title }</CardTitle>
-                <CardDescription>{ routine.exercises.map((exercise) => exercise.title ).join(", ") }</CardDescription>
+                <CardDescription>{ routine.exercises.filter((exercise) => exercise != null).map((exercise) => exercise.title ?? "Unknown exercise").join(", ") }</CardDescription>
             </CardHeader>
         </Card>
     );

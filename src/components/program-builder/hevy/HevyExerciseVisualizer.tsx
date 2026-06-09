@@ -116,6 +116,8 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                 exercise={detailsExercise}
             />
             {day?.exercises?.map((exercise: THevyExercise, i: number) => {
+                if (exercise == null) return null;
+                const exerciseTitle = exercise.title ?? "Unknown exercise";
                 const isSelected = selectedExercises.includes(i);
                 const supersetColor = getSupersetColor(exercise.supersets_id);
                 const isEvenRow = i % 2 === 0;
@@ -209,10 +211,10 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                                 />
                                             )}
                                         </div>
-                                        <HevyExerciseGif thumbnailOrImage={"thmb"} name={exercise.title} gif_id={hevyExercises?.find((hevyExercise: THevyExerciseTemplate) => hevyExercise.id === exercise.exercise_template_id)?.gif_id} resolution={"180"} file_type={'jpg'} />
+                                        <HevyExerciseGif thumbnailOrImage={"thmb"} name={exerciseTitle} gif_id={hevyExercises?.find((hevyExercise: THevyExerciseTemplate) => hevyExercise.id === exercise.exercise_template_id)?.gif_id} resolution={"180"} file_type={'jpg'} />
                                         <div className="flex flex-row items-center justify-between">
                                             <div className={isSelected ? 'text-white' : 'dark:text-offWhite'}>
-                                                {exercise.title}
+                                                {exerciseTitle}
                                             </div>
                                         </div>
                                     </div>

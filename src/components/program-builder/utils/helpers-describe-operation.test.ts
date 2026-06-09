@@ -56,6 +56,33 @@ describe("describeProgramOperation", () => {
 
         expect(describeProgramOperation(operation)).toBe("Add day");
     });
+
+    it("does not throw when insert_exercise exercise is missing (streaming partial input)", () => {
+        const operation = {
+            op: "insert_exercise",
+            folderIds: [0],
+            dayOrder: 1,
+            exerciseIndex: 0,
+        } as TAgentProgramOperation;
+
+        expect(describeProgramOperation(operation)).toBe(
+            "Week 1 day 1: insert \"…\" at index 0",
+        );
+    });
+
+    it("describes insert_exercise with template id when title omitted", () => {
+        const operation = {
+            op: "insert_exercise",
+            folderIds: [0],
+            dayOrder: 2,
+            exerciseIndex: 1,
+            exercise: { exercise_template_id: "BENCH_BB" },
+        } as TAgentProgramOperation;
+
+        expect(describeProgramOperation(operation)).toBe(
+            "Week 1 day 2: insert \"BENCH_BB\" at index 1",
+        );
+    });
 });
 
 describe("getMutateProgramObjectives", () => {

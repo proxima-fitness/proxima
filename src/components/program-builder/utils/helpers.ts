@@ -603,10 +603,19 @@ export function describeProgramOperation(operation: TAgentProgramOperation): str
             return `Week${weeks ? ` ${weeks}` : ""} day ${operation.dayOrder}: rename to "${operation.title}"`;
         case "add_day_notes":
             return `Week${weeks ? ` ${weeks}` : ""} day ${operation.dayOrder}: set day notes`;
-        case "insert_exercise":
-            return `Week${weeks ? ` ${weeks}` : ""} day ${operation.dayOrder}: insert "${operation.exercise.title ?? operation.exercise.exercise_template_id}" at index ${operation.exerciseIndex}`;
-        case "edit_exercise":
-            return `Week${weeks ? ` ${weeks}` : ""} day ${operation.dayOrder}: replace exercise ${operation.exerciseIndex + 1}`;
+        case "insert_exercise": {
+            const ex = "exercise" in operation ? operation.exercise : undefined;
+            const label = ex?.title ?? ex?.exercise_template_id ?? "…";
+            const day = operation.dayOrder ?? "?";
+            const idx = operation.exerciseIndex ?? "?";
+            return `Week${weeks ? ` ${weeks}` : ""} day ${day}: insert "${label}" at index ${idx}`;
+        }
+        case "edit_exercise": {
+            const day = operation.dayOrder ?? "?";
+            const idx =
+                operation.exerciseIndex != null ? operation.exerciseIndex + 1 : "?";
+            return `Week${weeks ? ` ${weeks}` : ""} day ${day}: replace exercise ${idx}`;
+        }
         case "delete_exercise":
             return `Week${weeks ? ` ${weeks}` : ""} day ${operation.dayOrder}: remove exercise ${operation.exerciseIndex + 1}`;
         case "update_set":
@@ -682,28 +691,74 @@ function buildFlatPartIndexByKey(messages: UIMessage[]): Map<string, number> {
     return indexByKey;
 }
 
+function exerciseNeedsGridNormalization(exercise: THevyExercise): boolean {
+    const sets = exercise.sets ?? [];
+    return (
+        exercise.title === undefined ||
+        exercise.notes === undefined ||
+        exercise.exercise_template_id === undefined ||
+        exercise.sets === undefined ||
+        sets.some((s) => s == null)
+    );
+}
+
+function normalizeExerciseForGrid(exercise: THevyExercise): THevyExercise {
+    return {
+        ...exercise,
+        title: exercise.title ?? "",
+        notes: exercise.notes ?? "",
+        exercise_template_id: exercise.exercise_template_id ?? "",
+        supersets_id: exercise.supersets_id ?? null,
+        rest_seconds: exercise.rest_seconds ?? null,
+        sets: (exercise.sets ?? []).filter((s): s is THevySets => s != null),
+    };
+}
+
 /**
- * Ensures every routine has an exercises array and every exercise has a sets array
- * (null slots dropped). Prevents grid render crashes after mutate/hydrate gaps.
+ * Ensures every routine has an exercises array and every exercise has coalesced
+ * string fields and a sets array (null exercise/set slots dropped). Prevents grid
+ * render crashes after mutate/hydrate gaps.
  */
 export const normalizeProgramForGrid = (routines: THevyRoutine[]): THevyRoutine[] => {
     let mutated = false;
-    const next = routines.map((routine) => {
-        let routineChanged = routine.exercises === undefined;
-        const exercises = (routine.exercises ?? []).map((exercise) => {
-            const sets = (exercise.sets ?? []).filter((s): s is THevySets => s != null);
-            if (exercise.sets === undefined || sets.length !== (exercise.sets?.length ?? 0)) {
-                routineChanged = true;
+    const next = routines
+        .filter((routine): routine is THevyRoutine => {
+            if (routine == null) {
                 mutated = true;
-                return { ...exercise, sets };
+                return false;
             }
-            return exercise;
+            return true;
+        })
+        .map((routine) => {
+            const rawExercises = routine.exercises ?? [];
+            let exercisesChanged = routine.exercises === undefined;
+            const exercises: THevyExercise[] = [];
+
+            for (const ex of rawExercises) {
+                if (ex == null) {
+                    exercisesChanged = true;
+                    continue;
+                }
+                if (exerciseNeedsGridNormalization(ex)) {
+                    exercises.push(normalizeExerciseForGrid(ex));
+                    exercisesChanged = true;
+                } else {
+                    exercises.push(ex);
+                }
+            }
+
+            const title = routine.title ?? "";
+            const notes = routine.notes ?? "";
+            const routineChanged =
+                exercisesChanged || routine.title === undefined || routine.notes === undefined;
+
+            if (routineChanged) {
+                mutated = true;
+                return { ...routine, title, notes, exercises };
+            }
+            return routine;
         });
-        if (routineChanged) {
-            return { ...routine, exercises };
-        }
-        return routine;
-    });
+
     return mutated ? next : routines;
 };
 
