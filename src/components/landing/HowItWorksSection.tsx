@@ -32,7 +32,7 @@ const steps: IHowItWorksStep[] = [
     },
     {
         title: "Evolve with your coach",
-        body: "Your integrated coach keeps working after day one - get advice, adjust your program as you progress, and stay on track.",
+        body: "Your unified coach keeps working after day one - get advice, adjust your program as you progress, and stay on track.",
         icon: TrendingUp,
     },
 ];

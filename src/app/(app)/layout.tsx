@@ -39,8 +39,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-    title: 'Proxima Fitness | Integrated Training Coach',
-    description: 'Describe your goals, get a tailored program, track in your fitness app, and evolve with your integrated training coach.',
+    title: 'Proxima Fitness | Unified Training Coach',
+    description: 'Describe your goals, get a tailored program, track in your fitness app, and evolve with your unified training coach.',
     manifest: "/manifest.webmanifest",
     icons: {
         icon: "/favicon.svg", // Use SVG favicon
