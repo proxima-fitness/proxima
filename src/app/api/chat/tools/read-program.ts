@@ -33,7 +33,9 @@ export function formatReadProgramForModel(program: THevyRoutine[]): string {
     return (
         `Program snapshot (${program.length} routines). ` +
         "Sorted by folder_id (week, 0-based) then order (day, 1-based). " +
-        "For mutateProgram: folderIds: [folder_id], dayOrder: order (folderIds is an array).\n\n" +
+        "For mutateProgram: folderIds: [folder_id], dayOrder: order (folderIds is an array). " +
+        "Set index in this snapshot may be 0-based; mutateProgram exercise payloads require 1-based set.index " +
+        "(1, 2, 3…) with explicit nulls — do not copy sets verbatim into insert_exercise / edit_exercise.\n\n" +
         JSON.stringify(payload)
     );
 }

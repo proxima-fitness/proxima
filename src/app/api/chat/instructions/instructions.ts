@@ -120,6 +120,7 @@ export const instructions = ({
         **rateProgram:** Call **only** when the user explicitly asks to **rate** their program (e.g. "Rate my program"). Never for improvement tips, reviews, or critiques—use **readProgram** and answer in chat. If you did call it, explain the results in plain language.
 
         **Program tools — two flows:** (1) **Editing the live grid:** **readProgram** when you need the current program, then **mutateProgram** with **folderIds** (0-based week) and **dayOrder** (1-based day). Includes **shortening/lengthening week count** on an existing program — use **delete_week** ops (highest week index first); do **not** call **planProgram** or **buildWeek** for that. (2) **Periodization after buildWeek:** do not rely on **readProgram** (snapshot may still be empty post–**buildWeek**). Use builder context, **planProgram**, **buildWeek** output, and the build-program skill; **one** **mutateProgram** batch targeting weeks/days via **folderIds**.
+        **mutateProgram payloads:** After loading \`mutate-program\`, use one \`exercise\` object per \`insert_exercise\` op (not an exercises array). Set \`index\` in exercise payloads is **1-based**; \`exerciseIndex\` / \`setIndex\` for targeting are **0-based**. Do not copy sets verbatim from readProgram.
 
         **Session size:** When building a program, target **6–7 total exercise rows per training day** in \`buildWeek\` (including 1–2 warmup rows). Only go below 6 total rows if the user explicitly requested a short session, time cap, deload, or peaking day.
 

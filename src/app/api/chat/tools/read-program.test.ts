@@ -78,6 +78,12 @@ describe("readProgramSnapshot", () => {
 });
 
 describe("formatReadProgramForModel", () => {
+    it("warns that mutateProgram set.index is 1-based", () => {
+        const formatted = formatReadProgramForModel(sampleProgram());
+        expect(formatted).toContain("1-based set.index");
+        expect(formatted).toContain("do not copy sets verbatim");
+    });
+
     it("includes full exercise fields in JSON for the agent", () => {
         const formatted = formatReadProgramForModel(sampleProgram());
         expect(formatted).toContain("Bench");

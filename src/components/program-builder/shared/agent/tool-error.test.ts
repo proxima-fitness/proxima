@@ -120,6 +120,18 @@ describe("summarizeToolError", () => {
         expect(summary).not.toContain('"invalid_type"');
     });
 
+    it("humanizes stringified nested object SDK validation errors", () => {
+        const sdkError =
+            'Invalid input for tool mutateProgram: Type validation failed: Value: {"operations":[{"op":"update_set","set":"{\\"rpe\\":9}"}]}.' +
+            ' Error message: [{"expected":"object","code":"invalid_type","path":["operations",0,"set"],"message":"Invalid input: expected object, received string"}]';
+
+        const summary = summarizeToolError("mutateProgram", { errorText: sdkError });
+
+        expect(summary).toBe(
+            "We couldn't apply that change: set must be a nested object in tool args, not a JSON string",
+        );
+    });
+
     it("falls back to tool-specific default", () => {
         expect(summarizeToolError("rateProgram", {})).toBe("Could not rate this program.");
         expect(summarizeToolError("buildWeek", {})).toBe("Something went wrong while building your program.");

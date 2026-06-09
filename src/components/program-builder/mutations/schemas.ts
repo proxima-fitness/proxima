@@ -1,24 +1,31 @@
 import { z } from "zod";
 
-const folderIdsSchema = z.array(z.number().int().nonnegative()).min(1);
-const singleFolderIdsSchema = z.array(z.number().int().nonnegative()).length(1);
+export { normalizeAgentOperationInput } from "./normalizeAgentInput";
 
-const SINGLE_FOLDER_ID_OPS = new Set(["add_day", "delete_week", "add_routine_as_day"]);
+const folderIdsSchema = z
+    .array(z.number().int().nonnegative())
+    .min(1)
+    .describe("0-based week index(es). Week 1 → [0]. Always an array, not folderId.");
+const singleFolderIdsSchema = z
+    .array(z.number().int().nonnegative())
+    .length(1)
+    .describe("Exactly one 0-based week index, e.g. [0] for week 1.");
 
-/** Agents often send folderId / folder_id (from readProgram) instead of folderIds: [n]. */
-export function normalizeAgentOperationInput(val: unknown): unknown {
-    if (typeof val !== "object" || val === null) return val;
-    const obj = val as Record<string, unknown>;
-    if (typeof obj.op !== "string" || !SINGLE_FOLDER_ID_OPS.has(obj.op)) return val;
-    if (obj.folderIds !== undefined) return val;
-    const weekIndex = obj.folderId ?? obj.folder_id;
-    if (typeof weekIndex !== "number") return val;
-    const { folderId: _f, folder_id: _g, ...rest } = obj;
-    return { ...rest, folderIds: [weekIndex] };
-}
-const dayOrderSchema = z.number().int().min(1);
-const exerciseIndexSchema = z.number().int().nonnegative();
-const setIndexSchema = z.number().int().nonnegative();
+const dayOrderSchema = z
+    .number()
+    .int()
+    .min(1)
+    .describe("1-based day within the week (matches routine order).");
+const exerciseIndexSchema = z
+    .number()
+    .int()
+    .nonnegative()
+    .describe("0-based index in the day's exercises[]. Use length to append.");
+const setIndexSchema = z
+    .number()
+    .int()
+    .nonnegative()
+    .describe("0-based index in the exercise's sets[] (for update_set only).");
 
 const hevyRepRangeSchema = z.object({
     start: z.number(),
@@ -26,8 +33,12 @@ const hevyRepRangeSchema = z.object({
 });
 
 const hevySetShape = {
-    index: z.number().int().min(1),
-    type: z.string(),
+    index: z
+        .number()
+        .int()
+        .min(1)
+        .describe("1-based set number within the exercise (1, 2, 3…). Not update_set setIndex."),
+    type: z.string().describe('Set type, usually "normal".'),
     weight_kg: z.number().nullable(),
     reps: z.number().nullable(),
     distance_meters: z.number().nullable(),
@@ -58,11 +69,16 @@ export function toHevySet(set: TZodHevySet): THevySets {
 }
 
 export const insertExercisePayloadSchema = z.object({
-    exercise_template_id: z.string().min(1),
-    title: z.string().optional(),
+    exercise_template_id: z.string().min(1).describe("ID from getExerciseList."),
+    title: z.string().optional().describe("Optional; server resolves canonical title from template ID."),
     notes: z.string().optional(),
     rest_seconds: z.string().nullable().optional(),
-    sets: z.array(hevySetSchema).min(1),
+    sets: z
+        .array(hevySetSchema)
+        .min(1)
+        .describe(
+            "At least one set. Each set needs 1-based index and explicit nulls for unused metrics.",
+        ),
     supersets_id: z.number().nullable().optional(),
     reason: z.string().optional(),
 });

@@ -49,6 +49,16 @@ export const mutateProgramInputSchema = z.object({
 
 export type TMutateProgramInput = z.infer<typeof mutateProgramInputSchema>;
 
+const MUTATE_PROGRAM_INDEXING_GUIDE =
+    "**Indexing:** folderIds = 0-based week (array, e.g. `[0]`). dayOrder = 1-based day. " +
+    "exerciseIndex / setIndex (update_set) = 0-based. **set.index inside exercise payloads = 1-based** (1, 2, 3…) — " +
+    "do not copy sets verbatim from readProgram.\n" +
+    "**Nested objects:** pass object fields (`exercise`, `to`, `set`, etc.) as nested objects in tool args — never JSON strings. **insert_exercise:** one `exercise` per op (not an `exercises` array). Title optional — resolved from template ID.\n" +
+    "**Op choice:** rename day → edit_day_title; replace one slot → edit_exercise; add rows → insert_exercise (one per row); tweak reps/RPE → update_set.\n";
+
+const MUTATE_PROGRAM_INSERT_EXAMPLE =
+    'Example insert_exercise:\n{ "op": "insert_exercise", "folderIds": [0], "dayOrder": 1, "exerciseIndex": 1, "exercise": { "exercise_template_id": "ID", "rest_seconds": "90", "sets": [{ "index": 1, "type": "normal", "reps": 8, "weight_kg": null, "rpe": 8, "distance_meters": null, "duration_seconds": null, "custom_metric": null, "rep_range": null }] } }';
+
 /** Auto-generated tool description from registry metadata. */
 export function buildMutateProgramToolDescription(): string {
     const operationDocs = agentExposedMutations
@@ -60,7 +70,10 @@ export function buildMutateProgramToolDescription(): string {
         "**Fail-all:** if any operation is invalid, the entire batch is rejected and nothing is applied. " +
         "Target days with **folderIds** (0-based week index, always an array e.g. `[0]`) and **dayOrder** (1-based day within week). " +
         "readProgram shows `folder_id` on each routine — map to **folderIds: [folder_id]**, not `folderId`.\n\n" +
-        "Available operations:\n" +
+        MUTATE_PROGRAM_INDEXING_GUIDE +
+        "\n" +
+        MUTATE_PROGRAM_INSERT_EXAMPLE +
+        "\n\nAvailable operations:\n" +
         operationDocs
     );
 }

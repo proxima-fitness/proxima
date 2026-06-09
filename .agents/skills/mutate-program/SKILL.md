@@ -27,12 +27,66 @@ allowedTools:
 
 Use registry operation ids only — field details live in the **mutateProgram** tool description; do not duplicate per-op tables here.
 
-- **folderIds:** 0-based week index (`folder_id` on each routine). Week 1 → `[0]`, week W → `[W - 1]`. Multiple weeks: `[0, 1, 2, …]`.
+- **folderIds:** 0-based week index (`folder_id` on each routine). Week 1 → `[0]`, week W → `[W - 1]`. Multiple weeks: `[0, 1, 2, …]`. Always an **array** — never `folderId`.
 - **dayOrder:** 1-based day within the week (`order` on the routine).
-- **exerciseIndex:** 0-based index in that day’s `exercises[]`.
-- **setIndex:** 0-based index on that exercise’s sets (for **update_set**).
+- **exerciseIndex:** 0-based index in that day’s `exercises[]`. Use `exercises.length` to append.
+- **setIndex:** 0-based index on that exercise’s sets (for **update_set** only).
+- **set.index** (inside `exercise` on **insert_exercise** / **edit_exercise**): **1-based** (1, 2, 3…). Do **not** copy `sets` verbatim from **readProgram** — snapshot indices may be 0-based.
 
 **Week + day from builder context:** For week `w` (1-based) and day `d` (1-based): `folderIds: [w - 1]`, `dayOrder: d`. Program length = **daysPerWeek × programLength** routines total.
+
+## Op selection
+
+| Goal | Op |
+|------|-----|
+| Rename day (e.g. "Back Day") | **edit_day_title** |
+| Rename + day notes | **edit_day_title** + **add_day_notes** |
+| Replace one exercise slot (new movement + sets) | **edit_exercise** |
+| Add exercise rows to a day | **insert_exercise** — **one `exercise` object per op**, not an `exercises` array |
+| Remove a row | **delete_exercise** |
+| Tweak reps / RPE / rest on existing set | **update_set** |
+| Swap template, keep sets/rest | **swap_exercise_template** |
+
+## Populate a training day
+
+When the user wants a day type (e.g. "make day 1 a Back Day"): **readProgram**, then one batch:
+
+1. **edit_day_title** for the new name.
+2. **insert_exercise** once per movement — one `exercise` per op. Keep existing warmups unless replacing them.
+3. Target **6–7 total exercise rows** per day (including 1–2 warmups) unless the user asked for a short session.
+
+Multi-insert in one batch: ops apply in order on an accumulating program — use rising **exerciseIndex** values (`1`, then `2`, then `3` after a warmup at index 0), not the same index repeatedly.
+
+```json
+{
+  "operations": [
+    { "op": "edit_day_title", "folderIds": [0], "dayOrder": 1, "title": "Back Day" },
+    {
+      "op": "insert_exercise",
+      "folderIds": [0],
+      "dayOrder": 1,
+      "exerciseIndex": 1,
+      "exercise": {
+        "exercise_template_id": "TEMPLATE_ID",
+        "rest_seconds": "90",
+        "sets": [
+          {
+            "index": 1,
+            "type": "normal",
+            "reps": 8,
+            "weight_kg": null,
+            "rpe": 8,
+            "distance_meters": null,
+            "duration_seconds": null,
+            "custom_metric": null,
+            "rep_range": null
+          }
+        ]
+      }
+    }
+  ]
+}
+```
 
 ## Batch order
 
@@ -122,6 +176,9 @@ When the user's program or requested changes are **bodybuilding- or hypertrophy-
 ## Gotchas
 
 - **folderIds vs folder_id:** **readProgram** returns `folder_id` on each routine. **mutateProgram** expects **folderIds** as an array — week 3 → `folderIds: [2]`, never `folderId: 2`.
+- **One exercise per insert_exercise:** Never pass `exercises: [...]`. Each new row needs its own `{ "op": "insert_exercise", "exercise": { … } }`.
+- **Nested objects, not JSON strings:** Any object field (`exercise`, `to`, `set`, etc.) must be a nested object in the tool call — never stringify it.
+- **set.index is 1-based in payloads:** `exerciseIndex` / `setIndex` are 0-based for targeting; `set.index` inside `exercise.sets[]` starts at 1.
 - **Supersets:** **create_superset** / **remove_from_superset** / **delete_day** all use **folderIds** + **dayOrder** — never `dayId`.
 - **Program shape**: The live program is all routines across all weeks. Length N = **daysPerWeek × programLength** (e.g. 6×8 = 48). Target days with **folderIds** + **dayOrder**, not flat routine-index math.
 - **Program-wide changes**: To change every occurrence (e.g. rename all "Push" to "Chest"), include **folderIds** for each week (or one op with all relevant **folderIds**) and the same **dayOrder**. Do not edit only the first week.

@@ -570,7 +570,7 @@ export function getTools({
                             const rawRange = set.rep_range ?? null;
                             const isDegenerate = rawRange != null && rawRange.start === rawRange.end;
                             return {
-                                index: setIndex,
+                                index: setIndex + 1,
                                 type: set.type || 'normal',
                                 reps: isDegenerate ? (set.reps ?? rawRange.start) : (set.reps ?? null),
                                 weight_kg: set.weight_kg ?? null,

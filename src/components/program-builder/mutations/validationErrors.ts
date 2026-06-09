@@ -1,5 +1,10 @@
 import type { ZodError } from "zod";
 
+import { OP_NESTED_OBJECT_FIELDS } from "./normalizeAgentInput";
+
+const STRINGIFIED_OBJECT_MESSAGE =
+    "must be a nested object in tool args, not a JSON string — pass the object directly";
+
 /** Detect common agent field-name mistakes before Zod parse. */
 export function detectCommonMutationFieldMistakes(raw: Record<string, unknown>): string | null {
     if ("operation" in raw && typeof raw.operation === "string") {
@@ -7,9 +12,20 @@ export function detectCommonMutationFieldMistakes(raw: Record<string, unknown>):
     }
 
     const op = raw.op ?? raw.operation;
+    if (typeof op === "string") {
+        for (const field of OP_NESTED_OBJECT_FIELDS[op] ?? []) {
+            if (typeof raw[field] === "string") {
+                return `${field} ${STRINGIFIED_OBJECT_MESSAGE}`;
+            }
+        }
+    }
+
     if (op === "edit_exercise" || op === "insert_exercise") {
         if ("new_exercise" in raw && !("exercise" in raw)) {
             return "Expected field 'exercise', received 'new_exercise'";
+        }
+        if ("exercises" in raw && !("exercise" in raw)) {
+            return "Use 'exercise' (single object) per insert_exercise op — not an 'exercises' array";
         }
     }
 

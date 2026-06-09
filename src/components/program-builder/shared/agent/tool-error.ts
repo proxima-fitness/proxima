@@ -81,6 +81,10 @@ function humanizeZodIssue(issue: TZodIssue): string {
             : "A required number was missing from the request.";
     }
 
+    if (message.includes("expected object, received string") && field) {
+        return `${field} must be a nested object in tool args, not a JSON string`;
+    }
+
     if (field && message) {
         return `${field}: ${message.replace(/^Invalid input:\s*/i, "")}`;
     }
