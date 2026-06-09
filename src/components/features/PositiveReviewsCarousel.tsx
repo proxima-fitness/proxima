@@ -28,6 +28,7 @@ export function PositiveReviewsCarousel({ quotes }: IPositiveReviewsCarouselProp
     dots: false,
     infinite: false,
     initialSlide: 0,
+    adaptiveHeight: true,
   };
 
   return (

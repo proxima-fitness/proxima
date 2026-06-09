@@ -296,7 +296,7 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                             <Button
                                 onClick={ () => { if (!mutationsLocked) setDropdownOpen(true); } }
                                 disabled={mutationsLocked}
-                                className="mb-4 h-12 w-44 rounded-full bg-lightSecondary font-semibold uppercase text-white hover:bg-lightSecondary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="mb-4 h-12 w-44 rounded-full bg-lightSecondary font-semibold text-white hover:bg-lightSecondary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                                 aria-label="Add day to week">
                                 <PlusIcon />
                                 Add Day

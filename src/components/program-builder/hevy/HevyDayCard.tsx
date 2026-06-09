@@ -340,7 +340,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                             if (mutationsLocked) return;
                             handleOpenAddExerciseDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true});
                          } }>
-                        <Button variant="ghost" disabled={mutationsLocked} className="mt-1 w-full rounded-full font-bold uppercase h-9 sm:h-12 text-sm sm:text-base hover:bg-gray-200 dark:hover:bg-darkGray text-black dark:text-white disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Add exercise to this day"><PlusIcon />Add Exercise</Button>
+                        <Button variant="ghost" disabled={mutationsLocked} className="mt-1 w-full rounded-full font-bold h-9 sm:h-12 text-sm sm:text-base hover:bg-gray-200 dark:hover:bg-darkGray text-black dark:text-white disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Add exercise to this day"><PlusIcon />Add Exercise</Button>
                     </div>
                     <div className="flex flex-row justify-between items-center px-3">
                         {editMode ? (
@@ -382,7 +382,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                             <Button
                                 variant="ghost"
                                 disabled={mutationsLocked || !day.exercises || day.exercises.length < 2}
-                                className="mt-1 w-full rounded-full font-bold bg-lightGray dark:bg-darkGray text-lightSecondary disabled:text-gray-500 uppercase hover:text-lightSecondary hover:bg-gray-200 h-9 sm:h-12 text-sm sm:text-base border-2 border-lightSecondary dark:border-darkGray disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-lightGray dark:disabled:hover:bg-darkGray disabled:border-gray-300 dark:disabled:border-gray-600"
+                                className="mt-1 w-full rounded-full font-bold bg-lightGray dark:bg-darkGray text-lightSecondary disabled:text-gray-500 hover:text-lightSecondary hover:bg-gray-200 h-9 sm:h-12 text-sm sm:text-base border-2 border-lightSecondary dark:border-darkGray disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-lightGray dark:disabled:hover:bg-darkGray disabled:border-gray-300 dark:disabled:border-gray-600"
                                 onClick={() => {
                                     if (mutationsLocked) return;
                                     if (day.exercises && day.exercises.length >= 2) {
