@@ -62,10 +62,41 @@ const minimalHevyProgram = [
 ] as THevyRoutine[];
 
 describe("chat tools.ts", () => {
-    it("exposes mutateProgram but not modifyProgram", () => {
+    it("exposes readProgram and mutateProgram but not modifyProgram or getCurrentProgram", () => {
         const tools = getTools({});
+        expect(tools).toHaveProperty("readProgram");
         expect(tools).toHaveProperty("mutateProgram");
         expect(tools).not.toHaveProperty("modifyProgram");
+        expect(tools).not.toHaveProperty("getCurrentProgram");
+    });
+
+    describe("readProgram tool execute", () => {
+        it("returns full program snapshot without purpose filtering", async () => {
+            const programWithNotes = [
+                {
+                    ...minimalHevyProgram[0],
+                    notes: "day notes",
+                    exercises: [
+                        {
+                            ...minimalHevyProgram[0].exercises[0],
+                            notes: "exercise notes",
+                            reason: "Main lift",
+                        },
+                    ],
+                },
+            ] as THevyRoutine[];
+
+            const tools = getTools({ hevyProgram: programWithNotes });
+            const readProgram = tools.readProgram as {
+                execute: (args: Record<string, never>) => Promise<{ hevyProgram: THevyRoutine[] }>;
+            };
+
+            const output = await readProgram.execute({});
+            expect(output.hevyProgram).toHaveLength(1);
+            expect(output.hevyProgram[0].notes).toBe("day notes");
+            expect(output.hevyProgram[0].exercises[0].notes).toBe("exercise notes");
+            expect(output.hevyProgram[0].exercises[0].reason).toBe("Main lift");
+        });
     });
 
     describe("buildWeek tool execute", () => {

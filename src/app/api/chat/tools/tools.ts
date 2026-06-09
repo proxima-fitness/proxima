@@ -10,7 +10,7 @@
  *  - getExerciseList - fetches and filters available Hevy exercises
  *  - getMoreInfoQuestions - opens the pre-build questionnaire UI
  *  - planProgram - structured multi-week plan (duration, blocks, progression) before buildWeek
- *  - getCurrentProgram - returns the program snapshot from the request (may be stale mid-turn)
+ *  - readProgram - on-demand full program snapshot from the request
  *  - buildWeek - constructs a full week of THevyRoutine days in one call (titles resolved from hevy_exercise_templates by ID)
  *  - mutateProgram - applies typed registry operation batches to the program
  *  - rateProgram - scores the current bodybuilding program (heuristic report card)
@@ -29,6 +29,7 @@ import {
     mutateProgramInputSchema,
 } from '@/components/program-builder/mutations';
 import { isApplyBatchFailure } from '@/components/program-builder/mutations/types';
+import { readProgramInputSchema, readProgramSnapshot } from './read-program';
 import { tool } from 'ai';
 
 /** Request-scoped flag: set after first successful buildWeek so the agent cannot call buildWeek twice in one chat turn. */
@@ -99,7 +100,7 @@ export const planProgramInputSchema = z
  * @param props.excludeAreas - Comma-separated muscle groups to exclude from exercise selection.
  * @param props.excludeEquipment - Comma-separated equipment types to exclude.
  * @param props.healthIssues - Comma-separated health considerations for exercise filtering.
- * @param props.hevyProgram - The user's current Hevy routines (request-body snapshot for getCurrentProgram).
+ * @param props.hevyProgram - The user's current Hevy routines (request-body snapshot for readProgram).
  * @returns An object mapping tool names to Vercel AI SDK tool descriptors.
  */
 export function getTools({
@@ -358,26 +359,28 @@ export function getTools({
     });
 
     /**
-     * Title: getCurrentProgramTool
-     * Description: Tool to check if a program currently exists before creating a new one or modifying an existing one.
-     * @returns { Tool }
+     * Title: readProgramTool
+     * Description: On-demand read of the program snapshot from request start.
      */
-    const getCurrentProgramTool = tool({
+    const readProgramTool = tool({
         description:
-            'Program JSON **as of request start** (does not refresh after **buildWeek** in the same turn; may stay empty right after a new build). ' +
-            'Use for **editing** an existing grid (accurate paths/order). ' +
-            'For **post-buildWeek periodization**, do not use this for paths; use builder context, **planProgram**, **buildWeek** output, and the build-program skill index formula.',
-        inputSchema: z.object({
-            reason: z.string().optional().describe('Optional reason for checking the current program state'),
+            'Returns the full **hevyProgram** snapshot from the **start of this request** (does not refresh after **buildWeek** in the same turn). ' +
+            'Includes day notes, exercise notes, exercise reason, sets, and structure. Call when you need the current program — not on every turn. ' +
+            'Sorted by folder_id (week, 0-based) then order (day, 1-based). Use folder_id + dayOrder for **mutateProgram** targeting. ' +
+            'For **post-buildWeek periodization**, do not use this for targeting; use **buildWeek** output, **planProgram**, and **folderIds** + **dayOrder**.',
+        inputSchema: readProgramInputSchema,
+        execute: async () => ({
+            hevyProgram: readProgramSnapshot(hevyProgram),
         }),
-        execute: async () => {
-
+        toModelOutput: async ({ output }) => {
+            const o = output as { hevyProgram?: THevyRoutine[] };
+            const count = o.hevyProgram?.length ?? 0;
             return {
-            currentProgram: hevyProgram,
-            hasProgram: hevyProgram && hevyProgram.length > 0,
-            message: hevyProgram && hevyProgram.length > 0
-                ? 'A program currently exists in JSON format. You can modify it or create a new one based on user requests. Always return programs in JSON format as a THevyRoutine[] array.'
-                : 'No program currently exists. Create a new program based on user requests. Always return programs in JSON format as a THevyRoutine[] array.',
+                type: 'text' as const,
+                value:
+                    count > 0
+                        ? `Program snapshot (${count} routines). Use folder_id + dayOrder for mutateProgram targeting.`
+                        : 'Program snapshot is empty (no routines on the builder at request start).',
             };
         },
     });
@@ -704,8 +707,8 @@ export function getTools({
         description:
             'Heuristic report card (volume, frequency, categories, rep variety, session size). ' +
             'Call only when the user explicitly asks to rate their program (same intent as the "Rate my program" chip). ' +
-            'Do not call for "how do I improve", generic review, or critique—use getCurrentProgram and reply in chat. ' +
-            'Uses the program JSON from this request (same snapshot as getCurrentProgram).',
+            'Do not call for "how do I improve", generic review, or critique—use readProgram and reply in chat. ' +
+            'Uses the same request-start snapshot as readProgram.',
         inputSchema: z.object({
             reason: z.string().optional().describe('Short note on why the rating was requested'),
         }),
@@ -749,7 +752,7 @@ export function getTools({
         getExerciseList: getExerciseListTool,
         getMoreInfoQuestions: getMoreInfoQuestionsTool,
         planProgram: planProgramTool,
-        getCurrentProgram: getCurrentProgramTool,
+        readProgram: readProgramTool,
         buildWeek: buildWeekTool,
         mutateProgram: mutateProgramTool,
         rateProgram: rateProgramTool,

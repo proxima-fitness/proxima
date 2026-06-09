@@ -14,7 +14,10 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("4");
             expect(prompt).toContain("8");
             expect(prompt).toContain("planProgram");
-            expect(prompt).toContain("getCurrentProgram");
+            expect(prompt).toContain("readProgram");
+            expect(prompt).not.toContain('purpose "edit"');
+            expect(prompt).not.toContain('purpose "analyze"');
+            expect(prompt).not.toContain("getCurrentProgram");
             expect(prompt).toContain("buildWeek");
             expect(prompt).toContain("mutateProgram");
             expect(prompt).not.toContain("modifyProgram");
@@ -37,7 +40,10 @@ describe("chat instructions.ts", () => {
             });
 
             expect(prompt).toContain("planProgram");
-            expect(prompt).toContain("getCurrentProgram");
+            expect(prompt).toContain("readProgram");
+            expect(prompt).not.toContain('purpose "edit"');
+            expect(prompt).not.toContain('purpose "analyze"');
+            expect(prompt).not.toContain("getCurrentProgram");
             expect(prompt).toContain("buildWeek");
             expect(prompt).toContain("3");
             expect(prompt).toContain("4");
