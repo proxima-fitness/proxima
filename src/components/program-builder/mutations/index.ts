@@ -6,6 +6,7 @@ export {
     addDay,
     addDayNotes,
     addExercise,
+    addExerciseFormToInsertPayload,
     addExerciseNote,
     addRoutineAsDay,
     createSuperset,

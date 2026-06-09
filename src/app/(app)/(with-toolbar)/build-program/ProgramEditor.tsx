@@ -2,14 +2,12 @@
 
 import { useState, useCallback, memo } from "react";
 import {
-    addExercise,
+    addExerciseFormToInsertPayload,
     addExerciseNote,
     addRoutineAsDay,
     createSuperset,
-    deleteExercise,
     duplicateDay,
     duplicateWeek,
-    editExerciseFromDialog,
     getNextSupersetId,
     removeFromSuperset,
 } from "@/components/program-builder/mutations/handlers";
@@ -103,13 +101,32 @@ function ProgramEditorInner(props: IProps) {
         [orderedProgram, runMutation],
     );
 
-    const handleDeleteExercise = useCallback((folder_id: number, dayOrder: number, exerciseIndex: number) => {
-        setHevyProgram((prev) => deleteExercise(prev, [folder_id], dayOrder, exerciseIndex));
-    }, [setHevyProgram]);
+    const handleDeleteExercise = useCallback(
+        (folder_id: number, dayOrder: number, exerciseIndex: number) => {
+            runMutation("delete_exercise", {
+                folderIds: [folder_id],
+                dayOrder,
+                exerciseIndex,
+            });
+        },
+        [runMutation],
+    );
 
-    const handleAddExercise = useCallback(async (folder_id: number, dayOrder: number, exercise: THevyAddExercise) => {
-        setHevyProgram((prev) => addExercise(prev, [folder_id], dayOrder, exercise));
-    }, [setHevyProgram]);
+    const handleAddExercise = useCallback(
+        async (folder_id: number, dayOrder: number, exercise: THevyAddExercise) => {
+            const day = orderedProgram.find(
+                (routine) =>
+                    Number(routine.folder_id) === folder_id && Number(routine.order) === dayOrder,
+            );
+            runMutation("insert_exercise", {
+                folderIds: [folder_id],
+                dayOrder,
+                exerciseIndex: day?.exercises.length ?? 0,
+                exercise: addExerciseFormToInsertPayload(exercise),
+            });
+        },
+        [orderedProgram, runMutation],
+    );
 
     const handleAddRoutineAsDay = useCallback((routine: THevyRoutine, folder_id: number) => {
         setHevyProgram((prev) => {
@@ -149,12 +166,20 @@ function ProgramEditorInner(props: IProps) {
         setHevyProgram((prev) => removeFromSuperset(prev, dayId, exerciseIndex));
     }, [setHevyProgram]);
 
-    const handleEditExercise = useCallback((editExercise: THevyDialog) => {
-        if (editExercise.editExercise) {
-            setHevyProgram((prev) => editExerciseFromDialog(prev, editExercise));
-        }
-        setIsEditExercise(false);
-    }, [setHevyProgram]);
+    const handleEditExercise = useCallback(
+        (editExerciseDialog: THevyDialog) => {
+            if (editExerciseDialog.editExercise) {
+                runMutation("edit_exercise", {
+                    folderIds: [editExerciseDialog.folder_id],
+                    dayOrder: editExerciseDialog.dayOrder,
+                    exerciseIndex: editExerciseDialog.exerciseIndex ?? 0,
+                    exercise: editExerciseDialog.editExercise,
+                });
+            }
+            setIsEditExercise(false);
+        },
+        [runMutation],
+    );
 
     return (
         <ProgramGrid

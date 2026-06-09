@@ -4,8 +4,22 @@ vi.mock("@/components/program-builder/api/hevy", () => ({
     getHevyExercises: vi.fn(async () => []),
 }));
 
+import { addExerciseFormToInsertPayload } from "./handlers";
 import { runProgramMutation } from "./registry";
 import { isValidationFailure } from "./types";
+
+const mockTemplate: THevyExerciseTemplate = {
+    id: "bench-1",
+    title: "Bench Press",
+    type: "weight_reps",
+    primary_muscle_group: "chest",
+    secondary_muscle_groups: [],
+    is_custom: false,
+    equipment: "barbell",
+    normalized_title: "bench press",
+    gif_id: "gif-1",
+    instructions: [],
+};
 
 const makeDay = (overrides: Partial<THevyRoutine> = {}): THevyRoutine => ({
     id: "1",
@@ -59,6 +73,32 @@ describe("runProgramMutation", () => {
         if (!isValidationFailure(result)) return;
         expect(result.reason).toContain("assistant is responding");
         expect(commitWithUndo).not.toHaveBeenCalled();
+    });
+
+    it("insert_exercise from dialog form commits with 1-based set indices", () => {
+        const program = [makeDay()];
+        const commitWithUndo = vi.fn();
+        const exercise = addExerciseFormToInsertPayload({
+            selectedExercise: mockTemplate,
+            repTypeValue: "reps",
+            reps: [8, 8, 8, 8],
+            weightKg: null,
+            rpe: null,
+            setTypes: ["normal", "normal", "normal", "normal"],
+            restSeconds: "90",
+        });
+
+        expect(exercise.sets[0].index).toBe(1);
+
+        const result = runProgramMutation(
+            "insert_exercise",
+            { folderIds: [0], dayOrder: 1, exerciseIndex: 0, exercise },
+            { program, commitWithUndo, isAgentStreaming: false },
+        );
+
+        expect(isValidationFailure(result)).toBe(false);
+        expect(commitWithUndo).toHaveBeenCalledOnce();
+        expect(commitWithUndo.mock.calls[0][0][0].exercises[0].title).toBe("Bench Press");
     });
 
     it("returns failure for unknown operation id", () => {

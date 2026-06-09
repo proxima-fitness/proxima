@@ -306,6 +306,24 @@ export function addExercise(
 }
 
 /**
+ * Build an `insert_exercise` payload from add-exercise dialog form state.
+ *
+ * The dialog converter uses 0-based set array indices; registry schema expects 1-based.
+ */
+export function addExerciseFormToInsertPayload(exercise: THevyAddExercise): TInsertExercisePayload {
+    return {
+        exercise_template_id: exercise.selectedExercise?.id ?? "",
+        title: exercise.selectedExercise?.title ?? "",
+        notes: "",
+        rest_seconds: exercise.restSeconds ?? null,
+        sets: hevyAddExerciseToHevySetsConverter(exercise).map((set, i) => ({
+            ...set,
+            index: i + 1,
+        })),
+    };
+}
+
+/**
  * Insert a fully specified exercise record at a given array index.
  *
  * Agent-facing counterpart to addExercise: accepts a raw payload instead of
