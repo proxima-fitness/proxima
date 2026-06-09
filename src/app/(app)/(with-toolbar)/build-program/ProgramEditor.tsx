@@ -3,13 +3,9 @@
 import { useState, useCallback, memo } from "react";
 import {
     addExerciseFormToInsertPayload,
-    addExerciseNote,
     addRoutineAsDay,
-    createSuperset,
     duplicateDay,
     duplicateWeek,
-    getNextSupersetId,
-    removeFromSuperset,
 } from "@/components/program-builder/mutations/handlers";
 import { IOption } from "@/components/ui/multi-select";
 import { toast } from "sonner";
@@ -149,22 +145,31 @@ function ProgramEditorInner(props: IProps) {
         [runMutation],
     );
 
-    const handleAddExerciseNote = useCallback((
-        folder_id: number,
-        dayOrder: number,
-        exerciseIndex: number,
-        prompt: string,
-    ) => {
-        setHevyProgram((prev) => addExerciseNote(prev, [folder_id], dayOrder, exerciseIndex, prompt));
-    }, [setHevyProgram]);
+    const handleAddExerciseNote = useCallback(
+        (folder_id: number, dayOrder: number, exerciseIndex: number, prompt: string) => {
+            runMutation("add_exercise_notes", {
+                folderIds: [folder_id],
+                dayOrder,
+                exerciseIndex,
+                notes: prompt,
+            });
+        },
+        [runMutation],
+    );
 
-    const handleCreateSuperset = useCallback((dayId: string, selectedExercises: number[]) => {
-        setHevyProgram((prev) => createSuperset(prev, dayId, selectedExercises));
-    }, [setHevyProgram]);
+    const handleCreateSuperset = useCallback(
+        (dayId: string, selectedExercises: number[]) => {
+            runMutation("create_superset", { dayId, exerciseIndexes: selectedExercises });
+        },
+        [runMutation],
+    );
 
-    const handleRemoveFromSuperset = useCallback((dayId: string, exerciseIndex: number) => {
-        setHevyProgram((prev) => removeFromSuperset(prev, dayId, exerciseIndex));
-    }, [setHevyProgram]);
+    const handleRemoveFromSuperset = useCallback(
+        (dayId: string, exerciseIndex: number) => {
+            runMutation("remove_from_superset", { dayId, exerciseIndex });
+        },
+        [runMutation],
+    );
 
     const handleEditExercise = useCallback(
         (editExerciseDialog: THevyDialog) => {
@@ -205,7 +210,6 @@ function ProgramEditorInner(props: IProps) {
             handleAddRoutineAsDay={handleAddRoutineAsDay}
             handleAddRoutineNote={handleAddRoutineNote}
             handleAddExerciseNote={handleAddExerciseNote}
-            getNextSupersetId={getNextSupersetId}
             handleCreateSuperset={handleCreateSuperset}
             handleRemoveFromSuperset={handleRemoveFromSuperset}
             handleEditExercise={handleEditExercise}

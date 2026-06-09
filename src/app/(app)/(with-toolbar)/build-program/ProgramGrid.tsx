@@ -35,7 +35,6 @@ export interface IProps {
     handleAddRoutineAsDay: (routine: THevyRoutine, folder_id: number) => void;
     handleAddRoutineNote: (folder_id: number, dayOrder: number, prompt: string) => void;
     handleAddExerciseNote: (folder_id: number, dayOrder: number, exerciseIndex: number, prompt: string) => void;
-    getNextSupersetId: (day: THevyRoutine) => number;
     handleCreateSuperset: (dayId: string, selectedExercises: number[]) => void;
     handleRemoveFromSuperset: (dayId: string, exerciseIndex: number) => void;
     handleEditExercise: (editExercise: THevyDialog) => void;
@@ -66,7 +65,6 @@ function ProgramGridInner({
     handleAddRoutineAsDay,
     handleAddRoutineNote,
     handleAddExerciseNote,
-    getNextSupersetId,
     handleCreateSuperset,
     handleRemoveFromSuperset,
     handleEditExercise,
@@ -106,7 +104,6 @@ function ProgramGridInner({
             handleAddRoutineAsDay,
             handleAddRoutineNote,
             handleAddExerciseNote,
-            getNextSupersetId,
             handleCreateSuperset,
             handleRemoveFromSuperset,
             handleEditExercise,
@@ -138,7 +135,6 @@ function ProgramGridInner({
             handleAddRoutineAsDay,
             handleAddRoutineNote,
             handleAddExerciseNote,
-            getNextSupersetId,
             handleCreateSuperset,
             handleRemoveFromSuperset,
             handleEditExercise,

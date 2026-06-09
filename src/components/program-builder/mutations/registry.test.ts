@@ -101,6 +101,29 @@ describe("runProgramMutation", () => {
         expect(commitWithUndo.mock.calls[0][0][0].exercises[0].title).toBe("Bench Press");
     });
 
+    it("create_superset commits via registry", () => {
+        const program = [
+            makeDay({
+                exercises: [
+                    { index: 1, title: "A", notes: "", exercise_template_id: "a", supersets_id: null, sets: [], rest_seconds: null },
+                    { index: 2, title: "B", notes: "", exercise_template_id: "b", supersets_id: null, sets: [], rest_seconds: null },
+                ],
+            }),
+        ];
+        const commitWithUndo = vi.fn();
+
+        const result = runProgramMutation(
+            "create_superset",
+            { dayId: "1", exerciseIndexes: [0, 1] },
+            { program, commitWithUndo, isAgentStreaming: false },
+        );
+
+        expect(isValidationFailure(result)).toBe(false);
+        expect(commitWithUndo).toHaveBeenCalledOnce();
+        expect(commitWithUndo.mock.calls[0][0][0].exercises[0].supersets_id).toBe(0);
+        expect(commitWithUndo.mock.calls[0][0][0].exercises[1].supersets_id).toBe(0);
+    });
+
     it("returns failure for unknown operation id", () => {
         const commitWithUndo = vi.fn();
 

@@ -82,8 +82,6 @@ interface IProps {
     handleAddRoutineNote: (folder_id: number, dayOrder: number, prompt: string) => void;
     /** Add a note to an exercise. */
     handleAddExerciseNote: (folder_id: number, dayOrder: number, exerciseIndex: number, prompt: string) => void;
-    /** Returns next superset id for a day (used when creating supersets). */
-    getNextSupersetId: (day: THevyRoutine) => number;
 }
 
 /**
