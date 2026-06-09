@@ -180,9 +180,11 @@ export const programMutationCatalog: TProgramMutationDefinition[] = [
     }),
     defineProgramMutation({
         id: "delete_day",
-        description: "Delete a day by builder routine id.",
+        description:
+            "Remove one or more days by week and day order. Args: folderIds (0-based week), dayOrder (1-based day).",
         schema: deleteDaySchema,
-        run: (program, args) => mutationSuccess(deleteDay(program, args.dayId)),
+        run: (program, args) =>
+            mutationSuccess(deleteDay(program, args.folderIds, args.dayOrder)),
     }),
     defineProgramMutation({
         id: "add_day",
@@ -203,17 +205,28 @@ export const programMutationCatalog: TProgramMutationDefinition[] = [
     }),
     defineProgramMutation({
         id: "create_superset",
-        description: "Group two or more exercises into a superset.",
+        description:
+            "Group two or more exercises into a superset on matching days. Args: folderIds, dayOrder, exerciseIndexes (0-based, min 2).",
         schema: createSupersetSchema,
         run: (program, args) =>
-            mutationSuccess(createSuperset(program, args.dayId, args.exerciseIndexes)),
+            mutationSuccess(
+                createSuperset(program, args.folderIds, args.dayOrder, args.exerciseIndexes),
+            ),
     }),
     defineProgramMutation({
         id: "remove_from_superset",
-        description: "Remove one exercise from its superset.",
+        description:
+            "Remove one exercise from its superset on matching days. Args: folderIds, dayOrder, exerciseIndex (0-based).",
         schema: removeFromSupersetSchema,
         run: (program, args) =>
-            mutationSuccess(removeFromSuperset(program, args.dayId, args.exerciseIndex)),
+            mutationSuccess(
+                removeFromSuperset(
+                    program,
+                    args.folderIds,
+                    args.dayOrder,
+                    args.exerciseIndex,
+                ),
+            ),
     }),
     defineProgramMutation({
         id: "duplicate_week",

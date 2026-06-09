@@ -179,6 +179,31 @@ describe("mutateProgramInputSchema", () => {
         expect(parsed.success).toBe(false);
     });
 
+    it("accepts remove_from_superset across multiple weeks", () => {
+        const parsed = mutateProgramInputSchema.safeParse({
+            operations: [
+                {
+                    op: "remove_from_superset",
+                    folderIds: [0, 1, 2, 3, 4, 5, 6, 7],
+                    dayOrder: 1,
+                    exerciseIndex: 4,
+                },
+            ],
+        });
+        expect(parsed.success).toBe(true);
+    });
+
+    it("rejects remove_from_superset with dayId instead of folderIds", () => {
+        const result = applyOperationById([], "remove_from_superset", {
+            dayId: "49",
+            exerciseIndex: 4,
+        });
+
+        expect(isValidationFailure(result)).toBe(true);
+        if (!isValidationFailure(result)) return;
+        expect(result.reason).toBe("Target days with folderIds + dayOrder, not dayId");
+    });
+
     it("rejects operation key instead of op", () => {
         const parsed = mutateProgramInputSchema.safeParse({
             operations: [

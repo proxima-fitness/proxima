@@ -74,9 +74,14 @@ function ProgramEditorInner(props: IProps) {
 
     const handleDeleteDay = useCallback(
         (id: string) => {
-            runMutation("delete_day", { dayId: id });
+            const day = orderedProgram.find((routine) => routine.id === id);
+            if (!day) return;
+            runMutation("delete_day", {
+                folderIds: [Number(day.folder_id)],
+                dayOrder: Number(day.order),
+            });
         },
-        [runMutation],
+        [orderedProgram, runMutation],
     );
 
     const handleDeleteWeek = useCallback(
@@ -165,16 +170,28 @@ function ProgramEditorInner(props: IProps) {
 
     const handleCreateSuperset = useCallback(
         (dayId: string, selectedExercises: number[]) => {
-            runMutation("create_superset", { dayId, exerciseIndexes: selectedExercises });
+            const day = orderedProgram.find((routine) => routine.id === dayId);
+            if (!day) return;
+            runMutation("create_superset", {
+                folderIds: [Number(day.folder_id)],
+                dayOrder: Number(day.order),
+                exerciseIndexes: selectedExercises,
+            });
         },
-        [runMutation],
+        [orderedProgram, runMutation],
     );
 
     const handleRemoveFromSuperset = useCallback(
         (dayId: string, exerciseIndex: number) => {
-            runMutation("remove_from_superset", { dayId, exerciseIndex });
+            const day = orderedProgram.find((routine) => routine.id === dayId);
+            if (!day) return;
+            runMutation("remove_from_superset", {
+                folderIds: [Number(day.folder_id)],
+                dayOrder: Number(day.order),
+                exerciseIndex,
+            });
         },
-        [runMutation],
+        [orderedProgram, runMutation],
     );
 
     const handleEditExercise = useCallback(

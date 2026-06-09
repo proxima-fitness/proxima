@@ -95,7 +95,8 @@ describe("applyOperations", () => {
         const program = baseProgram();
         const result = applyOperation(program, {
             op: "delete_day",
-            dayId: "2",
+            folderIds: [0],
+            dayOrder: 2,
         });
 
         expect(isValidationFailure(result)).toBe(false);
@@ -170,7 +171,8 @@ describe("applyOperations", () => {
 
         const result = applyOperation(program, {
             op: "create_superset",
-            dayId: "1",
+            folderIds: [0],
+            dayOrder: 1,
             exerciseIndexes: [0, 1],
         });
 
@@ -180,6 +182,43 @@ describe("applyOperations", () => {
         expect(result.program[0].exercises[0].supersets_id).toBe(1);
         expect(result.program[0].exercises[1].supersets_id).toBe(1);
         expect(result.program[0].exercises[2].supersets_id).toBe(0);
+    });
+
+    it("remove_from_superset clears supersets_id across matching weeks", () => {
+        const program = [
+            makeDay({
+                id: "1",
+                folder_id: 0,
+                order: "1",
+                exercises: [
+                    makeExercise({ index: 1, supersets_id: 0 }),
+                    makeExercise({ index: 2, supersets_id: 0 }),
+                ],
+            }),
+            makeDay({
+                id: "2",
+                folder_id: 1,
+                order: "1",
+                exercises: [
+                    makeExercise({ index: 1, supersets_id: 0 }),
+                    makeExercise({ index: 2, supersets_id: 0 }),
+                ],
+            }),
+        ];
+
+        const result = applyOperation(program, {
+            op: "remove_from_superset",
+            folderIds: [0, 1],
+            dayOrder: 1,
+            exerciseIndex: 1,
+        });
+
+        expect(isValidationFailure(result)).toBe(false);
+        if (isValidationFailure(result)) return;
+
+        expect(result.program[0].exercises[1].supersets_id).toBeNull();
+        expect(result.program[1].exercises[1].supersets_id).toBeNull();
+        expect(result.program[0].exercises[0].supersets_id).toBe(0);
     });
 
     it("duplicate_week copies days into target weeks", () => {

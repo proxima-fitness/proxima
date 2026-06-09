@@ -4,7 +4,8 @@ description: >-
   Workflow for modifying an existing workout program. Load this skill when the
   user wants to change, edit, update, swap, rename, or remove exercises, sets,
   reps, days, or program length (e.g. "make it 2 weeks", "shorten to 4 weeks",
-  "change from 8 to 2 weeks") in their existing program.
+  "change from 8 to 2 weeks") in their existing program. Also load for superset
+  changes (create, remove, or ungroup exercises).
 allowedTools:
   - getExerciseList
   - readProgram
@@ -63,6 +64,38 @@ Operations run in **array order** (fail-all if any op is invalid):
 
 Do **not** emit nine **edit_exercise** ops re-specifying every set when **swap_exercise_template** suffices.
 
+## Supersets
+
+Superset ops use the same targeting as every other **mutateProgram** op: **folderIds** + **dayOrder**. Never use `dayId` or per-routine `id` from **readProgram**.
+
+- **create_superset** — group 2+ exercises on matching days. Args: `folderIds`, `dayOrder`, `exerciseIndexes` (0-based, min 2).
+- **remove_from_superset** — detach one exercise from its superset. Args: `folderIds`, `dayOrder`, `exerciseIndex` (0-based).
+
+**Detect supersets from readProgram:** exercises sharing the same non-null `supersets_id` on a day are grouped. To remove all supersets on a day, emit one **remove_from_superset** per grouped exercise index.
+
+**Program-wide ungroup** — one op per exercise index, each with every week in **folderIds** (not one op per week/day):
+
+```json
+{
+  "operations": [
+    { "op": "remove_from_superset", "folderIds": [0, 1, 2, 3, 4, 5, 6, 7], "dayOrder": 1, "exerciseIndex": 4 },
+    { "op": "remove_from_superset", "folderIds": [0, 1, 2, 3, 4, 5, 6, 7], "dayOrder": 1, "exerciseIndex": 6 }
+  ]
+}
+```
+
+After **readProgram**, build **folderIds** from each routine's `folder_id` for the target **dayOrder**. 8-week program → `[0, 1, 2, 3, 4, 5, 6, 7]`. Do **not** emit 16+ ops with different `dayId` values.
+
+**create_superset** across every week — same pattern:
+
+```json
+{
+  "operations": [
+    { "op": "create_superset", "folderIds": [0, 1, 2, 3, 4, 5, 6, 7], "dayOrder": 2, "exerciseIndexes": [3, 4] }
+  ]
+}
+```
+
 ## Warmup exercises
 
 **Warmup exercises vs warmup sets:** **Warmup exercises** are separate movements (IDs from **getExerciseList**) at the start of the day to prepare for the session. **Warmup sets** are lighter sets of the same working lift. When adding prep work, add **warmup exercises** with **`"normal"`** sets at low RPE—not only extra `"warmup"`-typed sets on the main lift.
@@ -89,6 +122,7 @@ When the user's program or requested changes are **bodybuilding- or hypertrophy-
 ## Gotchas
 
 - **folderIds vs folder_id:** **readProgram** returns `folder_id` on each routine. **mutateProgram** expects **folderIds** as an array — week 3 → `folderIds: [2]`, never `folderId: 2`.
+- **Supersets:** **create_superset** / **remove_from_superset** / **delete_day** all use **folderIds** + **dayOrder** — never `dayId`.
 - **Program shape**: The live program is all routines across all weeks. Length N = **daysPerWeek × programLength** (e.g. 6×8 = 48). Target days with **folderIds** + **dayOrder**, not flat routine-index math.
 - **Program-wide changes**: To change every occurrence (e.g. rename all "Push" to "Chest"), include **folderIds** for each week (or one op with all relevant **folderIds**) and the same **dayOrder**. Do not edit only the first week.
 - **One batch, one call**: Pass a single **operations** array to **mutateProgram**. Do not split by week or make multiple **mutateProgram** calls for one logical edit.

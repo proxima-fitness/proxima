@@ -114,7 +114,7 @@ describe("runProgramMutation", () => {
 
         const result = runProgramMutation(
             "create_superset",
-            { dayId: "1", exerciseIndexes: [0, 1] },
+            { folderIds: [0], dayOrder: 1, exerciseIndexes: [0, 1] },
             { program, commitWithUndo, isAgentStreaming: false },
         );
 

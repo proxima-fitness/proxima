@@ -109,11 +109,13 @@ describe("summarizeToolError", () => {
     it("summarizes SDK validation dumps instead of showing raw JSON", () => {
         const sdkError =
             'Invalid input for tool mutateProgram: Type validation failed: Value: {"operations":[{"op":"remove_from_superset","dayOrder":1}]}.' +
-            ' Error message: [{"expected":"string","code":"invalid_type","path":["operations",0,"dayId"],"message":"Invalid input: expected string, received undefined"}]';
+            ' Error message: [{"expected":"array","code":"invalid_type","path":["operations",0,"folderIds"],"message":"Invalid input: expected array, received undefined"}]';
 
         const summary = summarizeToolError("mutateProgram", { errorText: sdkError });
 
-        expect(summary).toBe("We couldn't apply that change: A required field (dayId) was missing.");
+        expect(summary).toBe(
+            "We couldn't apply that change: folderIds: expected array, received undefined",
+        );
         expect(summary).not.toContain("Type validation failed");
         expect(summary).not.toContain('"invalid_type"');
     });

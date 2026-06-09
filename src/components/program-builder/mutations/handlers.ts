@@ -149,18 +149,27 @@ export function addDay(program: THevyRoutine[], folder_id: number): THevyRoutine
 }
 
 /**
- * Remove a day by its stable id and compact week/day ordering.
+ * Remove matching days by week/day coordinates and compact week/day ordering.
  *
  * Remaining days are reindexed so folder_id and order stay contiguous.
  *
  * @param program - Current program snapshot.
- * @param id - Stable day id of the routine to remove.
- * @returns Updated program with the day removed and ordering compacted.
+ * @param folderIds - Week indices (`folder_id` values) to match.
+ * @param dayOrder - Day order within each matched week (1-based).
+ * @returns Updated program with matching days removed and ordering compacted.
  */
-export function deleteDay(program: THevyRoutine[], id: string): THevyRoutine[] {
-    let newDays = program.filter((day) => day.id !== id);
-    newDays = reorderHevy(newDays);
-    return newDays;
+export function deleteDay(
+    program: THevyRoutine[],
+    folderIds: number[],
+    dayOrder: number,
+): THevyRoutine[] {
+    const newDays = program.filter(
+        (day) =>
+            !(
+                folderIds.includes(Number(day.folder_id)) && Number(day.order) === dayOrder
+            ),
+    );
+    return reorderHevy(newDays);
 }
 
 /**
@@ -492,19 +501,26 @@ export function getNextSupersetId(day: THevyRoutine): number {
  * Selected indices receive a shared supersets_id allocated by getNextSupersetId.
  *
  * @param program - Current program snapshot.
- * @param dayId - Stable id of the day routine to modify.
+ * @param folderIds - Week indices (`folder_id` values) to match.
+ * @param dayOrder - Day order within each matched week (1-based).
  * @param selectedExercises - Zero-based exercise indices to group (minimum two).
  * @returns Updated program, or the same reference when fewer than two exercises are selected.
  */
 export function createSuperset(
     program: THevyRoutine[],
-    dayId: string,
+    folderIds: number[],
+    dayOrder: number,
     selectedExercises: number[],
 ): THevyRoutine[] {
     if (selectedExercises.length < 2) return program;
 
     return program.map((routine) => {
-        if (routine.id !== dayId) return routine;
+        if (
+            !folderIds.includes(Number(routine.folder_id)) ||
+            Number(routine.order) !== dayOrder
+        ) {
+            return routine;
+        }
         const nextSupersetId = getNextSupersetId(routine);
         return {
             ...routine,
@@ -523,17 +539,24 @@ export function createSuperset(
  * Other exercises in the same superset are unaffected.
  *
  * @param program - Current program snapshot.
- * @param dayId - Stable id of the day routine containing the exercise.
+ * @param folderIds - Week indices (`folder_id` values) to match.
+ * @param dayOrder - Day order within each matched week (1-based).
  * @param exerciseIndex - Zero-based index of the exercise to detach.
  * @returns Updated program with supersets_id cleared on the matching exercise.
  */
 export function removeFromSuperset(
     program: THevyRoutine[],
-    dayId: string,
+    folderIds: number[],
+    dayOrder: number,
     exerciseIndex: number,
 ): THevyRoutine[] {
     return program.map((routine) => {
-        if (routine.id !== dayId) return routine;
+        if (
+            !folderIds.includes(Number(routine.folder_id)) ||
+            Number(routine.order) !== dayOrder
+        ) {
+            return routine;
+        }
         return {
             ...routine,
             exercises: routine.exercises.map((exercise, index) =>

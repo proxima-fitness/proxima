@@ -614,15 +614,15 @@ export function describeProgramOperation(operation: TAgentProgramOperation): str
         case "add_exercise_notes":
             return `Week${weeks ? ` ${weeks}` : ""} day ${operation.dayOrder}: set exercise ${operation.exerciseIndex + 1} notes`;
         case "delete_day":
-            return `Delete day ${operation.dayId}`;
+            return `Week${weeks ? ` ${weeks}` : ""} day ${operation.dayOrder}: delete day`;
         case "add_day":
             return weeks ? `Add day to week ${weeks}` : "Add day";
         case "delete_week":
             return weeks ? `Delete week ${weeks}` : "Delete week";
         case "create_superset":
-            return `Create superset on day ${operation.dayId} (exercises ${operation.exerciseIndexes.map((i) => i + 1).join(", ")})`;
+            return `Week${weeks ? ` ${weeks}` : ""} day ${operation.dayOrder}: create superset (exercises ${operation.exerciseIndexes.map((i) => i + 1).join(", ")})`;
         case "remove_from_superset":
-            return `Remove exercise ${operation.exerciseIndex + 1} from superset on day ${operation.dayId}`;
+            return `Week${weeks ? ` ${weeks}` : ""} day ${operation.dayOrder}: remove exercise ${operation.exerciseIndex + 1} from superset`;
         case "swap_exercise_template": {
             const scope =
                 operation.folderIds || operation.dayOrder

@@ -72,12 +72,12 @@ describe("shrink 8x4 program to 4x3", () => {
             if (result.ok) program = result.program;
         }
 
-        const day4Ids = program.filter((d) => Number(d.order) === 4).map((d) => d.id);
-        for (const dayId of day4Ids) {
-            const result = applyOperations(program, [{ op: "delete_day", dayId }]);
-            expect(result.ok).toBe(true);
-            if (result.ok) program = result.program;
-        }
+        const weekIndexes = [...new Set(program.map((d) => d.folder_id))];
+        const deleteDay4 = applyOperations(program, [
+            { op: "delete_day", folderIds: weekIndexes, dayOrder: 4 },
+        ]);
+        expect(deleteDay4.ok).toBe(true);
+        if (deleteDay4.ok) program = deleteDay4.program;
 
         const ordered = appendOrderToHevyRoutines(program);
         const weeks = new Set(ordered.map((d) => d.folder_id));

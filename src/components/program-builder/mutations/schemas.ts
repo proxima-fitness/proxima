@@ -121,7 +121,8 @@ export const addDaySchema = z.object({
 
 export const deleteDaySchema = z.object({
     op: z.literal("delete_day"),
-    dayId: z.string().min(1),
+    folderIds: folderIdsSchema,
+    dayOrder: dayOrderSchema,
 });
 
 export const editDayTitleSchema = z.object({
@@ -185,13 +186,15 @@ export const addExerciseNotesSchema = z.object({
 
 export const createSupersetSchema = z.object({
     op: z.literal("create_superset"),
-    dayId: z.string().min(1),
+    folderIds: folderIdsSchema,
+    dayOrder: dayOrderSchema,
     exerciseIndexes: z.array(exerciseIndexSchema).min(2),
 });
 
 export const removeFromSupersetSchema = z.object({
     op: z.literal("remove_from_superset"),
-    dayId: z.string().min(1),
+    folderIds: folderIdsSchema,
+    dayOrder: dayOrderSchema,
     exerciseIndex: exerciseIndexSchema,
 });
 

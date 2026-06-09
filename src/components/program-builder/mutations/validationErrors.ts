@@ -13,6 +13,14 @@ export function detectCommonMutationFieldMistakes(raw: Record<string, unknown>):
         }
     }
 
+    if (
+        (op === "delete_day" || op === "create_superset" || op === "remove_from_superset") &&
+        "dayId" in raw &&
+        !("folderIds" in raw)
+    ) {
+        return "Target days with folderIds + dayOrder, not dayId";
+    }
+
     return null;
 }
 
