@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import {
+  AlertTriangleIcon,
   CheckCircleIcon,
   ChevronDownIcon,
   CircleIcon,
@@ -73,9 +74,15 @@ export type TToolPart = ToolUIPart | DynamicToolUIPart;
  * - For static tools, `type` and `state` come from `ToolUIPart`.
  * - For dynamic tools, `toolName` provides a human-friendly label.
  */
+export type TToolStatusOverride = {
+  label: string;
+  icon: ReactNode;
+};
+
 export type TToolHeaderProps = {
   title?: string;
   className?: string;
+  statusOverride?: TToolStatusOverride;
 } & (
   | { type: ToolUIPart["type"]; state: ToolUIPart["state"]; toolName?: never }
   | {
@@ -112,12 +119,18 @@ export const getStatusBadge = (status: TToolPart["state"]) => (
   </Badge>
 );
 
+export const warningStatusOverride: TToolStatusOverride = {
+  label: "Warning",
+  icon: <AlertTriangleIcon className="size-4 text-orange-600" />,
+};
+
 export const ToolHeader = ({
   className,
   title,
   type,
   state,
   toolName,
+  statusOverride,
   ...props
 }: TToolHeaderProps) => {
   const derivedName =
@@ -134,7 +147,14 @@ export const ToolHeader = ({
       <div className="flex items-center gap-2">
         <WrenchIcon className="size-4 text-muted-foreground" />
         <span className="font-medium text-sm">{title ?? derivedName}</span>
-        {getStatusBadge(state)}
+        {statusOverride ? (
+          <Badge className="gap-1.5 rounded-full text-xs" variant="secondary">
+            {statusOverride.icon}
+            {statusOverride.label}
+          </Badge>
+        ) : (
+          getStatusBadge(state)
+        )}
       </div>
       <ChevronDownIcon className="size-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
     </CollapsibleTrigger>
@@ -181,6 +201,7 @@ export type TToolErrorPanelProps = ComponentProps<"div"> & {
   errorCtx: TToolErrorContext;
   chatId?: string;
   getChatId?: () => string;
+  severity?: "error" | "warning";
 };
 
 export const ToolErrorPanel = ({
@@ -191,6 +212,7 @@ export const ToolErrorPanel = ({
   errorCtx,
   chatId = "",
   getChatId,
+  severity = "error",
   ...props
 }: TToolErrorPanelProps) => {
   const [isSending, setIsSending] = useState(false);
@@ -225,7 +247,12 @@ export const ToolErrorPanel = ({
       {...props}
     >
       <div className="flex items-start gap-2">
-        <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-red-500" />
+        <span
+          className={cn(
+            "mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full",
+            severity === "warning" ? "bg-orange-500" : "bg-red-500"
+          )}
+        />
         <p className="min-w-0 text-sm text-muted-foreground">{summary}</p>
       </div>
       <div className="flex flex-wrap gap-2">

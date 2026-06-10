@@ -7,6 +7,8 @@ export type TToolErrorContext = {
     output?: unknown;
 };
 
+export type TToolFailureSeverity = "error" | "warning";
+
 export type TSubmitToolErrorResult =
     | { ok: true }
     | { ok: false; message: string };
@@ -203,6 +205,35 @@ function summarizeFromErrorText(errorText: string): string | null {
     } catch {
         return null;
     }
+}
+
+/** Validation / targeting mistakes (wrong index, bad folderIds) → warning; unexpected failures → error. */
+export function getMutateProgramFailureSeverity(ctx: TToolErrorContext): TToolFailureSeverity {
+    if (ctx.output && typeof ctx.output === "object") {
+        const record = ctx.output as Record<string, unknown>;
+        if (record.error === "Failed to validate mutation batch") {
+            return "error";
+        }
+        if (record.error === "Program mutation batch failed") {
+            return "warning";
+        }
+        if (Array.isArray(record.failures) && record.failures.length > 0) {
+            return "warning";
+        }
+    }
+
+    if (ctx.errorText?.trim()) {
+        const trimmed = ctx.errorText.trim();
+        if (extractSdkValidationSummary(trimmed)) {
+            return "warning";
+        }
+        if (isTechnicalErrorDump(trimmed)) {
+            return "error";
+        }
+        return "error";
+    }
+
+    return "warning";
 }
 
 export function buildToolErrorPayload(tool: string, ctx: TToolErrorContext): string {

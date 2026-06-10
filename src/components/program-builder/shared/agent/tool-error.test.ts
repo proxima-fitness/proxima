@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
     buildDeveloperToolErrorFeedback,
     buildToolErrorPayload,
+    getMutateProgramFailureSeverity,
     summarizeToolError,
 } from "./tool-error";
 
@@ -48,6 +49,46 @@ describe("buildDeveloperToolErrorFeedback", () => {
         const feedback = buildDeveloperToolErrorFeedback("buildWeek", { errorText: "timeout" }, "  ");
 
         expect(feedback).toContain("Chat ID: unknown");
+    });
+});
+
+describe("getMutateProgramFailureSeverity", () => {
+    it("treats validation batch failures as warnings", () => {
+        expect(
+            getMutateProgramFailureSeverity({
+                output: {
+                    error: "Program mutation batch failed",
+                    failures: [{ index: 0, op: "insert_exercise", reason: "exerciseIndex 3 out of range for week 0, day 1" }],
+                },
+            }),
+        ).toBe("warning");
+    });
+
+    it("treats SDK input validation as warnings", () => {
+        const sdkError =
+            'Invalid input for tool mutateProgram: Type validation failed: Value: {"operations":[{"op":"insert_exercise","folderIds":[0],"dayOrder":1}]}.' +
+            ' Error message: [{"expected":"number","code":"invalid_type","path":["operations",0,"exerciseIndex"],"message":"Invalid input: expected number, received undefined"}]';
+
+        expect(getMutateProgramFailureSeverity({ errorText: sdkError })).toBe("warning");
+    });
+
+    it("treats unexpected batch validation errors as errors", () => {
+        expect(
+            getMutateProgramFailureSeverity({
+                output: {
+                    error: "Failed to validate mutation batch",
+                    failures: [{ index: 0, op: "add_day", reason: "Unexpected server error" }],
+                },
+            }),
+        ).toBe("error");
+    });
+
+    it("treats infrastructure errorText as errors", () => {
+        expect(
+            getMutateProgramFailureSeverity({
+                errorText: "Network timeout while validating batch",
+            }),
+        ).toBe("error");
     });
 });
 

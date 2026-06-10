@@ -30,9 +30,9 @@ import {
     ReasoningContent,
     ReasoningTrigger,
 } from "@/components/ai-elements/reasoning";
-import { Tool, ToolContent, ToolErrorPanel, ToolHeader } from "@/components/ai-elements/tool";
+import { Tool, ToolContent, ToolErrorPanel, ToolHeader, warningStatusOverride } from "@/components/ai-elements/tool";
 import type { TToolPart } from "@/components/ai-elements/tool";
-import { buildToolErrorPayload, summarizeToolError } from "./tool-error";
+import { buildToolErrorPayload, getMutateProgramFailureSeverity, summarizeToolError } from "./tool-error";
 import { ModifyProgramProgress } from "./ModifyProgramProgress";
 import { RateProgramResults } from "@/components/program-builder/shared/RateProgramResults";
 import type { IProgramScore } from "@/components/program-builder/utils/score-program";
@@ -674,9 +674,16 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                     errorText: mutatePart.errorText,
                                                     output: mutatePart.output,
                                                 };
+                                                const severity = getMutateProgramFailureSeverity(errorCtx);
+                                                const isWarning = severity === "warning";
                                                 return (
                                                     <Tool key={`${message.id}-${index}-mutate-error`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
-                                                        <ToolHeader type="tool-mutateProgram" state={toolState} title="Mutate program" />
+                                                        <ToolHeader
+                                                            type="tool-mutateProgram"
+                                                            state={toolState}
+                                                            title="Mutate program"
+                                                            statusOverride={isWarning ? warningStatusOverride : undefined}
+                                                        />
                                                         <ToolContent>
                                                             <ToolErrorPanel
                                                                 tool="mutateProgram"
@@ -684,6 +691,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                 getChatId={resolvePersistChatId}
                                                                 summary={summarizeToolError("mutateProgram", errorCtx)}
                                                                 copyPayload={buildToolErrorPayload("mutateProgram", errorCtx)}
+                                                                severity={severity}
                                                             />
                                                         </ToolContent>
                                                     </Tool>
