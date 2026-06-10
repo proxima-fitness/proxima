@@ -138,20 +138,20 @@ export const addDaySchema = z.object({
 
 export const deleteDaySchema = z.object({
     op: z.literal("delete_day"),
-    folderIds: folderIdsSchema,
+    folderIds: folderIdsSchema.optional(),
     dayOrder: dayOrderSchema,
 });
 
 export const editDayTitleSchema = z.object({
     op: z.literal("edit_day_title"),
-    folderIds: folderIdsSchema,
+    folderIds: folderIdsSchema.optional(),
     dayOrder: dayOrderSchema,
     title: z.string(),
 });
 
 export const addDayNotesSchema = z.object({
     op: z.literal("add_day_notes"),
-    folderIds: folderIdsSchema,
+    folderIds: folderIdsSchema.optional(),
     dayOrder: dayOrderSchema,
     notes: z.string(),
 });
@@ -163,7 +163,7 @@ export const deleteWeekSchema = z.object({
 
 export const insertExerciseSchema = z.object({
     op: z.literal("insert_exercise"),
-    folderIds: folderIdsSchema,
+    folderIds: folderIdsSchema.optional(),
     dayOrder: dayOrderSchema,
     exerciseIndex: exerciseIndexSchema,
     exercise: insertExercisePayloadSchema,
@@ -171,7 +171,7 @@ export const insertExerciseSchema = z.object({
 
 export const editExerciseSchema = z.object({
     op: z.literal("edit_exercise"),
-    folderIds: folderIdsSchema,
+    folderIds: folderIdsSchema.optional(),
     dayOrder: dayOrderSchema,
     exerciseIndex: exerciseIndexSchema,
     exercise: insertExercisePayloadSchema,
@@ -179,14 +179,14 @@ export const editExerciseSchema = z.object({
 
 export const deleteExerciseSchema = z.object({
     op: z.literal("delete_exercise"),
-    folderIds: folderIdsSchema,
+    folderIds: folderIdsSchema.optional(),
     dayOrder: dayOrderSchema,
     exerciseIndex: exerciseIndexSchema,
 });
 
 export const updateSetSchema = z.object({
     op: z.literal("update_set"),
-    folderIds: folderIdsSchema,
+    folderIds: folderIdsSchema.optional(),
     dayOrder: dayOrderSchema,
     exerciseIndex: exerciseIndexSchema,
     setIndex: setIndexSchema,
@@ -195,7 +195,7 @@ export const updateSetSchema = z.object({
 
 export const addExerciseNotesSchema = z.object({
     op: z.literal("add_exercise_notes"),
-    folderIds: folderIdsSchema,
+    folderIds: folderIdsSchema.optional(),
     dayOrder: dayOrderSchema,
     exerciseIndex: exerciseIndexSchema,
     notes: z.string(),
@@ -203,14 +203,14 @@ export const addExerciseNotesSchema = z.object({
 
 export const createSupersetSchema = z.object({
     op: z.literal("create_superset"),
-    folderIds: folderIdsSchema,
+    folderIds: folderIdsSchema.optional(),
     dayOrder: dayOrderSchema,
     exerciseIndexes: z.array(exerciseIndexSchema).min(2),
 });
 
 export const removeFromSupersetSchema = z.object({
     op: z.literal("remove_from_superset"),
-    folderIds: folderIdsSchema,
+    folderIds: folderIdsSchema.optional(),
     dayOrder: dayOrderSchema,
     exerciseIndex: exerciseIndexSchema,
 });

@@ -175,3 +175,31 @@ _Avoid_: syncProgramToHevy in hevy.ts, export sync
 **Edit navigation hook**:
 Shared `useNavigateToEditHevyProgram()` used by profile entry points (My Hevy Programs grid, blind-spot Hevy picker). Refetches `useHevyPrograms`, passes routines via router state, and navigates to Edit arrival with `folder` and optional extra query params.
 _Avoid_: navigateToEditHevyProgram helper, inline edit push
+
+**Constraint profile**:
+Merged training constraints for one builder session — home-prompt inference plus questionnaire answers plus later chat refinements. Authoritative for exercise selection and program edits; agent must not re-ask fields already captured here. Chat may add or override; it does not erase prior answers unless the user explicitly changes them.
+_Avoid_: User preferences (too broad), questionnaire data (implementation-shaped), builder state
+
+**Equipment constraint**:
+Hybrid equipment rule within the constraint profile: excluded equipment types (questionnaire) plus explicitly available equipment (home prompt, chat). Exercise selection must satisfy both — excluded types out, available types in. Distinct from a single "cables only" label; captures setups like cable machine plus bench attachments.
+_Avoid_: Exclude equipment (exclusion half only), gear list (too informal)
+
+**Available equipment**:
+Positive half of the equipment constraint — what the user explicitly has (e.g. cable machine, adjustable bench, attachments). Merged from home prompt and chat into the constraint profile. Complements excluded equipment from the questionnaire; both apply together.
+_Avoid_: Allowed gear (informal), equipment list (ambiguous with full Hevy catalog)
+
+**Movement restriction**:
+A constraint on how or where the user can train — e.g. no floor work, no kneeling, no single-leg exercises, avoid overhead with impingement. Lives in the constraint profile (health issues, chat refinements). Distinct from equipment constraint and from muscle-area exclusions.
+_Avoid_: Limitation (ambiguous with load/volume), injury (health issue may imply restrictions but is not the same term)
+
+**Restriction tag**:
+Canonical machine-readable flag for a movement restriction (e.g. no floor, no kneeling, no unilateral). Derived from the constraint profile; used in a later enforcement slice to filter exercise candidates. Prompt and skills honor the plain-language source first; tags tighten tool-level filtering when present.
+_Avoid_: Movement flag (too implementation-shaped), exclusion tag (ambiguous with equipment)
+
+**Exercise objection**:
+User pushback on one programmed movement — pain, equipment mismatch, can't perform position (e.g. kneeling), wrong stimulus. Agent treats as replace-in-place on that slot, not removal. Distinct from explicit "remove/skip this exercise" and from program-wide filters (e.g. no single-leg across all days).
+_Avoid_: Complaint (too informal), exercise feedback (too broad)
+
+**Questionnaire gate**:
+Required `getMoreInfoQuestions` step before first `planProgram` / `buildWeek` on a new program. Collects structured prefs; merges into the constraint profile with home-prompt inference. After the user submits or says "Build my program", the agent must not ask again in chat for fields already captured — proceed to build using the profile.
+_Avoid_: Intake form (UI-shaped), pre-build questions (too vague)

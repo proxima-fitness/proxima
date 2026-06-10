@@ -1,6 +1,7 @@
 import type { z } from "zod";
 
 import { programMutationCatalogById } from "./catalog";
+import { inferMissingFolderIds } from "./inferFolderIds";
 import type { TProgramOperation } from "./schemas";
 import { normalizeAgentOperationInput } from "./schemas";
 import {
@@ -9,6 +10,7 @@ import {
     type TApplyBatchResult,
     type TMutationResult,
 } from "./types";
+import { collectDeletedDayKeys, validateNoEmptiedTrainingDays } from "./validateProgram";
 import {
     detectCommonMutationFieldMistakes,
     formatMutationSchemaError,
@@ -20,18 +22,20 @@ function stripOpField<T extends { op: string }>(operation: T): Omit<T, "op"> {
 }
 
 function parseMutationOperation<TSchema extends z.ZodType>(
+    program: THevyRoutine[],
     operation: Record<string, unknown>,
     schema: TSchema,
 ):
     | { ok: true; data: z.infer<TSchema> }
     | { ok: false; reason: string } {
     const normalized = normalizeAgentOperationInput(operation) as Record<string, unknown>;
-    const mistake = detectCommonMutationFieldMistakes(normalized);
+    const withFolderIds = inferMissingFolderIds(program, normalized);
+    const mistake = detectCommonMutationFieldMistakes(withFolderIds);
     if (mistake) {
         return { ok: false, reason: mistake };
     }
 
-    const parsed = schema.safeParse(normalized);
+    const parsed = schema.safeParse(withFolderIds);
     if (!parsed.success) {
         return { ok: false, reason: formatMutationSchemaError(parsed.error) };
     }
@@ -45,7 +49,11 @@ export function applyOperation(program: THevyRoutine[], operation: TProgramOpera
         return mutationFailure(`Unknown operation: ${operation.op}`);
     }
 
-    const parsed = parseMutationOperation(operation as Record<string, unknown>, mutation.schema);
+    const parsed = parseMutationOperation(
+        program,
+        operation as Record<string, unknown>,
+        mutation.schema,
+    );
     if (parsed.ok === false) {
         return mutationFailure(parsed.reason);
     }
@@ -63,7 +71,7 @@ export function applyOperationById(
         return mutationFailure(`Unknown operation: ${op}`);
     }
 
-    const parsed = parseMutationOperation({ op, ...args }, mutation.schema);
+    const parsed = parseMutationOperation(program, { op, ...args }, mutation.schema);
     if (parsed.ok === false) {
         return mutationFailure(parsed.reason);
     }
@@ -76,6 +84,9 @@ export function applyOperations(
     operations: TProgramOperation[],
 ): TApplyBatchResult {
     let nextProgram = program;
+    const deletedDayKeys = collectDeletedDayKeys(
+        operations as Array<{ op: string } & Record<string, unknown>>,
+    );
 
     for (let index = 0; index < operations.length; index++) {
         const operation = operations[index];
@@ -88,6 +99,22 @@ export function applyOperations(
             };
         }
         nextProgram = result.program;
+    }
+
+    const emptiedDayReason = validateNoEmptiedTrainingDays(program, nextProgram, deletedDayKeys);
+    if (emptiedDayReason) {
+        const lastOp = operations[operations.length - 1];
+        return {
+            ok: false,
+            failures: [
+                {
+                    index: operations.length - 1,
+                    op: lastOp?.op ?? "unknown",
+                    reason: emptiedDayReason,
+                },
+            ],
+            program,
+        };
     }
 
     return { ok: true, program: nextProgram };

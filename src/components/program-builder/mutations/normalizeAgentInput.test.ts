@@ -178,6 +178,79 @@ describe("normalizeAgentOperationInput", () => {
         expect(result.reason).toContain("Empty day");
     });
 
+    it("coerces 1-based week to folderIds", () => {
+        const parsed = mutateProgramInputSchema.safeParse({
+            operations: [
+                {
+                    op: "edit_day_title",
+                    week: 2,
+                    dayOrder: 4,
+                    title: "Lower B",
+                },
+            ],
+        });
+
+        expect(parsed.success).toBe(true);
+        if (!parsed.success) return;
+        expect(parsed.data.operations[0]).toMatchObject({
+            op: "edit_day_title",
+            folderIds: [1],
+            dayOrder: 4,
+        });
+    });
+
+    it("coerces type to op", () => {
+        const parsed = mutateProgramInputSchema.safeParse({
+            operations: [
+                {
+                    type: "edit_day_title",
+                    folderIds: [0],
+                    dayOrder: 1,
+                    title: "Push",
+                },
+            ],
+        });
+
+        expect(parsed.success).toBe(true);
+        if (!parsed.success) return;
+        expect(parsed.data.operations[0]).toMatchObject({ op: "edit_day_title" });
+    });
+
+    it("infers folderIds from program when only dayOrder is provided", () => {
+        const program = [
+            {
+                id: "1",
+                folder_id: 0,
+                order: "4",
+                title: "Lower B",
+                notes: "",
+                exercises: [],
+            },
+            {
+                id: "2",
+                folder_id: 1,
+                order: "4",
+                title: "Lower B",
+                notes: "",
+                exercises: [],
+            },
+        ];
+
+        const result = applyOperationById(program, "insert_exercise", {
+            dayOrder: 4,
+            exerciseIndex: 0,
+            exercise: {
+                exercise_template_id: "cable-1",
+                sets: [{ index: 1, type: "normal", reps: 10 }],
+            },
+        });
+
+        expect(result.ok).toBe(true);
+        if (!result.ok) return;
+        expect(result.program[0].exercises).toHaveLength(1);
+        expect(result.program[1].exercises).toHaveLength(1);
+    });
+
     it("rejects exercises array with a clear mistake message", () => {
         const result = applyOperationById([], "insert_exercise", {
             folderIds: [0],

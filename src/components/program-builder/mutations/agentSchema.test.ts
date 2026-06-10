@@ -204,7 +204,7 @@ describe("mutateProgramInputSchema", () => {
         expect(result.reason).toBe("Target days with folderIds + dayOrder, not dayId");
     });
 
-    it("rejects operation key instead of op", () => {
+    it("coerces operation key to op", () => {
         const parsed = mutateProgramInputSchema.safeParse({
             operations: [
                 {
@@ -220,23 +220,9 @@ describe("mutateProgramInputSchema", () => {
             ],
         });
 
-        expect(parsed.success).toBe(false);
-        if (parsed.success) return;
-
-        const result = applyOperationById([], "edit_exercise", {
-            operation: "edit_exercise",
-            folderIds: [0],
-            dayOrder: 1,
-            exerciseIndex: 0,
-            exercise: {
-                exercise_template_id: "bench-1",
-                sets: [makeSet()],
-            },
-        });
-
-        expect(isValidationFailure(result)).toBe(true);
-        if (!isValidationFailure(result)) return;
-        expect(result.reason).toBe("Expected field 'op', received 'operation'");
+        expect(parsed.success).toBe(true);
+        if (!parsed.success) return;
+        expect(parsed.data.operations[0]).toMatchObject({ op: "edit_exercise" });
     });
 
     it("rejects new_exercise key instead of exercise", () => {

@@ -40,12 +40,22 @@ import {
     toHevyExercise,
     updateSetSchema,
 } from "./schemas";
+import { requireNonEmptyFolderIds } from "./locate";
 import {
     mutationFailure,
     mutationSuccess,
     type TMutationResult,
     type TProgramMutationDefinition,
 } from "./types";
+
+function runScopedMutation(
+    folderIds: number[] | undefined,
+    run: (folderIds: number[]) => THevyRoutine[],
+): TMutationResult {
+    const failure = requireNonEmptyFolderIds(folderIds);
+    if (failure) return failure;
+    return mutationSuccess(run(folderIds!));
+}
 
 function weekFullResult(program: THevyRoutine[], next: THevyRoutine[]): TMutationResult {
     if (next === program) {
@@ -60,10 +70,10 @@ export const programMutationCatalog: TProgramMutationDefinition[] = [
         description: "Insert an exercise at a 0-based index on one or more days.",
         schema: insertExerciseSchema,
         run: (program, args) =>
-            mutationSuccess(
+            runScopedMutation(args.folderIds, (folderIds) =>
                 insertExercise(
                     program,
-                    args.folderIds,
+                    folderIds,
                     args.dayOrder,
                     args.exerciseIndex,
                     args.exercise,
@@ -76,10 +86,10 @@ export const programMutationCatalog: TProgramMutationDefinition[] = [
             "Replace an exercise at a 0-based index using grid payload (exercise_template_id, sets[], rest_seconds, optional title/reason) — same shape as insert_exercise.",
         schema: editExerciseSchema,
         run: (program, args) =>
-            mutationSuccess(
+            runScopedMutation(args.folderIds, (folderIds) =>
                 editExercise(
                     program,
-                    args.folderIds,
+                    folderIds,
                     args.dayOrder,
                     args.exerciseIndex,
                     args.exercise,
@@ -125,8 +135,8 @@ export const programMutationCatalog: TProgramMutationDefinition[] = [
         description: "Remove an exercise by 0-based index.",
         schema: deleteExerciseSchema,
         run: (program, args) =>
-            mutationSuccess(
-                deleteExercise(program, args.folderIds, args.dayOrder, args.exerciseIndex),
+            runScopedMutation(args.folderIds, (folderIds) =>
+                deleteExercise(program, folderIds, args.dayOrder, args.exerciseIndex),
             ),
     }),
     defineProgramMutation({
@@ -134,10 +144,10 @@ export const programMutationCatalog: TProgramMutationDefinition[] = [
         description: "Patch fields on a single set row.",
         schema: updateSetSchema,
         run: (program, args) =>
-            mutationSuccess(
+            runScopedMutation(args.folderIds, (folderIds) =>
                 updateSet(
                     program,
-                    args.folderIds,
+                    folderIds,
                     args.dayOrder,
                     args.exerciseIndex,
                     args.setIndex,
@@ -150,8 +160,8 @@ export const programMutationCatalog: TProgramMutationDefinition[] = [
         description: "Set the day title on one or more matching days.",
         schema: editDayTitleSchema,
         run: (program, args) =>
-            mutationSuccess(
-                editDayTitle(program, args.folderIds, args.dayOrder, args.title),
+            runScopedMutation(args.folderIds, (folderIds) =>
+                editDayTitle(program, folderIds, args.dayOrder, args.title),
             ),
     }),
     defineProgramMutation({
@@ -159,8 +169,8 @@ export const programMutationCatalog: TProgramMutationDefinition[] = [
         description: "Set routine notes on one or more matching days.",
         schema: addDayNotesSchema,
         run: (program, args) =>
-            mutationSuccess(
-                addDayNotes(program, args.folderIds, args.dayOrder, args.notes),
+            runScopedMutation(args.folderIds, (folderIds) =>
+                addDayNotes(program, folderIds, args.dayOrder, args.notes),
             ),
     }),
     defineProgramMutation({
@@ -168,10 +178,10 @@ export const programMutationCatalog: TProgramMutationDefinition[] = [
         description: "Set notes on a single exercise.",
         schema: addExerciseNotesSchema,
         run: (program, args) =>
-            mutationSuccess(
+            runScopedMutation(args.folderIds, (folderIds) =>
                 addExerciseNote(
                     program,
-                    args.folderIds,
+                    folderIds,
                     args.dayOrder,
                     args.exerciseIndex,
                     args.notes,
@@ -184,7 +194,9 @@ export const programMutationCatalog: TProgramMutationDefinition[] = [
             "Remove one or more days by week and day order. Args: folderIds (0-based week), dayOrder (1-based day).",
         schema: deleteDaySchema,
         run: (program, args) =>
-            mutationSuccess(deleteDay(program, args.folderIds, args.dayOrder)),
+            runScopedMutation(args.folderIds, (folderIds) =>
+                deleteDay(program, folderIds, args.dayOrder),
+            ),
     }),
     defineProgramMutation({
         id: "add_day",
@@ -209,8 +221,8 @@ export const programMutationCatalog: TProgramMutationDefinition[] = [
             "Group two or more exercises into a superset on matching days. Args: folderIds, dayOrder, exerciseIndexes (0-based, min 2).",
         schema: createSupersetSchema,
         run: (program, args) =>
-            mutationSuccess(
-                createSuperset(program, args.folderIds, args.dayOrder, args.exerciseIndexes),
+            runScopedMutation(args.folderIds, (folderIds) =>
+                createSuperset(program, folderIds, args.dayOrder, args.exerciseIndexes),
             ),
     }),
     defineProgramMutation({
@@ -219,13 +231,8 @@ export const programMutationCatalog: TProgramMutationDefinition[] = [
             "Remove one exercise from its superset on matching days. Args: folderIds, dayOrder, exerciseIndex (0-based).",
         schema: removeFromSupersetSchema,
         run: (program, args) =>
-            mutationSuccess(
-                removeFromSuperset(
-                    program,
-                    args.folderIds,
-                    args.dayOrder,
-                    args.exerciseIndex,
-                ),
+            runScopedMutation(args.folderIds, (folderIds) =>
+                removeFromSuperset(program, folderIds, args.dayOrder, args.exerciseIndex),
             ),
     }),
     defineProgramMutation({

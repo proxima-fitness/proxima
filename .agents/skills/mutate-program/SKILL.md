@@ -14,8 +14,17 @@ allowedTools:
 
 # Mutate Program
 
+## Before mutateProgram (mandatory)
+
+Before **every** **mutateProgram** call:
+
+1. **Constraint inventory:** Review the **full conversation** and list every active constraint in the **constraint profile** — questionnaire prefs (health/injury, excluded equipment), available equipment from chat, movement restrictions (no floor work, no kneeling, no single-leg, overhead limits, etc.), exercise or muscle-area exclusions, and any refinements from later messages. Include constraints from earlier turns even if the latest message does not repeat them.
+2. **Compliance check:** Verify each operation in your batch violates **none** of those constraints. Do not swap or insert templates that use excluded equipment or break stated movement restrictions.
+3. **No empty days:** If **delete_exercise** (or removing the last exercise on a day) would leave a training day with **zero** exercise rows, find and add a suitable replacement **first** — **insert_exercise** or **edit_exercise** in the **same batch**, ordered before the delete. Use **getExerciseList**; pick a template that honors the constraint profile and preserves the day's training intent.
+
 ## Checklist
 
+- [ ] **Constraint gate** (above): inventory → compliance → no empty days.
 - [ ] **readProgram** when you need the current program (weeks, days, exercises, sets, notes, reason). `hevyProgram.length` = N total routines (all weeks).
 - [ ] Build **one operations array** with all registry ops for the requested change.
 - [ ] **Equipment / template swaps** (dumbbell-only, barbell → dumbbell, variation replace across program): use **`swap_exercise_template`** — one op per `from_exercise_template_id`; omit **folderIds** / **dayOrder** to hit every week and day.

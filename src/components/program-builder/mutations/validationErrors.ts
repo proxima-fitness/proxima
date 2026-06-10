@@ -5,13 +5,32 @@ import { OP_NESTED_OBJECT_FIELDS } from "./normalizeAgentInput";
 const STRINGIFIED_OBJECT_MESSAGE =
     "must be a nested object in tool args, not a JSON string — pass the object directly";
 
+const OPS_REQUIRING_FOLDER_IDS = new Set([
+    "insert_exercise",
+    "edit_exercise",
+    "delete_exercise",
+    "update_set",
+    "edit_day_title",
+    "add_day_notes",
+    "add_exercise_notes",
+    "delete_day",
+    "create_superset",
+    "remove_from_superset",
+    "add_day",
+    "delete_week",
+]);
+
 /** Detect common agent field-name mistakes before Zod parse. */
 export function detectCommonMutationFieldMistakes(raw: Record<string, unknown>): string | null {
-    if ("operation" in raw && typeof raw.operation === "string") {
+    if (raw.op === undefined && typeof raw.type === "string") {
+        return "Expected field 'op', received 'type'";
+    }
+
+    if ("operation" in raw && typeof raw.operation === "string" && raw.op === undefined) {
         return "Expected field 'op', received 'operation'";
     }
 
-    const op = raw.op ?? raw.operation;
+    const op = raw.op ?? raw.operation ?? raw.type;
     if (typeof op === "string") {
         for (const field of OP_NESTED_OBJECT_FIELDS[op] ?? []) {
             if (typeof raw[field] === "string") {
@@ -42,6 +61,30 @@ export function detectCommonMutationFieldMistakes(raw: Record<string, unknown>):
         !("folderIds" in raw)
     ) {
         return "Target days with folderIds + dayOrder, not dayId";
+    }
+
+    if (
+        typeof op === "string" &&
+        OPS_REQUIRING_FOLDER_IDS.has(op) &&
+        raw.folderIds === undefined &&
+        "dayOrder" in raw
+    ) {
+        return (
+            "folderIds is required (0-based week array, e.g. [0]). " +
+            "readProgram folder_id maps to folderIds: [folder_id]. " +
+            "Omit only for program-wide swap_exercise_template."
+        );
+    }
+
+    if (
+        typeof op === "string" &&
+        OPS_REQUIRING_FOLDER_IDS.has(op) &&
+        raw.folderIds === undefined
+    ) {
+        return (
+            "folderIds is required (0-based week array, e.g. [0]). " +
+            "readProgram folder_id maps to folderIds: [folder_id]."
+        );
     }
 
     return null;

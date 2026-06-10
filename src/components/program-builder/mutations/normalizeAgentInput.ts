@@ -76,18 +76,60 @@ function normalizeNestedObjectField(value: unknown): unknown {
     return unwrapped;
 }
 
+function coerceWeekIndex(value: unknown): number | null {
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value === "string" && value.trim() !== "" && Number.isFinite(Number(value))) {
+        return Number(value);
+    }
+    return null;
+}
+
+function coerceFolderIdsArray(value: unknown): number[] | null {
+    const single = coerceWeekIndex(value);
+    if (single !== null) return [single];
+
+    if (!Array.isArray(value) || value.length === 0) return null;
+
+    const ids = value.map(coerceWeekIndex);
+    if (ids.some((id) => id === null)) return null;
+    return ids as number[];
+}
+
 /** Agents often send folderId / folder_id (from readProgram) instead of folderIds: [n]. */
 export function normalizeAgentOperationInput(val: unknown): unknown {
     if (typeof val !== "object" || val === null) return val;
 
     const obj = { ...(val as Record<string, unknown>) };
 
-    if (obj.folderIds === undefined) {
-        const weekIndex = obj.folderId ?? obj.folder_id;
-        if (typeof weekIndex === "number") {
+    if (obj.op === undefined) {
+        if (typeof obj.type === "string") {
+            obj.op = obj.type;
+            delete obj.type;
+        } else if (typeof obj.operation === "string") {
+            obj.op = obj.operation;
+            delete obj.operation;
+        }
+    }
+
+    if (obj.folderIds !== undefined) {
+        const coerced = coerceFolderIdsArray(obj.folderIds);
+        if (coerced) obj.folderIds = coerced;
+    } else {
+        const weekIndex =
+            coerceWeekIndex(obj.folderId) ??
+            coerceWeekIndex(obj.folder_id) ??
+            coerceWeekIndex(obj.weekIndex);
+        if (weekIndex !== null) {
             delete obj.folderId;
             delete obj.folder_id;
+            delete obj.weekIndex;
             obj.folderIds = [weekIndex];
+        } else {
+            const weekOneBased = coerceWeekIndex(obj.week);
+            if (weekOneBased !== null && weekOneBased >= 1) {
+                delete obj.week;
+                obj.folderIds = [weekOneBased - 1];
+            }
         }
     }
 
