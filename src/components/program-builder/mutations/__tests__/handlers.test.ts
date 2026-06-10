@@ -10,10 +10,10 @@ import {
     editExerciseFromDialog,
     swapExerciseTemplate,
     updateSet,
-} from "./handlers";
-import { applyOperation } from "./apply";
-import { resolveExercisePayload } from "./resolveExercisePayload";
-import { isValidationFailure } from "./types";
+} from "../handlers";
+import { applyOperation } from "../apply";
+import { resolveExercisePayload } from "../resolveExercisePayload";
+import { isValidationFailure } from "../types";
 
 const mockTemplate: THevyExerciseTemplate = {
     id: "bench-1",

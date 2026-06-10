@@ -7,7 +7,7 @@ import {
     renderRpeColumn,
     renderSetsCount,
     renderWeightColumn,
-} from "./hevyPrescriptionDisplay";
+} from "../hevyPrescriptionDisplay";
 
 const makeSet = (index: number): THevySets => ({
     index,

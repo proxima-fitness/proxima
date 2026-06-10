@@ -7,7 +7,7 @@ vi.mock("@/components/program-builder/api/hevy", () => ({
 import {
     convertHevyExerciseIntoHevyAddExercise,
     hevyAddExerciseToHevySetsConverter,
-} from "./format-responses";
+} from "../format-responses";
 
 const mockTemplate: THevyExerciseTemplate = {
     id: "ex-1",

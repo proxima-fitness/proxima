@@ -4,7 +4,7 @@ vi.mock("@/api/index", () => ({
     supabase: {},
 }));
 
-import { defaultFetch, defaultPost, defaultPut, parsePostCustomExerciseBody, postHevyCustomExercise } from "./hevy";
+import { defaultFetch, defaultPost, defaultPut, parsePostCustomExerciseBody, postHevyCustomExercise } from "../hevy";
 
 describe("Hevy HTTP helpers", () => {
     const url = "https://api.hevyapp.com/v1/test";

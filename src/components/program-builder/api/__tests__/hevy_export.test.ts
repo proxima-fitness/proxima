@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { mapSupabaseExerciseTemplateRowToPostExercise } from "./hevy_export";
+import { mapSupabaseExerciseTemplateRowToPostExercise } from "../hevy_export";
 
 describe("mapSupabaseExerciseTemplateRowToPostExercise", () => {
     const validRow = {

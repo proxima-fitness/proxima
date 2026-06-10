@@ -4,8 +4,8 @@ vi.mock("@/components/program-builder/api/hevy", () => ({
     getHevyExercises: vi.fn(async () => []),
 }));
 
-import { applyOperation, applyOperations } from "./apply";
-import { isApplyBatchFailure, isValidationFailure } from "./types";
+import { applyOperation, applyOperations } from "../apply";
+import { isApplyBatchFailure, isValidationFailure } from "../types";
 
 const makeSet = (overrides: Partial<THevySets> & Pick<THevySets, "index">): THevySets => ({
     type: "normal",

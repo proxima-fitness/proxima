@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { PROXIMA_FITNESS_EXPORT_URL, routineNotesForExport } from "./proximaExportAttribution";
+import { PROXIMA_FITNESS_EXPORT_URL, routineNotesForExport } from "../proximaExportAttribution";
 
 describe("routineNotesForExport", () => {
     const line = `Built by Proxima · ${PROXIMA_FITNESS_EXPORT_URL}`;

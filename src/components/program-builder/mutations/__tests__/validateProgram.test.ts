@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { applyOperations } from "./apply";
-import { isApplyBatchFailure } from "./types";
-import { validateNoEmptiedTrainingDays } from "./validateProgram";
+import { applyOperations } from "../apply";
+import { isApplyBatchFailure } from "../types";
+import { validateNoEmptiedTrainingDays } from "../validateProgram";
 
 const makeSet = (): THevySets => ({
     index: 0,

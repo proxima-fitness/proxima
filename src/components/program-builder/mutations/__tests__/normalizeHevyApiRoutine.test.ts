@@ -4,8 +4,8 @@ vi.mock("@/components/program-builder/api/hevy", () => ({
     getHevyExercises: vi.fn(async () => []),
 }));
 
-import { runProgramMutation } from "./registry";
-import { isValidationFailure } from "./types";
+import { runProgramMutation } from "../registry";
+import { isValidationFailure } from "../types";
 
 const makeDay = (): THevyRoutine => ({
     id: "1",

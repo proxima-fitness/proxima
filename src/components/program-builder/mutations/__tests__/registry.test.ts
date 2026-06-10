@@ -4,9 +4,9 @@ vi.mock("@/components/program-builder/api/hevy", () => ({
     getHevyExercises: vi.fn(async () => []),
 }));
 
-import { addExerciseFormToInsertPayload } from "./handlers";
-import { runProgramMutation } from "./registry";
-import { isValidationFailure } from "./types";
+import { addExerciseFormToInsertPayload } from "../handlers";
+import { runProgramMutation } from "../registry";
+import { isValidationFailure } from "../types";
 
 const mockTemplate: THevyExerciseTemplate = {
     id: "bench-1",

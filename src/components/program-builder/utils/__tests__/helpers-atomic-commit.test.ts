@@ -15,7 +15,7 @@ import {
     resolveEffectiveWeeksForAtomicCommit,
     buildFullProgramFromFirstWeek,
     tryCommitAtomicBuildWeekAndMutations,
-} from "./helpers";
+} from "../helpers";
 
 const minimalRoutine = (day: number): THevyRoutine => ({
     id: String(day),

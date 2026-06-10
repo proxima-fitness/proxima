@@ -5,7 +5,7 @@ import {
     buildToolErrorPayload,
     getMutateProgramFailureSeverity,
     summarizeToolError,
-} from "./tool-error";
+} from "../tool-error";
 
 describe("buildToolErrorPayload", () => {
     it("serializes tool, errorText, and output for clipboard", () => {

@@ -23,7 +23,7 @@ vi.mock("@/api/index", () => ({
     },
 }));
 
-import { resolveCustomExerciseTemplatesForHevyUpload } from "./hevy";
+import { resolveCustomExerciseTemplatesForHevyUpload } from "../hevy";
 
 const PROXIMA_ID = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
 const user = { id: "user-test" } as User;

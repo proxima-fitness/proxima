@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { editorReducer, UNDO_STACK_CAP, type TEditorState } from "./editor-reducer";
+import { editorReducer, UNDO_STACK_CAP, type TEditorState } from "../editor-reducer";
 
 const makeDay = (id: string, title: string): THevyRoutine => ({
     id,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatReadProgramForModel, readProgramSnapshot, sortProgramRoutines } from "./read-program";
+import { formatReadProgramForModel, readProgramSnapshot, sortProgramRoutines } from "../read-program";
 
 const sampleProgram = (): THevyRoutine[] => [
     {

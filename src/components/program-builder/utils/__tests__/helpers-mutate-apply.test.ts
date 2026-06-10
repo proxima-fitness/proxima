@@ -6,7 +6,7 @@ vi.mock("@/components/program-builder/api/hevy", () => ({
     getHevyExercises: vi.fn(async () => []),
 }));
 
-import { applyMutateProgramFromMessages } from "./helpers";
+import { applyMutateProgramFromMessages } from "../helpers";
 
 const makeDay = (): THevyRoutine => ({
     id: "1",

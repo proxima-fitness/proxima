@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { applyOperationById } from "./apply";
-import { mutateProgramInputSchema } from "./agentSchema";
-import { isValidationFailure } from "./types";
+import { applyOperationById } from "../apply";
+import { mutateProgramInputSchema } from "../agentSchema";
+import { isValidationFailure } from "../types";
 
 describe("normalizeAgentOperationInput", () => {
     it("coerces folderId to folderIds on insert_exercise", () => {

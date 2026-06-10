@@ -4,10 +4,10 @@ vi.mock("@/components/program-builder/api/hevy", () => ({
     getHevyExercises: vi.fn(async () => []),
 }));
 
-import { agentExposedMutations } from "./catalog";
-import { applyOperationById } from "./apply";
-import { mutateProgramInputSchema } from "./agentSchema";
-import { isValidationFailure } from "./types";
+import { agentExposedMutations } from "../catalog";
+import { applyOperationById } from "../apply";
+import { mutateProgramInputSchema } from "../agentSchema";
+import { isValidationFailure } from "../types";
 
 const makeSet = () => ({
     index: 0,

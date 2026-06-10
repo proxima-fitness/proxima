@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { inferMissingFolderIds } from "./inferFolderIds";
+import { inferMissingFolderIds } from "../inferFolderIds";
 
 const makeDay = (folder_id: number, order: string): THevyRoutine => ({
     id: String(folder_id * 10 + Number(order)),
