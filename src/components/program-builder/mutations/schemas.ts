@@ -37,8 +37,9 @@ const hevySetShape = {
     index: z
         .number()
         .int()
-        .min(1)
-        .describe("1-based set number within the exercise (1, 2, 3…). Not update_set setIndex."),
+        .nonnegative()
+        .optional()
+        .describe("Optional; assigned from sets[] array order (0-based). Not update_set setIndex."),
     type: z.string().describe('Set type, usually "normal".'),
     weight_kg: z.number().nullable(),
     reps: z.number().nullable(),
@@ -55,9 +56,9 @@ const hevySetPatchSchema = z.object(hevySetShape).partial();
 export type TZodHevySet = z.infer<typeof hevySetSchema>;
 
 /** Zod v4 treats nullable fields as optional on output; normalize before grid state. */
-export function toHevySet(set: TZodHevySet): THevySets {
+export function toHevySet(set: TZodHevySet, arrayIndex: number): THevySets {
     return {
-        index: set.index,
+        index: arrayIndex,
         type: set.type,
         weight_kg: set.weight_kg ?? null,
         reps: set.reps ?? null,
@@ -78,7 +79,7 @@ export const insertExercisePayloadSchema = z.object({
         .array(hevySetSchema)
         .min(1)
         .describe(
-            "At least one set. Each set needs 1-based index and explicit nulls for unused metrics.",
+            "At least one set in order. Index is assigned from array position (0-based). Use explicit nulls for unused metrics.",
         ),
     supersets_id: z.number().nullable().optional(),
     reason: z.string().optional(),
@@ -99,15 +100,15 @@ const hevyExerciseSchema = z.object({
 
 export type TZodHevyExercise = z.infer<typeof hevyExerciseSchema>;
 
-export function toHevyExercise(exercise: TZodHevyExercise): THevyExercise {
+export function toHevyExercise(exercise: TZodHevyExercise, arrayIndex: number): THevyExercise {
     return {
-        index: exercise.index,
+        index: arrayIndex,
         title: exercise.title,
         notes: exercise.notes,
         rest_seconds: exercise.rest_seconds ?? null,
         exercise_template_id: exercise.exercise_template_id,
         supersets_id: exercise.supersets_id ?? null,
-        sets: exercise.sets.map(toHevySet),
+        sets: exercise.sets.map((set, setIndex) => toHevySet(set, setIndex)),
         ...(exercise.reason !== undefined ? { reason: exercise.reason } : {}),
     };
 }

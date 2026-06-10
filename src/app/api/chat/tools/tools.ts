@@ -375,7 +375,7 @@ export function getTools({
         description:
             'Returns the full **hevyProgram** snapshot from the **start of this request** (does not refresh after **buildWeek** in the same turn). ' +
             'Includes day notes, exercise notes, exercise reason, sets, and structure. Call when you need the current program — not on every turn. ' +
-            'Sorted by folder_id (week, 0-based) then order (day, 1-based). For **mutateProgram**: folderIds: [folder_id], dayOrder: order. ' +
+            'Sorted by folder_id (week, 0-based) then order (day number 1–7). For **mutateProgram**: folderIds: [folder_id], dayOrder: order. Target exercises/sets by 0-based array position (exerciseIndex, setIndex). ' +
             'For **post-buildWeek periodization**, do not use this for targeting; use **buildWeek** output, **planProgram**, and **folderIds** + **dayOrder**.',
         inputSchema: readProgramInputSchema,
         execute: async () => ({
@@ -570,7 +570,7 @@ export function getTools({
                             const rawRange = set.rep_range ?? null;
                             const isDegenerate = rawRange != null && rawRange.start === rawRange.end;
                             return {
-                                index: setIndex + 1,
+                                index: setIndex,
                                 type: set.type || 'normal',
                                 reps: isDegenerate ? (set.reps ?? rawRange.start) : (set.reps ?? null),
                                 weight_kg: set.weight_kg ?? null,

@@ -10,15 +10,13 @@ export const OP_NESTED_OBJECT_FIELDS: Record<string, string[]> = {
 
 function normalizeAgentSetInput(set: unknown, arrayIndex: number): Record<string, unknown> {
     if (typeof set !== "object" || set === null) {
-        return { index: arrayIndex + 1, type: "normal" };
+        return { index: arrayIndex, type: "normal" };
     }
 
     const raw = set as Record<string, unknown>;
-    const index =
-        typeof raw.index === "number" && raw.index >= 1 ? raw.index : arrayIndex + 1;
 
     return {
-        index,
+        index: arrayIndex,
         type: typeof raw.type === "string" ? raw.type : "normal",
         weight_kg: raw.weight_kg !== undefined ? raw.weight_kg : null,
         reps: raw.reps !== undefined ? raw.reps : null,

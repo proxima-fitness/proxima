@@ -19,6 +19,18 @@ export function readProgramSnapshot(program: THevyRoutine[] | undefined): THevyR
     }));
 }
 
+type THevyExerciseForModel = Omit<THevyExercise, "index" | "sets"> & {
+    sets: Omit<THevySets, "index">[];
+};
+
+function exerciseForModel(exercise: THevyExercise): THevyExerciseForModel {
+    const { index: _exerciseIndex, sets, ...exerciseRest } = exercise;
+    return {
+        ...exerciseRest,
+        sets: sets.map(({ index: _setIndex, ...set }) => set),
+    };
+}
+
 /** Full program JSON for the LLM after readProgram — not a summary. */
 export function formatReadProgramForModel(program: THevyRoutine[]): string {
     if (program.length === 0) {
@@ -27,15 +39,15 @@ export function formatReadProgramForModel(program: THevyRoutine[]): string {
 
     const payload = program.map(({ created_at: _c, updated_at: _u, ...routine }) => ({
         ...routine,
-        exercises: routine.exercises.map(({ ...exercise }) => exercise),
+        exercises: routine.exercises.map((exercise) => exerciseForModel(exercise)),
     }));
 
     return (
         `Program snapshot (${program.length} routines). ` +
-        "Sorted by folder_id (week, 0-based) then order (day, 1-based). " +
+        "Sorted by folder_id (week, 0-based) then order (day number 1–7). " +
         "For mutateProgram: folderIds: [folder_id], dayOrder: order (folderIds is an array). " +
-        "Set index in this snapshot may be 0-based; mutateProgram exercise payloads require 1-based set.index " +
-        "(1, 2, 3…) with explicit nulls — do not copy sets verbatim into insert_exercise / edit_exercise.\n\n" +
+        "Target exercises and sets by 0-based array position: first exercise → exerciseIndex 0, first set → setIndex 0. " +
+        "exercises[] and sets[] order is the index; index fields are omitted from this snapshot.\n\n" +
         JSON.stringify(payload)
     );
 }

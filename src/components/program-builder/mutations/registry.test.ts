@@ -75,7 +75,7 @@ describe("runProgramMutation", () => {
         expect(commitWithUndo).not.toHaveBeenCalled();
     });
 
-    it("insert_exercise from dialog form commits with 1-based set indices", () => {
+    it("insert_exercise from dialog form commits with 0-based set indices", () => {
         const program = [makeDay()];
         const commitWithUndo = vi.fn();
         const exercise = addExerciseFormToInsertPayload({
@@ -88,7 +88,7 @@ describe("runProgramMutation", () => {
             restSeconds: "90",
         });
 
-        expect(exercise.sets[0].index).toBe(1);
+        expect(exercise.sets[0].index).toBe(0);
 
         const result = runProgramMutation(
             "insert_exercise",
@@ -105,8 +105,8 @@ describe("runProgramMutation", () => {
         const program = [
             makeDay({
                 exercises: [
-                    { index: 1, title: "A", notes: "", exercise_template_id: "a", supersets_id: null, sets: [], rest_seconds: null },
-                    { index: 2, title: "B", notes: "", exercise_template_id: "b", supersets_id: null, sets: [], rest_seconds: null },
+                    { index: 0, title: "A", notes: "", exercise_template_id: "a", supersets_id: null, sets: [], rest_seconds: null },
+                    { index: 1, title: "B", notes: "", exercise_template_id: "b", supersets_id: null, sets: [], rest_seconds: null },
                 ],
             }),
         ];

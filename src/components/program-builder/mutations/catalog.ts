@@ -283,7 +283,9 @@ export const programMutationCatalog: TProgramMutationDefinition[] = [
                     program,
                     {
                         ...args.routine,
-                        exercises: args.routine.exercises.map(toHevyExercise),
+                        exercises: args.routine.exercises.map((exercise, index) =>
+                            toHevyExercise(exercise, index),
+                        ),
                     },
                     args.folderIds[0],
                 ),

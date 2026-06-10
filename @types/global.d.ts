@@ -224,7 +224,7 @@ type THevyRoutine = {
 }
 
 type THevyExercise = {
-    index: number; // Index indicating the order of the exercise in the routine.
+    index: number; // 0-based position in the routine's exercises[] array.
     title: string; // Title of the exercise
     notes: string; // Routine notes on the exercise
     rest_seconds: string | null; // The rest time in seconds
@@ -236,7 +236,7 @@ type THevyExercise = {
 }
 
 type THevySets = {
-    index: number; // Index indicating the order of the set in the routine.
+    index: number; // 0-based position in the exercise's sets[] array.
     type: string; // The type of set. This can be one of 'normal', 'warmup', 'dropset', 'failure'
     weight_kg: number | null; // Weight lifted in kilograms
     reps: number | null; // Number of reps logged for the set

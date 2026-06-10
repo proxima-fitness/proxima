@@ -56,7 +56,7 @@ describe("normalizeAgentOperationInput", () => {
         if (exercise.op !== "insert_exercise") return;
 
         expect(exercise.exercise.sets[0]).toMatchObject({
-            index: 1,
+            index: 0,
             reps: 10,
             weight_kg: null,
             distance_meters: null,
@@ -64,7 +64,7 @@ describe("normalizeAgentOperationInput", () => {
             custom_metric: null,
             rep_range: null,
         });
-        expect(exercise.exercise.sets[1]).toMatchObject({ index: 2, reps: 8 });
+        expect(exercise.exercise.sets[1]).toMatchObject({ index: 1, reps: 8 });
     });
 
     it("parses stringified exercise JSON into a nested object", () => {
@@ -89,7 +89,7 @@ describe("normalizeAgentOperationInput", () => {
         const op = parsed.data.operations[0];
         if (op.op !== "insert_exercise") return;
         expect(op.exercise.exercise_template_id).toBe("WU000008");
-        expect(op.exercise.sets[0]).toMatchObject({ index: 1, reps: 10 });
+        expect(op.exercise.sets[0]).toMatchObject({ index: 0, reps: 10 });
     });
 
     it("rejects unparseable string exercise with a clear mistake message", () => {

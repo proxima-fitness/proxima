@@ -54,7 +54,7 @@ describe("add_routine_as_day with Hevy API routine payload", () => {
         expect(next).toHaveLength(2);
         expect(next[1].title).toBe("Upper Body");
         expect(next[1].exercises[0].rest_seconds).toBe("90");
-        expect(next[1].exercises[0].sets[0].index).toBe(1);
+        expect(next[1].exercises[0].sets[0].index).toBe(0);
         expect(next[1].exercises[0].sets[0].rpe).toBeNull();
         expect(next[1].exercises[0].sets[0].rep_range).toBeNull();
     });

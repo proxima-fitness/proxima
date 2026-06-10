@@ -41,14 +41,14 @@ const makeSet = (overrides: Partial<THevySets> & Pick<THevySets, "index">): THev
 });
 
 const makeExercise = (overrides: Partial<THevyExercise> = {}): THevyExercise => ({
-    index: 1,
+    index: 0,
     title: "Bench Press",
     notes: "Keep elbows tucked",
     reason: "Primary horizontal press",
     rest_seconds: "90",
     exercise_template_id: "bench-1",
     supersets_id: 0,
-    sets: [makeSet({ index: 1 }), makeSet({ index: 2 }), makeSet({ index: 3 })],
+    sets: [makeSet({ index: 0 }), makeSet({ index: 1 }), makeSet({ index: 2 })],
     ...overrides,
 });
 
@@ -67,7 +67,7 @@ const gridPayload = {
     title: "Overhead Press",
     rest_seconds: "120",
     reason: "Vertical push",
-    sets: [makeSet({ index: 1, reps: 6 }), makeSet({ index: 2, reps: 6 })],
+    sets: [makeSet({ index: 0, reps: 6 }), makeSet({ index: 1, reps: 6 })],
 };
 
 describe("editExercise", () => {
@@ -179,7 +179,7 @@ describe("swapExerciseTemplate", () => {
                 exercise_template_id: "3601968B",
                 title: "DB Bench",
                 rest_seconds: "60",
-                sets: [makeSet({ index: 1, reps: 12 })],
+                sets: [makeSet({ index: 0, reps: 12 })],
             },
             { preserveSets: false },
         );
@@ -252,7 +252,7 @@ describe("resolveExercisePayload", () => {
         const result = resolveExercisePayload(
             {
                 exercise_template_id: "ohp-1",
-                sets: [makeSet({ index: 1 })],
+                sets: [makeSet({ index: 0 })],
             },
             catalog,
         );
@@ -266,7 +266,7 @@ describe("resolveExercisePayload", () => {
         const result = resolveExercisePayload(
             {
                 exercise_template_id: "missing-id",
-                sets: [makeSet({ index: 1 })],
+                sets: [makeSet({ index: 0 })],
             },
             new Map(),
         );

@@ -235,10 +235,22 @@ export function editDayTitle(
 
 // --- Exercises ---
 
+/** Sync exercise.index and set.index to 0-based array positions. */
+export function renumberExercises(exercises: THevyExercise[]): THevyExercise[] {
+    return exercises.map((exercise, exerciseIndex) => ({
+        ...exercise,
+        index: exerciseIndex,
+        sets: exercise.sets.map((set, setIndex) => ({
+            ...set,
+            index: setIndex,
+        })),
+    }));
+}
+
 /**
  * Remove one exercise from matching days by its position in the exercises array.
  *
- * Does not renumber exercise.index fields on survivors; only the array changes.
+ * Renumbers exercise.index and set.index to match array positions after removal.
  *
  * @param program - Current program snapshot.
  * @param folderIds - Week indices (`folder_id` values) to match.
@@ -256,7 +268,9 @@ export function deleteExercise(
         if (folderIds.includes(Number(day.folder_id)) && Number(day.order) === dayOrder) {
             return {
                 ...day,
-                exercises: day.exercises.filter((_, index) => index !== exerciseIndex),
+                exercises: renumberExercises(
+                    day.exercises.filter((_, index) => index !== exerciseIndex),
+                ),
             };
         }
         return day;
@@ -292,7 +306,7 @@ export function addExercise(
         }
 
         const newExercise: THevyExercise = {
-            index: day.exercises.length + 1,
+            index: 0,
             title: exercise?.selectedExercise?.title ?? "",
             notes: "",
             exercise_template_id: exercise?.selectedExercise?.id ?? "",
@@ -304,20 +318,18 @@ export function addExercise(
         if (exerciseIndex === undefined || exerciseIndex === day.exercises.length) {
             return {
                 ...day,
-                exercises: [...day.exercises, newExercise],
+                exercises: renumberExercises([...day.exercises, newExercise]),
             };
         }
 
         const exercises = [...day.exercises];
         exercises.splice(exerciseIndex, 0, newExercise);
-        return { ...day, exercises };
+        return { ...day, exercises: renumberExercises(exercises) };
     });
 }
 
 /**
  * Build an `insert_exercise` payload from add-exercise dialog form state.
- *
- * The dialog converter uses 0-based set array indices; registry schema expects 1-based.
  */
 export function addExerciseFormToInsertPayload(exercise: THevyAddExercise): TInsertExercisePayload {
     return {
@@ -325,10 +337,7 @@ export function addExerciseFormToInsertPayload(exercise: THevyAddExercise): TIns
         title: exercise.selectedExercise?.title ?? "",
         notes: "",
         rest_seconds: exercise.restSeconds ?? null,
-        sets: hevyAddExerciseToHevySetsConverter(exercise).map((set, i) => ({
-            ...set,
-            index: i + 1,
-        })),
+        sets: hevyAddExerciseToHevySetsConverter(exercise),
     };
 }
 
@@ -352,14 +361,14 @@ export function insertExercise(
     exerciseIndex: number,
     payload: TInsertExercisePayload,
 ): THevyRoutine[] {
-    const sets = payload.sets.map(toHevySet);
+    const sets = payload.sets.map((set, setIndex) => toHevySet(set, setIndex));
     return program.map((day) => {
         if (!folderIds.includes(Number(day.folder_id)) || Number(day.order) !== dayOrder) {
             return day;
         }
 
         const newExercise: THevyExercise = {
-            index: day.exercises.length + 1,
+            index: 0,
             title: payload.title ?? "",
             notes: payload.notes ?? "",
             exercise_template_id: payload.exercise_template_id ?? "",
@@ -370,12 +379,12 @@ export function insertExercise(
         };
 
         if (exerciseIndex === day.exercises.length) {
-            return { ...day, exercises: [...day.exercises, newExercise] };
+            return { ...day, exercises: renumberExercises([...day.exercises, newExercise]) };
         }
 
         const exercises = [...day.exercises];
         exercises.splice(exerciseIndex, 0, newExercise);
-        return { ...day, exercises };
+        return { ...day, exercises: renumberExercises(exercises) };
     });
 }
 
@@ -407,7 +416,7 @@ export function addRoutineAsDay(
         id: String(maxId + 1),
         folder_id,
         order: String(nthDayOrder),
-        exercises: routine.exercises,
+        exercises: renumberExercises(routine.exercises),
         title: routine.title ?? "",
         notes: routine.notes ?? "",
     };
@@ -589,26 +598,28 @@ export function editExercise(
     exerciseIndex: number,
     payload: TInsertExercisePayload,
 ): THevyRoutine[] {
-    const sets = payload.sets.map(toHevySet);
+    const sets = payload.sets.map((set, setIndex) => toHevySet(set, setIndex));
     return program.map((day) => {
         if (!folderIds.includes(Number(day.folder_id)) || Number(day.order) !== dayOrder) {
             return day;
         }
         return {
             ...day,
-            exercises: day.exercises.map((existingExercise, index) =>
-                index === exerciseIndex
-                    ? {
-                          index: existingExercise.index,
-                          title: payload.title ?? "",
-                          notes: existingExercise.notes ?? "",
-                          exercise_template_id: payload.exercise_template_id,
-                          supersets_id: existingExercise.supersets_id ?? null,
-                          sets,
-                          rest_seconds: payload.rest_seconds ?? null,
-                          ...(payload.reason !== undefined ? { reason: payload.reason } : {}),
-                      }
-                    : existingExercise,
+            exercises: renumberExercises(
+                day.exercises.map((existingExercise, index) =>
+                    index === exerciseIndex
+                        ? {
+                              index: exerciseIndex,
+                              title: payload.title ?? "",
+                              notes: existingExercise.notes ?? "",
+                              exercise_template_id: payload.exercise_template_id,
+                              supersets_id: existingExercise.supersets_id ?? null,
+                              sets,
+                              rest_seconds: payload.rest_seconds ?? null,
+                              ...(payload.reason !== undefined ? { reason: payload.reason } : {}),
+                          }
+                        : existingExercise,
+                ),
             ),
         };
     });
@@ -708,7 +719,7 @@ export function swapExerciseTemplate(
                     notes: exercise.notes ?? "",
                     exercise_template_id: fullTo.exercise_template_id,
                     supersets_id: exercise.supersets_id ?? null,
-                    sets: fullTo.sets.map(toHevySet),
+                    sets: fullTo.sets.map((set, setIndex) => toHevySet(set, setIndex)),
                     rest_seconds: fullTo.rest_seconds ?? null,
                     ...(fullTo.reason !== undefined ? { reason: fullTo.reason } : {}),
                 };

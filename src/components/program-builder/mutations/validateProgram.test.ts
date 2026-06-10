@@ -5,7 +5,7 @@ import { isApplyBatchFailure } from "./types";
 import { validateNoEmptiedTrainingDays } from "./validateProgram";
 
 const makeSet = (): THevySets => ({
-    index: 1,
+    index: 0,
     type: "normal",
     weight_kg: null,
     reps: 8,
@@ -17,7 +17,7 @@ const makeSet = (): THevySets => ({
 });
 
 const makeExercise = (id: string): THevyExercise => ({
-    index: 1,
+    index: 0,
     title: id,
     notes: "",
     rest_seconds: "90",

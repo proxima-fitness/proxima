@@ -20,13 +20,13 @@ const makeSet = (overrides: Partial<THevySets> & Pick<THevySets, "index">): THev
 });
 
 const makeExercise = (overrides: Partial<THevyExercise> = {}): THevyExercise => ({
-    index: 1,
+    index: 0,
     title: "Bench Press",
     notes: "",
     rest_seconds: "90",
     exercise_template_id: "ex-1",
     supersets_id: null,
-    sets: [makeSet({ index: 1 }), makeSet({ index: 2 }), makeSet({ index: 3 })],
+    sets: [makeSet({ index: 0 }), makeSet({ index: 1 }), makeSet({ index: 2 })],
     ...overrides,
 });
 
@@ -59,7 +59,7 @@ describe("applyOperations", () => {
                 title: "Band Pull-apart",
                 notes: "Warmup",
                 rest_seconds: "30",
-                sets: [makeSet({ index: 1, reps: 15 })],
+                sets: [makeSet({ index: 0, reps: 15 })],
             },
         });
 
@@ -69,6 +69,37 @@ describe("applyOperations", () => {
         expect(result.program[0].exercises).toHaveLength(2);
         expect(result.program[0].exercises[0].title).toBe("Band Pull-apart");
         expect(result.program[0].exercises[1].title).toBe("Bench Press");
+        expect(result.program[0].exercises[0].index).toBe(0);
+        expect(result.program[0].exercises[1].index).toBe(1);
+        expect(result.program[0].exercises[0].sets[0].index).toBe(0);
+    });
+
+    it("delete_exercise renumbers remaining exercises and sets", () => {
+        const program = [
+            makeDay({
+                exercises: [
+                    makeExercise({ index: 0, title: "Warmup", exercise_template_id: "warmup-1" }),
+                    makeExercise({ index: 1, title: "Target", exercise_template_id: "target-1" }),
+                    makeExercise({ index: 2, title: "Other", exercise_template_id: "other-1" }),
+                ],
+            }),
+        ];
+
+        const result = applyOperation(program, {
+            op: "delete_exercise",
+            folderIds: [0],
+            dayOrder: 1,
+            exerciseIndex: 1,
+        });
+
+        expect(isValidationFailure(result)).toBe(false);
+        if (isValidationFailure(result)) return;
+
+        expect(result.program[0].exercises.map((exercise) => exercise.title)).toEqual([
+            "Warmup",
+            "Other",
+        ]);
+        expect(result.program[0].exercises.map((exercise) => exercise.index)).toEqual([0, 1]);
     });
 
     it("edit_day_title updates matching days across folderIds", () => {

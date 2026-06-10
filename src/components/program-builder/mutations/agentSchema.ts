@@ -50,14 +50,14 @@ export const mutateProgramInputSchema = z.object({
 export type TMutateProgramInput = z.infer<typeof mutateProgramInputSchema>;
 
 const MUTATE_PROGRAM_INDEXING_GUIDE =
-    "**Indexing:** folderIds = 0-based week (array, e.g. `[0]`). dayOrder = 1-based day. " +
-    "exerciseIndex / setIndex (update_set) = 0-based. **set.index inside exercise payloads = 1-based** (1, 2, 3…) — " +
-    "do not copy sets verbatim from readProgram.\n" +
+    "**Indexing:** folderIds = 0-based week (array, e.g. `[0]`). dayOrder = Hevy day number (1–7). " +
+    "exerciseIndex, setIndex, and array positions are **0-based** (first exercise → 0, first set → 0). " +
+    "readProgram lists exercises[] and sets[] in order — use that array position for targeting.\n" +
     "**Nested objects:** pass object fields (`exercise`, `to`, `set`, etc.) as nested objects in tool args — never JSON strings. **insert_exercise:** one `exercise` per op (not an `exercises` array). **`exerciseIndex` is required** on every insert_exercise (empty day → 0; append → exercises.length from readProgram). Title optional — resolved from template ID.\n" +
     "**Op choice:** rename day → edit_day_title; replace one slot → edit_exercise; add rows → insert_exercise (one per row); tweak reps/RPE → update_set.\n";
 
 const MUTATE_PROGRAM_INSERT_EXAMPLE =
-    'Example insert_exercise (first row on empty day — exerciseIndex 0):\n{ "op": "insert_exercise", "folderIds": [0], "dayOrder": 1, "exerciseIndex": 0, "exercise": { "exercise_template_id": "ID", "rest_seconds": "90", "sets": [{ "index": 1, "type": "normal", "reps": 8, "weight_kg": null, "rpe": 8, "distance_meters": null, "duration_seconds": null, "custom_metric": null, "rep_range": null }] } }';
+    'Example insert_exercise (first row on empty day — exerciseIndex 0):\n{ "op": "insert_exercise", "folderIds": [0], "dayOrder": 1, "exerciseIndex": 0, "exercise": { "exercise_template_id": "ID", "rest_seconds": "90", "sets": [{ "type": "normal", "reps": 8, "weight_kg": null, "rpe": 8, "distance_meters": null, "duration_seconds": null, "custom_metric": null, "rep_range": null }] } }';
 
 /** Auto-generated tool description from registry metadata. */
 export function buildMutateProgramToolDescription(): string {

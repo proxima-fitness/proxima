@@ -10,7 +10,7 @@ function normalizeRestSeconds(value: unknown): string | null {
 function normalizeHevyApiSetForGrid(set: unknown, arrayIndex: number): Record<string, unknown> {
     if (typeof set !== "object" || set === null) {
         return {
-            index: arrayIndex + 1,
+            index: arrayIndex,
             type: "normal",
             weight_kg: null,
             reps: null,
@@ -23,11 +23,9 @@ function normalizeHevyApiSetForGrid(set: unknown, arrayIndex: number): Record<st
     }
 
     const raw = set as Record<string, unknown>;
-    const index =
-        typeof raw.index === "number" && raw.index >= 1 ? raw.index : arrayIndex + 1;
 
     return {
-        index,
+        index: arrayIndex,
         type: typeof raw.type === "string" ? raw.type : "normal",
         weight_kg: raw.weight_kg !== undefined ? raw.weight_kg : null,
         reps: raw.reps !== undefined ? raw.reps : null,
@@ -56,7 +54,7 @@ function normalizeHevyApiExerciseForGrid(exercise: unknown, arrayIndex: number):
     const supersetsId = raw.supersets_id ?? raw.superset_id;
 
     return {
-        index: typeof raw.index === "number" ? raw.index : arrayIndex,
+        index: arrayIndex,
         title: typeof raw.title === "string" ? raw.title : "",
         notes: typeof raw.notes === "string" ? raw.notes : "",
         rest_seconds: normalizeRestSeconds(raw.rest_seconds),

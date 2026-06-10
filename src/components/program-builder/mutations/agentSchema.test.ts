@@ -10,7 +10,7 @@ import { mutateProgramInputSchema } from "./agentSchema";
 import { isValidationFailure } from "./types";
 
 const makeSet = () => ({
-    index: 1,
+    index: 0,
     type: "normal" as const,
     weight_kg: null,
     reps: 8,
