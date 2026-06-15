@@ -93,7 +93,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                         </div>
                         <div className="text-center text-xl font-normal leading-tight px-12 max-sm:text-base max-sm:px-2 text-muted-foreground">
                             <span className="block">Work, injuries, and no time to program your training?</span>
-                            <span className="block">Proxima builds yours and updates it from every workout you log.</span>
+                            <span className="block">Proxima builds yours and updates it from your fitness app data.</span>
                         </div>
                     </div>
                     <div className="w-full max-w-3xl max-sm:px-2 flex flex-col items-center gap-3">
