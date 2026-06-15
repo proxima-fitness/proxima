@@ -373,36 +373,72 @@
   }
 }
 
-/* Outside @layer so these beat slick-carousel's default white arrows */
-.reddit-reviews-carousel .slick-slide {
-  height: auto;
+@keyframes reddit-reviews-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
-.reddit-reviews-carousel .slick-prev,
-.reddit-reviews-carousel .slick-next {
-  top: 50%;
-  transform: translateY(-50%);
+.reddit-reviews-marquee-viewport {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 3rem,
+    black calc(100% - 3rem),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 3rem,
+    black calc(100% - 3rem),
+    transparent 100%
+  );
 }
 
-.reddit-reviews-carousel .slick-prev:before,
-.reddit-reviews-carousel .slick-next:before {
-  color: hsl(var(--foreground) / 0.75);
-  opacity: 1;
+@media (min-width: 640px) {
+  .reddit-reviews-marquee-viewport {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      black 7rem,
+      black calc(100% - 7rem),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      black 7rem,
+      black calc(100% - 7rem),
+      transparent 100%
+    );
+  }
 }
 
-.reddit-reviews-carousel .slick-prev:hover:before,
-.reddit-reviews-carousel .slick-next:hover:before {
-  color: hsl(var(--foreground));
+.reddit-reviews-marquee-track {
+  animation: reddit-reviews-marquee 80s linear infinite;
 }
 
-.dark .reddit-reviews-carousel .slick-prev:before,
-.dark .reddit-reviews-carousel .slick-next:before {
-  color: rgba(255, 255, 255, 0.85);
+.reddit-reviews-marquee-track:hover {
+  animation-play-state: paused;
 }
 
-.dark .reddit-reviews-carousel .slick-prev:hover:before,
-.dark .reddit-reviews-carousel .slick-next:hover:before {
-  color: rgba(255, 255, 255, 1);
+@media (prefers-reduced-motion: reduce) {
+  .reddit-reviews-marquee-track {
+    animation: none;
+  }
+
+  .reddit-reviews-marquee-viewport {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .reddit-reviews-marquee-viewport::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @layer base {

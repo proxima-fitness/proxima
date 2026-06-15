@@ -23,8 +23,7 @@ export const PwaSection: React.FC = () => {
     <div>
       <div className={layout.sectionInfoCentered}>
         <h2 className="w-full text-center font-tertiary text-3xl font-semibold text-foreground sm:text-4xl">
-          A Coaching Companion{" "}
-          <span className="text-lightSecondary">In Your Pocket</span>
+          A Coaching Companion In Your Pocket
         </h2>
         <p className="mx-auto mt-4 max-w-[560px] text-center font-tertiary text-[14px] font-normal leading-[30.8px] text-muted-foreground ss:text-[18px]">
           Add Proxima as an App to your home screen for quick access

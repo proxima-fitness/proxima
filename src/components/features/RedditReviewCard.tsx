@@ -4,7 +4,7 @@
  * @module RedditReviewCard
  * @description Single Reddit community testimonial card with avatar and quote.
  * @dependsOn public reddit icon asset.
- * @usedBy PositiveReviewsMosaic, PositiveReviewsCarousel.
+ * @usedBy PositiveReviewsMarquee.
  */
 
 import { reddit } from "public";
@@ -17,31 +17,22 @@ interface IRedditReviewCardProps {
 }
 
 export function RedditReviewCard({ author, quote, className }: IRedditReviewCardProps) {
-  const initial = author.replace(/^u\//, "").charAt(0).toUpperCase();
-
   return (
     <figure
       className={cn(
-        "break-inside-avoid rounded-2xl border border-black/5 bg-lightGray p-6 shadow-sm transition-all duration-200 ease-out hover:border-black/20 hover:shadow-md dark:border-white/8 dark:bg-black dark:hover:border-white/20 dark:hover:shadow-lg dark:hover:shadow-black/20",
+        "flex min-h-[160px] flex-col break-inside-avoid rounded-2xl border border-black/5 bg-lightGray p-6 shadow-sm transition-shadow duration-200 ease-out hover:border-black/20 hover:shadow-md dark:border-white/8 dark:bg-black dark:hover:border-white/20 dark:hover:shadow-lg dark:hover:shadow-black/20",
         className,
       )}
     >
-      <figcaption className="mb-4 flex items-center gap-3">
-        <span className="relative shrink-0" aria-hidden>
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-sm font-semibold text-foreground dark:bg-extraDarkGray dark:text-white">
-            {initial}
-          </span>
-          <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center overflow-hidden rounded-full ring-2 ring-lightGray dark:ring-black">
-            <img src={reddit.src} alt="" className="h-full w-full object-cover" />
-          </span>
-        </span>
-        <span className="font-tertiary text-sm font-semibold text-foreground dark:text-white">
+      <blockquote className="font-tertiary text-base font-semibold leading-snug tracking-tight text-foreground sm:text-[17px] dark:text-white">
+        {quote}
+      </blockquote>
+      <figcaption className="mt-auto flex items-center gap-2 pt-4">
+        <img src={reddit.src} alt="" className="h-4 w-4 shrink-0 object-contain" aria-hidden />
+        <span className="font-tertiary text-xs font-normal text-muted-foreground dark:text-white/60">
           {author}
         </span>
       </figcaption>
-      <blockquote className="font-tertiary text-sm leading-relaxed text-muted-foreground dark:text-white/80">
-        {quote}
-      </blockquote>
     </figure>
   );
 }

@@ -31,8 +31,8 @@ const steps: IHowItWorksStep[] = [
         icon: Dumbbell,
     },
     {
-        title: "Evolve with your coach",
-        body: "Your unified coach keeps working after day one - get advice, adjust your program as you progress, and stay on track.",
+        title: "Program adapts with you",
+        body: "Proxima monitors your workout data and updates your program as you progress - ongoing coaching, not a one-time plan.",
         icon: TrendingUp,
     },
 ];

@@ -88,11 +88,12 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                             <img src={(proxima_logo_black as any).src} alt="Proxima" className="h-14 w-auto hidden dark:block" />
                             <img src={(proxima_logo_white as any).src} alt="Proxima" className="h-14 w-auto dark:hidden block" />
                         </div>
-                        <div className="font-tertiary text-4xl max-sm:text-2xl max-sm:px-6 font-bold text-foreground">
-                            Your Unified <span className="text-secondary dark:text-lightSecondary">Training Coach</span>
+                        <div className="font-tertiary text-6xl max-sm:text-4xl max-sm:px-6 font-bold text-foreground">
+                            Your Unified Training Coach
                         </div>
-                        <div className="text-lg font-normal px-12 max-sm:text-sm max-sm:px-2 text-muted-foreground">
-                            Describe your goals. Get a program. Track in your app. Evolve with your coach.
+                        <div className="text-center text-xl font-normal leading-tight px-12 max-sm:text-base max-sm:px-2 text-muted-foreground">
+                            <span className="block">Work, injuries, and no time to program your training?</span>
+                            <span className="block">Proxima builds yours and updates it from every workout you log.</span>
                         </div>
                     </div>
                     <div className="w-full max-w-3xl max-sm:px-2 flex flex-col items-center gap-3">
