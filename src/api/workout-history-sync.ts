@@ -241,5 +241,44 @@ export async function runSyncChunk(db: TWorkoutHistoryDb,params: { userId: strin
  * Fire-and-forget first sync chunk after Hevy connect (browser only).
  */
 export function triggerWorkoutHistorySync(): void {
-    void fetch("/api/workout-history/sync", { method: "POST" });
+    void runWorkoutHistorySyncChunk();
+}
+
+/** Delay between client poller chunks (server handles Hevy 429 backoff per chunk). */
+export const WORKOUT_SYNC_POLL_DELAY_MS = 2_000;
+
+/** Extra delay when the last chunk reported a rate-limit error string. */
+export const WORKOUT_SYNC_RATE_LIMIT_POLL_DELAY_MS = 60_000;
+
+/**
+ * Fetches derived backup progress for the authenticated user (browser only).
+ */
+export async function fetchWorkoutHistorySyncProgress(): Promise<TWorkoutSyncProgress> {
+    const response = await fetch("/api/workout-history/progress");
+    if (!response.ok) {
+        throw new Error("Failed to fetch workout history sync progress");
+    }
+    return response.json() as Promise<TWorkoutSyncProgress>;
+}
+
+/**
+ * Runs one backup chunk for the authenticated user (browser only).
+ */
+export async function runWorkoutHistorySyncChunk(): Promise<TSyncChunkResult> {
+    const response = await fetch("/api/workout-history/sync", { method: "POST" });
+    if (!response.ok) {
+        throw new Error("Failed to run workout history sync chunk");
+    }
+    return response.json() as Promise<TSyncChunkResult>;
+}
+
+/** True when backup is still catching up and no cursor error is set. */
+export function isWorkoutHistorySyncInProgress(progress: TWorkoutSyncProgress): boolean {
+    return progress.backedUpCount < progress.hevyCount && !progress.syncError;
+}
+
+/** True when the global sync banner should render. */
+export function shouldShowWorkoutHistorySyncBanner(progress: TWorkoutSyncProgress | null): boolean {
+    if (!progress) return false;
+    return isWorkoutHistorySyncInProgress(progress) || Boolean(progress.syncError);
 }

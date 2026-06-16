@@ -30,6 +30,7 @@ import { ProfilePictureProvider } from "@/contexts/ProfilePictureContext";
 import { ThemeProvider } from "@/components/theme-provider"
 import { PoundsOrKgProvider } from "@/contexts/PoundsOrKgContext";
 import { BuildProgramActionsProvider } from "@/contexts/BuildProgramActionsContext";
+import { WorkoutHistorySyncBannerDynamic } from "@/components/workout-history/WorkoutHistorySyncBannerDynamic";
 
 export const viewport: Viewport = {
   themeColor: [
@@ -126,6 +127,7 @@ export default function RootLayout({
                                     <AppSidebarDynamic />
                                     <div className="flex-1 min-w-0 bg-background">
                                         <MobileSidebarHeader />
+                                        <WorkoutHistorySyncBannerDynamic />
                                         <main id="main">
                                             <PostHogClientProvider>
                                                 <Analytics />
