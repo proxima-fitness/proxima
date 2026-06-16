@@ -155,6 +155,13 @@ type TImportHevyWorkoutResult =
     | { status: "skipped"; workoutId: string }
     | { status: "error"; message: string };
 
+type TSyncChunkResult = {
+    backedUpCount: number;
+    hevyCount: number;
+    syncError: string | null;
+    done: boolean;
+};
+
 type THevyExerciseTemplateRow = Pick<
     Database["public"]["Tables"]["hevy_exercise_templates"]["Row"],
     | "id"

@@ -1365,38 +1365,41 @@ export const getLastKnownHevyWorkoutCount = async (user: User): Promise<number |
 };
 
 /**
- * UPDATES OR INSERTS THE LAST KNOWN HEVY WORKOUT COUNT
- * @param user - The user
- * @param count - The workout count to store
- * @returns True if successful, false otherwise
+ * Updates `last_known_workout_count` on `hevy_workouts_count` after a full catch-up.
+ * Clears `sync_error` when the cursor advances.
+ *
+ * @param user - Authenticated Supabase user
+ * @param count - Live Hevy workout count to store as the cursor
+ * @returns `true` when the upsert succeeds
  */
-// export const updateLastKnownHevyWorkoutCount = async (user: User, count: number): Promise<boolean> => {
-//     try {
-//         if (user) {
-//             // Use upsert to insert or update
-//             const { error } = await supabase
-//                 .from('hevy_workouts_count')
-//                 .upsert({
-//                     user_id: user.id,
-//                     last_known_workout_count: count,
-//                     updated_at: new Date().toISOString(),
-//                 }, {
-//                     onConflict: 'user_id',
-//                 });
+export const updateLastKnownHevyWorkoutCount = async (user: User, count: number): Promise<boolean> => {
+    try {
+        if (user) {
+            const { error } = await supabase
+                .from("hevy_workouts_count")
+                .upsert(
+                    {
+                        user_id: user.id,
+                        last_known_workout_count: count,
+                        sync_error: null,
+                        updated_at: new Date().toISOString(),
+                    },
+                    { onConflict: "user_id" },
+                );
 
-//             if (error) {
-//                 console.error("Error updating last known Hevy workout count", error);
-//                 return false;
-//             }
+            if (error) {
+                console.error("Error updating last known Hevy workout count", error);
+                return false;
+            }
 
-//             return true;
-//         }
-//         return false;
-//     } catch (error: unknown) {
-//         console.error("Error updating last known Hevy workout count", error);
-//         return false;
-//     }
-// };
+            return true;
+        }
+        return false;
+    } catch (error: unknown) {
+        console.error("Error updating last known Hevy workout count", error);
+        return false;
+    }
+};
 
 /**
  * CALCULATES THE DIFFERENCE BETWEEN CURRENT AND LAST KNOWN HEVY WORKOUT COUNT

@@ -26,6 +26,7 @@ import {
     saveProgramToSupabase,
     updateHevyApiKey,
 } from "../api/hevy";
+import { triggerWorkoutHistorySync } from "@/api/workout-history-sync";
 import { MAIN_DISCOUNT_PERCENT, MAIN_DISCOUNT_CODE, RATE_LIMIT_EXHAUSTED_MESSAGE } from "@/assets/constants/ui-constants";
 import { postNewProgramSubscriber } from "@/api/programs";
 import { toast } from "sonner";
@@ -151,6 +152,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                 toast.success("Hevy API Key saved successfully");
                 queryClient.invalidateQueries({ queryKey: ["hevy_api_key"] });
                 queryClient.invalidateQueries({ queryKey: ["exercise-stalls-analysis", user?.id] });
+                triggerWorkoutHistorySync();
                 setIsEditingApiKey(false);
             }
         } else {
@@ -159,6 +161,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                 toast.success("Hevy API Key saved successfully");
                 queryClient.invalidateQueries({ queryKey: ["hevy_api_key"] });
                 queryClient.invalidateQueries({ queryKey: ["exercise-stalls-analysis", user?.id] });
+                triggerWorkoutHistorySync();
                 setIsEditingApiKey(false);
             } else {
                 toast.error(

@@ -11,6 +11,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { useState } from "react";
 import { postHevyApikey, updateHevyApiKey } from "../program-builder/api/hevy";
+import { triggerWorkoutHistorySync } from "@/api/workout-history-sync";
 import { useUserContext } from "@/contexts/UserContext";
 import { toast } from "sonner";
 import { validate } from "uuid";
@@ -55,6 +56,7 @@ export const ConnectHevyDialog: React.FC<IProps> = (props) => {
                         toast.success("Hevy API Key saved successfully");
                         queryClient.invalidateQueries({ queryKey: [ "hevy_api_key" ] });
                         queryClient.invalidateQueries({ queryKey: ["exercise-stalls-analysis", user?.id] });
+                        triggerWorkoutHistorySync();
                     }
                 }
             } else {
@@ -64,6 +66,7 @@ export const ConnectHevyDialog: React.FC<IProps> = (props) => {
                         toast.success("Hevy API Key saved successfully");
                         queryClient.invalidateQueries({ queryKey: [ "hevy_api_key" ] });
                         queryClient.invalidateQueries({ queryKey: ["exercise-stalls-analysis", user?.id] });
+                        triggerWorkoutHistorySync();
                         handleOpenConnectHevyDialog(false);
                     } else {
                         toast.error(`Error saving Hevy API Key: ${ newApiKey && newApiKey?.data ? JSON.stringify(newApiKey.data) : "Unknown error" }`);
