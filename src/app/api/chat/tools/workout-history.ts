@@ -1,7 +1,7 @@
 /**
  * @module chat/tools/workout-history
  *
- * Agent workout history tool — schema, limit cap, and compact model output
+ * Agent workout history tool — schema, limit cap, and structured model output
  * for backed-up workouts from Supabase (no live Hevy fetch).
  *
  * Depends on: zod, api/workout-history-read types
@@ -41,47 +41,74 @@ export function clampWorkoutHistoryLimit(limit: number): number {
     return Math.min(Math.floor(limit), AGENT_WORKOUT_HISTORY_MAX);
 }
 
-function formatSetHighlight(set: Database['public']['Tables']['workout_sets']['Row']): string {
-    const parts: string[] = [];
-    if (set.weight_kg != null) parts.push(`${set.weight_kg}kg`);
-    if (set.reps != null) {
-        parts.push(`×${set.reps}`);
-    } else if (set.rep_range_start != null && set.rep_range_end != null) {
-        parts.push(`×${set.rep_range_start}-${set.rep_range_end}`);
-    }
-    if (set.rpe != null) parts.push(`@RPE${set.rpe}`);
-    const body = parts.join('');
-    if (set.set_type !== 'normal' && body) {
-        return `${set.set_type}:${body}`;
-    }
-    return body || set.set_type;
+type TWorkoutSetForModel = {
+    set_type: Database['public']['Tables']['workout_sets']['Row']['set_type'];
+    weight_kg: number | null;
+    reps: number | null;
+    rep_range: { start: number; end: number } | null;
+    rpe: number | null;
+    distance_meters: number | null;
+    duration_seconds: number | null;
+    custom_metric: number | null;
+};
+
+type TWorkoutExerciseForModel = {
+    title: string;
+    canonical_exercise_id: string;
+    notes: string;
+    superset_id: number | null;
+    sets: TWorkoutSetForModel[];
+};
+
+export type TWorkoutForModel = {
+    started_at: string | null;
+    ended_at: string | null;
+    title: string;
+    description: string;
+    exercises: TWorkoutExerciseForModel[];
+};
+
+function setForModel(set: Database['public']['Tables']['workout_sets']['Row']): TWorkoutSetForModel {
+    const repRange =
+        set.rep_range_start != null && set.rep_range_end != null
+            ? { start: set.rep_range_start, end: set.rep_range_end }
+            : null;
+
+    return {
+        set_type: set.set_type,
+        weight_kg: set.weight_kg,
+        reps: set.reps,
+        rep_range: repRange,
+        rpe: set.rpe,
+        distance_meters: set.distance_meters,
+        duration_seconds: set.duration_seconds,
+        custom_metric: set.custom_metric,
+    };
 }
 
-function formatExerciseHighlights(exercise: TWorkoutExerciseRow): string {
-    const title = exercise.canonical_exercises?.title ?? 'Unknown exercise';
-    const sets = exercise.workout_sets ?? [];
-    const workingSets = sets.filter((set) => set.set_type !== 'warmup');
-    const highlightSets = (workingSets.length > 0 ? workingSets : sets).slice(-2);
-    if (highlightSets.length === 0) return title;
-    return `${title}: ${highlightSets.map(formatSetHighlight).join(', ')}`;
+function exerciseForModel(exercise: TWorkoutExerciseRow): TWorkoutExerciseForModel {
+    const sortedSets = [...(exercise.workout_sets ?? [])].sort((a, b) => a.set_index - b.set_index);
+
+    return {
+        title: exercise.canonical_exercises?.title ?? 'Unknown exercise',
+        canonical_exercise_id: exercise.canonical_exercise_id,
+        notes: exercise.notes ?? '',
+        superset_id: exercise.superset_id,
+        sets: sortedSets.map(setForModel),
+    };
 }
 
-function formatWorkoutDurationMinutes(workout: TBackedUpWorkout): number | null {
-    if (!workout.started_at || !workout.ended_at) return null;
-    const ms = new Date(workout.ended_at).getTime() - new Date(workout.started_at).getTime();
-    if (!Number.isFinite(ms) || ms < 0) return null;
-    return Math.round(ms / 60_000);
-}
-
-function formatWorkoutBlock(workout: TBackedUpWorkout): string {
-    const date = workout.started_at?.slice(0, 10) ?? '?';
-    const durationMin = formatWorkoutDurationMinutes(workout);
-    const durationSuffix = durationMin != null ? ` | ${durationMin}min` : '';
-    const header = `${date} | ${workout.title?.trim() || 'Untitled'}${durationSuffix}`;
-    const exerciseLines = (workout.workout_exercises ?? []).map(
-        (exercise) => `  ${formatExerciseHighlights(exercise)}`,
-    );
-    return exerciseLines.length > 0 ? `${header}\n${exerciseLines.join('\n')}` : header;
+/** Full workout JSON for the LLM — not a summary. */
+export function workoutHistoryForModel(workouts: TBackedUpWorkout[]): TWorkoutForModel[] {
+    return workouts.map((workout) => ({
+        started_at: workout.started_at,
+        ended_at: workout.ended_at,
+        title: workout.title?.trim() || 'Untitled',
+        description: workout.description ?? '',
+        exercises: [...(workout.workout_exercises ?? [])]
+            .sort((a, b) => a.sort_order - b.sort_order)
+            .map(exerciseForModel),
+    }));
 }
 
 export type TWorkoutHistoryToolOutput =
@@ -98,7 +125,7 @@ export type TWorkoutHistoryToolOutput =
           message: string;
       };
 
-/** Token-efficient summary for the LLM after getWorkoutHistory executes. */
+/** Structured workout history for the LLM after getWorkoutHistory executes. */
 export function formatWorkoutHistoryForModel(output: TWorkoutHistoryToolOutput): string {
     if ('error' in output) {
         return `Error: ${output.message || output.error}`;
@@ -117,6 +144,11 @@ export function formatWorkoutHistoryForModel(output: TWorkoutHistoryToolOutput):
     if (hasMore) headerParts.push('(more available — increase limit or narrow since if needed)');
     if (syncPending) headerParts.push('(sync may still be catching up)');
 
-    const blocks = workouts.map(formatWorkoutBlock).join('\n\n');
-    return `${headerParts.join(' · ')}\n\n${blocks}`;
+    const payload = workoutHistoryForModel(workouts);
+
+    return (
+        `${headerParts.join(' · ')}. ` +
+        'Workouts sorted newest-first. Use set data (weight_kg, reps, rep_range, rpe, set_type) for weights, reps, and progress questions.\n\n' +
+        JSON.stringify(payload)
+    );
 }

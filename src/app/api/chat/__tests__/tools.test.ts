@@ -31,11 +31,38 @@ vi.mock("@/api/workout-history-read", () => ({
 
 import { getHevyExercises } from "@/components/program-builder/api/hevy";
 import { getWorkoutsForUser } from "@/api/workout-history-read";
+import { backedUpWorkoutFixture } from "@/api/__tests__/manual/backed-up-workout.fixture";
 import { mutateProgramInputSchema } from "@/components/program-builder/mutations";
 import {
     getTools,
     planProgramInputSchema,
 } from "@/app/api/chat/tools/tools";
+
+/** Narrow AI SDK Tool to execute + toModelOutput for tests (SDK returns PromiseLike, not Promise). */
+type TToolTestHarness<TInput, TOutput> = {
+    execute: (args: TInput) => Promise<TOutput>;
+    toModelOutput: (args: { output: TOutput }) => PromiseLike<{ value: string }>;
+};
+
+type TGetWorkoutHistoryTool = TToolTestHarness<
+    { limit: number; since?: string; canonicalExerciseIds?: string[] },
+    unknown
+>;
+
+type TProToolsWithWorkoutHistory = ReturnType<typeof getTools> & {
+    getWorkoutHistory: TGetWorkoutHistoryTool;
+};
+
+function getProToolsWithWorkoutHistory(
+    overrides: Partial<Parameters<typeof getTools>[0]> = {},
+): TProToolsWithWorkoutHistory {
+    return getTools({
+        hasActiveSubscription: true,
+        userId: "user-1",
+        workoutHistoryDb: {} as TWorkoutHistoryDb,
+        ...overrides,
+    }) as TProToolsWithWorkoutHistory;
+}
 
 const minimalHevyProgram = [
     {
@@ -136,10 +163,10 @@ describe("chat tools.ts", () => {
             ] as THevyRoutine[];
 
             const tools = getTools({ hevyProgram: programWithNotes });
-            const readProgram = tools.readProgram as {
-                execute: (args: Record<string, never>) => Promise<{ hevyProgram: THevyRoutine[] }>;
-                toModelOutput: (args: { output: { hevyProgram: THevyRoutine[] } }) => Promise<{ value: string }>;
-            };
+            const readProgram = tools.readProgram as unknown as TToolTestHarness<
+                Record<string, never>,
+                { hevyProgram: THevyRoutine[] }
+            >;
 
             const output = await readProgram.execute({});
             const modelOutput = await readProgram.toModelOutput({ output });
@@ -528,10 +555,7 @@ describe("chat tools.ts", () => {
     });
 
     describe("mutateProgram tool execute", () => {
-        type TMutateProgramTestTool = {
-            execute: (args: { operations: unknown[] }) => Promise<unknown>;
-            toModelOutput: (args: { output: unknown }) => PromiseLike<{ value: string }>;
-        };
+        type TMutateProgramTestTool = TToolTestHarness<{ operations: unknown[] }, unknown>;
 
         it("returns operations on successful preflight", async () => {
             const tools = getTools({ hevyProgram: minimalHevyProgram });
@@ -595,14 +619,8 @@ describe("chat tools.ts", () => {
         } as unknown as TWorkoutHistoryDb;
 
         it("clamps limit to 30 and calls getWorkoutsForUser", async () => {
-            const tools = getTools({
-                hasActiveSubscription: true,
-                userId: "user-1",
-                workoutHistoryDb: mockDb,
-            });
-            const getWorkoutHistory = tools.getWorkoutHistory as {
-                execute: (args: { limit: number; since?: string }) => Promise<unknown>;
-            };
+            const tools = getProToolsWithWorkoutHistory({ workoutHistoryDb: mockDb });
+            const { getWorkoutHistory } = tools;
 
             await getWorkoutHistory.execute({ limit: 50, since: "2024-05-01T00:00:00.000Z" });
 
@@ -621,17 +639,36 @@ describe("chat tools.ts", () => {
                 rpc: vi.fn(async () => ({ data: null, error: { message: "missing" } })),
             } as unknown as TWorkoutHistoryDb;
 
-            const tools = getTools({
-                hasActiveSubscription: true,
-                userId: "user-1",
-                workoutHistoryDb: noKeyDb,
-            });
-            const getWorkoutHistory = tools.getWorkoutHistory as {
-                execute: (args: { limit: number }) => Promise<{ error?: string; message?: string }>;
+            const tools = getProToolsWithWorkoutHistory({ workoutHistoryDb: noKeyDb });
+            const output = (await tools.getWorkoutHistory.execute({ limit: 10 })) as {
+                error?: string;
+                message?: string;
             };
+            expect(output.error).toBe("Hevy not connected");
+        });
+
+        it("toModelOutput returns full workout JSON for the agent", async () => {
+            vi.mocked(getWorkoutsForUser).mockResolvedValueOnce({
+                workouts: [backedUpWorkoutFixture],
+                nextCursor: null,
+            });
+
+            const tools = getProToolsWithWorkoutHistory({
+                workoutHistoryDb: {
+                    rpc: vi.fn(async () => ({ data: "test-api-key", error: null })),
+                } as unknown as TWorkoutHistoryDb,
+            });
+            const { getWorkoutHistory } = tools;
 
             const output = await getWorkoutHistory.execute({ limit: 10 });
-            expect(output.error).toBe("Hevy not connected");
+            const modelOutput = await getWorkoutHistory.toModelOutput({ output });
+
+            expect(modelOutput.value).toContain("Upper Power");
+            expect(modelOutput.value).toContain("Bench Press (Barbell)");
+            expect(modelOutput.value).toContain('"weight_kg":60');
+            expect(modelOutput.value).toContain('"weight_kg":100');
+            expect(modelOutput.value).toContain('"set_type":"warmup"');
+            expect(modelOutput.value).toContain('"rpe":8');
         });
     });
 });

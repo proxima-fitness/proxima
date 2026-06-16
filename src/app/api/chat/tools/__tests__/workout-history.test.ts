@@ -5,6 +5,7 @@ import {
     AGENT_WORKOUT_HISTORY_MAX,
     clampWorkoutHistoryLimit,
     formatWorkoutHistoryForModel,
+    workoutHistoryForModel,
 } from '../workout-history';
 
 describe('workout-history tool helpers', () => {
@@ -20,8 +21,32 @@ describe('workout-history tool helpers', () => {
         });
     });
 
+    describe('workoutHistoryForModel', () => {
+        it('includes all sets, canonical IDs, notes, and superset_id', () => {
+            const payload = workoutHistoryForModel([backedUpWorkoutFixture]);
+            const bench = payload[0].exercises.find((e) => e.title.includes('Bench'));
+            const ohp = payload[0].exercises.find((e) => e.title.includes('Overhead'));
+
+            expect(payload[0].title).toBe('Upper Power');
+            expect(payload[0].description).toBe('Heavy singles focus');
+            expect(bench?.canonical_exercise_id).toBeTruthy();
+            expect(bench?.superset_id).toBe(0);
+            expect(bench?.sets).toHaveLength(2);
+            expect(bench?.sets[0]).toMatchObject({ set_type: 'warmup', weight_kg: 60, reps: 10 });
+            expect(bench?.sets[1]).toMatchObject({ set_type: 'normal', weight_kg: 100, reps: 5, rpe: 8 });
+
+            expect(ohp?.notes).toBe('felt heavy');
+            expect(ohp?.sets[0]).toMatchObject({
+                weight_kg: 55,
+                reps: 8,
+                rpe: 7.5,
+                rep_range: { start: 6, end: 8 },
+            });
+        });
+    });
+
     describe('formatWorkoutHistoryForModel', () => {
-        it('returns compact summary with dates, titles, and set highlights', () => {
+        it('returns structured JSON with all set data for the agent', () => {
             const text = formatWorkoutHistoryForModel({
                 workouts: [backedUpWorkoutFixture],
                 totalReturned: 1,
@@ -30,11 +55,15 @@ describe('workout-history tool helpers', () => {
             });
 
             expect(text).toContain('1 workout');
-            expect(text).toContain('2024-06-10');
             expect(text).toContain('Upper Power');
             expect(text).toContain('Bench Press (Barbell)');
-            expect(text).toContain('100kg');
-            expect(text).toContain('Overhead Press (Barbell)');
+
+            const jsonStart = text.indexOf('[');
+            expect(jsonStart).toBeGreaterThan(-1);
+            const parsed = JSON.parse(text.slice(jsonStart)) as ReturnType<typeof workoutHistoryForModel>;
+            expect(parsed[0].exercises[0].sets).toHaveLength(2);
+            expect(parsed[0].exercises[0].sets[0].weight_kg).toBe(60);
+            expect(parsed[0].exercises[0].sets[1].weight_kg).toBe(100);
         });
 
         it('handles empty results', () => {

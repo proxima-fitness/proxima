@@ -31,6 +31,8 @@ import { Tool, ToolContent, ToolErrorPanel, ToolHeader, warningStatusOverride } 
 import type { TToolPart } from "@/components/ai-elements/tool";
 import { buildToolErrorPayload, getMutateProgramFailureSeverity, summarizeToolError } from "./tool-error";
 import { ModifyProgramProgress } from "./ModifyProgramProgress";
+import { WorkoutHistoryToolContent } from "./WorkoutHistoryToolContent";
+import type { TWorkoutHistoryToolOutput } from "@/app/api/chat/tools/workout-history";
 import { RateProgramResults } from "@/components/program-builder/shared/RateProgramResults";
 import type { IProgramScore } from "@/components/program-builder/utils/score-program";
 import { toast } from "sonner";
@@ -709,6 +711,82 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                         <ModifyProgramProgress
                                                             objectivesByRoutine={objectivesByRoutine}
                                                             status={isComplete ? "complete" : "processing"}
+                                                        />
+                                                    </ToolContent>
+                                                </Tool>
+                                            );
+                                        }
+                                        case "tool-getWorkoutHistory": {
+                                            type TGetWorkoutHistoryPart = {
+                                                type: "tool-getWorkoutHistory";
+                                                state?: TToolPart["state"];
+                                                input?: { limit?: number; since?: string };
+                                                output?: TWorkoutHistoryToolOutput;
+                                                errorText?: string;
+                                            };
+                                            const historyPart = part as unknown as TGetWorkoutHistoryPart;
+                                            const historyOutput = historyPart.output;
+                                            const historyHasError =
+                                                historyPart.state === "output-error" ||
+                                                Boolean(historyOutput && "error" in historyOutput);
+                                            const historyComplete =
+                                                historyPart.state === "output-available" &&
+                                                historyOutput != null &&
+                                                !("error" in historyOutput);
+                                            const toolState: TToolPart["state"] = historyHasError
+                                                ? "output-error"
+                                                : historyComplete
+                                                    ? "output-available"
+                                                    : (historyPart.state ?? "input-available");
+
+                                            if (historyHasError) {
+                                                const errorCtx = {
+                                                    errorText: historyPart.errorText,
+                                                    output: historyOutput,
+                                                };
+                                                return (
+                                                    <Tool
+                                                        key={`${message.id}-${index}-history-error`}
+                                                        defaultOpen
+                                                        className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2"
+                                                    >
+                                                        <ToolHeader
+                                                            type="tool-getWorkoutHistory"
+                                                            state={toolState}
+                                                            title="Workout history"
+                                                        />
+                                                        <ToolContent>
+                                                            <ToolErrorPanel
+                                                                tool="getWorkoutHistory"
+                                                                errorCtx={errorCtx}
+                                                                getChatId={resolvePersistChatId}
+                                                                summary={summarizeToolError("getWorkoutHistory", errorCtx)}
+                                                                copyPayload={buildToolErrorPayload("getWorkoutHistory", errorCtx)}
+                                                            />
+                                                        </ToolContent>
+                                                    </Tool>
+                                                );
+                                            }
+
+                                            const historyInFlight =
+                                                toolState === "input-available" || toolState === "input-streaming";
+
+                                            return (
+                                                <Tool
+                                                    key={`${message.id}-${index}-history`}
+                                                    defaultOpen
+                                                    className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2"
+                                                >
+                                                    <ToolHeader
+                                                        type="tool-getWorkoutHistory"
+                                                        state={toolState}
+                                                        title="Workout history"
+                                                    />
+                                                    <ToolContent className="max-w-full overflow-x-auto">
+                                                        <WorkoutHistoryToolContent
+                                                            input={historyPart.input}
+                                                            output={historyOutput}
+                                                            isInFlight={historyInFlight}
                                                         />
                                                     </ToolContent>
                                                 </Tool>

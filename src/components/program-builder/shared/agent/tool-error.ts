@@ -24,6 +24,10 @@ const FRIENDLY_ERROR_CODES: Record<string, string> = {
     "Invalid exercise_template_id": "One or more exercises couldn't be matched. Try asking to rebuild with different exercises.",
     "Failed to fetch exercises": "Couldn't load the exercise list. Try again in a moment.",
     "Failed to load questions": "Couldn't load the questionnaire. Try again in a moment.",
+    "Workout history unavailable": "Workout history requires a Pro subscription.",
+    "Hevy not connected": "Connect Hevy in profile settings to view logged workouts.",
+    "Sync error": "Workout history sync failed. Try again after sync completes.",
+    "Failed to fetch workout history": "Couldn't load workout history. Try again in a moment.",
 };
 
 const DEFAULT_SUMMARY = "Something went wrong. Try again or rephrase your request.";
