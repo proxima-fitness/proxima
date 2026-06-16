@@ -3,8 +3,8 @@
 /**
  * @module (app)/profile/ProfileContent
  *
- * Client profile body: Hevy-style card stack on muted background — header, statistics,
- * blind-spot analysis, recent workouts, Hevy programs, programs vault.
+ * Client profile body: Hevy-style card stack on muted background — header with Stats/Programs
+ * tabs, then tab panels for statistics/blind-spot/recent workouts vs Hevy + vault programs.
  * Resume-draft banner sits above the card stack.
  *
  * Depends on: UserContext, useHevyPrograms/useHevySecret, ProfileHero, ProfileStatisticsSection,
@@ -27,7 +27,9 @@ import { Suspense, useState } from "react";
 import { ProgramsFallback } from "@/components/generic/ProgramsFallback";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditProfile } from "@/components/profile/EditProfile";
+import { BookOpenTextIcon, ChartLineIcon } from "lucide-react";
 
 const PROFILE_PAGE_X =
     "max-sm:px-3 sm:px-12 md:px-16 lg:px-20 xl:px-24";
@@ -59,9 +61,55 @@ export function ProfileContent() {
 
                 {user ? (
                     <>
-                        <Card className={PROFILE_CARD_CLASS}>
-                            <ProfileHero onEditProfileClick={() => setEditDialogOpen(true)} />
-                        </Card>
+                        <Tabs defaultValue="stats" className="flex flex-col gap-4">
+                            <Card className={PROFILE_CARD_CLASS}>
+                                <ProfileHero onEditProfileClick={() => setEditDialogOpen(true)} />
+                            </Card>
+
+                            <div className="flex justify-center">
+                                <TabsList className="grid h-10 w-fit grid-cols-2">
+                                    <TabsTrigger value="stats" className="gap-1.5">
+                                        <ChartLineIcon className="size-4" aria-hidden />
+                                        Stats
+                                    </TabsTrigger>
+                                    <TabsTrigger value="programs" className="gap-1.5">
+                                        <BookOpenTextIcon className="size-4" aria-hidden />
+                                        Programs
+                                    </TabsTrigger>
+                                </TabsList>
+                            </div>
+
+                            <TabsContent value="stats" className="mt-0 flex flex-col gap-4">
+                                <ProfileStatisticsSection hevyConnected={hevyConnected} />
+
+                                <Card className={PROFILE_CARD_CLASS}>
+                                    <BlindSpotAnalysisSection
+                                        hevyPrograms={hevyPrograms}
+                                        isLoadingHevy={isLoadingHevy}
+                                    />
+                                </Card>
+
+                                {hevyConnected ? <RecentWorkoutsSection /> : null}
+                            </TabsContent>
+
+                            <TabsContent value="programs" className="mt-0 flex flex-col gap-4">
+                                {showHevyCard ? (
+                                    <Card className={PROFILE_CARD_CLASS}>
+                                        <HevyProgramsGrid
+                                            hevyPrograms={hevyPrograms}
+                                            isLoadingHevy={isLoadingHevy}
+                                        />
+                                    </Card>
+                                ) : null}
+
+                                <Suspense fallback={<ProgramsFallback />}>
+                                    <Card className={PROFILE_CARD_CLASS}>
+                                        <MyProgramsVault />
+                                    </Card>
+                                </Suspense>
+                            </TabsContent>
+                        </Tabs>
+
                         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
                             <DialogContent
                                 className="max-w-md sm:rounded-2xl"
@@ -74,33 +122,35 @@ export function ProfileContent() {
                             </DialogContent>
                         </Dialog>
                     </>
-                ) : null}
+                ) : (
+                    <>
+                        <ProfileStatisticsSection hevyConnected={hevyConnected} />
 
-                <ProfileStatisticsSection hevyConnected={hevyConnected} />
+                        <Card className={PROFILE_CARD_CLASS}>
+                            <BlindSpotAnalysisSection
+                                hevyPrograms={hevyPrograms}
+                                isLoadingHevy={isLoadingHevy}
+                            />
+                        </Card>
 
-                <Card className={PROFILE_CARD_CLASS}>
-                    <BlindSpotAnalysisSection
-                        hevyPrograms={hevyPrograms}
-                        isLoadingHevy={isLoadingHevy}
-                    />
-                </Card>
+                        {hevyConnected ? <RecentWorkoutsSection /> : null}
 
-                {hevyConnected ? <RecentWorkoutsSection /> : null}
+                        {showHevyCard ? (
+                            <Card className={PROFILE_CARD_CLASS}>
+                                <HevyProgramsGrid
+                                    hevyPrograms={hevyPrograms}
+                                    isLoadingHevy={isLoadingHevy}
+                                />
+                            </Card>
+                        ) : null}
 
-                {showHevyCard ? (
-                    <Card className={PROFILE_CARD_CLASS}>
-                        <HevyProgramsGrid
-                            hevyPrograms={hevyPrograms}
-                            isLoadingHevy={isLoadingHevy}
-                        />
-                    </Card>
-                ) : null}
-
-                <Suspense fallback={<ProgramsFallback />}>
-                    <Card className={PROFILE_CARD_CLASS}>
-                        <MyProgramsVault />
-                    </Card>
-                </Suspense>
+                        <Suspense fallback={<ProgramsFallback />}>
+                            <Card className={PROFILE_CARD_CLASS}>
+                                <MyProgramsVault />
+                            </Card>
+                        </Suspense>
+                    </>
+                )}
             </div>
         </div>
     );

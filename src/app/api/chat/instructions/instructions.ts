@@ -39,6 +39,8 @@ interface IProps {
     progressionSystem?: string;
     deloadWeek?: string;
     peakWeek?: string;
+    /** When true, include getWorkoutHistory tool guidance (Pro-only). */
+    hasWorkoutHistoryAccess?: boolean;
 }
 
 function trimOpt(s: string | undefined): string {
@@ -85,7 +87,18 @@ export const instructions = ({
     progressionSystem = '',
     deloadWeek = '',
     peakWeek = '',
+    hasWorkoutHistoryAccess = false,
 }: IProps) => {
+
+    const workoutHistoryToolLine = hasWorkoutHistoryAccess
+        ? `- getWorkoutHistory: Returns backed-up logged workouts from the user's Hevy sync (not live Hevy). Use when they ask about past training — weights, reps, sessions, or time-bounded questions like "what did I bench last month?". Pick the smallest limit that answers the question; use \`since\` for date ranges.\n        `
+        : '';
+
+    const workoutHistoryGuidance = hasWorkoutHistoryAccess
+        ? `
+        **Workout history:** When the user asks about their **logged training** (past sessions, weights, reps, progress over time), call **getWorkoutHistory** — not **readProgram** (which is the program grid, not completed workouts). Choose limit and optional \`since\` based on the question scope. Summarize findings in plain language; do not dump raw history verbatim.
+        `
+        : '';
 
     const questionnairePreferencesLine = buildQuestionnairePreferencesLine({
         healthIssues,
@@ -116,8 +129,9 @@ export const instructions = ({
         - buildWeek: Builds an entire week of routines/days for the workout program in a single call.
         - mutateProgram: Applies typed program mutations (operation batches) to edit the live grid or periodize after buildWeek. See tool description for available ops and batch semantics (array order, fail-all).
         - rateProgram: Scores the current program against bodybuilding-oriented heuristics (volume, frequency, categories, rep variety, session size) and shows a green/yellow/red report card in the UI.
-
+        ${workoutHistoryToolLine}
         **rateProgram:** Call **only** when the user explicitly asks to **rate** their program (e.g. "Rate my program"). Never for improvement tips, reviews, or critiques—use **readProgram** and answer in chat. If you did call it, explain the results in plain language.
+        ${workoutHistoryGuidance}
 
         **Program tools — two flows:** (1) **Editing the live grid:** **readProgram** when you need the current program, then **mutateProgram** with **folderIds** (0-based week) and **dayOrder** (1-based day). Includes **shortening/lengthening week count** on an existing program — use **delete_week** ops (highest week index first); do **not** call **planProgram** or **buildWeek** for that. (2) **Periodization after buildWeek:** do not rely on **readProgram** (snapshot may still be empty post–**buildWeek**). Use builder context, **planProgram**, **buildWeek** output, and the build-program skill; **one** **mutateProgram** batch targeting weeks/days via **folderIds**.
         **Before mutateProgram (mandatory):** (1) Review the full conversation and list every active constraint in the constraint profile — equipment (excluded and available), health/injury, movement restrictions, exercise exclusions, and chat refinements from earlier turns. (2) Verify your proposed operations violate none of them. (3) If a removal would leave a training day with zero exercise rows, find a replacement first — add **insert_exercise** or **edit_exercise** in the same batch, before **delete_exercise**.

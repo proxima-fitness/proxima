@@ -14,6 +14,7 @@
  *  - buildWeek - constructs a full week of THevyRoutine days in one call (titles resolved from hevy_exercise_templates by ID)
  *  - mutateProgram - applies typed registry operation batches to the program
  *  - rateProgram - scores the current bodybuilding program (heuristic report card)
+ *  - getWorkoutHistory - Pro-only backed-up workout history from Supabase (no live Hevy)
  *
  * Depends on: ai, zod, @/components/program-builder/api/hevy, @/assets/constants
  * Used by: /api/chat/route.ts (passed to ToolLoopAgent)
@@ -39,6 +40,18 @@ import type {
 } from '@/components/program-builder/mutations/schemas';
 import { isApplyBatchFailure } from '@/components/program-builder/mutations/types';
 import { readProgramInputSchema, formatReadProgramForModel, readProgramSnapshot } from './read-program';
+import {
+    AGENT_WORKOUT_HISTORY_MAX,
+    clampWorkoutHistoryLimit,
+    formatWorkoutHistoryForModel,
+    getWorkoutHistoryInputSchema,
+    type TWorkoutHistoryToolOutput,
+} from './workout-history';
+import {
+    ensureWorkoutHistoryFresh,
+    getSyncProgress,
+    getWorkoutsForUser,
+} from '@/api/workout-history-read';
 import { tool } from 'ai';
 
 /** Request-scoped flag: set after first successful buildWeek so the agent cannot call buildWeek twice in one chat turn. */
@@ -52,6 +65,10 @@ interface IProps {
     healthIssues?: string;
     hevyProgram?: THevyRoutine[];
     buildWeekOnceGuard?: IBuildWeekOnceGuard;
+    /** When false, getWorkoutHistory is omitted from the tool set (Pro-only). */
+    hasActiveSubscription?: boolean;
+    userId?: string;
+    workoutHistoryDb?: TWorkoutHistoryDb;
 }
 
 function stripFrontmatter(content: string): string {
@@ -118,6 +135,9 @@ export function getTools({
     healthIssues,
     hevyProgram,
     buildWeekOnceGuard,
+    hasActiveSubscription = false,
+    userId,
+    workoutHistoryDb,
 }: IProps = {}) {
 
     /** Request-scoped id → canonical title from hevy_exercise_templates (populated by getExerciseList; buildWeek uses it or refetches). */
@@ -753,6 +773,76 @@ export function getTools({
         },
     });
 
+    const getWorkoutHistoryTool = tool({
+        description:
+            'Returns the user\'s backed-up workout history from their Hevy sync (Supabase backup — not a live Hevy API call). ' +
+            'Use when they ask about logged training: past weights, reps, sessions, volume, or questions like "what did I bench last month?". ' +
+            `Choose the smallest limit that answers the question (typical 5–15; hard cap ${AGENT_WORKOUT_HISTORY_MAX}). ` +
+            'Use `since` for time-bounded questions. Reads only synced backup data.',
+        inputSchema: getWorkoutHistoryInputSchema,
+        execute: async ({ limit, since, canonicalExerciseIds }): Promise<TWorkoutHistoryToolOutput> => {
+            try {
+                if (!userId || !workoutHistoryDb) {
+                    return {
+                        error: 'Workout history unavailable',
+                        message: 'Workout history requires an authenticated Pro session.',
+                    };
+                }
+
+                const { data: apiKey, error: keyError } = await workoutHistoryDb.rpc('read_secret', {
+                    secret_name: `hevy_api_key_${userId}`,
+                });
+
+                if (keyError || !apiKey) {
+                    return {
+                        error: 'Hevy not connected',
+                        message: 'No Hevy backup found. The user must connect Hevy in profile settings first.',
+                    };
+                }
+
+                const progress = await getSyncProgress(workoutHistoryDb, userId, { apiKey });
+
+                if (progress.syncError) {
+                    return {
+                        error: 'Sync error',
+                        message: progress.syncError,
+                    };
+                }
+
+                const syncResult = await ensureWorkoutHistoryFresh(workoutHistoryDb, {
+                    userId,
+                    apiKey,
+                });
+
+                const limitApplied = clampWorkoutHistoryLimit(limit);
+                const page = await getWorkoutsForUser(workoutHistoryDb, userId, {
+                    limit: limitApplied,
+                    since,
+                    canonicalExerciseIds,
+                });
+
+                return {
+                    workouts: page.workouts,
+                    totalReturned: page.workouts.length,
+                    limitApplied,
+                    since,
+                    hasMore: page.nextCursor != null,
+                    syncPending: !syncResult.done && !syncResult.syncError,
+                };
+            } catch (error) {
+                console.error('Error in getWorkoutHistory tool:', error);
+                return {
+                    error: 'Failed to fetch workout history',
+                    message: error instanceof Error ? error.message : 'Unknown error',
+                };
+            }
+        },
+        toModelOutput: async ({ output }) => ({
+            type: 'text' as const,
+            value: formatWorkoutHistoryForModel(output as TWorkoutHistoryToolOutput),
+        }),
+    });
+
     const rateProgramTool = tool({
         description:
             'Heuristic report card (volume, frequency, categories, rep variety, session size). ' +
@@ -798,7 +888,7 @@ export function getTools({
         },
     });
 
-    return {
+    const baseTools = {
         getExerciseList: getExerciseListTool,
         getMoreInfoQuestions: getMoreInfoQuestionsTool,
         planProgram: planProgramTool,
@@ -810,4 +900,13 @@ export function getTools({
         readFile: readFileTool,
         bash: bashTool,
     };
+
+    if (hasActiveSubscription && userId && workoutHistoryDb) {
+        return {
+            ...baseTools,
+            getWorkoutHistory: getWorkoutHistoryTool,
+        };
+    }
+
+    return baseTools;
 }

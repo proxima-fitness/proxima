@@ -121,6 +121,31 @@ describe("chat instructions.ts", () => {
 
             expect(prompt).not.toContain("Questionnaire preferences");
         });
+
+        it("includes getWorkoutHistory guidance when hasWorkoutHistoryAccess is true", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+                hasWorkoutHistoryAccess: true,
+            });
+
+            expect(prompt).toContain("getWorkoutHistory");
+            expect(prompt).toContain("Workout history:");
+            expect(prompt).toContain("logged training");
+        });
+
+        it("omits getWorkoutHistory guidance for free users", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+                hasWorkoutHistoryAccess: false,
+            });
+
+            expect(prompt).not.toContain("getWorkoutHistory");
+            expect(prompt).not.toContain("Workout history:");
+        });
     });
 });
 

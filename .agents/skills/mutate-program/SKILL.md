@@ -201,6 +201,10 @@ When the user's program or requested changes are **bodybuilding- or hypertrophy-
 - When the program uses rep ranges, use **update_set** with the full **`rep_range`** object rather than only updating **reps**. Example: change 8–12 to 10–15 via `{ "op": "update_set", …, "set": { "rep_range": { "start": 10, "end": 15 } } }`.
 - **Fixed-rep rule:** When changing to a fixed rep count (e.g. 5x5, singles, doubles, triples), set **`rep_range`: null** and set **`reps`** to the fixed value in **update_set**. **NEVER** emit a degenerate `rep_range` where `start === end` (e.g. `{start: 5, end: 5}`). That will display as "5-5" in the UI which is incorrect.
 
+## Logged training history
+
+When the user asks about **past logged workouts** (weights they actually lifted, session history, stalls based on training log) while editing their program, use **getWorkoutHistory** — not **readProgram**. **readProgram** is the program grid; **getWorkoutHistory** is completed sessions from their Hevy backup. Pick a small limit based on what the user asks for and optional `since` date based on the question. Max: 30 workouts, if user leaves out number default 15.
+
 ## Operations batch template
 
 The following is **only** the payload shape for **mutateProgram**—do **not** copy this block into user-visible assistant messages. The tool expects `{ "operations": [ … ] }` (not a bare array at the top level).

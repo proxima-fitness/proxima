@@ -46,6 +46,16 @@ function buildSkillsPrompt(skills: ISkillMetadata[]): string {
     `;
 }
 
+async function getServerHasActiveSubscription(
+    supabase: Awaited<ReturnType<typeof createClient>>,
+): Promise<boolean> {
+    const { data, error } = await supabase.rpc('get_my_feature_limits');
+    if (error || !data?.[0]) {
+        return false;
+    }
+    return Boolean((data[0] as TFeatureLimits).has_active_subscription);
+}
+
 const callOptionsSchema = z.object({
     sandbox: z.custom<ISandbox>(),
     skills: z.array(
@@ -103,6 +113,8 @@ async function handleChatPost(req: Request) {
             async () => {
                 const sanitizedMessages = sanitizeMessagesWithUnresolvedToolCalls(messages);
 
+                const hasActiveSubscription = user ? await getServerHasActiveSubscription(supabase) : false;
+
                 const systemPrompt = instructions({
                     hevyProgram,
                     daysPerWeek,
@@ -114,6 +126,7 @@ async function handleChatPost(req: Request) {
                     progressionSystem,
                     deloadWeek,
                     peakWeek,
+                    hasWorkoutHistoryAccess: hasActiveSubscription,
                 });
                 const buildWeekOnceGuard: IBuildWeekOnceGuard = { locked: false };
                 const tools = getTools({
@@ -122,6 +135,9 @@ async function handleChatPost(req: Request) {
                     healthIssues,
                     hevyProgram,
                     buildWeekOnceGuard,
+                    hasActiveSubscription,
+                    userId: user?.id,
+                    workoutHistoryDb: user ? supabase : undefined,
                 });
 
                 const sandbox = createSandbox({ workingDirectory: process.cwd() });

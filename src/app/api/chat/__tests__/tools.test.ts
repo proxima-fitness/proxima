@@ -19,7 +19,18 @@ vi.mock("@/components/program-builder/api/hevy", () => ({
     getHevyExercises: vi.fn(async () => [...mockExerciseTemplates]),
 }));
 
+vi.mock("@/api/workout-history-read", () => ({
+    ensureWorkoutHistoryFresh: vi.fn(async () => ({ done: true, syncError: null, rateLimited: false, backedUpCount: 1, hevyCount: 1 })),
+    getSyncProgress: vi.fn(async () => ({ backedUpCount: 1, hevyCount: 1, syncError: null })),
+    getWorkoutsForUser: vi.fn(async (_db, _userId, options) => ({
+        workouts: [],
+        nextCursor: null,
+        _options: options,
+    })),
+}));
+
 import { getHevyExercises } from "@/components/program-builder/api/hevy";
+import { getWorkoutsForUser } from "@/api/workout-history-read";
 import { mutateProgramInputSchema } from "@/components/program-builder/mutations";
 import {
     getTools,
@@ -68,6 +79,15 @@ describe("chat tools.ts", () => {
         expect(tools).toHaveProperty("mutateProgram");
         expect(tools).not.toHaveProperty("modifyProgram");
         expect(tools).not.toHaveProperty("getCurrentProgram");
+        expect(tools).not.toHaveProperty("getWorkoutHistory");
+    });
+
+    it("includes getWorkoutHistory only for Pro users with auth context", () => {
+        const freeTools = getTools({ hasActiveSubscription: false, userId: "user-1", workoutHistoryDb: {} as TWorkoutHistoryDb });
+        expect(freeTools).not.toHaveProperty("getWorkoutHistory");
+
+        const proTools = getTools({ hasActiveSubscription: true, userId: "user-1", workoutHistoryDb: {} as TWorkoutHistoryDb });
+        expect(proTools).toHaveProperty("getWorkoutHistory");
     });
 
     describe("readProgram tool execute", () => {
@@ -561,6 +581,57 @@ describe("chat tools.ts", () => {
 
             const modelOutput = await mutateProgram.toModelOutput({ output });
             expect(modelOutput.value).toContain("[0] add_day:");
+        });
+    });
+
+    describe("getWorkoutHistory tool execute", () => {
+        const mockDb = {
+            rpc: vi.fn(async (name: string) => {
+                if (name === "read_secret") {
+                    return { data: "test-api-key", error: null };
+                }
+                return { data: null, error: null };
+            }),
+        } as unknown as TWorkoutHistoryDb;
+
+        it("clamps limit to 30 and calls getWorkoutsForUser", async () => {
+            const tools = getTools({
+                hasActiveSubscription: true,
+                userId: "user-1",
+                workoutHistoryDb: mockDb,
+            });
+            const getWorkoutHistory = tools.getWorkoutHistory as {
+                execute: (args: { limit: number; since?: string }) => Promise<unknown>;
+            };
+
+            await getWorkoutHistory.execute({ limit: 50, since: "2024-05-01T00:00:00.000Z" });
+
+            expect(getWorkoutsForUser).toHaveBeenCalledWith(
+                mockDb,
+                "user-1",
+                expect.objectContaining({
+                    limit: 30,
+                    since: "2024-05-01T00:00:00.000Z",
+                }),
+            );
+        });
+
+        it("returns Hevy-not-connected when read_secret fails", async () => {
+            const noKeyDb = {
+                rpc: vi.fn(async () => ({ data: null, error: { message: "missing" } })),
+            } as unknown as TWorkoutHistoryDb;
+
+            const tools = getTools({
+                hasActiveSubscription: true,
+                userId: "user-1",
+                workoutHistoryDb: noKeyDb,
+            });
+            const getWorkoutHistory = tools.getWorkoutHistory as {
+                execute: (args: { limit: number }) => Promise<{ error?: string; message?: string }>;
+            };
+
+            const output = await getWorkoutHistory.execute({ limit: 10 });
+            expect(output.error).toBe("Hevy not connected");
         });
     });
 });
