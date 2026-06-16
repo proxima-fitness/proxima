@@ -21,7 +21,7 @@ import { HevyExerciseGif } from "./HevyExerciseGif";
 import { HevyExerciseDetailsDialog } from "./HevyExerciseDetailsDialog";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useState } from "react";
-import { useProgramMutation } from "@/contexts/ProgramMutationContext";
+import { useIsAgentStreaming } from "@/contexts/ProgramMutationContext";
 
 /** Props for the exercise list within a day card. */
 interface IProps {
@@ -30,11 +30,11 @@ interface IProps {
     /** Week index (folder_id) for callbacks. */
     folder_id: number;
     /** Deletes an exercise at the given week/day/index. */
-    handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
+    handleDeleteExercise?: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
     /** Opens the add-exercise dialog in edit mode with the given exercise data. */
-    handleEdit: (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: THevyExercise) => void;
+    handleEdit?: (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: THevyExercise) => void;
     /** Opens the add-exercise-note dialog for a specific exercise. */
-    handleOpenAddExerciseNoteDialog: (addExerciseNoteDialog: THevyDialog) => void;
+    handleOpenAddExerciseNoteDialog?: (addExerciseNoteDialog: THevyDialog) => void;
     /** When true, rows show checkboxes for superset selection instead of opening edit. */
     editMode: boolean;
     /** Indices of exercises currently selected for superset. */
@@ -45,6 +45,8 @@ interface IProps {
     removeFromSuperset: (exerciseIndex: number) => void;
     /** Global Hevy exercise library from parent (for thumbnails); undefined while loading. */
     hevyExercises?: THevyExerciseTemplate[];
+    /** Read-only logged workout rows — no edit/delete/add-note actions. */
+    readOnly?: boolean;
 }
 
 // Color palette for supersets - distinct colors that work in both light and dark modes
@@ -90,21 +92,21 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
         toggleExerciseSelection,
         removeFromSuperset,
         hevyExercises,
+        readOnly = false,
     } = props;
 
     const { isInLbs } = usePoundsOrKgContext();
     const isSm = useMediaQuery("(min-width: 640px)");
-    const { isAgentStreaming } = useProgramMutation();
-    const mutationsLocked = isAgentStreaming;
+    const mutationsLocked = useIsAgentStreaming();
     const [detailsExercise, setDetailsExercise] = useState<THevyExerciseTemplate | undefined>(undefined);
 
     const editHandler = (e: React.MouseEvent<HTMLButtonElement>, folder_id: number, dayOrder: number, i: number, exercise: THevyExercise) => {
-        if (mutationsLocked) return;
+        if (readOnly || mutationsLocked) return;
         if (editMode) {
             e.stopPropagation();
             toggleExerciseSelection(i);
         } else {
-            handleEdit(folder_id, Number(day.order), i, exercise);
+            handleEdit?.(folder_id, Number(day.order), i, exercise);
         }
     }
 
@@ -139,29 +141,36 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                         : 'bg-extraLightGray dark:bg-midDarkGray';
 
                 const rowProps = {
-                    onClick: mutationsLocked ? undefined : (e: React.MouseEvent) => editHandler(e as unknown as React.MouseEvent<HTMLButtonElement>, Number(folder_id), Number(day.order), i, exercise),
-                    className: `w-full min-h-14 border-gray-200 appearance-none p-0 m-0 text-left font-inherit focus:outline-hidden focus-visible:ring-2 focus-visible:ring-lightSecondary focus-visible:ring-inset ${mutationsLocked ? "cursor-default" : "cursor-pointer"} ${rowBackgroundClass} ${supersetColor && !isSelected ? 'border-r-4' : ''}`,
+                    onClick: readOnly || mutationsLocked ? undefined : (e: React.MouseEvent) => editHandler(e as unknown as React.MouseEvent<HTMLButtonElement>, Number(folder_id), Number(day.order), i, exercise),
+                    className: `w-full min-h-14 border-gray-200 appearance-none p-0 m-0 text-left font-inherit focus:outline-hidden focus-visible:ring-2 focus-visible:ring-lightSecondary focus-visible:ring-inset ${readOnly || mutationsLocked ? "cursor-default" : "cursor-pointer"} ${rowBackgroundClass} ${supersetColor && !isSelected ? 'border-r-4' : ''}`,
                     style: supersetColor && !isSelected ? borderStyle : {},
                 };
 
                 const rowContent = (
                                     <div
-                                        role="button"
-                                        tabIndex={0}
+                                        role={readOnly ? undefined : "button"}
+                                        tabIndex={readOnly ? undefined : 0}
                                         className="w-full"
-                                        onKeyDown={(e) => {
+                                        onKeyDown={readOnly ? undefined : (e) => {
                                             if (e.key === "Enter" || e.key === " ") {
                                                 e.preventDefault();
                                                 if (mutationsLocked) return;
                                                 if (editMode) {
                                                     toggleExerciseSelection(i);
                                                 } else {
-                                                    handleEdit(Number(folder_id), Number(day.order), i, exercise);
+                                                    handleEdit?.(Number(folder_id), Number(day.order), i, exercise);
                                                 }
                                             }
                                         }}
                                     >
                                         {exercise.supersets_id !== null && exercise.supersets_id !== undefined && !editMode && (
+                                            readOnly ? (
+                                                <span className="flex flex-row justify-end items-center w-full pt-2">
+                                                    <span className="text-xs flex flex-row items-center gap-2 pr-2 dark:text-offWhite">
+                                                        <LinkIcon className="w-4 h-4" /> Superset {exercise.supersets_id + 1}
+                                                    </span>
+                                                </span>
+                                            ) : (
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -178,6 +187,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                                     <span className="text-xs flex flex-row items-center gap-2 pr-2"> <LinkIcon className="w-4 h-4" /> Superset {exercise.supersets_id + 1}</span>
                                                 </span>
                                             </button>
+                                            )
                                         )}
                                         { exercise.supersets_id !== null && exercise.supersets_id !== undefined && editMode && (
                                                 <span className="flex flex-row justify-end items-center w-full pt-2">
@@ -200,13 +210,13 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             ) : (
                                                 <span className="hidden sm:block">{i + 1}</span>
                                             )}
-                                            {!editMode && (
+                                            {!editMode && !readOnly && (
                                                 <Trash2Icon
                                                     className={`block sm:hidden size-4 ${mutationsLocked ? "opacity-50 cursor-not-allowed" : ""}`}
                                                     onClick={(event) => {
                                                         event.stopPropagation();
                                                         if (mutationsLocked) return;
-                                                        handleDeleteExercise(Number(folder_id), Number(day.order), i);
+                                                        handleDeleteExercise?.(Number(folder_id), Number(day.order), i);
                                                     }}
                                                 />
                                             )}
@@ -216,6 +226,18 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             <div className={isSelected ? 'text-white' : 'dark:text-offWhite'}>
                                                 {exerciseTitle}
                                             </div>
+                                            {readOnly && (
+                                                <button
+                                                    type="button"
+                                                    className="shrink-0 p-1 ml-1 cursor-pointer hover:opacity-80 text-lightSecondary dark:text-offWhite"
+                                                    onClick={() => setDetailsExercise(
+                                                        hevyExercises?.find((h) => h.id === exercise.exercise_template_id),
+                                                    )}
+                                                    aria-label="Exercise details"
+                                                >
+                                                    <InfoIcon className="size-4" />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                     <div className={`text-center flex flex-row items-center justify-end max-w-[50%] w-[50%] ${isSelected ? 'text-white' : 'dark:text-offWhite'}`}>
@@ -297,13 +319,15 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             <InfoIcon className="shrink-0 size-5" />
                                             <span>Details</span>
                                         </button>
+                                        {!readOnly && (
+                                        <>
                                         <button
                                             type="button"
                                             className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 text-sm text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                                             disabled={mutationsLocked}
                                             onClick={() => {
                                                 if (mutationsLocked) return;
-                                                handleOpenAddExerciseNoteDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), exerciseIndex: i, isOpen: true});
+                                                handleOpenAddExerciseNoteDialog?.({folder_id: Number(folder_id), dayOrder: Number(day.order), exerciseIndex: i, isOpen: true});
                                             }}
                                             aria-label="Add note to exercise"
                                         >
@@ -316,13 +340,15 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             disabled={mutationsLocked}
                                             onClick={() => {
                                                 if (mutationsLocked) return;
-                                                handleDeleteExercise(Number(folder_id), Number(day.order), i);
+                                                handleDeleteExercise?.(Number(folder_id), Number(day.order), i);
                                             }}
                                             aria-label="Delete exercise"
                                         >
                                             <Trash2Icon className="shrink-0 size-5" />
                                             <span>Delete</span>
                                         </button>
+                                        </>
+                                        )}
                                     </div>
                                 </div>
                                     </TooltipContent>

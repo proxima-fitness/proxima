@@ -41,8 +41,9 @@ export const getMaxFolderId = (routines: THevyRoutine[]): number => {
     if (routines.length === 0) return 0;
 
     return routines.reduce((max, routine) => {
-        return routine.folder_id > max ? routine.folder_id : max;
-        }, routines[0].folder_id);
+        const folderId = routine.folder_id ?? 0;
+        return folderId > max ? folderId : max;
+        }, routines[0].folder_id ?? 0);
 };
 
 /**

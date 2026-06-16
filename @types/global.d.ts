@@ -176,10 +176,51 @@ type TWorkoutSyncProgress = Pick<TSyncChunkResult, "backedUpCount" | "hevyCount"
     paused?: boolean;
 };
 
+type TWorkoutHistoryCursor = {
+    startedAt: string;
+    id: string;
+};
+
 type TWorkoutHistoryQueryOptions = {
     limit?: number;
     since?: string;
     canonicalExerciseIds?: string[];
+    cursorStartedAt?: string;
+    cursorId?: string;
+};
+
+type TWorkoutHistoryPage = {
+    workouts: TBackedUpWorkout[];
+    nextCursor: TWorkoutHistoryCursor | null;
+};
+
+type TLoggedWorkoutPreviewItem = {
+    workout: THevyRoutine;
+    totalExerciseCount: number;
+};
+
+type TLoggedWorkoutBrowsePage = {
+    workouts: TLoggedWorkoutPreviewItem[];
+    nextCursor: TWorkoutHistoryCursor | null;
+};
+
+type TProfileStatisticsWeekBucket = {
+    weekStart: string;
+    durationSeconds: number;
+    reps: number;
+};
+
+type TProfileStatisticsResponse = {
+    weeks: 4 | 12;
+    thisWeek: {
+        durationSeconds: number;
+        reps: number;
+    };
+    buckets: TProfileStatisticsWeekBucket[];
+};
+
+type TMapBackedUpWorkoutOptions = {
+    previewMaxExercises?: number;
 };
 
 type TWorkoutExerciseRow = Database["public"]["Tables"]["workout_exercises"]["Row"] & {
@@ -360,9 +401,15 @@ type THevyRoutineFolder = {
 type THevyRoutine = {
     id: string; // The routine ID
     title: string; // The routine title
-    folder_id: number; // An ID for the folder this routine corresponds to. (Also used to choose the week routine is assigned in drag and drop)
+    folder_id: number | null; // Week folder in builder; null for logged backup workouts
     updated_at?: string; // ISO 8601 timestamp of when the routine was last updated. example: 2021-09-14T12:00:00Z
     created_at?: string; // ISO 8601 timestamp of when the routine was created. example: 2021-09-14T12:00:00Z
+    /** Logged workout session start (backup `workouts.started_at`). */
+    started_at?: string;
+    /** Logged workout session end (backup `workouts.ended_at`). */
+    ended_at?: string;
+    /** Backup source (`workouts.source`); omitted for program-builder routines. */
+    source?: string;
     exercises: THevyExercise[];
     notes: string; // Routine notes on the routine
     /* This field are used for the drag and drop but not stored in the DB */
@@ -520,19 +567,6 @@ type TRoutineFolderResponse = {
     updated_at: string;
     created_at: string;
   };
-
-type THevyRoutine = {
-    id: string; // The routine ID
-    title: string; // The routine title
-    folder_id: number | null; // An ID for the folder this routine corresponds to. (Also used to choose the week routine is assigned in drag and drop)
-    updated_at?: string; // ISO 8601 timestamp of when the routine was last updated. example: 2021-09-14T12:00:00Z
-    created_at?: string; // ISO 8601 timestamp of when the routine was created. example: 2021-09-14T12:00:00Z
-    exercises: THevyExercise[];
-    notes: string;
-
-    /* This field are used for the drag and drop but not stored in the DB */
-    order?: string // The day this Routine is assigned on (1-indexed)
-  }
 
 type THevyExerciseHistory = {
     exercise_history: THevyExerciseHistoryEntry[];

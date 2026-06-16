@@ -17,7 +17,7 @@
  *             ./featureLimits, ../components/program-builder/api/hevy
  * Used by: virtually every page and component that renders dynamic data
  */
-import { useQuery, type QueryFunctionContext } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery, type QueryFunctionContext } from "@tanstack/react-query";
 import { getBlogById, getBlogs } from "./blog";
 import { getCommunityAiPrograms, getCommunityAiProgramsPaginated, getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID, getSubscribedPrograms } from "./programs";
 import { ANONYMOUS_USER_METADATA, getOpUserId, getUserFullName, getUserMetaData, getUsersBatch } from "./users";
@@ -27,6 +27,7 @@ import { getMyFeatureLimits } from "./feature-limits";
 import { getFollowers, getFollowing } from "./followers";
 import { User } from "@supabase/supabase-js";
 import { getChatHistoryById, getChatIds } from "./chat-history";
+import { getLoggedWorkoutDetail, getLoggedWorkoutPreviews, getProfileStatistics, LOGGED_WORKOUT_BROWSE_QUERY_KEY, PROFILE_STATISTICS_QUERY_KEY, WorkoutNotFoundError } from "./workout-history-browse";
 
 /* ================================
    CLIENT-SIDE RENDERED HOOKS
@@ -142,8 +143,7 @@ export const useSubscribedPrograms = (user: User | undefined | null) => {
 };
 
 /**
- * Calls the internal `/api/hevy/exercise-history` route to retrieve exercise
- * stall/plateau analysis data for all exercises.
+ * Calls the internal `/api/hevy/exercise-history` route for backup-based stall analysis.
  */
 async function fetchExerciseStallsData({ signal }: QueryFunctionContext): Promise<TExerciseStallResult[]> {
     const res = await fetch("/api/hevy/exercise-history", {
@@ -153,22 +153,28 @@ async function fetchExerciseStallsData({ signal }: QueryFunctionContext): Promis
         credentials: "same-origin",
         signal,
     });
+    if (res.status === 503) {
+        const payload = await res.json().catch(() => ({}));
+        throw new Error(
+            typeof payload?.message === "string" ? payload.message : "Workout history sync failed",
+        );
+    }
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data) ? data : [];
 }
 
-/** Fetches full exercise stall data (all exercises). Cached 1hr; no refetch on window focus to avoid Hevy 429. */
+/** Backup-based exercise stall analysis. Cached 15m; no Hevy fan-out. */
 export const useExerciseStallsAnalysis = (
     user: User | undefined | null,
     enabled = true,
 ) => {
     return useQuery({
-        queryKey: ["exercise-stalls-analysis", user?.id, "v6"],
+        queryKey: ["exercise-stalls-analysis", user?.id, "v7"],
         queryFn: fetchExerciseStallsData,
         enabled: !!user && enabled,
-        staleTime: 60 * 60 * 1000,
-        gcTime: 2 * 60 * 60 * 1000,
+        staleTime: 15 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
         refetchOnMount: false,
     });
@@ -401,6 +407,63 @@ export const useMyFeatureLimits = (user: User | undefined | null) => {
     return useQuery({
         queryKey: ["feature-limits", user?.id],
         queryFn: () => getMyFeatureLimits(user),
+    });
+};
+
+/**
+ * Fetches one backed-up logged workout for the detail page.
+ *
+ * @param user - Authenticated user (query disabled when null)
+ * @param workoutId - Proxima backup workout UUID
+ */
+export const useWorkoutDetail = (user: User | undefined | null, workoutId: string) => {
+    return useQuery({
+        queryKey: ["workout-detail", user?.id, workoutId],
+        queryFn: ({ signal }) => getLoggedWorkoutDetail(workoutId, signal),
+        enabled: !!user && !!workoutId,
+        retry: (failureCount, error) => {
+            if (error instanceof WorkoutNotFoundError) {
+                return false;
+            }
+            return failureCount < 2;
+        },
+    });
+};
+
+/**
+ * Cursor-paginated browse feed of logged workout previews for the profile section.
+ *
+ * @param user - Authenticated user (query disabled when null)
+ * @param enabled - When false, skips fetch (e.g. Hevy not connected)
+ */
+export const useLoggedWorkoutBrowse = (user: User | undefined | null, enabled: boolean) => {
+    return useInfiniteQuery({
+        queryKey: [...LOGGED_WORKOUT_BROWSE_QUERY_KEY, user?.id],
+        queryFn: ({ pageParam, signal }) =>
+            getLoggedWorkoutPreviews({ cursor: pageParam ?? null }, signal),
+        initialPageParam: null as TWorkoutHistoryCursor | null,
+        getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+        enabled: !!user && enabled,
+    });
+};
+
+/**
+ * Weekly Duration/Reps aggregates for the profile statistics chart.
+ *
+ * @param user - Authenticated user (query disabled when null)
+ * @param enabled - When false, skips fetch (e.g. Hevy not connected)
+ * @param weeks - Chart range: 4 or 12 Sunday-start weeks
+ */
+export const useProfileStatistics = (
+    user: User | undefined | null,
+    enabled: boolean,
+    weeks: 4 | 12,
+) => {
+    return useQuery({
+        queryKey: [...PROFILE_STATISTICS_QUERY_KEY, user?.id, weeks],
+        queryFn: ({ signal }) => getProfileStatistics(weeks, signal),
+        enabled: !!user && enabled,
+        staleTime: 30_000,
     });
 };
 

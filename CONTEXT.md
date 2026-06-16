@@ -213,11 +213,11 @@ Proxima's stored copy of a user's completed workouts, synced from connected fitn
 _Avoid_: Hevy sync (implementation), exercise_history backup (wrong grain), blocking connect flow
 
 **Workout** (backup):
-One completed workout in the workout history backup — what the user actually performed, with exercises and sets. Identified by app source + external ID for dedup on sync. Not a builder routine/day, not a chat session, not a scheduled program day.
+One completed workout in the workout history backup — what the user actually performed, with exercises and sets. Optional **description** (workout-level notes from the source app). Identified by app source + external ID for dedup on sync. Not a builder routine/day, not a chat session, not a scheduled program day.
 _Avoid_: Session (use workout), workout log (deprecated term), program day
 
 **Workout exercise**:
-One exercise performed within a backup workout — ordered rows linking to a canonical exercise. Distinct from canonical exercises, builder slots, and Hevy exercise templates.
+One exercise performed within a backup workout — ordered rows linking to a canonical exercise. May include logged **notes** and **superset_id** from the source app (for display in workout history browse). Distinct from canonical exercises, builder slots, and Hevy exercise templates.
 _Avoid_: Exercise (ambiguous — specify canonical, builder, or workout exercise)
 
 **Set** (backup):
@@ -236,10 +236,30 @@ _Avoid_: Exercise FK (implementation), template id (Hevy-shaped), catalog (depre
 Profile feature that surfaces exercises where logged performance has stalled or regressed, and routes the user into the builder to fix plateaus. Reads the workout history backup (not live Hevy). Free tier: limited preview (last 15 performances per exercise); Pro: full synced history for analysis, trends, and stall dispatch. Pro-gated for depth, not for backup sync itself.
 _Avoid_: Stall detection (implementation), exercise stalls (UI component name)
 
+**Workout history browse**:
+Profile **Recent Workouts** section — horizontal feed of backed-up **Workouts** as read-only logged day cards (title, date, duration; up to 5 exercises per preview card). **See more exercises** opens **Logged workout detail** when a workout has more than five exercises. Free for all Hevy-connected users; cursor-paginated load-more over full synced history. Page refetches as backfill adds rows. Validates the backup read path before blind spot analysis ships. Distinct from blind spot analysis (stall detection) and from profile statistics (weekly aggregates). Placement and card shell per profile Hevy layout ADR.
+_Avoid_: Workout history (ambiguous with backup or Hevy API), exercise history (Hevy API grain), sync banner (progress only)
+
+**Logged workout detail**:
+Full read-only view of one backed-up **Workout** at `/workout/{id}` (`{id}` = Proxima backup UUID). Metadata block (title, date, duration, source badge, exercise/set counts, back to profile) plus full logged day card with all exercises and sets. Profile card shell on muted background; dedicated 404 when missing or not owned. Distinct from workout history browse (5-exercise preview cards on profile).
+_Avoid_: Workout page (ambiguous with builder day), Hevy workout URL (external app)
+
 **Workout history access**:
-Reading backed-up workouts for product features (Blind Spot, agent tool). Pro-gated for agent queries and full Blind Spot; backup sync and retention are free for all connected users so upgrade unlocks existing data immediately.
+Reading backed-up workouts for product features (workout history browse, blind spot analysis, agent tool). Pro-gated for agent queries and full blind spot depth; backup sync, browse, and retention are free for all connected users so upgrade unlocks existing data immediately.
 _Avoid_: Hevy API access (live fetch), export (program push to Hevy)
 
 **Agent workout history tool**:
 Pro-only chat tool that returns recent backed-up workouts from Supabase. Agent chooses how many workouts to pull (cap ~30). Optional filters by date or canonical exercise. Workout-scoped only in v1 — no separate exercise-history tool.
 _Avoid_: getExerciseHistory (v1 scope), live Hevy fetch in chat
+
+**Profile statistics**:
+Hevy-style aggregate chart on the profile page — weekly Duration and Reps totals derived from the workout history backup, with a time-range filter (last 4 weeks or last 12 weeks). Headline above the chart always shows the current Sun–Sat week total for the active tab (Duration or Reps), independent of the chart range. Duration uses workout wall time (`ended_at − started_at` per workout, summed by week). Reps uses total reps across all sets in each week (null reps excluded). Weeks bucket by `started_at` using Sunday-start calendar weeks (US convention). Free for all users with Hevy connected and backup data — not Pro-gated. Distinct from blind spot analysis (per-exercise stall detection) and from the header workout count (lifetime total).
+_Avoid_: Workout stats (ambiguous with header count), activity chart (too generic)
+
+**Profile header**:
+Top identity block on the profile page — avatar, @username (primary), display name (secondary), bio, Edit profile, and stat row (Workouts, Followers, Following). Stat row uses Hevy layout: label above number. Workouts stat folds in backup sync state (count when caught up; fraction + status dot when syncing/paused/error; inline pause/play icon when syncing or paused). Hevy-parity layout; no photo banner.
+_Avoid_: Profile hero (implementation component name), user card (too generic)
+
+**Recent workouts** (profile):
+Horizontal browse feed on the profile page — read-only preview cards for backed-up **Workouts** (≤5 exercises each), newest first, cursor-paginated with load-more. Card header shows title, date, and duration. **See more exercises** links to logged workout detail when needed. Shown only when Hevy is connected. Sits after profile statistics and before My Hevy Programs. White card on muted page background per profile Hevy layout.
+_Avoid_: Workout feed (ambiguous with social feed), workout history list (too generic)

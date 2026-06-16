@@ -85,3 +85,8 @@ export function useProgramMutation() {
     }
     return context;
 }
+
+/** Agent streaming lock — safe outside {@link ProgramMutationProvider} (defaults to false). */
+export function useIsAgentStreaming(): boolean {
+    return useContext(ProgramMutationContext)?.isAgentStreaming ?? false;
+}

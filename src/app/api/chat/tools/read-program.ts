@@ -6,7 +6,9 @@ export const readProgramInputSchema = z.object({});
 /** Sort routines by week (folder_id) then day (order, 1-based string). */
 export function sortProgramRoutines(program: THevyRoutine[]): THevyRoutine[] {
     return [...program].sort((a, b) => {
-        if (a.folder_id !== b.folder_id) return a.folder_id - b.folder_id;
+        if (a.folder_id !== b.folder_id) {
+            return (a.folder_id ?? 0) - (b.folder_id ?? 0);
+        }
         return Number(a.order) - Number(b.order);
     });
 }

@@ -9,6 +9,7 @@
  */
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { EllipsisIcon, PlusIcon, NotebookTextIcon, LinkIcon } from "lucide-react";
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -28,44 +29,54 @@ import { HevyDuplicateDay } from "./HevyDuplicateDay";
 import { convertHevyExerciseIntoHevyAddExercise } from "../utils";
 import { useTheme } from "next-themes";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
-import { useProgramMutation } from "@/contexts/ProgramMutationContext";
+import { useIsAgentStreaming } from "@/contexts/ProgramMutationContext";
+import {
+    convertSupabaseDateToReadable,
+    formatWorkoutWallDuration,
+} from "@/utils/general/helpers";
 
 /** Props for a single day card within a week column. */
 interface IProps {
     /** The day (routine) data: id, order, title, exercises, notes. */
     day: THevyRoutine;
+    /** Read-only backup workout card — hides builder chrome. */
+    variant?: "read-only";
+    /** Total exercises when preview is capped (logged variant). */
+    totalExerciseCount?: number;
+    /** Backup workout id for preview CTA (defaults to `day.id`). */
+    workoutId?: string;
     /** Week label (e.g. "Week 1") for context. */
-    title: string;
+    title?: string;
     /** Week index (folder_id) this day belongs to. */
-    folder_id: number;
+    folder_id?: number;
     /** Total number of weeks (used by duplicate-day target list). */
-    programLength: number;
+    programLength?: number;
     /** Called when user starts dragging this card (sets cardId on dataTransfer). */
-    handleDragStart: (e: DragEvent, card: THevyCard) => void;
+    handleDragStart?: (e: DragEvent, card: THevyCard) => void;
     /** Updates this day's title. */
-    handleEditTitle: (id: string, title: string) => void;
+    handleEditTitle?: (id: string, title: string) => void;
     /** Deletes this day. */
-    handleDeleteDay: (id: string) => void;
+    handleDeleteDay?: (id: string) => void;
     /** Opens the add-note dialog for this day. */
-    handleOpenAddNoteDialog: (addNoteDialog: THevyDialog) => void;
+    handleOpenAddNoteDialog?: (addNoteDialog: THevyDialog) => void;
     /** Opens the add-exercise dialog for this day. */
-    handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
+    handleOpenAddExerciseDialog?: (addExerciseDialog: THevyDialog) => void;
     /** Opens the add-exercise-note dialog. */
-    handleOpenAddExerciseNoteDialog: (addExerciseNoteDialog: THevyDialog) => void;
+    handleOpenAddExerciseNoteDialog?: (addExerciseNoteDialog: THevyDialog) => void;
     /** Duplicates this day to a target week and day slots. */
-    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: TSelectOption[]) => void;
+    handleDuplicateDay?: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: TSelectOption[]) => void;
     /** Deletes an exercise from this day. */
-    handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
+    handleDeleteExercise?: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
     /** Sets add-exercise dialog to edit mode and passes exercise data. */
-    handleIsEditExercise: (isEditExercise: boolean) => void;
+    handleIsEditExercise?: (isEditExercise: boolean) => void;
     /** Id of the card that currently has focus. */
-    focusedCardId: string;
+    focusedCardId?: string;
     /** Sets focused card (this card calls it on click). */
-    setFocusedCardId: (focusedCardId: string) => void;
+    setFocusedCardId?: (focusedCardId: string) => void;
     /** Creates a superset from the selected exercise indices in this day. */
-    handleCreateSuperset: (dayId: string, selectedExercises: number[]) => void;
+    handleCreateSuperset?: (dayId: string, selectedExercises: number[]) => void;
     /** Removes an exercise from its superset in this day. */
-    handleRemoveFromSuperset: (dayId: string, exerciseIndex: number) => void;
+    handleRemoveFromSuperset?: (dayId: string, exerciseIndex: number) => void;
     /** Custom exercises from Hevy (lifted from HevyRoutine to avoid duplicate subscriptions). */
     customExercises?: THevyExerciseTemplate[];
     /** Global Hevy exercise library (lifted from HevyRoutine to avoid duplicate subscriptions). */
@@ -81,11 +92,14 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
 
     const {
         day,
-        title,
-        folder_id,
+        variant,
+        totalExerciseCount,
+        workoutId,
+        title = "",
+        folder_id = 0,
         handleDragStart,
         handleDeleteDay,
-        programLength,
+        programLength = 0,
         handleEditTitle,
         handleOpenAddExerciseDialog,
         handleOpenAddExerciseNoteDialog,
@@ -93,7 +107,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         handleDuplicateDay,
         handleDeleteExercise,
         handleIsEditExercise,
-        focusedCardId,
+        focusedCardId = "",
         setFocusedCardId,
         handleCreateSuperset,
         handleRemoveFromSuperset,
@@ -102,10 +116,11 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         isMobile = false,
     } = props;
 
+    const isReadOnly = variant === "read-only";
+
     const { resolvedTheme } = useTheme();
     const { isInLbs } = usePoundsOrKgContext();
-    const { isAgentStreaming } = useProgramMutation();
-    const mutationsLocked = isAgentStreaming;
+    const mutationsLocked = useIsAgentStreaming();
     const [duplicateDayOpen, setDuplicateDayOpen] = useState(false);
     const [editTitleOpen, setEditTitleOpen] = useState(false);
     const [currentTitle, setCurrentTitle] = useState(day.title ?? "");
@@ -114,13 +129,13 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
     const [selectedExercises, setSelectedExercises] = useState<number[]>([]);
 
     const handleEdit = async (currentWeek: number, currentDay: number, exerciseIndex: number, editExercise: THevyExercise ) => {
-            handleIsEditExercise(true);
+            handleIsEditExercise?.(true);
             const convertedExercise = await convertHevyExerciseIntoHevyAddExercise(editExercise, customExercises, hevyExercises);
-            handleOpenAddExerciseDialog({folder_id: currentWeek, dayOrder: currentDay, isOpen: true, exerciseIndex: exerciseIndex, editExercise: convertedExercise });
+            handleOpenAddExerciseDialog?.({folder_id: currentWeek, dayOrder: currentDay, isOpen: true, exerciseIndex: exerciseIndex, editExercise: convertedExercise });
     };
 
     const handleFocus = () => {
-        setFocusedCardId(day.id ?? "");
+        setFocusedCardId?.(day.id ?? "");
     }
 
     const cardVal: THevyCard = {
@@ -133,6 +148,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
     };
 
     useEffect(() => {
+        if (isReadOnly) return;
         const handleKeyDown = (event: KeyboardEvent) => {
             if (mutationsLocked) return;
             if (focusedCardId !== day.id) return;
@@ -143,10 +159,10 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                 setEditTitleOpen(true);
             } else if (key === "d") {
                 event.preventDefault();
-                handleDeleteDay(day.id);
+                handleDeleteDay?.(day.id);
             } else if (key === "p") {
                 event.preventDefault();
-                handleOpenAddNoteDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true });
+                handleOpenAddNoteDialog?.({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true });
             } else if (key === "y") {
                 event.preventDefault();
                 setDuplicateDayOpen(true);
@@ -155,7 +171,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
 
         document.addEventListener("keydown", handleKeyDown);
         return () => document.removeEventListener("keydown", handleKeyDown);
-    }, [day.id, day.order, focusedCardId, folder_id, handleDeleteDay, handleOpenAddNoteDialog, mutationsLocked]);
+    }, [day.id, day.order, focusedCardId, folder_id, handleDeleteDay, handleOpenAddNoteDialog, isReadOnly, mutationsLocked]);
 
     const toggleExerciseSelection = (exerciseIndex: number) => {
         if (selectedExercises.includes(exerciseIndex)) {
@@ -170,33 +186,66 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         if (selectedExercises.length < 2) {
             return;
         }
-        handleCreateSuperset(day.id, selectedExercises);
+        handleCreateSuperset?.(day.id, selectedExercises);
         setSelectedExercises([]);
         setEditMode(false);
     };
 
     const removeFromSuperset = (exerciseIndex: number) => {
-        handleRemoveFromSuperset(day.id, exerciseIndex);
+        handleRemoveFromSuperset?.(day.id, exerciseIndex);
     };
+
+    const showSeeMore =
+        isReadOnly &&
+        totalExerciseCount != null &&
+        totalExerciseCount > (day.exercises?.length ?? 0);
+    const resolvedWorkoutId = workoutId ?? day.id;
 
     return (
         <>
-            <DropIndicator beforeId={ day.id } weekOrder={ String(folder_id) } />
+            {!isReadOnly && <DropIndicator beforeId={ day.id } weekOrder={ String(folder_id) } />}
             <motion.div
                 layout={ !isMobile }
                 layoutId={ isMobile ? undefined : `${day.id}-${folder_id}` }
                 initial={ isMobile ? { opacity: 0 } : false }
                 animate={ isMobile ? { opacity: 1 } : undefined }
                 transition={ isMobile ? { duration: 0.2 } : undefined }
-                draggable={ !mutationsLocked }
-                onDragStart={ mutationsLocked ? undefined : (e: DragEvent) => handleDragStart(e, cardVal) }
-                className={`rounded active:cursor-grabbing gap-4 w-full max-w-full ${mutationsLocked ? "cursor-default" : "cursor-grab"}`}
+                draggable={ !isReadOnly && !mutationsLocked }
+                onDragStart={ !isReadOnly && !mutationsLocked && handleDragStart ? (e: DragEvent) => handleDragStart(e, cardVal) : undefined }
+                className={`rounded gap-4 w-full max-w-full ${!isReadOnly && !mutationsLocked ? "active:cursor-grabbing cursor-grab" : ""}`}
                 style={ isMobile ? undefined : { opacity: 1, visibility: 'visible' } }
             >
                 <Card
-                    tabIndex={ 0 }
-                    onClick={ handleFocus }
-                    className={`border-[3px] border-gray-100 ${resolvedTheme === "dark" ? "border-extraDarkGray bg-extraDarkGray shadow-xl shadow-black/20" : "border-gray-100 bg-lightGray shadow-lg shadow-gray-200/50"} dark:border-extraDarkGray dark:bg-extraDarkGray dark:shadow-xl dark:shadow-black/20 focus:dark:border-lightSecondary focus:border-gray-300 w-full max-w-full group py-4 sm:pt-2 px-1 sm:px-0 sm:min-w-[360px] sm:max-w-[360px] md:min-w-[385px] md:max-w-[385px] lg:min-w-[450px] lg:max-w-[450px] my-2 box-border`}>
+                    tabIndex={ isReadOnly ? undefined : 0 }
+                    onClick={ isReadOnly ? undefined : handleFocus }
+                    className={`border-[3px] border-gray-100 ${resolvedTheme === "dark" ? "border-extraDarkGray bg-extraDarkGray shadow-xl shadow-black/20" : "border-gray-100 bg-lightGray shadow-lg shadow-gray-200/50"} dark:border-extraDarkGray dark:bg-extraDarkGray dark:shadow-xl dark:shadow-black/20 ${!isReadOnly ? "focus:dark:border-lightSecondary focus:border-gray-300 group" : ""} w-full max-w-full py-4 sm:pt-2 px-1 sm:px-0 sm:min-w-[360px] sm:max-w-[360px] md:min-w-[385px] md:max-w-[385px] lg:min-w-[450px] lg:max-w-[450px] my-2 box-border`}>
+                    {isReadOnly ? (
+                        <div className="flex flex-row justify-between items-start px-3 py-2 gap-2">
+                            <div className="min-w-0 flex-1">
+                                <div className="font-tertiary text-lg truncate">{day.title}</div>
+                                <div className="font-secondary text-sm text-muted-foreground flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5">
+                                    {convertSupabaseDateToReadable(day.started_at) && (
+                                        <span>{convertSupabaseDateToReadable(day.started_at)}</span>
+                                    )}
+                                    {formatWorkoutWallDuration(day.started_at, day.ended_at) && (
+                                        <span>{formatWorkoutWallDuration(day.started_at, day.ended_at)}</span>
+                                    )}
+                                </div>
+                            </div>
+                            { day.notes && day.notes.length > 0 &&
+                            <TooltipProvider delayDuration={ 0 }>
+                                <Tooltip>
+                                    <TooltipTrigger className="cursor-pointer shrink-0 pt-0.5">
+                                        <NotebookTextIcon />
+                                    </TooltipTrigger>
+                                    <TooltipContent className="bg-gray-600 text-white rounded-lg">
+                                        <p>{ day.notes }</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                            }
+                        </div>
+                    ) : (
                     <div className="flex flex-row justify-between items-center px-3 py-1">
                         <div className="font-main text-lg flex flex-row whitespace-nowrap">
                             Day {day.order}
@@ -208,12 +257,12 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                     disabled={mutationsLocked}
                                     onInput={ (event) => setCurrentTitle(String(event.currentTarget.value)) }
                                     onBlur={ (event) => {
-                                        handleEditTitle(day.id, String(event.currentTarget.value));
+                                        handleEditTitle?.(day.id, String(event.currentTarget.value));
                                         setEditTitleOpen(false);
                                     } }
                                     onKeyDown={ (e) => {
                                         if (e.key === 'Enter') {
-                                            handleEditTitle(day.id, e.currentTarget.value);
+                                            handleEditTitle?.(day.id, e.currentTarget.value);
                                             setEditTitleOpen(false);
                                         }
                                     } }
@@ -264,7 +313,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                         disabled={mutationsLocked}
                                         onClick={ () => {
                                             if (mutationsLocked) return;
-                                            handleDeleteDay(day.id);
+                                            handleDeleteDay?.(day.id);
                                             } }>
                                         Delete Day
                                         <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
@@ -273,7 +322,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                         Edit Title
                                         <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem disabled={mutationsLocked} onClick={ () => { if (mutationsLocked) return; handleOpenAddNoteDialog({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true }); setDropdownOpen(false); } } className="cursor-pointer">
+                                    <DropdownMenuItem disabled={mutationsLocked} onClick={ () => { if (mutationsLocked) return; handleOpenAddNoteDialog?.({ folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true }); setDropdownOpen(false); } } className="cursor-pointer">
                                         Add Note
                                         <DropdownMenuShortcut>⌘P</DropdownMenuShortcut>
                                     </DropdownMenuItem>
@@ -294,6 +343,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                             </DropdownMenu>
                         </div>
                     </div>
+                    )}
 
                     <div className="text-xs mt-2 flex flex-row justify-between pl-2 pr-2 gap-2 sm:gap-4 border-t border-b py-2 border-gray-200 dark:text-offWhite dark:border-darkGray bg-[#e8e8e8] dark:bg-extraDarkGray">
                         <div className="flex flex-row gap-2 sm:gap-4 shrink min-w-0">
@@ -323,9 +373,10 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                         <HevyExerciseVisualizer
                             day={ day }
                             folder_id={ folder_id }
-                            handleEdit={ handleEdit }
-                            handleDeleteExercise={ handleDeleteExercise }
-                            handleOpenAddExerciseNoteDialog={ handleOpenAddExerciseNoteDialog }
+                            readOnly={ isReadOnly }
+                            handleEdit={ isReadOnly ? undefined : handleEdit }
+                            handleDeleteExercise={ isReadOnly ? undefined : handleDeleteExercise }
+                            handleOpenAddExerciseNoteDialog={ isReadOnly ? undefined : handleOpenAddExerciseNoteDialog }
                             editMode={editMode}
                             selectedExercises={selectedExercises}
                             toggleExerciseSelection={toggleExerciseSelection}
@@ -333,14 +384,17 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                             hevyExercises={ hevyExercises }
                         />
                     </div>
+                    {!isReadOnly && (
                     <div
                         className={`flex items-center justify-center px-3 py-2 ${mutationsLocked ? "opacity-50 cursor-not-allowed" : ""}`}
                         onClick={ () => {
                             if (mutationsLocked) return;
-                            handleOpenAddExerciseDialog({folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true});
+                            handleOpenAddExerciseDialog?.({folder_id: Number(folder_id), dayOrder: Number(day.order), isOpen: true});
                          } }>
                         <Button variant="ghost" disabled={mutationsLocked} className="mt-1 w-full rounded-full font-bold h-9 sm:h-12 text-sm sm:text-base hover:bg-gray-200 dark:hover:bg-darkGray text-black dark:text-white disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Add exercise to this day"><PlusIcon />Add Exercise</Button>
                     </div>
+                    )}
+                    {!isReadOnly && (
                     <div className="flex flex-row justify-between items-center px-3">
                         {editMode ? (
                             <div className="w-full p-4 bg-[#e6f7f9] dark:bg-darkGray border-t border-[#33bbcf]">
@@ -394,8 +448,20 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                             </Button>
                         )}
                     </div>
+                    )}
+                    {showSeeMore && (
+                        <div className="px-3 pb-3 pt-1 text-center">
+                            <Link
+                                href={`/workout/${resolvedWorkoutId}`}
+                                className="text-sm font-medium text-lightSecondary hover:underline dark:text-lightSecondary"
+                            >
+                                See more exercises
+                            </Link>
+                        </div>
+                    )}
                 </Card>
             </motion.div>
+            {!isReadOnly && programLength > 0 && handleDuplicateDay && (
             <HevyDuplicateDay
                 programLength={ programLength }
                 folder_id={ folder_id }
@@ -404,6 +470,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                 setDuplicateDayOpen={ setDuplicateDayOpen }
                 handleDuplicateDay={ handleDuplicateDay }
             />
+            )}
         </>
     );
 };

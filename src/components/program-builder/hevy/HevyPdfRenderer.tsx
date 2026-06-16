@@ -170,7 +170,7 @@ export const HevyPdfRenderer: React.FC<IProps> = (props) => {
                                     borderRadius: "8px",
                                     backgroundColor: "#F3F4F6",
                                 } }
-                                key={ "week " + (day.folder_id + 1) + "day " + day.order + " " }
+                                key={ "week " + ((day.folder_id ?? 0) + 1) + "day " + day.order + " " }
                             >
                                 <View style={ { borderBottomWidth: "1px", borderColor: "#E5E7EB" } }>
                                     <Text style={ { fontSize: "12px", fontFamily: "Russo One" } }>

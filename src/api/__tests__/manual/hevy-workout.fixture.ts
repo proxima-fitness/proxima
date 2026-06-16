@@ -2,7 +2,7 @@
 export const hevyWorkoutFixture: THevyWorkout = {
     id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     title: "Upper Power",
-    description: "",
+    description: "Heavy singles focus",
     start_time: "2024-06-10T09:00:00.000Z",
     end_time: "2024-06-10T10:15:00.000Z",
     exercises: [
@@ -11,7 +11,7 @@ export const hevyWorkoutFixture: THevyWorkout = {
             title: "Bench Press (Barbell)",
             notes: "",
             exercise_template_id: "11111111-1111-1111-1111-111111111111",
-            superset_id: null,
+            superset_id: 0,
             sets: [
                 {
                     index: 0,
@@ -42,7 +42,7 @@ export const hevyWorkoutFixture: THevyWorkout = {
             title: "Overhead Press (Barbell)",
             notes: "felt heavy",
             exercise_template_id: "22222222-2222-2222-2222-222222222222",
-            superset_id: null,
+            superset_id: 0,
             sets: [
                 {
                     index: 0,

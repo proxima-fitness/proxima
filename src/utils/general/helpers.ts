@@ -29,6 +29,33 @@ export function convertSupabaseDateToReadable(inputDate: string | undefined): st
 }
 
 /**
+ * Formats logged workout wall time (`ended_at − started_at`) for card headers.
+ *
+ * @param startedAt - ISO session start from backup
+ * @param endedAt - ISO session end from backup
+ * @returns Human-readable duration (e.g. "1h 15m", "45 min") or empty string when invalid
+ */
+export function formatWorkoutWallDuration(startedAt: string | undefined, endedAt: string | undefined): string {
+    if (!startedAt || !endedAt) {
+        return "";
+    }
+
+    const durationMs = new Date(endedAt).getTime() - new Date(startedAt).getTime();
+    if (!Number.isFinite(durationMs) || durationMs <= 0) {
+        return "";
+    }
+
+    const totalMinutes = Math.round(durationMs / 60_000);
+    if (totalMinutes < 60) {
+        return `${totalMinutes} min`;
+    }
+
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+}
+
+/**
  * Sort schedule workouts into a week-major, day-minor 2D array.
  *
  * @param scheduleWorkouts - Flat array of workouts with `nthWeek` and `nthDay` fields

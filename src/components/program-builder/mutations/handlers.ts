@@ -35,7 +35,7 @@ export function duplicateWeek(
     fromWeekIndex: number,
     toWeekIndexes: number[],
 ): THevyRoutine[] {
-    const filteredPrev = program.filter((day) => !toWeekIndexes.includes(day.folder_id));
+    const filteredPrev = program.filter((day) => !toWeekIndexes.includes(Number(day.folder_id)));
     const daysToCopy = program.filter((day) => day.folder_id === fromWeekIndex);
     let maxId = Math.max(...program.map((d) => Number(d.id)));
     const newDays = toWeekIndexes.flatMap((week) =>
@@ -183,9 +183,10 @@ export function deleteDay(
  */
 export function deleteWeek(program: THevyRoutine[], folder_id: number): THevyRoutine[] {
     const withoutWeek = program.filter((day) => day.folder_id !== folder_id);
-    const reindexed = withoutWeek.map((day) =>
-        day.folder_id > folder_id ? { ...day, folder_id: day.folder_id - 1 } : day,
-    );
+    const reindexed = withoutWeek.map((day) => {
+        const dayFolderId = day.folder_id ?? 0;
+        return dayFolderId > folder_id ? { ...day, folder_id: dayFolderId - 1 } : day;
+    });
     return reorderHevy(reindexed);
 }
 

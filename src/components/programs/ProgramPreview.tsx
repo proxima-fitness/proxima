@@ -2,8 +2,6 @@
 
 import { useState, useLayoutEffect, useRef } from "react";
 import { shortEnglishHumanizer } from "@/assets/constants";
-import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
-import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -18,7 +16,6 @@ export const ProgramPreview: React.FC<IProps> = (props) => {
         sortedWorkoutsByWeek,
     } = props;
 
-    const { isInLbs } = usePoundsOrKgContext();
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     /** Optimistic until measured: multi-week row usually overflows on sm+ (arrows are max-sm:hidden). */
@@ -272,15 +269,6 @@ export const ProgramPreview: React.FC<IProps> = (props) => {
                                                             ) : (
                                                                 exercise.rpe.map((rpeVal, index) => (
                                                                     <div key={ index }>{rpeVal} RPE</div>
-                                                                ))
-                                                            )
-                                                        )}
-                                                        { exercise?.weights && (
-                                                            exercise.weights.every((weightVal, i, arr) => weightVal === arr[0]) ? (
-                                                                <div>{formatWeight(exercise.weights[0], isInLbs, "lbs")} {getWeightUnit(isInLbs)}</div>
-                                                            ) : (
-                                                                exercise.weights.map((weightVal, index) => (
-                                                                    <div key={ index }>{ formatWeight(weightVal, isInLbs, "lbs") } {getWeightUnit(isInLbs)}</div>
                                                                 ))
                                                             )
                                                         )}

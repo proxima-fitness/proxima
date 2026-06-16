@@ -3,10 +3,13 @@
 /**
  * @module (app)/profile/ProfileContent
  *
- * Client profile body: profile hero, resume-draft banner, blind-spot analysis, Hevy
- * programs grid, and saved programs vault. Sits under (app)/profile/page.
+ * Client profile body: Hevy-style card stack on muted background — header, statistics,
+ * recent workouts, Hevy programs, programs vault, blind-spot analysis.
+ * Resume-draft banner sits above the card stack.
  *
- * Depends on: UserContext, useHevyPrograms/useHevySecret, ProfileHero, EditProfile, BlindSpotAnalysisSection, HevyProgramsGrid, MyProgramsVault, ResumeDraftBanner, WorkoutHistorySyncStatus.
+ * Depends on: UserContext, useHevyPrograms/useHevySecret, ProfileHero, ProfileStatisticsSection,
+ * RecentWorkoutsSection, EditProfile, BlindSpotAnalysisSection, HevyProgramsGrid, MyProgramsVault,
+ * ResumeDraftBanner.
  * Used by: (app)/profile/page.tsx.
  */
 
@@ -15,14 +18,22 @@ import { useHevyPrograms, useHevySecret } from "@/api/hooks";
 import { MyProgramsVault } from "@/components/programs/MyProgramsVault";
 import { BlindSpotAnalysisSection } from "@/components/profile/BlindSpotAnalysisSection";
 import { ProfileHero } from "@/components/profile/ProfileHero";
+import { ProfileStatisticsSection } from "@/components/profile/ProfileStatisticsSection";
+import { RecentWorkoutsSection } from "@/components/profile/RecentWorkoutsSection";
 import { HevyProgramsGrid } from "@/components/program-builder/hevy/HevyProgramsGrid";
 import { ResumeDraftBanner } from "@/components/program-builder/ResumeDraftBanner";
-import { WorkoutHistorySyncStatus } from "@/components/profile/WorkoutHistorySyncStatus";
 import styles from "../../../style";
 import { Suspense, useState } from "react";
 import { ProgramsFallback } from "@/components/generic/ProgramsFallback";
+import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { EditProfile } from "@/components/profile/EditProfile";
+
+const PROFILE_PAGE_X =
+    "max-sm:px-3 sm:px-12 md:px-16 lg:px-20 xl:px-24";
+
+const PROFILE_CARD_CLASS =
+    "rounded-2xl border border-border/60 bg-card px-4 py-5 shadow-sm sm:px-6 sm:py-6";
 
 /**
  * Renders profile sections; fetches Hevy key and programs for the current user.
@@ -35,65 +46,61 @@ export function ProfileContent() {
     const { data: hevyPrograms, isLoading: isLoadingHevy } = useHevyPrograms(user, hevyApiKey ?? "");
 
     const showHevyCard = (hevyPrograms?.length ?? 0) > 0 || isLoadingHevy;
-
-    const sectionDivider = "border-t border-border/40 pt-12 dark:border-white/10";
-    /** First block after profile head: head wrapper already has border-b; avoid border-t stack. */
-    const sectionFirstAfterHead = "pt-12";
+    const hevyConnected = Boolean(hevyApiKey);
 
     return (
-        <div className={`bg-background px-8 max-sm:px-3 ${styles.flexCenter} flex-col`}>
-            <div className={`${styles.boxWidth} flex flex-col gap-0`}>
-                <div className="border-b border-border/40 dark:border-white/10">
-                    {user && (
-                        <>
-                            <div className="mt-14 py-8 pb-10">
-                                <ProfileHero onEditProfileClick={() => setEditDialogOpen(true)} />
-                            </div>
-                            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-                                <DialogContent
-                                    className="max-w-md sm:rounded-2xl"
-                                    onOpenAutoFocus={(e) => e.preventDefault()}
-                                >
-                                    {user && (
-                                        <EditProfile
-                                            user={user}
-                                            onSuccess={() => setEditDialogOpen(false)}
-                                        />
-                                    )}
-                                </DialogContent>
-                            </Dialog>
-                        </>
-                    )}
-                    <div className="mx-auto flex w-full flex-col items-center gap-4 pb-6 max-sm:pb-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center *:mb-0">
-                        <ResumeDraftBanner />
-                        <WorkoutHistorySyncStatus />
-                    </div>
+        <div
+            className={`min-h-screen bg-muted/30 py-8 ${PROFILE_PAGE_X} ${styles.flexCenter} flex-col`}
+        >
+            <div className={`${styles.boxWidth} flex flex-col gap-4 pb-16`}>
+                <div className="flex w-full justify-center">
+                    <ResumeDraftBanner />
                 </div>
 
+                {user ? (
+                    <>
+                        <Card className={PROFILE_CARD_CLASS}>
+                            <ProfileHero onEditProfileClick={() => setEditDialogOpen(true)} />
+                        </Card>
+                        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+                            <DialogContent
+                                className="max-w-md sm:rounded-2xl"
+                                onOpenAutoFocus={(e) => e.preventDefault()}
+                            >
+                                <EditProfile
+                                    user={user}
+                                    onSuccess={() => setEditDialogOpen(false)}
+                                />
+                            </DialogContent>
+                        </Dialog>
+                    </>
+                ) : null}
+
+                <ProfileStatisticsSection hevyConnected={hevyConnected} />
+
+                {hevyConnected ? <RecentWorkoutsSection /> : null}
+
                 {showHevyCard ? (
-                    <section className={sectionFirstAfterHead}>
+                    <Card className={PROFILE_CARD_CLASS}>
                         <HevyProgramsGrid
                             hevyPrograms={hevyPrograms}
                             isLoadingHevy={isLoadingHevy}
                         />
-                    </section>
-                ) : (
-                    <HevyProgramsGrid
-                        hevyPrograms={hevyPrograms}
-                        isLoadingHevy={isLoadingHevy}
-                    />
-                )}
+                    </Card>
+                ) : null}
+
                 <Suspense fallback={<ProgramsFallback />}>
-                    <section className={showHevyCard ? sectionDivider : sectionFirstAfterHead}>
+                    <Card className={PROFILE_CARD_CLASS}>
                         <MyProgramsVault />
-                    </section>
+                    </Card>
                 </Suspense>
-                <section className={`${sectionDivider} pb-16`}>
+
+                <Card className={PROFILE_CARD_CLASS}>
                     <BlindSpotAnalysisSection
                         hevyPrograms={hevyPrograms}
                         isLoadingHevy={isLoadingHevy}
                     />
-                </section>
+                </Card>
             </div>
         </div>
     );

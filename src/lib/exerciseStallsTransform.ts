@@ -1,16 +1,25 @@
 /**
  * @module exerciseStallsTransform
  *
- * Transforms raw Hevy exercise-history entries into per-exercise analytics:
- * session aggregates, a 15-point weight trend, and a stall detection flag.
- * Used to populate the exercise-stall dashboard that highlights exercises
- * where the user has stopped progressing.
+ * Builds per-exercise stall analytics from backed-up workout sessions or legacy
+ * Hevy exercise-history rows: session aggregates, weight trend, stall flag.
  *
- * Depends on: Hevy type definitions (THevyExerciseTemplate, THevyExerciseHistoryEntry)
- * Used by: Exercise stall dashboard, workout-analytics views
+ * Depends on: Hevy type definitions, TBackedUpWorkout
+ * Used by: exercise-history API route, workout-history read layer
  */
 
 const KG_TO_LBS = 2.20462;
+
+/** Free tier: max performances per exercise for trend, stall detection, and dispatch. */
+export const FREE_STALL_PERFORMANCE_CAP = 15;
+
+export type TExerciseSessionAggregate = {
+    workoutId: string;
+    date: string;
+    totalVolume: number;
+    maxWeight: number;
+    totalReps: number;
+};
 
 /** Round a number to two decimal places. */
 function round2(n: number): number {
@@ -18,60 +27,146 @@ function round2(n: number): number {
 }
 
 /**
- * Aggregate raw Hevy history entries into session-level stats with stall detection.
+ * Groups nested backup workouts into per-template session aggregates (newest first).
  *
- * Groups entries by workout, computes per-session volume/max weight/reps,
- * builds a 15-session weight trend (oldest-to-newest), and flags a stall
- * when the last 3 sessions show no weight increase over the preceding 3.
- *
- * @param template - The exercise template (used for the exercise name)
- * @param historyEntries - Raw set/rep-level history rows from Hevy
- * @returns Aggregated exercise result with trend array, stall flag, and colour indicator
+ * @param workouts - Backed-up workouts with nested exercises and sets
+ * @returns Map keyed by Hevy `source_exercise_id` (template id)
  */
-export function transformHistoryToExercise(
-    template: THevyExerciseTemplate,
+export function aggregateSessionsByTemplateId(
+    workouts: TBackedUpWorkout[],
+): Map<string, TExerciseSessionAggregate[]> {
+    const byTemplate = new Map<string, Map<string, TExerciseSessionAggregate>>();
+
+    for (const workout of workouts) {
+        const workoutDate = workout.started_at;
+        for (const exercise of workout.workout_exercises ?? []) {
+            const templateId = exercise.source_exercise_id;
+            if (!templateId) {
+                continue;
+            }
+
+            const sets = exercise.workout_sets ?? [];
+            if (sets.length === 0) {
+                continue;
+            }
+
+            let totalVolume = 0;
+            let maxWeight = 0;
+            let totalReps = 0;
+            for (const set of sets) {
+                const weight = set.weight_kg ?? 0;
+                const reps = set.reps ?? 0;
+                totalVolume += weight * reps;
+                maxWeight = Math.max(maxWeight, weight);
+                totalReps += reps;
+            }
+
+            let templateWorkouts = byTemplate.get(templateId);
+            if (!templateWorkouts) {
+                templateWorkouts = new Map<string, TExerciseSessionAggregate>();
+                byTemplate.set(templateId, templateWorkouts);
+            }
+
+            const existing = templateWorkouts.get(workout.id);
+            if (existing) {
+                existing.totalVolume += totalVolume;
+                existing.maxWeight = Math.max(existing.maxWeight, maxWeight);
+                existing.totalReps += totalReps;
+            } else {
+                templateWorkouts.set(workout.id, {
+                    workoutId: workout.id,
+                    date: workoutDate,
+                    totalVolume,
+                    maxWeight,
+                    totalReps,
+                });
+            }
+        }
+    }
+
+    const result = new Map<string, TExerciseSessionAggregate[]>();
+    byTemplate.forEach((workoutMap, templateId) => {
+        const sessions = Array.from(workoutMap.values()).sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+        );
+        result.set(templateId, sessions);
+    });
+    return result;
+}
+
+/**
+ * Converts legacy Hevy per-set history rows into session aggregates (newest first).
+ */
+export function historyEntriesToSessions(
     historyEntries: THevyExerciseHistoryEntry[],
-): TExerciseStallResult {
-    const byWorkout = new Map<
-        string,
-        { date: string; totalVolume: number; maxWeight: number; workoutId: string; totalReps: number }
-    >();
-    for (const e of historyEntries) {
-        const w = byWorkout.get(e.workout_id);
-        const weight = e.weight_kg ?? 0;
-        const reps = e.reps ?? 0;
+): TExerciseSessionAggregate[] {
+    const byWorkout = new Map<string, TExerciseSessionAggregate>();
+    for (const entry of historyEntries) {
+        const weight = entry.weight_kg ?? 0;
+        const reps = entry.reps ?? 0;
         const vol = weight * reps;
-        if (!w) {
-            byWorkout.set(e.workout_id, {
-                date: e.workout_start_time,
+        const existing = byWorkout.get(entry.workout_id);
+        if (!existing) {
+            byWorkout.set(entry.workout_id, {
+                workoutId: entry.workout_id,
+                date: entry.workout_start_time,
                 totalVolume: vol,
                 maxWeight: weight,
-                workoutId: e.workout_id,
                 totalReps: reps,
             });
         } else {
-            w.totalVolume += vol;
-            w.maxWeight = Math.max(w.maxWeight, weight);
-            w.totalReps += reps;
+            existing.totalVolume += vol;
+            existing.maxWeight = Math.max(existing.maxWeight, weight);
+            existing.totalReps += reps;
         }
     }
-    const sessions = Array.from(byWorkout.values()).sort(
+    return Array.from(byWorkout.values()).sort(
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
     );
-    const trendLen = 15;
-    const last15 = sessions.slice(0, trendLen);
-    const oldestToNewest = [...last15].reverse();
-    const trend = Array(trendLen)
-        .fill(0)
-        .map((_, i) => round2(oldestToNewest[i] ? oldestToNewest[i].maxWeight * KG_TO_LBS : 0));
+}
+
+export type TTransformSessionsOptions = {
+    /** When false, caps performances at {@link FREE_STALL_PERFORMANCE_CAP}. */
+    isPro?: boolean;
+};
+
+/**
+ * Aggregates session-level stats with stall detection and weight trend.
+ *
+ * Stall: last 3 max-weight sessions vs previous 3. Free tier analyzes only the
+ * last {@link FREE_STALL_PERFORMANCE_CAP} performances; Pro uses full backup depth.
+ */
+export function transformSessionsToExercise(
+    template: THevyExerciseTemplate,
+    sessions: TExerciseSessionAggregate[],
+    options: TTransformSessionsOptions = {},
+): TExerciseStallResult {
+    const isPro = options.isPro === true;
+    const analysisSessions = isPro
+        ? sessions
+        : sessions.slice(0, FREE_STALL_PERFORMANCE_CAP);
+
+    const trendSource = analysisSessions;
+    const oldestToNewest = [...trendSource].reverse();
+
+    const trend = isPro
+        ? oldestToNewest.map((s) => round2(s.maxWeight * KG_TO_LBS))
+        : Array(FREE_STALL_PERFORMANCE_CAP)
+              .fill(0)
+              .map((_, i) =>
+                  round2(oldestToNewest[i] ? oldestToNewest[i].maxWeight * KG_TO_LBS : 0),
+              );
+
     const weightLbs =
-        sessions.length > 0 ? round2(Math.max(...sessions.map((s) => s.maxWeight)) * KG_TO_LBS) : 0;
+        analysisSessions.length > 0
+            ? round2(Math.max(...analysisSessions.map((s) => s.maxWeight)) * KG_TO_LBS)
+            : 0;
 
     let hasStall = false;
     let color: "green" | "yellow" | "red" = "green";
-    if (sessions.length >= 3) {
-        const last3 = sessions.slice(0, 3).map((s) => s.maxWeight);
-        const prev3 = sessions.slice(3, 6).map((s) => s.maxWeight);
+    if (analysisSessions.length >= 3) {
+        const last3 = analysisSessions.slice(0, 3).map((s) => s.maxWeight);
+        const prev3 = analysisSessions.slice(3, 6).map((s) => s.maxWeight);
         const maxLast3 = Math.max(...last3, 0);
         const maxPrev3 = prev3.length ? Math.max(...prev3, 0) : 0;
         if (maxPrev3 > 0 && maxLast3 <= maxPrev3) {
@@ -88,7 +183,7 @@ export function transformHistoryToExercise(
         color,
         trend,
         hasStall,
-        sessions: sessions.map((s) => ({
+        sessions: analysisSessions.map((s) => ({
             workoutId: s.workoutId,
             date: s.date,
             totalVolume: round2(s.totalVolume * KG_TO_LBS),
@@ -96,4 +191,20 @@ export function transformHistoryToExercise(
             totalReps: s.totalReps,
         })),
     };
+}
+
+/**
+ * @deprecated Prefer {@link transformSessionsToExercise} with backup aggregates.
+ * Kept for compatibility with legacy Hevy history entry shape.
+ */
+export function transformHistoryToExercise(
+    template: THevyExerciseTemplate,
+    historyEntries: THevyExerciseHistoryEntry[],
+    options: TTransformSessionsOptions = {},
+): TExerciseStallResult {
+    return transformSessionsToExercise(
+        template,
+        historyEntriesToSessions(historyEntries),
+        options,
+    );
 }

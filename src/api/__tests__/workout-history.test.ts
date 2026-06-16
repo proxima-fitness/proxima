@@ -89,8 +89,34 @@ describe("hevy import mapping", () => {
             source: HEVY_WORKOUT_SOURCE,
             external_id: workout.id,
             title: workout.title,
+            description: workout.description,
             started_at: workout.start_time,
             ended_at: workout.end_time,
+        });
+    });
+
+    it("maps exercise notes and superset id", () => {
+        const bench = workout.exercises[0];
+        const ohp = workout.exercises[1];
+
+        expect(mapHevyExerciseToInsert(
+            bench,
+            "workout-internal-id",
+            "bench-internal-id",
+            CANONICAL_KNOWN_ID,
+        )).toMatchObject({
+            notes: "",
+            superset_id: 0,
+        });
+
+        expect(mapHevyExerciseToInsert(
+            ohp,
+            "workout-internal-id",
+            "ohp-internal-id",
+            "canonical-ohp-aaaa-bbbb-cccc-dddddddddddd",
+        )).toMatchObject({
+            notes: "felt heavy",
+            superset_id: 0,
         });
     });
 
@@ -156,7 +182,10 @@ describe("importHevyWorkout", () => {
 
         expect(mockDb.tables.workouts).toHaveLength(1);
         expect(mockDb.tables.workouts[0].external_id).toBe(workout.id);
+        expect(mockDb.tables.workouts[0].description).toBe("Heavy singles focus");
         expect(mockDb.tables.workout_exercises).toHaveLength(2);
+        expect(mockDb.tables.workout_exercises[0].superset_id).toBe(0);
+        expect(mockDb.tables.workout_exercises[1].notes).toBe("felt heavy");
         expect(mockDb.tables.workout_sets).toHaveLength(3);
     });
 

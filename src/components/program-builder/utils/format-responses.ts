@@ -55,7 +55,7 @@ export const appendOrderToHevyRoutines = (routines: THevyRoutine[]): THevyRoutin
 
     if (!routines || routines.length === 0) return [];
 
-    const sortedRoutines = [...routines].sort((a, b) => a.folder_id - b.folder_id);
+    const sortedRoutines = [...routines].sort((a, b) => (a.folder_id ?? 0) - (b.folder_id ?? 0));
 
     let currentFolderId = sortedRoutines[0].folder_id;
     let orderCounter = 1;
@@ -245,8 +245,9 @@ export const reorder = (days: TProgramCreatorDay[]) => {
 export const reorderHevy = (routines: THevyRoutine[]): THevyRoutine[] => {
     // Group routines by folder_id
     const groupedByFolder: Record<number, THevyRoutine[]> = routines.reduce((acc, item) => {
-        if (!acc[item.folder_id]) acc[item.folder_id] = [];
-        acc[item.folder_id].push(item);
+        const folderId = item.folder_id ?? 0;
+        if (!acc[folderId]) acc[folderId] = [];
+        acc[folderId].push(item);
         return acc;
     }, {} as Record<number, THevyRoutine[]>);
 
@@ -270,8 +271,9 @@ export const reorderHevy = (routines: THevyRoutine[]): THevyRoutine[] => {
  */
 export const sortHevyByOrder = (routines: THevyRoutine[]): THevyRoutine[] => {
     const groupedByFolder: Record<number, THevyRoutine[]> = routines.reduce((acc, item) => {
-        if (!acc[item.folder_id]) acc[item.folder_id] = [];
-        acc[item.folder_id].push(item);
+        const folderId = item.folder_id ?? 0;
+        if (!acc[folderId]) acc[folderId] = [];
+        acc[folderId].push(item);
         return acc;
     }, {} as Record<number, THevyRoutine[]>);
 
@@ -305,7 +307,7 @@ export const removeOrderHevy = (routines: THevyRoutine[]): Omit<THevyRoutine, 'o
 export const deFlattenHevyRoutine = (routines: THevyRoutine[]): THevyRoutine[][] => {
     return Object.entries(
       routines.reduce<Record<number, THevyRoutine[]>>((acc, routine) => {
-        const folderId = routine.folder_id;
+        const folderId = routine.folder_id ?? 0;
 
         if (!acc[folderId]) {
           acc[folderId] = [];
@@ -390,7 +392,7 @@ export const programCreatorDayToScheduleWorkouts = (program: TProgramCreatorDay[
 export const getNumberRoutineFolders = (routines: THevyRoutine[]): number => {
     if (routines.length === 0) return 12;
 
-    const folderIds = routines.map(routine => routine.folder_id);
+    const folderIds = routines.map((routine) => routine.folder_id ?? 0);
     const minFolderId = Math.min(...folderIds);
     const maxFolderId = Math.max(...folderIds);
 
@@ -487,7 +489,7 @@ function canCollapseExerciseSets(sets: THevySets[]): boolean {
 export const hevyRoutinesToCsvRows = (routines: THevyRoutine[]): THevyCsvRow[] => {
     const rows: THevyCsvRow[] = [];
     for (const routine of routines) {
-        const week = routine.folder_id + 1;
+        const week = (routine.folder_id ?? 0) + 1;
         const day = routine.order ?? "";
         const routineTitle = routine.title ?? "";
         const routineNotes = routineNotesForExport(routine.notes);

@@ -13,10 +13,21 @@
  * @property isLoadingHevy Whether Hevy programs are still loading.
  */
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useUserContext } from "@/contexts/UserContext";
-import { useExerciseStallsAnalysis, useHevyExercises, useMyFeatureLimits, useSubscribedPrograms } from "@/api/hooks";
+import {
+    useExerciseStallsAnalysis,
+    useHevyExercises,
+    useHevySecret,
+    useMyFeatureLimits,
+    useSubscribedPrograms,
+} from "@/api/hooks";
+import {
+    fetchWorkoutHistorySyncProgress,
+    isWorkoutHistorySyncInProgress,
+} from "@/api/workout-history-sync";
+import { WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY } from "@/hooks/useWorkoutHistorySyncPoller";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -40,12 +51,11 @@ const PRO_PAGE_SIZE = 9;
 const FREE_LIMIT = 3;
 
 const LOADING_PHRASES = [
-    "Loading exercise history…",
-    "Fetching your workouts…",
-    "Crunching the numbers…",
+    "Analyzing your backup…",
+    "Crunching lift trends…",
+    "Checking for stalls…",
     "Almost there…",
     "Building your analysis…",
-    "Gathering lift data…",
 ];
 
 const PHRASE_ROTATE_MS = 2800;
@@ -96,12 +106,21 @@ function formatSessionLine(
     return `${dateStr}: ${formatWeight(s.maxWeight, isInLbs, "lbs")} ${unit} max, ${formatWeight(s.totalVolume, isInLbs, "lbs")} ${unit} volume`;
 }
 
-function buildStallSearchString(exercise: TExerciseStallResult, isInLbs: boolean): string {
-    const sessions = (exercise.sessions ?? []).slice(0, 15);
+function buildStallSearchString(
+    exercise: TExerciseStallResult,
+    isInLbs: boolean,
+    isPro: boolean,
+): string {
+    const sessions = isPro
+        ? (exercise.sessions ?? [])
+        : (exercise.sessions ?? []).slice(0, 15);
     const historyLines = sessions.map((s) => formatSessionLine(s, isInLbs));
+    const depthLabel = isPro
+        ? `${sessions.length} session${sessions.length === 1 ? "" : "s"}`
+        : "last 15 sessions";
     return [
         STALL_PROMPT,
-        `Recent history for ${exercise.name} (last 15 sessions):`,
+        `Recent history for ${exercise.name} (${depthLabel}):`,
         ...historyLines,
     ].join("\n");
 }
@@ -114,11 +133,25 @@ export function BlindSpotAnalysisSection({
     const queryClient = useQueryClient();
     const { user } = useUserContext();
     const { isInLbs } = usePoundsOrKgContext();
+    const { data: hevyApiKey } = useHevySecret(user);
+    const hevyConnected = Boolean(hevyApiKey);
+    const { data: progress } = useQuery({
+        queryKey: WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY,
+        queryFn: fetchWorkoutHistorySyncProgress,
+        enabled: hevyConnected,
+        staleTime: 5_000,
+        refetchOnWindowFocus: false,
+    });
+    const isSyncing = progress != null && isWorkoutHistorySyncInProgress(progress);
+    const syncError = progress?.syncError ?? null;
+
     const [analysisRequested, setAnalysisRequested] = useState(false);
     const { data: templates = [], isLoading: isLoadingTemplates } = useHevyExercises(analysisRequested);
     const {
         data: exerciseStallsData,
         isFetching: isFetchingExerciseStalls,
+        isError: isExerciseStallsError,
+        error: exerciseStallsError,
         refetch: refetchExerciseStalls,
     } = useExerciseStallsAnalysis(user, analysisRequested);
     const { data: featureLimits } = useMyFeatureLimits(user);
@@ -138,10 +171,17 @@ export function BlindSpotAnalysisSection({
 
     const handleCancelAnalysis = useCallback(() => {
         void queryClient.cancelQueries({
-            queryKey: ["exercise-stalls-analysis", user?.id, "v6"],
+            queryKey: ["exercise-stalls-analysis", user?.id, "v7"],
         });
         setAnalysisRequested(false);
     }, [queryClient, user?.id]);
+
+    const handleStartAnalysis = useCallback(() => {
+        if (syncError) {
+            return;
+        }
+        setAnalysisRequested(true);
+    }, [syncError]);
 
     const handleExploreFixes = useCallback((exercise: TExerciseStallResult) => {
         setExploreFixesExercise(exercise);
@@ -151,7 +191,7 @@ export function BlindSpotAnalysisSection({
     const handleSelectProgram = useCallback(
         (program: { id: number }) => {
             if (!exploreFixesExercise) return;
-            const search = buildStallSearchString(exploreFixesExercise, isInLbs);
+            const search = buildStallSearchString(exploreFixesExercise, isInLbs, isPro);
             const params = new URLSearchParams({
                 shareId: String(program.id),
                 search,
@@ -160,13 +200,13 @@ export function BlindSpotAnalysisSection({
             setExploreFixesDialogOpen(false);
             setExploreFixesExercise(null);
         },
-        [exploreFixesExercise, isInLbs, router],
+        [exploreFixesExercise, isInLbs, isPro, router],
     );
 
     const handleSelectHevyProgram = useCallback(
         (program: THevyProgramItem) => {
             if (!exploreFixesExercise) return;
-            const search = buildStallSearchString(exploreFixesExercise, isInLbs);
+            const search = buildStallSearchString(exploreFixesExercise, isInLbs, isPro);
             for (const routine of program.program) {
                 routine.folder_id = 0;
             }
@@ -179,7 +219,7 @@ export function BlindSpotAnalysisSection({
             setExploreFixesDialogOpen(false);
             setExploreFixesExercise(null);
         },
-        [exploreFixesExercise, isInLbs, router],
+        [exploreFixesExercise, isInLbs, isPro, router],
     );
 
     const filteredAndSorted = useMemo(() => {
@@ -263,19 +303,44 @@ export function BlindSpotAnalysisSection({
             </div>
             {showIdleAnalyze && (
                 <div className="mb-6 rounded-lg bg-card/50 p-5 flex flex-col items-center text-center">
-                    <p className="text-sm text-muted-foreground mb-4 max-w-md">
-                        This feature will pull your history from Hevy for each exercise in the library (30s). Please stay on
-                        this page until it finishes.
-                    </p>
-                    <Button
-                        type="button"
-                        size="lg"
-                        onClick={() => setAnalysisRequested(true)}
-                        className="min-w-56 h-12 rounded-full px-10 text-md text-white bg-lightSecondary hover:bg-lightSecondary/90"
-                    >
-                        Analyze
-                        <SparklesIcon className="size-4" />
-                    </Button>
+                    {syncError ? (
+                        <>
+                            <p className="text-sm text-destructive mb-4 max-w-md">
+                                Workout history sync failed: {syncError}
+                            </p>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="lg"
+                                className="min-w-56 h-12 rounded-full"
+                                onClick={() => {
+                                    void queryClient.invalidateQueries({
+                                        queryKey: WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY,
+                                    });
+                                }}
+                            >
+                                Retry sync
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <p className="text-sm text-muted-foreground mb-4 max-w-md">
+                                Analyzes your backed-up Hevy workouts for stalls — usually a few seconds.
+                                {isSyncing
+                                    ? " Older workouts are still syncing; analysis uses what is backed up so far."
+                                    : ""}
+                            </p>
+                            <Button
+                                type="button"
+                                size="lg"
+                                onClick={handleStartAnalysis}
+                                className="min-w-56 h-12 rounded-full px-10 text-md text-white bg-lightSecondary hover:bg-lightSecondary/90"
+                            >
+                                Analyze
+                                <SparklesIcon className="size-4" />
+                            </Button>
+                        </>
+                    )}
                 </div>
             )}
             {dataLoading && (
@@ -284,11 +349,13 @@ export function BlindSpotAnalysisSection({
                         <div className="h-full w-1/3 rounded-full bg-lightSecondary dark:bg-lightGold animate-loading-bar" />
                     </div>
                     <p className="text-xs text-muted-foreground mt-2 transition-opacity duration-300">
-                        {LOADING_PHRASES[loadingPhraseIndex]} (30s)
+                        {LOADING_PHRASES[loadingPhraseIndex]}
                     </p>
-                    <p className="text-sm font-medium text-yellow-600 dark:text-yellow-500 mt-1">
-                        Don&apos;t leave the page
-                    </p>
+                    {isSyncing ? (
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Backup still syncing — results may update as more workouts arrive.
+                        </p>
+                    ) : null}
                     <div className="flex justify-center mt-4">
                         <Button type="button" variant="outline" size="lg" onClick={handleCancelAnalysis}>
                             <XIcon className="size-4" />
@@ -297,6 +364,13 @@ export function BlindSpotAnalysisSection({
                     </div>
                 </div>
             )}
+            {!dataLoading && isExerciseStallsError && analysisRequested ? (
+                <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+                    {exerciseStallsError instanceof Error
+                        ? exerciseStallsError.message
+                        : "Could not run analysis. Please try again."}
+                </div>
+            ) : null}
             {!dataLoading && allExercises.length > 0 && (
                 <div className="flex flex-wrap items-center gap-4 mb-4">
                     <div className="flex flex-wrap items-center gap-2">
@@ -470,6 +544,7 @@ export function BlindSpotAnalysisSection({
                     currentPage={isPro ? currentPage : undefined}
                     totalPages={isPro ? totalPages : undefined}
                     onPageChange={isPro ? setCurrentPage : undefined}
+                    performancesLabel={isPro ? "Full backup history" : "Last 15 performances"}
                 />
             )}
         </section>

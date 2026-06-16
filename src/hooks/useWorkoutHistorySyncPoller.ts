@@ -9,7 +9,7 @@
  * backoff (60s → 120s → 240s → …) without persisting a terminal sync_error.
  *
  * Depends on: @tanstack/react-query, api/workout-history-sync
- * Used by: WorkoutHistorySyncBanner, WorkoutHistorySyncStatus
+ * Used by: WorkoutHistorySyncBanner, ProfileHero
  */
 import { useCallback, useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";

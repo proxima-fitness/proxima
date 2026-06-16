@@ -57,6 +57,8 @@ interface IProps {
     currentPage?: number;
     /** Total number of pages. When > 1 and onPageChange is set, pagination UI is shown. */
     totalPages?: number;
+    /** Label above the exercise grid (depth hint). */
+    performancesLabel?: string;
     /** Called when user selects a page. */
     onPageChange?: (page: number) => void;
 }
@@ -103,6 +105,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
         currentPage,
         totalPages,
         onPageChange,
+        performancesLabel = BLIND_SPOT_STRINGS.Last15Workouts,
     } = props;
     const { isInLbs } = usePoundsOrKgContext();
 
@@ -154,7 +157,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
         <div className="pt-5 w-full max-w-full overflow-hidden px-0 box-border">
             <div className="flex justify-between items-center mb-3 w-full max-w-full box-border">
                 <div className="text-xs text-muted-foreground shrink-0">
-                    {BLIND_SPOT_STRINGS.Last15Workouts}
+                    {performancesLabel}
                 </div>
             </div>
 

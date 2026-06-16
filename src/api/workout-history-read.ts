@@ -13,9 +13,24 @@ import {
     readSyncCursor,
     runSyncChunk,
 } from "./workout-history-sync";
+import type { Database } from "@/hooks/supabase";
+import {
+    aggregateProfileStatistics,
+    getSinceIsoForWeekRange,
+} from "./workout-history-statistics";
+import {
+    aggregateSessionsByTemplateId,
+    transformSessionsToExercise,
+} from "@/lib/exerciseStallsTransform";
 
-/** Default workout cap for agent-style reads. */
+const HEVY_TEMPLATE_SELECT =
+    "id, title, type, primary_muscle_group, secondary_muscle_groups, is_custom, equipment, normalized_title, gif_id, instructions";
+
+/** Default workout cap for browse and agent-style reads. */
 export const DEFAULT_WORKOUT_HISTORY_LIMIT = 15;
+
+/** Max exercises returned when list route uses `preview=true`. */
+export const PREVIEW_MAX_EXERCISES = 3;
 
 /** Max sync chunks per `ensureWorkoutHistoryFresh` call (avoids serverless timeout). */
 export const DEFAULT_ENSURE_FRESH_MAX_CHUNKS = 5;
@@ -59,6 +74,79 @@ function sortWorkoutNestedRows(workouts: TBackedUpWorkout[]): TBackedUpWorkout[]
 }
 
 /**
+ * Maps a backed-up set row to Hevy set shape for {@link THevyRoutine} consumers.
+ */
+function mapBackedUpSetToHevySet(set: Database["public"]["Tables"]["workout_sets"]["Row"]): THevySets {
+    const repRange =
+        set.rep_range_start != null && set.rep_range_end != null
+            ? { start: set.rep_range_start, end: set.rep_range_end }
+            : null;
+
+    return {
+        index: set.set_index,
+        type: set.set_type,
+        weight_kg: set.weight_kg,
+        reps: set.reps,
+        distance_meters: set.distance_meters,
+        duration_seconds: set.duration_seconds,
+        rpe: set.rpe,
+        custom_metric: set.custom_metric,
+        rep_range: repRange,
+    };
+}
+
+/**
+ * Maps a backed-up exercise row to Hevy exercise shape for {@link THevyRoutine} consumers.
+ */
+function mapBackedUpExerciseToHevyExercise(
+    exercise: TWorkoutExerciseRow,
+    arrayIndex: number,
+): THevyExercise {
+    return {
+        index: arrayIndex,
+        title: exercise.canonical_exercises.title,
+        notes: exercise.notes ?? "",
+        rest_seconds: null,
+        exercise_template_id: exercise.source_exercise_id ?? "",
+        supersets_id: exercise.superset_id,
+        sets: (exercise.workout_sets ?? []).map(mapBackedUpSetToHevySet),
+    };
+}
+
+/**
+ * Maps a nested backup workout to {@link THevyRoutine} for `HevyDayCard` and browse APIs.
+ *
+ * @param workout - Nested backup row from {@link getWorkoutsForUser} or {@link getWorkoutById}
+ * @param options - Optional adapter options
+ * @param options.previewMaxExercises - Caps exercises (re-indexed 0..n-1); omit for full workout
+ */
+export function mapBackedUpWorkoutToHevyRoutine(
+    workout: TBackedUpWorkout,
+    options: TMapBackedUpWorkoutOptions = {},
+): THevyRoutine {
+    const exercises = workout.workout_exercises ?? [];
+    const visibleExercises =
+        options.previewMaxExercises != null
+            ? exercises.slice(0, options.previewMaxExercises)
+            : exercises;
+
+    return {
+        id: workout.id,
+        title: workout.title ?? "",
+        folder_id: null,
+        notes: workout.description ?? "",
+        exercises: visibleExercises.map((exercise, index) =>
+            mapBackedUpExerciseToHevyExercise(exercise, index),
+        ),
+        updated_at: workout.updated_at ?? undefined,
+        created_at: workout.created_at ?? undefined,
+        started_at: workout.started_at,
+        ended_at: workout.ended_at,
+        source: workout.source ?? undefined,
+    };
+}
+
+/**
  * Returns backed-up workouts with nested exercises, canonical exercise metadata, and sets.
  *
  * @param db - Supabase client (user or service role)
@@ -67,9 +155,15 @@ function sortWorkoutNestedRows(workouts: TBackedUpWorkout[]): TBackedUpWorkout[]
  * @param options.limit - Max workouts to return (default {@link DEFAULT_WORKOUT_HISTORY_LIMIT})
  * @param options.since - ISO 8601 lower bound on `started_at`
  * @param options.canonicalExerciseIds - When set, inner-joins to workouts containing those exercises
- * @returns Workouts newest-first, with nested exercises and sets
+ * @param options.cursorStartedAt - Keyset cursor `started_at` (with {@link TWorkoutHistoryQueryOptions.cursorId})
+ * @param options.cursorId - Keyset cursor workout `id` tiebreaker
+ * @returns Workouts newest-first with optional `nextCursor` when more rows exist
  */
-export async function getWorkoutsForUser(db: TWorkoutHistoryDb, userId: string, options: TWorkoutHistoryQueryOptions = {}): Promise<TBackedUpWorkout[]> {
+export async function getWorkoutsForUser(
+    db: TWorkoutHistoryDb,
+    userId: string,
+    options: TWorkoutHistoryQueryOptions = {},
+): Promise<TWorkoutHistoryPage> {
     const limit = options.limit ?? DEFAULT_WORKOUT_HISTORY_LIMIT;
     const canonicalExerciseIds = options.canonicalExerciseIds?.filter(Boolean) ?? [];
     const useExerciseFilter = canonicalExerciseIds.length > 0;
@@ -79,10 +173,17 @@ export async function getWorkoutsForUser(db: TWorkoutHistoryDb, userId: string, 
         .select(useExerciseFilter ? WORKOUT_NESTED_SELECT_INNER : WORKOUT_NESTED_SELECT)
         .eq("user_id", userId)
         .order("started_at", { ascending: false })
-        .limit(limit);
+        .order("id", { ascending: false })
+        .limit(limit + 1);
 
     if (options.since) {
         query = query.gte("started_at", options.since);
+    }
+
+    if (options.cursorStartedAt && options.cursorId) {
+        query = query.or(
+            `started_at.lt.${options.cursorStartedAt},and(started_at.eq.${options.cursorStartedAt},id.lt.${options.cursorId})`,
+        );
     }
 
     if (useExerciseFilter) {
@@ -95,7 +196,49 @@ export async function getWorkoutsForUser(db: TWorkoutHistoryDb, userId: string, 
         throw new Error(error.message);
     }
 
-    return sortWorkoutNestedRows((data ?? []) as TBackedUpWorkout[]);
+    const sorted = sortWorkoutNestedRows((data ?? []) as TBackedUpWorkout[]);
+    const hasMore = sorted.length > limit;
+    const workouts = hasMore ? sorted.slice(0, limit) : sorted;
+    const lastWorkout = workouts.at(-1);
+
+    return {
+        workouts,
+        nextCursor:
+            hasMore && lastWorkout
+                ? { startedAt: lastWorkout.started_at, id: lastWorkout.id }
+                : null,
+    };
+}
+
+/**
+ * Returns one backed-up workout with nested exercises and sets, scoped to the user.
+ *
+ * @param db - Supabase client (user or service role)
+ * @param userId - Proxima user ID owning the backup row
+ * @param workoutId - Proxima workout row ID
+ * @returns Nested workout, or `null` when missing or not owned by the user (RLS)
+ */
+export async function getWorkoutById(
+    db: TWorkoutHistoryDb,
+    userId: string,
+    workoutId: string,
+): Promise<TBackedUpWorkout | null> {
+    const { data, error } = await db
+        .from("workouts")
+        .select(WORKOUT_NESTED_SELECT)
+        .eq("user_id", userId)
+        .eq("id", workoutId)
+        .maybeSingle();
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    if (!data) {
+        return null;
+    }
+
+    return sortWorkoutNestedRows([data as TBackedUpWorkout])[0];
 }
 
 /**
@@ -157,5 +300,136 @@ export async function ensureWorkoutHistoryFresh(db: TWorkoutHistoryDb, params: {
             syncError: null,
             done: false,
         }
+    );
+}
+
+/**
+ * Fetches all backed-up workouts with nested sets on or after `since`, paginating internally.
+ *
+ * @param db - Supabase client (user or service role)
+ * @param userId - Proxima user ID
+ * @param since - ISO 8601 lower bound on `started_at`
+ */
+export async function getAllWorkoutsSinceForUser(
+    db: TWorkoutHistoryDb,
+    userId: string,
+    since: string,
+): Promise<TBackedUpWorkout[]> {
+    const pageSize = 100;
+    const all: TBackedUpWorkout[] = [];
+    let cursor: TWorkoutHistoryCursor | null = null;
+
+    for (;;) {
+        const page = await getWorkoutsForUser(db, userId, {
+            limit: pageSize,
+            since,
+            cursorStartedAt: cursor?.startedAt,
+            cursorId: cursor?.id,
+        });
+
+        all.push(...page.workouts);
+
+        if (!page.nextCursor) {
+            break;
+        }
+
+        cursor = page.nextCursor;
+    }
+
+    return all;
+}
+
+/**
+ * Weekly Duration/Reps aggregates for profile statistics.
+ *
+ * @param db - Supabase client (user or service role)
+ * @param userId - Proxima user ID
+ * @param weeks - Chart range: 4 or 12 Sunday-start weeks (US ET)
+ * @param referenceDate - Anchor for bucket window (default now)
+ */
+export async function getProfileStatisticsForUser(
+    db: TWorkoutHistoryDb,
+    userId: string,
+    weeks: 4 | 12,
+    referenceDate: Date = new Date(),
+): Promise<TProfileStatisticsResponse> {
+    const since = getSinceIsoForWeekRange(referenceDate, weeks);
+    const workouts = await getAllWorkoutsSinceForUser(db, userId, since);
+    return aggregateProfileStatistics(workouts, { weeks, referenceDate });
+}
+
+/**
+ * Fetches all backed-up workouts with nested sets, paginating internally.
+ *
+ * @param db - Supabase client (user or service role)
+ * @param userId - Proxima user ID
+ */
+export async function getAllWorkoutsForUser(
+    db: TWorkoutHistoryDb,
+    userId: string,
+): Promise<TBackedUpWorkout[]> {
+    const pageSize = 100;
+    const all: TBackedUpWorkout[] = [];
+    let cursor: TWorkoutHistoryCursor | null = null;
+
+    for (;;) {
+        const page = await getWorkoutsForUser(db, userId, {
+            limit: pageSize,
+            cursorStartedAt: cursor?.startedAt,
+            cursorId: cursor?.id,
+        });
+
+        all.push(...page.workouts);
+
+        if (!page.nextCursor) {
+            break;
+        }
+
+        cursor = page.nextCursor;
+    }
+
+    return all;
+}
+
+/**
+ * Blind Spot stall analysis from the workout history backup (not live Hevy).
+ *
+ * @param db - Supabase client (user or service role)
+ * @param userId - Proxima user ID
+ * @param options - Tier depth and optional template filter
+ * @param options.isPro - When true, uses full backup depth per exercise
+ * @param options.exerciseTemplateIds - Optional subset of Hevy template ids
+ */
+export async function getExerciseStallAnalysisForUser(
+    db: TWorkoutHistoryDb,
+    userId: string,
+    options: { isPro: boolean; exerciseTemplateIds?: string[] } = { isPro: false },
+): Promise<TExerciseStallResult[]> {
+    const { data: templates, error: templatesError } = await db
+        .from("hevy_exercise_templates")
+        .select(HEVY_TEMPLATE_SELECT)
+        .order("title", { ascending: true });
+
+    if (templatesError || !templates?.length) {
+        return [];
+    }
+
+    const requestedIds = options.exerciseTemplateIds?.filter(Boolean) ?? [];
+    const orderedTemplates =
+        requestedIds.length > 0
+            ? requestedIds
+                  .map((id) =>
+                      (templates as THevyExerciseTemplate[]).find((template) => template.id === id),
+                  )
+                  .filter((template): template is THevyExerciseTemplate => template != null)
+            : (templates as THevyExerciseTemplate[]);
+
+    const workouts = await getAllWorkoutsForUser(db, userId);
+    const sessionsByTemplate = aggregateSessionsByTemplateId(workouts);
+
+    return orderedTemplates.map((template) =>
+        transformSessionsToExercise(template, sessionsByTemplate.get(template.id) ?? [], {
+            isPro: options.isPro,
+        }),
     );
 }

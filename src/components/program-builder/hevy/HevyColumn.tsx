@@ -267,7 +267,7 @@ export const HevyColumn: React.FC<IProps> = (props) => {
                             key={ dy.id }
                             day={ dy }
                             title={ title }
-                            folder_id={ dy.folder_id }
+                            folder_id={ dy.folder_id ?? undefined }
                             programLength={ programLength }
                             handleDragStart={ handleDragStart }
                             handleDeleteDay={ handleDeleteDay }

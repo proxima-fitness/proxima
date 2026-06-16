@@ -1,43 +1,35 @@
 /**
  * @module hevy/exercise-history
  *
- * Fetches per-exercise training history from the Hevy API for the
- * authenticated user and transforms it into stall-detection results.
- * Requests are batched with limited concurrency and inter-batch delays to
- * stay within Hevy's rate limits.
+ * Blind Spot stall analysis from the workout history backup (Supabase), not live
+ * Hevy `/exercise_history` fan-out. Ensures backup freshness before read.
  *
- * Depends on: @/utils/supabase/server, @/components/program-builder/api/hevy,
- *             @/lib/exerciseStallsTransform
- * Used by: Exercise stalls / progress analysis UI
+ * Depends on: @/utils/supabase/server, api/workout-history-read
+ * Used by: BlindSpotAnalysisSection via useExerciseStallsAnalysis
  */
 
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { getHevyExerciseHistory } from "@/components/program-builder/api/hevy";
-import { transformHistoryToExercise } from "@/lib/exerciseStallsTransform";
+import {
+    ensureWorkoutHistoryFresh,
+    getExerciseStallAnalysisForUser,
+    getSyncProgress,
+} from "@/api/workout-history-read";
 
-/** Max concurrent Hevy API calls per batch. */
-const CONCURRENCY = 3;
-
-/** Milliseconds to wait between batches to respect Hevy rate limits. */
-const DELAY_MS = 200;
-
-/**
- * Returns a promise that resolves after `ms` milliseconds.
- *
- * @param ms - Delay duration in milliseconds.
- */
-function delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+async function getServerIsPro(
+    supabase: Awaited<ReturnType<typeof createClient>>,
+): Promise<boolean> {
+    const { data, error } = await supabase.rpc("get_my_feature_limits");
+    if (error || !data?.[0]) {
+        return false;
+    }
+    return Boolean((data[0] as TFeatureLimits).has_active_subscription);
 }
 
 /**
- * Fetches Hevy exercise history for the authenticated user, optionally
- * filtered to a specific set of exercise template IDs. Returns an array
- * of `TExerciseStallResult` objects with trend and stall data.
+ * POST /api/hevy/exercise-history — backup-based stall analysis per exercise template.
  *
- * @param request - Request whose JSON body may contain `{ exerciseTemplateIds: string[] }`.
- * @returns JSON array of `TExerciseStallResult`, or an error response.
+ * Body: `{ exerciseTemplateIds?: string[] }`
  */
 export async function POST(request: Request) {
     try {
@@ -62,44 +54,25 @@ export async function POST(request: Request) {
             return NextResponse.json([]);
         }
 
-        const { data: templates, error: templatesError } = await supabase
-            .from("hevy_exercise_templates")
-            .select("id, title, type, primary_muscle_group, secondary_muscle_groups, is_custom, equipment, normalized_title, gif_id, instructions")
-            .order("title", { ascending: true });
+        const progress = await getSyncProgress(supabase, user.id, { apiKey });
 
-        if (templatesError || !templates?.length) {
-            return NextResponse.json([]);
-        }
-
-        const orderedTemplates =
-            Array.isArray(requestedIds) && requestedIds.length > 0
-                ? requestedIds
-                      .map((id) => (templates as THevyExerciseTemplate[]).find((t) => t.id === id))
-                      .filter((t): t is THevyExerciseTemplate => t != null)
-                : (templates as THevyExerciseTemplate[]);
-
-        const results: TExerciseStallResult[] = [];
-
-        for (let i = 0; i < orderedTemplates.length; i += CONCURRENCY) {
-            const chunk = orderedTemplates.slice(i, i + CONCURRENCY);
-            const histories = await Promise.all(
-                chunk.map(async (ex) => {
-                    try {
-                        return await getHevyExerciseHistory(apiKey, ex.id);
-                    } catch {
-                        return { exercise_history: [] };
-                    }
-                }),
+        if (progress.syncError) {
+            return NextResponse.json(
+                { error: "sync_error", message: progress.syncError, progress },
+                { status: 503 },
             );
-            for (let j = 0; j < chunk.length; j++) {
-                results.push(
-                    transformHistoryToExercise(chunk[j], histories[j].exercise_history ?? []),
-                );
-            }
-            if (i + CONCURRENCY < orderedTemplates.length) {
-                await delay(DELAY_MS);
-            }
         }
+
+        await ensureWorkoutHistoryFresh(supabase, {
+            userId: user.id,
+            apiKey,
+        });
+
+        const isPro = await getServerIsPro(supabase);
+        const results = await getExerciseStallAnalysisForUser(supabase, user.id, {
+            isPro,
+            exerciseTemplateIds: requestedIds,
+        });
 
         return NextResponse.json(results);
     } catch (err) {

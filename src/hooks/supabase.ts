@@ -1092,24 +1092,30 @@ export type Database = {
           canonical_exercise_id: string
           created_at: string
           id: string
+          notes: string | null
           sort_order: number
           source_exercise_id: string | null
+          superset_id: number | null
           workout_id: string
         }
         Insert: {
           canonical_exercise_id: string
           created_at?: string
           id?: string
+          notes?: string | null
           sort_order: number
           source_exercise_id?: string | null
+          superset_id?: number | null
           workout_id: string
         }
         Update: {
           canonical_exercise_id?: string
           created_at?: string
           id?: string
+          notes?: string | null
           sort_order?: number
           source_exercise_id?: string | null
+          superset_id?: number | null
           workout_id?: string
         }
         Relationships: [
@@ -1188,6 +1194,7 @@ export type Database = {
       workouts: {
         Row: {
           created_at: string | null
+          description: string | null
           ended_at: string
           external_id: string | null
           id: string
@@ -1199,6 +1206,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          description?: string | null
           ended_at: string
           external_id?: string | null
           id: string
@@ -1210,6 +1218,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          description?: string | null
           ended_at?: string
           external_id?: string | null
           id?: string

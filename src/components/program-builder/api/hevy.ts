@@ -252,18 +252,24 @@ export const getHevyPrograms = async (user: User | undefined | null, apiKey: str
                 continue;
             }
 
+            const folderId = program[0].folder_id;
+            if (folderId == null) {
+                console.warn("Skipping program without folder_id:", program);
+                continue;
+            }
+
             try {
-                const routineFolder = await getHevyRoutineFolder(apiKey, program[0].folder_id);
+                const routineFolder = await getHevyRoutineFolder(apiKey, folderId);
 
                 programsWithTitles.push({
-                    program_title: routineFolder?.title || `Program ${program[0].folder_id}`,
+                    program_title: routineFolder?.title || `Program ${folderId}`,
                     program: program
                 });
             } catch (error) {
-                console.error(`Error fetching folder for program ${program[0].folder_id}:`, error);
+                console.error(`Error fetching folder for program ${folderId}:`, error);
                 // Still add the program with a fallback title
                 programsWithTitles.push({
-                    program_title: `Program ${program[0].folder_id}`,
+                    program_title: `Program ${folderId}`,
                     program: program
                 });
             }
@@ -518,7 +524,7 @@ async function runSaveProgramToSupabase(
         // STEP 2: Prepare and insert schedule uploads in batches
         const scheduleUploads = hevyRoutines.map((routine) => ({
             id: uuidv4(),
-            nthWeek: routine.folder_id + 1,
+            nthWeek: (routine.folder_id ?? 0) + 1,
             nthDay: Number(routine?.order || '1'),
             day_title: routine.title,
             day_notes: routine?.notes ?? "",

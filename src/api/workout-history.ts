@@ -38,6 +38,7 @@ export function mapHevyWorkoutToInsert(workout: THevyWorkout, userId: string, wo
         source: HEVY_WORKOUT_SOURCE,
         external_id: workout.id,
         title: workout.title,
+        description: workout.description ?? null,
         started_at: workout.start_time,
         ended_at: workout.end_time,
     };
@@ -59,6 +60,8 @@ export function mapHevyExerciseToInsert(exercise: THevyWorkoutExercise, workoutI
         canonical_exercise_id: canonicalExerciseId,
         sort_order: exercise.index,
         source_exercise_id: exercise.exercise_template_id,
+        notes: exercise.notes ?? null,
+        superset_id: exercise.superset_id ?? null,
     };
 }
 

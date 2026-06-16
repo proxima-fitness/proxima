@@ -12,7 +12,7 @@ import { useId, useReducer } from "react";
 import styles from "../../style";
 import { minus, add } from "public";
 
-type FAQItemProps = {
+interface IFAQItemProps {
     question: string;
     answer: string;
 };
@@ -21,7 +21,7 @@ const iconClass =
     "h-[23px] w-[23px] shrink-0 object-contain opacity-80 pt-0.5 [filter:brightness(0)] dark:[filter:brightness(0)_invert(1)]";
 
 /** Single expandable FAQ row: question, toggle icon; when open shows answer. */
-const FAQItem = ({ question, answer }: FAQItemProps) => {
+const FAQItem = ({ question, answer }: IFAQItemProps) => {
     const [isOpen, toggleIsOpen] = useReducer((prev: boolean) => !prev, false);
     const headingId = useId();
     const panelId = useId();
@@ -86,7 +86,7 @@ export const Faq = () => {
                     />
                     <FAQItem
                         question="How does the blind spot analysis work?"
-                        answer="It looks at your last 15 workouts in Hevy, flags exercises where your weights have stalled or regressed, and lets you ask the agent to diagnose why and suggest fixes."
+                        answer="It reads your backed-up Hevy workout history (not live API calls), flags exercises where your weights have stalled or regressed, and lets you ask the agent to diagnose why and suggest fixes. Free users see the last 15 performances per exercise; Pro users get full synced depth."
                     />
                     <FAQItem
                         question="Can I just use HevyGPT instead?"
