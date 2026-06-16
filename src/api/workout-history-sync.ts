@@ -53,7 +53,7 @@ async function fetchHevyWorkoutsPage(apiKey: string,page: number,pageSize: numbe
 /**
  * Fetches live Hevy workout count with rate-limit backoff.
  */
-async function fetchHevyWorkoutCount(apiKey: string): Promise<number> {
+export async function fetchHevyWorkoutCount(apiKey: string): Promise<number> {
     const url = "https://api.hevyapp.com/v1/workouts/count";
 
     for (let retry = 0; retry <= RATE_LIMIT_MAX_RETRIES; retry++) {
@@ -100,7 +100,7 @@ export async function countBackedUpWorkouts(db: TWorkoutHistoryDb,userId: string
 /**
  * Reads sync cursor row from `hevy_workouts_count`.
  */
-async function readSyncCursor(db: TWorkoutHistoryDb,userId: string): Promise<{ lastKnownWorkoutCount: number | null; syncError: string | null }> {
+export async function readSyncCursor(db: TWorkoutHistoryDb,userId: string): Promise<{ lastKnownWorkoutCount: number | null; syncError: string | null }> {
     const { data, error } = await db
         .from("hevy_workouts_count")
         .select("last_known_workout_count, sync_error")

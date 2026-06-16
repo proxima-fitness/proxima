@@ -162,6 +162,23 @@ type TSyncChunkResult = {
     done: boolean;
 };
 
+type TWorkoutSyncProgress = Pick<TSyncChunkResult, "backedUpCount" | "hevyCount" | "syncError">;
+
+type TWorkoutHistoryQueryOptions = {
+    limit?: number;
+    since?: string;
+    canonicalExerciseIds?: string[];
+};
+
+type TWorkoutExerciseRow = Database["public"]["Tables"]["workout_exercises"]["Row"] & {
+    canonical_exercises: Database["public"]["Tables"]["canonical_exercises"]["Row"];
+    workout_sets: Database["public"]["Tables"]["workout_sets"]["Row"][];
+};
+
+type TBackedUpWorkout = Database["public"]["Tables"]["workouts"]["Row"] & {
+    workout_exercises: TWorkoutExerciseRow[];
+};
+
 type THevyExerciseTemplateRow = Pick<
     Database["public"]["Tables"]["hevy_exercise_templates"]["Row"],
     | "id"
