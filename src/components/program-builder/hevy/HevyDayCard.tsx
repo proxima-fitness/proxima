@@ -25,7 +25,6 @@ import { Input } from "@/components/ui/input";
 import { DropIndicator } from "@/components/program-builder/shared/DropIndicator";
 import { HevyExerciseVisualizer } from "./HevyExerciseVisualizer";
 import { HevyDuplicateDay } from "./HevyDuplicateDay";
-import { IOption } from "@/components/ui/multi-select";
 import { convertHevyExerciseIntoHevyAddExercise } from "../utils";
 import { useTheme } from "next-themes";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
@@ -54,7 +53,7 @@ interface IProps {
     /** Opens the add-exercise-note dialog. */
     handleOpenAddExerciseNoteDialog: (addExerciseNoteDialog: THevyDialog) => void;
     /** Duplicates this day to a target week and day slots. */
-    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;
+    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: TSelectOption[]) => void;
     /** Deletes an exercise from this day. */
     handleDeleteExercise: (folder_id: number, dayOrder: number, exerciseIndex: number) => void;
     /** Sets add-exercise dialog to edit mode and passes exercise data. */

@@ -32,13 +32,13 @@ const useChainOfThought = () => {
   return context;
 };
 
-export type ChainOfThoughtProps = ComponentProps<"div"> & {
+export type TChainOfThoughtProps = ComponentProps<"div"> & {
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
 };
 
-export const ChainOfThought = memo(
+export const TChainOfThought = memo(
   ({
     className,
     open,
@@ -46,7 +46,7 @@ export const ChainOfThought = memo(
     onOpenChange,
     children,
     ...props
-  }: ChainOfThoughtProps) => {
+  }: TChainOfThoughtProps) => {
     const [isOpen, setIsOpen] = useControllableState({
       defaultProp: defaultOpen,
       onChange: onOpenChange,
@@ -68,12 +68,12 @@ export const ChainOfThought = memo(
   }
 );
 
-export type ChainOfThoughtHeaderProps = ComponentProps<
+export type TChainOfThoughtHeaderProps = ComponentProps<
   typeof CollapsibleTrigger
 >;
 
-export const ChainOfThoughtHeader = memo(
-  ({ className, children, ...props }: ChainOfThoughtHeaderProps) => {
+export const TChainOfThoughtHeader = memo(
+  ({ className, children, ...props }: TChainOfThoughtHeaderProps) => {
     const { isOpen, setIsOpen } = useChainOfThought();
 
     return (
@@ -101,7 +101,7 @@ export const ChainOfThoughtHeader = memo(
   }
 );
 
-export type ChainOfThoughtStepProps = ComponentProps<"div"> & {
+export type TChainOfThoughtStepProps = ComponentProps<"div"> & {
   icon?: LucideIcon;
   label: ReactNode;
   description?: ReactNode;
@@ -114,7 +114,7 @@ const stepStatusStyles = {
   pending: "text-muted-foreground/50",
 };
 
-export const ChainOfThoughtStep = memo(
+export const TChainOfThoughtStep = memo(
   ({
     className,
     icon: Icon = DotIcon,
@@ -123,7 +123,7 @@ export const ChainOfThoughtStep = memo(
     status = "complete",
     children,
     ...props
-  }: ChainOfThoughtStepProps) => (
+  }: TChainOfThoughtStepProps) => (
     <div
       className={cn(
         "flex gap-2 text-sm",
@@ -148,10 +148,10 @@ export const ChainOfThoughtStep = memo(
   )
 );
 
-export type ChainOfThoughtSearchResultsProps = ComponentProps<"div">;
+export type TChainOfThoughtSearchResultsProps = ComponentProps<"div">;
 
-export const ChainOfThoughtSearchResults = memo(
-  ({ className, ...props }: ChainOfThoughtSearchResultsProps) => (
+export const TChainOfThoughtSearchResults = memo(
+  ({ className, ...props }: TChainOfThoughtSearchResultsProps) => (
     <div
       className={cn("flex flex-wrap items-center gap-2", className)}
       {...props}
@@ -159,10 +159,10 @@ export const ChainOfThoughtSearchResults = memo(
   )
 );
 
-export type ChainOfThoughtSearchResultProps = ComponentProps<typeof Badge>;
+export type TChainOfThoughtSearchResultProps = ComponentProps<typeof Badge>;
 
-export const ChainOfThoughtSearchResult = memo(
-  ({ className, children, ...props }: ChainOfThoughtSearchResultProps) => (
+export const TChainOfThoughtSearchResult = memo(
+  ({ className, children, ...props }: TChainOfThoughtSearchResultProps) => (
     <Badge
       className={cn("gap-1 px-2 py-0.5 font-normal text-xs", className)}
       variant="secondary"
@@ -173,12 +173,12 @@ export const ChainOfThoughtSearchResult = memo(
   )
 );
 
-export type ChainOfThoughtContentProps = ComponentProps<
+export type TChainOfThoughtContentProps = ComponentProps<
   typeof CollapsibleContent
 >;
 
-export const ChainOfThoughtContent = memo(
-  ({ className, children, ...props }: ChainOfThoughtContentProps) => {
+export const TChainOfThoughtContent = memo(
+  ({ className, children, ...props }: TChainOfThoughtContentProps) => {
     const { isOpen } = useChainOfThought();
 
     return (
@@ -198,14 +198,14 @@ export const ChainOfThoughtContent = memo(
   }
 );
 
-export type ChainOfThoughtImageProps = ComponentProps<"div"> & {
+export type TChainOfThoughtImageProps = ComponentProps<"div"> & {
   caption?: string;
 };
 
-export const ChainOfThoughtImage = memo(
-  ({ className, children, caption, ...props }: ChainOfThoughtImageProps) => (
+export const TChainOfThoughtImage = memo(
+  ({ className, children, caption, ...props }: TChainOfThoughtImageProps) => (
     <div className={cn("mt-2 space-y-2", className)} {...props}>
-      <div className="relative flex max-h-[22rem] items-center justify-center overflow-hidden rounded-lg bg-muted p-3">
+      <div className="relative flex max-h-88 items-center justify-center overflow-hidden rounded-lg bg-muted p-3">
         {children}
       </div>
       {caption && <p className="text-muted-foreground text-xs">{caption}</p>}
@@ -213,10 +213,10 @@ export const ChainOfThoughtImage = memo(
   )
 );
 
-ChainOfThought.displayName = "ChainOfThought";
-ChainOfThoughtHeader.displayName = "ChainOfThoughtHeader";
-ChainOfThoughtStep.displayName = "ChainOfThoughtStep";
-ChainOfThoughtSearchResults.displayName = "ChainOfThoughtSearchResults";
-ChainOfThoughtSearchResult.displayName = "ChainOfThoughtSearchResult";
-ChainOfThoughtContent.displayName = "ChainOfThoughtContent";
-ChainOfThoughtImage.displayName = "ChainOfThoughtImage";
+TChainOfThought.displayName = "TChainOfThought";
+TChainOfThoughtHeader.displayName = "TChainOfThoughtHeader";
+TChainOfThoughtStep.displayName = "TChainOfThoughtStep";
+TChainOfThoughtSearchResults.displayName = "TChainOfThoughtSearchResults";
+TChainOfThoughtSearchResult.displayName = "TChainOfThoughtSearchResult";
+TChainOfThoughtContent.displayName = "TChainOfThoughtContent";
+TChainOfThoughtImage.displayName = "TChainOfThoughtImage";

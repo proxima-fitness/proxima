@@ -6,16 +6,14 @@
 import { cn } from "@/lib/utils";
 import styles, { layout } from "@/style";
 
-export type LandingSectionVariant = "white" | "tint";
-
 interface ILandingSectionProps {
     id?: string;
-    variant: LandingSectionVariant;
+    variant: TLandingSectionVariant;
     children: React.ReactNode;
     className?: string;
 }
 
-const variantClasses: Record<LandingSectionVariant, string> = {
+const variantClasses: Record<TLandingSectionVariant, string> = {
     white: "bg-white dark:bg-darkGray",
     tint: "bg-extraLightGray dark:bg-blueGray/40",
 };

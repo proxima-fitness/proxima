@@ -22,8 +22,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { normalizeRoutineTitlesForBuilder } from "@/components/program-builder/utils/format-responses";
 
-export type HevyProgramItem = { program_title: string; program: THevyRoutine[] };
-
 const ROUTINES_PER_PAGE = 4;
 
 /** Props for a single program card in the grid. */
@@ -31,7 +29,7 @@ function HevyProgramCard({
     program,
     onEdit,
 }: {
-    program: HevyProgramItem;
+    program: THevyProgramItem;
     onEdit: () => void;
 }) {
     const [currentPage, setCurrentPage] = useState(1);
@@ -93,7 +91,7 @@ function HevyProgramCard({
                     >
                         <ChevronLeft className="size-4" />
                     </Button>
-                    <span className="font-third text-[11px] tabular-nums text-muted-foreground min-w-[5.5rem] text-center">
+                    <span className="font-third text-[11px] tabular-nums text-muted-foreground min-w-22 text-center">
                         {currentPage} / {totalPages}
                     </span>
                     <Button
@@ -125,20 +123,15 @@ function HevyProgramCard({
 }
 
 /** Props for the programs grid. */
-type HevyProgramsGridProps = {
-    /** List of synced Hevy programs (title + routine array); undefined while loading. */
-    hevyPrograms: HevyProgramItem[] | undefined;
-    /** When true, show skeleton placeholders. */
+interface IProps {
+    hevyPrograms: THevyProgramItem[] | undefined;
     isLoadingHevy?: boolean;
-};
+}
 
-/**
- * Renders a grid of Hevy program cards with paginated routines and Edit (navigate to builder). Handles loading and empty state.
- */
-export const HevyProgramsGrid: React.FC<HevyProgramsGridProps> = ({ hevyPrograms, isLoadingHevy }) => {
+export const HevyProgramsGrid: React.FC<IProps> = ({ hevyPrograms, isLoadingHevy }) => {
     const router = useRouter();
 
-    const handleEditProgram = (program: HevyProgramItem) => {
+    const handleEditProgram = (program: THevyProgramItem): void => {
         const normalized = normalizeRoutineTitlesForBuilder(program.program);
         localStorage.setItem("hevy-program-in-progress", JSON.stringify(normalized));
         router.push("/build-program?resume=true&edit=true&hevy=true");

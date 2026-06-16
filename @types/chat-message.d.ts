@@ -1,8 +1,40 @@
-import type { UIDataTypes, UIMessage, UITools } from "ai";
+import type {
+    UIDataTypes,
+    UIMessage,
+    UITools,
+    ChatRequestOptions,
+    CreateUIMessage,
+    FileUIPart,
+} from "ai";
 
 declare global {
     /** UIMessage alias for chat history persistence. */
     type TChatMessage = UIMessage<unknown, UIDataTypes, UITools>;
+
+    type TChatSendMessageParam =
+        | (CreateUIMessage<TChatMessage> & {
+              text?: never;
+              files?: never;
+              messageId?: string;
+          })
+        | {
+              text: string;
+              files?: FileList | FileUIPart[];
+              metadata?: unknown;
+              parts?: never;
+              messageId?: string;
+          }
+        | {
+              files: FileList | FileUIPart[];
+              metadata?: unknown;
+              parts?: never;
+              messageId?: string;
+          };
+
+    type TSendMessageWithContext = (
+        message?: TChatSendMessageParam,
+        options?: ChatRequestOptions,
+    ) => Promise<void>;
 
     type TChatHistory = {
         id: string;

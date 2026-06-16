@@ -24,12 +24,12 @@ import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import { memo, useMemo } from "react";
 
-type MotionHTMLProps = MotionProps & Record<string, unknown>;
+type TMotionHTMLProps = MotionProps & Record<string, unknown>;
 
 // Cache motion components at module level to avoid creating during render
 const motionComponentCache = new Map<
   keyof JSX.IntrinsicElements,
-  React.ComponentType<MotionHTMLProps>
+  React.ComponentType<TMotionHTMLProps>
 >();
 
 const getMotionComponent = (element: keyof JSX.IntrinsicElements) => {
@@ -74,11 +74,11 @@ const ShimmerComponent = ({
   );
 
   return (
-     
+
     <MotionComponent
       animate={{ backgroundPosition: "0% center" }}
       className={cn(
-        "relative inline-block bg-[length:250%_100%,auto] bg-clip-text text-transparent",
+        "relative inline-block bg-size-[250%_100%,auto] bg-clip-text text-transparent",
         "[--bg:linear-gradient(90deg,#0000_calc(50%-var(--spread)),var(--color-background,hsl(var(--background))),#0000_calc(50%+var(--spread)))] [background-repeat:no-repeat,padding-box]",
         className
       )}

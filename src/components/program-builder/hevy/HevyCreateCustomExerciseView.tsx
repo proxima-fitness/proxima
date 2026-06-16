@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { postHevyCustomExercise } from "@/components/program-builder/api/hevy";
 import { getHevyMuscleGroupSelectOptions } from "@/components/program-builder/hevy/hevy-muscle-group-labels";
 import { Input } from "@/components/ui/input";
-import MultiSelect, { type IOption } from "@/components/ui/multi-select";
+import MultiSelect from "@/components/ui/multi-select";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const EXERCISE_TYPE_OPTIONS: { value: THevyPostExerciseTemplate["exercise_type"]; label: string }[] = [
@@ -41,7 +41,7 @@ const EQUIPMENT_OPTIONS: { value: THevyPostExerciseTemplate["equipment_category"
 
 const MUSCLE_GROUP_OPTIONS = getHevyMuscleGroupSelectOptions();
 
-const MUSCLE_MULTI_OPTIONS: IOption[] = MUSCLE_GROUP_OPTIONS.map((o) => ({
+const MUSCLE_MULTI_OPTIONS: TSelectOption[] = MUSCLE_GROUP_OPTIONS.map((o) => ({
     value: o.value,
     label: o.label,
 }));
@@ -66,7 +66,7 @@ export const HevyCreateCustomExerciseView: React.FC<IProps> = ({ hevyApiKey, onS
     const [exerciseType, setExerciseType] = useState<THevyPostExerciseTemplate["exercise_type"] | "">("");
     const [equipment, setEquipment] = useState<THevyPostExerciseTemplate["equipment_category"] | "">("");
     const [primaryMuscle, setPrimaryMuscle] = useState<THevyPostExerciseTemplate["muscle_group"] | "">("");
-    const [otherMuscles, setOtherMuscles] = useState<IOption[]>([]);
+    const [otherMuscles, setOtherMuscles] = useState<TSelectOption[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async () => {

@@ -17,8 +17,7 @@ import {
     inferExcludeEquipment,
     inferHealthIssues,
 } from "@/components/program-builder/utils/helpers";
-import type { IOption } from "@/components/ui/multi-select";
-import type { ProgramLengthOption } from "./use-program-request-state";
+import type { TProgramLengthOption } from "./use-program-request-state";
 
 /** True when the `shareId` query param should load a shared program from the API. */
 export function isValidShareId(shareId: string): boolean {
@@ -58,15 +57,15 @@ export function readPendingAttachmentFileParts(): FileUIPart[] | undefined {
 
 export interface IProgramRequestInferenceTarget {
     daysPerWeek: string;
-    programLength: ProgramLengthOption;
-    excludeAreas: IOption[];
-    excludeEquipment: IOption[];
-    healthIssues: IOption[];
+    programLength: TProgramLengthOption;
+    excludeAreas: TSelectOption[];
+    excludeEquipment: TSelectOption[];
+    healthIssues: TSelectOption[];
     setDaysPerWeek: Dispatch<SetStateAction<string>>;
-    setProgramLength: Dispatch<SetStateAction<ProgramLengthOption>>;
-    setExcludeAreas: Dispatch<SetStateAction<IOption[]>>;
-    setExcludeEquipment: Dispatch<SetStateAction<IOption[]>>;
-    setHealthIssues: Dispatch<SetStateAction<IOption[]>>;
+    setProgramLength: Dispatch<SetStateAction<TProgramLengthOption>>;
+    setExcludeAreas: Dispatch<SetStateAction<TSelectOption[]>>;
+    setExcludeEquipment: Dispatch<SetStateAction<TSelectOption[]>>;
+    setHealthIssues: Dispatch<SetStateAction<TSelectOption[]>>;
 }
 
 export function inferProgramRequestFromPrompt(text: string, target: IProgramRequestInferenceTarget): void {
@@ -76,7 +75,7 @@ export function inferProgramRequestFromPrompt(text: string, target: IProgramRequ
     }
     if (!target.programLength) {
         const inferredLength = inferProgramLength(text);
-        if (inferredLength) target.setProgramLength(inferredLength as ProgramLengthOption);
+        if (inferredLength) target.setProgramLength(inferredLength as TProgramLengthOption);
     }
     if (target.excludeAreas.length === 0) {
         const inferred = inferExcludeAreas(text, focusAreasOptions);

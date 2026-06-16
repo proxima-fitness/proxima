@@ -18,24 +18,15 @@ import { Badge } from '@/components/ui/badge';
 import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 
-export interface IOption {
-  /** Group the options by providing key. */
-  [key: string]: string | boolean | undefined;
-  value: string;
-  label: string;
-  disable?: boolean;
-  /** fixed option that can't be removed. */
-  fixed?: boolean;
-}
 interface IGroupOption {
-  [key: string]: IOption[];
+  [key: string]: TSelectOption[];
 }
 
 interface IMultipleSelectorProps {
-  value?: IOption[];
-  defaultOptions?: IOption[];
+  value?: TSelectOption[];
+  defaultOptions?: TSelectOption[];
   /** manually controlled options */
-  options?: IOption[];
+  options?: TSelectOption[];
   placeholder?: string;
   /** Loading component. */
   loadingIndicator?: React.ReactNode;
@@ -49,14 +40,14 @@ interface IMultipleSelectorProps {
    **/
   triggerSearchOnFocus?: boolean;
   /** async search */
-  onSearch?: (value: string) => Promise<IOption[]>;
+  onSearch?: (value: string) => Promise<TSelectOption[]>;
   /**
    * sync search. This search will not showing loadingIndicator.
    * The rest props are the same as async search.
    * i.e.: creatable, groupBy, delay.
    **/
-  onSearchSync?: (value: string) => IOption[];
-  onChange?: (options: IOption[]) => void;
+  onSearchSync?: (value: string) => TSelectOption[];
+  onChange?: (options: TSelectOption[]) => void;
   /** Limit the maximum number of selected options. */
   maxSelected?: number;
   /** When the number of selected options exceeds the limit, the onMaxSelected will be called. */
@@ -88,13 +79,6 @@ interface IMultipleSelectorProps {
   hideClearAllButton?: boolean;
 }
 
-export interface IMultipleSelectorRef {
-  selectedValue: IOption[];
-  input: HTMLInputElement;
-  focus: () => void;
-  reset: () => void;
-}
-
 export function useDebounce<T>(value: T, delay?: number): T {
   const [debouncedValue, setDebouncedValue] = React.useState<T>(value);
 
@@ -109,7 +93,7 @@ export function useDebounce<T>(value: T, delay?: number): T {
   return debouncedValue;
 }
 
-function transToGroupOption(options: IOption[], groupBy?: string) {
+function transToGroupOption(options: TSelectOption[], groupBy?: string) {
   if (options.length === 0) {
     return {};
   }
@@ -130,7 +114,7 @@ function transToGroupOption(options: IOption[], groupBy?: string) {
   return groupOption;
 }
 
-function removePickedOption(groupOption: IGroupOption, picked: IOption[]) {
+function removePickedOption(groupOption: IGroupOption, picked: TSelectOption[]) {
   const cloneOption = JSON.parse(JSON.stringify(groupOption)) as IGroupOption;
 
   for (const [key, value] of Object.entries(cloneOption)) {
@@ -139,7 +123,7 @@ function removePickedOption(groupOption: IGroupOption, picked: IOption[]) {
   return cloneOption;
 }
 
-function isOptionsExist(groupOption: IGroupOption, targetOption: IOption[]) {
+function isOptionsExist(groupOption: IGroupOption, targetOption: TSelectOption[]) {
   for (const [, value] of Object.entries(groupOption)) {
     if (value.some((option) => targetOption.find((p) => p.value === option.value))) {
       return true;
@@ -176,7 +160,7 @@ const CommandEmpty = forwardRef<
 CommandEmpty.displayName = 'CommandEmpty';
 
 /** Multi-select combobox with search, optional grouping/creatable, and badge list. Key props: value/onChange, options/defaultOptions, onSearch/onSearchSync, maxSelected, groupBy, creatable, commandProps, inputProps. */
-const MultiSelect = React.forwardRef<IMultipleSelectorRef, IMultipleSelectorProps>(
+const MultiSelect = React.forwardRef<TMultiSelectRef, IMultipleSelectorProps>(
   (
     {
       value,
@@ -203,7 +187,7 @@ const MultiSelect = React.forwardRef<IMultipleSelectorRef, IMultipleSelectorProp
       inputProps,
       hideClearAllButton = false,
     }: IMultipleSelectorProps,
-    ref: React.Ref<IMultipleSelectorRef>,
+    ref: React.Ref<TMultiSelectRef>,
   ) => {
     const inputRef = React.useRef<HTMLInputElement>(null);
     const [open, setOpen] = React.useState(false);
@@ -211,7 +195,7 @@ const MultiSelect = React.forwardRef<IMultipleSelectorRef, IMultipleSelectorProp
     const [isLoading, setIsLoading] = React.useState(false);
     const dropdownRef = React.useRef<HTMLDivElement>(null); // Added this
 
-    const [selected, setSelected] = React.useState<IOption[]>(value || []);
+    const [selected, setSelected] = React.useState<TSelectOption[]>(value || []);
     const [options, setOptions] = React.useState<IGroupOption>(
       transToGroupOption(arrayDefaultOptions, groupBy),
     );
@@ -242,7 +226,7 @@ const MultiSelect = React.forwardRef<IMultipleSelectorRef, IMultipleSelectorProp
     };
 
     const handleUnselect = React.useCallback(
-      (option: IOption) => {
+      (option: TSelectOption) => {
         const newOptions = selected.filter((s) => s.value !== option.value);
         setSelected(newOptions);
         onChange?.(newOptions);

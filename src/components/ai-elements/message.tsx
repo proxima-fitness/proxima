@@ -55,7 +55,7 @@ import { Streamdown } from "streamdown";
  * - `from` controls whether the bubble is styled as a user or assistant
  *   message, and is derived from the `UIMessage` role.
  */
-export type MessageProps = HTMLAttributes<HTMLDivElement> & {
+export type TMessageProps = HTMLAttributes<HTMLDivElement> & {
   from: UIMessage["role"];
 };
 
@@ -63,7 +63,7 @@ export type MessageProps = HTMLAttributes<HTMLDivElement> & {
  * Root message container that positions and styles a chat bubble
  * according to the message role.
  */
-export const Message = ({ className, from, ...props }: MessageProps) => (
+export const Message = ({ className, from, ...props }: TMessageProps) => (
   <div
     className={cn(
       "group flex w-full max-w-[95%] flex-col gap-2",
@@ -78,13 +78,13 @@ export const Message = ({ className, from, ...props }: MessageProps) => (
  * Props for the message content region, typically containing markdown
  * or other rich UI for the message body.
  */
-export type MessageContentProps = HTMLAttributes<HTMLDivElement>;
+export type TMessageContentProps = HTMLAttributes<HTMLDivElement>;
 
 export const MessageContent = ({
   children,
   className,
   ...props
-}: MessageContentProps) => (
+}: TMessageContentProps) => (
   <div
     className={cn(
       "is-user:dark flex w-fit min-w-0 max-w-full flex-col gap-2 overflow-hidden text-sm",
@@ -101,13 +101,13 @@ export const MessageContent = ({
 /**
  * Props for the container that holds per-message action buttons.
  */
-export type MessageActionsProps = ComponentProps<"div">;
+export type TMessageActionsProps = ComponentProps<"div">;
 
 export const MessageActions = ({
   className,
   children,
   ...props
-}: MessageActionsProps) => (
+}: TMessageActionsProps) => (
   <div className={cn("flex items-center gap-1", className)} {...props}>
     {children}
   </div>
@@ -120,7 +120,7 @@ export const MessageActions = ({
  * - `label` controls the accessible text when the icon alone is not
  *   descriptive enough.
  */
-export type MessageActionProps = ComponentProps<typeof Button> & {
+export type TMessageActionProps = ComponentProps<typeof Button> & {
   tooltip?: string;
   label?: string;
 };
@@ -132,7 +132,7 @@ export const MessageAction = ({
   variant = "ghost",
   size = "icon",
   ...props
-}: MessageActionProps) => {
+}: TMessageActionProps) => {
   const button = (
     <Button size={size} type="button" variant={variant} {...props}>
       {children}
@@ -188,7 +188,7 @@ const useMessageBranch = () => {
  * - `defaultBranch` selects which branch is shown initially.
  * - `onBranchChange` is notified when the active branch changes.
  */
-export type MessageBranchProps = HTMLAttributes<HTMLDivElement> & {
+export type TMessageBranchProps = HTMLAttributes<HTMLDivElement> & {
   defaultBranch?: number;
   onBranchChange?: (branchIndex: number) => void;
 };
@@ -198,7 +198,7 @@ export const MessageBranch = ({
   onBranchChange,
   className,
   ...props
-}: MessageBranchProps) => {
+}: TMessageBranchProps) => {
   const [currentBranch, setCurrentBranch] = useState(defaultBranch);
   const [branches, setBranches] = useState<ReactElement[]>([]);
 
@@ -248,12 +248,12 @@ export const MessageBranch = ({
  * Props for the content region inside a `MessageBranch`. Children are
  * treated as separate branches and only the active one is rendered.
  */
-export type MessageBranchContentProps = HTMLAttributes<HTMLDivElement>;
+export type TMessageBranchContentProps = HTMLAttributes<HTMLDivElement>;
 
 export const MessageBranchContent = ({
   children,
   ...props
-}: MessageBranchContentProps) => {
+}: TMessageBranchContentProps) => {
   const { currentBranch, setBranches, branches } = useMessageBranch();
   const childrenArray = useMemo(
     () => (Array.isArray(children) ? children : [children]),
@@ -285,12 +285,12 @@ export const MessageBranchContent = ({
  * Props for the button group that appears under a branched message to
  * navigate between alternative responses.
  */
-export type MessageBranchSelectorProps = ComponentProps<typeof ButtonGroup>;
+export type TMessageBranchSelectorProps = ComponentProps<typeof ButtonGroup>;
 
 export const MessageBranchSelector = ({
   className,
   ...props
-}: MessageBranchSelectorProps) => {
+}: TMessageBranchSelectorProps) => {
   const { totalBranches } = useMessageBranch();
 
   // Don't render if there's only one branch
@@ -310,12 +310,12 @@ export const MessageBranchSelector = ({
   );
 };
 
-export type MessageBranchPreviousProps = ComponentProps<typeof Button>;
+export type TMessageBranchPreviousProps = ComponentProps<typeof Button>;
 
 export const MessageBranchPrevious = ({
   children,
   ...props
-}: MessageBranchPreviousProps) => {
+}: TMessageBranchPreviousProps) => {
   const { goToPrevious, totalBranches } = useMessageBranch();
 
   return (
@@ -333,12 +333,12 @@ export const MessageBranchPrevious = ({
   );
 };
 
-export type MessageBranchNextProps = ComponentProps<typeof Button>;
+export type TMessageBranchNextProps = ComponentProps<typeof Button>;
 
 export const MessageBranchNext = ({
   children,
   ...props
-}: MessageBranchNextProps) => {
+}: TMessageBranchNextProps) => {
   const { goToNext, totalBranches } = useMessageBranch();
 
   return (
@@ -356,12 +356,12 @@ export const MessageBranchNext = ({
   );
 };
 
-export type MessageBranchPageProps = HTMLAttributes<HTMLSpanElement>;
+export type TMessageBranchPageProps = HTMLAttributes<HTMLSpanElement>;
 
 export const MessageBranchPage = ({
   className,
   ...props
-}: MessageBranchPageProps) => {
+}: TMessageBranchPageProps) => {
   const { currentBranch, totalBranches } = useMessageBranch();
 
   return (
@@ -380,12 +380,12 @@ export const MessageBranchPage = ({
 /**
  * Props for the rich text message body rendered via Streamdown.
  */
-export type MessageResponseProps = ComponentProps<typeof Streamdown>;
+export type TMessageResponseProps = ComponentProps<typeof Streamdown>;
 
 const streamdownPlugins = { cjk, code, math, mermaid };
 
 export const MessageResponse = memo(
-  ({ className, ...props }: MessageResponseProps) => (
+  ({ className, ...props }: TMessageResponseProps) => (
     <Streamdown
       className={cn(
         "size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
@@ -404,13 +404,13 @@ MessageResponse.displayName = "MessageResponse";
  * Props for an optional toolbar that appears beneath a message, often
  * used to show branch controls and other contextual actions.
  */
-export type MessageToolbarProps = ComponentProps<"div">;
+export type TMessageToolbarProps = ComponentProps<"div">;
 
 export const MessageToolbar = ({
   className,
   children,
   ...props
-}: MessageToolbarProps) => (
+}: TMessageToolbarProps) => (
   <div
     className={cn(
       "mt-4 flex w-full items-center justify-between gap-4",

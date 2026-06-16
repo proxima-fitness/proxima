@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 export type Json =
   | string
   | number
@@ -7,98 +8,13 @@ export type Json =
   | Json[]
 
 export type Database = {
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          operationName?: string
-          query?: string
-          variables?: Json
-          extensions?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
-      ai_notes: {
-        Row: {
-          ai_schema: Json | null
-          created_at: string
-          id: string
-          notes: string | null
-          program_id: string | null
-          saved_workout_id: string | null
-          title: string | null
-          user_id: string | null
-          workout_history_id: string | null
-        }
-        Insert: {
-          ai_schema?: Json | null
-          created_at?: string
-          id?: string
-          notes?: string | null
-          program_id?: string | null
-          saved_workout_id?: string | null
-          title?: string | null
-          user_id?: string | null
-          workout_history_id?: string | null
-        }
-        Update: {
-          ai_schema?: Json | null
-          created_at?: string
-          id?: string
-          notes?: string | null
-          program_id?: string | null
-          saved_workout_id?: string | null
-          title?: string | null
-          user_id?: string | null
-          workout_history_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ai_notes_program_id_fkey"
-            columns: ["program_id"]
-            isOneToOne: false
-            referencedRelation: "programs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ai_notes_saved_workout_id_fkey"
-            columns: ["saved_workout_id"]
-            isOneToOne: false
-            referencedRelation: "saved_workouts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ai_notes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ai_notes_workout_history_id_fkey"
-            columns: ["workout_history_id"]
-            isOneToOne: false
-            referencedRelation: "workout_history"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       blocked_users: {
         Row: {
           blocked_id: string | null
@@ -135,53 +51,142 @@ export type Database = {
           },
         ]
       }
-      exercises: {
+      canonical_exercise_mappings: {
         Row: {
-          body_part: string | null
+          canonical_exercise_id: string
           created_at: string
-          equipment: string[] | null
-          gif_id: string | null
+          external_exercise_id: string
           id: string
-          instructions: string[] | null
-          name_english: string | null
-          name_espanol: string | null
-          name_francais: string | null
-          name_portugues: string | null
-          normalized_name_english: string | null
-          secondary_muscles: string[] | null
-          target_muscle: string | null
+          source: Database["public"]["Enums"]["source_type"]
         }
         Insert: {
-          body_part?: string | null
+          canonical_exercise_id: string
           created_at?: string
-          equipment?: string[] | null
-          gif_id?: string | null
-          id: string
-          instructions?: string[] | null
-          name_english?: string | null
-          name_espanol?: string | null
-          name_francais?: string | null
-          name_portugues?: string | null
-          normalized_name_english?: string | null
-          secondary_muscles?: string[] | null
-          target_muscle?: string | null
+          external_exercise_id: string
+          id?: string
+          source: Database["public"]["Enums"]["source_type"]
         }
         Update: {
-          body_part?: string | null
+          canonical_exercise_id?: string
           created_at?: string
-          equipment?: string[] | null
-          gif_id?: string | null
+          external_exercise_id?: string
           id?: string
-          instructions?: string[] | null
-          name_english?: string | null
-          name_espanol?: string | null
-          name_francais?: string | null
-          name_portugues?: string | null
-          normalized_name_english?: string | null
-          secondary_muscles?: string[] | null
-          target_muscle?: string | null
+          source?: Database["public"]["Enums"]["source_type"]
         }
         Relationships: []
+      }
+      canonical_exercises: {
+        Row: {
+          created_at: string
+          equipment: string | null
+          exercise_type: string | null
+          id: string
+          normalized_title: string
+          primary_muscle_group: string | null
+          secondary_muscle_groups: string[] | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          equipment?: string | null
+          exercise_type?: string | null
+          id?: string
+          normalized_title: string
+          primary_muscle_group?: string | null
+          secondary_muscle_groups?: string[] | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          equipment?: string | null
+          exercise_type?: string | null
+          id?: string
+          normalized_title?: string
+          primary_muscle_group?: string | null
+          secondary_muscle_groups?: string[] | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      chat_history: {
+        Row: {
+          conversation: Json[] | null
+          created_at: string
+          id: string
+          pinned: boolean | null
+          program_id: number | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          conversation?: Json[] | null
+          created_at?: string
+          id?: string
+          pinned?: boolean | null
+          program_id?: number | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          conversation?: Json[] | null
+          created_at?: string
+          id?: string
+          pinned?: boolean | null
+          program_id?: number | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_history_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feature_usage: {
+        Row: {
+          created_at: string
+          id: string
+          monthly_exports_used: number
+          monthly_llm_requests: number
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          monthly_exports_used?: number
+          monthly_llm_requests?: number
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          monthly_exports_used?: number
+          monthly_llm_requests?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feature_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       feedback: {
         Row: {
@@ -237,7 +242,9 @@ export type Database = {
       hevy_exercise_templates: {
         Row: {
           equipment: string | null
+          gif_id: string | null
           id: string
+          instructions: string[] | null
           is_custom: boolean | null
           normalized_title: string | null
           primary_muscle_group: string | null
@@ -247,7 +254,9 @@ export type Database = {
         }
         Insert: {
           equipment?: string | null
+          gif_id?: string | null
           id: string
+          instructions?: string[] | null
           is_custom?: boolean | null
           normalized_title?: string | null
           primary_muscle_group?: string | null
@@ -257,7 +266,9 @@ export type Database = {
         }
         Update: {
           equipment?: string | null
+          gif_id?: string | null
           id?: string
+          instructions?: string[] | null
           is_custom?: boolean | null
           normalized_title?: string | null
           primary_muscle_group?: string | null
@@ -266,6 +277,41 @@ export type Database = {
           type?: string | null
         }
         Relationships: []
+      }
+      hevy_workouts_count: {
+        Row: {
+          created_at: string
+          id: string
+          last_known_workout_count: number | null
+          sync_error: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_known_workout_count?: number | null
+          sync_error?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_known_workout_count?: number | null
+          sync_error?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hevy_workouts_count_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       onboarding_emails: {
         Row: {
@@ -403,13 +449,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "personal_records_exercise_id_fkey"
-            columns: ["exercise_id"]
-            isOneToOne: false
-            referencedRelation: "exercises"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "personal_records_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -418,11 +457,38 @@ export type Database = {
           },
         ]
       }
+      product_usage_limits: {
+        Row: {
+          created_at: string
+          id: string
+          max_monthly_exports: number | null
+          max_monthly_llm_requests: number | null
+          max_premium_llm_requests: number | null
+          product_title: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          max_monthly_exports?: number | null
+          max_monthly_llm_requests?: number | null
+          max_premium_llm_requests?: number | null
+          product_title?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          max_monthly_exports?: number | null
+          max_monthly_llm_requests?: number | null
+          max_premium_llm_requests?: number | null
+          product_title?: string | null
+        }
+        Relationships: []
+      }
       program_history: {
         Row: {
           created_at: string
           id: string
-          program_id: string | null
+          program_id: number
           program_length: number | null
           title: string | null
           user_id: string | null
@@ -430,7 +496,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
-          program_id?: string | null
+          program_id: number
           program_length?: number | null
           title?: string | null
           user_id?: string | null
@@ -438,7 +504,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
-          program_id?: string | null
+          program_id?: number
           program_length?: number | null
           title?: string | null
           user_id?: string | null
@@ -506,19 +572,19 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          program_id: string | null
+          program_id: number
           user_id: string | null
         }
         Insert: {
           created_at?: string
           id?: string
-          program_id?: string | null
+          program_id: number
           user_id?: string | null
         }
         Update: {
           created_at?: string
           id?: string
-          program_id?: string | null
+          program_id?: number
           user_id?: string | null
         }
         Relationships: [
@@ -544,6 +610,7 @@ export type Database = {
           created_at: string
           exercise_id: string | null
           id: string
+          old_exercise_id: string | null
           percent_rm: number[] | null
           reps: number[] | null
           reps_max: number[] | null
@@ -562,6 +629,7 @@ export type Database = {
           created_at?: string
           exercise_id?: string | null
           id?: string
+          old_exercise_id?: string | null
           percent_rm?: number[] | null
           reps?: number[] | null
           reps_max?: number[] | null
@@ -580,6 +648,7 @@ export type Database = {
           created_at?: string
           exercise_id?: string | null
           id?: string
+          old_exercise_id?: string | null
           percent_rm?: number[] | null
           reps?: number[] | null
           reps_max?: number[] | null
@@ -595,10 +664,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "program_workout_exercise_id_fkey"
+            foreignKeyName: "program_workout_exercises_exercise_id_fkey"
             columns: ["exercise_id"]
             isOneToOne: false
-            referencedRelation: "exercises"
+            referencedRelation: "hevy_exercise_templates"
             referencedColumns: ["id"]
           },
           {
@@ -616,6 +685,7 @@ export type Database = {
           created_at: string
           exercise_id: string | null
           id: string
+          old_exercise_id: string | null
           program_schedule_history_id: string | null
           reps: number[] | null
           rpe: number[] | null
@@ -628,6 +698,7 @@ export type Database = {
           created_at?: string
           exercise_id?: string | null
           id?: string
+          old_exercise_id?: string | null
           program_schedule_history_id?: string | null
           reps?: number[] | null
           rpe?: number[] | null
@@ -640,6 +711,7 @@ export type Database = {
           created_at?: string
           exercise_id?: string | null
           id?: string
+          old_exercise_id?: string | null
           program_schedule_history_id?: string | null
           reps?: number[] | null
           rpe?: number[] | null
@@ -659,7 +731,7 @@ export type Database = {
             foreignKeyName: "program_workout_exercises_history_exercise_id_fkey"
             columns: ["exercise_id"]
             isOneToOne: false
-            referencedRelation: "exercises"
+            referencedRelation: "hevy_exercise_templates"
             referencedColumns: ["id"]
           },
           {
@@ -678,10 +750,11 @@ export type Database = {
           difficulty: string[] | null
           equipment: string | null
           explore: boolean | null
-          hevy_routines: Json | null
-          id: string
+          id: number
+          is_coach: boolean | null
+          lock: boolean | null
           program_length: number | null
-          programs_textsearchable_index_col: unknown | null
+          programs_textsearchable_index_col: unknown
           prompt: string | null
           saves: number
           specialization: string[] | null
@@ -695,10 +768,11 @@ export type Database = {
           difficulty?: string[] | null
           equipment?: string | null
           explore?: boolean | null
-          hevy_routines?: Json | null
-          id: string
+          id?: number
+          is_coach?: boolean | null
+          lock?: boolean | null
           program_length?: number | null
-          programs_textsearchable_index_col?: unknown | null
+          programs_textsearchable_index_col?: unknown
           prompt?: string | null
           saves?: number
           specialization?: string[] | null
@@ -712,10 +786,11 @@ export type Database = {
           difficulty?: string[] | null
           equipment?: string | null
           explore?: boolean | null
-          hevy_routines?: Json | null
-          id?: string
+          id?: number
+          is_coach?: boolean | null
+          lock?: boolean | null
           program_length?: number | null
-          programs_textsearchable_index_col?: unknown | null
+          programs_textsearchable_index_col?: unknown
           prompt?: string | null
           saves?: number
           specialization?: string[] | null
@@ -737,7 +812,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          program_id: string | null
+          program_id: number
           reason: string | null
           status: string | null
           user_id: string | null
@@ -745,7 +820,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
-          program_id?: string | null
+          program_id: number
           reason?: string | null
           status?: string | null
           user_id?: string | null
@@ -753,7 +828,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
-          program_id?: string | null
+          program_id?: number
           reason?: string | null
           status?: string | null
           user_id?: string | null
@@ -781,6 +856,7 @@ export type Database = {
           created_at: string
           exercise_id: string | null
           id: string
+          old_exercise_id: string | null
           percent_rm: number[] | null
           reps: number[] | null
           reps_max: number[] | null
@@ -799,6 +875,7 @@ export type Database = {
           created_at?: string
           exercise_id?: string | null
           id?: string
+          old_exercise_id?: string | null
           percent_rm?: number[] | null
           reps?: number[] | null
           reps_max?: number[] | null
@@ -817,6 +894,7 @@ export type Database = {
           created_at?: string
           exercise_id?: string | null
           id?: string
+          old_exercise_id?: string | null
           percent_rm?: number[] | null
           reps?: number[] | null
           reps_max?: number[] | null
@@ -835,7 +913,7 @@ export type Database = {
             foreignKeyName: "saved_workout_exercises_exercise_id_fkey"
             columns: ["exercise_id"]
             isOneToOne: false
-            referencedRelation: "exercises"
+            referencedRelation: "hevy_exercise_templates"
             referencedColumns: ["id"]
           },
           {
@@ -884,7 +962,7 @@ export type Database = {
           id: string
           nthDay: number | null
           nthWeek: number | null
-          program_id: string | null
+          program_id: number | null
         }
         Insert: {
           created_at?: string
@@ -893,7 +971,7 @@ export type Database = {
           id?: string
           nthDay?: number | null
           nthWeek?: number | null
-          program_id?: string | null
+          program_id?: number | null
         }
         Update: {
           created_at?: string
@@ -902,7 +980,7 @@ export type Database = {
           id?: string
           nthDay?: number | null
           nthWeek?: number | null
-          program_id?: string | null
+          program_id?: number | null
         }
         Relationships: [
           {
@@ -910,6 +988,32 @@ export type Database = {
             columns: ["program_id"]
             isOneToOne: false
             referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_users: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_users_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -952,7 +1056,8 @@ export type Database = {
           first_name: string | null
           id: string
           last_name: string | null
-          textsearchable_index_col: unknown | null
+          textsearchable_index_col: unknown
+          timezone: string | null
           username: string | null
         }
         Insert: {
@@ -962,7 +1067,8 @@ export type Database = {
           first_name?: string | null
           id: string
           last_name?: string | null
-          textsearchable_index_col?: unknown | null
+          textsearchable_index_col?: unknown
+          timezone?: string | null
           username?: string | null
         }
         Update: {
@@ -972,29 +1078,143 @@ export type Database = {
           first_name?: string | null
           id?: string
           last_name?: string | null
-          textsearchable_index_col?: unknown | null
+          textsearchable_index_col?: unknown
+          timezone?: string | null
           username?: string | null
         }
         Relationships: []
       }
-      workout_history: {
+      workout_exercises: {
+        Row: {
+          canonical_exercise_id: string
+          created_at: string
+          id: string
+          sort_order: number
+          source_exercise_id: string | null
+          workout_id: string
+        }
+        Insert: {
+          canonical_exercise_id: string
+          created_at?: string
+          id?: string
+          sort_order: number
+          source_exercise_id?: string | null
+          workout_id: string
+        }
+        Update: {
+          canonical_exercise_id?: string
+          created_at?: string
+          id?: string
+          sort_order?: number
+          source_exercise_id?: string | null
+          workout_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_exercises_canonical_exercise_id_fkey"
+            columns: ["canonical_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_exercises_workout_id_fkey"
+            columns: ["workout_id"]
+            isOneToOne: false
+            referencedRelation: "workouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workout_sets: {
+        Row: {
+          created_at: string
+          custom_metric: number | null
+          distance_meters: number | null
+          duration_seconds: number | null
+          id: string
+          rep_range_end: number | null
+          rep_range_start: number | null
+          reps: number | null
+          rpe: number | null
+          set_index: number
+          set_type: string
+          weight_kg: number | null
+          workout_exercise_id: string
+        }
+        Insert: {
+          created_at?: string
+          custom_metric?: number | null
+          distance_meters?: number | null
+          duration_seconds?: number | null
+          id?: string
+          rep_range_end?: number | null
+          rep_range_start?: number | null
+          reps?: number | null
+          rpe?: number | null
+          set_index: number
+          set_type: string
+          weight_kg?: number | null
+          workout_exercise_id: string
+        }
+        Update: {
+          created_at?: string
+          custom_metric?: number | null
+          distance_meters?: number | null
+          duration_seconds?: number | null
+          id?: string
+          rep_range_end?: number | null
+          rep_range_start?: number | null
+          reps?: number | null
+          rpe?: number | null
+          set_index?: number
+          set_type?: string
+          weight_kg?: number | null
+          workout_exercise_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_sets_workout_exercise_id_fkey"
+            columns: ["workout_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "workout_exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workouts: {
         Row: {
           created_at: string | null
+          ended_at: string
+          external_id: string | null
           id: string
-          user_id: string | null
-          workout_name: string | null
+          source: Database["public"]["Enums"]["source_type"] | null
+          started_at: string
+          title: string | null
+          updated_at: string | null
+          user_id: string
         }
         Insert: {
           created_at?: string | null
+          ended_at: string
+          external_id?: string | null
           id: string
-          user_id?: string | null
-          workout_name?: string | null
+          source?: Database["public"]["Enums"]["source_type"] | null
+          started_at: string
+          title?: string | null
+          updated_at?: string | null
+          user_id: string
         }
         Update: {
           created_at?: string | null
+          ended_at?: string
+          external_id?: string | null
           id?: string
-          user_id?: string | null
-          workout_name?: string | null
+          source?: Database["public"]["Enums"]["source_type"] | null
+          started_at?: string
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: [
           {
@@ -1006,78 +1226,33 @@ export type Database = {
           },
         ]
       }
-      workout_history_exercises: {
-        Row: {
-          created_at: string
-          exercise_id: string | null
-          id: string
-          reps: number[] | null
-          user_id: string | null
-          weights: number[] | null
-          workout_history_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          exercise_id?: string | null
-          id?: string
-          reps?: number[] | null
-          user_id?: string | null
-          weights?: number[] | null
-          workout_history_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          exercise_id?: string | null
-          id?: string
-          reps?: number[] | null
-          user_id?: string | null
-          weights?: number[] | null
-          workout_history_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "workout_history_exercises_exercise_id_fkey"
-            columns: ["exercise_id"]
-            isOneToOne: false
-            referencedRelation: "exercises"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "workout_history_exercises_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "workout_history_exercises_workout_history_id_fkey"
-            columns: ["workout_history_id"]
-            isOneToOne: false
-            referencedRelation: "workout_history"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      delete_secret: {
-        Args: { secret_name: string }
-        Returns: string
+      delete_secret: { Args: { secret_name: string }; Returns: string }
+      get_hevy_key_from_vault: { Args: { p_user_id: string }; Returns: string }
+      get_my_feature_limits: {
+        Args: never
+        Returns: {
+          has_active_subscription: boolean
+          max_monthly_exports: number
+          max_monthly_llm_requests: number
+          monthly_exports_used: number
+          monthly_llm_requests_used: number
+          remaining_exports: number
+          remaining_llm_requests: number
+          tier: string
+          user_id: string
+        }[]
       }
-      insert_secret: {
-        Args:
-          | { name: string; secret: string }
-          | { name: string; secret: string; description: string }
-          | { secret: string }
-        Returns: string
+      increment_feature_usage: {
+        Args: { p_feature: string }
+        Returns: undefined
       }
-      read_secret: {
-        Args: { secret_name: string }
-        Returns: string
-      }
+      insert_secret: { Args: { secret: string }; Returns: string }
+      read_secret: { Args: { secret_name: string }; Returns: string }
       search_programs_by_prefix: {
         Args: { prefix: string }
         Returns: {
@@ -1086,10 +1261,11 @@ export type Database = {
           difficulty: string[] | null
           equipment: string | null
           explore: boolean | null
-          hevy_routines: Json | null
-          id: string
+          id: number
+          is_coach: boolean | null
+          lock: boolean | null
           program_length: number | null
-          programs_textsearchable_index_col: unknown | null
+          programs_textsearchable_index_col: unknown
           prompt: string | null
           saves: number
           specialization: string[] | null
@@ -1097,6 +1273,12 @@ export type Database = {
           user_id: string | null
           workout_duration: number | null
         }[]
+        SetofOptions: {
+          from: "*"
+          to: "programs"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       search_users_by_prefix: {
         Args: { prefix: string }
@@ -1107,429 +1289,21 @@ export type Database = {
           first_name: string | null
           id: string
           last_name: string | null
-          textsearchable_index_col: unknown | null
+          textsearchable_index_col: unknown
+          timezone: string | null
           username: string | null
         }[]
+        SetofOptions: {
+          from: "*"
+          to: "users"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
+      trigger_all_users_hevy_program_sync: { Args: never; Returns: undefined }
     }
     Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-  storage: {
-    Tables: {
-      buckets: {
-        Row: {
-          allowed_mime_types: string[] | null
-          avif_autodetection: boolean | null
-          created_at: string | null
-          file_size_limit: number | null
-          id: string
-          name: string
-          owner: string | null
-          owner_id: string | null
-          public: boolean | null
-          updated_at: string | null
-        }
-        Insert: {
-          allowed_mime_types?: string[] | null
-          avif_autodetection?: boolean | null
-          created_at?: string | null
-          file_size_limit?: number | null
-          id: string
-          name: string
-          owner?: string | null
-          owner_id?: string | null
-          public?: boolean | null
-          updated_at?: string | null
-        }
-        Update: {
-          allowed_mime_types?: string[] | null
-          avif_autodetection?: boolean | null
-          created_at?: string | null
-          file_size_limit?: number | null
-          id?: string
-          name?: string
-          owner?: string | null
-          owner_id?: string | null
-          public?: boolean | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      migrations: {
-        Row: {
-          executed_at: string | null
-          hash: string
-          id: number
-          name: string
-        }
-        Insert: {
-          executed_at?: string | null
-          hash: string
-          id: number
-          name: string
-        }
-        Update: {
-          executed_at?: string | null
-          hash?: string
-          id?: number
-          name?: string
-        }
-        Relationships: []
-      }
-      objects: {
-        Row: {
-          bucket_id: string | null
-          created_at: string | null
-          id: string
-          last_accessed_at: string | null
-          level: number | null
-          metadata: Json | null
-          name: string | null
-          owner: string | null
-          owner_id: string | null
-          path_tokens: string[] | null
-          updated_at: string | null
-          user_metadata: Json | null
-          version: string | null
-        }
-        Insert: {
-          bucket_id?: string | null
-          created_at?: string | null
-          id?: string
-          last_accessed_at?: string | null
-          level?: number | null
-          metadata?: Json | null
-          name?: string | null
-          owner?: string | null
-          owner_id?: string | null
-          path_tokens?: string[] | null
-          updated_at?: string | null
-          user_metadata?: Json | null
-          version?: string | null
-        }
-        Update: {
-          bucket_id?: string | null
-          created_at?: string | null
-          id?: string
-          last_accessed_at?: string | null
-          level?: number | null
-          metadata?: Json | null
-          name?: string | null
-          owner?: string | null
-          owner_id?: string | null
-          path_tokens?: string[] | null
-          updated_at?: string | null
-          user_metadata?: Json | null
-          version?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "objects_bucketId_fkey"
-            columns: ["bucket_id"]
-            isOneToOne: false
-            referencedRelation: "buckets"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      prefixes: {
-        Row: {
-          bucket_id: string
-          created_at: string | null
-          level: number
-          name: string
-          updated_at: string | null
-        }
-        Insert: {
-          bucket_id: string
-          created_at?: string | null
-          level?: number
-          name: string
-          updated_at?: string | null
-        }
-        Update: {
-          bucket_id?: string
-          created_at?: string | null
-          level?: number
-          name?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "prefixes_bucketId_fkey"
-            columns: ["bucket_id"]
-            isOneToOne: false
-            referencedRelation: "buckets"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      s3_multipart_uploads: {
-        Row: {
-          bucket_id: string
-          created_at: string
-          id: string
-          in_progress_size: number
-          key: string
-          owner_id: string | null
-          upload_signature: string
-          user_metadata: Json | null
-          version: string
-        }
-        Insert: {
-          bucket_id: string
-          created_at?: string
-          id: string
-          in_progress_size?: number
-          key: string
-          owner_id?: string | null
-          upload_signature: string
-          user_metadata?: Json | null
-          version: string
-        }
-        Update: {
-          bucket_id?: string
-          created_at?: string
-          id?: string
-          in_progress_size?: number
-          key?: string
-          owner_id?: string | null
-          upload_signature?: string
-          user_metadata?: Json | null
-          version?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "s3_multipart_uploads_bucket_id_fkey"
-            columns: ["bucket_id"]
-            isOneToOne: false
-            referencedRelation: "buckets"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      s3_multipart_uploads_parts: {
-        Row: {
-          bucket_id: string
-          created_at: string
-          etag: string
-          id: string
-          key: string
-          owner_id: string | null
-          part_number: number
-          size: number
-          upload_id: string
-          version: string
-        }
-        Insert: {
-          bucket_id: string
-          created_at?: string
-          etag: string
-          id?: string
-          key: string
-          owner_id?: string | null
-          part_number: number
-          size?: number
-          upload_id: string
-          version: string
-        }
-        Update: {
-          bucket_id?: string
-          created_at?: string
-          etag?: string
-          id?: string
-          key?: string
-          owner_id?: string | null
-          part_number?: number
-          size?: number
-          upload_id?: string
-          version?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "s3_multipart_uploads_parts_bucket_id_fkey"
-            columns: ["bucket_id"]
-            isOneToOne: false
-            referencedRelation: "buckets"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "s3_multipart_uploads_parts_upload_id_fkey"
-            columns: ["upload_id"]
-            isOneToOne: false
-            referencedRelation: "s3_multipart_uploads"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      add_prefixes: {
-        Args: { _bucket_id: string; _name: string }
-        Returns: undefined
-      }
-      can_insert_object: {
-        Args: { bucketid: string; name: string; owner: string; metadata: Json }
-        Returns: undefined
-      }
-      delete_prefix: {
-        Args: { _bucket_id: string; _name: string }
-        Returns: boolean
-      }
-      extension: {
-        Args: { name: string }
-        Returns: string
-      }
-      filename: {
-        Args: { name: string }
-        Returns: string
-      }
-      foldername: {
-        Args: { name: string }
-        Returns: string[]
-      }
-      get_level: {
-        Args: { name: string }
-        Returns: number
-      }
-      get_prefix: {
-        Args: { name: string }
-        Returns: string
-      }
-      get_prefixes: {
-        Args: { name: string }
-        Returns: string[]
-      }
-      get_size_by_bucket: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          size: number
-          bucket_id: string
-        }[]
-      }
-      list_multipart_uploads_with_delimiter: {
-        Args: {
-          bucket_id: string
-          prefix_param: string
-          delimiter_param: string
-          max_keys?: number
-          next_key_token?: string
-          next_upload_token?: string
-        }
-        Returns: {
-          key: string
-          id: string
-          created_at: string
-        }[]
-      }
-      list_objects_with_delimiter: {
-        Args: {
-          bucket_id: string
-          prefix_param: string
-          delimiter_param: string
-          max_keys?: number
-          start_after?: string
-          next_token?: string
-        }
-        Returns: {
-          name: string
-          id: string
-          metadata: Json
-          updated_at: string
-        }[]
-      }
-      operation: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      search: {
-        Args: {
-          prefix: string
-          bucketname: string
-          limits?: number
-          levels?: number
-          offsets?: number
-          search?: string
-          sortcolumn?: string
-          sortorder?: string
-        }
-        Returns: {
-          name: string
-          id: string
-          updated_at: string
-          created_at: string
-          last_accessed_at: string
-          metadata: Json
-        }[]
-      }
-      search_legacy_v1: {
-        Args: {
-          prefix: string
-          bucketname: string
-          limits?: number
-          levels?: number
-          offsets?: number
-          search?: string
-          sortcolumn?: string
-          sortorder?: string
-        }
-        Returns: {
-          name: string
-          id: string
-          updated_at: string
-          created_at: string
-          last_accessed_at: string
-          metadata: Json
-        }[]
-      }
-      search_v1_optimised: {
-        Args: {
-          prefix: string
-          bucketname: string
-          limits?: number
-          levels?: number
-          offsets?: number
-          search?: string
-          sortcolumn?: string
-          sortorder?: string
-        }
-        Returns: {
-          name: string
-          id: string
-          updated_at: string
-          created_at: string
-          last_accessed_at: string
-          metadata: Json
-        }[]
-      }
-      search_v2: {
-        Args: {
-          prefix: string
-          bucket_name: string
-          limits?: number
-          levels?: number
-          start_after?: string
-        }
-        Returns: {
-          key: string
-          name: string
-          id: string
-          updated_at: string
-          created_at: string
-          metadata: Json
-        }[]
-      }
-    }
-    Enums: {
-      [_ in never]: never
+      source_type: "hevy"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1537,21 +1311,25 @@ export type Database = {
   }
 }
 
-type DefaultSchema = Database[Extract<keyof Database, "public">]
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
@@ -1569,14 +1347,16 @@ export type Tables<
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
@@ -1592,14 +1372,16 @@ export type TablesInsert<
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
@@ -1615,14 +1397,16 @@ export type TablesUpdate<
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
@@ -1630,26 +1414,24 @@ export type Enums<
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
-    Enums: {},
-  },
-  storage: {
-    Enums: {},
+    Enums: {
+      source_type: ["hevy"],
+    },
   },
 } as const

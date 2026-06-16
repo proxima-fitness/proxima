@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 /**
@@ -50,7 +51,7 @@ import { createContext, useCallback, useContext, useMemo } from "react";
  * Combines `ai` file and source document parts with a local `id` so that
  * individual attachments can be addressed for removal and list rendering.
  */
-export type AttachmentData =
+export type TAttachmentData =
   | (FileUIPart & { id: string })
   | (SourceDocumentUIPart & { id: string });
 
@@ -60,7 +61,7 @@ export type AttachmentData =
  * These categories are derived from the underlying `mediaType` or the
  * special `source-document` type.
  */
-export type AttachmentMediaCategory =
+export type TAttachmentMediaCategory =
   | "image"
   | "video"
   | "audio"
@@ -68,13 +69,13 @@ export type AttachmentMediaCategory =
   | "source"
   | "unknown";
 
-export type AttachmentVariant = "grid" | "inline" | "list";
+export type TAttachmentVariant = "grid" | "inline" | "list";
 
 /**
  * Default icon mapping for each media category. Used when a thumbnail or
  * preview cannot be rendered directly.
  */
-const mediaCategoryIcons: Record<AttachmentMediaCategory, typeof ImageIcon> = {
+const mediaCategoryIcons: Record<TAttachmentMediaCategory, typeof ImageIcon> = {
   audio: Music2Icon,
   document: FileTextIcon,
   image: ImageIcon,
@@ -94,8 +95,8 @@ const mediaCategoryIcons: Record<AttachmentMediaCategory, typeof ImageIcon> = {
  * classified into one of the known buckets.
  */
 export const getMediaCategory = (
-  data: AttachmentData
-): AttachmentMediaCategory => {
+  data: TAttachmentData
+): TAttachmentMediaCategory => {
   if (data.type === "source-document") {
     return "source";
   }
@@ -124,7 +125,7 @@ export const getMediaCategory = (
  * Prefers explicit titles and filenames and falls back to a generic label
  * when no descriptive metadata is available.
  */
-export const getAttachmentLabel = (data: AttachmentData): string => {
+export const getAttachmentLabel = (data: TAttachmentData): string => {
   if (data.type === "source-document") {
     return data.title || data.filename || "Source";
   }
@@ -165,16 +166,16 @@ const renderAttachmentImage = (
 // ============================================================================
 
 interface IAttachmentsContextValue {
-  variant: AttachmentVariant;
+  variant: TAttachmentVariant;
 }
 
 const AttachmentsContext = createContext<IAttachmentsContextValue | null>(null);
 
 interface IAttachmentContextValue {
-  data: AttachmentData;
-  mediaCategory: AttachmentMediaCategory;
+  data: TAttachmentData;
+  mediaCategory: TAttachmentMediaCategory;
   onRemove?: () => void;
-  variant: AttachmentVariant;
+  variant: TAttachmentVariant;
 }
 
 const AttachmentContext = createContext<IAttachmentContextValue | null>(null);
@@ -219,8 +220,8 @@ export const useAttachmentContext = () => {
  * - Standard `div` props (e.g., `className`) can be used to integrate with
  *   parent layout and styling.
  */
-export type AttachmentsProps = HTMLAttributes<HTMLDivElement> & {
-  variant?: AttachmentVariant;
+export type TAttachmentsProps = HTMLAttributes<HTMLDivElement> & {
+  variant?: TAttachmentVariant;
 };
 
 /**
@@ -235,7 +236,7 @@ export const Attachments = ({
   className,
   children,
   ...props
-}: AttachmentsProps) => {
+}: TAttachmentsProps) => {
   const contextValue = useMemo(() => ({ variant }), [variant]);
 
   return (
@@ -266,8 +267,8 @@ export const Attachments = ({
  * - `onRemove` is an optional callback for removing the attachment from
  *   upstream state; if omitted, remove controls will not be rendered.
  */
-export type AttachmentProps = HTMLAttributes<HTMLDivElement> & {
-  data: AttachmentData;
+export type TAttachmentProps = HTMLAttributes<HTMLDivElement> & {
+  data: TAttachmentData;
   onRemove?: () => void;
 };
 
@@ -283,7 +284,7 @@ export const Attachment = ({
   className,
   children,
   ...props
-}: AttachmentProps) => {
+}: TAttachmentProps) => {
   const { variant } = useAttachmentsContext();
   const mediaCategory = getMediaCategory(data);
 
@@ -329,7 +330,7 @@ export const Attachment = ({
  *   a thumbnail cannot be shown.
  * - Additional `div` props can be used to control layout around the preview.
  */
-export type AttachmentPreviewProps = HTMLAttributes<HTMLDivElement> & {
+export type TAttachmentPreviewProps = HTMLAttributes<HTMLDivElement> & {
   fallbackIcon?: ReactNode;
 };
 
@@ -344,7 +345,7 @@ export const AttachmentPreview = ({
   fallbackIcon,
   className,
   ...props
-}: AttachmentPreviewProps) => {
+}: TAttachmentPreviewProps) => {
   const { data, mediaCategory, variant } = useAttachmentContext();
 
   const iconSize = variant === "inline" ? "size-3" : "size-4";
@@ -392,7 +393,7 @@ export const AttachmentPreview = ({
  * - `showMediaType` toggles whether the raw MIME type is displayed
  *   beneath the primary label.
  */
-export type AttachmentInfoProps = HTMLAttributes<HTMLDivElement> & {
+export type TAttachmentInfoProps = HTMLAttributes<HTMLDivElement> & {
   showMediaType?: boolean;
 };
 
@@ -405,7 +406,7 @@ export const AttachmentInfo = ({
   showMediaType = false,
   className,
   ...props
-}: AttachmentInfoProps) => {
+}: TAttachmentInfoProps) => {
   const { data, variant } = useAttachmentContext();
   const label = getAttachmentLabel(data);
 
@@ -436,7 +437,7 @@ export const AttachmentInfo = ({
  *   the visible icon is derived from the slot children.
  * - All standard `Button` props are forwarded for styling and behavior.
  */
-export type AttachmentRemoveProps = ComponentProps<typeof Button> & {
+export type TAttachmentRemoveProps = ComponentProps<typeof Button> & {
   label?: string;
 };
 
@@ -452,7 +453,7 @@ export const AttachmentRemove = ({
   className,
   children,
   ...props
-}: AttachmentRemoveProps) => {
+}: TAttachmentRemoveProps) => {
   const { onRemove, variant } = useAttachmentContext();
 
   const handleClick = useCallback(
@@ -507,25 +508,25 @@ export const AttachmentRemove = ({
  * Use together with `AttachmentHoverCardTrigger` and
  * `AttachmentHoverCardContent` to build rich hover states for attachments.
  */
-export type AttachmentHoverCardProps = ComponentProps<typeof HoverCard>;
+export type TAttachmentHoverCardProps = ComponentProps<typeof HoverCard>;
 
 export const AttachmentHoverCard = ({
   openDelay = 0,
   closeDelay = 0,
   ...props
-}: AttachmentHoverCardProps) => (
+}: TAttachmentHoverCardProps) => (
   <HoverCard closeDelay={closeDelay} openDelay={openDelay} {...props} />
 );
 
-export type AttachmentHoverCardTriggerProps = ComponentProps<
+export type TAttachmentHoverCardTriggerProps = ComponentProps<
   typeof HoverCardTrigger
 >;
 
 export const AttachmentHoverCardTrigger = (
-  props: AttachmentHoverCardTriggerProps
+  props: TAttachmentHoverCardTriggerProps
 ) => <HoverCardTrigger {...props} />;
 
-export type AttachmentHoverCardContentProps = ComponentProps<
+export type TAttachmentHoverCardContentProps = ComponentProps<
   typeof HoverCardContent
 >;
 
@@ -533,10 +534,10 @@ export const AttachmentHoverCardContent = ({
   align = "start",
   className,
   ...props
-}: AttachmentHoverCardContentProps) => (
+}: TAttachmentHoverCardContentProps) => (
   <HoverCardContent
     align={align}
-    className={cn("!z-[9999] w-auto p-2", className)}
+    className={cn("z-9999! w-auto p-2", className)}
     {...props}
   />
 );
@@ -551,13 +552,13 @@ export const AttachmentHoverCardContent = ({
  * Accepts standard `div` props plus optional children to override the
  * default "No attachments" message.
  */
-export type AttachmentEmptyProps = HTMLAttributes<HTMLDivElement>;
+export type TAttachmentEmptyProps = HTMLAttributes<HTMLDivElement>;
 
 export const AttachmentEmpty = ({
   className,
   children,
   ...props
-}: AttachmentEmptyProps) => (
+}: TAttachmentEmptyProps) => (
   <div
     className={cn(
       "flex items-center justify-center p-4 text-muted-foreground text-sm",

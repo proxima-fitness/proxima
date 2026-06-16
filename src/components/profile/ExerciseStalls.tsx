@@ -37,23 +37,6 @@ const BLIND_SPOT_STRINGS = {
     ViewMoreExercises: "View more exercises",
 } as const;
 
-export interface IExercise {
-    name: string;
-    weight: number;
-    color: "green" | "yellow" | "red";
-    trend: number[];
-    hasStall: boolean;
-    sessions?: Array<{
-        workoutId: string;
-        date: string;
-        totalVolume: number;
-        maxWeight: number;
-        /** Total reps in the workout (for bodyweight display when totalVolume is 0). */
-        totalReps?: number;
-    }>;
-}
-
-/** Build page entries for pagination (numbers and "…" for ellipsis). */
 function getPaginationPages(currentPage: number, totalPages: number): (number | "…")[] {
     if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
     if (currentPage <= 3) return [1, 2, 3, "…", totalPages];
@@ -61,21 +44,9 @@ function getPaginationPages(currentPage: number, totalPages: number): (number | 
     return [1, "…", currentPage, "…", totalPages];
 }
 
-/**
- * Props for `ExerciseStalls`.
- * @property exercises List of exercises to render including trend and optional session data.
- * @property onExploreFixes Optional callback when the user chooses to explore fixes for a stalled exercise.
- * @property onViewMore Optional callback fired when a non-link “View more exercises” button is clicked.
- * @property viewMoreHref Optional link used instead of `onViewMore` to navigate to a pricing or upsell page.
- * @property showViewMore Whether to render the “View more exercises” button or link (defaults to true).
- * @property dataLoading When true, renders skeleton placeholders for metrics and charts while data loads.
- * @property currentPage Current page number for paginated exercise lists.
- * @property totalPages Total page count for pagination controls.
- * @property onPageChange Callback to change pages when pagination controls are used.
- */
 interface IProps {
-    exercises: IExercise[];
-    onExploreFixes?: (exercise: IExercise) => void;
+    exercises: TExerciseStallResult[];
+    onExploreFixes?: (exercise: TExerciseStallResult) => void;
     onViewMore?: () => void;
     viewMoreHref?: string;
     /** When false, the "View more exercises" button is hidden (e.g. when all exercises are already shown). Default true. */
@@ -153,7 +124,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
         }
     };
 
-    const handleExploreFixes = (exercise: IExercise) => {
+    const handleExploreFixes = (exercise: TExerciseStallResult) => {
         onExploreFixes?.(exercise);
     };
 

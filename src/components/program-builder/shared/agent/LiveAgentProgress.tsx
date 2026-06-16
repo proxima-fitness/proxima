@@ -3,10 +3,10 @@
 import { useMemo, memo } from "react";
 import type { ChatStatus } from "ai";
 import {
-  ChainOfThought,
-  ChainOfThoughtContent,
-  ChainOfThoughtHeader,
-  ChainOfThoughtStep,
+  TChainOfThought,
+  TChainOfThoughtContent,
+  TChainOfThoughtHeader,
+  TChainOfThoughtStep,
 } from "@/components/ai-elements/chain-of-thought";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import {
@@ -134,11 +134,11 @@ export const LiveAgentProgress = memo(
         status === "submitted" ? "Thinking..." : "Working…";
       return (
         <div className={className}>
-          <ChainOfThought defaultOpen open>
-            <ChainOfThoughtHeader>
+          <TChainOfThought defaultOpen open>
+            <TChainOfThoughtHeader>
               <Shimmer duration={1.5}>{fallbackLabel}</Shimmer>
-            </ChainOfThoughtHeader>
-          </ChainOfThought>
+            </TChainOfThoughtHeader>
+          </TChainOfThought>
         </div>
       );
     }
@@ -148,21 +148,21 @@ export const LiveAgentProgress = memo(
 
     return (
       <div className={className}>
-        <ChainOfThought defaultOpen open>
-          <ChainOfThoughtHeader>
+        <TChainOfThought defaultOpen open>
+          <TChainOfThoughtHeader>
             <Shimmer duration={1.5}>{headerLabel}</Shimmer>
-          </ChainOfThoughtHeader>
-          <ChainOfThoughtContent>
+          </TChainOfThoughtHeader>
+          <TChainOfThoughtContent>
             {steps.map((step) => (
-              <ChainOfThoughtStep
+              <TChainOfThoughtStep
                 key={step.key}
                 icon={step.icon}
                 label={step.label}
                 status={step.status}
               />
             ))}
-          </ChainOfThoughtContent>
-        </ChainOfThought>
+          </TChainOfThoughtContent>
+        </TChainOfThought>
       </div>
     );
   }

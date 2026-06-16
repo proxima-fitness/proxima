@@ -14,7 +14,6 @@ import { DropIndicator } from "@/components/program-builder/shared/DropIndicator
 import { HevyDayCard } from "./HevyDayCard";
 import { HevyDuplicateWeek } from "./HevyDuplicateWeek";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { IOption } from "@/components/ui/multi-select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { HevyAddRoutineDialog } from "./HevyAddRoutineDialog";
 import { useProgramMutation } from "@/contexts/ProgramMutationContext";
@@ -46,7 +45,7 @@ interface IProps {
     /** Deletes this week and reindexes remaining weeks. */
     handleDeleteWeek: (folder_id: number) => void;
     /** Duplicates a day to a target week and selected day slots. */
-    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;
+    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: TSelectOption[]) => void;
     /** Opens the add/edit exercise dialog for a given week/day. */
     handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
     /** Deletes an exercise from a day. */

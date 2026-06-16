@@ -51,10 +51,10 @@ import { createHighlighter } from "shiki";
 
 // Shiki uses bitflags for font styles: 1=italic, 2=bold, 4=underline
 // biome-ignore lint/suspicious/noBitwiseOperators: shiki bitflag check
- 
+
 const isItalic = (fontStyle: number | undefined) => fontStyle && fontStyle & 1;
 // biome-ignore lint/suspicious/noBitwiseOperators: shiki bitflag check
- 
+
 // oxlint-disable-next-line eslint(no-bitwise)
 const isBold = (fontStyle: number | undefined) => fontStyle && fontStyle & 2;
 const isUnderline = (fontStyle: number | undefined) =>
@@ -84,7 +84,7 @@ const addKeysToTokens = (lines: ThemedToken[][]): IKeyedLine[] =>
 // Token rendering component
 const TokenSpan = ({ token }: { token: ThemedToken }) => (
   <span
-    className="dark:!bg-[var(--shiki-dark-bg)] dark:!text-[var(--shiki-dark)]"
+    className="dark:bg-(--shiki-dark-bg)! dark:text-(--shiki-dark)!"
     style={
       {
         backgroundColor: token.bgColor,
@@ -128,7 +128,7 @@ const LineSpan = ({
  * - Additional `div` props (e.g., `className`) are applied to the outer
  *   container so callers can control layout.
  */
-type CodeBlockProps = HTMLAttributes<HTMLDivElement> & {
+type TCodeBlockProps = HTMLAttributes<HTMLDivElement> & {
   code: string;
   language: BundledLanguage;
   showLineNumbers?: boolean;
@@ -319,7 +319,7 @@ const CodeBlockBody = memo(
     return (
       <pre
         className={cn(
-          "dark:!bg-[var(--shiki-dark-bg)] dark:!text-[var(--shiki-dark)] m-0 p-4 text-sm",
+          "dark:bg-(--shiki-dark-bg)! dark:text-(--shiki-dark)! m-0 p-4 text-sm",
           className
         )}
         style={preStyle}
@@ -501,7 +501,7 @@ export const CodeBlock = ({
   className,
   children,
   ...props
-}: CodeBlockProps) => {
+}: TCodeBlockProps) => {
   const contextValue = useMemo(() => ({ code }), [code]);
 
   return (
@@ -525,7 +525,7 @@ export const CodeBlock = ({
  * - `onError` is invoked when the Clipboard API is unavailable or fails.
  * - `timeout` controls how long the "copied" state is shown.
  */
-export type CodeBlockCopyButtonProps = ComponentProps<typeof Button> & {
+export type TCodeBlockCopyButtonProps = ComponentProps<typeof Button> & {
   onCopy?: () => void;
   onError?: (error: Error) => void;
   timeout?: number;
@@ -542,7 +542,7 @@ export const CodeBlockCopyButton = ({
   children,
   className,
   ...props
-}: CodeBlockCopyButtonProps) => {
+}: TCodeBlockCopyButtonProps) => {
   const [isCopied, setIsCopied] = useState(false);
   const timeoutRef = useRef<number>(0);
   const { code } = useContext(CodeBlockContext);
@@ -591,17 +591,17 @@ export const CodeBlockCopyButton = ({
   );
 };
 
-export type CodeBlockLanguageSelectorProps = ComponentProps<typeof Select>;
+export type TCodeBlockLanguageSelectorProps = ComponentProps<typeof Select>;
 
 /**
  * High-level wrapper for a language-select dropdown that controls the
  * language shown in the surrounding UI; does not itself retokenize code.
  */
 export const CodeBlockLanguageSelector = (
-  props: CodeBlockLanguageSelectorProps
+  props: TCodeBlockLanguageSelectorProps
 ) => <Select {...props} />;
 
-export type CodeBlockLanguageSelectorTriggerProps = ComponentProps<
+export type TCodeBlockLanguageSelectorTriggerProps = ComponentProps<
   typeof SelectTrigger
 >;
 
@@ -612,7 +612,7 @@ export type CodeBlockLanguageSelectorTriggerProps = ComponentProps<
 export const CodeBlockLanguageSelectorTrigger = ({
   className,
   ...props
-}: CodeBlockLanguageSelectorTriggerProps) => (
+}: TCodeBlockLanguageSelectorTriggerProps) => (
   <SelectTrigger
     className={cn(
       "h-7 border-none bg-transparent px-2 text-xs shadow-none",
@@ -622,7 +622,7 @@ export const CodeBlockLanguageSelectorTrigger = ({
   />
 );
 
-export type CodeBlockLanguageSelectorValueProps = ComponentProps<
+export type TCodeBlockLanguageSelectorValueProps = ComponentProps<
   typeof SelectValue
 >;
 
@@ -631,10 +631,10 @@ export type CodeBlockLanguageSelectorValueProps = ComponentProps<
  * inside a `CodeBlockLanguageSelectorTrigger`.
  */
 export const CodeBlockLanguageSelectorValue = (
-  props: CodeBlockLanguageSelectorValueProps
+  props: TCodeBlockLanguageSelectorValueProps
 ) => <SelectValue {...props} />;
 
-export type CodeBlockLanguageSelectorContentProps = ComponentProps<
+export type TCodeBlockLanguageSelectorContentProps = ComponentProps<
   typeof SelectContent
 >;
 
@@ -645,11 +645,11 @@ export type CodeBlockLanguageSelectorContentProps = ComponentProps<
 export const CodeBlockLanguageSelectorContent = ({
   align = "end",
   ...props
-}: CodeBlockLanguageSelectorContentProps) => (
+}: TCodeBlockLanguageSelectorContentProps) => (
   <SelectContent align={align} {...props} />
 );
 
-export type CodeBlockLanguageSelectorItemProps = ComponentProps<
+export type TCodeBlockLanguageSelectorItemProps = ComponentProps<
   typeof SelectItem
 >;
 
@@ -658,5 +658,5 @@ export type CodeBlockLanguageSelectorItemProps = ComponentProps<
  * language dropdown.
  */
 export const CodeBlockLanguageSelectorItem = (
-  props: CodeBlockLanguageSelectorItemProps
+  props: TCodeBlockLanguageSelectorItemProps
 ) => <SelectItem {...props} />;

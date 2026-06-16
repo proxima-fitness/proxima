@@ -2,7 +2,6 @@
 
 import { useState, useCallback, memo } from "react";
 import { addExerciseFormToInsertPayload } from "@/components/program-builder/mutations/handlers";
-import { IOption } from "@/components/ui/multi-select";
 import { useProgramMutation } from "@/contexts/ProgramMutationContext";
 import { ProgramGrid } from "./ProgramGrid";
 
@@ -37,7 +36,7 @@ function ProgramEditorInner(props: IProps) {
             fromWeekOrder: number,
             fromDayOrder: number,
             toWeekOrder: number,
-            toDayOrderArray: IOption[],
+            toDayOrderArray: TSelectOption[],
         ) => {
             const toDayOrders = toDayOrderArray.map((day) => Number(day.value)).sort((a, b) => a - b);
             runMutation("duplicate_day", {

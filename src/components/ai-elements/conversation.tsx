@@ -33,13 +33,13 @@ import { StickToBottom, useStickToBottomContext } from "use-stick-to-bottom";
  * Inherits all props from `StickToBottom`, with `className` commonly used
  * to size the chat region within a larger layout.
  */
-export type ConversationProps = ComponentProps<typeof StickToBottom>;
+export type TConversationProps = ComponentProps<typeof StickToBottom>;
 
 /**
  * Top-level conversation container that manages scroll anchoring to the
  * newest messages, with behavior tuned for mobile vs. desktop.
  */
-export const Conversation = ({ className, ...props }: ConversationProps) => {
+export const Conversation = ({ className, ...props }: TConversationProps) => {
   const isMobile = useIsMobile();
   return (
     <StickToBottom
@@ -59,14 +59,14 @@ export const Conversation = ({ className, ...props }: ConversationProps) => {
  * Props for the `ConversationContent` region that actually holds message
  * bubbles inside the scroll-managed `Conversation`.
  */
-export type ConversationContentProps = ComponentProps<
+export type TConversationContentProps = ComponentProps<
   typeof StickToBottom.Content
 >;
 
 export const ConversationContent = ({
   className,
   ...props
-}: ConversationContentProps) => (
+}: TConversationContentProps) => (
   <StickToBottom.Content
     className={cn("flex flex-col gap-8 p-4", className)}
     {...props}
@@ -79,7 +79,7 @@ export const ConversationContent = ({
  * - `title` and `description` describe the empty conversation.
  * - `icon` and `children` allow callers to fully customize the visual.
  */
-export type ConversationEmptyStateProps = ComponentProps<"div"> & {
+export type TConversationEmptyStateProps = ComponentProps<"div"> & {
   title?: string;
   description?: string;
   icon?: React.ReactNode;
@@ -92,7 +92,7 @@ export const ConversationEmptyState = ({
   icon,
   children,
   ...props
-}: ConversationEmptyStateProps) => (
+}: TConversationEmptyStateProps) => (
   <div
     className={cn(
       "flex size-full flex-col items-center justify-center gap-3 p-8 text-center",
@@ -117,12 +117,12 @@ export const ConversationEmptyState = ({
 /**
  * Props for the floating "scroll to bottom" button.
  */
-export type ConversationScrollButtonProps = ComponentProps<typeof Button>;
+export type TConversationScrollButtonProps = ComponentProps<typeof Button>;
 
 export const ConversationScrollButton = ({
   className,
   ...props
-}: ConversationScrollButtonProps) => {
+}: TConversationScrollButtonProps) => {
   const { isAtBottom, scrollToBottom } = useStickToBottomContext();
 
   const handleScrollToBottom = useCallback(() => {
@@ -150,15 +150,6 @@ export const ConversationScrollButton = ({
 };
 
 /**
- * Minimal message abstraction used when exporting a conversation to
- * markdown. Captures only the author role and rendered content text.
- */
-export interface IConversationMessage {
-  role: "user" | "assistant" | "system" | "data" | "tool";
-  content: string;
-}
-
-/**
  * Props for the conversation download button.
  *
  * - `messages` is the chat history to export.
@@ -166,16 +157,16 @@ export interface IConversationMessage {
  * - `formatMessage` allows callers to override the markdown formatting
  *   for each message.
  */
-export type ConversationDownloadProps = Omit<
+export type TConversationDownloadProps = Omit<
   ComponentProps<typeof Button>,
   "onClick"
 > & {
-  messages: IConversationMessage[];
+  messages: TConversationMessage[];
   filename?: string;
-  formatMessage?: (message: IConversationMessage, index: number) => string;
+  formatMessage?: (message: TConversationMessage, index: number) => string;
 };
 
-const defaultFormatMessage = (message: IConversationMessage): string => {
+const defaultFormatMessage = (message: TConversationMessage): string => {
   const roleLabel =
     message.role.charAt(0).toUpperCase() + message.role.slice(1);
   return `**${roleLabel}:** ${message.content}`;
@@ -186,9 +177,9 @@ const defaultFormatMessage = (message: IConversationMessage): string => {
  * a caller-provided formatter or the default role-prefixed format.
  */
 export const messagesToMarkdown = (
-  messages: IConversationMessage[],
+  messages: TConversationMessage[],
   formatMessage: (
-    message: IConversationMessage,
+    message: TConversationMessage,
     index: number
   ) => string = defaultFormatMessage
 ): string => messages.map((msg, i) => formatMessage(msg, i)).join("\n\n");
@@ -200,7 +191,7 @@ export const ConversationDownload = ({
   className,
   children,
   ...props
-}: ConversationDownloadProps) => {
+}: TConversationDownloadProps) => {
   const handleDownload = useCallback(() => {
     const markdown = messagesToMarkdown(messages, formatMessage);
     const blob = new Blob([markdown], { type: "text/markdown" });

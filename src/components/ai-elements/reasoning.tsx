@@ -44,7 +44,7 @@ export const useReasoning = () => {
   return context;
 };
 
-export type ReasoningProps = ComponentProps<typeof Collapsible> & {
+export type TReasoningProps = ComponentProps<typeof Collapsible> & {
   isStreaming?: boolean;
   open?: boolean;
   defaultOpen?: boolean;
@@ -68,7 +68,7 @@ export const Reasoning = memo(
     suppressAutoClose = false,
     children,
     ...props
-  }: ReasoningProps) => {
+  }: TReasoningProps) => {
     const resolvedDefaultOpen = defaultOpen ?? isStreaming;
     // Track if defaultOpen was explicitly set to false (to prevent auto-open)
     const isExplicitlyClosed = defaultOpen === false;
@@ -152,7 +152,7 @@ export const Reasoning = memo(
   }
 );
 
-export type ReasoningTriggerProps = ComponentProps<
+export type TReasoningTriggerProps = ComponentProps<
   typeof CollapsibleTrigger
 > & {
   getThinkingMessage?: (isStreaming: boolean, duration?: number) => ReactNode;
@@ -174,7 +174,7 @@ export const ReasoningTrigger = memo(
     children,
     getThinkingMessage = defaultGetThinkingMessage,
     ...props
-  }: ReasoningTriggerProps) => {
+  }: TReasoningTriggerProps) => {
     const { isStreaming, isOpen, duration } = useReasoning();
 
     return (
@@ -202,7 +202,7 @@ export const ReasoningTrigger = memo(
   }
 );
 
-export type ReasoningContentProps = ComponentProps<
+export type TReasoningContentProps = ComponentProps<
   typeof CollapsibleContent
 > & {
   children: string;
@@ -211,7 +211,7 @@ export type ReasoningContentProps = ComponentProps<
 const streamdownPlugins = { cjk, code, math, mermaid };
 
 export const ReasoningContent = memo(
-  ({ className, children, ...props }: ReasoningContentProps) => (
+  ({ className, children, ...props }: TReasoningContentProps) => (
     <CollapsibleContent
       className={cn(
         "mt-4 text-sm",

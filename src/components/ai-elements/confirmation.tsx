@@ -7,7 +7,7 @@ import type { ToolUIPart } from "ai";
 import type { ComponentProps, ReactNode } from "react";
 import { createContext, useContext, useMemo } from "react";
 
-type ToolUIPartApproval =
+type TToolUIPartApproval =
   | {
       id: string;
       approved?: never;
@@ -36,7 +36,7 @@ type ToolUIPartApproval =
   | undefined;
 
 interface IConfirmationContextValue {
-  approval: ToolUIPartApproval;
+  approval: TToolUIPartApproval;
   state: ToolUIPart["state"];
 }
 
@@ -54,8 +54,8 @@ const useConfirmation = () => {
   return context;
 };
 
-export type ConfirmationProps = ComponentProps<typeof Alert> & {
-  approval?: ToolUIPartApproval;
+export type TConfirmationProps = ComponentProps<typeof Alert> & {
+  approval?: TToolUIPartApproval;
   state: ToolUIPart["state"];
 };
 
@@ -64,7 +64,7 @@ export const Confirmation = ({
   approval,
   state,
   ...props
-}: ConfirmationProps) => {
+}: TConfirmationProps) => {
   const contextValue = useMemo(() => ({ approval, state }), [approval, state]);
 
   if (!approval || state === "input-streaming" || state === "input-available") {
@@ -78,12 +78,12 @@ export const Confirmation = ({
   );
 };
 
-export type ConfirmationTitleProps = ComponentProps<typeof AlertDescription>;
+export type TConfirmationTitleProps = ComponentProps<typeof AlertDescription>;
 
 export const ConfirmationTitle = ({
   className,
   ...props
-}: ConfirmationTitleProps) => (
+}: TConfirmationTitleProps) => (
   <AlertDescription className={cn("inline", className)} {...props} />
 );
 
@@ -146,12 +146,12 @@ export const ConfirmationRejected = ({
   return children;
 };
 
-export type ConfirmationActionsProps = ComponentProps<"div">;
+export type TConfirmationActionsProps = ComponentProps<"div">;
 
 export const ConfirmationActions = ({
   className,
   ...props
-}: ConfirmationActionsProps) => {
+}: TConfirmationActionsProps) => {
   const { state } = useConfirmation();
 
   // Only show when approval is requested
@@ -167,8 +167,8 @@ export const ConfirmationActions = ({
   );
 };
 
-export type ConfirmationActionProps = ComponentProps<typeof Button>;
+export type TConfirmationActionProps = ComponentProps<typeof Button>;
 
-export const ConfirmationAction = (props: ConfirmationActionProps) => (
+export const ConfirmationAction = (props: TConfirmationActionProps) => (
   <Button className="h-8 px-3 text-sm" type="button" {...props} />
 );

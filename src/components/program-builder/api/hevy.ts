@@ -362,18 +362,18 @@ export const getHevyRoutines = async (user: User | undefined | null, apiKey: str
 };
 
 /** One exercise omitted from the saved program (e.g. not found in library). Caller should show a warning toast. */
-export type SkippedExercise = { exerciseName: string; reason: string };
+export type TSkippedExercise = { exerciseName: string; reason: string };
 
 /** Success shape returned by {@link saveProgramToSupabase} when the program is saved. */
-export type SaveProgramToSupabaseSuccess = {
+export type TSaveProgramToSupabaseSuccess = {
     status: "success";
     id: number;
     /** Exercises that were omitted; UI should show a warning toast per item. */
-    skippedExercises?: SkippedExercise[];
+    skippedExercises?: TSkippedExercise[];
 };
 
 /** Type guard for {@link SaveProgramToSupabaseSuccess}. */
-export function isSaveProgramToSupabaseSuccess(r: unknown): r is SaveProgramToSupabaseSuccess {
+export function isSaveProgramToSupabaseSuccess(r: unknown): r is TSaveProgramToSupabaseSuccess {
     return (
         typeof r === "object" &&
         r !== null &&
@@ -385,7 +385,7 @@ export function isSaveProgramToSupabaseSuccess(r: unknown): r is SaveProgramToSu
 }
 
 /** Failure shape returned by {@link saveProgramToSupabase} when the save does not complete. */
-export type SaveProgramToSupabaseError = {
+export type TSaveProgramToSupabaseError = {
     status: "error";
     message: string;
     code?: string;
@@ -394,7 +394,7 @@ export type SaveProgramToSupabaseError = {
 };
 
 /** Type guard for {@link SaveProgramToSupabaseError}. */
-export function isSaveProgramToSupabaseError(r: unknown): r is SaveProgramToSupabaseError {
+export function isSaveProgramToSupabaseError(r: unknown): r is TSaveProgramToSupabaseError {
     return (
         typeof r === "object" &&
         r !== null &&
@@ -410,7 +410,7 @@ function postgrestToSaveError(err: {
     code?: string;
     details?: string;
     hint?: string;
-}): SaveProgramToSupabaseError {
+}): TSaveProgramToSupabaseError {
     return {
         status: "error",
         message: err.message,
@@ -420,7 +420,7 @@ function postgrestToSaveError(err: {
     };
 }
 
-function unknownToSaveError(err: unknown): SaveProgramToSupabaseError {
+function unknownToSaveError(err: unknown): TSaveProgramToSupabaseError {
     if (err && typeof err === "object" && "message" in err && typeof (err as { message: unknown }).message === "string") {
         return postgrestToSaveError(err as { message: string; code?: string; details?: string; hint?: string });
     }
@@ -479,7 +479,7 @@ async function runSaveProgramToSupabase(
     prompt: string,
     request: TTextToJsonRequest | undefined,
     userId: string | undefined,
-): Promise<SaveProgramToSupabaseSuccess | SaveProgramToSupabaseError> {
+): Promise<TSaveProgramToSupabaseSuccess | TSaveProgramToSupabaseError> {
     const weeks = getMaxFolderId(hevyRoutines) + 1;
     const BATCH_SIZE = 50; // Process exercises in batches of 50
 
@@ -554,7 +554,7 @@ async function runSaveProgramToSupabase(
             if (keyNorm && !titleToId.has(keyNorm)) titleToId.set(keyNorm, t.id);
         }
 
-        const skippedExercises: SkippedExercise[] = [];
+        const skippedExercises: TSkippedExercise[] = [];
 
         // STEP 4: Process exercises and build insert rows (resolve exercise_id by ID then by title; sanitize UUIDs)
         const allWorkoutUploads: { [key: string]: unknown }[] = [];
@@ -671,7 +671,7 @@ export const saveProgramToSupabase = async (
     prompt: string,
     request?: TTextToJsonRequest,
     userId?: string,
-): Promise<SaveProgramToSupabaseSuccess | SaveProgramToSupabaseError> => {
+): Promise<TSaveProgramToSupabaseSuccess | TSaveProgramToSupabaseError> => {
     await supabase.auth.getSession();
     let result = await runSaveProgramToSupabase(hevyRoutines, prompt, request, userId);
     if (result.status !== "success") {
@@ -777,7 +777,7 @@ export const RATE_LIMIT_BACKOFF_MS = 60_000;
 export const RATE_LIMIT_MAX_RETRIES = 3;
 
 /** Callback for upload progress: uploaded count, total count, status, and optional countdown seconds when rate limited. */
-export type HevyUploadProgressCallback = (
+export type THevyUploadProgressCallback = (
     uploaded: number,
     total: number,
     status: 'uploading' | 'rate_limited',
@@ -798,7 +798,7 @@ export const delay = (ms: number) => {
 async function delayWithRateLimitCountdown(
     uploaded: number,
     total: number,
-    onProgress?: HevyUploadProgressCallback,
+    onProgress?: THevyUploadProgressCallback,
     waitSeconds: number = RATE_LIMIT_BACKOFF_MS / 1000,
 ): Promise<void> {
     for (let s = waitSeconds; s >= 0; s--) {
@@ -807,7 +807,7 @@ async function delayWithRateLimitCountdown(
     }
 }
 
-type ExerciseTemplateDbRow = {
+type TExerciseTemplateDbRow = {
     id: string;
     title: string | null;
     type: string | null;
@@ -847,9 +847,9 @@ function remapRoutineExerciseTemplateIds(routines: THevyRoutine[], idMap: Map<st
 
 async function fetchExerciseTemplateRowsFromSupabase(
     templateIds: string[],
-): Promise<{ success: true; rows: ExerciseTemplateDbRow[] } | { success: false; error: Error }> {
+): Promise<{ success: true; rows: TExerciseTemplateDbRow[] } | { success: false; error: Error }> {
     const unique = Array.from(new Set(templateIds));
-    const merged: ExerciseTemplateDbRow[] = [];
+    const merged: TExerciseTemplateDbRow[] = [];
     const seen = new Set<string>();
 
     for (let i = 0; i < unique.length; i += EXPORT_TEMPLATE_IDS_CHUNK_SIZE) {
@@ -862,7 +862,7 @@ async function fetchExerciseTemplateRowsFromSupabase(
             return { success: false, error: new Error(error.message) };
         }
         for (const row of data ?? []) {
-            const r = row as ExerciseTemplateDbRow;
+            const r = row as TExerciseTemplateDbRow;
             if (r.id && !seen.has(r.id)) {
                 seen.add(r.id);
                 merged.push(r);
@@ -952,7 +952,7 @@ function isRetryablePostHevyCustomError(error: unknown): boolean {
 async function postHevyCustomExerciseWithRateLimitRetry(
     exercise: THevyPostExerciseTemplate,
     apiKey: string,
-    onProgress: HevyUploadProgressCallback | undefined,
+    onProgress: THevyUploadProgressCallback | undefined,
     uploaded: number,
     total: number,
 ): Promise<THevyPostCustomExerciseResponse> {
@@ -976,7 +976,7 @@ async function postHevyCustomExerciseWithRateLimitRetry(
     throw new Error("postHevyCustomExerciseWithRateLimitRetry: exhausted retries");
 }
 
-export type ResolveCustomExerciseTemplatesResult =
+export type TResolveCustomExerciseTemplatesResult =
     | { success: true; routines: THevyRoutine[]; createdNewHevyCustomTemplates: number }
     | { success: false; error: Error };
 
@@ -992,8 +992,8 @@ export async function resolveCustomExerciseTemplatesForHevyUpload(
     user: User | null | undefined,
     apiKey: string,
     routines: THevyRoutine[],
-    onProgress?: HevyUploadProgressCallback,
-): Promise<ResolveCustomExerciseTemplatesResult> {
+    onProgress?: THevyUploadProgressCallback,
+): Promise<TResolveCustomExerciseTemplatesResult> {
     if (!user) {
         return { success: true, routines, createdNewHevyCustomTemplates: 0 };
     }
@@ -1502,7 +1502,7 @@ export const postProgramToHevyOneFolder = async (
     apiKey: string,
     programTitle: TProgramTitle[] | undefined,
     user: User,
-    onProgress?: HevyUploadProgressCallback,
+    onProgress?: THevyUploadProgressCallback,
 ) => {
     let routinesToUpload = hevyRoutines;
     const resolved = await resolveCustomExerciseTemplatesForHevyUpload(user, apiKey, hevyRoutines, onProgress);
@@ -1595,7 +1595,7 @@ export const postProgramToHevy = async (
     hevyRoutines: THevyRoutine[],
     apiKey: string,
     user: User,
-    onProgress?: HevyUploadProgressCallback,
+    onProgress?: THevyUploadProgressCallback,
 ) => {
     let routinesToUpload = hevyRoutines;
     const resolved = await resolveCustomExerciseTemplatesForHevyUpload(user, apiKey, hevyRoutines, onProgress);
@@ -2058,7 +2058,7 @@ export const putRoutine = async (routineId: string, updateRoutine: THevyRoutineR
 /**
  * Type for tracking which exercises progressed and their types
  */
-export type ProgressedExercise = {
+export type TProgressedExercise = {
     exercise_template_id: string;
     exercise_name: string;
     exerciseType: string;

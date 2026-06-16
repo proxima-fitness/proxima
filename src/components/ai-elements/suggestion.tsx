@@ -30,13 +30,13 @@ import { useCallback } from "react";
  * Props for the horizontal list of suggestions. Inherits all scroll
  * area props so callers can integrate with surrounding layout.
  */
-export type SuggestionsProps = ComponentProps<typeof ScrollArea>;
+export type TSuggestionsProps = ComponentProps<typeof ScrollArea>;
 
 export const Suggestions = ({
   className,
   children,
   ...props
-}: SuggestionsProps) => (
+}: TSuggestionsProps) => (
   <ScrollArea className="w-full overflow-x-auto whitespace-nowrap" {...props}>
     <div className={cn("flex w-max flex-nowrap items-center gap-2", className)}>
       {children}
@@ -51,7 +51,7 @@ export const Suggestions = ({
  * - `suggestion` is the text value surfaced to consumers.
  * - `onClick` receives the suggestion string when the chip is selected.
  */
-export type SuggestionProps = Omit<ComponentProps<typeof Button>, "onClick"> & {
+export type TSuggestionProps = Omit<ComponentProps<typeof Button>, "onClick"> & {
   suggestion: string;
   onClick?: (suggestion: string) => void;
 };
@@ -64,7 +64,7 @@ export const Suggestion = ({
   size = "sm",
   children,
   ...props
-}: SuggestionProps) => {
+}: TSuggestionProps) => {
   const handleClick = useCallback(() => {
     onClick?.(suggestion);
   }, [onClick, suggestion]);

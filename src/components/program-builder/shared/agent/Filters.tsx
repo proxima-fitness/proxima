@@ -4,7 +4,7 @@
  * Depends on: (none – code commented). Used by: none.
  */
 // import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-// import MultiSelect, { IOption } from "@/components/ui/multi-select"
+// import MultiSelect, { TSelectOption } from "@/components/ui/multi-select"
 // import { Input } from "@/components/ui/input"
 // import { activityLevelOptions, ageOptions, dayPerWeekOptions, difficultyOptions, equipmentOptions, focusAreasOptions, goalsOptions, healthIssuesOptions, programLengthOptions, sexOptions, specializationOptions, specificDaysOptions, workoutDurationOptions } from "@/assets/constants"
 // import { Checkbox } from "@/components/ui/checkbox"
@@ -15,36 +15,36 @@
 //     age: string;
 //     programLength: ""|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12";
 //     daysPerWeek: string;
-//     excludeAreas: IOption[];
-//     excludeEquipment: IOption[];
-//     healthIssues: IOption[];
-//     specificDays: IOption[];
+//     excludeAreas: TSelectOption[];
+//     excludeEquipment: TSelectOption[];
+//     healthIssues: TSelectOption[];
+//     specificDays: TSelectOption[];
 //     workoutDuration: string;
 //     activityLevel: string;
-//     goals: IOption[];
-//     specialization: IOption[];
-//     equipment: IOption[];
-//     focusAreas: IOption[];
-//     difficultyLevel: IOption[];
-//     excludeSpecializations: IOption[];
+//     goals: TSelectOption[];
+//     specialization: TSelectOption[];
+//     equipment: TSelectOption[];
+//     focusAreas: TSelectOption[];
+//     difficultyLevel: TSelectOption[];
+//     excludeSpecializations: TSelectOption[];
 //     programTitle: string;
 //     explore: boolean;
 //     handleSex: (value: string) => void;
 //     handleAge: (value: string) => void;
 //     handleDaysPerWeek: (value: string) => void;
-//     handleSpecificDays: (value: IOption[]) => void;
+//     handleSpecificDays: (value: TSelectOption[]) => void;
 //     handleProgramLength: (value: ""|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12") => void;
 //     handleWorkoutDuration: (value: string) => void;
 //     handleActivityLevel: (value: string) => void;
-//     handleGoals: (value: IOption[]) => void;
-//     handleSpecialization: (value: IOption[]) => void;
-//     handleEquipment: (value: IOption[]) => void;
-//     handleFocusAreas: (value: IOption[]) => void;
-//     handleDifficultyLevel: (value: IOption[]) => void;
-//     handleExcludeAreas: (value: IOption[]) => void;
-//     handleExcludeEquipment: (value: IOption[]) => void;
-//     handleExcludeSpecializations: (value: IOption[]) => void;
-//     handleHealthIssues: (value: IOption[]) => void;
+//     handleGoals: (value: TSelectOption[]) => void;
+//     handleSpecialization: (value: TSelectOption[]) => void;
+//     handleEquipment: (value: TSelectOption[]) => void;
+//     handleFocusAreas: (value: TSelectOption[]) => void;
+//     handleDifficultyLevel: (value: TSelectOption[]) => void;
+//     handleExcludeAreas: (value: TSelectOption[]) => void;
+//     handleExcludeEquipment: (value: TSelectOption[]) => void;
+//     handleExcludeSpecializations: (value: TSelectOption[]) => void;
+//     handleHealthIssues: (value: TSelectOption[]) => void;
 //     handleProgramTitle: (value: string) => void;
 //     handleExplore: () => void;
 // }

@@ -27,7 +27,6 @@ import {
     getTextFromChatMessage,
     isMessageAboutProgram,
 } from "@/components/program-builder/utils/helpers";
-import type { TSendMessageWithContext } from "@/components/program-builder/shared/agent/Agent";
 import {
     clearLongPromptFromSessionStorage,
     inferProgramRequestFromPrompt,

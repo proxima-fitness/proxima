@@ -14,10 +14,8 @@ import {
 import { MessageSquare } from "lucide-react"
 import { useMemo, useCallback, useState, useRef, useLayoutEffect } from "react"
 import type { RefObject } from "react"
+import type { ChatStatus, FileUIPart } from "ai"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { IOption } from "@/components/ui/multi-select"
-import { type ChatStatus, FileUIPart, ChatRequestOptions, type CreateUIMessage } from "ai"
-import type { IQuestion } from "@/components/ui/questions"
 import { equipmentOptions, healthIssuesOptions } from "@/assets/constants/form-options"
 import { quickModifyProgramSuggestionChips } from "@/assets/constants/suggestions"
 import { inferDaysPerWeek, inferProgramLength } from "@/components/program-builder/utils/helpers"
@@ -26,31 +24,6 @@ import { Chat } from "./Chat"
 import { Navbar } from "./Navbar"
 import { MessageBubbles } from "./MessageBubbles"
 import { LiveAgentProgress } from "./LiveAgentProgress"
-
-export type TChatSendMessageParam =
-    | (CreateUIMessage<TChatMessage> & {
-          text?: never;
-          files?: never;
-          messageId?: string;
-      })
-    | {
-          text: string;
-          files?: FileList | FileUIPart[];
-          metadata?: unknown;
-          parts?: never;
-          messageId?: string;
-      }
-    | {
-          files: FileList | FileUIPart[];
-          metadata?: unknown;
-          parts?: never;
-          messageId?: string;
-      };
-
-export type TSendMessageWithContext = (
-    message?: TChatSendMessageParam,
-    options?: ChatRequestOptions,
-) => Promise<void>;
 
 /** Props for the agent container (navbar, messages, chat input, and all filter/program/send state). */
 interface IProps {
@@ -68,19 +41,19 @@ interface IProps {
     sex: string;
     age: string;
     daysPerWeek: string;
-    specificDays: IOption[];
+    specificDays: TSelectOption[];
     programLength: ""|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12";
     workoutDuration: string;
     activityLevel: string;
-    goals: IOption[];
-    specialization: IOption[];
-    equipment: IOption[];
-    focusAreas: IOption[];
-    difficultyLevel: IOption[];
-    excludeAreas: IOption[];
-    excludeEquipment: IOption[];
-    excludeSpecializations: IOption[];
-    healthIssues: IOption[];
+    goals: TSelectOption[];
+    specialization: TSelectOption[];
+    equipment: TSelectOption[];
+    focusAreas: TSelectOption[];
+    difficultyLevel: TSelectOption[];
+    excludeAreas: TSelectOption[];
+    excludeEquipment: TSelectOption[];
+    excludeSpecializations: TSelectOption[];
+    healthIssues: TSelectOption[];
     splitType: string;
     exerciseVariability: string;
     progressionSystem: string;
@@ -91,19 +64,19 @@ interface IProps {
     handleSex: (value: string) => void;
     handleAge: (value: string) => void;
     handleDaysPerWeek: (value: string) => void;
-    handleSpecificDays: (value: IOption[]) => void;
+    handleSpecificDays: (value: TSelectOption[]) => void;
     handleProgramLength: (value: ""|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12") => void;
     handleWorkoutDuration: (value: string) => void;
     handleActivityLevel: (value: string) => void;
-    handleGoals: (value: IOption[]) => void;
-    handleSpecialization: (value: IOption[]) => void;
-    handleEquipment: (value: IOption[]) => void;
-    handleFocusAreas: (value: IOption[]) => void;
-    handleDifficultyLevel: (value: IOption[]) => void;
-    handleExcludeAreas: (value: IOption[]) => void;
-    handleExcludeEquipment: (value: IOption[]) => void;
-    handleExcludeSpecializations: (value: IOption[]) => void;
-    handleHealthIssues: (value: IOption[]) => void;
+    handleGoals: (value: TSelectOption[]) => void;
+    handleSpecialization: (value: TSelectOption[]) => void;
+    handleEquipment: (value: TSelectOption[]) => void;
+    handleFocusAreas: (value: TSelectOption[]) => void;
+    handleDifficultyLevel: (value: TSelectOption[]) => void;
+    handleExcludeAreas: (value: TSelectOption[]) => void;
+    handleExcludeEquipment: (value: TSelectOption[]) => void;
+    handleExcludeSpecializations: (value: TSelectOption[]) => void;
+    handleHealthIssues: (value: TSelectOption[]) => void;
     handleSplitType: (value: string) => void;
     handleExerciseVariability: (value: string) => void;
     handleProgressionSystem: (value: string) => void;
@@ -211,7 +184,7 @@ export const Agent: React.FC<IProps> = (props) => {
             (p) =>
                 typeof p === "object" && p !== null && "type" in p && (p as { type: string }).type === "tool-getMoreInfoQuestions",
         )
-        const toolOutput = part && "output" in part ? (part as { output?: { questions?: IQuestion[]; userRequest?: string } }).output : undefined
+        const toolOutput = part && "output" in part ? (part as { output?: { questions?: TQuestion[]; userRequest?: string } }).output : undefined
         if (!toolOutput?.questions || !Array.isArray(toolOutput.questions)) return null
         const initialAnswers: Record<string, string | string[]> = {}
         if (programLength) initialAnswers["program-length"] = programLength
@@ -246,10 +219,10 @@ export const Agent: React.FC<IProps> = (props) => {
     const showQuestionsPayload =
         activeQuestionsPayload && dismissedForMessageId !== lastMessage?.id ? activeQuestionsPayload : null
 
-    const convertStringArrayToOptions = useCallback((values: string[], options: IOption[]): IOption[] => {
+    const convertStringArrayToOptions = useCallback((values: string[], options: TSelectOption[]): TSelectOption[] => {
         return values
             .map((value) => options.find((opt) => opt.value === value))
-            .filter((opt): opt is IOption => opt !== undefined)
+            .filter((opt): opt is TSelectOption => opt !== undefined)
     }, [])
 
     const handleQuestionsComplete = useCallback(
@@ -257,8 +230,8 @@ export const Agent: React.FC<IProps> = (props) => {
             const userRequest = (activeQuestionsPayload?.userRequest ?? answers["userRequest"] ?? "") as string
             let programLengthValue: "" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "11" | "12" = ""
             let daysPerWeekValue = ""
-            let excludeEquipmentValue: IOption[] = []
-            let healthIssuesValue: IOption[] = []
+            let excludeEquipmentValue: TSelectOption[] = []
+            let healthIssuesValue: TSelectOption[] = []
 
             if (answers["days-per-week"] && (answers["days-per-week"] as string).length > 0) {
                 daysPerWeekValue = answers["days-per-week"] as string

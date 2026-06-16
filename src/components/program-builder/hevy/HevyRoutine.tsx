@@ -19,7 +19,6 @@ import { SetTypesLegend } from "../shared/SetTypesLegend";
 import { useUserContext } from "@/contexts/UserContext";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { IOption } from "@/components/ui/multi-select";
 import { useEffect, useRef, useState } from "react";
 
 /** Props for the main Hevy routine builder (columns + dialogs). */
@@ -43,7 +42,7 @@ interface IProps {
     /** Delete a week and reindex remaining weeks. */
     handleDeleteWeek: (folder_id: number) => void;
     /** Duplicate a day to a target week and day slots. */
-    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;
+    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: TSelectOption[]) => void;
     /** Open/close add exercise dialog. */
     handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
     /** Open/close add note dialog. */

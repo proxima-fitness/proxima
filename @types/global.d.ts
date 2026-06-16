@@ -141,8 +141,75 @@ type TExerciseStallResult = {
         maxWeight: number;
         /** Total reps in the workout (for bodyweight display when totalVolume is 0). */
         totalReps?: number;
-    }>
-}
+    }>;
+};
+
+type TSelectOption = {
+    [key: string]: string | boolean | undefined;
+    value: string;
+    label: string;
+    disable?: boolean;
+    fixed?: boolean;
+};
+
+type TMultiSelectRef = {
+    selectedValue: TSelectOption[];
+    input: HTMLInputElement;
+    focus: () => void;
+    reset: () => void;
+};
+
+type TQuestionOption = {
+    id: string;
+    label: string;
+};
+
+type TQuestion = {
+    id: string;
+    question: string;
+    options: TQuestionOption[];
+    allowOther?: boolean;
+    type?: "select" | "multi-select" | "text-with-quickfill";
+    subtitle?: { text: string; link?: string };
+};
+
+type TQuestionsPayload = {
+    questions: TQuestion[];
+    userRequest?: string;
+    initialAnswers?: Record<string, string | string[]>;
+};
+
+type THevyProgramItem = {
+    program_title: string;
+    program: THevyRoutine[];
+};
+
+type TTestStatus = "passed" | "failed" | "okay" | "running";
+
+type TBlindSpotSortOption = "most_activity" | "alphabetical";
+
+type TBlindSpotStatusFilter = "all" | "progressing" | "stalling" | "stalled";
+
+type TBlindSpotAnalysisSectionProps = {
+    hevyPrograms?: THevyProgramItem[] | undefined;
+    isLoadingHevy?: boolean;
+};
+
+type TLandingSectionVariant = "white" | "tint";
+
+type TPrescriptionDisplayOptions = {
+    selected?: boolean;
+};
+
+type THevyPromoBannerProps = {
+    className?: string;
+    onJumpToCheckout?: () => void;
+};
+
+type TConversationMessage = {
+    role: "user" | "assistant" | "system" | "data" | "tool";
+    content: string;
+};
 
 interface IPoundsOrKgContextValue {
 	isInLbs: boolean;

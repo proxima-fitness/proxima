@@ -15,27 +15,6 @@ import { Input } from "@/components/ui/input"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
 
-/** Single choice option (id + label). */
-export interface IQuestionOption {
-  id: string
-  label: string
-}
-
-/**
- * Question definition.
- * @property type - "select" (single), "multi-select", or "text-with-quickfill".
- * @property allowOther - When true, adds "Other" option and stores value as "other:<text>".
- * @property subtitle - Optional helper text or link below question.
- */
-export interface IQuestion {
-  id: string
-  question: string
-  options: IQuestionOption[]
-  allowOther?: boolean
-  type?: "select" | "multi-select" | "text-with-quickfill"
-  subtitle?: { text: string; link?: string }
-}
-
 /**
  * Props for the Questions flow.
  * @property onComplete - Called with answers map (questionId -> value or array for multi).
@@ -43,7 +22,7 @@ export interface IQuestion {
  * @property initialAnswers - Optional pre-selected answers (e.g. inferred from initial prompt) keyed by question id.
  */
 interface IQuestionsProps {
-  questions: IQuestion[]
+  questions: TQuestion[]
   onComplete?: (answers: Record<string, string | string[]>) => void
   onSkip?: () => void
   /** When provided, shows a close (X) button in the header instead of the help icon; called when user dismisses without completing. */
@@ -56,7 +35,7 @@ interface IQuestionsProps {
 
 /** Props for single-select (radio) question renderer. */
 interface IQuestionSelectProps {
-  question: IQuestion
+  question: TQuestion
   selectedAnswer: string | undefined
   otherText: string
   onSelect: (questionId: string, optionId: string) => void
@@ -176,7 +155,7 @@ function QuestionSelect({
 
 /** Props for multi-select (checkbox) question renderer. */
 interface IQuestionMultiSelectProps {
-  question: IQuestion
+  question: TQuestion
   selectedAnswers: string[]
   otherText: string
   onToggle: (questionId: string, optionId: string) => void
@@ -358,7 +337,7 @@ function QuestionMultiSelect({
 
 /** Props for text-with-quickfill question (free text + optional chips to append). */
 interface IQuestionTextWithQuickfillProps {
-  question: IQuestion
+  question: TQuestion
   value: string
   onChange: (questionId: string, text: string) => void
   questionIndex: number
@@ -370,7 +349,7 @@ function QuestionTextWithQuickfill({
   onChange,
   questionIndex,
 }: IQuestionTextWithQuickfillProps) {
-  const handleQuickfillClick = (option: IQuestionOption) => {
+  const handleQuickfillClick = (option: TQuestionOption) => {
     const trimmed = value.trim()
     const addition = option.label
     const newValue = trimmed ? `${trimmed}, ${addition}` : addition

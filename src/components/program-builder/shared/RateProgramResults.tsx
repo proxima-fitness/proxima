@@ -18,8 +18,6 @@ import {
 } from "@/components/ai-elements/test-results";
 import type { IProgramScore, IProgramScoreSuite } from "@/components/program-builder/utils/score-program";
 
-type TTestStatus = "passed" | "failed" | "okay" | "running";
-
 function suiteStatus(suite: IProgramScoreSuite): TTestStatus {
     if (suite.tests.some((t) => t.status === "failed")) return "failed";
     if (suite.tests.some((t) => t.status === "okay")) return "okay";

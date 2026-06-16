@@ -20,9 +20,7 @@
  */
 import { people03, people02, people04, people05, people06, discord, instagram, linkedin, star, reddit, twitter, hevy_logo, google_sheets_logo_icon } from "public";
 import humanizeDuration from "humanize-duration";
-import { IOption } from '@/components/ui/multi-select';
 import { BicepsFlexedIcon, BookOpenIcon, Calculator, Crown, FileText, FootprintsIcon, SquarePowerIcon, Table } from "lucide-react";
-import { IQuestion } from "@/components/ui/questions";
 
 /** Suggestion groups for common program builder starting points. */
 export const suggestionGroups = [
@@ -6165,19 +6163,19 @@ export const coolQuotes: TQuote[] = [
 ];
 
 /** Sex options used in onboarding and goal forms. */
-export const sexOptions: IOption[] = [
+export const sexOptions: TSelectOption[] = [
     { label: "Male", value: "male"},
     { label: "Female", value: "female"},
 ];
 
 /** Age options (in years) used in onboarding and program tailoring. */
-export const ageOptions: IOption[] = Array.from({ length: 100 - 14 + 1 }, (_, i) => {
+export const ageOptions: TSelectOption[] = Array.from({ length: 100 - 14 + 1 }, (_, i) => {
     const age = (i + 14).toString();
     return { label: age, value: age };
 } );
 
 /** Training frequency options for days per week. */
-export const dayPerWeekOptions: IOption[] = [
+export const dayPerWeekOptions: TSelectOption[] = [
     { label: "1x per week", value: "1"},
     { label: "2x per week", value: "2" },
     { label: "3x per week", value: "3" },
@@ -6188,7 +6186,7 @@ export const dayPerWeekOptions: IOption[] = [
 ];
 
 /** Specific weekday selection options for scheduling workouts. */
-export const specificDaysOptions: IOption[] = [
+export const specificDaysOptions: TSelectOption[] = [
     { label: "Mon", value: "monday"},
     { label: "Tue", value: "tuesday" },
     { label: "Wed", value: "wednesday" },
@@ -6199,19 +6197,19 @@ export const specificDaysOptions: IOption[] = [
 ];
 
 /** Program length options (in weeks) used in forms. */
-export const programLengthOptions: IOption[] = Array.from({ length: 12 }, (_, i) => {
+export const programLengthOptions: TSelectOption[] = Array.from({ length: 12 }, (_, i) => {
     const programLength = (i + 1).toString();
     return { label: `${programLength} Week${programLength === "1" ? "": "s"}`, value: programLength };
 } );
 
 /** Workout duration options (in minutes) used in forms. */
-export const workoutDurationOptions: IOption[] = Array.from({ length: 18 }, (_, i) => {
+export const workoutDurationOptions: TSelectOption[] = Array.from({ length: 18 }, (_, i) => {
     const duration = ((i+1)*10).toString();
     return { label: `${duration} Mins`, value: duration };
 } );
 
 /** Self-reported activity level choices for personalization. */
-export const activityLevelOptions: IOption[] = [
+export const activityLevelOptions: TSelectOption[] = [
     { label: "Sedentary", value: "sedentary"},
     { label: "Light activity", value: "light activity" },
     { label: "Moderate activity", value: "moderate activity" },
@@ -6220,7 +6218,7 @@ export const activityLevelOptions: IOption[] = [
 ];
 
 /** High-level training goal options (strength, hypertrophy, etc.). */
-export const goalsOptions: IOption[] = [
+export const goalsOptions: TSelectOption[] = [
     { label: "Build muscle", value: "build muscle"},
     { label: "Improve fitness", value: "improve fitness" },
     { label: "Reduce back pain", value: "reduce back pain" },
@@ -6237,7 +6235,7 @@ export const goalsOptions: IOption[] = [
 ];
 
 /** Specialization focus options such as specific lifts or sports. */
-export const specializationOptions: IOption[] = [
+export const specializationOptions: TSelectOption[] = [
     { label: "Bodybuilding", value: "bodybuilding"},
     { label: "Powerbuilding", value: "powerbuilding" },
     { label: "Powerlifting", value: "powerlifting"},
@@ -6248,7 +6246,7 @@ export const specializationOptions: IOption[] = [
 ];
 
 /** Available equipment options used to constrain program design. */
-export const equipmentOptions: IOption[] = [
+export const equipmentOptions: TSelectOption[] = [
     { label: "Barbell", value: "barbell"},
     { label: "Dumbbell", value: "dumbbell"},
     { label: "Kettlebell", value: "kettlebell"},
@@ -6266,7 +6264,7 @@ export const equipmentOptions: IOption[] = [
 ];
 
 /** Focus area options such as body regions or performance attributes. */
-export const focusAreasOptions: IOption[] = [
+export const focusAreasOptions: TSelectOption[] = [
     { label: "Back", value: "back"},
     { label: "Arms", value: "arms"},
     { label: "Shoulders", value: "shoulders"},
@@ -6278,7 +6276,7 @@ export const focusAreasOptions: IOption[] = [
 ];
 
 /** Difficulty level options from beginner to advanced. */
-export const difficultyOptions: IOption[] = [
+export const difficultyOptions: TSelectOption[] = [
     { label: "Beginner", value: "beginner"},
     { label: "Novice", value: "novice"},
     { label: "Intermediate", value: "intermediate"},
@@ -6286,7 +6284,7 @@ export const difficultyOptions: IOption[] = [
 ];
 
 /** Health issue flags surfaced in safety and modification questions. */
-export const healthIssuesOptions: IOption[] = [
+export const healthIssuesOptions: TSelectOption[] = [
     { label: "Post-covid recovery", value: "post-covid recovery"},
     { label: "Cannot jump", value: "cannot jump"},
     { label: "Back or hernia", value: "back or hernia"},
@@ -6297,7 +6295,7 @@ export const healthIssuesOptions: IOption[] = [
 
 
 /** Sample prompt questions used to inspire users in the program builder. */
-export const sampleQuestions: IQuestion[] = [
+export const sampleQuestions: TQuestion[] = [
     {
       id: "program-length",
       question: "Program length?",

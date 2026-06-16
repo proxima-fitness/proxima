@@ -32,10 +32,9 @@ import {
 import { STALL_PROMPT } from "@/assets/constants/ui-constants";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
-import { ExerciseStalls, type IExercise } from "./ExerciseStalls";
+import { ExerciseStalls } from "./ExerciseStalls";
 import Link from "next/link";
 import { ChartLineIcon, SparklesIcon, XIcon } from "lucide-react";
-import type { HevyProgramItem } from "@/components/program-builder/hevy/HevyProgramsGrid";
 
 const PRO_PAGE_SIZE = 9;
 const FREE_LIMIT = 3;
@@ -51,20 +50,17 @@ const LOADING_PHRASES = [
 
 const PHRASE_ROTATE_MS = 2800;
 
-type SortOption = "most_activity" | "alphabetical";
-type StatusFilter = "all" | "progressing" | "stalling" | "stalled";
-
-function hasData(exercise: IExercise): boolean {
+function hasData(exercise: TExerciseStallResult): boolean {
     return (exercise.sessions?.length ?? 0) > 0 || exercise.weight > 0;
 }
 
-function activityScore(exercise: IExercise): number {
+function activityScore(exercise: TExerciseStallResult): number {
     const sessions = exercise.sessions ?? [];
     const volume = sessions.reduce((sum, s) => sum + s.totalVolume, 0);
     return sessions.length * 1e6 + volume;
 }
 
-function placeholderExercise(name: string): IExercise {
+function placeholderExercise(name: string): TExerciseStallResult {
     return {
         name,
         weight: 0,
@@ -100,7 +96,7 @@ function formatSessionLine(
     return `${dateStr}: ${formatWeight(s.maxWeight, isInLbs, "lbs")} ${unit} max, ${formatWeight(s.totalVolume, isInLbs, "lbs")} ${unit} volume`;
 }
 
-function buildStallSearchString(exercise: IExercise, isInLbs: boolean): string {
+function buildStallSearchString(exercise: TExerciseStallResult, isInLbs: boolean): string {
     const sessions = (exercise.sessions ?? []).slice(0, 15);
     const historyLines = sessions.map((s) => formatSessionLine(s, isInLbs));
     return [
@@ -110,38 +106,31 @@ function buildStallSearchString(exercise: IExercise, isInLbs: boolean): string {
     ].join("\n");
 }
 
-type BlindSpotAnalysisSectionProps = {
-    hevyPrograms?: HevyProgramItem[] | undefined;
-    isLoadingHevy?: boolean;
-};
-
-/**
- * BlindSpotAnalysisSection fetches exercise stall data, templates, and saved programs, then renders a paginated `ExerciseStalls` view with fix flows.
- */
-export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHevy = false }: BlindSpotAnalysisSectionProps) {
+export function BlindSpotAnalysisSection({
+    hevyPrograms = undefined,
+    isLoadingHevy = false,
+}: TBlindSpotAnalysisSectionProps) {
     const router = useRouter();
     const queryClient = useQueryClient();
     const { user } = useUserContext();
     const { isInLbs } = usePoundsOrKgContext();
     const [analysisRequested, setAnalysisRequested] = useState(false);
-    const { data: templates = [], isLoading: isLoadingTemplates } = useHevyExercises({
-        enabled: analysisRequested,
-    });
+    const { data: templates = [], isLoading: isLoadingTemplates } = useHevyExercises(analysisRequested);
     const {
         data: exerciseStallsData,
         isFetching: isFetchingExerciseStalls,
         refetch: refetchExerciseStalls,
-    } = useExerciseStallsAnalysis(user, { enabled: analysisRequested });
+    } = useExerciseStallsAnalysis(user, analysisRequested);
     const { data: featureLimits } = useMyFeatureLimits(user);
     const { data: subscribedPrograms = [], isLoading: isLoadingPrograms } = useSubscribedPrograms(user);
     const isPro = featureLimits?.has_active_subscription === true;
     const allExercises = useMemo(() => exerciseStallsData ?? [], [exerciseStallsData]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [sortBy, setSortBy] = useState<SortOption>("most_activity");
+    const [sortBy, setSortBy] = useState<TBlindSpotSortOption>("most_activity");
     const [hideNoData, setHideNoData] = useState(false);
-    const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+    const [statusFilter, setStatusFilter] = useState<TBlindSpotStatusFilter>("all");
     const [exploreFixesDialogOpen, setExploreFixesDialogOpen] = useState(false);
-    const [exploreFixesExercise, setExploreFixesExercise] = useState<IExercise | null>(null);
+    const [exploreFixesExercise, setExploreFixesExercise] = useState<TExerciseStallResult | null>(null);
 
     const stallAnalysisResolved = exerciseStallsData !== undefined;
     const showIdleAnalyze = !analysisRequested && !stallAnalysisResolved && !isFetchingExerciseStalls;
@@ -154,7 +143,7 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
         setAnalysisRequested(false);
     }, [queryClient, user?.id]);
 
-    const handleExploreFixes = useCallback((exercise: IExercise) => {
+    const handleExploreFixes = useCallback((exercise: TExerciseStallResult) => {
         setExploreFixesExercise(exercise);
         setExploreFixesDialogOpen(true);
     }, []);
@@ -175,7 +164,7 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
     );
 
     const handleSelectHevyProgram = useCallback(
-        (program: HevyProgramItem) => {
+        (program: THevyProgramItem) => {
             if (!exploreFixesExercise) return;
             const search = buildStallSearchString(exploreFixesExercise, isInLbs);
             for (const routine of program.program) {
@@ -196,7 +185,7 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
     const filteredAndSorted = useMemo(() => {
         let filtered = hideNoData ? allExercises.filter(hasData) : allExercises;
         if (statusFilter !== "all") {
-            const colorMap: Record<Exclude<StatusFilter, "all">, IExercise["color"]> = {
+            const colorMap: Record<Exclude<TBlindSpotStatusFilter, "all">, TExerciseStallResult["color"]> = {
                 progressing: "green",
                 stalling: "yellow",
                 stalled: "red",
@@ -282,7 +271,7 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
                         type="button"
                         size="lg"
                         onClick={() => setAnalysisRequested(true)}
-                        className="min-w-[14rem] h-12 rounded-full px-10 text-md text-white bg-lightSecondary hover:bg-lightSecondary/90"
+                        className="min-w-56 h-12 rounded-full px-10 text-md text-white bg-lightSecondary hover:bg-lightSecondary/90"
                     >
                         Analyze
                         <SparklesIcon className="size-4" />
@@ -315,7 +304,7 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
                         <ToggleGroup
                             type="single"
                             value={sortBy}
-                            onValueChange={(v) => v && setSortBy(v as SortOption)}
+                            onValueChange={(v: string) => v && setSortBy(v as TBlindSpotSortOption)}
                             className="justify-start flex-wrap"
                         >
                             <ToggleGroupItem value="most_activity" aria-label="Most Activity">
@@ -331,7 +320,7 @@ export function BlindSpotAnalysisSection({ hevyPrograms = undefined, isLoadingHe
                         <ToggleGroup
                             type="single"
                             value={statusFilter}
-                            onValueChange={(v) => v && setStatusFilter(v as StatusFilter)}
+                            onValueChange={(v: string) => v && setStatusFilter(v as TBlindSpotStatusFilter)}
                             className="justify-start flex-wrap"
                         >
                             <ToggleGroupItem value="all" aria-label="All">

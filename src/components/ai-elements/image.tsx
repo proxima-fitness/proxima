@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /**
  * @module Image
  *
@@ -24,7 +25,7 @@ import { cn } from "@/lib/utils";
  * Extends `Experimental_GeneratedImage` with optional `className` for
  * styling and `alt` text for accessibility.
  */
-export type ImageProps = Experimental_GeneratedImage & {
+export type TImageProps = Experimental_GeneratedImage & {
   className?: string;
   alt?: string;
 };
@@ -38,7 +39,7 @@ export const Image = ({
   uint8Array: _uint8Array,
   mediaType,
   ...props
-}: ImageProps) => (
+}: TImageProps) => (
   <img
     {...props}
     alt={props.alt ?? "Image"}

@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useReducer, useCallback, useMemo } from "react";
-import type { IOption } from "@/components/ui/multi-select";
-
-const DEFAULT_EXCLUDE_EQUIPMENT: IOption[] = [
+const DEFAULT_EXCLUDE_EQUIPMENT: TSelectOption[] = [
     { label: "Bodyweight", value: "bodyweight" },
     { label: "Band", value: "band" },
     { label: "Suspension", value: "suspension" },
@@ -13,7 +11,7 @@ const DEFAULT_EXCLUDE_EQUIPMENT: IOption[] = [
     { label: "None", value: "none" },
 ];
 
-export type ProgramLengthOption = "" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "11" | "12";
+export type TProgramLengthOption = "" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "11" | "12";
 
 export interface IUseProgramRequestStateOptions {
     empty?: string;
@@ -30,19 +28,19 @@ export function useProgramRequestState(options: IUseProgramRequestStateOptions =
     const [sex, setSex] = useState<string>("");
     const [age, setAge] = useState<string>("");
     const [daysPerWeek, setDaysPerWeek] = useState<string>("");
-    const [specificDays, setSpecificDays] = useState<IOption[]>([]);
-    const [programLength, setProgramLength] = useState<ProgramLengthOption>("");
+    const [specificDays, setSpecificDays] = useState<TSelectOption[]>([]);
+    const [programLength, setProgramLength] = useState<TProgramLengthOption>("");
     const [workoutDuration, setWorkoutDuration] = useState<string>("");
     const [activityLevel, setActivityLevel] = useState<string>("");
-    const [goals, setGoals] = useState<IOption[]>([]);
-    const [specialization, setSpecialization] = useState<IOption[]>([]);
-    const [equipment, setEquipment] = useState<IOption[]>([]);
-    const [focusAreas, setFocusAreas] = useState<IOption[]>([]);
-    const [difficultyLevel, setDifficultyLevel] = useState<IOption[]>([]);
-    const [excludeAreas, setExcludeAreas] = useState<IOption[]>([]);
-    const [excludeEquipment, setExcludeEquipment] = useState<IOption[]>(() => DEFAULT_EXCLUDE_EQUIPMENT);
-    const [excludeSpecializations, setExcludeSpecializations] = useState<IOption[]>([]);
-    const [healthIssues, setHealthIssues] = useState<IOption[]>([]);
+    const [goals, setGoals] = useState<TSelectOption[]>([]);
+    const [specialization, setSpecialization] = useState<TSelectOption[]>([]);
+    const [equipment, setEquipment] = useState<TSelectOption[]>([]);
+    const [focusAreas, setFocusAreas] = useState<TSelectOption[]>([]);
+    const [difficultyLevel, setDifficultyLevel] = useState<TSelectOption[]>([]);
+    const [excludeAreas, setExcludeAreas] = useState<TSelectOption[]>([]);
+    const [excludeEquipment, setExcludeEquipment] = useState<TSelectOption[]>(() => DEFAULT_EXCLUDE_EQUIPMENT);
+    const [excludeSpecializations, setExcludeSpecializations] = useState<TSelectOption[]>([]);
+    const [healthIssues, setHealthIssues] = useState<TSelectOption[]>([]);
     const [splitType, setSplitType] = useState<string>("");
     const [exerciseVariability, setExerciseVariability] = useState<string>("");
     const [progressionSystem, setProgressionSystem] = useState<string>("");
@@ -112,19 +110,19 @@ export function useProgramRequestState(options: IUseProgramRequestStateOptions =
     const handleSex = useCallback((value: string) => setSex(value), []);
     const handleAge = useCallback((value: string) => setAge(value), []);
     const handleDaysPerWeek = useCallback((value: string) => setDaysPerWeek(value), []);
-    const handleSpecificDays = useCallback((value: IOption[]) => setSpecificDays(value), []);
-    const handleProgramLength = useCallback((value: ProgramLengthOption) => setProgramLength(value), []);
+    const handleSpecificDays = useCallback((value: TSelectOption[]) => setSpecificDays(value), []);
+    const handleProgramLength = useCallback((value: TProgramLengthOption) => setProgramLength(value), []);
     const handleWorkoutDuration = useCallback((value: string) => setWorkoutDuration(value), []);
     const handleActivityLevel = useCallback((value: string) => setActivityLevel(value), []);
-    const handleGoals = useCallback((value: IOption[]) => setGoals(value), []);
-    const handleSpecialization = useCallback((value: IOption[]) => setSpecialization(value), []);
-    const handleEquipment = useCallback((value: IOption[]) => setEquipment(value), []);
-    const handleFocusAreas = useCallback((value: IOption[]) => setFocusAreas(value), []);
-    const handleDifficultyLevel = useCallback((value: IOption[]) => setDifficultyLevel(value), []);
-    const handleExcludeAreas = useCallback((value: IOption[]) => setExcludeAreas(value), []);
-    const handleExcludeEquipment = useCallback((value: IOption[]) => setExcludeEquipment(value), []);
-    const handleExcludeSpecializations = useCallback((value: IOption[]) => setExcludeSpecializations(value), []);
-    const handleHealthIssues = useCallback((value: IOption[]) => setHealthIssues(value), []);
+    const handleGoals = useCallback((value: TSelectOption[]) => setGoals(value), []);
+    const handleSpecialization = useCallback((value: TSelectOption[]) => setSpecialization(value), []);
+    const handleEquipment = useCallback((value: TSelectOption[]) => setEquipment(value), []);
+    const handleFocusAreas = useCallback((value: TSelectOption[]) => setFocusAreas(value), []);
+    const handleDifficultyLevel = useCallback((value: TSelectOption[]) => setDifficultyLevel(value), []);
+    const handleExcludeAreas = useCallback((value: TSelectOption[]) => setExcludeAreas(value), []);
+    const handleExcludeEquipment = useCallback((value: TSelectOption[]) => setExcludeEquipment(value), []);
+    const handleExcludeSpecializations = useCallback((value: TSelectOption[]) => setExcludeSpecializations(value), []);
+    const handleHealthIssues = useCallback((value: TSelectOption[]) => setHealthIssues(value), []);
     const handleSplitType = useCallback((value: string) => setSplitType(value), []);
     const handleExerciseVariability = useCallback((value: string) => setExerciseVariability(value), []);
     const handleProgressionSystem = useCallback((value: string) => setProgressionSystem(value), []);

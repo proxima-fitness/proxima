@@ -27,7 +27,7 @@ import {
   getAttachmentLabel,
   getMediaCategory,
 } from "@/components/ai-elements/attachments";
-import type { AttachmentData } from "@/components/ai-elements/attachments";
+import type { TAttachmentData } from "@/components/ai-elements/attachments";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Paperclip, X, MicIcon, Square, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -70,7 +70,7 @@ function SyncSearchFromInput({
 
 /** Props for a single attachment chip in the prompt input. */
 interface IAttachmentItemProps {
-  attachment: AttachmentData;
+  attachment: TAttachmentData;
   onRemove: (id: string) => void;
 }
 
@@ -329,7 +329,7 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
         </Tooltip>
         <PromptInputTextarea
           placeholder={animatedPlaceholder}
-          className="z-10 dark:text-white min-h-9 flex-1 min-w-0 py-2 text-base leading-[1.3] max-sm:min-h-8 max-sm:h-auto max-sm:py-1.5 [&::placeholder]:text-sm"
+          className="z-10 dark:text-white min-h-9 flex-1 min-w-0 py-2 text-base leading-[1.3] max-sm:min-h-8 max-sm:h-auto max-sm:py-1.5 placeholder:text-sm"
           onKeyDown={handleKeyDown}
         />
         <div className={cn("flex shrink-0 flex-row gap-2", alignClass)}>
@@ -436,7 +436,7 @@ export const PromptTemplate: React.FC = () => {
 
     return (
         <div className="z-10 mx-auto flex w-full max-w-3xl flex-col items-center justify-center gap-4 px-3 pb-3 md:px-5 md:pb-5">
-            <div className="relative z-[100] w-full">
+            <div className="relative z-100 w-full">
                 <PromptInputProvider key={`${submitKey}-${initialInputKey}`} initialInput={search}>
                     <SyncSearchFromInput setSearch={setSearch} setActiveCategory={setActiveCategory} />
                     <PromptTemplateInput
@@ -448,7 +448,7 @@ export const PromptTemplate: React.FC = () => {
                 </PromptInputProvider>
             </div>
             <div className="flex w-full flex-col items-center justify-center space-y-2">
-                <div className="mb-3 w-full flex flex-wrap justify-center gap-3 block md:hidden">
+                <div className="mb-3 w-full flex flex-wrap justify-center gap-3 md:hidden">
                   {quickTriggerSuggestionChips.map((label) => (
                     <Suggestion
                       key={label}

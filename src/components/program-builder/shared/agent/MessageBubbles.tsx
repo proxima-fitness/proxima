@@ -16,10 +16,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { Copy, ThumbsUp, ThumbsDown, Pencil, Trash, FileText } from "lucide-react"
-import { type ChatStatus, FileUIPart, ChatRequestOptions } from "ai";
-import type { TChatSendMessageParam } from "./Agent";
-import type { IQuestion } from "@/components/ui/questions";
-import { IOption } from "@/components/ui/multi-select";
+import { type ChatStatus, FileUIPart } from "ai";
 import {
     applyMutateProgramFromMessages,
     getMutateProgramObjectives,
@@ -55,13 +52,13 @@ interface IProps {
     setMessages: (messages: TChatMessage[] | ((messages: TChatMessage[]) => TChatMessage[])) => void;
     daysPerWeek: string;
     programLength: string;
-    excludeEquipment: IOption[];
-    healthIssues: IOption[];
-    sendMessage: (message?: TChatSendMessageParam, options?: ChatRequestOptions) => Promise<void>;
+    excludeEquipment: TSelectOption[];
+    healthIssues: TSelectOption[];
+    sendMessage: TSendMessageWithContext;
     handleProgramLength: (value: ""|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"10"|"11"|"12") => void;
     handleDaysPerWeek: (value: string) => void;
-    handleExcludeEquipment: (value: IOption[]) => void;
-    handleHealthIssues: (value: IOption[]) => void;
+    handleExcludeEquipment: (value: TSelectOption[]) => void;
+    handleHealthIssues: (value: TSelectOption[]) => void;
     isBuilding: boolean;
     handleIsBuilding: (isBuilding: boolean) => void;
     isLoading: boolean;
@@ -524,7 +521,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                         }
                                         case "tool-getMoreInfoQuestions": {
                                             const toolOutput = part.output as {
-                                                questions?: IQuestion[];
+                                                questions?: TQuestion[];
                                                 userRequest?: string;
                                                 message?: string;
                                             };

@@ -22,13 +22,6 @@ import { cn } from "@/lib/utils";
  * @usedBy /pricing accordion panel.
  */
 
-export type HevyPromoBannerProps = {
-    /** Merged onto the outer wrapper. */
-    className?: string;
-    /** Scrolls to the checkout section below (e.g. after booking a call). */
-    onJumpToCheckout?: () => void;
-};
-
 const PopupModal = dynamic(
     () => import("react-calendly").then((m) => m.PopupModal),
     { ssr: false },
@@ -42,7 +35,7 @@ function getCalendlyPortalRoot(): HTMLElement | null {
 /**
  * HevyPromoBanner stacks the main Pro+ promo and discovery-call offers for use inside the pricing accordion.
  */
-export function HevyPromoBanner({ className, onJumpToCheckout }: HevyPromoBannerProps = {}) {
+export function HevyPromoBanner({ className, onJumpToCheckout }: THevyPromoBannerProps = {}) {
     const calendlyUrl = process.env.NEXT_PUBLIC_CALENDLY_URL || DEFAULT_CALENDLY_SCHEDULING_URL;
     const portalRoot = useSyncExternalStore(emptySubscribe, getCalendlyPortalRoot, () => null);
     const [calendlyOpen, setCalendlyOpen] = useState(false);

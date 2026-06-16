@@ -10,8 +10,6 @@ import { memo, useMemo } from "react";
 import { HevyRoutine } from "@/components/program-builder/hevy/HevyRoutine";
 import { BuildProgramSkeleton } from "@/components/program-builder/shared/BuildProgramSkeleton";
 import { getNumberRoutineFolders } from "@/components/program-builder/utils";
-import type { IOption } from "@/components/ui/multi-select";
-
 export interface IProps {
     orderedProgram: THevyRoutine[];
     isMobile: boolean;
@@ -22,7 +20,7 @@ export interface IProps {
     handleIsEditExercise: (isEditExercise: boolean) => void;
     handleDuplicateWeek: (fromWeekIndex: number, toWeekIndexes: number[]) => void;
     handleDeleteWeek: (folder_id: number) => void;
-    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;
+    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: TSelectOption[]) => void;
     handleOpenAddExerciseDialog: (addExerciseDialog: THevyDialog) => void;
     handleOpenAddNoteDialog: (addNoteDialog: THevyDialog) => void;
     handleOpenAddExerciseNoteDialog: (addExerciseNoteDialog: THevyDialog) => void;

@@ -29,10 +29,6 @@ export const setTypeBadgeClass = (setType: string): string =>
             ? "text-white bg-[#01579B] px-1 rounded-sm"
             : "";
 
-type TPrescriptionDisplayOptions = {
-    selected?: boolean;
-};
-
 export function HevyPrescriptionEmpty({
     className,
     selected,

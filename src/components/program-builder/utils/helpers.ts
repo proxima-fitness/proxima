@@ -23,7 +23,6 @@ import { UIMessage } from "ai";
 import nlp from "compromise";
 import Fuse from "fuse.js";
 import { toast } from "sonner";
-import type { IOption } from "@/components/ui/multi-select";
 import { applyOperations } from "@/components/program-builder/mutations/apply";
 import type { TAgentProgramOperation } from "@/components/program-builder/mutations/agentSchema";
 import { isApplyBatchFailure, type TCommitWithUndoOptions } from "@/components/program-builder/mutations/types";
@@ -226,7 +225,7 @@ export const inferProgramLength = (text: string) => {
  * Returns options whose label or value appears in the normalized text (substring match).
  * Used internally by infer functions that need to match options to free text.
  */
-function matchOptionsInText(text: string, options: IOption[]): IOption[] {
+function matchOptionsInText(text: string, options: TSelectOption[]): TSelectOption[] {
     if (!text || !options.length) return [];
     const normalized = text.toLowerCase().replace(/[\u2010\u2011\u2012\u2013\u2014\u2015]/g, "-");
     return options.filter((opt) => {
@@ -243,15 +242,15 @@ function matchOptionsInText(text: string, options: IOption[]): IOption[] {
  *
  * @param text - Raw user message text
  * @param options - Body-part options (same set as focus areas: back, arms, shoulders, etc.)
- * @returns Matching IOption[] for areas to exclude
+ * @returns Matching TSelectOption[] for areas to exclude
  */
-export function inferExcludeAreas(text: string, options: IOption[]): IOption[] {
+export function inferExcludeAreas(text: string, options: TSelectOption[]): TSelectOption[] {
     if (!text || !options.length) return [];
     const normalized = text.toLowerCase().replace(/[\u2010\u2011\u2012\u2013\u2014\u2015]/g, "-");
     const exclusionRegex = /(?:exclude|no|avoid|skip|without|don't\s+train)\s+/gi;
     const parts = normalized.split(exclusionRegex);
     parts.shift(); // drop segment before first keyword
-    const matched = new Map<string, IOption>();
+    const matched = new Map<string, TSelectOption>();
     for (const part of parts) {
         const segment = part.replace(/\s*(?:,|and|&)\s*/g, " ").trim();
         for (const opt of options) {
@@ -273,9 +272,9 @@ export function inferExcludeAreas(text: string, options: IOption[]): IOption[] {
  *
  * @param text - Raw user message text
  * @param options - Equipment options (e.g. equipmentOptions or exclude-equipment subset)
- * @returns Matching IOption[] for equipment to exclude
+ * @returns Matching TSelectOption[] for equipment to exclude
  */
-export function inferExcludeEquipment(text: string, options: IOption[]): IOption[] {
+export function inferExcludeEquipment(text: string, options: TSelectOption[]): TSelectOption[] {
     if (!text || !options.length) return [];
     const normalized = text.toLowerCase().replace(/[\u2010\u2011\u2012\u2013\u2014\u2015]/g, "-");
     if (/bodyweight\s+only|no\s+equipment|only\s+bodyweight/.test(normalized)) {
@@ -284,7 +283,7 @@ export function inferExcludeEquipment(text: string, options: IOption[]): IOption
     const exclusionRegex = /(?:no|without|don't\s+use|exclude)\s+/gi;
     const parts = normalized.split(exclusionRegex);
     parts.shift();
-    const matched = new Map<string, IOption>();
+    const matched = new Map<string, TSelectOption>();
     for (const part of parts) {
         const segment = part.replace(/\s*(?:,|and|&)\s*/g, " ").trim();
         for (const opt of options) {
@@ -321,12 +320,12 @@ const HEALTH_ISSUE_SYNONYMS: Array<{ pattern: RegExp; value: string }> = [
  *
  * @param text - Raw user message text
  * @param options - Health issue options (healthIssuesOptions)
- * @returns Matching IOption[] for health issues to consider
+ * @returns Matching TSelectOption[] for health issues to consider
  */
-export function inferHealthIssues(text: string, options: IOption[]): IOption[] {
+export function inferHealthIssues(text: string, options: TSelectOption[]): TSelectOption[] {
     if (!text || !options.length) return [];
     const normalized = text.toLowerCase().replace(/[\u2010\u2011\u2012\u2013\u2014\u2015]/g, "-");
-    const matched = new Map<string, IOption>();
+    const matched = new Map<string, TSelectOption>();
     const valueToOption = new Map(options.map((o) => [(o.value ?? "").toLowerCase(), o]));
     for (const { pattern, value } of HEALTH_ISSUE_SYNONYMS) {
         if (pattern.test(normalized)) {

@@ -9,7 +9,7 @@
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import MultiSelect, { IOption } from "@/components/ui/multi-select";
+import MultiSelect from "@/components/ui/multi-select";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useProgramMutation } from "@/contexts/ProgramMutationContext";
@@ -27,7 +27,7 @@ interface IProps {
     /** Setter to open/close the dialog. */
     setDuplicateDayOpen: (duplicateDayOpen: boolean) => void;
     /** Called with source week/day, target week, and selected day options to perform the duplicate. */
-    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: IOption[]) => void;
+    handleDuplicateDay: (fromWeekOrder: number, fromDayOrder: number, toWeekOrder: number, toDayIndexArray: TSelectOption[]) => void;
 }
 
 /**
@@ -49,8 +49,8 @@ export const HevyDuplicateDay: React.FC<IProps> = (props) => {
 
     const programLengthArray = Array.from({ length: programLength }, (_, index) => index + 1);
     const daysArray = Array.from({length: 7 }, (_, index) => index + 1);
-    const daysOptions: IOption[] = daysArray.map((d) => ({ label: `Day ${d}`, value: String(d)}));
-    const [selectedDays, setSelectedDays] = useState<IOption[]>([]);
+    const daysOptions: TSelectOption[] = daysArray.map((d) => ({ label: `Day ${d}`, value: String(d)}));
+    const [selectedDays, setSelectedDays] = useState<TSelectOption[]>([]);
     const [selectedWeek, setSelectedWeek ] = useState<string>(String(folder_id + 1));
 
     return (

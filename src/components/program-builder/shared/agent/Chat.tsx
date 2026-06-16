@@ -26,7 +26,7 @@ import {
   getAttachmentLabel,
   getMediaCategory,
 } from "@/components/ai-elements/attachments";
-import type { AttachmentData } from "@/components/ai-elements/attachments";
+import type { TAttachmentData } from "@/components/ai-elements/attachments";
 import { Suggestions, Suggestion } from "@/components/ai-elements/suggestion";
 import { Mic, Paperclip, Square, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -44,14 +44,6 @@ import type { FileUIPart } from "ai";
 import { memo, useCallback, useState, forwardRef, useMemo } from "react";
 import { useMicTranscription } from "@/hooks/use-mic-transcription";
 import { Questions } from "@/components/ui/questions";
-import type { IQuestion } from "@/components/ui/questions";
-
-/** Payload when questions are shown in place of the prompt input (e.g. after getMoreInfoQuestions tool). */
-export interface IQuestionsPayload {
-  questions: IQuestion[];
-  userRequest?: string;
-  initialAnswers?: Record<string, string | string[]>;
-}
 
 /** Props for the chat input container. */
 interface IProps {
@@ -61,7 +53,7 @@ interface IProps {
   /** Whether to show quick-trigger suggestion chips (e.g. when no messages). */
   showSuggestions?: boolean;
   /** When set, show Questions in place of PromptInput until user completes or skips. */
-  questionsPayload?: IQuestionsPayload | null;
+  questionsPayload?: TQuestionsPayload | null;
   onQuestionsComplete?: (answers: Record<string, string | string[]>) => void;
   onQuestionsSkip?: () => void;
   /** Called when user dismisses the questions without building (e.g. close button). */
@@ -72,7 +64,7 @@ interface IProps {
 }
 
 interface IAttachmentItemProps {
-  attachment: AttachmentData;
+  attachment: TAttachmentData;
   onRemove: (id: string) => void;
 }
 

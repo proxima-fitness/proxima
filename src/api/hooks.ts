@@ -158,21 +158,15 @@ async function fetchExerciseStallsData({ signal }: QueryFunctionContext): Promis
     return Array.isArray(data) ? data : [];
 }
 
-export type UseExerciseStallsAnalysisOptions = {
-    /** When false, does not POST exercise-history (no Hevy fan-out). Default true. */
-    enabled?: boolean;
-};
-
 /** Fetches full exercise stall data (all exercises). Cached 1hr; no refetch on window focus to avoid Hevy 429. */
 export const useExerciseStallsAnalysis = (
     user: User | undefined | null,
-    options?: UseExerciseStallsAnalysisOptions,
+    enabled = true,
 ) => {
-    const enabledFlag = options?.enabled ?? true;
     return useQuery({
         queryKey: ["exercise-stalls-analysis", user?.id, "v6"],
         queryFn: fetchExerciseStallsData,
-        enabled: !!user && enabledFlag,
+        enabled: !!user && enabled,
         staleTime: 60 * 60 * 1000,
         gcTime: 2 * 60 * 60 * 1000,
         refetchOnWindowFocus: false,
@@ -357,15 +351,10 @@ export const useUsersBatch = (userIds: string[]) => {
     });
 };
 
-export type UseHevyExercisesOptions = {
-    enabled?: boolean;
-};
-
 /**
  * Fetches the global exercise library from the Proxima Supabase mirror of Hevy templates.
  */
-export const useHevyExercises = (options?: UseHevyExercisesOptions) => {
-    const enabled = options?.enabled ?? true;
+export const useHevyExercises = (enabled = true) => {
     return useQuery({
         queryKey: ["hevy-exercises"],
         queryFn: () => getHevyExercises(),
