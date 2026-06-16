@@ -203,3 +203,43 @@ _Avoid_: Complaint (too informal), exercise feedback (too broad)
 **Questionnaire gate**:
 Required `getMoreInfoQuestions` step before first `planProgram` / `buildWeek` on a new program. Collects structured prefs; merges into the constraint profile with home-prompt inference. After the user submits or says "Build my program", the agent must not ask again in chat for fields already captured — proceed to build using the profile.
 _Avoid_: Intake form (UI-shaped), pre-build questions (too vague)
+
+**Hevy workout history**:
+The user's completed Hevy workouts — full logs (title, timestamps, exercises, sets). Canonical copy lives in Proxima's workout history backup after sync; agent and Blind Spot read from there, not live Hevy per request. Distinct from Hevy's per-exercise history API and from program workout days in the builder.
+_Avoid_: Exercise history (Hevy API term — derived view)
+
+**Workout history backup**:
+Proxima's stored copy of a user's completed workouts, synced from connected fitness apps. Full backfill runs in the background when Hevy is first connected (all tiers — pre-stages data before Pro); connect dialog closes immediately. Ongoing sync uses workout-count delta plus on-demand refresh when Blind Spot or the agent reads history. Canonical shape: workout → exercises → sets. Supersedes legacy `workout_history` / `workout_history_exercises` tables, which are removed once canonical storage ships.
+_Avoid_: Hevy sync (implementation), exercise_history backup (wrong grain), blocking connect flow
+
+**Workout** (backup):
+One completed workout in the workout history backup — what the user actually performed, with exercises and sets. Identified by app source + external ID for dedup on sync. Not a builder routine/day, not a chat session, not a scheduled program day.
+_Avoid_: Session (use workout), workout log (deprecated term), program day
+
+**Workout exercise**:
+One exercise performed within a backup workout — ordered rows linking to a catalog exercise. Distinct from catalog exercises, builder slots, and Hevy exercise templates.
+_Avoid_: Exercise (ambiguous — specify catalog, builder, or workout exercise)
+
+**Set** (backup):
+One logged set within a workout exercise — weight, reps, RPE, duration, distance, set type, etc. Normalized columns, not app-native JSON.
+_Avoid_: Builder set (prescription), program set (planned)
+
+**Catalog exercise**:
+Canonical movement in Proxima's exercise catalog — name, muscles, equipment — independent of any fitness app. Workout exercises link to catalog exercises via source mappings, not Hevy template IDs directly.
+_Avoid_: Hevy exercise template (app-specific), workout exercise (instance in a logged workout)
+
+**Exercise source mapping**:
+Link from an app-specific exercise ID (e.g. Hevy template UUID) to a catalog exercise. One catalog row may have many mappings across sources. Used when importing workout history from connected apps. Catalog is seeded from Hevy templates deduped by `normalized_title`; new templates get a lazy mapping on first sync if missing.
+_Avoid_: Exercise FK (implementation), template id (Hevy-shaped)
+
+**Blind spot analysis**:
+Profile feature that surfaces exercises where logged performance has stalled or regressed, and routes the user into the builder to fix plateaus. Reads the workout history backup (not live Hevy). Free tier: limited preview (last 15 performances per exercise); Pro: full synced history for analysis, trends, and stall dispatch. Pro-gated for depth, not for backup sync itself.
+_Avoid_: Stall detection (implementation), exercise stalls (UI component name)
+
+**Workout history access**:
+Reading backed-up workouts for product features (Blind Spot, agent tool). Pro-gated for agent queries and full Blind Spot; backup sync and retention are free for all connected users so upgrade unlocks existing data immediately.
+_Avoid_: Hevy API access (live fetch), export (program push to Hevy)
+
+**Agent workout history tool**:
+Pro-only chat tool that returns recent backed-up workouts from Supabase. Agent chooses how many workouts to pull (cap ~30). Optional filters by date or catalog exercise. Workout-scoped only in v1 — no separate exercise-history tool.
+_Avoid_: getExerciseHistory (v1 scope), live Hevy fetch in chat
