@@ -162,6 +162,13 @@ type TSyncChunkResult = {
     done: boolean;
     /** True when Hevy returned 429; client should back off and retry (not a terminal failure). */
     rateLimited?: boolean;
+    /** Per-chunk diagnostics for logging and UI hints. */
+    chunk?: {
+        page: number;
+        pageCount: number;
+        inserted: number;
+        skipped: number;
+    };
 };
 
 type TWorkoutSyncProgress = Pick<TSyncChunkResult, "backedUpCount" | "hevyCount" | "syncError" | "rateLimited"> & {

@@ -6,7 +6,7 @@
  * Client profile body: profile hero, resume-draft banner, blind-spot analysis, Hevy
  * programs grid, and saved programs vault. Sits under (app)/profile/page.
  *
- * Depends on: UserContext, useHevyPrograms/useHevySecret, ProfileHero, EditProfile, BlindSpotAnalysisSection, HevyProgramsGrid, MyProgramsVault, ResumeDraftBanner.
+ * Depends on: UserContext, useHevyPrograms/useHevySecret, ProfileHero, EditProfile, BlindSpotAnalysisSection, HevyProgramsGrid, MyProgramsVault, ResumeDraftBanner, WorkoutHistorySyncStatus.
  * Used by: (app)/profile/page.tsx.
  */
 
@@ -17,6 +17,7 @@ import { BlindSpotAnalysisSection } from "@/components/profile/BlindSpotAnalysis
 import { ProfileHero } from "@/components/profile/ProfileHero";
 import { HevyProgramsGrid } from "@/components/program-builder/hevy/HevyProgramsGrid";
 import { ResumeDraftBanner } from "@/components/program-builder/ResumeDraftBanner";
+import { WorkoutHistorySyncStatus } from "@/components/profile/WorkoutHistorySyncStatus";
 import styles from "../../../style";
 import { Suspense, useState } from "react";
 import { ProgramsFallback } from "@/components/generic/ProgramsFallback";
@@ -63,8 +64,9 @@ export function ProfileContent() {
                             </Dialog>
                         </>
                     )}
-                    <div className="flex items-center justify-center pb-6 max-sm:pb-4">
+                    <div className="mx-auto flex w-full flex-col items-center gap-4 pb-6 max-sm:pb-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center *:mb-0">
                         <ResumeDraftBanner />
+                        <WorkoutHistorySyncStatus />
                     </div>
                 </div>
 

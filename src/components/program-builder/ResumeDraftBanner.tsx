@@ -59,14 +59,14 @@ export const ResumeDraftBanner: React.FC = () => {
     }
 
     return (
-        <div className="relative flex w-full max-w-3xl mx-0 sm:mx-auto mb-4 sm:mb-8 flex-col sm:flex-row flex-nowrap items-center gap-4 rounded-2xl border border-border bg-muted/40 px-5 py-4 shadow-xs">
-            <div className="w-full sm:flex-1 sm:min-w-0">
-                <span className="text-sm sm:text-base font-medium text-foreground">
+        <div className="relative flex w-full min-w-lg max-w-2xl flex-col sm:flex-row flex-nowrap items-center gap-4 rounded-2xl border border-border bg-muted/40 px-6 py-3 shadow-xs">
+            <div className="w-full min-w-0 sm:flex-1">
+                <span className="text-sm font-medium text-foreground sm:text-base">
                     Pick up where you left off.
                 </span>
             </div>
-            <div className="flex flex-row items-center justify-end sm:justify-start gap-2 w-full sm:w-auto shrink-0">
-                <Button asChild size="default" className="shrink-0 bg-lightSecondary text-white">
+            <div className="flex w-full shrink-0 flex-row items-center justify-end gap-2 sm:w-auto sm:justify-start">
+                <Button asChild size="default" className="h-9 shrink-0 bg-lightSecondary px-5 text-white hover:bg-lightSecondary/90">
                     <Link
                         href="/build-program?resume=true"
                         target="_self"
@@ -77,12 +77,12 @@ export const ResumeDraftBanner: React.FC = () => {
                         Resume program
                     </Link>
                 </Button>
-                <div className="flex items-center sm:border-l sm:border-border sm:pl-4 sm:ml-0">
+                <div className="flex items-center sm:ml-0 sm:border-l sm:border-border sm:pl-4">
                     <Button
                         type="button"
                         variant="ghost"
                         onClick={() => setClearDialogOpen(true)}
-                        className="h-9 px-3 text-muted-foreground hover:text-foreground sm:h-10 sm:w-10 sm:p-0 shrink-0"
+                        className="h-9 shrink-0 px-3 text-muted-foreground hover:text-foreground sm:h-9 sm:w-10 sm:p-0"
                         title="Clear program and chat"
                         aria-label="Clear program and chat"
                     >

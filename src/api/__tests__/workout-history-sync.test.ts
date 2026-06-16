@@ -129,13 +129,25 @@ function asDb(mock: ReturnType<typeof createSyncMockDb>): SupabaseClient<Databas
 
 describe("computeSyncPage", () => {
     it("uses page 1 for delta when cursor caught up but live count grew", () => {
-        expect(computeSyncPage(100, 100, 102, 10)).toBe(1);
+        expect(computeSyncPage(100, 100, 102, null, 10)).toBe(1);
     });
 
-    it("walks backfill pages from backed-up count", () => {
-        expect(computeSyncPage(0, null, 25, 10)).toBe(1);
-        expect(computeSyncPage(10, null, 25, 10)).toBe(2);
-        expect(computeSyncPage(20, null, 25, 10)).toBe(3);
+    it("walks backfill pages from backed-up count when no page cursor", () => {
+        expect(computeSyncPage(0, null, 25, null, 10)).toBe(1);
+        expect(computeSyncPage(10, null, 25, null, 10)).toBe(2);
+        expect(computeSyncPage(20, null, 25, null, 10)).toBe(3);
+    });
+
+    it("advances from last_synced_page even when backed-up count is unchanged", () => {
+        expect(computeSyncPage(60, null, 76, 7, 10)).toBe(8);
+    });
+
+    it("does not reset to page 1 when backfill crosses last_known_workout_count mid-scan", () => {
+        expect(computeSyncPage(60, 60, 76, 6, 10)).toBe(7);
+    });
+
+    it("continues past delta page 1 when every workout on page 1 was skipped", () => {
+        expect(computeSyncPage(60, 60, 76, 1, 10)).toBe(2);
     });
 });
 
@@ -191,7 +203,7 @@ describe("runSyncChunk", () => {
             .mockResolvedValueOnce({ workout_count: 3 })
             .mockResolvedValueOnce({
                 page: 1,
-                page_count: 1,
+                page_count: 3,
                 workouts: [hevyWorkoutFixture],
             });
 
@@ -203,6 +215,7 @@ describe("runSyncChunk", () => {
         expect(result.syncError).toBeNull();
         expect(mockDb.tables.workouts).toHaveLength(1);
         expect(mockDb.tables.hevy_workouts_count[0]?.sync_error).toBeNull();
+        expect(mockDb.tables.hevy_workouts_count[0]?.last_synced_page).toBe(1);
         expect(mockDb.tables.hevy_workouts_count[0]?.last_known_workout_count).toBeUndefined();
     });
 
@@ -283,7 +296,7 @@ describe("runSyncChunk", () => {
 
         const result = await runSyncChunk(asDb(mockDb), { userId: USER_ID, apiKey: API_KEY });
 
-        expect(computeSyncPage(1, 1, 2, WORKOUT_SYNC_PAGE_SIZE)).toBe(1);
+        expect(computeSyncPage(1, 1, 2, null, WORKOUT_SYNC_PAGE_SIZE)).toBe(1);
         expect(result.done).toBe(true);
         expect(result.backedUpCount).toBe(2);
         expect(mockDb.tables.workouts).toHaveLength(2);
@@ -309,6 +322,95 @@ describe("runSyncChunk", () => {
 
         expect(result.done).toBe(true);
         expect(defaultFetch).toHaveBeenCalledTimes(2);
+    });
+
+    it("does not restart at page 1 after chunk 6 when last_known_workout_count matches backed-up count", async () => {
+        mockDb.tables.hevy_workouts_count.push({
+            user_id: USER_ID,
+            last_known_workout_count: 60,
+            last_synced_page: 6,
+        });
+
+        mockDb.tables.workouts.push(
+            ...Array.from({ length: 60 }, (_, index) => ({
+                id: `w-${index}`,
+                user_id: USER_ID,
+                source: HEVY_WORKOUT_SOURCE,
+                external_id: `ext-${index}`,
+            })),
+        );
+
+        const pageSevenWorkouts = Array.from({ length: 10 }, (_, index) => ({
+            ...hevyWorkoutFixture,
+            id: `page-seven-${index}`,
+            title: `Workout ${index}`,
+        }));
+
+        vi.mocked(defaultFetch)
+            .mockResolvedValueOnce({ workout_count: 76 })
+            .mockResolvedValueOnce({
+                page: 7,
+                page_count: 8,
+                workouts: pageSevenWorkouts,
+            });
+
+        const result = await runSyncChunk(asDb(mockDb), { userId: USER_ID, apiKey: API_KEY });
+
+        expect(result.chunk?.page).toBe(7);
+        expect(result.done).toBe(false);
+        expect(mockDb.tables.hevy_workouts_count[0]?.last_synced_page).toBe(7);
+    });
+
+    it("advances last_synced_page when every workout on the page is skipped", async () => {
+        mockDb.tables.workouts.push(
+            ...Array.from({ length: 50 }, (_, index) => ({
+                id: `w-${index}`,
+                user_id: USER_ID,
+                source: HEVY_WORKOUT_SOURCE,
+                external_id: `ext-${index}`,
+            })),
+        );
+
+        const pageSevenWorkouts = Array.from({ length: 10 }, (_, index) => ({
+            ...hevyWorkoutFixture,
+            id: `page-seven-${index}`,
+            title: `Workout ${index}`,
+        }));
+
+        for (const workout of pageSevenWorkouts) {
+            mockDb.tables.workouts.push({
+                id: `existing-${workout.id}`,
+                user_id: USER_ID,
+                source: HEVY_WORKOUT_SOURCE,
+                external_id: workout.id,
+            });
+        }
+
+        vi.mocked(defaultFetch)
+            .mockResolvedValueOnce({ workout_count: 76 })
+            .mockResolvedValueOnce({
+                page: 7,
+                page_count: 8,
+                workouts: pageSevenWorkouts,
+            });
+
+        const result = await runSyncChunk(asDb(mockDb), { userId: USER_ID, apiKey: API_KEY });
+
+        expect(result.done).toBe(false);
+        expect(result.backedUpCount).toBe(60);
+        expect(result.hevyCount).toBe(76);
+        expect(result.syncError).toBeNull();
+        expect(result.chunk).toEqual({
+            page: 7,
+            pageCount: 8,
+            inserted: 0,
+            skipped: 10,
+        });
+        expect(mockDb.tables.hevy_workouts_count[0]).toMatchObject({
+            user_id: USER_ID,
+            last_synced_page: 7,
+            sync_error: null,
+        });
     });
 });
 

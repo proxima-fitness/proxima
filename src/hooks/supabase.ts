@@ -283,6 +283,7 @@ export type Database = {
           created_at: string
           id: string
           last_known_workout_count: number | null
+          last_synced_page: number | null
           sync_error: string | null
           updated_at: string | null
           user_id: string | null
@@ -291,6 +292,7 @@ export type Database = {
           created_at?: string
           id?: string
           last_known_workout_count?: number | null
+          last_synced_page?: number | null
           sync_error?: string | null
           updated_at?: string | null
           user_id?: string | null
@@ -299,6 +301,7 @@ export type Database = {
           created_at?: string
           id?: string
           last_known_workout_count?: number | null
+          last_synced_page?: number | null
           sync_error?: string | null
           updated_at?: string | null
           user_id?: string | null
