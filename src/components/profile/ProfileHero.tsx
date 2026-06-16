@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo } from "react";
 import { PenBoxIcon } from "lucide-react";
+import { WorkoutHistorySyncStatus } from "@/components/profile/WorkoutHistorySyncStatus";
 
 interface IProfileHeroProps {
     onEditProfileClick: () => void;
@@ -110,6 +111,7 @@ export function ProfileHero({ onEditProfileClick }: IProfileHeroProps) {
                     {metaData?.bio ? (
                         <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">{metaData.bio}</p>
                     ) : null}
+                    <WorkoutHistorySyncStatus />
                 </div>
             </div>
             <div className="flex items-center gap-2 pt-1">

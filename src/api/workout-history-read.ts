@@ -145,7 +145,7 @@ export async function ensureWorkoutHistoryFresh(db: TWorkoutHistoryDb, params: {
             apiKey: params.apiKey,
         });
 
-        if (lastResult.done || lastResult.syncError) {
+        if (lastResult.done || lastResult.syncError || lastResult.rateLimited) {
             return lastResult;
         }
     }

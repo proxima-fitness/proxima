@@ -288,6 +288,28 @@ describe("runSyncChunk", () => {
         expect(result.backedUpCount).toBe(2);
         expect(mockDb.tables.workouts).toHaveLength(2);
     });
+
+    it("returns rateLimited without persisting sync_error on Hevy 429", async () => {
+        vi.mocked(defaultFetch).mockRejectedValueOnce(new Error("HTTP GET error! Status: 429"));
+
+        const result = await runSyncChunk(asDb(mockDb), { userId: USER_ID, apiKey: API_KEY });
+
+        expect(result.rateLimited).toBe(true);
+        expect(result.syncError).toBeNull();
+        expect(result.done).toBe(false);
+        expect(mockDb.tables.hevy_workouts_count).toHaveLength(0);
+    });
+
+    it("retries 5xx with short backoff before failing", async () => {
+        vi.mocked(defaultFetch)
+            .mockRejectedValueOnce(new Error("HTTP GET error! Status: 503"))
+            .mockResolvedValueOnce({ workout_count: 0 });
+
+        const result = await runSyncChunk(asDb(mockDb), { userId: USER_ID, apiKey: API_KEY });
+
+        expect(result.done).toBe(true);
+        expect(defaultFetch).toHaveBeenCalledTimes(2);
+    });
 });
 
 describe("countBackedUpWorkouts", () => {

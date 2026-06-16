@@ -21,63 +21,81 @@ import {
 /** Workouts per Hevy API page for backup chunks. */
 export const WORKOUT_SYNC_PAGE_SIZE = 10;
 
-/**
- * Fetches one Hevy workouts page with exponential backoff on 429 / 5xx.
- */
-async function fetchHevyWorkoutsPage(apiKey: string,page: number,pageSize: number): Promise<THevyWorkoutsResponse> {
-    const url = `https://api.hevyapp.com/v1/workouts?page=${page}&pageSize=${pageSize}`;
-
-    for (let retry = 0; retry <= RATE_LIMIT_MAX_RETRIES; retry++) {
-        try {
-            return await defaultFetch<THevyWorkoutsResponse>(url, apiKey);
-        } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : "";
-            const is429 = message.includes("Status: 429");
-            const is5xx = /Status: 5\d\d/.test(message);
-            const canRetry = is429 || is5xx;
-
-            if (!canRetry || retry >= RATE_LIMIT_MAX_RETRIES) {
-                throw error;
-            }
-
-            const waitMs = is429
-                ? 60_000 * Math.pow(2, retry)
-                : Math.min(8_000, 1_000 * Math.pow(2, retry));
-            await delay(waitMs);
-        }
+/** Thrown when Hevy returns HTTP 429 — caller should back off (not persist as sync_error). */
+export class HevyRateLimitError extends Error {
+    constructor(message = "HTTP GET error! Status: 429") {
+        super(message);
+        this.name = "HevyRateLimitError";
     }
+}
 
-    throw new Error("Hevy workouts fetch failed after retries");
+/** True when a Hevy fetch error is HTTP 429. */
+export function isHevyRateLimitError(error: unknown): boolean {
+    const message = error instanceof Error ? error.message : String(error);
+    return message.includes("Status: 429");
 }
 
 /**
- * Fetches live Hevy workout count with rate-limit backoff.
+ * GET with 5xx retry (short backoff). 429 fails fast so the client poller can
+ * exponential-backoff without exceeding serverless route timeouts.
  */
-export async function fetchHevyWorkoutCount(apiKey: string): Promise<number> {
-    const url = "https://api.hevyapp.com/v1/workouts/count";
-
+async function fetchHevyGetWithRetry<T>(url: string, apiKey: string): Promise<T> {
     for (let retry = 0; retry <= RATE_LIMIT_MAX_RETRIES; retry++) {
         try {
-            const response = await defaultFetch<{ workout_count: number }>(url, apiKey);
-            return response.workout_count ?? 0;
+            return await defaultFetch<T>(url, apiKey);
         } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : "";
-            const is429 = message.includes("Status: 429");
-            const is5xx = /Status: 5\d\d/.test(message);
-            const canRetry = is429 || is5xx;
+            if (isHevyRateLimitError(error)) {
+                throw new HevyRateLimitError(
+                    error instanceof Error ? error.message : "HTTP GET error! Status: 429",
+                );
+            }
 
-            if (!canRetry || retry >= RATE_LIMIT_MAX_RETRIES) {
+            const message = error instanceof Error ? error.message : "";
+            const is5xx = /Status: 5\d\d/.test(message);
+
+            if (!is5xx || retry >= RATE_LIMIT_MAX_RETRIES) {
                 throw error;
             }
 
-            const waitMs = is429
-                ? 60_000 * Math.pow(2, retry)
-                : Math.min(8_000, 1_000 * Math.pow(2, retry));
-            await delay(waitMs);
+            await delay(Math.min(8_000, 1_000 * Math.pow(2, retry)));
         }
     }
 
-    throw new Error("Hevy workout count fetch failed after retries");
+    throw new Error("Hevy fetch failed after retries");
+}
+
+async function handleHevyFetchFailure(
+    db: TWorkoutHistoryDb,
+    userId: string,
+    error: unknown,
+    backedUpCount: number,
+    hevyCount: number,
+): Promise<TSyncChunkResult> {
+    if (error instanceof HevyRateLimitError || isHevyRateLimitError(error)) {
+        return { backedUpCount, hevyCount, syncError: null, done: false, rateLimited: true };
+    }
+
+    const message = error instanceof Error ? error.message : "Hevy request failed";
+    await upsertHevyWorkoutsCountCursor(db, userId, { syncError: message });
+    const { syncError } = await readSyncCursor(db, userId);
+    return { backedUpCount, hevyCount, syncError, done: false };
+}
+
+/**
+ * Fetches one Hevy workouts page (429 → fast fail; 5xx → short in-request retry).
+ */
+async function fetchHevyWorkoutsPage(apiKey: string, page: number, pageSize: number): Promise<THevyWorkoutsResponse> {
+    const url = `https://api.hevyapp.com/v1/workouts?page=${page}&pageSize=${pageSize}`;
+    return fetchHevyGetWithRetry<THevyWorkoutsResponse>(url, apiKey);
+}
+
+/**
+ * Fetches live Hevy workout count (429 → fast fail; 5xx → short in-request retry).
+ */
+export async function fetchHevyWorkoutCount(apiKey: string): Promise<number> {
+    const url = "https://api.hevyapp.com/v1/workouts/count";
+    const response = await fetchHevyGetWithRetry<{ workout_count: number }>(url, apiKey);
+    return response.workout_count ?? 0;
 }
 
 /**
@@ -171,12 +189,8 @@ export async function runSyncChunk(db: TWorkoutHistoryDb,params: { userId: strin
     try {
         hevyCount = await fetchHevyWorkoutCount(apiKey);
     } catch (error: unknown) {
-        const message =
-            error instanceof Error ? error.message : "Failed to fetch Hevy workout count";
-        await upsertHevyWorkoutsCountCursor(db, userId, { syncError: message });
         const backedUpCount = await countBackedUpWorkouts(db, userId);
-        const { syncError } = await readSyncCursor(db, userId);
-        return { backedUpCount, hevyCount: backedUpCount, syncError, done: false };
+        return handleHevyFetchFailure(db, userId, error, backedUpCount, backedUpCount);
     }
 
     let backedUpCount = await countBackedUpWorkouts(db, userId);
@@ -196,11 +210,7 @@ export async function runSyncChunk(db: TWorkoutHistoryDb,params: { userId: strin
     try {
         workoutsResponse = await fetchHevyWorkoutsPage(apiKey, page, WORKOUT_SYNC_PAGE_SIZE);
     } catch (error: unknown) {
-        const message =
-            error instanceof Error ? error.message : "Failed to fetch Hevy workouts page";
-        await upsertHevyWorkoutsCountCursor(db, userId, { syncError: message });
-        const { syncError } = await readSyncCursor(db, userId);
-        return { backedUpCount, hevyCount, syncError, done: false };
+        return handleHevyFetchFailure(db, userId, error, backedUpCount, hevyCount);
     }
 
     const workouts = workoutsResponse.workouts ?? [];
@@ -244,11 +254,23 @@ export function triggerWorkoutHistorySync(): void {
     void runWorkoutHistorySyncChunk();
 }
 
-/** Delay between client poller chunks (server handles Hevy 429 backoff per chunk). */
+/** Delay between client poller chunks when sync is progressing normally. */
 export const WORKOUT_SYNC_POLL_DELAY_MS = 2_000;
 
-/** Extra delay when the last chunk reported a rate-limit error string. */
+/** Base delay before retrying after Hevy 429 (client exponential backoff). */
 export const WORKOUT_SYNC_RATE_LIMIT_POLL_DELAY_MS = 60_000;
+
+/** Cap for client 429 backoff (60s → 120s → 240s → 480s). */
+export const WORKOUT_SYNC_RATE_LIMIT_MAX_DELAY_MS = 480_000;
+
+/**
+ * Client poll delay after a rate-limited chunk (exponential on consecutive 429s).
+ */
+export function workoutSyncRateLimitPollDelayMs(consecutiveRateLimits: number): number {
+    const attempt = Math.max(1, consecutiveRateLimits);
+    const delay = WORKOUT_SYNC_RATE_LIMIT_POLL_DELAY_MS * Math.pow(2, attempt - 1);
+    return Math.min(delay, WORKOUT_SYNC_RATE_LIMIT_MAX_DELAY_MS);
+}
 
 /**
  * Fetches derived backup progress for the authenticated user (browser only).
@@ -281,4 +303,20 @@ export function isWorkoutHistorySyncInProgress(progress: TWorkoutSyncProgress): 
 export function shouldShowWorkoutHistorySyncBanner(progress: TWorkoutSyncProgress | null): boolean {
     if (!progress) return false;
     return isWorkoutHistorySyncInProgress(progress) || Boolean(progress.syncError);
+}
+
+/** Profile / status UI indicator for workout backup state. */
+export type TWorkoutHistorySyncStatus = "synced" | "syncing" | "error" | "paused";
+
+/**
+ * Derives sync status for profile indicator (green / yellow / red / grey dot).
+ */
+export function getWorkoutHistorySyncStatus(
+    progress: TWorkoutSyncProgress | null,
+): TWorkoutHistorySyncStatus | null {
+    if (!progress) return null;
+    if (progress.paused && isWorkoutHistorySyncInProgress(progress)) return "paused";
+    if (progress.syncError) return "error";
+    if (isWorkoutHistorySyncInProgress(progress)) return "syncing";
+    return "synced";
 }

@@ -160,9 +160,14 @@ type TSyncChunkResult = {
     hevyCount: number;
     syncError: string | null;
     done: boolean;
+    /** True when Hevy returned 429; client should back off and retry (not a terminal failure). */
+    rateLimited?: boolean;
 };
 
-type TWorkoutSyncProgress = Pick<TSyncChunkResult, "backedUpCount" | "hevyCount" | "syncError">;
+type TWorkoutSyncProgress = Pick<TSyncChunkResult, "backedUpCount" | "hevyCount" | "syncError" | "rateLimited"> & {
+    /** User paused background sync for this browser session. */
+    paused?: boolean;
+};
 
 type TWorkoutHistoryQueryOptions = {
     limit?: number;
