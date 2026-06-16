@@ -150,7 +150,7 @@ export function RecentWorkoutsSection() {
 
     return (
         <section aria-labelledby="recent-workouts-heading">
-            <Card className="overflow-visible rounded-2xl border border-border/60 bg-card px-4 py-5 shadow-sm sm:px-6 sm:py-6">
+            <Card className="rounded-2xl border border-border/60 bg-card px-4 py-5 shadow-sm sm:overflow-visible sm:px-6 sm:py-6">
                 <div className="min-w-0 space-y-1">
                     <h2
                         id="recent-workouts-heading"
@@ -165,7 +165,7 @@ export function RecentWorkoutsSection() {
                 </div>
 
                 {isLoading ? (
-                    <div className="flex gap-4 overflow-x-auto pb-2 pt-4 px-3 sm:px-5 md:px-6">
+                    <div className="flex gap-4 overflow-x-auto pb-2 pt-4 sm:px-5 md:px-6">
                         <PreviewCardSkeleton />
                         <PreviewCardSkeleton />
                     </div>
@@ -202,10 +202,10 @@ export function RecentWorkoutsSection() {
                         No backed-up workouts yet. Log a workout in Hevy to see it here.
                     </p>
                 ) : (
-                    <div className="relative overflow-visible pt-4">
+                    <div className="relative overflow-hidden pt-4 sm:overflow-visible">
                         <div
                             ref={scrollContainerRef}
-                            className="flex gap-4 overflow-x-auto pb-2 px-3 sm:px-5 md:px-6 snap-x snap-mandatory"
+                            className="flex gap-4 overflow-x-auto pb-2 sm:px-5 md:px-6 snap-x snap-mandatory"
                         >
                             {previewItems.map((item) => (
                                 <div
@@ -264,7 +264,7 @@ export function RecentWorkoutsSection() {
                                 onClick={handleScrollLeft}
                                 variant="outline"
                                 size="icon"
-                                className="absolute left-0 top-1/2 z-10 -translate-x-[calc(100%+0.75rem)] sm:-translate-x-[calc(100%+1rem)] -translate-y-1/2 bg-white/90 hover:bg-white dark:bg-lightSecondary dark:hover:bg-lightSecondary shadow-lg border-2 h-12 w-12 rounded-full transition-opacity flex items-center justify-center p-0"
+                                className="absolute left-0 top-1/2 z-10 hidden h-12 w-12 -translate-x-[calc(100%+1rem)] -translate-y-1/2 items-center justify-center rounded-full border-2 bg-white/90 p-0 shadow-lg transition-opacity hover:bg-white dark:bg-lightSecondary dark:hover:bg-lightSecondary sm:flex"
                                 aria-label="Scroll left"
                             >
                                 <ChevronLeft className="h-6 w-6" />
@@ -276,7 +276,7 @@ export function RecentWorkoutsSection() {
                                 onClick={handleScrollRight}
                                 variant="outline"
                                 size="icon"
-                                className="absolute right-0 top-1/2 z-10 translate-x-[calc(100%+0.75rem)] sm:translate-x-[calc(100%+1rem)] -translate-y-1/2 bg-white/90 hover:bg-white dark:bg-lightSecondary dark:hover:bg-lightSecondary shadow-lg border-2 h-12 w-12 rounded-full transition-opacity flex items-center justify-center p-0"
+                                className="absolute right-0 top-1/2 z-10 hidden h-12 w-12 translate-x-[calc(100%+1rem)] -translate-y-1/2 items-center justify-center rounded-full border-2 bg-white/90 p-0 shadow-lg transition-opacity hover:bg-white dark:bg-lightSecondary dark:hover:bg-lightSecondary sm:flex"
                                 aria-label="Scroll right"
                             >
                                 <ChevronRight className="h-6 w-6" />

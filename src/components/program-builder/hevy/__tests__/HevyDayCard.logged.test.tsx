@@ -81,12 +81,12 @@ describe("HevyDayCard read-only variant", () => {
         expect(within(container).getAllByTestId("exercise-gif")).toHaveLength(PREVIEW_MAX_EXERCISES);
     });
 
-    it("shows exercise note tooltip trigger and superset label when mapped", () => {
+    it("wraps exercises with notes in hover tooltips and shows superset label when mapped", () => {
         const day = mapBackedUpWorkoutToHevyRoutine(backedUpWorkoutFixture);
 
         render(<HevyDayCard variant="read-only" day={day} />);
 
         expect(screen.getAllByText("Superset 1").length).toBeGreaterThanOrEqual(1);
-        expect(screen.getAllByLabelText("Exercise details")).toHaveLength(2);
+        expect(screen.queryAllByLabelText("Exercise details")).toHaveLength(0);
     });
 });

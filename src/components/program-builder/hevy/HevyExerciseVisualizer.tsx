@@ -226,18 +226,6 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             <div className={isSelected ? 'text-white' : 'dark:text-offWhite'}>
                                                 {exerciseTitle}
                                             </div>
-                                            {readOnly && (
-                                                <button
-                                                    type="button"
-                                                    className="shrink-0 p-1 ml-1 cursor-pointer hover:opacity-80 text-lightSecondary dark:text-offWhite"
-                                                    onClick={() => setDetailsExercise(
-                                                        hevyExercises?.find((h) => h.id === exercise.exercise_template_id),
-                                                    )}
-                                                    aria-label="Exercise details"
-                                                >
-                                                    <InfoIcon className="size-4" />
-                                                </button>
-                                            )}
                                         </div>
                                     </div>
                                     <div className={`text-center flex flex-row items-center justify-end max-w-[50%] w-[50%] ${isSelected ? 'text-white' : 'dark:text-offWhite'}`}>
@@ -258,9 +246,15 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                 </div>
                 );
 
+                const hasExerciseTooltipContent =
+                    Boolean(exercise.reason) ||
+                    Boolean(exercise.notes) ||
+                    Boolean(exercise.rest_seconds && Number(exercise.rest_seconds) > 0);
+                const useRowTooltip = isSm || (readOnly && hasExerciseTooltipContent);
+
                 return (
                     <span key={"Week" + (Number(folder_id) + 1) + "Day" + i} className="contents">
-                        {isSm ? (
+                        {useRowTooltip ? (
                             <TooltipProvider delayDuration={0}>
                                 <Tooltip>
                                     <TooltipTrigger
@@ -302,6 +296,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             Rest time {exercise.rest_seconds} s
                                         </div>
                                     )}
+                                    {!readOnly && (
                                     <div className="flex flex-row flex-nowrap items-center gap-3">
                                         <button
                                             type="button"
@@ -319,8 +314,6 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             <InfoIcon className="shrink-0 size-5" />
                                             <span>Details</span>
                                         </button>
-                                        {!readOnly && (
-                                        <>
                                         <button
                                             type="button"
                                             className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 text-sm text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
@@ -347,9 +340,8 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             <Trash2Icon className="shrink-0 size-5" />
                                             <span>Delete</span>
                                         </button>
-                                        </>
-                                        )}
                                     </div>
+                                    )}
                                 </div>
                                     </TooltipContent>
                                 </Tooltip>
