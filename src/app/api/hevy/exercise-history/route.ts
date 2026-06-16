@@ -10,21 +10,12 @@
 
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { getServerHasActiveSubscription } from "@/lib/server-feature-limits";
 import {
     ensureWorkoutHistoryFresh,
     getExerciseStallAnalysisForUser,
     getSyncProgress,
 } from "@/api/workout-history-read";
-
-async function getServerIsPro(
-    supabase: Awaited<ReturnType<typeof createClient>>,
-): Promise<boolean> {
-    const { data, error } = await supabase.rpc("get_my_feature_limits");
-    if (error || !data?.[0]) {
-        return false;
-    }
-    return Boolean((data[0] as TFeatureLimits).has_active_subscription);
-}
 
 /**
  * POST /api/hevy/exercise-history — backup-based stall analysis per exercise template.
@@ -68,7 +59,7 @@ export async function POST(request: Request) {
             apiKey,
         });
 
-        const isPro = await getServerIsPro(supabase);
+        const isPro = await getServerHasActiveSubscription(supabase, user);
         const results = await getExerciseStallAnalysisForUser(supabase, user.id, {
             isPro,
             exerciseTemplateIds: requestedIds,

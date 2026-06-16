@@ -18,6 +18,7 @@ import { after } from 'next/server';
 import { observe, propagateAttributes } from '@langfuse/tracing';
 import { langfuseSpanProcessor } from '../../../../instrumentation';
 import { createClient } from '@/utils/supabase/server';
+import { getServerHasActiveSubscription } from '@/lib/server-feature-limits';
 import { instructions } from './instructions/instructions';
 import { getTools, type IBuildWeekOnceGuard } from './tools/tools';
 import { createSandbox } from './skills/sandbox';
@@ -44,16 +45,6 @@ function buildSkillsPrompt(skills: ISkillMetadata[]): string {
         Available skills:
         ${skillsList}
     `;
-}
-
-async function getServerHasActiveSubscription(
-    supabase: Awaited<ReturnType<typeof createClient>>,
-): Promise<boolean> {
-    const { data, error } = await supabase.rpc('get_my_feature_limits');
-    if (error || !data?.[0]) {
-        return false;
-    }
-    return Boolean((data[0] as TFeatureLimits).has_active_subscription);
 }
 
 const callOptionsSchema = z.object({
@@ -113,7 +104,7 @@ async function handleChatPost(req: Request) {
             async () => {
                 const sanitizedMessages = sanitizeMessagesWithUnresolvedToolCalls(messages);
 
-                const hasActiveSubscription = user ? await getServerHasActiveSubscription(supabase) : false;
+                const hasActiveSubscription = user ? await getServerHasActiveSubscription(supabase, user) : false;
 
                 const systemPrompt = instructions({
                     hevyProgram,

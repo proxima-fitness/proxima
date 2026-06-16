@@ -28,7 +28,7 @@ import {
     getTestTierOverride,
     isTestUser,
     setTestTierOverride,
-    type TestTierOverride,
+    type TTestTierOverride,
 } from "@/api/feature-limits";
 import { Crown, Home, PersonStanding, LockIcon, LogIn, Search, UserRound, Trash2 } from "lucide-react";
 import { DeleteAccountDialog } from "./DeleteAccountDialog";
@@ -93,7 +93,7 @@ const NavItems = (pathname: string) => {
     );
 
     const [dropdownOpen, setDropdownOpen] = useState(false);
-    const [testTierOverride, setTestTierOverrideState] = useState<TestTierOverride | null>(() => getTestTierOverride());
+    const [testTierOverride, setTestTierOverrideState] = useState<TTestTierOverride | null>(() => getTestTierOverride());
     const [openConnectHevyDialog, setOpenConnectHevyDialog] = useState(false);
     const [openDeleteAccountDialog, setOpenDeleteAccountDialog] = useState(false);
     // const { isHevy, setIsHevy } = useIsHevy();

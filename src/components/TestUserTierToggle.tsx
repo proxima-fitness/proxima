@@ -20,26 +20,30 @@ import {
     getTestTierOverride,
     isTestUser,
     setTestTierOverride,
-    type TestTierOverride,
+    syncTestTierOverrideToCookie,
+    type TTestTierOverride,
 } from "@/api/feature-limits";
 import { useState, useEffect } from "react";
 
-type TierSelectValue = "real" | TestTierOverride;
+type TTierSelectValue = "real" | TTestTierOverride;
 
 /** No props. Renders nothing if user is not a test user; otherwise tier select. */
 export function TestUserTierToggle() {
     const { user } = useUserContext();
     const queryClient = useQueryClient();
-    const [value, setValue] = useState<TierSelectValue>(() => getTestTierOverride() ?? "real");
+    const [value, setValue] = useState<TTierSelectValue>(() => getTestTierOverride() ?? "real");
 
     useEffect(() => {
+        if (user && isTestUser(user)) {
+            syncTestTierOverrideToCookie();
+        }
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setValue(getTestTierOverride() ?? "real");
-    }, [user?.id]);
+    }, [user]);
 
     if (!user || !isTestUser(user)) return null;
 
-    const handleChange = (next: TierSelectValue) => {
+    const handleChange = (next: TTierSelectValue) => {
         setTestTierOverride(next === "real" ? null : next);
         setValue(next);
         queryClient.invalidateQueries({ queryKey: ["feature-limits", user.id] });
@@ -50,7 +54,7 @@ export function TestUserTierToggle() {
             <p className="text-muted-foreground mb-1.5 text-xs font-medium">Test user</p>
             <Select
                 value={value}
-                onValueChange={(v) => handleChange(v as TierSelectValue)}
+                onValueChange={(v) => handleChange(v as TTierSelectValue)}
             >
                 <SelectTrigger className="h-8 text-xs">
                     <SelectValue placeholder="Tier" />

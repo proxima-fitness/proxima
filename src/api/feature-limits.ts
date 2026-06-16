@@ -8,7 +8,7 @@
  * 2. **Free / Pro / Pro+** — limits from `get_my_feature_limits` (backed by
  *    `product_usage_limits`), with usage incremented via `increment_feature_usage`.
  * 3. **Test users** — allowlisted emails that can override tier (Free, Pro, Pro+)
- *    via localStorage for QA.
+ *    via localStorage (mirrored to a cookie for server-side paywall checks).
  *
  * Depends on: ./index (supabase client), @supabase/supabase-js (User type)
  * Used by: hooks.ts (useMyFeatureLimits), program-builder (recordLlmRequest),
@@ -20,7 +20,7 @@ import { User } from "@supabase/supabase-js";
 const ANONYMOUS_LLM_STORAGE_KEY = "proxima_anonymous_llm_remaining";
 const ANONYMOUS_LLM_MAX = 10;
 
-// Test user tier override (client-side only, for allowlisted emails)
+// Test user tier override (localStorage + cookie mirror for server routes)
 const TEST_USER_EMAILS = (
     typeof process !== "undefined" && process.env.NEXT_PUBLIC_TEST_USER_EMAILS
         ? process.env.NEXT_PUBLIC_TEST_USER_EMAILS.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean)
@@ -29,10 +29,10 @@ const TEST_USER_EMAILS = (
 
 export const TEST_TIER_OVERRIDE_KEY = "proxima_test_tier_override";
 
-export type TestTierOverride = "free" | "pro" | "pro_plus";
+export type TTestTierOverride = "free" | "pro" | "pro_plus";
 
 /** Test overrides only — mirrors `public.product_usage_limits` (product_title): Free 1/20; Pro 2/100; Pro+ 10/1000 */
-const TIER_LIMITS: Record<TestTierOverride, { tier: string; has_active_subscription: boolean; max_monthly_exports: number; max_monthly_llm_requests: number }> = {
+export const TEST_TIER_LIMITS: Record<TTestTierOverride, { tier: string; has_active_subscription: boolean; max_monthly_exports: number; max_monthly_llm_requests: number }> = {
     free: { tier: "Free", has_active_subscription: false, max_monthly_exports: 1, max_monthly_llm_requests: 20 },
     pro: { tier: "Pro", has_active_subscription: true, max_monthly_exports: 2, max_monthly_llm_requests: 100 },
     pro_plus: { tier: "Pro+", has_active_subscription: true, max_monthly_exports: 10, max_monthly_llm_requests: 1000 },
@@ -54,23 +54,61 @@ export function isTestUser(user: User | null | undefined): boolean {
  *
  * @returns A `TestTierOverride` if set and valid, otherwise `null`
  */
-export function getTestTierOverride(): TestTierOverride | null {
-    if (typeof window === "undefined") return null;
-    const raw = localStorage.getItem(TEST_TIER_OVERRIDE_KEY);
-    if (raw !== null && raw in TIER_LIMITS) {
-        return raw as TestTierOverride;
+export function parseTestTierOverride(raw: string | null | undefined): TTestTierOverride | null {
+    if (raw != null && raw in TEST_TIER_LIMITS) {
+        return raw as TTestTierOverride;
     }
     return null;
 }
 
+export function applyTestTierOverrideToLimits(
+    row: TFeatureLimits,
+    override: TTestTierOverride,
+): TFeatureLimits {
+    const limits = TEST_TIER_LIMITS[override];
+    const monthly_exports_used = row.monthly_exports_used ?? 0;
+    const monthly_llm_requests_used = row.monthly_llm_requests_used ?? 0;
+    const remaining_exports = Math.max(0, limits.max_monthly_exports - monthly_exports_used);
+    const remaining_llm_requests = Math.max(0, limits.max_monthly_llm_requests - monthly_llm_requests_used);
+
+    return {
+        ...row,
+        tier: limits.tier,
+        has_active_subscription: limits.has_active_subscription,
+        max_monthly_exports: limits.max_monthly_exports,
+        max_monthly_llm_requests: limits.max_monthly_llm_requests,
+        monthly_exports_used: row.monthly_exports_used ?? 0,
+        monthly_llm_requests_used: row.monthly_llm_requests_used ?? 0,
+        remaining_exports,
+        remaining_llm_requests,
+    };
+}
+
+/** Mirrors localStorage test-tier override to a cookie so server routes can apply the same gating. */
+export function syncTestTierOverrideToCookie(): void {
+    if (typeof document === "undefined") return;
+    const override = getTestTierOverride();
+    if (override) {
+        document.cookie = `${TEST_TIER_OVERRIDE_KEY}=${override}; path=/; SameSite=Lax`;
+    } else {
+        document.cookie = `${TEST_TIER_OVERRIDE_KEY}=; path=/; Max-Age=0; SameSite=Lax`;
+    }
+}
+
+export function getTestTierOverride(): TTestTierOverride | null {
+    if (typeof window === "undefined") return null;
+    return parseTestTierOverride(localStorage.getItem(TEST_TIER_OVERRIDE_KEY));
+}
+
 /** Sets test tier override (localStorage). Caller should invalidate ["feature-limits", user?.id] after. */
-export function setTestTierOverride(value: TestTierOverride | null): void {
+export function setTestTierOverride(value: TTestTierOverride | null): void {
     if (typeof window === "undefined") return;
     if (value === null) {
         localStorage.removeItem(TEST_TIER_OVERRIDE_KEY);
     } else {
         localStorage.setItem(TEST_TIER_OVERRIDE_KEY, value);
     }
+    syncTestTierOverrideToCookie();
 }
 
 /**
@@ -123,26 +161,11 @@ export const getMyFeatureLimits = async (user: User | undefined | null): Promise
         if (!isTestUser(user)) return row;
 
         if (typeof window === "undefined") return row;
+        syncTestTierOverrideToCookie();
         const override = getTestTierOverride();
         if (!override) return row;
 
-        const limits = TIER_LIMITS[override];
-        const monthly_exports_used = row.monthly_exports_used ?? 0;
-        const monthly_llm_requests_used = row.monthly_llm_requests_used ?? 0;
-        const remaining_exports = Math.max(0, limits.max_monthly_exports - monthly_exports_used);
-        const remaining_llm_requests = Math.max(0, limits.max_monthly_llm_requests - monthly_llm_requests_used);
-
-        return {
-            ...row,
-            tier: limits.tier,
-            has_active_subscription: limits.has_active_subscription,
-            max_monthly_exports: limits.max_monthly_exports,
-            max_monthly_llm_requests: limits.max_monthly_llm_requests,
-            monthly_exports_used: row.monthly_exports_used ?? 0,
-            monthly_llm_requests_used: row.monthly_llm_requests_used ?? 0,
-            remaining_exports,
-            remaining_llm_requests,
-        };
+        return applyTestTierOverrideToLimits(row, override);
     } catch (err) {
         console.error("Error fetching feature limits", err);
         return null;
