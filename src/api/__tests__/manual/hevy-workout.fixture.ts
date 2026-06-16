@@ -1,0 +1,61 @@
+/** Sample Hevy `GET /v1/workouts` payload for import adapter tests. */
+export const hevyWorkoutFixture: THevyWorkout = {
+    id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    title: "Upper Power",
+    description: "",
+    start_time: "2024-06-10T09:00:00.000Z",
+    end_time: "2024-06-10T10:15:00.000Z",
+    exercises: [
+        {
+            index: 0,
+            title: "Bench Press (Barbell)",
+            notes: "",
+            exercise_template_id: "11111111-1111-1111-1111-111111111111",
+            superset_id: null,
+            sets: [
+                {
+                    index: 0,
+                    type: "warmup",
+                    weight_kg: 60,
+                    reps: 10,
+                    distance_meters: null,
+                    duration_seconds: null,
+                    rpe: null,
+                    custom_metric: null,
+                    rep_range: null,
+                },
+                {
+                    index: 1,
+                    type: "normal",
+                    weight_kg: 100,
+                    reps: 5,
+                    distance_meters: null,
+                    duration_seconds: null,
+                    rpe: 8,
+                    custom_metric: null,
+                    rep_range: null,
+                },
+            ],
+        },
+        {
+            index: 1,
+            title: "Overhead Press (Barbell)",
+            notes: "felt heavy",
+            exercise_template_id: "22222222-2222-2222-2222-222222222222",
+            superset_id: null,
+            sets: [
+                {
+                    index: 0,
+                    type: "normal",
+                    weight_kg: 55,
+                    reps: 8,
+                    distance_meters: null,
+                    duration_seconds: null,
+                    rpe: 7.5,
+                    custom_metric: null,
+                    rep_range: { start: 6, end: 8 },
+                },
+            ],
+        },
+    ],
+};

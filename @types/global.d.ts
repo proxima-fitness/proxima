@@ -1,3 +1,7 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/hooks/supabase";
+
+declare global {
 // Here we will define the global types for the project and the union types
 
 // Generic Types
@@ -117,11 +121,50 @@ type TFeatureLimits = {
 };
 
 
+/** One completed workout from `GET /v1/workouts` or `GET /v1/workouts/{id}`. */
+type THevyWorkoutExercise = {
+    index: number;
+    title: string;
+    notes?: string;
+    exercise_template_id: string;
+    superset_id?: number | null;
+    sets: THevySets[];
+};
+
+type THevyWorkout = {
+    id: string;
+    title: string;
+    description?: string;
+    start_time: string;
+    end_time: string;
+    exercises: THevyWorkoutExercise[];
+    updated_at?: string;
+    created_at?: string;
+};
+
 type THevyWorkoutsResponse = {
     page: number;
     page_count: number;
-    workouts: THevyWorkouts[];
+    workouts: THevyWorkout[];
 };
+
+type TWorkoutHistoryDb = SupabaseClient<Database>;
+
+type TImportHevyWorkoutResult =
+    | { status: "inserted"; workoutId: string }
+    | { status: "skipped"; workoutId: string }
+    | { status: "error"; message: string };
+
+type THevyExerciseTemplateRow = Pick<
+    Database["public"]["Tables"]["hevy_exercise_templates"]["Row"],
+    | "id"
+    | "title"
+    | "normalized_title"
+    | "type"
+    | "primary_muscle_group"
+    | "secondary_muscle_groups"
+    | "equipment"
+>;
 
 type TRoutineResponse = {
     routine: TRoutine;
@@ -642,3 +685,6 @@ interface IBuildWeekOutput {
     error?: string;
     message?: string;
 }
+}
+
+export {};

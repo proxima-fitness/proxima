@@ -4,12 +4,12 @@ import type { User } from "@supabase/supabase-js";
 const mockMaybeSingle = vi.fn();
 const mockSingle = vi.fn();
 
-type MockFilterBuilder =
+type TMockFilterBuilder =
     | { maybeSingle: typeof mockMaybeSingle; single: typeof mockSingle }
-    | { eq: Mock<() => MockFilterBuilder> }
+    | { eq: Mock<() => TMockFilterBuilder> }
     | { select: Mock<() => { maybeSingle: typeof mockMaybeSingle }> };
 
-const mockEqSecond: Mock<() => MockFilterBuilder> = vi.fn(() => ({
+const mockEqSecond: Mock<() => TMockFilterBuilder> = vi.fn(() => ({
     maybeSingle: mockMaybeSingle,
     single: mockSingle,
 }));

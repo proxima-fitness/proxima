@@ -2224,7 +2224,7 @@ export type TProgressedExercise = {
  * @returns An array of ProgressedExercise objects
  */
 // export const doubleProgression = async (
-//     workout: THevyWorkouts,
+//     workout: THevyWorkout,
 //     routine: TRoutineResponse,
 //     program_id: string,
 //     programHistoryId: string,
