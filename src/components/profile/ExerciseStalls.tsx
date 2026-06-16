@@ -161,24 +161,24 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4 w-full max-w-full box-border items-start">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4 w-full max-w-full box-border items-stretch">
                 {exercises.map((exercise, index) => {
                     const rowIndex = Math.floor(index / gridColumns);
                     const colorValue = exercise.weight > 0 ? getColorValue(exercise.color) : "var(--muted-foreground, #999)";
                     const isExpanded = expandedRow === rowIndex;
                     const hasSessions = !dataLoading && exercise.sessions && exercise.sessions.length > 0;
-                    const showBottomSpacing = (exercise.hasStall && exercise.weight > 0) || isExpanded;
+                    const showStallFooter = exercise.hasStall && exercise.weight > 0 && !dataLoading;
 
                     return (
                         <Card
                             key={exercise.name}
-                            className="w-full box-border border border-l-4 border-border dark:bg-blueGray dark:border dark:border-l-4"
+                            className="flex h-full w-full flex-col box-border border border-l-4 border-border dark:bg-blueGray dark:border dark:border-l-4"
                             style={{ borderLeftColor: colorValue }}
                         >
-                            <CardContent className="p-4 flex flex-col">
+                            <CardContent className="flex flex-1 flex-col p-4">
                                 {/* Top section: Exercise name, weight, and trend line */}
                                 <div
-                                    className={`flex justify-between items-center w-full ${showBottomSpacing ? "mb-3" : ""} ${hasSessions ? "cursor-pointer" : ""}`}
+                                    className={`flex justify-between items-center w-full ${isExpanded ? "mb-3" : ""} ${hasSessions ? "cursor-pointer" : ""}`}
                                     onClick={(e) => {
                                         if (hasSessions) {
                                             e.stopPropagation();
@@ -283,13 +283,15 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                                     </>
                                 )}
 
-                                {/* Stall detected section */}
-                                {exercise.hasStall && exercise.weight > 0 && (
-                                    <>
-                                        <Separator className="my-3" />
-                                        <div className="flex flex-row items-center justify-between gap-2 pt-0 pb-0">
-                                            <div className="flex items-center gap-2 flex-1">
-                                                <AlertTriangle className="size-4 text-red-600 shrink-0" />
+                                <div
+                                    className={`mt-auto flex min-h-[46px] items-center pt-3 ${
+                                        showStallFooter ? "border-t border-border" : ""
+                                    }`}
+                                >
+                                    {showStallFooter ? (
+                                        <div className="flex w-full flex-row items-center justify-between gap-2">
+                                            <div className="flex min-w-0 flex-1 items-center gap-2">
+                                                <AlertTriangle className="size-4 shrink-0 text-red-600" />
                                                 <span className="text-xs text-red-600">
                                                     {BLIND_SPOT_STRINGS.StallDetected}
                                                 </span>
@@ -297,16 +299,15 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                                             <Button
                                                 variant="destructive"
                                                 size="sm"
-                                                disabled={exercise.weight === 0}
                                                 onClick={() => handleExploreFixes(exercise)}
-                                                className="shrink-0 h-[38px] px-4 text-xs  text-white hover:bg-red-900 bg-red-700 dark:bg-destructive dark:text-destructive-foreground dark:hover:bg-destructive/90"
+                                                className="h-[38px] shrink-0 px-4 text-xs text-white hover:bg-red-900 bg-red-700 dark:bg-destructive dark:text-destructive-foreground dark:hover:bg-destructive/90"
                                             >
                                                 {BLIND_SPOT_STRINGS.ExploreFixes}{" "}
-                                                <ArrowRight className="size-4 ml-1" />
+                                                <ArrowRight className="ml-1 size-4" />
                                             </Button>
                                         </div>
-                                    </>
-                                )}
+                                    ) : null}
+                                </div>
                             </CardContent>
                         </Card>
                     );

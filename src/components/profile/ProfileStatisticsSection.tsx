@@ -203,7 +203,7 @@ export function ProfileStatisticsSection({ hevyConnected }: IProps) {
                                 className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-2"
                             >
                                 <ChartLineIcon className="size-5 shrink-0 opacity-80" aria-hidden />
-                                Profile statistics
+                                Statistics
                             </h2>
                             <p className="text-sm text-muted-foreground">
                                 Weekly totals from your Hevy backup.

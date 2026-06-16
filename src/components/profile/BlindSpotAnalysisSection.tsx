@@ -45,7 +45,7 @@ import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
 import { ExerciseStalls } from "./ExerciseStalls";
 import Link from "next/link";
-import { ChartLineIcon, SparklesIcon, XIcon } from "lucide-react";
+import { ChartLineIcon } from "lucide-react";
 
 const PRO_PAGE_SIZE = 9;
 const FREE_LIMIT = 3;
@@ -144,16 +144,16 @@ export function BlindSpotAnalysisSection({
     });
     const isSyncing = progress != null && isWorkoutHistorySyncInProgress(progress);
     const syncError = progress?.syncError ?? null;
+    const analysisEnabled = Boolean(user) && hevyConnected && !syncError;
 
-    const [analysisRequested, setAnalysisRequested] = useState(false);
-    const { data: templates = [], isLoading: isLoadingTemplates } = useHevyExercises(analysisRequested);
+    const { data: templates = [], isLoading: isLoadingTemplates } = useHevyExercises(analysisEnabled);
     const {
         data: exerciseStallsData,
         isFetching: isFetchingExerciseStalls,
         isError: isExerciseStallsError,
         error: exerciseStallsError,
         refetch: refetchExerciseStalls,
-    } = useExerciseStallsAnalysis(user, analysisRequested);
+    } = useExerciseStallsAnalysis(user, analysisEnabled);
     const { data: featureLimits } = useMyFeatureLimits(user);
     const { data: subscribedPrograms = [], isLoading: isLoadingPrograms } = useSubscribedPrograms(user);
     const isPro = featureLimits?.has_active_subscription === true;
@@ -166,22 +166,7 @@ export function BlindSpotAnalysisSection({
     const [exploreFixesExercise, setExploreFixesExercise] = useState<TExerciseStallResult | null>(null);
 
     const stallAnalysisResolved = exerciseStallsData !== undefined;
-    const showIdleAnalyze = !analysisRequested && !stallAnalysisResolved && !isFetchingExerciseStalls;
-    const dataLoading = analysisRequested && isFetchingExerciseStalls;
-
-    const handleCancelAnalysis = useCallback(() => {
-        void queryClient.cancelQueries({
-            queryKey: ["exercise-stalls-analysis", user?.id, "v7"],
-        });
-        setAnalysisRequested(false);
-    }, [queryClient, user?.id]);
-
-    const handleStartAnalysis = useCallback(() => {
-        if (syncError) {
-            return;
-        }
-        setAnalysisRequested(true);
-    }, [syncError]);
+    const dataLoading = analysisEnabled && isFetchingExerciseStalls;
 
     const handleExploreFixes = useCallback((exercise: TExerciseStallResult) => {
         setExploreFixesExercise(exercise);
@@ -256,7 +241,7 @@ export function BlindSpotAnalysisSection({
     }, [filteredAndSorted.length, sortBy, hideNoData, statusFilter]);
 
     const showPlaceholderCards =
-        analysisRequested && isLoadingTemplates === false && dataLoading && templates.length > 0;
+        analysisEnabled && isLoadingTemplates === false && dataLoading && templates.length > 0;
 
     const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
     useEffect(() => {
@@ -268,9 +253,10 @@ export function BlindSpotAnalysisSection({
     }, [dataLoading]);
 
     const titleSuffix = (() => {
-        if (showIdleAnalyze) return null;
-        if (dataLoading) return "(…)";
-        return `(${filteredAndSorted.length})`;
+        if (!analysisEnabled) return null;
+        if (dataLoading && !stallAnalysisResolved) return "(…)";
+        if (stallAnalysisResolved) return `(${filteredAndSorted.length})`;
+        return null;
     })();
 
     return (
@@ -285,7 +271,7 @@ export function BlindSpotAnalysisSection({
                         Quick check on lift progress. Open fixes for exercises that stall.
                     </p>
                 </div>
-                {stallAnalysisResolved && !showIdleAnalyze ? (
+                {stallAnalysisResolved && analysisEnabled ? (
                     <Button
                         type="button"
                         variant="outline"
@@ -293,7 +279,6 @@ export function BlindSpotAnalysisSection({
                         className="shrink-0 rounded-full border-border/80"
                         disabled={isFetchingExerciseStalls}
                         onClick={() => {
-                            setAnalysisRequested(true);
                             void refetchExerciseStalls();
                         }}
                     >
@@ -301,48 +286,30 @@ export function BlindSpotAnalysisSection({
                     </Button>
                 ) : null}
             </div>
-            {showIdleAnalyze && (
+            {!hevyConnected ? (
+                <p className="mb-6 text-sm text-muted-foreground max-w-2xl">
+                    Connect Hevy to analyze lift progress from your backed-up workouts.
+                </p>
+            ) : syncError ? (
                 <div className="mb-6 rounded-lg bg-card/50 p-5 flex flex-col items-center text-center">
-                    {syncError ? (
-                        <>
-                            <p className="text-sm text-destructive mb-4 max-w-md">
-                                Workout history sync failed: {syncError}
-                            </p>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="lg"
-                                className="min-w-56 h-12 rounded-full"
-                                onClick={() => {
-                                    void queryClient.invalidateQueries({
-                                        queryKey: WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY,
-                                    });
-                                }}
-                            >
-                                Retry sync
-                            </Button>
-                        </>
-                    ) : (
-                        <>
-                            <p className="text-sm text-muted-foreground mb-4 max-w-md">
-                                Analyzes your backed-up Hevy workouts for stalls — usually a few seconds.
-                                {isSyncing
-                                    ? " Older workouts are still syncing; analysis uses what is backed up so far."
-                                    : ""}
-                            </p>
-                            <Button
-                                type="button"
-                                size="lg"
-                                onClick={handleStartAnalysis}
-                                className="min-w-56 h-12 rounded-full px-10 text-md text-white bg-lightSecondary hover:bg-lightSecondary/90"
-                            >
-                                Analyze
-                                <SparklesIcon className="size-4" />
-                            </Button>
-                        </>
-                    )}
+                    <p className="text-sm text-destructive mb-4 max-w-md">
+                        Workout history sync failed: {syncError}
+                    </p>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="lg"
+                        className="min-w-56 h-12 rounded-full"
+                        onClick={() => {
+                            void queryClient.invalidateQueries({
+                                queryKey: WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY,
+                            });
+                        }}
+                    >
+                        Retry sync
+                    </Button>
                 </div>
-            )}
+            ) : null}
             {dataLoading && (
                 <div className="mb-4 w-full">
                     <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
@@ -356,22 +323,16 @@ export function BlindSpotAnalysisSection({
                             Backup still syncing — results may update as more workouts arrive.
                         </p>
                     ) : null}
-                    <div className="flex justify-center mt-4">
-                        <Button type="button" variant="outline" size="lg" onClick={handleCancelAnalysis}>
-                            <XIcon className="size-4" />
-                            Cancel
-                        </Button>
-                    </div>
                 </div>
             )}
-            {!dataLoading && isExerciseStallsError && analysisRequested ? (
+            {!dataLoading && isExerciseStallsError && analysisEnabled ? (
                 <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
                     {exerciseStallsError instanceof Error
                         ? exerciseStallsError.message
                         : "Could not run analysis. Please try again."}
                 </div>
             ) : null}
-            {!dataLoading && allExercises.length > 0 && (
+            {analysisEnabled && !dataLoading && allExercises.length > 0 && (
                 <div className="flex flex-wrap items-center gap-4 mb-4">
                     <div className="flex flex-wrap items-center gap-2">
                         <span className="text-sm text-muted-foreground">Sort:</span>
@@ -503,7 +464,7 @@ export function BlindSpotAnalysisSection({
                     </div>
                 </DialogContent>
             </Dialog>
-            {showIdleAnalyze ? null : showPlaceholderCards ? (
+            {analysisEnabled && (showPlaceholderCards ? (
                 <ExerciseStalls
                     exercises={placeholderExercises}
                     onExploreFixes={handleExploreFixes}
@@ -511,7 +472,7 @@ export function BlindSpotAnalysisSection({
                     showViewMore={!isPro}
                     dataLoading={true}
                 />
-            ) : analysisRequested && isLoadingTemplates ? (
+            ) : isLoadingTemplates ? (
                 <div className="pt-5 w-full max-w-full overflow-hidden px-0 box-border">
                     <div className="flex justify-between items-center mb-3 w-full max-w-full box-border">
                         <Skeleton className="h-3.5 w-2/5 flex-1 min-w-0" />
@@ -546,7 +507,7 @@ export function BlindSpotAnalysisSection({
                     onPageChange={isPro ? setCurrentPage : undefined}
                     performancesLabel={isPro ? "Full backup history" : "Last 15 performances"}
                 />
-            )}
+            ))}
         </section>
     );
 }

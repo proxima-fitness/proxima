@@ -4,11 +4,11 @@
  * @module (app)/profile/ProfileContent
  *
  * Client profile body: Hevy-style card stack on muted background — header, statistics,
- * recent workouts, Hevy programs, programs vault, blind-spot analysis.
+ * blind-spot analysis, recent workouts, Hevy programs, programs vault.
  * Resume-draft banner sits above the card stack.
  *
  * Depends on: UserContext, useHevyPrograms/useHevySecret, ProfileHero, ProfileStatisticsSection,
- * RecentWorkoutsSection, EditProfile, BlindSpotAnalysisSection, HevyProgramsGrid, MyProgramsVault,
+ * BlindSpotAnalysisSection, RecentWorkoutsSection, EditProfile, HevyProgramsGrid, MyProgramsVault,
  * ResumeDraftBanner.
  * Used by: (app)/profile/page.tsx.
  */
@@ -78,6 +78,13 @@ export function ProfileContent() {
 
                 <ProfileStatisticsSection hevyConnected={hevyConnected} />
 
+                <Card className={PROFILE_CARD_CLASS}>
+                    <BlindSpotAnalysisSection
+                        hevyPrograms={hevyPrograms}
+                        isLoadingHevy={isLoadingHevy}
+                    />
+                </Card>
+
                 {hevyConnected ? <RecentWorkoutsSection /> : null}
 
                 {showHevyCard ? (
@@ -94,13 +101,6 @@ export function ProfileContent() {
                         <MyProgramsVault />
                     </Card>
                 </Suspense>
-
-                <Card className={PROFILE_CARD_CLASS}>
-                    <BlindSpotAnalysisSection
-                        hevyPrograms={hevyPrograms}
-                        isLoadingHevy={isLoadingHevy}
-                    />
-                </Card>
             </div>
         </div>
     );
