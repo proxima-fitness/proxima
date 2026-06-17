@@ -40,6 +40,7 @@ import { toast } from "sonner";
 import type { TCommitWithUndoOptions } from "@/components/program-builder/mutations/types";
 import posthog from "posthog-js";
 import { useBuildProgramActions } from "@/contexts/BuildProgramActionsContext";
+import { useAgentDebugMode } from "@/contexts/AgentDebugModeContext";
 import { useUserContext } from "@/contexts/UserContext";
 import {
     Attachments,
@@ -85,6 +86,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
 
     const { user } = useUserContext();
     const { getPersistChatIdRef } = useBuildProgramActions();
+    const { debugMode } = useAgentDebugMode();
     const searchParams = useSearchParams();
     const buildProgramReturnQs = searchParams.toString();
     const resolvePersistChatId = () => getPersistChatIdRef.current?.() ?? "";
@@ -672,6 +674,21 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                     : "input-available";
 
                                             if (isError) {
+                                                if (!debugMode) {
+                                                    return (
+                                                        <Tool key={`${message.id}-${index}-mutate-planning`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
+                                                            <ToolHeader
+                                                                type="tool-mutateProgram"
+                                                                state="input-available"
+                                                                title="Planning"
+                                                            />
+                                                            <ToolContent>
+                                                                <p className="text-sm text-muted-foreground px-3 pb-3">Planning…</p>
+                                                            </ToolContent>
+                                                        </Tool>
+                                                    );
+                                                }
+
                                                 const errorCtx = {
                                                     errorText: mutatePart.errorText,
                                                     output: mutatePart.output,

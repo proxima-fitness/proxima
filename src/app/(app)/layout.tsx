@@ -30,6 +30,7 @@ import { ProfilePictureProvider } from "@/contexts/ProfilePictureContext";
 import { ThemeProvider } from "@/components/theme-provider"
 import { PoundsOrKgProvider } from "@/contexts/PoundsOrKgContext";
 import { BuildProgramActionsProvider } from "@/contexts/BuildProgramActionsContext";
+import { AgentDebugModeProvider } from "@/contexts/AgentDebugModeContext";
 import { WorkoutHistorySyncBanner } from "@/components/workout-history/WorkoutHistorySyncBanner";
 
 export const viewport: Viewport = {
@@ -119,6 +120,7 @@ export default function RootLayout({
                 >
                 <QueryProvider>
                     <UserProvider>
+                        <AgentDebugModeProvider>
                         <ProfilePictureProvider>
                         <IsHevyProvider>
                             <SidebarProvider defaultOpen={false}>
@@ -146,6 +148,7 @@ export default function RootLayout({
                             </SidebarProvider>
                         </IsHevyProvider>
                         </ProfilePictureProvider>
+                        </AgentDebugModeProvider>
                     </UserProvider>
                 </QueryProvider>
                 </ThemeProvider>

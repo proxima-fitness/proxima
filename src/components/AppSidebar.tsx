@@ -55,6 +55,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useMyFeatureLimits, useUserFullName, useProfilePictureByID, useHevySecret, useChatIds } from "@/api/hooks";
 import { signOutUser } from "@/api/authentication";
 import { TestUserTierToggle } from "@/components/TestUserTierToggle";
+import { TestUserDebugModeToggle } from "@/components/TestUserDebugModeToggle";
 import { isTestUser } from "@/api/feature-limits";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { getInitials } from "@/utils/general/helpers";
@@ -401,6 +402,7 @@ export function AppSidebar() {
                             <SidebarGroup>
                                 <SidebarGroupContent>
                                     <TestUserTierToggle />
+                                    <TestUserDebugModeToggle />
                                 </SidebarGroupContent>
                             </SidebarGroup>
                         </>
