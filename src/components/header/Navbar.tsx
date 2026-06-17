@@ -30,7 +30,7 @@ import {
     setTestTierOverride,
     type TTestTierOverride,
 } from "@/api/feature-limits";
-import { Crown, Home, PersonStanding, LockIcon, LogIn, Search, UserRound, Trash2 } from "lucide-react";
+import { Crown, Home, PersonStanding, LockIcon, LogIn, Search, UserRound, Trash2, Shield } from "lucide-react";
 import { DeleteAccountDialog } from "./DeleteAccountDialog";
 import { authenticatedNavLinks, navLinks, navIdToUrl } from "@/assets/constants/nav-links";
 import { useTheme } from "next-themes"
@@ -343,6 +343,12 @@ const NavItems = (pathname: string) => {
                                     </>
                                 )}
                                 <DropdownMenuSeparator />
+                                <DropdownMenuItem asChild>
+                                    <Link href="/account/privacy" className="cursor-pointer flex items-center gap-2">
+                                        <Shield className="w-4 h-4" />
+                                        Privacy settings
+                                    </Link>
+                                </DropdownMenuItem>
                                 <DropdownMenuItem
                                     onSelect={(e) => {
                                         e.preventDefault();

@@ -17,6 +17,7 @@ import {
     Crown,
     UserRound,
     Trash2,
+    Shield,
     LockIcon,
     Link2,
     Sun,
@@ -546,6 +547,16 @@ export function AppSidebar() {
                                             )}
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator />
+                                        <DropdownMenuItem asChild>
+                                            <Link
+                                                href="/account/privacy"
+                                                className="cursor-pointer flex items-center gap-2"
+                                                onClick={closeMobileSidebar}
+                                            >
+                                                <Shield className="h-4 w-4" />
+                                                Privacy settings
+                                            </Link>
+                                        </DropdownMenuItem>
                                         <DropdownMenuItem
                                             onSelect={(e) => {
                                                 e.preventDefault();

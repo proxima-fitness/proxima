@@ -19,6 +19,8 @@ import { toast } from "sonner";
 
 const CONFIRM_TEXT = "Delete";
 
+const stripePortalUrl = process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL?.trim() || "";
+
 interface IDeleteAccountDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -72,8 +74,23 @@ export function DeleteAccountDialog({ open, onOpenChange }: IDeleteAccountDialog
             <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
                 <DialogHeader>
                     <DialogTitle>Delete my account</DialogTitle>
-                    <DialogDescription>
-                        Your account and all associated data will be removed. You will lose access to programs, profile, and any linked services. If you are on a paid plan please cancel your plan via `Manage Subscription` before deleting your account.
+                    <DialogDescription asChild>
+                        <p>
+                            Your account and all associated data will be removed. You will lose access
+                            to programs, profile, and any linked services. If you are on a paid plan
+                            please cancel your plan via{" "}
+                            {stripePortalUrl ? (
+                                <a
+                                    href={stripePortalUrl}
+                                    className="text-lightSecondary underline underline-offset-4 hover:underline"
+                                >
+                                    Manage Subscription
+                                </a>
+                            ) : (
+                                "Manage Subscription"
+                            )}{" "}
+                            before deleting your account.
+                        </p>
                     </DialogDescription>
                 </DialogHeader>
                 <p className="text-sm text-destructive font-medium">

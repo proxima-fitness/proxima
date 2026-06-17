@@ -120,6 +120,70 @@ type TFeatureLimits = {
     remaining_llm_requests: number;
 };
 
+type TSignUpPendingConsents = {
+    platformImprovementOptIn: boolean;
+    marketingOptIn: boolean;
+};
+
+type TPolicyVersionRow = {
+    id: string;
+    document_type: string;
+    version_label: string;
+    effective_at: string;
+};
+
+type TPolicyVersionSummary = {
+    id: string;
+    versionLabel: string;
+    effectiveAt: string;
+};
+
+type TCurrentPolicyVersions = {
+    terms: TPolicyVersionSummary;
+    privacy: TPolicyVersionSummary;
+};
+
+type TUserConsentsLegalFields = {
+    terms_version_id: string;
+    privacy_version_id: string;
+};
+
+type TUserConsentsRow = {
+    user_id: string;
+    terms_version_id: string;
+    privacy_version_id: string;
+    legal_accepted_at: string;
+    platform_improvement_opt_in: boolean;
+    platform_improvement_opt_in_at: string | null;
+    marketing_opt_in: boolean;
+    marketing_opt_in_at: string | null;
+    created_at: string;
+    updated_at: string;
+};
+
+type TOptionalConsentUpdates = {
+    platformImprovementOptIn?: boolean;
+    marketingOptIn?: boolean;
+};
+
+type TLegalAcceptanceInput = {
+    termsVersionId: string;
+    privacyVersionId: string;
+};
+
+type TOptionalConsentPatch = {
+    platform_improvement_opt_in?: boolean;
+    platform_improvement_opt_in_at?: string | null;
+    marketing_opt_in?: boolean;
+    marketing_opt_in_at?: string | null;
+    updated_at: string;
+};
+
+type TPutUserConsentsInput = {
+    termsVersionId?: string;
+    privacyVersionId?: string;
+} & TOptionalConsentUpdates;
+
 
 /** One completed workout from `GET /v1/workouts` or `GET /v1/workouts/{id}`. */
 type THevyWorkoutExercise = {

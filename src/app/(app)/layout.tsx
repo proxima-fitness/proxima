@@ -7,7 +7,7 @@
  * (sidebar trigger + logo) is shown so the sidebar can be opened as a sheet.
  * Sits at src/app/(app)/layout.tsx; wraps every page under (app).
  *
- * Depends on: global.css, QueryProvider, theme/sidebar/context providers, Analytics, Toaster, MobileSidebarHeader, AppSidebar.
+ * Depends on: global.css, QueryProvider, theme/sidebar/context providers, UserConsentsShell, Analytics, Toaster, MobileSidebarHeader, AppSidebar.
  * Used by: All (app) routes as parent layout.
  */
 
@@ -26,6 +26,7 @@ import { Analytics } from "@vercel/analytics/react";
 import NextTopLoader from 'nextjs-toploader';
 import { PostHogClientProvider } from "@/utils/PostHogClientProvider";
 import { UserProvider } from "@/contexts/UserContext";
+import { UserConsentsShell } from "@/components/legal/UserConsentsShell";
 import { ProfilePictureProvider } from "@/contexts/ProfilePictureContext";
 import { ThemeProvider } from "@/components/theme-provider"
 import { PoundsOrKgProvider } from "@/contexts/PoundsOrKgContext";
@@ -120,6 +121,7 @@ export default function RootLayout({
                 >
                 <QueryProvider>
                     <UserProvider>
+                        <UserConsentsShell>
                         <AgentDebugModeProvider>
                         <ProfilePictureProvider>
                         <IsHevyProvider>
@@ -149,6 +151,7 @@ export default function RootLayout({
                         </IsHevyProvider>
                         </ProfilePictureProvider>
                         </AgentDebugModeProvider>
+                        </UserConsentsShell>
                     </UserProvider>
                 </QueryProvider>
                 </ThemeProvider>

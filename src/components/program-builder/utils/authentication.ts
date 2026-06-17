@@ -11,8 +11,18 @@
  */
 
 import { resetPassword, signInViaEmail, signUpViaEmail } from "@/api/authentication";
+import { supabase } from "@/api";
+import { fetchCurrentPolicyVersions, putUserConsents } from "@/api/user-consents";
+import {
+    clearSignUpPendingConsents,
+    readSignUpPendingConsents,
+} from "@/lib/user-consents";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { toast } from "sonner";
+
+function isSignUpFailure(result: unknown): boolean {
+    return !result || (Array.isArray(result) && result.length === 0);
+}
 
 /**
  * Validates sign-up form fields and creates a new account via email.
@@ -27,8 +37,8 @@ import { toast } from "sonner";
  * @param lastName - Optional last name
  * @param router - Next.js app router instance used for redirect on success
  */
-export const handleSignUpViaEmail =
-    (   email: string,
+export const handleSignUpViaEmail = async (
+        email: string,
         password: string,
         confirmPassword: string,
         userName: string,
@@ -39,10 +49,40 @@ export const handleSignUpViaEmail =
     ) => {
         if (email !== "" && password !== "" && confirmPassword !== "" && userName !== "" && turnstileToken != "") {
             if (password === confirmPassword) {
-                const account = signUpViaEmail(email, password, turnstileToken, userName, firstName, lastName);
-                if (account !== null && account !== undefined) {
-                    router.push('/auth/sign-up-success')
+                const account = await signUpViaEmail(email, password, turnstileToken, userName, firstName, lastName);
+                if (isSignUpFailure(account)) {
+                    toast.error("Failed to create account");
+                    return;
                 }
+
+                const pendingConsents = readSignUpPendingConsents();
+                const { data: { session } } = await supabase.auth.getSession();
+
+                if (session && pendingConsents) {
+                    try {
+                        const versions = await fetchCurrentPolicyVersions();
+                        await putUserConsents({
+                            termsVersionId: versions.terms.id,
+                            privacyVersionId: versions.privacy.id,
+                            platformImprovementOptIn: pendingConsents.platformImprovementOptIn,
+                            marketingOptIn: pendingConsents.marketingOptIn,
+                        });
+                    } catch (error) {
+                        const message =
+                            error instanceof Error
+                                ? error.message
+                                : "Failed to save consent preferences";
+                        toast.error(
+                            `${message}. You may be asked to accept policies when you sign in.`,
+                        );
+                    }
+                }
+
+                if (pendingConsents) {
+                    clearSignUpPendingConsents();
+                }
+
+                router.push("/auth/sign-up-success");
             } else {
                 toast.error("Passwords must match");
             }

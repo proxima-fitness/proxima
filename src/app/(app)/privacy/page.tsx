@@ -38,8 +38,24 @@ export default function PrivacyPage() {
                     <strong>Proxima Fitness App</strong> means the cross-platform (Google Play Store and Apple App Store) application owned by Proxima Fitness and used to provide Fitness services.
                     <strong>Personal Information</strong> means recorded information about an identifiable individual and includes information such as gender, age, address information, financial information.
 
-                    <h2>Google Analytics</h2>
-                    The Proxima Fitness Website and Proxima Fitness Application use Google Analytics to better understand how visitors engage with our Proxima Fitness Services. Google Analytics collects first-party cookies, data related to the device/browser and on-site/app activities to measure and report statistics about pseudonymous users’ interactions on the websites and/or apps that use Google Analytics. For more information, see How Google uses data when you use our partners&apos; sites or apps: <a href="https://www.google.com/policies/privacy/partners">How Google uses Data</a>.
+                    <h2>Third-party fitness data</h2>
+                    <p>
+                        If you connect your Hevy account, Proxima uses your Hevy API key to read workout data from Hevy on your behalf. We copy your completed workout history - including workout titles, dates, duration, exercises, sets, reps, weights, and related notes - into a workout history backup stored in Proxima. This backup lets us show your workout history, power training insights (such as blind spot analysis), and support coaching features without calling Hevy on every request.
+                    </p>
+                    <p>
+                        Workout history backup runs while your Hevy account remains connected. Disconnecting Hevy stops new imports; existing backup data is retained until you request deletion or delete your account. We do not sell your Hevy workout data to third parties.
+                    </p>
+                    <h2 id="platform-improvement">Platform improvement</h2>
+                    <p>
+                        With your optional consent, Proxima may use your workout history backup, saved programs, builder usage, and coaching chat content to improve our products and services - for example, to refine program recommendations, fix bugs, and evaluate feature quality. Where feasible, we aggregate or de-identify this information. This data is not sold, shared for third-party advertising, or used to target ads.
+                    </p>
+                    <p>
+                        The Proxima Fitness Website and Application also use PostHog and Google Analytics as part of platform improvement. These tools collect pseudonymous usage data - such as pages visited, feature interactions, device and browser information, and session activity - to help us understand how the Services are used and where to improve them. PostHog and Google Analytics are covered by the same optional platform improvement consent; you can turn this off in Privacy settings once that page is available in your account menu. For more on Google Analytics, see <a href="https://www.google.com/policies/privacy/partners">How Google uses Data</a>.
+                    </p>
+                    <h2 id="marketing">Marketing</h2>
+                    <p>
+                        With your separate optional consent, Proxima may send you promotional emails about new features, offers, or product updates. Marketing email is off by default. You can opt in at sign-up or later in Privacy settings, and opt out at any time from Privacy settings or via the unsubscribe link in any marketing email. Opting out of marketing does not affect transactional messages about your account or the Services.
+                    </p>
                     <h2>Collection, Use, and Disclosure of Your Personal Information</h2>
                     Your Personal Information is collected, used and disclosed in accordance with the <a href="https://www.bclaws.gov.bc.ca/civix/document/id/complete/statreg/96165_00">Freedom of Information and Protection of Privacy Act (FOIPPA)</a> and other applicable legislation. Personal Information collected from you includes information collected as a result of your visit to the Proxima Fitness Website, Proxima Fitness Application and/or use of Proxima Fitness Services; information that you provide via your Proxima Fitness Website account and information included in your communications or interaction with Proxima Fitness Services (such as emails, including the User Survey, telephone conversations, face-to-face, online meetings, or written correspondence); and any information about you that is disclosed to Proxima Fitness by third parties as a result of your use of Proxima Fitness Services.
                     The purposes of the collection include:
@@ -47,6 +63,13 @@ export default function PrivacyPage() {
                     <strong>2.	Services research to create better services for all users.</strong>
                     Information is also collected through the use of audit logs and cookies. Cookies are small files stored on your computer by your web browser when using some websites. The cookies store information about your previous visits to the Proxima Fitness Website and Proxima Fitness Application help simplify and enhance your experience while using Proxima Fitness Services.
                     A cookie may stay on your computer or device after your browser has been closed, until the cookie expires or is deleted by you. If you choose to disable cookies on your browser, it may impact your web experience with the Proxima Fitness Website and Proxima Fitness Application including your ability to login to access Proxima Fitness services. However, you may still be able to access Proxima Fitness Services by other methods such as email.
+                    <h2>Data deletion</h2>
+                    <p>
+                        You may request erasure of your Personal Information at any time by emailing <a href="mailto:jack@proximafitness.com">jack@proximafitness.com</a> with sufficient detail to identify your account and the data you want removed. We will respond in accordance with applicable law, including FOIPPA.
+                    </p>
+                    <p>
+                        You may also permanently delete your Proxima account from account settings (Delete account). Account deletion removes your authentication identity and associated data in Proxima, including your workout history backup, saved programs, profile information, and connected integrations such as your stored Hevy API key. This action is intended to be irreversible.
+                    </p>
                     <h2>Access to Personal Information</h2>
                     FOIPPA provides individuals the right to request access to their Personal Information subject to limited exceptions. A request to access Personal Information must be made in writing and provide sufficient detail to identify the Personal Information being sought.
                     <h2>Correction of Personal Information</h2>
@@ -57,9 +80,11 @@ export default function PrivacyPage() {
                     <h2>Retention of Personal Information</h2>
                     Personal information will be retained in accordance with the records retention requirements, for as long as may be necessary or relevant for the purpose of collection, or as may be otherwise required or permitted by law, after which time it will be made anonymous, or destroyed.
                     <h2>Changes to this Privacy Policy</h2>
-                    Changes to this policy may be made without direct notice to you. Any changes will be posted on the Proxima Fitness Website and will be effective as of the date of posting.
                     <p>
-                        <strong>Last posted on: January 25, 2024</strong>
+                        We may update this Privacy Policy from time to time. Material changes will be posted on the Proxima Fitness Website with an updated “Last posted” date. When we publish a new policy version, you must explicitly accept the updated Terms of Use and Privacy Policy in the application before continuing to use authenticated Proxima Fitness Services. Continuing to browse public pages without signing in does not constitute acceptance of updated policies for your account.
+                    </p>
+                    <p>
+                        <strong>Last posted on: June 17, 2026</strong>
                     </p>
                 </div>
             </section>

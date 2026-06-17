@@ -460,6 +460,30 @@ export type Database = {
           },
         ]
       }
+      policy_versions: {
+        Row: {
+          created_at: string
+          document_type: string
+          effective_at: string
+          id: string
+          version_label: string
+        }
+        Insert: {
+          created_at?: string
+          document_type: string
+          effective_at: string
+          id?: string
+          version_label: string
+        }
+        Update: {
+          created_at?: string
+          document_type?: string
+          effective_at?: string
+          id?: string
+          version_label?: string
+        }
+        Relationships: []
+      }
       product_usage_limits: {
         Row: {
           created_at: string
@@ -1050,6 +1074,60 @@ export type Database = {
           title_portugues?: string | null
         }
         Relationships: []
+      }
+      user_consents: {
+        Row: {
+          created_at: string
+          legal_accepted_at: string
+          marketing_opt_in: boolean
+          marketing_opt_in_at: string | null
+          platform_improvement_opt_in: boolean
+          platform_improvement_opt_in_at: string | null
+          privacy_version_id: string
+          terms_version_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          legal_accepted_at: string
+          marketing_opt_in?: boolean
+          marketing_opt_in_at?: string | null
+          platform_improvement_opt_in?: boolean
+          platform_improvement_opt_in_at?: string | null
+          privacy_version_id: string
+          terms_version_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          legal_accepted_at?: string
+          marketing_opt_in?: boolean
+          marketing_opt_in_at?: string | null
+          platform_improvement_opt_in?: boolean
+          platform_improvement_opt_in_at?: string | null
+          privacy_version_id?: string
+          terms_version_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_consents_privacy_version_id_fkey"
+            columns: ["privacy_version_id"]
+            isOneToOne: false
+            referencedRelation: "policy_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_consents_terms_version_id_fkey"
+            columns: ["terms_version_id"]
+            isOneToOne: false
+            referencedRelation: "policy_versions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       users: {
         Row: {

@@ -209,8 +209,16 @@ The user's completed Hevy workouts — full logs (title, timestamps, exercises, 
 _Avoid_: Exercise history (Hevy API term — derived view)
 
 **Workout history backup**:
-Proxima's stored copy of a user's completed workouts, synced from connected fitness apps. Full backfill runs in the background when Hevy is first connected (all tiers — pre-stages data before Pro); connect dialog closes immediately. Ongoing sync uses workout-count delta plus on-demand refresh when Blind Spot or the agent reads history. Canonical shape: workout → exercises → sets. Supersedes legacy `workout_history` / `workout_history_exercises` tables, which are removed once canonical storage ships.
+Proxima's stored copy of a user's completed workouts, synced from connected fitness apps. Full backfill runs in the background when Hevy is first connected (all tiers — pre-stages data before Pro); connect dialog closes immediately. Ongoing sync uses workout-count delta for new workouts, **backed-up workout revision** when Hevy reports a newer version of an existing workout, plus on-demand refresh when Blind Spot or the agent reads history. Canonical shape: workout → exercises → sets. Supersedes legacy `workout_history` / `workout_history_exercises` tables, which are removed once canonical storage ships.
 _Avoid_: Hevy sync (implementation), exercise_history backup (wrong grain), blocking connect flow
+
+**Backed-up workout revision**:
+Re-sync of one existing backup **Workout** when the connected app reports a newer version of the same external workout ID (e.g. user edited sets or title in Hevy after initial import). Runs during ongoing workout history backup — not a separate user action. Bounded to recent history on routine sync; older edits rely on **Workout history fresh sync**. Distinct from count-based delta, which only detects net-new workouts.
+_Avoid_: Upsert (implementation), workout edit (ambiguous with builder Sync)
+
+**Workout history fresh sync**:
+User-initiated full reset of one user's **Workout history backup** — wipe all backed-up **Workouts** for that user, then re-run full Hevy backfill from scratch. Escape hatch when bounded revision window is insufficient (e.g. user edited a workout older than recent history). Requires explicit confirmation; destructive to Proxima backup only — does not modify the Hevy account.
+_Avoid_: Re-sync (ambiguous with revision), clear cache (implementation)
 
 **Workout** (backup):
 One completed workout in the workout history backup — what the user actually performed, with exercises and sets. Optional **description** (workout-level notes from the source app). Identified by app source + external ID for dedup on sync. Not a builder routine/day, not a chat session, not a scheduled program day.
@@ -225,8 +233,16 @@ One logged set within a workout exercise — weight, reps, RPE, duration, distan
 _Avoid_: Builder set (prescription), program set (planned)
 
 **Canonical exercise**:
-Cross-app movement identity in Proxima — name, muscles, equipment — independent of any fitness app. Workout exercises link to canonical exercises via source mappings, not Hevy template IDs directly.
+Cross-app movement identity in Proxima — name, muscles, equipment. **Global canonical** rows (`user_id` null) include the shared Hevy library seed and **Proxima supplemental** customs — readable by all authenticated users. Distinct from **Custom movement** (user-owned, `user_id` set, RLS-gated).
 _Avoid_: Catalog exercise (deprecated term), Hevy exercise template (app-specific), workout exercise (instance in a logged workout)
+
+**Proxima supplemental**:
+Shared custom exercises Proxima added to the exercise library (e.g. warmup templates) — flagged `is_proxima_supplemental` on the template mirror. Stored as global canonical rows (`user_id` null). Readable by all users. Distinct from **Custom movement** (one user's Hevy app creation).
+_Avoid_: Warmup exercise (examples only), export custom (process not identity)
+
+**Custom movement**:
+User-owned exercise identity — created in the user's Hevy app (**Hevy-native custom**) or minted on that account when exporting a non-supplemental custom (**Proxima-exported custom** with a per-account Hevy ID). Stored as `canonical_exercises` with `user_id` set. RLS: readable only by that user. Distinct from **Proxima supplemental** (shared, `user_id` null).
+_Avoid_: Custom exercise (ambiguous with Hevy template object), user exercise (too generic)
 
 **Exercise source mapping**:
 Link from an app-specific exercise ID (e.g. Hevy template UUID) to a canonical exercise. One canonical exercise may have many mappings across sources. Used when importing workout history from connected apps. Canonical exercises are seeded from Hevy templates deduped by `normalized_title`; new templates get a lazy mapping on first sync if missing.
@@ -263,3 +279,45 @@ _Avoid_: Profile hero (implementation component name), user card (too generic)
 **Recent workouts** (profile):
 Horizontal browse feed on the profile page — read-only preview cards for backed-up **Workouts** (≤5 exercises each), newest first, cursor-paginated with load-more. Card header shows title, date, and duration. **See more exercises** links to logged workout detail when needed. Shown only when Hevy is connected. Sits after profile statistics and before My Hevy Programs. White card on muted page background per profile Hevy layout.
 _Avoid_: Workout feed (ambiguous with social feed), workout history list (too generic)
+
+## Legal & privacy
+
+**Legal acceptance**:
+Required confirmation that the user has read and agrees to the current **Terms of Use** and **Privacy Policy** versions. All authenticated users must accept when their stored versions are behind the published versions. Email **sign-up** collects required acceptance and writes `user_consents` at registration; the **Legal acceptance dialog** is the safety net for OAuth first-timers, legacy users without a row, and future version bumps. Enforced by an unclosable client dialog over the app until accepted — not by API route locks in v1. No row or stale version = blocked. Prior browsewrap acceptance does not satisfy the gate.
+_Avoid_: Terms checkbox (implementation), browsewrap acceptance (deprecated pattern), API consent middleware (v1 out of scope)
+
+**Policy version**:
+Published revision of Terms of Use or Privacy Policy, stored in Supabase (`policy_versions`). Each row is one release of one document type. The app fetches the current version per type — no hardcoded version constants in code. Bumping either version forces **Legal acceptance** for users whose `user_consents` FKs point at older rows.
+_Avoid_: Last updated date (display-only), legal_version (bundled single ID)
+
+**Policy version registry**:
+Supabase table holding metadata for each published Terms and Privacy revision (document type, version label, effective date). `user_consents` FKs reference the specific `policy_versions` rows the user accepted. **Current version** = latest row per document type where `effective_at <= now()`. Legal prose lives on static app routes (`/terms-of-use`, `/privacy`); the registry is for gating and audit only.
+_Avoid_: CURRENT_TERMS_VERSION constants, version strings in application code, storing full legal text in Postgres (v1)
+
+**Data deletion request**:
+User-initiated request to erase all personal data Proxima holds, without necessarily closing the account. Distinct from **Account deletion** (which also removes the auth identity). v1: policy + email to Proxima support (`jack@proximafitness.com`); no in-app request flow or ticket table.
+_Avoid_: GDPR request (jurisdiction-specific label), forget me (informal), self-serve partial wipe (v1 out of scope)
+
+**Account deletion**:
+Permanent removal of the user's auth identity and all associated personal data in Proxima. Available from account settings; policy states this erases workout history backup, programs, profile, and integrations.
+_Avoid_: Deactivate (ambiguous — may imply recoverable), unsubscribe (email-only)
+
+**Platform improvement consent**:
+Optional opt-in allowing Proxima to use the user's workout history backup, programs, builder usage, coaching chats, and **service analytics** (PostHog, Google Analytics) to improve the product and services — aggregated or de-identified where feasible. PostHog and Google Analytics are disclosed together in Privacy Policy and controlled by this single toggle (not a separate analytics consent). Not used for marketing, third-party sale, or ad targeting. v1: store preference and disclose in policy only — **do not** gate PostHog/GA capture or other pipelines on the flag yet (deferred follow-up). Revocable on **Privacy settings**.
+_Avoid_: Analytics consent (separate toggle), research opt-in (subset only), anonymous-only aggregates (v1 scope is broader), operational analytics carve-out (PostHog is in-scope)
+
+**Legal acceptance dialog**:
+Unclosable modal shown over the authenticated app when **Legal acceptance** is required. No dismiss, backdrop click, or Escape. Contains: policy summary, required agreement checkbox with links to Terms and Privacy (open in new tab), Accept button, and footer actions Log out and Delete account.
+_Avoid_: Browsewrap banner, dismissible update toast
+
+**Marketing consent**:
+Optional opt-in to receive promotional emails and offers from Proxima. Not required for account or product use; default off until explicitly opted in. Collected at sign-up and editable on the dedicated Privacy settings page — not re-prompted on every sign-in.
+_Avoid_: Newsletter signup (too narrow), notifications (in-app vs email)
+
+**Privacy settings**:
+Dedicated account page reachable from the sidebar account menu. Hosts revocable **Platform improvement consent** and **Marketing consent** toggles. Distinct from Edit profile (identity fields) and from the **Legal acceptance dialog** (required policy gate).
+_Avoid_: Profile preferences card, settings (too generic)
+
+**User consents**:
+Single per-user record in Supabase (`user_consents`) holding **Legal acceptance** (FKs to `policy_versions` for Terms and Privacy), **Platform improvement consent**, and **Marketing consent**. One row per user; created on sign-up or first authenticated session. Audit timestamps: `legal_accepted_at`, `platform_improvement_opt_in_at`, `marketing_opt_in_at` (nullable when opted out). No append-only event log in v1.
+_Avoid_: user_preferences (ambiguous with app prefs), legal_acceptances (too narrow), consent_events table (v1 out of scope)
