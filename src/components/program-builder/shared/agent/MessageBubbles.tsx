@@ -5,6 +5,7 @@
  */
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useRef, useMemo, useState, type RefObject } from "react";
+import { useSearchParams } from "next/navigation";
 import {
     Message,
     MessageAction,
@@ -84,6 +85,8 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
 
     const { user } = useUserContext();
     const { getPersistChatIdRef } = useBuildProgramActions();
+    const searchParams = useSearchParams();
+    const buildProgramReturnQs = searchParams.toString();
     const resolvePersistChatId = () => getPersistChatIdRef.current?.() ?? "";
     const {
         messages,
@@ -787,6 +790,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                             input={historyPart.input}
                                                             output={historyOutput}
                                                             isInFlight={historyInFlight}
+                                                            returnQs={buildProgramReturnQs}
                                                         />
                                                     </ToolContent>
                                                 </Tool>

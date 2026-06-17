@@ -13,6 +13,7 @@ import {
 } from "@/api/workout-history-read";
 import type { TWorkoutHistoryToolOutput } from "@/app/api/chat/tools/workout-history";
 import { HevyDayCard } from "@/components/program-builder/hevy/HevyDayCard";
+import { buildWorkoutDetailHref } from "@/lib/build-program-url";
 
 type TWorkoutHistorySuccessOutput = Extract<TWorkoutHistoryToolOutput, { workouts: TBackedUpWorkout[] }>;
 
@@ -25,6 +26,8 @@ interface IProps {
     input?: TWorkoutHistoryInput;
     output?: TWorkoutHistoryToolOutput;
     isInFlight: boolean;
+    /** Serialized build-program search params for return navigation. */
+    returnQs?: string;
 }
 
 function formatSinceLabel(since: string): string {
@@ -32,7 +35,7 @@ function formatSinceLabel(since: string): string {
 }
 
 /** Renders loading, empty, or horizontal read-only workout cards from tool output. */
-export function WorkoutHistoryToolContent({ input, output, isInFlight }: IProps) {
+export function WorkoutHistoryToolContent({ input, output, isInFlight, returnQs }: IProps) {
     const { data: hevyExercises } = useHevyExercises();
 
     if (isInFlight) {
@@ -80,6 +83,7 @@ export function WorkoutHistoryToolContent({ input, output, isInFlight }: IProps)
                                 variant="read-only"
                                 day={day}
                                 workoutId={workout.id}
+                                seeMoreHref={buildWorkoutDetailHref(workout.id, { returnQs })}
                                 totalExerciseCount={totalExerciseCount}
                                 hevyExercises={hevyExercises}
                             />

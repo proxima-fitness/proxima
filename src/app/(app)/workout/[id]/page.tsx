@@ -22,9 +22,19 @@ export const metadata = {
  */
 export default async function WorkoutDetailPage({
     params,
+    searchParams,
 }: {
     params: Promise<{ id: string }>;
+    searchParams: Promise<{ from?: string; returnQs?: string; chat?: string }>;
 }) {
     const { id } = await params;
-    return <WorkoutDetailContent workoutId={id} />;
+    const { from, returnQs, chat } = await searchParams;
+    return (
+        <WorkoutDetailContent
+            workoutId={id}
+            returnFrom={from}
+            returnQs={returnQs}
+            returnChatId={chat}
+        />
+    );
 }

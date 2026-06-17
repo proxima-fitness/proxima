@@ -11,7 +11,6 @@
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { useUserContext } from "@/contexts/UserContext";
 import { useHevyExercises, useWorkoutDetail } from "@/api/hooks";
 import { WorkoutNotFoundError } from "@/api/workout-history-browse";
@@ -20,6 +19,7 @@ import { HevyDayCard } from "@/components/program-builder/hevy/HevyDayCard";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { WorkoutDetailBackLink } from "./WorkoutDetailBackLink";
 import {
     convertSupabaseDateToReadable,
     formatWorkoutWallDuration,
@@ -50,10 +50,19 @@ function WorkoutDetailSkeleton() {
 
 interface IProps {
     workoutId: string;
+    returnFrom?: string | null;
+    returnQs?: string | null;
+    /** Legacy links that only passed chat without returnQs. */
+    returnChatId?: string | null;
 }
 
 /** Renders logged workout metadata and full exercise card. */
-export function WorkoutDetailContent({ workoutId }: IProps) {
+export function WorkoutDetailContent({
+    workoutId,
+    returnFrom,
+    returnQs,
+    returnChatId,
+}: IProps) {
     const { user, isLoading: isUserLoading } = useUserContext();
     const { data: workout, isLoading, isError, error } = useWorkoutDetail(user, workoutId);
     const { data: hevyExercises } = useHevyExercises(!!user);
@@ -97,12 +106,13 @@ export function WorkoutDetailContent({ workoutId }: IProps) {
                 <Card className="max-w-md rounded-2xl px-6 py-12 text-center shadow-sm">
                     <h1 className="text-xl font-semibold tracking-tight">Could not load workout</h1>
                     <p className="mt-2 text-sm text-muted-foreground">Please try again later.</p>
-                    <Link
-                        href="/profile"
+                    <WorkoutDetailBackLink
+                        returnFrom={returnFrom}
+                        returnQs={returnQs}
+                        returnChatId={returnChatId}
+                        showArrow={false}
                         className="mt-6 inline-block text-sm font-medium text-lightSecondary hover:underline"
-                    >
-                        Back to profile
-                    </Link>
+                    />
                 </Card>
             </div>
         );
@@ -117,13 +127,11 @@ export function WorkoutDetailContent({ workoutId }: IProps) {
         <div className={`min-h-[50vh] bg-muted/30 py-8 max-sm:px-3 sm:px-12 md:px-16 lg:px-20 xl:px-24 ${styles.flexCenter} flex-col`}>
             <div className={`${styles.boxWidth} w-full max-w-2xl flex flex-col gap-6`}>
                 <Card className="rounded-2xl border border-border/60 bg-card px-5 py-6 shadow-sm sm:px-8">
-                    <Link
-                        href="/profile"
-                        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                        <ArrowLeft className="h-4 w-4" aria-hidden />
-                        Back to profile
-                    </Link>
+                    <WorkoutDetailBackLink
+                        returnFrom={returnFrom}
+                        returnQs={returnQs}
+                        returnChatId={returnChatId}
+                    />
 
                     <header className="mt-4 space-y-3">
                         <h1 className="font-tertiary text-2xl sm:text-3xl tracking-tight">{workout.title}</h1>

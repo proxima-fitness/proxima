@@ -81,6 +81,28 @@ describe("HevyDayCard read-only variant", () => {
         expect(within(container).getAllByTestId("exercise-gif")).toHaveLength(PREVIEW_MAX_EXERCISES);
     });
 
+    it("uses custom seeMoreHref when provided", () => {
+        const fullWorkout = backedUpWorkoutWithManyExercisesFixture();
+        const day = mapBackedUpWorkoutToHevyRoutine(fullWorkout, {
+            previewMaxExercises: PREVIEW_MAX_EXERCISES,
+        });
+        const totalExerciseCount = fullWorkout.workout_exercises?.length ?? 0;
+        const customHref = "/workout/custom-id?from=build-program&chat=abc";
+
+        render(
+            <HevyDayCard
+                variant="read-only"
+                day={day}
+                totalExerciseCount={totalExerciseCount}
+                workoutId={day.id}
+                seeMoreHref={customHref}
+            />,
+        );
+
+        const seeMore = screen.getByRole("link", { name: /See more exercises/i });
+        expect(seeMore.getAttribute("href")).toBe(customHref);
+    });
+
     it("wraps exercises with notes in hover tooltips and shows superset label when mapped", () => {
         const day = mapBackedUpWorkoutToHevyRoutine(backedUpWorkoutFixture);
 

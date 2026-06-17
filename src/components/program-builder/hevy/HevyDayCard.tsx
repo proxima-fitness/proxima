@@ -45,6 +45,8 @@ interface IProps {
     totalExerciseCount?: number;
     /** Backup workout id for preview CTA (defaults to `day.id`). */
     workoutId?: string;
+    /** Override href for "See more exercises" (defaults to `/workout/{workoutId}`). */
+    seeMoreHref?: string;
     /** Week label (e.g. "Week 1") for context. */
     title?: string;
     /** Week index (folder_id) this day belongs to. */
@@ -95,6 +97,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         variant,
         totalExerciseCount,
         workoutId,
+        seeMoreHref,
         title = "",
         folder_id = 0,
         handleDragStart,
@@ -452,7 +455,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                     {showSeeMore && (
                         <div className="px-3 pb-3 pt-1 text-center">
                             <Link
-                                href={`/workout/${resolvedWorkoutId}`}
+                                href={seeMoreHref ?? `/workout/${resolvedWorkoutId}`}
                                 className="text-sm font-medium text-lightSecondary hover:underline dark:text-lightSecondary"
                             >
                                 See more exercises

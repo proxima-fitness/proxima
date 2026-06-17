@@ -4,9 +4,9 @@
  * Dedicated 404 for missing or unowned backup workouts.
  */
 
-import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import styles from "@/style";
+import { WorkoutNotFoundBackLink } from "./WorkoutDetailBackLink";
 
 /** 404 when workout id is invalid or not owned by the current user. */
 export default function WorkoutNotFound() {
@@ -17,12 +17,7 @@ export default function WorkoutNotFound() {
                 <p className="mt-2 text-sm text-muted-foreground">
                     This workout does not exist or you do not have access to it.
                 </p>
-                <Link
-                    href="/profile"
-                    className="mt-6 inline-block text-sm font-medium text-lightSecondary hover:underline"
-                >
-                    Back to profile
-                </Link>
+                <WorkoutNotFoundBackLink />
             </Card>
         </div>
     );

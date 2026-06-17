@@ -2,9 +2,13 @@ import { describe, it, expect, vi } from "vitest";
 import {
     applyBuildProgramMintUrlUpdate,
     buildBuildProgramHref,
+    buildWorkoutDetailHref,
+    resolveWorkoutDetailBackLink,
     setBuildProgramChatSearchParam,
     stripSearchFromBuildProgramUrl,
 } from "../build-program-url";
+
+const CHAT_ID = "11111111-1111-4111-8111-111111111111";
 
 describe("buildBuildProgramHref", () => {
     it("includes chat and search together", () => {
@@ -24,6 +28,59 @@ describe("buildBuildProgramHref", () => {
         const href = buildBuildProgramHref({ search: "build me a 4 day split" });
         expect(href).toBe("/build-program?search=build+me+a+4+day+split");
         expect(href).not.toContain("empty=true");
+    });
+
+    it("includes resume when requested", () => {
+        const href = buildBuildProgramHref({ chatId: CHAT_ID, resume: true });
+        expect(href).toBe(`/build-program?chat=${CHAT_ID}&resume=true`);
+    });
+});
+
+describe("buildWorkoutDetailHref", () => {
+    it("returns plain path without return context", () => {
+        expect(buildWorkoutDetailHref("workout-abc")).toBe("/workout/workout-abc");
+    });
+
+    it("includes from and returnQs when opened from program builder", () => {
+        const returnQs = `chat=${CHAT_ID}&hevy=true&edit=true`;
+        const href = buildWorkoutDetailHref("workout-abc", { returnQs });
+        expect(href).toContain("from=build-program");
+        expect(href).toContain(`returnQs=${encodeURIComponent(returnQs)}`);
+    });
+});
+
+describe("resolveWorkoutDetailBackLink", () => {
+    it("returns program builder link with all preserved params when returnQs present", () => {
+        const returnQs = `chat=${CHAT_ID}&hevy=true&edit=true`;
+        expect(
+            resolveWorkoutDetailBackLink({ from: "build-program", returnQs }),
+        ).toEqual({
+            href: `/build-program?chat=${CHAT_ID}&hevy=true&edit=true&resume=true`,
+            label: "Back to Program Builder",
+        });
+    });
+
+    it("returns program builder link for legacy chat-only links", () => {
+        expect(
+            resolveWorkoutDetailBackLink({ from: "build-program", chat: CHAT_ID }),
+        ).toEqual({
+            href: `/build-program?chat=${CHAT_ID}&resume=true`,
+            label: "Back to Program Builder",
+        });
+    });
+
+    it("returns profile link without return context", () => {
+        expect(resolveWorkoutDetailBackLink({})).toEqual({
+            href: "/profile",
+            label: "Back to profile",
+        });
+    });
+
+    it("returns profile link when from is build-program but return context is missing", () => {
+        expect(resolveWorkoutDetailBackLink({ from: "build-program" })).toEqual({
+            href: "/profile",
+            label: "Back to profile",
+        });
     });
 });
 
