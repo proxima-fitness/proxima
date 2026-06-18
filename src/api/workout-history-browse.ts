@@ -13,6 +13,8 @@ export const LOGGED_WORKOUT_BROWSE_QUERY_KEY = ["logged-workout-browse"] as cons
 
 export const PROFILE_STATISTICS_QUERY_KEY = ["profile-statistics"] as const;
 
+export const PROFILE_CALENDAR_QUERY_KEY = ["profile-calendar"] as const;
+
 /** Thrown when GET /api/workout-history/workouts/[id] returns 404. */
 export class WorkoutNotFoundError extends Error {
     constructor() {
@@ -105,4 +107,40 @@ export async function getProfileStatistics(
     }
 
     return res.json() as Promise<TProfileStatisticsResponse>;
+}
+
+type TGetProfileCalendarParams = {
+    year: number;
+    month: number;
+    timezoneOffsetMinutes: number;
+};
+
+/**
+ * Fetches backed-up workouts for one local calendar month (profile calendar).
+ *
+ * @param params.year - Calendar year
+ * @param params.month - Calendar month (1–12)
+ * @param params.timezoneOffsetMinutes - `Date.getTimezoneOffset()` from the browser
+ * @param signal - Optional abort signal (React Query)
+ */
+export async function getProfileCalendarWorkouts(
+    params: TGetProfileCalendarParams,
+    signal?: AbortSignal,
+): Promise<TProfileCalendarResponse> {
+    const searchParams = new URLSearchParams({
+        year: String(params.year),
+        month: String(params.month),
+        tzOffset: String(params.timezoneOffsetMinutes),
+    });
+
+    const res = await fetch(`/api/workout-history/calendar?${searchParams}`, {
+        credentials: "same-origin",
+        signal,
+    });
+
+    if (!res.ok) {
+        throw new Error("Failed to load profile calendar");
+    }
+
+    return res.json() as Promise<TProfileCalendarResponse>;
 }

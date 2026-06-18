@@ -154,14 +154,14 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
     };
 
     return (
-        <div className="pt-5 w-full max-w-full overflow-hidden px-0 box-border">
-            <div className="flex justify-between items-center mb-3 w-full max-w-full box-border">
+        <div className="pt-2 w-full max-w-full overflow-hidden px-0 box-border">
+            <div className="flex justify-between items-center mb-2 w-full max-w-full box-border">
                 <div className="text-xs text-muted-foreground shrink-0">
                     {performancesLabel}
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4 w-full max-w-full box-border items-stretch">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-3 w-full max-w-full box-border items-stretch">
                 {exercises.map((exercise, index) => {
                     const rowIndex = Math.floor(index / gridColumns);
                     const colorValue = exercise.weight > 0 ? getColorValue(exercise.color) : "var(--muted-foreground, #999)";
@@ -175,10 +175,10 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                             className="flex h-full w-full flex-col box-border border border-l-4 border-border dark:bg-blueGray dark:border dark:border-l-4"
                             style={{ borderLeftColor: colorValue }}
                         >
-                            <CardContent className="flex flex-1 flex-col p-4">
+                            <CardContent className="flex flex-1 flex-col p-3">
                                 {/* Top section: Exercise name, weight, and trend line */}
                                 <div
-                                    className={`flex justify-between items-center w-full ${isExpanded ? "mb-3" : ""} ${hasSessions ? "cursor-pointer" : ""}`}
+                                    className={`flex justify-between items-center w-full ${isExpanded ? "mb-2" : ""} ${hasSessions ? "cursor-pointer" : ""}`}
                                     onClick={(e) => {
                                         if (hasSessions) {
                                             e.stopPropagation();
@@ -186,26 +186,26 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                                         }
                                     }}
                                 >
-                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 flex-1 min-w-0">
                                         <div
-                                            className="w-3 h-3 rounded-full shrink-0"
+                                            className="w-2.5 h-2.5 rounded-full shrink-0"
                                             style={{ backgroundColor: dataLoading ? "var(--muted-foreground, #999)" : colorValue }}
                                         />
                                         <div className="flex-1 min-w-0 overflow-hidden">
-                                            <div className="text-base font-bold mb-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                                            <div className="text-sm font-bold mb-0.5 overflow-hidden text-ellipsis whitespace-nowrap">
                                                 {exercise.name}
                                             </div>
                                             {dataLoading ? (
-                                                <div className="flex items-baseline gap-1 min-h-7">
-                                                    <Skeleton className="h-5 w-14 rounded-full bg-muted-foreground/15" />
+                                                <div className="flex items-baseline gap-1 min-h-6">
+                                                    <Skeleton className="h-4 w-14 rounded-full bg-muted-foreground/15" />
                                                     <Skeleton className="h-3 w-6 rounded-full bg-muted-foreground/10" />
                                                 </div>
                                             ) : exercise.weight > 0 ? (
-                                                <div className="text-lg font-bold text-gray-500 dark:text-offWhite min-h-7 flex items-center">
+                                                <div className="text-base font-bold text-gray-500 dark:text-offWhite min-h-6 flex items-center">
                                                     {formatWeightUtil(exercise.weight, isInLbs, "lbs")} {getWeightUnitUtil(isInLbs)}
                                                 </div>
                                             ) : (
-                                                <div className="text-sm text-muted-foreground min-h-7 flex items-center">
+                                                <div className="text-xs text-muted-foreground min-h-6 flex items-center">
                                                     {BLIND_SPOT_STRINGS.NoData}
                                                 </div>
                                             )}
@@ -227,7 +227,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                                         )}
                                         {hasSessions && (
                                             <span className="text-muted-foreground">
-                                                {isExpanded ? <ChevronUp className="size-5" /> : <ChevronDown className="size-5" />}
+                                                {isExpanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
                                             </span>
                                         )}
                                     </div>
@@ -236,16 +236,16 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                                 {/* Expanded session history */}
                                 {isExpanded && hasSessions && !dataLoading && (
                                     <>
-                                        <Separator className="my-3" />
-                                        <div className="pt-0 pb-3 w-full">
-                                            <div className="text-xs font-bold text-muted-foreground mb-2 uppercase">
+                                        <Separator className="my-2" />
+                                        <div className="pt-0 pb-2 w-full">
+                                            <div className="text-[11px] font-bold text-muted-foreground mb-1.5 uppercase">
                                                 {BLIND_SPOT_STRINGS.RecentSessions}
                                             </div>
-                                            <div className="flex flex-col gap-2">
+                                            <div className="flex flex-col gap-1.5">
                                                 {exercise.sessions?.map((session) => (
                                                     <div
                                                         key={session.workoutId}
-                                                        className="flex justify-between items-center py-2 px-3 rounded-md bg-muted/50 dark:bg-black/20"
+                                                        className="flex justify-between items-center py-1.5 px-2.5 rounded-md bg-muted/50 dark:bg-black/20"
                                                     >
                                                         <div className="flex flex-col gap-1">
                                                             <div className="text-xs text-muted-foreground">
@@ -284,7 +284,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                                 )}
 
                                 <div
-                                    className={`mt-auto flex min-h-[46px] items-center pt-3 ${
+                                    className={`mt-auto flex min-h-10 items-center pt-2 ${
                                         showStallFooter ? "border-t border-border" : ""
                                     }`}
                                 >
@@ -300,7 +300,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                                                 variant="destructive"
                                                 size="sm"
                                                 onClick={() => handleExploreFixes(exercise)}
-                                                className="h-[38px] shrink-0 px-4 text-xs text-white hover:bg-red-900 bg-red-700 dark:bg-destructive dark:text-destructive-foreground dark:hover:bg-destructive/90"
+                                                className="h-8 shrink-0 px-3 text-xs text-white hover:bg-red-900 bg-red-700 dark:bg-destructive dark:text-destructive-foreground dark:hover:bg-destructive/90"
                                             >
                                                 {BLIND_SPOT_STRINGS.ExploreFixes}{" "}
                                                 <ArrowRight className="ml-1 size-4" />
@@ -315,10 +315,10 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
             </div>
 
             {totalPages != null && totalPages > 1 && currentPage != null && onPageChange && (
-                <Pagination className="pt-4 h-[100px]">
+                <Pagination className="pt-2">
                     <PaginationContent>
                         <PaginationPrevious
-                            className="h-[45px] text-lg"
+                            className="h-9 text-sm"
                             href="#"
                             onClick={(e) => {
                                 e.preventDefault();
@@ -329,7 +329,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                             page === "…" ? (
                                 <PaginationLink
                                     key={index}
-                                    className="h-[45px] text-lg"
+                                    className="h-9 text-sm"
                                     href="#"
                                     onClick={(e) => e.preventDefault()}
                                 >
@@ -338,7 +338,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                             ) : (
                                 <PaginationLink
                                     key={index}
-                                    className="h-[45px] text-lg"
+                                    className="h-9 text-sm"
                                     href="#"
                                     isActive={currentPage === page}
                                     onClick={(e) => {
@@ -351,7 +351,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                             ),
                         )}
                         <PaginationNext
-                            className="h-[45px] text-lg"
+                            className="h-9 text-sm"
                             href="#"
                             onClick={(e) => {
                                 e.preventDefault();
@@ -363,9 +363,9 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
             )}
 
             {showViewMore && (
-                <div className="w-full pt-4 max-w-full box-border overflow-hidden flex justify-center">
+                <div className="w-full pt-2 max-w-full box-border overflow-hidden flex justify-center">
                     {viewMoreHref ? (
-                        <Button size="lg" asChild className="mt-2 w-[220px] bg-darkGray text-white hover:text-black hover:bg-lightGold/90">
+                        <Button size="sm" asChild className="mt-1 w-[200px] bg-darkGray text-white hover:text-black hover:bg-lightGold/90">
                             <Link href={viewMoreHref}>
                                 {BLIND_SPOT_STRINGS.ViewMoreExercises}
                                 <Crown className="size-4 ml-1" />
@@ -373,9 +373,9 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                         </Button>
                     ) : (
                         <Button
-                            size="lg"
+                            size="sm"
                             onClick={handleViewMore}
-                            className="mt-2 w-[220px] bg-darkGray text-white hover:bg-lightSecondary/90"
+                            className="mt-1 w-[200px] bg-darkGray text-white hover:bg-lightSecondary/90"
                         >
                             {BLIND_SPOT_STRINGS.ViewMoreExercises}
                             <PlusIcon className="size-4 ml-1" />

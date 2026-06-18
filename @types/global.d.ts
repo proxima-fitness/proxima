@@ -283,6 +283,17 @@ type TProfileStatisticsResponse = {
     buckets: TProfileStatisticsWeekBucket[];
 };
 
+type TProfileCalendarWorkout = {
+    id: string;
+    title: string;
+    started_at: string;
+    ended_at: string;
+};
+
+type TProfileCalendarResponse = {
+    workouts: TProfileCalendarWorkout[];
+};
+
 type TMapBackedUpWorkoutOptions = {
     previewMaxExercises?: number;
 };

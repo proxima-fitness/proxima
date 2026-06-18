@@ -18,6 +18,7 @@ import {
     aggregateProfileStatistics,
     getSinceIsoForWeekRange,
 } from "./workout-history-statistics";
+import { getLocalMonthUtcBounds } from "./workout-history-calendar";
 import {
     aggregateSessionsByTemplateId,
     transformSessionsToExercise,
@@ -356,6 +357,39 @@ export async function getProfileStatisticsForUser(
     const since = getSinceIsoForWeekRange(referenceDate, weeks);
     const workouts = await getAllWorkoutsSinceForUser(db, userId, since);
     return aggregateProfileStatistics(workouts, { weeks, referenceDate });
+}
+
+/**
+ * Lightweight workouts for profile calendar month view.
+ *
+ * @param db - Supabase client (user or service role)
+ * @param userId - Proxima user ID
+ * @param year - Local calendar year
+ * @param month - Local calendar month (1–12)
+ * @param timezoneOffsetMinutes - `Date.getTimezoneOffset()` from the client
+ */
+export async function getWorkoutsForMonthForUser(
+    db: TWorkoutHistoryDb,
+    userId: string,
+    year: number,
+    month: number,
+    timezoneOffsetMinutes: number,
+): Promise<TProfileCalendarWorkout[]> {
+    const { startIso, endIso } = getLocalMonthUtcBounds(year, month, timezoneOffsetMinutes);
+
+    const { data, error } = await db
+        .from("workouts")
+        .select("id, title, started_at, ended_at")
+        .eq("user_id", userId)
+        .gte("started_at", startIso)
+        .lt("started_at", endIso)
+        .order("started_at", { ascending: false });
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    return (data ?? []) as TProfileCalendarWorkout[];
 }
 
 /**

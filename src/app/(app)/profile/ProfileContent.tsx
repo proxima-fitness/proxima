@@ -8,7 +8,7 @@
  * Resume-draft banner sits above the card stack.
  *
  * Depends on: UserContext, useHevyPrograms/useHevySecret, ProfileHero, ProfileStatisticsSection,
- * BlindSpotAnalysisSection, RecentWorkoutsSection, EditProfile, HevyProgramsGrid, MyProgramsVault,
+ * ProfileCalendarSection, BlindSpotAnalysisSection, RecentWorkoutsSection, EditProfile, HevyProgramsGrid, MyProgramsVault,
  * ResumeDraftBanner.
  * Used by: (app)/profile/page.tsx.
  */
@@ -19,6 +19,7 @@ import { MyProgramsVault } from "@/components/programs/MyProgramsVault";
 import { BlindSpotAnalysisSection } from "@/components/profile/BlindSpotAnalysisSection";
 import { ProfileHero } from "@/components/profile/ProfileHero";
 import { ProfileStatisticsSection } from "@/components/profile/ProfileStatisticsSection";
+import { ProfileCalendarSection } from "@/components/profile/ProfileCalendarSection";
 import { RecentWorkoutsSection } from "@/components/profile/RecentWorkoutsSection";
 import { HevyProgramsGrid } from "@/components/program-builder/hevy/HevyProgramsGrid";
 import { ResumeDraftBanner } from "@/components/program-builder/ResumeDraftBanner";
@@ -35,7 +36,7 @@ const PROFILE_PAGE_X =
     "max-sm:px-3 sm:px-12 md:px-16 lg:px-20 xl:px-24";
 
 const PROFILE_CARD_CLASS =
-    "rounded-2xl border border-border/60 bg-card px-4 py-5 shadow-sm sm:px-6 sm:py-6";
+    "rounded-2xl border border-border/60 bg-card px-3 py-3 shadow-sm sm:px-4 sm:py-4";
 
 /**
  * Renders profile sections; fetches Hevy key and programs for the current user.
@@ -80,7 +81,16 @@ export function ProfileContent() {
                             </div>
 
                             <TabsContent value="stats" className="mt-0 flex flex-col gap-4">
-                                <ProfileStatisticsSection hevyConnected={hevyConnected} />
+                                <div className="grid gap-4 lg:grid-cols-5 lg:items-stretch">
+                                    <div className="h-full lg:col-span-3">
+                                        <ProfileStatisticsSection hevyConnected={hevyConnected} />
+                                    </div>
+                                    {hevyConnected ? (
+                                        <div className="h-full lg:col-span-2">
+                                            <ProfileCalendarSection />
+                                        </div>
+                                    ) : null}
+                                </div>
 
                                 <Card className={PROFILE_CARD_CLASS}>
                                     <BlindSpotAnalysisSection
@@ -124,7 +134,16 @@ export function ProfileContent() {
                     </>
                 ) : (
                     <>
-                        <ProfileStatisticsSection hevyConnected={hevyConnected} />
+                        <div className="grid gap-4 lg:grid-cols-5 lg:items-stretch">
+                            <div className="h-full lg:col-span-3">
+                                <ProfileStatisticsSection hevyConnected={hevyConnected} />
+                            </div>
+                            {hevyConnected ? (
+                                <div className="h-full lg:col-span-2">
+                                    <ProfileCalendarSection />
+                                </div>
+                            ) : null}
+                        </div>
 
                         <Card className={PROFILE_CARD_CLASS}>
                             <BlindSpotAnalysisSection

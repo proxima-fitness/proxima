@@ -9,6 +9,7 @@ import {
     ensureWorkoutHistoryFresh,
     getSyncProgress,
     getWorkoutById,
+    getWorkoutsForMonthForUser,
     getWorkoutsForUser,
     mapBackedUpWorkoutToHevyRoutine,
 } from "../workout-history-read";
@@ -310,6 +311,7 @@ function createBrowseMockDb(seed: TBrowseWorkoutRow[]) {
             const filters: Array<{ column: string; value: unknown }> = [];
             let cursorFilter: { startedAt: string; id: string } | null = null;
             let since: string | null = null;
+            let before: string | null = null;
             let limit = DEFAULT_WORKOUT_HISTORY_LIMIT + 1;
 
             const builder = {
@@ -322,6 +324,10 @@ function createBrowseMockDb(seed: TBrowseWorkoutRow[]) {
                 },
                 gte(column: string, value: string) {
                     if (column === "started_at") since = value;
+                    return builder;
+                },
+                lt(column: string, value: string) {
+                    if (column === "started_at") before = value;
                     return builder;
                 },
                 or(expression: string) {
@@ -353,6 +359,10 @@ function createBrowseMockDb(seed: TBrowseWorkoutRow[]) {
 
                     if (since) {
                         rows = rows.filter((row) => row.started_at >= since!);
+                    }
+
+                    if (before) {
+                        rows = rows.filter((row) => row.started_at < before!);
                     }
 
                     if (cursorFilter) {
@@ -511,5 +521,56 @@ describe("getWorkoutById", () => {
         );
 
         expect(workout).toBeNull();
+    });
+});
+
+describe("getWorkoutsForMonthForUser", () => {
+    it("returns lightweight workouts within local month bounds", async () => {
+        const mockDb = createBrowseMockDb([
+            {
+                ...backedUpWorkoutFixture,
+                id: "in-month",
+                title: "May workout",
+                started_at: "2026-05-15T12:00:00.000Z",
+                ended_at: "2026-05-15T13:00:00.000Z",
+            },
+            {
+                ...backedUpWorkoutFixture,
+                id: "out-month",
+                title: "June workout",
+                started_at: "2026-06-02T12:00:00.000Z",
+                ended_at: "2026-06-02T13:00:00.000Z",
+            },
+        ]);
+
+        const workouts = await getWorkoutsForMonthForUser(
+            asBrowseDb(mockDb),
+            USER_ID,
+            2026,
+            5,
+            0,
+        );
+
+        expect(workouts).toHaveLength(1);
+        expect(workouts[0]).toMatchObject({
+            id: "in-month",
+            title: "May workout",
+            started_at: "2026-05-15T12:00:00.000Z",
+            ended_at: "2026-05-15T13:00:00.000Z",
+        });
+    });
+
+    it("returns an empty array when no workouts match the month", async () => {
+        const mockDb = createBrowseMockDb([]);
+
+        const workouts = await getWorkoutsForMonthForUser(
+            asBrowseDb(mockDb),
+            USER_ID,
+            2026,
+            1,
+            0,
+        );
+
+        expect(workouts).toEqual([]);
     });
 });

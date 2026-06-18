@@ -100,8 +100,8 @@ export const MyProgramsVault = () => {
                 <div className="pt-0 pb-6">
                     <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-2">
                         <div className="min-w-0 space-y-1">
-                            <h2 className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-2">
-                                <BookOpenTextIcon className="size-5 shrink-0 opacity-80" aria-hidden />
+                            <h2 className="text-lg font-semibold tracking-tight text-foreground flex items-center gap-1.5">
+                                <BookOpenTextIcon className="size-4 shrink-0 opacity-80" aria-hidden />
                                 My Programs
                             </h2>
                             <p className="text-sm text-muted-foreground">
@@ -139,8 +139,8 @@ export const MyProgramsVault = () => {
             <div className="pt-0 pb-6">
                 <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-2">
                     <div className="min-w-0 space-y-1">
-                        <h2 className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-2">
-                            <BookOpenTextIcon className="size-5 shrink-0 opacity-80" aria-hidden />
+                        <h2 className="text-lg font-semibold tracking-tight text-foreground flex items-center gap-1.5">
+                            <BookOpenTextIcon className="size-4 shrink-0 opacity-80" aria-hidden />
                             My Programs ({programs.length})
                         </h2>
                         <p className="text-sm text-muted-foreground">

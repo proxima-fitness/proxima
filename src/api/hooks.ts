@@ -27,7 +27,7 @@ import { getMyFeatureLimits } from "./feature-limits";
 import { getFollowers, getFollowing } from "./followers";
 import { User } from "@supabase/supabase-js";
 import { getChatHistoryById, getChatIds } from "./chat-history";
-import { getLoggedWorkoutDetail, getLoggedWorkoutPreviews, getProfileStatistics, LOGGED_WORKOUT_BROWSE_QUERY_KEY, PROFILE_STATISTICS_QUERY_KEY, WorkoutNotFoundError } from "./workout-history-browse";
+import { getLoggedWorkoutDetail, getLoggedWorkoutPreviews, getProfileCalendarWorkouts, getProfileStatistics, LOGGED_WORKOUT_BROWSE_QUERY_KEY, PROFILE_CALENDAR_QUERY_KEY, PROFILE_STATISTICS_QUERY_KEY, WorkoutNotFoundError } from "./workout-history-browse";
 
 /* ================================
    CLIENT-SIDE RENDERED HOOKS
@@ -462,6 +462,31 @@ export const useProfileStatistics = (
     return useQuery({
         queryKey: [...PROFILE_STATISTICS_QUERY_KEY, user?.id, weeks],
         queryFn: ({ signal }) => getProfileStatistics(weeks, signal),
+        enabled: !!user && enabled,
+        staleTime: 30_000,
+    });
+};
+
+/**
+ * Backed-up workouts for one profile calendar month.
+ *
+ * @param user - Authenticated user (query disabled when null)
+ * @param enabled - When false, skips fetch
+ * @param year - Visible calendar year
+ * @param month - Visible calendar month (1–12)
+ */
+export const useProfileCalendar = (
+    user: User | undefined | null,
+    enabled: boolean,
+    year: number,
+    month: number,
+) => {
+    const timezoneOffsetMinutes = new Date().getTimezoneOffset();
+
+    return useQuery({
+        queryKey: [...PROFILE_CALENDAR_QUERY_KEY, user?.id, year, month, timezoneOffsetMinutes],
+        queryFn: ({ signal }) =>
+            getProfileCalendarWorkouts({ year, month, timezoneOffsetMinutes }, signal),
         enabled: !!user && enabled,
         staleTime: 30_000,
     });

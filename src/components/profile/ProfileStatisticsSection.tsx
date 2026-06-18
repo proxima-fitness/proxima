@@ -46,7 +46,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchWorkoutHistorySyncProgress } from "@/api/workout-history-sync";
 
 const PROFILE_CARD_CLASS =
-    "rounded-2xl border border-border/60 bg-card px-4 py-5 shadow-sm sm:px-6 sm:py-6";
+    "rounded-2xl border border-border/60 bg-card px-3 py-3 shadow-sm sm:px-4 sm:py-4";
 
 type TMetric = "duration" | "reps";
 type TWeekRange = 4 | 12;
@@ -57,9 +57,9 @@ interface IProps {
 
 function StatisticsChartSkeleton() {
     return (
-        <div className="space-y-4 pt-4">
-            <Skeleton className="h-8 w-32" />
-            <Skeleton className="h-36 w-full rounded-xl" />
+        <div className="space-y-2 pt-2">
+            <Skeleton className="h-6 w-28" />
+            <Skeleton className="h-24 w-full rounded-xl" />
         </div>
     );
 }
@@ -86,7 +86,7 @@ function WeeklyBarChart({
     return (
         <TooltipProvider delayDuration={0}>
             <div
-                className="mt-6 flex items-end gap-2 sm:gap-3"
+                className="mt-3 flex items-end gap-1 sm:gap-1.5"
                 role="img"
                 aria-label={`Weekly ${metric} bar chart`}
             >
@@ -100,11 +100,11 @@ function WeeklyBarChart({
                     return (
                         <div
                             key={bucket.weekStart}
-                            className="flex min-w-0 flex-1 flex-col items-center gap-2"
+                            className="flex min-w-0 flex-1 flex-col items-center gap-1"
                         >
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <div className="flex h-32 w-full cursor-default flex-col justify-end rounded-t-md outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                                    <div className="flex h-24 w-full cursor-default flex-col justify-end rounded-t-md outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                                         <div
                                             className={cn(
                                                 "w-full rounded-t-md transition-colors hover:opacity-90",
@@ -194,18 +194,18 @@ export function ProfileStatisticsSection({ hevyConnected }: IProps) {
 
     return (
         <>
-            <section aria-labelledby="profile-statistics-heading">
-                <Card className={PROFILE_CARD_CLASS}>
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                        <div className="min-w-0 space-y-1">
+            <section aria-labelledby="profile-statistics-heading" className="h-full">
+                <Card className={cn(PROFILE_CARD_CLASS, "h-full flex flex-col")}>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                        <div className="min-w-0 space-y-0.5">
                             <h2
                                 id="profile-statistics-heading"
-                                className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-2"
+                                className="text-lg font-semibold tracking-tight text-foreground flex items-center gap-1.5"
                             >
-                                <ChartLineIcon className="size-5 shrink-0 opacity-80" aria-hidden />
+                                <ChartLineIcon className="size-4 shrink-0 opacity-80" aria-hidden />
                                 Statistics
                             </h2>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-xs text-muted-foreground">
                                 Weekly totals from your Hevy backup.
                             </p>
                         </div>
@@ -217,7 +217,7 @@ export function ProfileStatisticsSection({ hevyConnected }: IProps) {
                                 }
                             >
                                 <SelectTrigger
-                                    className="h-9 w-[140px] shrink-0 rounded-full border-border/60 text-xs"
+                                    className="h-8 w-[132px] shrink-0 rounded-full border-border/60 text-xs"
                                     aria-label="Chart time range"
                                 >
                                     <SelectValue />
@@ -231,15 +231,15 @@ export function ProfileStatisticsSection({ hevyConnected }: IProps) {
                     </div>
 
                     {!hevyConnected ? (
-                        <div className="pt-4">
-                            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-muted/20 px-4 py-10 text-center">
-                            <p className="text-sm text-muted-foreground max-w-sm">
+                        <div className="pt-2">
+                            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-muted/20 px-3 py-6 text-center">
+                            <p className="text-xs text-muted-foreground max-w-sm">
                                 Connect Hevy to see weekly duration and rep totals from your
                                 backed-up workouts.
                             </p>
                             <Button
                                 type="button"
-                                className="mt-4 rounded-full bg-lightSecondary px-5 text-white hover:bg-lightSecondary/90"
+                                className="mt-3 rounded-full bg-lightSecondary px-4 text-sm text-white hover:bg-lightSecondary/90"
                                 onClick={() => setConnectOpen(true)}
                             >
                                 Connect Hevy
@@ -249,17 +249,17 @@ export function ProfileStatisticsSection({ hevyConnected }: IProps) {
                     ) : isLoading ? (
                         <StatisticsChartSkeleton />
                     ) : isError || !data ? (
-                        <p className="pt-4 text-sm text-muted-foreground">
+                        <p className="pt-2 text-xs text-muted-foreground">
                             Could not load statistics. Please try again later.
                         </p>
                     ) : (
-                        <div className="pt-4">
-                            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                        <div className="pt-2">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                                 <div>
-                                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                    <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                                         This week
                                     </p>
-                                    <p className="text-2xl font-semibold tabular-nums tracking-tight text-foreground">
+                                    <p className="text-xl font-semibold tabular-nums tracking-tight text-foreground">
                                         {headlineValue}
                                     </p>
                                 </div>
@@ -300,9 +300,9 @@ export function ProfileStatisticsSection({ hevyConnected }: IProps) {
                             </div>
 
                             {!hasChartData ? (
-                                <div className="mt-6 rounded-xl border border-dashed border-border/60 bg-muted/20 px-4 py-10 text-center">
+                                <div className="mt-3 rounded-xl border border-dashed border-border/60 bg-muted/20 px-3 py-6 text-center">
                                     {isSyncing ? (
-                                        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                                        <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                                             <Loader2
                                                 className="size-4 shrink-0 animate-spin"
                                                 aria-hidden
@@ -310,7 +310,7 @@ export function ProfileStatisticsSection({ hevyConnected }: IProps) {
                                             <span>Syncing workout history… charts fill in as data arrives.</span>
                                         </div>
                                     ) : (
-                                        <p className="text-sm text-muted-foreground">
+                                        <p className="text-xs text-muted-foreground">
                                             No backed-up workouts in this range yet. Log a workout
                                             in Hevy to see weekly totals here.
                                         </p>
@@ -320,7 +320,7 @@ export function ProfileStatisticsSection({ hevyConnected }: IProps) {
                                 <>
                                     <WeeklyBarChart buckets={data.buckets} metric={metric} />
                                     {isSyncing ? (
-                                        <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+                                        <p className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
                                             <Loader2
                                                 className="size-3 shrink-0 animate-spin"
                                                 aria-hidden

@@ -154,9 +154,9 @@ export function RecentWorkoutsSection() {
                 <div className="min-w-0 space-y-1">
                     <h2
                         id="recent-workouts-heading"
-                        className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-2"
+                        className="text-lg font-semibold tracking-tight text-foreground flex items-center gap-1.5"
                     >
-                        <History className="size-5 shrink-0 opacity-80" aria-hidden />
+                        <History className="size-4 shrink-0 opacity-80" aria-hidden />
                         Recent workouts
                     </h2>
                     <p className="text-sm text-muted-foreground">
