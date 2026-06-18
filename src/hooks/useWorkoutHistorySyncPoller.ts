@@ -20,6 +20,7 @@ import {
     WORKOUT_SYNC_POLL_DELAY_MS,
     workoutSyncRateLimitPollDelayMs,
 } from "@/api/workout-history-sync";
+import { notifyWorkoutHistoryBackfillIfNeeded } from "@/api/workout-history-browse";
 import {
     resetWorkoutHistorySyncToastState,
     syncWorkoutHistorySyncToast,
@@ -103,6 +104,9 @@ export function useWorkoutHistorySyncPoller(enabled: boolean, options?: TPollerO
             } else {
                 consecutiveRateLimitsRef.current = 0;
             }
+            const previous = queryClient.getQueryData<TWorkoutSyncProgress>(
+                WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY,
+            );
             const next: TWorkoutSyncProgress = {
                 backedUpCount: chunk.backedUpCount,
                 hevyCount: chunk.hevyCount,
@@ -110,6 +114,7 @@ export function useWorkoutHistorySyncPoller(enabled: boolean, options?: TPollerO
                 rateLimited: chunk.rateLimited,
                 paused: false,
             };
+            notifyWorkoutHistoryBackfillIfNeeded(queryClient, previous, next);
             queryClient.setQueryData<TWorkoutSyncProgress>(WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY, next);
             notifyToast(next, false, () => retryRef.current());
         },
@@ -129,12 +134,16 @@ export function useWorkoutHistorySyncPoller(enabled: boolean, options?: TPollerO
     const progressQuery = useQuery({
         queryKey: WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY,
         queryFn: async (): Promise<TWorkoutSyncProgress> => {
+            const previous = queryClient.getQueryData<TWorkoutSyncProgress>(
+                WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY,
+            );
             const progress = await fetchWorkoutHistorySyncProgress();
 
             if (!isWorkoutHistorySyncInProgress(progress)) {
                 consecutiveRateLimitsRef.current = 0;
                 writeSyncPausedToStorage(false);
                 queryClient.setQueryData(WORKOUT_HISTORY_SYNC_PAUSED_QUERY_KEY, false);
+                notifyWorkoutHistoryBackfillIfNeeded(queryClient, previous, progress);
                 notifyToast(progress, false, () => retryRef.current());
                 return progress;
             }
@@ -160,6 +169,7 @@ export function useWorkoutHistorySyncPoller(enabled: boolean, options?: TPollerO
                 rateLimited: chunk.rateLimited,
                 paused: false,
             };
+            notifyWorkoutHistoryBackfillIfNeeded(queryClient, previous, next);
             notifyToast(next, false, () => retryRef.current());
             return next;
         },

@@ -272,15 +272,23 @@ type TProfileStatisticsWeekBucket = {
     weekStart: string;
     durationSeconds: number;
     reps: number;
+    volumeKg: number;
 };
 
-type TProfileStatisticsResponse = {
+type TProfileStatisticsChart = {
     weeks: 4 | 12;
     thisWeek: {
         durationSeconds: number;
         reps: number;
+        volumeKg: number;
     };
     buckets: TProfileStatisticsWeekBucket[];
+};
+
+type TProfileStatisticsResponse = TProfileStatisticsChart & {
+    weekStreak: number;
+    thisWeekWorkouts: number;
+    avgWorkoutsPerWeek: number | null;
 };
 
 type TProfileCalendarWorkout = {

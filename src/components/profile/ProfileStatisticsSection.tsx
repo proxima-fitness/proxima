@@ -4,26 +4,28 @@
 /**
  * @module ProfileStatisticsSection
  *
- * Profile statistics card: Duration/Reps tabs, weekly bar chart, "This week" headline,
+ * Profile statistics card: Duration/Reps/Volume tabs, weekly bar chart, "This week" headline,
  * 4/12 week range selector. Connect CTA when Hevy not connected.
  *
  * Depends on: useProfileStatistics, useWorkoutHistorySyncPoller, ConnectHevyDialog
  * Used by: ProfileContent
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { Loader2, ChartLineIcon } from "lucide-react";
 import { useUserContext } from "@/contexts/UserContext";
 import { useProfileStatistics } from "@/api/hooks";
 import {
     formatDurationFromSeconds,
+    formatProfileConsistencyLine,
     formatRepsTotal,
+    formatVolumeTotal,
     formatWeekBucketLabel,
 } from "@/api/workout-history-statistics";
-import { PROFILE_STATISTICS_QUERY_KEY } from "@/api/workout-history-browse";
 import { isWorkoutHistorySyncInProgress } from "@/api/workout-history-sync";
 import { ConnectHevyDialog } from "@/components/header/ConnectHevyDialog";
+import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
+import { getWeightUnit } from "@/lib/weightUtils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -48,7 +50,7 @@ import { fetchWorkoutHistorySyncProgress } from "@/api/workout-history-sync";
 const PROFILE_CARD_CLASS =
     "rounded-2xl border border-border/60 bg-card px-3 py-3 shadow-sm sm:px-4 sm:py-4";
 
-type TMetric = "duration" | "reps";
+type TMetric = "duration" | "reps" | "volume";
 type TWeekRange = 4 | 12;
 
 interface IProps {
@@ -64,9 +66,17 @@ function StatisticsChartSkeleton() {
     );
 }
 
-function formatBarTooltipValue(value: number, metric: TMetric): string {
+function formatBarTooltipValue(
+    value: number,
+    metric: TMetric,
+    isInLbs: boolean,
+): string {
     if (metric === "duration") {
         return formatDurationFromSeconds(value);
+    }
+    if (metric === "volume") {
+        const unit = getWeightUnit(isInLbs);
+        return `${formatVolumeTotal(value, isInLbs)} ${unit}`;
     }
     return value === 1 ? "1 rep" : `${formatRepsTotal(value)} reps`;
 }
@@ -74,13 +84,21 @@ function formatBarTooltipValue(value: number, metric: TMetric): string {
 function WeeklyBarChart({
     buckets,
     metric,
+    isInLbs,
 }: {
     buckets: TProfileStatisticsWeekBucket[];
     metric: TMetric;
+    isInLbs: boolean;
 }) {
-    const values = buckets.map((bucket) =>
-        metric === "duration" ? bucket.durationSeconds : bucket.reps,
-    );
+    const values = buckets.map((bucket) => {
+        if (metric === "duration") {
+            return bucket.durationSeconds;
+        }
+        if (metric === "volume") {
+            return bucket.volumeKg;
+        }
+        return bucket.reps;
+    });
     const maxValue = Math.max(...values, 1);
 
     return (
@@ -95,7 +113,7 @@ function WeeklyBarChart({
                     const heightPercent = maxValue > 0 ? (value / maxValue) * 100 : 0;
                     const isCurrentWeek = index === buckets.length - 1;
                     const weekLabel = formatWeekBucketLabel(bucket.weekStart);
-                    const valueLabel = formatBarTooltipValue(value, metric);
+                    const valueLabel = formatBarTooltipValue(value, metric, isInLbs);
 
                     return (
                         <div
@@ -141,7 +159,7 @@ function WeeklyBarChart({
 /** Statistics card with weekly chart or connect CTA. */
 export function ProfileStatisticsSection({ hevyConnected }: IProps) {
     const { user } = useUserContext();
-    const queryClient = useQueryClient();
+    const { isInLbs } = usePoundsOrKgContext();
     const [connectOpen, setConnectOpen] = useState(false);
     const [metric, setMetric] = useState<TMetric>("duration");
     const [weekRange, setWeekRange] = useState<TWeekRange>(12);
@@ -156,39 +174,36 @@ export function ProfileStatisticsSection({ hevyConnected }: IProps) {
         refetchOnWindowFocus: false,
     });
 
-    const prevBackedUpCount = useRef<number | undefined>(undefined);
-
-    useEffect(() => {
-        const backedUpCount = progress?.backedUpCount;
-        if (
-            backedUpCount != null &&
-            prevBackedUpCount.current != null &&
-            backedUpCount > prevBackedUpCount.current
-        ) {
-            void queryClient.invalidateQueries({
-                queryKey: [...PROFILE_STATISTICS_QUERY_KEY, user?.id],
-            });
-        }
-        prevBackedUpCount.current = backedUpCount;
-    }, [progress?.backedUpCount, queryClient, user?.id]);
-
     const isSyncing = progress != null && isWorkoutHistorySyncInProgress(progress);
 
     const headlineValue = useMemo(() => {
         if (!data) {
             return "";
         }
-        return metric === "duration"
-            ? formatDurationFromSeconds(data.thisWeek.durationSeconds)
-            : formatRepsTotal(data.thisWeek.reps);
-    }, [data, metric]);
+        if (metric === "duration") {
+            return formatDurationFromSeconds(data.thisWeek.durationSeconds);
+        }
+        if (metric === "volume") {
+            const unit = getWeightUnit(isInLbs);
+            return `${formatVolumeTotal(data.thisWeek.volumeKg, isInLbs)} ${unit}`;
+        }
+        return formatRepsTotal(data.thisWeek.reps);
+    }, [data, metric, isInLbs]);
+
+    const consistencyLine = useMemo(() => {
+        if (!data || data.avgWorkoutsPerWeek == null) {
+            return null;
+        }
+        return formatProfileConsistencyLine(data.thisWeekWorkouts, data.avgWorkoutsPerWeek);
+    }, [data]);
 
     const hasChartData = useMemo(() => {
         if (!data) {
             return false;
         }
         return data.buckets.some(
-            (bucket) => bucket.durationSeconds > 0 || bucket.reps > 0,
+            (bucket) =>
+                bucket.durationSeconds > 0 || bucket.reps > 0 || bucket.volumeKg > 0,
         );
     }, [data]);
 
@@ -234,8 +249,8 @@ export function ProfileStatisticsSection({ hevyConnected }: IProps) {
                         <div className="pt-2">
                             <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-muted/20 px-3 py-6 text-center">
                             <p className="text-xs text-muted-foreground max-w-sm">
-                                Connect Hevy to see weekly duration and rep totals from your
-                                backed-up workouts.
+                                Connect Hevy to see weekly duration, rep, and volume totals from
+                                your backed-up workouts.
                             </p>
                             <Button
                                 type="button"
@@ -262,6 +277,11 @@ export function ProfileStatisticsSection({ hevyConnected }: IProps) {
                                     <p className="text-xl font-semibold tabular-nums tracking-tight text-foreground">
                                         {headlineValue}
                                     </p>
+                                    {consistencyLine ? (
+                                        <p className="text-xs text-muted-foreground tabular-nums">
+                                            {consistencyLine}
+                                        </p>
+                                    ) : null}
                                 </div>
                                 <div
                                     className="flex gap-1 rounded-full bg-muted/50 p-1"
@@ -296,6 +316,20 @@ export function ProfileStatisticsSection({ hevyConnected }: IProps) {
                                     >
                                         Reps
                                     </button>
+                                    <button
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={metric === "volume"}
+                                        className={cn(
+                                            "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                                            metric === "volume"
+                                                ? "bg-lightSecondary/15 text-lightSecondary"
+                                                : "text-muted-foreground hover:text-foreground",
+                                        )}
+                                        onClick={() => setMetric("volume")}
+                                    >
+                                        Volume
+                                    </button>
                                 </div>
                             </div>
 
@@ -318,7 +352,11 @@ export function ProfileStatisticsSection({ hevyConnected }: IProps) {
                                 </div>
                             ) : (
                                 <>
-                                    <WeeklyBarChart buckets={data.buckets} metric={metric} />
+                                    <WeeklyBarChart
+                                        buckets={data.buckets}
+                                        metric={metric}
+                                        isInLbs={isInLbs}
+                                    />
                                     {isSyncing ? (
                                         <p className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
                                             <Loader2

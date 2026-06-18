@@ -8,12 +8,32 @@
  */
 
 import { DEFAULT_WORKOUT_HISTORY_LIMIT } from "./workout-history-read";
+import type { QueryClient } from "@tanstack/react-query";
 
 export const LOGGED_WORKOUT_BROWSE_QUERY_KEY = ["logged-workout-browse"] as const;
 
 export const PROFILE_STATISTICS_QUERY_KEY = ["profile-statistics"] as const;
 
 export const PROFILE_CALENDAR_QUERY_KEY = ["profile-calendar"] as const;
+
+/** Refetch profile surfaces that depend on backed-up workout rows growing during sync. */
+export function invalidateProfileWorkoutHistoryOnBackfill(queryClient: QueryClient) {
+    void queryClient.invalidateQueries({ queryKey: PROFILE_STATISTICS_QUERY_KEY });
+    void queryClient.invalidateQueries({ queryKey: PROFILE_CALENDAR_QUERY_KEY });
+    void queryClient.resetQueries({ queryKey: LOGGED_WORKOUT_BROWSE_QUERY_KEY });
+}
+
+/** Invalidate profile browse/statistics when sync progress reports more backed-up workouts. */
+export function notifyWorkoutHistoryBackfillIfNeeded(
+    queryClient: QueryClient,
+    previous: TWorkoutSyncProgress | null | undefined,
+    next: TWorkoutSyncProgress,
+) {
+    const prevCount = previous?.backedUpCount;
+    if (prevCount != null && next.backedUpCount > prevCount) {
+        invalidateProfileWorkoutHistoryOnBackfill(queryClient);
+    }
+}
 
 /** Thrown when GET /api/workout-history/workouts/[id] returns 404. */
 export class WorkoutNotFoundError extends Error {

@@ -17,6 +17,7 @@ import {
     useFollowingMyProfile,
     useHevySecret,
     useProfilePictureByID,
+    useProfileStatistics,
     useUserFullName,
     useUserMetadata,
 } from "@/api/hooks";
@@ -100,6 +101,11 @@ export function ProfileHero({ onEditProfileClick }: IProfileHeroProps) {
     const { data: hevyApiKey } = useHevySecret(user);
     const hevyConnected = Boolean(hevyApiKey);
     const { progress, pause, play } = useWorkoutHistorySyncPoller(hevyConnected);
+    const { data: statistics, isLoading: isLoadingStatistics } = useProfileStatistics(
+        user,
+        hevyConnected,
+        12,
+    );
 
     const effectiveProfilePic = contextProfilePic ?? profilePicBlob;
     const profilePicUrl = useMemo(() => {
@@ -199,6 +205,13 @@ export function ProfileHero({ onEditProfileClick }: IProfileHeroProps) {
                             ) : null
                         }
                     />
+                    {hevyConnected ? (
+                        <StatCell
+                            label="Streak"
+                            value={String(statistics?.weekStreak ?? 0)}
+                            loading={isLoadingStatistics}
+                        />
+                    ) : null}
                     <StatCell
                         label="Followers"
                         value={String(followers?.length ?? 0)}

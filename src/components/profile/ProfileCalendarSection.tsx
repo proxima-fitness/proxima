@@ -11,29 +11,25 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { useUserContext } from "@/contexts/UserContext";
 import { useProfileCalendar } from "@/api/hooks";
 import {
     buildSundayStartCalendarGrid,
+    formatLocalDateKey,
     groupWorkoutsByLocalDate,
 } from "@/api/workout-history-calendar";
-import { PROFILE_CALENDAR_QUERY_KEY } from "@/api/workout-history-browse";
-import { fetchWorkoutHistorySyncProgress } from "@/api/workout-history-sync";
 import { buildWorkoutDetailHref } from "@/lib/build-program-url";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY } from "@/hooks/useWorkoutHistorySyncPoller";
 import {
     convertSupabaseDateToReadable,
     formatWorkoutWallDuration,
 } from "@/utils/general/helpers";
 import { cn } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
 
 const PROFILE_CARD_CLASS =
     "rounded-2xl border border-border/60 bg-card px-3 py-3 shadow-sm sm:px-4 sm:py-4";
@@ -97,11 +93,13 @@ function CalendarWorkoutDay({
     workouts,
     open,
     onOpenChange,
+    isToday,
 }: {
     day: number;
     workouts: TProfileCalendarWorkout[];
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    isToday: boolean;
 }) {
     const closeTimeoutRef = useRef<number | undefined>(undefined);
 
@@ -124,7 +122,10 @@ function CalendarWorkoutDay({
             <PopoverTrigger asChild>
                 <button
                     type="button"
-                    className="mx-auto flex size-7 items-center justify-center rounded-full bg-lightSecondary text-xs font-medium tabular-nums text-white outline-none transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    className={cn(
+                        "mx-auto flex size-7 items-center justify-center rounded-full bg-lightSecondary text-xs font-medium tabular-nums text-white outline-none transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                        isToday && "ring-2 ring-foreground",
+                    )}
                     aria-label={`${workouts.length} workout${workouts.length === 1 ? "" : "s"} on day ${day}`}
                     onMouseEnter={() => {
                         clearCloseTimeout();
@@ -152,7 +153,6 @@ function CalendarWorkoutDay({
 /** Month calendar with backed-up workout day highlights. */
 export function ProfileCalendarSection() {
     const { user } = useUserContext();
-    const queryClient = useQueryClient();
     const now = new Date();
     const [visibleYear, setVisibleYear] = useState(now.getFullYear());
     const [visibleMonth, setVisibleMonth] = useState(now.getMonth() + 1);
@@ -165,29 +165,6 @@ export function ProfileCalendarSection() {
         visibleMonth,
     );
 
-    const { data: progress } = useQuery({
-        queryKey: WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY,
-        queryFn: fetchWorkoutHistorySyncProgress,
-        staleTime: 5_000,
-        refetchOnWindowFocus: false,
-    });
-
-    const prevBackedUpCount = useRef<number | undefined>(undefined);
-
-    useEffect(() => {
-        const backedUpCount = progress?.backedUpCount;
-        if (
-            backedUpCount != null &&
-            prevBackedUpCount.current != null &&
-            backedUpCount > prevBackedUpCount.current
-        ) {
-            void queryClient.invalidateQueries({
-                queryKey: [...PROFILE_CALENDAR_QUERY_KEY, user?.id],
-            });
-        }
-        prevBackedUpCount.current = backedUpCount;
-    }, [progress?.backedUpCount, queryClient, user?.id]);
-
     const workoutsByDay = useMemo(
         () => groupWorkoutsByLocalDate(data?.workouts ?? []),
         [data?.workouts],
@@ -197,6 +174,11 @@ export function ProfileCalendarSection() {
         () => buildSundayStartCalendarGrid(visibleYear, visibleMonth),
         [visibleYear, visibleMonth],
     );
+
+    const todayLocalDateKey = useMemo(() => {
+        const today = new Date();
+        return formatLocalDateKey(today.getFullYear(), today.getMonth() + 1, today.getDate());
+    }, []);
 
     const goToPreviousMonth = () => {
         const next = shiftMonth(visibleYear, visibleMonth, -1);
@@ -273,6 +255,7 @@ export function ProfileCalendarSection() {
                     <div className="grid grid-cols-7 gap-y-1.5 pt-2">
                         {grid.map((cell) => {
                             const dayWorkouts = workoutsByDay.get(cell.localDateKey) ?? [];
+                            const isToday = cell.localDateKey === todayLocalDateKey;
 
                             if (dayWorkouts.length > 0) {
                                 return (
@@ -284,6 +267,7 @@ export function ProfileCalendarSection() {
                                             onOpenChange={(open) =>
                                                 setOpenDayKey(open ? cell.localDateKey : null)
                                             }
+                                            isToday={isToday}
                                         />
                                     </div>
                                 );
@@ -297,6 +281,7 @@ export function ProfileCalendarSection() {
                                             cell.isCurrentMonth
                                                 ? "text-foreground"
                                                 : "text-muted-foreground/50",
+                                            isToday && "rounded-full ring-2 ring-foreground/40",
                                         )}
                                     >
                                         {cell.day}

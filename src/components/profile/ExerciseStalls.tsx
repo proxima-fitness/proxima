@@ -365,7 +365,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
             {showViewMore && (
                 <div className="w-full pt-2 max-w-full box-border overflow-hidden flex justify-center">
                     {viewMoreHref ? (
-                        <Button size="sm" asChild className="mt-1 w-[200px] bg-darkGray text-white hover:text-black hover:bg-lightGold/90">
+                        <Button size="sm" asChild className="mt-1 w-[200px] bg-lightGold text-black hover:bg-lightGold hover:text-black">
                             <Link href={viewMoreHref}>
                                 {BLIND_SPOT_STRINGS.ViewMoreExercises}
                                 <Crown className="size-4 ml-1" />
@@ -375,7 +375,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                         <Button
                             size="sm"
                             onClick={handleViewMore}
-                            className="mt-1 w-[200px] bg-darkGray text-white hover:bg-lightSecondary/90"
+                            className="mt-1 w-[200px] bg-lightGold text-black hover:bg-lightGold hover:text-black"
                         >
                             {BLIND_SPOT_STRINGS.ViewMoreExercises}
                             <PlusIcon className="size-4 ml-1" />

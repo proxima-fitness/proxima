@@ -15,7 +15,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUserContext } from "@/contexts/UserContext";
 import { useHevyExercises, useHevySecret, useLoggedWorkoutBrowse } from "@/api/hooks";
-import { LOGGED_WORKOUT_BROWSE_QUERY_KEY } from "@/api/workout-history-browse";
 import {
     fetchWorkoutHistorySyncProgress,
     getWorkoutHistorySyncStatus,
@@ -61,24 +60,9 @@ export function RecentWorkoutsSection() {
         refetchOnWindowFocus: false,
     });
 
-    const prevBackedUpCount = useRef<number | undefined>(undefined);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(false);
-
-    useEffect(() => {
-        const backedUpCount = progress?.backedUpCount;
-        if (
-            backedUpCount != null &&
-            prevBackedUpCount.current != null &&
-            backedUpCount > prevBackedUpCount.current
-        ) {
-            void queryClient.resetQueries({
-                queryKey: [...LOGGED_WORKOUT_BROWSE_QUERY_KEY, user?.id],
-            });
-        }
-        prevBackedUpCount.current = backedUpCount;
-    }, [progress?.backedUpCount, queryClient, user?.id]);
 
     const previewItems = useMemo(
         () => data?.pages.flatMap((page) => page.workouts) ?? [],

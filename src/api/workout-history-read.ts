@@ -16,6 +16,7 @@ import {
 import type { Database } from "@/hooks/supabase";
 import {
     aggregateProfileStatistics,
+    buildProfileTrainingMetrics,
     getSinceIsoForWeekRange,
 } from "./workout-history-statistics";
 import { getLocalMonthUtcBounds } from "./workout-history-calendar";
@@ -341,6 +342,67 @@ export async function getAllWorkoutsSinceForUser(
 }
 
 /**
+ * All workout `started_at` timestamps for streak and consistency metrics.
+ *
+ * @param db - Supabase client (user or service role)
+ * @param userId - Proxima user ID
+ */
+export async function getAllWorkoutStartedAtForUser(
+    db: TWorkoutHistoryDb,
+    userId: string,
+): Promise<string[]> {
+    const pageSize = 500;
+    const timestamps: string[] = [];
+    let cursor: TWorkoutHistoryCursor | null = null;
+
+    for (;;) {
+        let query = db
+            .from("workouts")
+            .select("id, started_at")
+            .eq("user_id", userId)
+            .not("started_at", "is", null)
+            .order("started_at", { ascending: false })
+            .order("id", { ascending: false })
+            .limit(pageSize + 1);
+
+        if (cursor?.startedAt && cursor.id) {
+            query = query.or(
+                `started_at.lt.${cursor.startedAt},and(started_at.eq.${cursor.startedAt},id.lt.${cursor.id})`,
+            );
+        }
+
+        const { data, error } = await query;
+
+        if (error) {
+            throw new Error(error.message);
+        }
+
+        const rows = (data ?? []) as Array<{ id: string; started_at: string }>;
+        const hasMore = rows.length > pageSize;
+        const page = hasMore ? rows.slice(0, pageSize) : rows;
+
+        for (const row of page) {
+            if (row.started_at) {
+                timestamps.push(row.started_at);
+            }
+        }
+
+        if (!hasMore) {
+            break;
+        }
+
+        const lastRow = page.at(-1);
+        if (!lastRow) {
+            break;
+        }
+
+        cursor = { startedAt: lastRow.started_at, id: lastRow.id };
+    }
+
+    return timestamps;
+}
+
+/**
  * Weekly Duration/Reps aggregates for profile statistics.
  *
  * @param db - Supabase client (user or service role)
@@ -355,8 +417,17 @@ export async function getProfileStatisticsForUser(
     referenceDate: Date = new Date(),
 ): Promise<TProfileStatisticsResponse> {
     const since = getSinceIsoForWeekRange(referenceDate, weeks);
-    const workouts = await getAllWorkoutsSinceForUser(db, userId, since);
-    return aggregateProfileStatistics(workouts, { weeks, referenceDate });
+    const [workouts, startedAtTimestamps] = await Promise.all([
+        getAllWorkoutsSinceForUser(db, userId, since),
+        getAllWorkoutStartedAtForUser(db, userId),
+    ]);
+    const chart = aggregateProfileStatistics(workouts, { weeks, referenceDate });
+    const training = buildProfileTrainingMetrics(startedAtTimestamps, referenceDate, weeks);
+
+    return {
+        ...chart,
+        ...training,
+    };
 }
 
 /**
