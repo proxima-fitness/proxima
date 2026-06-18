@@ -36,11 +36,15 @@ const PROFILE_CARD_CLASS =
 
 const WEEKDAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"] as const;
 
-function CalendarGridSkeleton() {
+function CalendarGridSkeleton({ year, month }: { year: number; month: number }) {
+    const grid = buildSundayStartCalendarGrid(year, month);
+
     return (
-        <div className="grid grid-cols-7 gap-y-1.5 pt-2">
-            {Array.from({ length: 42 }).map((_, index) => (
-                <Skeleton key={index} className="mx-auto size-7 rounded-full" />
+        <div className="grid grid-cols-7 gap-y-1.5 pt-2" aria-busy="true" aria-label="Loading calendar">
+            {grid.map((cell) => (
+                <div key={cell.localDateKey} className="flex justify-center">
+                    <Skeleton className="size-7 rounded-full" />
+                </div>
             ))}
         </div>
     );
@@ -158,7 +162,7 @@ export function ProfileCalendarSection() {
     const [visibleMonth, setVisibleMonth] = useState(now.getMonth() + 1);
     const [openDayKey, setOpenDayKey] = useState<string | null>(null);
 
-    const { data, isLoading, isError } = useProfileCalendar(
+    const { data, isPending, isError } = useProfileCalendar(
         user,
         true,
         visibleYear,
@@ -245,8 +249,8 @@ export function ProfileCalendarSection() {
                     </div>
                 </div>
 
-                {isLoading ? (
-                    <CalendarGridSkeleton />
+                {isPending ? (
+                    <CalendarGridSkeleton year={visibleYear} month={visibleMonth} />
                 ) : isError ? (
                     <p className="pt-2 text-xs text-muted-foreground">
                         Could not load calendar. Please try again later.

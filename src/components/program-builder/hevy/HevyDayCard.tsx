@@ -34,6 +34,7 @@ import {
     convertSupabaseDateToReadable,
     formatWorkoutWallDuration,
 } from "@/utils/general/helpers";
+import { SessionGoalBadge } from "@/components/profile/SessionGoalBadge";
 
 /** Props for a single day card within a week column. */
 interface IProps {
@@ -85,6 +86,8 @@ interface IProps {
     hevyExercises?: THevyExerciseTemplate[];
     /** When true (mobile), use fade-in instead of layout animation to avoid slide-from-top-left. */
     isMobile?: boolean;
+    /** Read-only: show session goal pill in card header (default true). */
+    showSessionGoalBadge?: boolean;
 }
 
 /**
@@ -117,6 +120,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         customExercises,
         hevyExercises,
         isMobile = false,
+        showSessionGoalBadge = true,
     } = props;
 
     const isReadOnly = variant === "read-only";
@@ -226,13 +230,14 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                         <div className="flex flex-row justify-between items-start px-3 py-2 gap-2">
                             <div className="min-w-0 flex-1">
                                 <div className="font-tertiary text-lg truncate">{day.title}</div>
-                                <div className="font-secondary text-sm text-muted-foreground flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5">
+                                <div className="font-secondary text-sm text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
                                     {convertSupabaseDateToReadable(day.started_at) && (
                                         <span>{convertSupabaseDateToReadable(day.started_at)}</span>
                                     )}
                                     {formatWorkoutWallDuration(day.started_at, day.ended_at) && (
                                         <span>{formatWorkoutWallDuration(day.started_at, day.ended_at)}</span>
                                     )}
+                                    {showSessionGoalBadge && <SessionGoalBadge day={day} />}
                                 </div>
                             </div>
                             { day.notes && day.notes.length > 0 &&

@@ -257,7 +257,7 @@ Profile **Recent Workouts** section — horizontal feed of backed-up **Workouts*
 _Avoid_: Workout history (ambiguous with backup or Hevy API), exercise history (Hevy API grain), sync banner (progress only)
 
 **Logged workout detail**:
-Full read-only view of one backed-up **Workout** at `/workout/{id}` (`{id}` = Proxima backup UUID). Metadata block (title, date, duration, source badge, exercise/set counts, back to profile) plus full logged day card with all exercises and sets. Profile card shell on muted background; dedicated 404 when missing or not owned. Distinct from workout history browse (5-exercise preview cards on profile).
+Full read-only view of one backed-up **Workout** at `/workout/{id}` (`{id}` = Proxima backup UUID). Metadata block (title, date, duration, source badge, **Session goal** badge when classifiable, exercise/set counts, back to profile) plus full logged day card with all exercises and sets. Profile card shell on muted background; dedicated 404 when missing or not owned. Distinct from workout history browse (5-exercise preview cards on profile).
 _Avoid_: Workout page (ambiguous with builder day), Hevy workout URL (external app)
 
 **Workout history access**:
@@ -289,8 +289,12 @@ Consecutive Sunday-start weeks (US ET, same as profile statistics) with at least
 _Avoid_: Day streak, GitHub streak, streak badge on calendar
 
 **Recent workouts** (profile):
-Horizontal browse feed on the profile page — read-only preview cards for backed-up **Workouts** (≤5 exercises each), newest first, cursor-paginated with load-more. Card header shows title, date, and duration. **See more exercises** links to logged workout detail when needed. Shown only when Hevy is connected. Sits after profile statistics and before My Hevy Programs. White card on muted page background per profile Hevy layout.
+Horizontal browse feed on the profile page — read-only preview cards for backed-up **Workouts** (≤5 exercises each), newest first, cursor-paginated with load-more. Card header shows title, date, duration, and **Session goal** badge when classifiable. **See more exercises** links to logged workout detail when needed. Shown only when Hevy is connected. Sits after profile statistics and before My Hevy Programs. White card on muted page background per profile Hevy layout.
 _Avoid_: Workout feed (ambiguous with social feed), workout history list (too generic)
+
+**Session goal**:
+Inferred training intent for one backed-up **Workout** — **Strength**, **Hypertrophy**, **Endurance**, or **Mixed** — from working-set rep distribution (excludes warmups; includes normal, dropset, and failure sets with non-null reps). Rep zones: Strength 1–5, Hypertrophy 6–12, Endurance 13+. Label is the zone with ≥50% of total working-set reps; otherwise **Mixed**. No badge when there are zero qualifying working sets. Computed client-side from logged sets; shown as a pill on **Recent workouts** preview cards and **Logged workout detail** metadata. Distinct from blind spot analysis (per-exercise performance) and from profile statistics (weekly aggregates).
+_Avoid_: Session type (ambiguous with builder day), workout tag (too generic)
 
 ## Legal & privacy
 

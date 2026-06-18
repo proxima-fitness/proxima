@@ -17,6 +17,7 @@ import { WorkoutNotFoundError } from "@/api/workout-history-browse";
 import { HEVY_WORKOUT_SOURCE } from "@/api/workout-history";
 import { HevyDayCard } from "@/components/program-builder/hevy/HevyDayCard";
 import { Badge } from "@/components/ui/badge";
+import { SessionGoalBadge } from "@/components/profile/SessionGoalBadge";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WorkoutDetailBackLink } from "./WorkoutDetailBackLink";
@@ -144,6 +145,7 @@ export function WorkoutDetailContent({
                                     {sourceLabel}
                                 </Badge>
                             )}
+                            <SessionGoalBadge day={workout} />
                         </div>
 
                         <p className="text-sm text-muted-foreground font-secondary">
@@ -165,6 +167,7 @@ export function WorkoutDetailContent({
                         variant="read-only"
                         day={workout}
                         hevyExercises={hevyExercises}
+                        showSessionGoalBadge={false}
                     />
                 </div>
             </div>

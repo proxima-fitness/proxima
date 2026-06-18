@@ -58,11 +58,11 @@ function StatCell({
     action?: ReactNode;
 }) {
     return (
-        <div className="flex flex-col items-start gap-0">
-            <span className="text-xs leading-none text-muted-foreground whitespace-nowrap">
+        <div className="flex min-w-0 flex-col items-start gap-0">
+            <span className="max-w-full truncate text-xs leading-none text-muted-foreground">
                 {label}
             </span>
-            <div className="mt-0.5 flex items-center gap-1">
+            <div className="mt-0.5 flex min-w-0 max-w-full items-center gap-0.5 sm:gap-1">
                 {loading ? (
                     <Skeleton className="h-4 w-8" />
                 ) : (
@@ -73,7 +73,7 @@ function StatCell({
                                 aria-hidden
                             />
                         ) : null}
-                        <span className="text-sm font-medium tabular-nums leading-none text-foreground">
+                        <span className="truncate text-xs font-medium tabular-nums leading-none text-foreground sm:text-sm">
                             {value}
                         </span>
                         {action}
@@ -170,7 +170,12 @@ export function ProfileHero({ onEditProfileClick }: IProfileHeroProps) {
                         ) : null}
                     </div>
 
-                    <div className="flex items-start gap-6 sm:gap-8">
+                    <div
+                        className={cn(
+                            "grid w-full min-w-0 gap-x-2 sm:flex sm:w-auto sm:items-start sm:gap-6 md:gap-8",
+                            hevyConnected ? "grid-cols-4" : "grid-cols-3",
+                        )}
+                    >
                     <StatCell
                         label="Workouts"
                         value={workoutsValue}

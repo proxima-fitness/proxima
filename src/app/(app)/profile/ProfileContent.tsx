@@ -56,7 +56,7 @@ export function ProfileContent() {
             className={`min-h-screen bg-muted/30 py-8 ${PROFILE_PAGE_X} ${styles.flexCenter} flex-col`}
         >
             <div className={`${styles.boxWidth} flex flex-col gap-4 pb-16`}>
-                <div className="flex w-full justify-center">
+                <div className="flex w-full min-w-0 justify-center">
                     <ResumeDraftBanner />
                 </div>
 
