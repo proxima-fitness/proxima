@@ -125,6 +125,7 @@ function MatchHistorySection({
                             type="button"
                             variant="outline"
                             size="sm"
+                            className="touch-manipulation"
                             onClick={() => removeRow(index)}
                             disabled={rows.length <= 1}
                         >
@@ -133,7 +134,13 @@ function MatchHistorySection({
                     </div>
                 ))}
             </div>
-            <Button type="button" variant="outline" size="sm" onClick={addRow}>
+            <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="touch-manipulation"
+                onClick={addRow}
+            >
                 Add match
             </Button>
         </div>
@@ -422,7 +429,7 @@ export function BolaoPredictorForm() {
                 <Button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full h-12 text-base bg-lightSecondary font-semibold"
+                    className="w-full h-12 text-base bg-lightSecondary font-semibold touch-manipulation"
                     size="lg"
                 >
                     {isLoading ? (

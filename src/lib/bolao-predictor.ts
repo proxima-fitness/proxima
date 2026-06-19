@@ -100,7 +100,10 @@ function fsolve(
     const maxIter = 100;
     const tol = 1.49012e-8;
     const h = 1e-8;
-    let x: [number, number] = [initialGuess[0], initialGuess[1]];
+    let x: [number, number] = [
+        Math.max(0.05, initialGuess[0]),
+        Math.max(0.05, initialGuess[1]),
+    ];
 
     for (let iter = 0; iter < maxIter; iter++) {
         const [f0, f1] = equations(x, targetPWin, targetPDraw);
@@ -124,10 +127,27 @@ function fsolve(
         const delta0 = (-f0 * j11 - -f1 * j01) / det;
         const delta1 = (j00 * -f1 - -f0 * j10) / det;
 
-        x = [x[0] + delta0, x[1] + delta1];
+        x = [
+            Math.max(0.05, x[0] + delta0),
+            Math.max(0.05, x[1] + delta1),
+        ];
     }
 
     return x;
+}
+
+function calibrationResidual(
+    lam1: number,
+    lam2: number,
+    targetPWin: number,
+    targetPDraw: number,
+): number {
+    const [err0, err1] = marketCalibrationEquations(
+        [lam1, lam2],
+        targetPWin,
+        targetPDraw,
+    );
+    return err0 * err0 + err1 * err1;
 }
 
 export function normalizeMarketProbabilities(
@@ -136,16 +156,24 @@ export function normalizeMarketProbabilities(
     const { team1_win, draw, team2_win } = probs;
     const max = Math.max(team1_win, draw, team2_win);
 
-    if (max <= 1) {
+    if (max > 1) {
+        const sum = team1_win + draw + team2_win;
+        if (sum > 10 && sum <= 110) {
+            return {
+                team1_win: team1_win / 100,
+                draw: draw / 100,
+                team2_win: team2_win / 100,
+            };
+        }
         return probs;
     }
 
     const sum = team1_win + draw + team2_win;
-    if (sum > 10 && sum <= 110) {
+    if (sum > 0 && Math.abs(sum - 1) > 1e-6 && Math.abs(sum - 1) < 0.2) {
         return {
-            team1_win: team1_win / 100,
-            draw: draw / 100,
-            team2_win: team2_win / 100,
+            team1_win: team1_win / sum,
+            draw: draw / sum,
+            team2_win: team2_win / sum,
         };
     }
 
@@ -158,28 +186,91 @@ export function calibrateLambdas(
     initialLam1: number,
     initialLam2: number,
 ): [number, number] {
-    const initialGuess: [number, number] = [initialLam1, initialLam2];
-    const calibratedLambdas = fsolve(
-        marketCalibrationEquations,
-        initialGuess,
-        targetPWin,
-        targetPDraw,
-    );
+    if (
+        targetPWin < 0 ||
+        targetPDraw < 0 ||
+        targetPWin > 1 ||
+        targetPDraw > 1
+    ) {
+        throw new Error(
+            'Win and draw probabilities must be between 0 and 1 (e.g. 0.46, not 46).',
+        );
+    }
+
+    const safeInitial: [number, number] = [
+        Math.max(0.1, initialLam1),
+        Math.max(0.1, initialLam2),
+    ];
+
+    const starts: [number, number][] = [
+        safeInitial,
+        [1.5, 1.5],
+        [1.0, 1.0],
+        [2.0, 1.0],
+        [1.0, 2.0],
+        [0.8, 0.8],
+    ];
+
+    let bestCandidate = safeInitial;
+    let bestResidual = Infinity;
+
+    for (const start of starts) {
+        const candidate = fsolve(
+            marketCalibrationEquations,
+            start,
+            targetPWin,
+            targetPDraw,
+        );
+        const residual = calibrationResidual(
+            candidate[0],
+            candidate[1],
+            targetPWin,
+            targetPDraw,
+        );
+        if (residual < bestResidual) {
+            bestResidual = residual;
+            bestCandidate = candidate;
+        }
+    }
+
+    if (bestResidual > 1e-8) {
+        for (let lam1 = 0.1; lam1 <= 4; lam1 += 0.05) {
+            for (let lam2 = 0.1; lam2 <= 4; lam2 += 0.05) {
+                const residual = calibrationResidual(
+                    lam1,
+                    lam2,
+                    targetPWin,
+                    targetPDraw,
+                );
+                if (residual < bestResidual) {
+                    bestResidual = residual;
+                    bestCandidate = [lam1, lam2];
+                }
+            }
+        }
+
+        bestCandidate = fsolve(
+            marketCalibrationEquations,
+            bestCandidate,
+            targetPWin,
+            targetPDraw,
+        );
+    }
 
     const [err0, err1] = marketCalibrationEquations(
-        calibratedLambdas,
+        bestCandidate,
         targetPWin,
         targetPDraw,
     );
     if (Math.abs(err0) > 1e-4 || Math.abs(err1) > 1e-4) {
         throw new Error(
-            'Market calibration failed. Use decimal probabilities between 0 and 1 (e.g. 0.46, not 46).',
+            'Could not calibrate to these win/draw probabilities. Check they are realistic and consistent.',
         );
     }
 
     return [
-        Math.max(0.01, calibratedLambdas[0]),
-        Math.max(0.01, calibratedLambdas[1]),
+        Math.max(0.01, bestCandidate[0]),
+        Math.max(0.01, bestCandidate[1]),
     ];
 }
 
@@ -290,8 +381,10 @@ export function runBolaoPredictor(
     const t1Sc = matchConfig.team1_history.map((match) => match[0]);
     const t2Sc = matchConfig.team2_history.map((match) => match[0]);
 
-    const lambda1_0 = t1Sc.length > 0 ? mean(t1Sc) : 1.5;
-    const lambda2_0 = t2Sc.length > 0 ? mean(t2Sc) : 1.5;
+    const lambda1_0 =
+        t1Sc.length > 0 ? Math.max(0.1, mean(t1Sc)) : 1.5;
+    const lambda2_0 =
+        t2Sc.length > 0 ? Math.max(0.1, mean(t2Sc)) : 1.5;
 
     const normalizedProbs = normalizeMarketProbabilities(
         matchConfig.market_probabilities,
