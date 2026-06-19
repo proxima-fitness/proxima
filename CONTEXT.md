@@ -298,6 +298,10 @@ _Avoid_: Session type (ambiguous with builder day), workout tag (too generic)
 
 ## Legal & privacy
 
+**Account registration**:
+Creation of a Supabase auth identity when a user completes sign-up — before email confirmation for email/password, or on first OAuth provider link for third-party sign-in. Distinct from email-confirmed account and from first authenticated session.
+_Avoid_: Sign-up (ambiguous with legal acceptance step), verified user, new user (ops informal)
+
 **Legal acceptance**:
 Required confirmation that the user has read and agrees to the current **Terms of Use** and **Privacy Policy** versions. All authenticated users must accept when their stored versions are behind the published versions. Email **sign-up** collects required acceptance and writes `user_consents` at registration; the **Legal acceptance dialog** is the safety net for OAuth first-timers, legacy users without a row, and future version bumps. Enforced by an unclosable client dialog over the app until accepted — not by API route locks in v1. No row or stale version = blocked. Prior browsewrap acceptance does not satisfy the gate.
 _Avoid_: Terms checkbox (implementation), browsewrap acceptance (deprecated pattern), API consent middleware (v1 out of scope)

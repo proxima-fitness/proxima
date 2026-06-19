@@ -11,3 +11,7 @@ Five canonical triage roles mapped to Linear labels. See `docs/agents/triage-lab
 ### Domain docs
 
 Single-context layout: `CONTEXT.md` + `docs/adr/` at repo root. See `docs/agents/domain.md`.
+
+### Strategy docs
+
+Product and investor positioning: `docs/strategy/coaching-vs-programming-positioning.md`.
