@@ -34,6 +34,21 @@ type TMatchRow = {
 
 const EMPTY_MATCH_ROW: TMatchRow = { scored: '', conceded: '' };
 
+function createDefaultFormState() {
+    return {
+        team1Name: '',
+        team2Name: '',
+        team1WinProb: '',
+        drawProb: '',
+        team2WinProb: '',
+        team1WinPoints: '',
+        drawPoints: '',
+        team2WinPoints: '',
+        team1History: [{ ...EMPTY_MATCH_ROW }],
+        team2History: [{ ...EMPTY_MATCH_ROW }],
+    };
+}
+
 function parseHistoryRows(rows: TMatchRow[]): [number, number][] {
     return rows
         .map((row) => {
@@ -148,24 +163,37 @@ function MatchHistorySection({
 }
 
 export function BolaoPredictorForm() {
-    const [team1Name, setTeam1Name] = useState('');
-    const [team2Name, setTeam2Name] = useState('');
-    const [team1WinProb, setTeam1WinProb] = useState('');
-    const [drawProb, setDrawProb] = useState('');
-    const [team2WinProb, setTeam2WinProb] = useState('');
-    const [team1WinPoints, setTeam1WinPoints] = useState('');
-    const [drawPoints, setDrawPoints] = useState('');
-    const [team2WinPoints, setTeam2WinPoints] = useState('');
-    const [team1History, setTeam1History] = useState<TMatchRow[]>([
-        { ...EMPTY_MATCH_ROW },
-    ]);
-    const [team2History, setTeam2History] = useState<TMatchRow[]>([
-        { ...EMPTY_MATCH_ROW },
-    ]);
+    const defaults = createDefaultFormState();
+    const [team1Name, setTeam1Name] = useState(defaults.team1Name);
+    const [team2Name, setTeam2Name] = useState(defaults.team2Name);
+    const [team1WinProb, setTeam1WinProb] = useState(defaults.team1WinProb);
+    const [drawProb, setDrawProb] = useState(defaults.drawProb);
+    const [team2WinProb, setTeam2WinProb] = useState(defaults.team2WinProb);
+    const [team1WinPoints, setTeam1WinPoints] = useState(defaults.team1WinPoints);
+    const [drawPoints, setDrawPoints] = useState(defaults.drawPoints);
+    const [team2WinPoints, setTeam2WinPoints] = useState(defaults.team2WinPoints);
+    const [team1History, setTeam1History] = useState(defaults.team1History);
+    const [team2History, setTeam2History] = useState(defaults.team2History);
 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<IBolaoPredictionResult | null>(null);
+
+    const handleReset = () => {
+        const next = createDefaultFormState();
+        setTeam1Name(next.team1Name);
+        setTeam2Name(next.team2Name);
+        setTeam1WinProb(next.team1WinProb);
+        setDrawProb(next.drawProb);
+        setTeam2WinProb(next.team2WinProb);
+        setTeam1WinPoints(next.team1WinPoints);
+        setDrawPoints(next.drawPoints);
+        setTeam2WinPoints(next.team2WinPoints);
+        setTeam1History(next.team1History);
+        setTeam2History(next.team2History);
+        setError(null);
+        setResult(null);
+    };
 
     const probabilitySum =
         Number(team1WinProb) + Number(drawProb) + Number(team2WinProb);
@@ -426,21 +454,33 @@ export function BolaoPredictorForm() {
                     </Alert>
                 )}
 
-                <Button
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full h-12 text-base bg-lightSecondary font-semibold touch-manipulation"
-                    size="lg"
-                >
-                    {isLoading ? (
-                        <span className="inline-flex items-center gap-2">
-                            <Spinner size="small" className="text-current" />
-                            Predicting...
-                        </span>
-                    ) : (
-                        'Get prediction'
-                    )}
-                </Button>
+                <div className="flex flex-col gap-3 sm:flex-row">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        disabled={isLoading}
+                        className="h-12 touch-manipulation sm:flex-1"
+                        size="lg"
+                        onClick={handleReset}
+                    >
+                        Reset
+                    </Button>
+                    <Button
+                        type="submit"
+                        disabled={isLoading}
+                        className="h-12 bg-lightSecondary text-base font-semibold touch-manipulation sm:flex-1"
+                        size="lg"
+                    >
+                        {isLoading ? (
+                            <span className="inline-flex items-center gap-2">
+                                <Spinner size="small" className="text-current" />
+                                Predicting...
+                            </span>
+                        ) : (
+                            'Get prediction'
+                        )}
+                    </Button>
+                </div>
             </form>
 
             {result && (
