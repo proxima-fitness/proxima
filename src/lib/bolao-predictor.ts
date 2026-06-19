@@ -130,6 +130,28 @@ function fsolve(
     return x;
 }
 
+export function normalizeMarketProbabilities(
+    probs: IMarketProbabilities,
+): IMarketProbabilities {
+    const { team1_win, draw, team2_win } = probs;
+    const max = Math.max(team1_win, draw, team2_win);
+
+    if (max <= 1) {
+        return probs;
+    }
+
+    const sum = team1_win + draw + team2_win;
+    if (sum > 10 && sum <= 110) {
+        return {
+            team1_win: team1_win / 100,
+            draw: draw / 100,
+            team2_win: team2_win / 100,
+        };
+    }
+
+    return probs;
+}
+
 export function calibrateLambdas(
     targetPWin: number,
     targetPDraw: number,
@@ -143,6 +165,18 @@ export function calibrateLambdas(
         targetPWin,
         targetPDraw,
     );
+
+    const [err0, err1] = marketCalibrationEquations(
+        calibratedLambdas,
+        targetPWin,
+        targetPDraw,
+    );
+    if (Math.abs(err0) > 1e-4 || Math.abs(err1) > 1e-4) {
+        throw new Error(
+            'Market calibration failed. Use decimal probabilities between 0 and 1 (e.g. 0.46, not 46).',
+        );
+    }
+
     return [
         Math.max(0.01, calibratedLambdas[0]),
         Math.max(0.01, calibratedLambdas[1]),
@@ -259,12 +293,13 @@ export function runBolaoPredictor(
     const lambda1_0 = t1Sc.length > 0 ? mean(t1Sc) : 1.5;
     const lambda2_0 = t2Sc.length > 0 ? mean(t2Sc) : 1.5;
 
-    const targetPW = matchConfig.market_probabilities.team1_win;
-    const targetPD = matchConfig.market_probabilities.draw;
+    const normalizedProbs = normalizeMarketProbabilities(
+        matchConfig.market_probabilities,
+    );
 
     const [lam1, lam2] = calibrateLambdas(
-        targetPW,
-        targetPD,
+        normalizedProbs.team1_win,
+        normalizedProbs.draw,
         lambda1_0,
         lambda2_0,
     );

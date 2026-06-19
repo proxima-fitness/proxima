@@ -97,6 +97,10 @@ export async function POST(request: Request) {
         const result = runBolaoPredictor(matchConfig);
         return NextResponse.json(result);
     } catch (error) {
+        if (error instanceof Error && error.message.includes('Market calibration failed')) {
+            return NextResponse.json({ error: error.message }, { status: 400 });
+        }
+
         console.error('Error in bolao predictor:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
