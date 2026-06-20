@@ -10,10 +10,15 @@
  */
 
 import { useState } from 'react';
+import Link from 'next/link';
+import { Clock } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import type {
     IBolaoMatchConfig,
     IBolaoPredictionResult,
 } from '@/lib/bolao-predictor';
+import { useBolaoPredictorLimits } from '@/api/hooks';
+import { useUserContext } from '@/contexts/UserContext';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,7 +30,14 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
+
+const BOLAO_LOGIN_NEXT = '/auth/login?next=' + encodeURIComponent('/bolao');
+const DAILY_LIMIT_MESSAGE =
+    "You've used today's prediction. Come back tomorrow.";
+const DAILY_LIMIT_DETAIL =
+    'Each account gets 1 prediction per day. Your next one is available after midnight UTC.';
 
 type TMatchRow = {
     scored: string;
@@ -163,6 +175,11 @@ function MatchHistorySection({
 }
 
 export function BolaoPredictorForm() {
+    const queryClient = useQueryClient();
+    const { user, isLoading: isUserLoading } = useUserContext();
+    const { data: bolaoLimits, isLoading: isLimitsLoading } =
+        useBolaoPredictorLimits(user);
+
     const defaults = createDefaultFormState();
     const [team1Name, setTeam1Name] = useState(defaults.team1Name);
     const [team2Name, setTeam2Name] = useState(defaults.team2Name);
@@ -178,6 +195,14 @@ export function BolaoPredictorForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<IBolaoPredictionResult | null>(null);
+
+    const isDailyLimitReached =
+        bolaoLimits != null &&
+        !bolaoLimits.unlimited &&
+        bolaoLimits.remainingToday === 0;
+    const showDailyLimitNotice =
+        isDailyLimitReached || error === DAILY_LIMIT_MESSAGE;
+    const isSubmitDisabled = isLoading || isDailyLimitReached;
 
     const handleReset = () => {
         const next = createDefaultFormState();
@@ -263,6 +288,14 @@ export function BolaoPredictorForm() {
             const data = await response.json();
 
             if (!response.ok) {
+                if (response.status === 429) {
+                    setError(DAILY_LIMIT_MESSAGE);
+                    await queryClient.invalidateQueries({
+                        queryKey: ['bolao-predictor-limits'],
+                    });
+                    return;
+                }
+
                 setError(
                     typeof data.error === 'string'
                         ? data.error
@@ -272,6 +305,9 @@ export function BolaoPredictorForm() {
             }
 
             setResult(data as IBolaoPredictionResult);
+            await queryClient.invalidateQueries({
+                queryKey: ['bolao-predictor-limits'],
+            });
         } catch (submitError) {
             setError(
                 submitError instanceof Error
@@ -282,6 +318,36 @@ export function BolaoPredictorForm() {
             setIsLoading(false);
         }
     };
+
+    if (isUserLoading || (user && isLimitsLoading)) {
+        return (
+            <div className="space-y-4">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-32 w-full" />
+            </div>
+        );
+    }
+
+    if (!user) {
+        return (
+            <Card className="rounded-2xl px-6 py-12 text-center shadow-sm">
+                <CardHeader className="p-0">
+                    <CardTitle className="text-xl font-semibold tracking-tight">
+                        Sign in required
+                    </CardTitle>
+                    <CardDescription className="mt-2">
+                        Log in to use the bolao predictor.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="p-0 pt-6">
+                    <Button asChild className="bg-lightSecondary">
+                        <Link href={BOLAO_LOGIN_NEXT}>Sign in</Link>
+                    </Button>
+                </CardContent>
+            </Card>
+        );
+    }
 
     return (
         <div className="space-y-8">
@@ -447,14 +513,43 @@ export function BolaoPredictorForm() {
                     />
                 </section>
 
-                {error && (
+                {error && error !== DAILY_LIMIT_MESSAGE && (
                     <Alert variant="destructive">
                         <AlertTitle>Error</AlertTitle>
                         <AlertDescription>{error}</AlertDescription>
                     </Alert>
                 )}
 
-                <div className="flex flex-col gap-3 sm:flex-row">
+                <div className="space-y-4 rounded-xl border border-border bg-muted/40 p-4 sm:p-5">
+                    {!bolaoLimits?.unlimited &&
+                        !showDailyLimitNotice &&
+                        bolaoLimits?.remainingToday === 1 && (
+                            <p className="text-sm font-medium text-foreground">
+                                1 free prediction left today
+                            </p>
+                        )}
+
+                    {showDailyLimitNotice && (
+                        <div
+                            role="status"
+                            className="flex gap-3 rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-4 text-amber-950 dark:text-amber-50"
+                        >
+                            <Clock
+                                className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400"
+                                aria-hidden
+                            />
+                            <div className="space-y-1">
+                                <p className="text-base font-semibold">
+                                    Daily limit reached
+                                </p>
+                                <p className="text-sm leading-relaxed text-amber-900/90 dark:text-amber-100/90">
+                                    {DAILY_LIMIT_MESSAGE} {DAILY_LIMIT_DETAIL}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex flex-col gap-3 sm:flex-row">
                     <Button
                         type="button"
                         variant="outline"
@@ -467,7 +562,7 @@ export function BolaoPredictorForm() {
                     </Button>
                     <Button
                         type="submit"
-                        disabled={isLoading}
+                        disabled={isSubmitDisabled}
                         className="h-12 bg-lightSecondary text-base font-semibold touch-manipulation sm:flex-1"
                         size="lg"
                     >
@@ -476,10 +571,13 @@ export function BolaoPredictorForm() {
                                 <Spinner size="small" className="text-current" />
                                 Predicting...
                             </span>
+                        ) : isDailyLimitReached ? (
+                            'Daily limit reached'
                         ) : (
                             'Get prediction'
                         )}
                     </Button>
+                    </div>
                 </div>
             </form>
 

@@ -8,6 +8,8 @@
  */
 
 import { NextResponse } from 'next/server';
+import { createClient } from '@/utils/supabase/server';
+import { consumeBolaoPrediction } from '@/lib/server-bolao-limits';
 import {
     type IBolaoMatchConfig,
     runBolaoPredictor,
@@ -84,6 +86,16 @@ function parseMatchConfig(body: unknown): IBolaoMatchConfig | null {
 
 export async function POST(request: Request) {
     try {
+        const supabase = await createClient();
+        const {
+            data: { user },
+            error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const body = await request.json();
         const matchConfig = parseMatchConfig(body);
 
@@ -91,6 +103,28 @@ export async function POST(request: Request) {
             return NextResponse.json(
                 { error: 'Missing or invalid required fields' },
                 { status: 400 },
+            );
+        }
+
+        const { allowed, error: consumeError } = await consumeBolaoPrediction(
+            supabase,
+            user,
+        );
+
+        if (consumeError) {
+            return NextResponse.json(
+                { error: consumeError.message },
+                { status: 500 },
+            );
+        }
+
+        if (!allowed) {
+            return NextResponse.json(
+                {
+                    error: "You've used today's prediction. Come back tomorrow.",
+                    code: 'daily_limit',
+                },
+                { status: 429 },
             );
         }
 

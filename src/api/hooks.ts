@@ -23,6 +23,7 @@ import { getCommunityAiPrograms, getCommunityAiProgramsPaginated, getExplorePage
 import { ANONYMOUS_USER_METADATA, getOpUserId, getUserFullName, getUserMetaData, getUsersBatch } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getHevyApiKey, getHevyCustomExercises, getHevyExercises, getHevyPrograms, getHevyRoutines } from "../components/program-builder/api/hevy";
+import { getBolaoPredictorLimits } from "./bolao-limits";
 import { getMyFeatureLimits } from "./feature-limits";
 import { getFollowers, getFollowing } from "./followers";
 import { User } from "@supabase/supabase-js";
@@ -407,6 +408,19 @@ export const useMyFeatureLimits = (user: User | undefined | null) => {
     return useQuery({
         queryKey: ["feature-limits", user?.id],
         queryFn: () => getMyFeatureLimits(user),
+    });
+};
+
+/**
+ * Fetches the current user's bolao predictor daily limit (1/day; unlimited for test users).
+ *
+ * @param user - The Supabase auth user; query disabled when null
+ */
+export const useBolaoPredictorLimits = (user: User | undefined | null) => {
+    return useQuery({
+        queryKey: ["bolao-predictor-limits", user?.id],
+        queryFn: () => getBolaoPredictorLimits(user),
+        enabled: !!user,
     });
 };
 

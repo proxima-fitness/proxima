@@ -158,6 +158,7 @@ export type Database = {
       }
       feature_usage: {
         Row: {
+          bolao_last_used_date: string | null
           created_at: string
           id: string
           monthly_exports_used: number
@@ -165,6 +166,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          bolao_last_used_date?: string | null
           created_at?: string
           id?: string
           monthly_exports_used?: number
@@ -172,6 +174,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          bolao_last_used_date?: string | null
           created_at?: string
           id?: string
           monthly_exports_used?: number
@@ -1335,6 +1338,19 @@ export type Database = {
           remaining_llm_requests: number
           tier: string
           user_id: string
+        }[]
+      }
+      get_bolao_predictor_limits: {
+        Args: never
+        Returns: {
+          remaining_today: number
+          used_today: boolean
+        }[]
+      }
+      try_consume_bolao_prediction: {
+        Args: never
+        Returns: {
+          allowed: boolean
         }[]
       }
       increment_feature_usage: {
