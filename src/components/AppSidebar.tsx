@@ -27,6 +27,7 @@ import {
     LogIn,
     Info,
     MessageSquarePlus,
+    Trophy,
 } from "lucide-react";
 import {
     Sidebar,
@@ -304,6 +305,8 @@ export function AppSidebar() {
         isTestUser(user) &&
         ((!isMobile && state !== "collapsed") || (isMobile && openMobile));
 
+    const showBolaoNavItem = !isLoading && user && isTestUser(user);
+
     const showRecentChats = isMobile || state !== "collapsed";
 
     return (
@@ -365,6 +368,20 @@ export function AppSidebar() {
                                         </SidebarMenuItem>
                                     );
                                 })}
+                                {showBolaoNavItem && (
+                                    <SidebarMenuItem>
+                                        <SidebarMenuButton
+                                            asChild
+                                            tooltip="Bolao Predictor"
+                                            isActive={pathname === "/bolao"}
+                                        >
+                                            <Link href="/bolao" onClick={closeMobileSidebar}>
+                                                <Trophy className="shrink-0" />
+                                                <span className="font-third">Bolao Predictor</span>
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                )}
                             </SidebarMenu>
                         </SidebarGroupContent>
                     </SidebarGroup>

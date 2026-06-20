@@ -108,6 +108,7 @@ export const navIdToUrl: Record<string, string> = {
     about: "/about",
     pricing: "/pricing",
     profile: "/profile",
+    bolao: "/bolao",
     "log-in": "/auth/login",
 };
 
