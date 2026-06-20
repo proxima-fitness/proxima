@@ -11,6 +11,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Clock } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import type {
     IBolaoMatchConfig,
@@ -35,6 +36,8 @@ import { Spinner } from '@/components/ui/spinner';
 const BOLAO_LOGIN_NEXT = '/auth/login?next=' + encodeURIComponent('/bolao');
 const DAILY_LIMIT_MESSAGE =
     "You've used today's prediction. Come back tomorrow.";
+const DAILY_LIMIT_DETAIL =
+    'Each account gets 1 prediction per day. Your next one is available after midnight UTC.';
 
 type TMatchRow = {
     scored: string;
@@ -197,6 +200,8 @@ export function BolaoPredictorForm() {
         bolaoLimits != null &&
         !bolaoLimits.unlimited &&
         bolaoLimits.remainingToday === 0;
+    const showDailyLimitNotice =
+        isDailyLimitReached || error === DAILY_LIMIT_MESSAGE;
     const isSubmitDisabled = isLoading || isDailyLimitReached;
 
     const handleReset = () => {
@@ -346,19 +351,6 @@ export function BolaoPredictorForm() {
 
     return (
         <div className="space-y-8">
-            {!bolaoLimits?.unlimited && bolaoLimits?.remainingToday === 1 && (
-                <p className="text-sm text-muted-foreground">
-                    1 prediction left today
-                </p>
-            )}
-
-            {isDailyLimitReached && (
-                <Alert>
-                    <AlertTitle>Daily limit reached</AlertTitle>
-                    <AlertDescription>{DAILY_LIMIT_MESSAGE}</AlertDescription>
-                </Alert>
-            )}
-
             <form onSubmit={handleSubmit} className="space-y-8">
                 <section className="space-y-4">
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -521,14 +513,43 @@ export function BolaoPredictorForm() {
                     />
                 </section>
 
-                {error && (
+                {error && error !== DAILY_LIMIT_MESSAGE && (
                     <Alert variant="destructive">
                         <AlertTitle>Error</AlertTitle>
                         <AlertDescription>{error}</AlertDescription>
                     </Alert>
                 )}
 
-                <div className="flex flex-col gap-3 sm:flex-row">
+                <div className="space-y-4 rounded-xl border border-border bg-muted/40 p-4 sm:p-5">
+                    {!bolaoLimits?.unlimited &&
+                        !showDailyLimitNotice &&
+                        bolaoLimits?.remainingToday === 1 && (
+                            <p className="text-sm font-medium text-foreground">
+                                1 free prediction left today
+                            </p>
+                        )}
+
+                    {showDailyLimitNotice && (
+                        <div
+                            role="status"
+                            className="flex gap-3 rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-4 text-amber-950 dark:text-amber-50"
+                        >
+                            <Clock
+                                className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400"
+                                aria-hidden
+                            />
+                            <div className="space-y-1">
+                                <p className="text-base font-semibold">
+                                    Daily limit reached
+                                </p>
+                                <p className="text-sm leading-relaxed text-amber-900/90 dark:text-amber-100/90">
+                                    {DAILY_LIMIT_MESSAGE} {DAILY_LIMIT_DETAIL}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex flex-col gap-3 sm:flex-row">
                     <Button
                         type="button"
                         variant="outline"
@@ -550,10 +571,13 @@ export function BolaoPredictorForm() {
                                 <Spinner size="small" className="text-current" />
                                 Predicting...
                             </span>
+                        ) : isDailyLimitReached ? (
+                            'Daily limit reached'
                         ) : (
                             'Get prediction'
                         )}
                     </Button>
+                    </div>
                 </div>
             </form>
 
