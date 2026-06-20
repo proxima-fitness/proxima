@@ -11,7 +11,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Clock } from 'lucide-react';
+import { Clock, Trash2 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import type {
     IBolaoMatchConfig,
@@ -45,6 +45,11 @@ type TMatchRow = {
 };
 
 const EMPTY_MATCH_ROW: TMatchRow = { scored: '', conceded: '' };
+const DEFAULT_MATCH_ROWS = 5;
+
+function createEmptyMatchRows(count = DEFAULT_MATCH_ROWS): TMatchRow[] {
+    return Array.from({ length: count }, () => ({ ...EMPTY_MATCH_ROW }));
+}
 
 function createDefaultFormState() {
     return {
@@ -56,8 +61,8 @@ function createDefaultFormState() {
         team1WinPoints: '',
         drawPoints: '',
         team2WinPoints: '',
-        team1History: [{ ...EMPTY_MATCH_ROW }],
-        team2History: [{ ...EMPTY_MATCH_ROW }],
+        team1History: createEmptyMatchRows(),
+        team2History: createEmptyMatchRows(),
     };
 }
 
@@ -151,12 +156,13 @@ function MatchHistorySection({
                         <Button
                             type="button"
                             variant="outline"
-                            size="sm"
-                            className="touch-manipulation"
+                            size="icon"
+                            className="shrink-0 touch-manipulation"
                             onClick={() => removeRow(index)}
                             disabled={rows.length <= 1}
+                            aria-label="Delete match"
                         >
-                            Remove
+                            <Trash2 className="size-4" aria-hidden />
                         </Button>
                     </div>
                 ))}
