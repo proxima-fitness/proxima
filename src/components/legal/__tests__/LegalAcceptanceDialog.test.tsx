@@ -46,6 +46,24 @@ describe("LegalAcceptanceDialog", () => {
         );
     });
 
+    it("keeps dialog within mobile viewport bounds with a flex-shrinkable policy area", () => {
+        render(<LegalAcceptanceDialog />);
+
+        const dialog = screen.getByRole("dialog");
+        expect(dialog.className).toContain("max-w-[calc(100vw-1rem)]");
+        expect(dialog.className).toContain("max-h-[min(96dvh,96vh)]");
+
+        const policyTextarea = screen.getByRole("textbox", {
+            name: "Privacy Policy and Terms of Use",
+        });
+        expect(policyTextarea.className).toContain("min-h-48");
+        expect(policyTextarea.className).toContain("max-h-none");
+
+        const scrollRegion = policyTextarea.parentElement;
+        expect(scrollRegion?.className).toContain("flex-1");
+        expect(scrollRegion?.className).toContain("min-h-0");
+    });
+
     it("shows optional consent preferences in a grouped panel", () => {
         render(<LegalAcceptanceDialog />);
 

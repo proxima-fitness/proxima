@@ -108,12 +108,12 @@ export function LegalAcceptanceDialog() {
             <Dialog open onOpenChange={() => {}}>
                 <DialogContent
                     hideClose
-                    className="flex max-h-[92vh] flex-col overflow-hidden sm:max-w-2xl"
+                    className="flex h-[min(96dvh,96vh)] w-[calc(100%-1rem)] max-h-[min(96dvh,96vh)] max-w-[calc(100vw-1rem)] flex-col overflow-hidden sm:w-full sm:max-w-2xl"
                     onEscapeKeyDown={(event) => event.preventDefault()}
                     onPointerDownOutside={(event) => event.preventDefault()}
                     onInteractOutside={(event) => event.preventDefault()}
                 >
-                    <DialogHeader>
+                    <DialogHeader className="shrink-0">
                         <DialogTitle>
                             We&apos;ve updated our privacy policy and terms of use
                         </DialogTitle>
@@ -126,9 +126,11 @@ export function LegalAcceptanceDialog() {
 
                     {view === "consent" ? (
                         <>
-                            <LegalPolicyTextarea />
+                            <div className="min-h-0 flex-1 overflow-y-auto">
+                                <LegalPolicyTextarea className="h-full min-h-48 max-h-none" />
+                            </div>
 
-                            <div className="space-y-3 border-t border-border pt-3">
+                            <div className="shrink-0 space-y-3 border-t border-border pt-3">
                                 <OptionalConsentPreferences
                                     idPrefix="legal"
                                     platformImprovementOptIn={platformImprovementOptIn}
@@ -145,7 +147,7 @@ export function LegalAcceptanceDialog() {
                                 />
                             </div>
 
-                            <DialogFooter className="flex-row justify-between gap-2 sm:justify-between sm:space-x-0">
+                            <DialogFooter className="shrink-0 justify-between gap-2 sm:justify-between sm:space-x-0">
                                 <Button
                                     type="button"
                                     variant="outline"
