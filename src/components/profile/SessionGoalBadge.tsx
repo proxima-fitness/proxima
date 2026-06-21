@@ -28,7 +28,10 @@ export function SessionGoalBadge({ day }: ISessionGoalBadgeProps) {
                         {SESSION_GOAL_LABELS[goal]}
                     </Badge>
                 </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-[240px] text-left leading-snug">
+                <TooltipContent
+                    side="top"
+                    className="max-w-[240px] bg-lightSecondary text-left leading-snug text-white"
+                >
                     {SESSION_GOAL_TOOLTIPS[goal]}
                 </TooltipContent>
             </Tooltip>
