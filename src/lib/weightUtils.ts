@@ -23,7 +23,7 @@ export const KG_TO_LBS = 2.20462;
  * @param weight - Raw numeric weight in `sourceUnit`
  * @param isInLbs - Whether the user wants to see pounds (`true`) or kilograms
  * @param sourceUnit - The unit the stored weight is expressed in
- * @returns Weight string with exactly 2 decimal places in the target unit
+ * @returns Weight string in the target unit; omits `.00` for whole numbers, keeps fractional decimals
  */
 export function formatWeight(
     weight: number,
@@ -38,7 +38,7 @@ export function formatWeight(
     }
     // Round to nearest quarter-unit for practical plate loading
     displayValue = Math.round(displayValue * 4) / 4;
-    return Number(displayValue).toFixed(2);
+    return String(parseFloat(displayValue.toFixed(2)));
 }
 
 /**
