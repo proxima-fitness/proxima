@@ -45,7 +45,7 @@ import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
 import { ExerciseStalls } from "./ExerciseStalls";
 import Link from "next/link";
-import { ChartLineIcon } from "lucide-react";
+import { ChartLineIcon, RefreshCwIcon } from "lucide-react";
 
 const PRO_PAGE_SIZE = 9;
 const FREE_LIMIT = 3;
@@ -282,7 +282,7 @@ export function BlindSpotAnalysisSection({
                             void refetchExerciseStalls();
                         }}
                     >
-                        {isFetchingExerciseStalls ? "Refreshing…" : "Run again"}
+                        <RefreshCwIcon className={`size-4${isFetchingExerciseStalls ? " animate-spin" : ""}`} />
                     </Button>
                 ) : null}
             </div>
