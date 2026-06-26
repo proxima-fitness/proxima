@@ -11,16 +11,14 @@ export const exportOptions = [
             <div className="flex items-center gap-2">
                 <Crown className="w-6 h-6 text-lightGold" />
                 <img
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    src={(hevy_logo_black as any).src}
+                    src={(hevy_logo_black).src}
                     alt="Hevy"
-                    className="h-6 w-auto max-w-[9rem] object-contain object-left dark:hidden"
+                    className="h-6 w-auto max-w-36 object-contain object-left dark:hidden"
                 />
                 <img
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    src={(hevy_logo as any).src}
+                    src={(hevy_logo).src}
                     alt="Hevy"
-                    className="hidden h-6 w-auto max-w-[9rem] object-contain object-left dark:block"
+                    className="hidden h-6 w-auto max-w-36 object-contain object-left dark:block"
                 />
             </div>
         ),
@@ -67,8 +65,7 @@ export const exportOptions = [
         name: "Google Sheets",
         icon: (
             <img
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                src={(google_sheets_logo_icon as any).src}
+                src={(google_sheets_logo_icon).src}
                 alt="Google Sheets"
                 className="w-full h-8 object-contain"
             />

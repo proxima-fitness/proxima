@@ -1,5 +1,4 @@
 /* eslint-disable @next/next/no-img-element */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /*
  * @module CustomPrograms
@@ -22,7 +21,7 @@ export const CustomPrograms: React.FC = () => {
     return (
         <section id="create-programs" data-aos="fade-up" data-aos-anchor-placement="top-bottom" data-aos-once="true" className={ layout.sectionReverse }>
             <div className={ layout.sectionImgReverse }>
-                <img src={ (ai_program_builder as any).src } alt="Program Creator Image" className="relative z-5 " />
+                <img src={ (ai_program_builder).src } alt="Program Creator Image" className="relative z-5 " />
             </div>
 
             <div className={ layout.sectionInfoCentered }>

@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/command";
 import { ProgramFilterGroup } from "./ProgramFilterGroup";
 import { programSearchChipRow, programSearchComboRow } from "@/assets/constants/nav-links";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import { getProgramsSearchResultsWithThumbnail } from "@/api/search";
 import Link from "next/link";
@@ -53,7 +53,7 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
 
     const commandRef = useRef<HTMLInputElement>(null);
 
-    const [filteredPrograms, setFilteredPrograms] = useState<TProgram[]>(programs);
+    const [searchResults, setSearchResults] = useState<TProgram[] | null>(null);
 
     const [appliedProgramLengthFilter, setAppliedProgramLengthFilter] = useState<string>("");
     const [appliedWorkoutDurationFilter, setAppliedWorkoutDurationFilter] = useState<string>("");
@@ -101,17 +101,16 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
         const target = value;
 
         if (target.length === 0) {
-            setFilteredPrograms(programs);
+            setSearchResults(null);
             return;
         }
 
         const response = await getProgramsSearchResultsWithThumbnail(target);
-        setFilteredPrograms(response);
+        setSearchResults(response);
         return;
     }, 200);
 
-
-    useEffect(() => {
+    const programsMatchingFilters = useMemo(() => {
         let filteredItems = programs;
 
         if (appliedProgramLengthFilter) {
@@ -139,9 +138,25 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
             );
         }
 
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setFilteredPrograms(filteredItems);
+        return filteredItems;
     }, [appliedProgramLengthFilter, appliedWorkoutDurationFilter, appliedEquipmentFilter, appliedSpecializationFilter, appliedDifficultyFilter, programs]);
+
+    const filterDepsKey = JSON.stringify({
+        appliedProgramLengthFilter,
+        appliedWorkoutDurationFilter,
+        appliedEquipmentFilter,
+        appliedSpecializationFilter,
+        appliedDifficultyFilter,
+    });
+    const [prevFilterDepsKey, setPrevFilterDepsKey] = useState(filterDepsKey);
+    const [prevPrograms, setPrevPrograms] = useState(programs);
+    if (prevFilterDepsKey !== filterDepsKey || prevPrograms !== programs) {
+        setPrevFilterDepsKey(filterDepsKey);
+        setPrevPrograms(programs);
+        setSearchResults(null);
+    }
+
+    const filteredPrograms = searchResults ?? programsMatchingFilters;
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {

@@ -3,7 +3,7 @@ import { parse as parseYaml } from "yaml";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 
-type YamlFrontmatter = Record<string, unknown>;
+type TYamlFrontmatter = Record<string, unknown>;
 
 async function walkFiles(dir: string): Promise<string[]> {
     const entries = await fs.readdir(dir, { withFileTypes: true });
@@ -43,9 +43,9 @@ describe("skill YAML frontmatter validation", () => {
 
             expect(frontmatter, `Missing or unterminated YAML frontmatter in ${filePath}`).not.toBeNull();
 
-            let parsed: YamlFrontmatter;
+            let parsed: TYamlFrontmatter;
             try {
-                parsed = parseYaml(frontmatter as string) as YamlFrontmatter;
+                parsed = parseYaml(frontmatter as string) as TYamlFrontmatter;
             } catch (err) {
                 const message = err instanceof Error ? err.message : String(err);
                 throw new Error(`Invalid YAML frontmatter in ${filePath}: ${message}`);

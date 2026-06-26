@@ -1,4 +1,3 @@
-/* eslint-disable */
 "use client";
 
 /**
@@ -62,14 +61,14 @@ const sheetVariants = cva(
 );
 
 /** Props for sheet panel. side controls which edge and slide direction. */
-interface SheetContentProps
+interface ISheetContentProps
   extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
     VariantProps<typeof sheetVariants> {}
 
 /** Panel + overlay + close button; side (top/bottom/left/right) drives position and animation. */
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
-  SheetContentProps
+  ISheetContentProps
 >(({ side = "right", className, children, ...props }, ref) => (
   <SheetPortal>
     <SheetOverlay />

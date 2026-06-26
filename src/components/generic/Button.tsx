@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 /**
@@ -28,8 +27,8 @@ export const Button: React.FC<IProps> = (props) => {
         <motion.button
             whileHover={ { scale: 1.2 } }
             whileTap={ { scale: 0.9 } }
-            onHoverStart={ e => {} }
-            onHoverEnd={ e => {} }
+            // onHoverStart={  => {} }
+            // onHoverEnd={ e => {} }
             type="button"
             className={`cursor-pointer px-4 font-main text-[18px] text-black bg-lightSecondary rounded-lg ${ styles } ` }
         >

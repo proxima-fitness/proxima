@@ -97,7 +97,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
     };
 
     const [ selectedExercise, setSelectedExercise ] = useState<THevyExerciseTemplate>();
-    const [ isEditing, setIsEditing ] = useState(true);
+    const [ isEditing, setIsEditing ] = useState(!isEditExercise);
 
     const handleIsEditing = (isEditing: boolean) => {
         setIsEditing(isEditing);
@@ -329,8 +329,6 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
             }
         };
         if (isEditExercise) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setIsEditing(false);
             getExercise();
         }
     }, [isEditExercise, isInLbs, addExerciseDialog?.editExercise?.weightKg, addExerciseDialog?.editExercise?.rpe, addExerciseDialog?.editExercise?.repTypeValue, addExerciseDialog?.editExercise?.repRangeStart, addExerciseDialog?.editExercise?.repRangeEnd, addExerciseDialog?.editExercise?.reps, addExerciseDialog?.editExercise?.restSeconds, addExerciseDialog?.editExercise?.setTypes, addExerciseDialog?.editExercise?.selectedExercise?.id, addExerciseDialog?.editExercise?.selectedExercise, addExerciseDialog?.editExercise]);
@@ -614,7 +612,7 @@ export const HevyAddExerciseDialog: React.FC<IProps> = (props) => {
                 <DrawerContent
                     className={ cn(
                         showCreateCustomExercise
-                            ? "mt-0 h-[100dvh] max-h-[100dvh] flex flex-col overflow-hidden"
+                            ? "mt-0 h-dvh max-h-dvh flex flex-col overflow-hidden"
                             : "max-h-[98%]",
                     ) }
                 >

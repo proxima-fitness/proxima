@@ -1,5 +1,4 @@
 /* eslint-disable @next/next/no-img-element */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /*
  * @module Footer
@@ -28,7 +27,7 @@ export const Footer: React.FC = () => {
                         Leave No Gains <br className="sm:block hidden" />{" "} On The Table
                     </p>
                     <div className="h-[100px] w-[200px] flex justify-start items-center">
-                        <img src={ (proxima_logo as any).src } alt="Proxima Logo" className="relative w-auto h-[180px] -ml-8 z-1" />
+                        <img src={ (proxima_logo).src } alt="Proxima Logo" className="relative w-auto h-[180px] -ml-8 z-1" />
                     </div>
                 </div>
 

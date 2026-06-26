@@ -1,5 +1,4 @@
 /* eslint-disable @next/next/no-img-element */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * @module (app)/auth/forgot-password/page
  *
@@ -21,7 +20,7 @@ export default function Page() {
         <ForgotPasswordForm />
       </div>
     <div className={ `w-[50%] relative max-sm:hidden` } >
-        <img src={ (ai_program_builder as any).src } alt="Program Creator Image" className="relative z-5" />
+        <img src={ (ai_program_builder).src } alt="Program Creator Image" className="relative z-5" />
         {/* gradient start */}
         <div className="absolute z-0 w-[40%] h-[35%] top-0 pink__gradient" />
         <div className="absolute z-1 w-[80%] h-[80%] rounded-full white__gradient bottom-40" />

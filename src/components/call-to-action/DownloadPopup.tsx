@@ -1,5 +1,4 @@
 /* eslint-disable @next/next/no-img-element */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * @module DownloadPopup
  * Modal dialog for app download CTA; shows platform-specific content (mobile vs desktop). Currently
@@ -60,7 +59,7 @@ export const DownloadPopup: React.FC<IProps> = (props) => {
                         null
                 :
                         <Button className="sm:w-[90%] bg-lightSecondary h-[90px] my-6 hover:bg-lightSecondary">
-                            <img src={ (proxima_logo_small as any).src } alt="Proxima Logo" />
+                            <img src={ (proxima_logo_small).src } alt="Proxima Logo" />
                         </Button>
             }
 

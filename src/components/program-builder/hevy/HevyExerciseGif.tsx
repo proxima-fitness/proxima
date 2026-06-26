@@ -1,9 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
-/* eslint-disable react-hooks/purity */
 /**
  * @module HevyExerciseGif
  * Renders an exercise image (GIF or thumbnail) from the API, or a fallback (initials/icon or "No Image") when missing.
- * Supports thumbnail vs full-size and different resolutions/file types. Uses random colour for fallback placeholder.
+ * Supports thumbnail vs full-size and different resolutions/file types. Uses name-derived colour for fallback placeholder.
  * Depends on: useExerciseGif, Skeleton, lightColours, getInitials.
  * Used by: HevyExerciseSearchBar, HevyExerciseVisualizer.
  */
@@ -44,9 +43,13 @@ export const HevyExerciseGif: React.FC<IProps> = (props) => {
 
     const [loaded, setLoaded] = useState(false);
 
-    const randomColour = useMemo(() => {
-        return lightColours[Math.floor(Math.random() * 10)];
-    }, []);
+    const fallbackColour = useMemo(() => {
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+            hash = (hash * 31 + name.charCodeAt(i)) | 0;
+        }
+        return lightColours[Math.abs(hash) % lightColours.length];
+    }, [name]);
 
     const isThumbnail = thumbnailOrImage === "thmb";
     const thumbRoundClass = isThumbnail && thumbnailShape === "circle" ? "rounded-full" : "rounded-xl";
@@ -79,7 +82,7 @@ export const HevyExerciseGif: React.FC<IProps> = (props) => {
                     {isThumbnail ? (
                         <div
                             className={`${containerClass} flex items-center justify-center ${thumbFallbackRoundClass} cursor-pointer overflow-hidden`}
-                            style={{ background: randomColour }}
+                            style={{ background: fallbackColour }}
                         >
                         <div>{getInitials(name) ?? <DumbbellIcon className="h-6 w-6" />}</div>
                         </div>

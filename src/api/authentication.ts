@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * @module api/authentication
  *
@@ -25,7 +24,7 @@ import { supabase } from ".";
  * @param lastName - Optional last name
  * @returns The Supabase user object on success, or an empty array on error
  */
-export const signUpViaEmail = async (email: string, password: string, captchaToken: any, userName: string, firstName?: string, lastName?: string) => {
+export const signUpViaEmail = async (email: string, password: string, captchaToken: string, userName: string, firstName?: string, lastName?: string) => {
     if (firstName && lastName && firstName.length > 0 && lastName.length > 0) {
         try {
             const { data: user, error: userError } = await supabase.auth.signUp (
@@ -128,7 +127,7 @@ export const signUpViaEmail = async (email: string, password: string, captchaTok
  * @param captchaToken - hCaptcha verification token
  * @returns A status object indicating success or containing the error
  */
-export const resetPassword = async (email: string, captchaToken: any) => {
+export const resetPassword = async (email: string, captchaToken: string) => {
     try {
         await supabase.auth.resetPasswordForEmail(email, { captchaToken, redirectTo: 'https://app.proximafitness.com/password-recovery' });
         return { status: "success", data: "Reset password email sent successfully" };
@@ -162,7 +161,7 @@ export const updatePassword = async (new_password: string) => {
  * @param captchaToken - hCaptcha verification token from the login form
  * @returns The authenticated user/session object on success, or the error object on failure
  */
-export const signInViaEmail = async (email: string, password: string, captchaToken: any) => {
+export const signInViaEmail = async (email: string, password: string, captchaToken: string) => {
     try {
         const { data: user, error: userError } = await supabase.auth.signInWithPassword({
             email: email,

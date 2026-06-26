@@ -32,13 +32,17 @@ export function TestUserTierToggle() {
     const { user } = useUserContext();
     const queryClient = useQueryClient();
     const [value, setValue] = useState<TTierSelectValue>(() => getTestTierOverride() ?? "real");
+    const [prevUserId, setPrevUserId] = useState(user?.id);
+
+    if (user?.id !== prevUserId) {
+        setPrevUserId(user?.id);
+        setValue(getTestTierOverride() ?? "real");
+    }
 
     useEffect(() => {
         if (user && isTestUser(user)) {
             syncTestTierOverrideToCookie();
         }
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setValue(getTestTierOverride() ?? "real");
     }, [user]);
 
     if (!user || !isTestUser(user)) return null;

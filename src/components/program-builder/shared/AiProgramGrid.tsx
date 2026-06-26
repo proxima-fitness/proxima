@@ -11,7 +11,7 @@ import Link from "next/link";
 import { quotes } from "public";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCommunityAiProgramsPaginated, useUsersBatch } from "@/api/hooks";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { lightColours } from "@/assets/constants";
 
@@ -26,13 +26,16 @@ interface IProgramItemProps {
 /** Single program card with hover actions (Edit/View) and avatar. */
 const ProgramItem: React.FC<IProgramItemProps> = memo(({ item, userData }) => {
 
-    const randomColour = useMemo(() => {
-        // eslint-disable-next-line react-hooks/purity
-        return lightColours[Math.floor(Math.random() * lightColours.length)];
-    }, []);
-
     const fullName = userData?.fullName || "Anonymous";
     const profilePic = userData?.profilePic || null;
+
+    const avatarColour = useMemo(() => {
+        let hash = 0;
+        for (let i = 0; i < fullName.length; i++) {
+            hash = (hash * 31 + fullName.charCodeAt(i)) | 0;
+        }
+        return lightColours[Math.abs(hash) % lightColours.length];
+    }, [fullName]);
 
     // Get the first letter of the user's name for the avatar fallback
     const getInitial = () => {
@@ -91,7 +94,7 @@ const ProgramItem: React.FC<IProgramItemProps> = memo(({ item, userData }) => {
             <div className="flex flex-row items-center justify-start gap-2">
             <Avatar className="w-10 h-10" >
                 <AvatarImage src={getProfilePicUrl()} alt="Creator avatar" />
-                <AvatarFallback className="bg-white" style={{ backgroundColor: randomColour }}>
+                <AvatarFallback className="bg-white" style={{ backgroundColor: avatarColour }}>
                     {getInitial()}
                 </AvatarFallback>
             </Avatar>
@@ -107,11 +110,19 @@ ProgramItem.displayName = "ProgramItem";
 
 /** Paginated grid of community AI programs with "See More" and skeleton loading. */
 export const AiProgramGrid: React.FC = () => {
-    const [offset, setOffset] = useState(0);
-    const [allPrograms, setAllPrograms] = useState<TProgram[]>([]);
     const pageSize = 9; // Reduced from 20 to 9 for faster initial load
 
-    const { data: programs, isLoading } = useCommunityAiProgramsPaginated(pageSize, offset);
+    const {
+        data,
+        isLoading,
+        fetchNextPage,
+        isFetchingNextPage,
+    } = useCommunityAiProgramsPaginated(pageSize);
+
+    const allPrograms = useMemo(
+        () => data?.pages.flatMap((page) => page) ?? [],
+        [data?.pages],
+    );
 
     // Extract unique user IDs from all loaded programs
     const userIds = Array.from(new Set(allPrograms.map(p => p.user_id).filter((id): id is string => id != null)));
@@ -119,22 +130,8 @@ export const AiProgramGrid: React.FC = () => {
     // Batch fetch user data for all programs (non-blocking)
     const { data: usersBatchData } = useUsersBatch(userIds);
 
-    // Update all programs when new data is fetched
-    useEffect(() => {
-        if (programs && programs.length > 0) {
-            if (offset === 0) {
-                // First page, replace all programs
-                // eslint-disable-next-line react-hooks/set-state-in-effect
-                setAllPrograms(programs);
-            } else {
-                // Subsequent pages, append to existing programs
-                setAllPrograms(prev => [...prev, ...programs]);
-            }
-        }
-    }, [programs, offset]);
-
     const handleSeeMore = () => {
-        setOffset(prev => prev + pageSize);
+        void fetchNextPage();
     };
 
 
@@ -177,12 +174,12 @@ export const AiProgramGrid: React.FC = () => {
                     <div className="flex justify-center mt-8">
                         <Button
                             onClick={handleSeeMore}
-                            disabled={isLoading}
+                            disabled={isLoading || isFetchingNextPage}
                             className="bg-lightSecondary text-white hover:bg-black hover:text-white"
                             aria-label="Load more community programs"
                         >
                             <ArrowDownIcon />
-                            {isLoading ? "Loading..." : "See More"}
+                            {isLoading || isFetchingNextPage ? "Loading..." : "See More"}
                         </Button>
                     </div>
 

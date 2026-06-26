@@ -130,8 +130,7 @@ export const getHevyExerciseFromLocalStorageByID = async (id?: string) => {
  * @returns Array of `999` values with the same length
  */
 export const amrapAsNumber = (amrap: string[] = []) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return amrap.map((item) => 999);
+    return amrap.map(() => 999);
 };
 
 

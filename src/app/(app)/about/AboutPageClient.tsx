@@ -1,5 +1,4 @@
 /* eslint-disable @next/next/no-img-element */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 /**
@@ -20,19 +19,13 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import posthog from "posthog-js";
 import { useEffect } from "react";
+import { jack, jack_jacked } from "public";
 
-/** Props for the About page client component. */
-interface IAboutPageClientProps {
-    /** Static image for founder (default state). */
-    jack: any;
-    /** Static image for founder (hover state). */
-    jack_jacked: any;
-}
 
 /**
  * Renders the full About Us content with AOS animations and PostHog page view.
  */
-export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
+export function AboutPageClient() {
     const { user } = useUserContext();
 
     useEffect(() => {
@@ -64,12 +57,12 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                                 <div className="relative h-[400px] w-[400px] max-sm:h-[300px] max-sm:w-full md:h-[300px] md:flex-1 md:w-auto group mb-6 md:mb-0">
                                     <div className="absolute inset-0 bg-linear-to-br from-secondary/20 to-lightSecondary/20 rounded-xl md:rounded-tl-xl md:rounded-bl-xl md:rounded-tr-none md:rounded-br-none opacity-50 group-hover:opacity-75 transition-opacity duration-300" />
                                     <img
-                                        src={(jack as any).src}
+                                        src={(jack).src}
                                         alt="Jack Hanlon"
                                         className="relative w-full rounded-t-md md:rounded-tl-md md:rounded-bl-md md:rounded-tr-none md:rounded-br-none h-full object-cover transition-opacity duration-300"
                                     />
                                     <img
-                                        src={(jack_jacked as any).src}
+                                        src={(jack_jacked).src}
                                         alt="Jack Hanlon Jacked"
                                         className="w-full rounded-t-md md:rounded-tl-md md:rounded-bl-md md:rounded-tr-none md:rounded-br-none h-full object-cover object-[center_20%] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                                     />
@@ -81,7 +74,7 @@ export function AboutPageClient({ jack, jack_jacked }: IAboutPageClientProps) {
                                     <p className="font-tertiary text-lightSecondary text-lg font-semibold mb-4">
                                         FOUNDER
                                     </p>
-                                    <p className={`text-md pr-4 max-sm:pl-4 pb-4 text-black font-third text-left text-gray-700 dark:text-offWhite`}>
+                                    <p className={`text-md pr-4 max-sm:pl-4 pb-4 text-black font-third text-left dark:text-offWhite`}>
                                         Jack was a Software Engineer before creating Proxima, and an avid lifter with a Bench Press PR of 240lbs. Jack enjoys weightlifting and playing with his two rescue puppies.
                                     </p>
                                 </div>

@@ -212,15 +212,19 @@ export const useCommunityAiPrograms = () => {
 };
 
 /**
- * Paginated variant of community AI programs, sorted by save count.
+ * Infinite-scroll variant of community AI programs, sorted by save count.
  *
  * @param limit - Page size (default 20)
- * @param offset - Pagination offset (default 0)
  */
-export const useCommunityAiProgramsPaginated = (limit: number = 20, offset: number = 0) => {
-    return useQuery({
-        queryKey: ['community-ai-programs-paginated', limit, offset],
-        queryFn: () => getCommunityAiProgramsPaginated(limit, offset),
+export const useCommunityAiProgramsPaginated = (limit: number = 20) => {
+    return useInfiniteQuery({
+        queryKey: ['community-ai-programs-paginated', limit],
+        queryFn: ({ pageParam }) => getCommunityAiProgramsPaginated(limit, pageParam),
+        initialPageParam: 0,
+        getNextPageParam: (lastPage, _allPages, lastPageParam) => {
+            if (lastPage.length < limit) return undefined;
+            return lastPageParam + limit;
+        },
     });
 };
 

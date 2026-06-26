@@ -8,7 +8,6 @@
  * @usedBy Application and marketing layouts to provide consistent navigation and account entry points across pages.
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NavDrawer } from "./NavDrawer";
 import { BuildProgramToolbarEnd } from "@/components/program-builder/shared/BuildProgramToolbarEnd";
 import { proxima_logo, proxima_logo_white_full_text, proxima_logo_black, proxima_logo_white } from "public";
@@ -436,8 +435,8 @@ export const Navbar: React.FC = () => {
     return (
         <nav className="w-full flex py-2 justify-between items-center bg-white dark:bg-darkGray relative z-50 md:hidden">
             <Link href={ "/" } aria-label="Proxima home">
-                <img src={ (proxima_logo as any).src } alt="Proxima Logo" className="dark:sm:block hidden max-sm:hidden h-[40px] w-auto" />
-                <img src={ (proxima_logo_white_full_text as any).src } alt="Proxima Logo" className="dark:hidden block max-sm:hidden h-[40px] w-auto" />
+                <img src={ (proxima_logo).src } alt="Proxima Logo" className="dark:sm:block hidden max-sm:hidden h-[40px] w-auto" />
+                <img src={ (proxima_logo_white_full_text).src } alt="Proxima Logo" className="dark:hidden block max-sm:hidden h-[40px] w-auto" />
             </Link>
             <ul className="list-none sm:flex hidden justify-end items-center flex-1 relative z-50 pr-6">
                 {/* {!pathname.startsWith("/build-program") && pathname !== "/pricing" && (
@@ -452,8 +451,8 @@ export const Navbar: React.FC = () => {
                     <NavDrawer />
                 </div>
                 <Link href={ "/" } className="absolute left-1/2 -translate-x-1/2" aria-label="Proxima home">
-                    <img src={ (proxima_logo_black as any).src } alt="Proxima Logo" className="h-10 w-auto sm:hidden hidden dark:block" />
-                    <img src={ (proxima_logo_white as any).src } alt="Proxima Logo" className="h-10 w-auto sm:hidden dark:hidden" />
+                    <img src={ (proxima_logo_black).src } alt="Proxima Logo" className="h-10 w-auto sm:hidden hidden dark:block" />
+                    <img src={ (proxima_logo_white).src } alt="Proxima Logo" className="h-10 w-auto sm:hidden dark:hidden" />
                 </Link>
                 <div className="flex-1 flex justify-end items-center min-w-0">
                     {pathname.startsWith("/build-program") ? (

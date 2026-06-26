@@ -118,8 +118,7 @@ export const aiRequest = async (numberOfDaysPerWeek: number, promptBase: string)
     toast.info("Generating Routines. This may take up to a minute...");
 
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let response: any;
+        let response: Awaited<ReturnType<typeof postTextToJson>> | undefined;
 
         // Treat 0 as "not specified" — fall back to 6-day PPL as the default split
         if (numberOfDaysPerWeek === 0) {
@@ -145,6 +144,7 @@ export const aiRequest = async (numberOfDaysPerWeek: number, promptBase: string)
 
         if (!response?.success) {
             toast.warning("Failed to generate a routine" + response?.error);
+            return undefined;
         }
 
         return response.data;

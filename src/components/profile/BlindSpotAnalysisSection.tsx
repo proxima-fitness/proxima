@@ -224,6 +224,13 @@ export function BlindSpotAnalysisSection({
 
     const totalPages = Math.max(1, Math.ceil(filteredAndSorted.length / PRO_PAGE_SIZE));
 
+    const paginationResetKey = `${sortBy}|${hideNoData}|${statusFilter}|${filteredAndSorted.length}`;
+    const [prevPaginationResetKey, setPrevPaginationResetKey] = useState(paginationResetKey);
+    if (prevPaginationResetKey !== paginationResetKey) {
+        setPrevPaginationResetKey(paginationResetKey);
+        setCurrentPage(1);
+    }
+
     const exercisesToShow = useMemo(() => {
         return isPro
             ? filteredAndSorted.slice((currentPage - 1) * PRO_PAGE_SIZE, currentPage * PRO_PAGE_SIZE)
@@ -234,11 +241,6 @@ export function BlindSpotAnalysisSection({
         const limit = isPro ? PRO_PAGE_SIZE : FREE_LIMIT;
         return templates.slice(0, limit).map((t) => placeholderExercise(t.title));
     }, [templates, isPro]);
-
-    useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- reset pagination when filters or result size change
-        setCurrentPage(1);
-    }, [filteredAndSorted.length, sortBy, hideNoData, statusFilter]);
 
     const showPlaceholderCards =
         analysisEnabled && isLoadingTemplates === false && dataLoading && templates.length > 0;

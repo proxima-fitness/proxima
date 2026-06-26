@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 /**
@@ -90,11 +89,7 @@ export function RecentWorkoutsSection() {
 
     useEffect(() => {
         const container = scrollContainerRef.current;
-        if (!container || !showScrollableFeed) {
-            setCanScrollLeft(false);
-            setCanScrollRight(false);
-            return;
-        }
+        if (!container || !showScrollableFeed) return;
 
         const updateScrollButtons = () => {
             const { scrollLeft, scrollWidth, clientWidth } = container;

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 /**
  * @module spinner
  * Loading spinner (Loader2 icon) with size and visibility variants.
@@ -38,14 +37,14 @@ const loaderVariants = cva('animate-spin text-primary', {
  * @property show - When false, container is hidden (flex vs hidden).
  * @property size - Icon size: small | medium | large.
  */
-interface SpinnerContentProps extends VariantProps<typeof spinnerVariants>,
+interface ISpinnerContentProps extends VariantProps<typeof spinnerVariants>,
     VariantProps<typeof loaderVariants> {
   className?: string;
   children?: React.ReactNode;
 }
 
 /** Loader2 icon with spin animation; optional children below. */
-export function Spinner({ size, show, children, className }: SpinnerContentProps) {
+export function Spinner({ size, show, children, className }: ISpinnerContentProps) {
     return (
         <span className={spinnerVariants({ show })}>
             <Loader2 className={cn(loaderVariants({ size }), className)} />

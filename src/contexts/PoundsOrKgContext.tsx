@@ -6,7 +6,7 @@
  * Depends on: React context API, `localStorage`.
  * Used by: Program builder and exercise UI that need to format weight units.
  */
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { createContext, ReactNode, useContext, useState } from 'react';
 
 export const PoundsOrKgContext = createContext<IPoundsOrKgContextValue | undefined>(undefined);
 
@@ -45,15 +45,13 @@ const stringToBool = (text: "true" | "false"): boolean => {
  * @param children React subtree that can consume the unit preference context.
  */
 export const PoundsOrKgProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [isInLbs, setIsInLbs] = useState<boolean>(true);
-
-    useEffect(() => {
+    const [isInLbs, setIsInLbs] = useState<boolean>(() => {
         const saved = getPoundsOrKgPreference();
         if (saved !== null) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setIsInLbs(stringToBool(saved as "true" | "false"));
+            return stringToBool(saved as "true" | "false");
         }
-    }, []);
+        return true;
+    });
 
     const toggleModePreference = () => {
         const newMode = !isInLbs;

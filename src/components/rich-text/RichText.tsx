@@ -21,9 +21,31 @@ import type { SerializedEditorState } from "@payloadcms/richtext-lexical/lexical
 const linkAnchorClassName =
     "text-primary underline underline-offset-2 hover:opacity-90";
 
+type TRichTextLinkFields = {
+    linkType?: string;
+    url?: string;
+    newTab?: boolean;
+    media_url?: string;
+};
+
+type TRichTextNode = {
+    type: string;
+    tag?: string;
+    text?: string;
+    listType?: string;
+    children?: TRichTextNode[];
+    fields?: TRichTextLinkFields;
+};
+
+const HEADING_TAGS = ["h1", "h2", "h3", "h4", "h5", "h6"] as const;
+type THeadingTag = (typeof HEADING_TAGS)[number];
+
+function resolveHeadingTag(tag: string | undefined): THeadingTag {
+    return HEADING_TAGS.includes(tag as THeadingTag) ? (tag as THeadingTag) : "h1";
+}
+
 /** Resolve href for Payload LinkFeature nodes; internal links need a site-specific mapper (fallback `#`). */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function hrefForLinkNode(node: any): string {
+function hrefForLinkNode(node: TRichTextNode): string {
     const fields = node?.fields;
     if (!fields) return "#";
     if (fields.linkType === "internal") {
@@ -50,19 +72,17 @@ export const RichText: React.FC<IProps> = (props) => {
     const { data } = props;
 
     if (!data || !data.root.children) return null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const renderNode = (node:any, index: number) => {
+    const renderNode = (node: TRichTextNode, index: number) => {
         switch (node.type) {
             case "list": {
                 if (node.listType === "check") {
                     return (
                         <div key={ index }>
-                            { /* eslint-disable-next-line @typescript-eslint/no-explicit-any */ }
-                            {node.children.map((child: any, childIndex: number) => (
+                            {node.children?.map((child: TRichTextNode, childIndex: number) => (
                                 <div key={ childIndex } style={ { display: "flex", alignItems: "center" } }>
                                     <input type="checkbox" id={ `check-${index}-${childIndex}` } className="text-foreground" />
                                     <label htmlFor={ `check-${index}-${childIndex}` } className="text-foreground" style={ { marginLeft: "8px" } }>
-                                        {child.children.map(renderNode)}
+                                        {child.children?.map(renderNode)}
                                     </label>
                                 </div>
                             ))}
@@ -70,25 +90,29 @@ export const RichText: React.FC<IProps> = (props) => {
                     );
                 } else {
                     const ListTag = node.listType === "bullet" ? "ul" : "ol";
-                    return <ListTag key={ index }>{node.children.map(renderNode)}</ListTag>;
+                    return <ListTag key={ index }>{node.children?.map(renderNode)}</ListTag>;
                 }
             }
             case "listitem":
-                return <li className="text-foreground" key={ index }>{node.children.map(renderNode)}</li>;
+                return <li className="text-foreground" key={ index }>{node.children?.map(renderNode)}</li>;
             case "paragraph":
                 return <p className='py-4 text-foreground' key={ index }>{node.children?.map(renderNode)}</p>;
-            case "heading":
-                { const HeadingTag = node.tag || "h1";
+            case "heading": {
+                const HeadingTag = resolveHeadingTag(node.tag);
                 const fontSize = (HeadingTag === "h6" ? "text-base" : HeadingTag === "h5" ? "text-lg" : HeadingTag === "h4" ? "text-xl" : HeadingTag === "h3" ? "text-2xl" : HeadingTag === "h2" ? "text-3xl" : HeadingTag === "h1" ? "text-4xl" : "text-base");
-                return <HeadingTag className={ `${fontSize} text-foreground` } key={ index }>{node.children.map(renderNode)}</HeadingTag>; }
+                return <HeadingTag className={ `${fontSize} text-foreground` } key={ index }>{node.children?.map(renderNode)}</HeadingTag>;
+            }
             case "text":
                 return <span className="text-foreground" key={ index }>{node.text}</span>;
             case "quote":
-                return <blockquote className="text-foreground border-l-4 border-border pl-4 my-4" key={ index }>{node.children.map(renderNode)}</blockquote>;
+                return <blockquote className="text-foreground border-l-4 border-border pl-4 my-4" key={ index }>{node.children?.map(renderNode)}</blockquote>;
             case "horizontalrule":
                 return <hr className="border-border" key={ index } />;
-            case "upload":
-                return <img key={ index } src={ getMediaPublicUrl(node.fields?.media_url) } alt="uploaded content" />;
+            case "upload": {
+                const mediaUrl = node.fields?.media_url;
+                if (!mediaUrl) return null;
+                return <img key={ index } src={ getMediaPublicUrl(mediaUrl) } alt="uploaded content" />;
+            }
             case "autolink": {
                 const rel = node.fields?.newTab ? "noopener noreferrer" : undefined;
                 const target = node.fields?.newTab ? "_blank" : undefined;

@@ -58,16 +58,14 @@ export const ExportProgramCTAButtons: React.FC<IProps> = ({
             hideHevyCrown && isHevy ? (
                 <div className="flex items-center gap-2">
                     <img
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        src={(hevy_logo_black as any).src}
+                        src={(hevy_logo_black).src}
                         alt="Hevy"
-                        className="h-6 w-auto max-w-[9rem] object-contain object-left dark:hidden"
+                        className="h-6 w-auto max-w-36 object-contain object-left dark:hidden"
                     />
                     <img
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        src={(hevy_logo as any).src}
+                        src={(hevy_logo).src}
                         alt="Hevy"
-                        className="hidden h-6 w-auto max-w-[9rem] object-contain object-left dark:block"
+                        className="hidden h-6 w-auto max-w-36 object-contain object-left dark:block"
                     />
                 </div>
             ) : (

@@ -1,5 +1,4 @@
 /* eslint-disable @next/next/no-img-element */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /*
  * @module PwaSection
@@ -12,10 +11,10 @@ import { pwa_flow_1, pwa_flow_2, pwa_flow_3, pwa_flow_4 } from "public";
 import { layout } from "../../style";
 
 const pwaSteps = [
-  { src: (pwa_flow_1 as any).src, alt: "PWA install step 1", label: "Step 1" },
-  { src: (pwa_flow_2 as any).src, alt: "PWA install step 2", label: "Step 2" },
-  { src: (pwa_flow_3 as any).src, alt: "PWA install step 3", label: "Step 3" },
-  { src: (pwa_flow_4 as any).src, alt: "PWA install step 4", label: "Step 4" },
+  { src: (pwa_flow_1).src, alt: "PWA install step 1", label: "Step 1" },
+  { src: (pwa_flow_2).src, alt: "PWA install step 2", label: "Step 2" },
+  { src: (pwa_flow_3).src, alt: "PWA install step 3", label: "Step 3" },
+  { src: (pwa_flow_4).src, alt: "PWA install step 4", label: "Step 4" },
 ];
 
 export const PwaSection: React.FC = () => {

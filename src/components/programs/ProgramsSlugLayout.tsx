@@ -92,7 +92,7 @@ export const ProgramsSlugLayout: FC<IProps> =  async (props) => {
                         <div className="order-3 lg:col-start-1 lg:row-start-3">
                             <ProgramOverviewCard program={ program } />
                         </div>
-                        <aside className="order-4 flex min-h-0 flex-col gap-4 lg:sticky lg:top-0 lg:max-h-[100dvh] lg:overflow-y-auto lg:overscroll-contain lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:self-start">
+                        <aside className="order-4 flex min-h-0 flex-col gap-4 lg:sticky lg:top-0 lg:max-h-dvh lg:overflow-y-auto lg:overscroll-contain lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:self-start">
                             <ExportProgramCTA programId={id} sortedWorkoutsByWeek={sortedWorkoutsByWeek} />
                             <EditProgramCTA programId={id} />
                         </aside>

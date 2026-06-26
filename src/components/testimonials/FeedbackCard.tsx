@@ -1,6 +1,4 @@
 /* eslint-disable @next/next/no-img-element */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 
 /**
  * @module FeedbackCard
@@ -20,7 +18,7 @@ interface IProps {
     content: string;
     name: string;
     title: string;
-    img: any;
+    img: string;
 }
 
 /** Renders one feedback card with quote, stars, and author. */
@@ -36,28 +34,26 @@ export const FeedbackCard: React.FC<IProps> = (props) => {
     return (
         <motion.div
             whileHover={ { scale: 1.08 } }
-            onHoverStart={ e => {} }
-            onHoverEnd={ e => {} }
             className="flex justify-around flex-col px-6 rounded-[20px] max-w-[370px] m-6 feedback-card"
         >
-            <img src={ (quotes as any).src } alt="double_quotes" className="w-[42.6px] h-[27.6px] object-contain" />
+            <img src={ (quotes).src } alt="double_quotes" className="w-[42.6px] h-[27.6px] object-contain" />
             <div className="font-tertiary font-normal text-[16px] leading-[32.4px] text-white py-4">
                 {content}
                 <div className="flex flex-row py-4">
                     <div>
-                        <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                        <img src={ (starGold).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                     </div>
                     <div>
-                        <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                        <img src={ (starGold).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                     </div>
                     <div>
-                        <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                        <img src={ (starGold).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                     </div>
                     <div>
-                        <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                        <img src={ (starGold ).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                     </div>
                     <div>
-                        <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                        <img src={ (starGold).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                     </div>
                 </div>
             </div>

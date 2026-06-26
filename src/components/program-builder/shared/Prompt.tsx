@@ -1,5 +1,4 @@
 /* eslint-disable @next/next/no-img-element */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 /**
  * @module Prompt
@@ -52,7 +51,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                         <>
                             {showLightPreview && (
                                 <img
-                                    src={(light_builder as any).src}
+                                    src={(light_builder).src}
                                     alt=""
                                     className="absolute inset-0 h-full w-full scale-105 object-cover object-center opacity-75 blur-sm dark:hidden xl:hidden"
                                     loading="eager"
@@ -63,7 +62,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                             )}
                             {showDarkPreview && (
                                 <img
-                                    src={(dark_builder as any).src}
+                                    src={(dark_builder).src}
                                     alt=""
                                     className="absolute inset-0 hidden h-full w-full scale-105 object-cover object-center opacity-55 blur-md dark:block xl:dark:hidden"
                                     loading="eager"
@@ -85,8 +84,8 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                 <div className="flex flex-col items-center justify-center gap-12 w-full relative z-10">
                     <div className="text-center flex flex-col items-center gap-3">
                         <div className="hidden sm:block">
-                            <img src={(proxima_logo_black as any).src} alt="Proxima" className="h-14 w-auto hidden dark:block" />
-                            <img src={(proxima_logo_white as any).src} alt="Proxima" className="h-14 w-auto dark:hidden block" />
+                            <img src={(proxima_logo_black).src} alt="Proxima" className="h-14 w-auto hidden dark:block" />
+                            <img src={(proxima_logo_white).src} alt="Proxima" className="h-14 w-auto dark:hidden block" />
                         </div>
                         <div className="font-tertiary text-6xl max-sm:text-4xl max-sm:px-6 font-bold text-foreground">
                             Your Unified Training Coach

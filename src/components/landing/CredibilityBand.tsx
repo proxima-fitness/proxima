@@ -1,5 +1,4 @@
 /* eslint-disable @next/next/no-img-element */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
  * @module CredibilityBand
@@ -54,7 +53,7 @@ export const CredibilityBand: React.FC = () => {
                     rel="noreferrer noopener"
                 >
                     <img
-                        src={(league_of_innovators_logo as any).src}
+                        src={(league_of_innovators_logo).src}
                         alt="League of Innovators"
                         className="h-7 w-auto object-contain sm:h-8"
                     />

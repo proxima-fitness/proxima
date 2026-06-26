@@ -1,6 +1,4 @@
 /* eslint-disable @next/next/no-img-element */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 /*
@@ -10,8 +8,7 @@
  * @usedBy Header and hero sections wherever an app download or onboarding CTA is needed.
  */
 
-import { motion } from "motion/react";
-import { apple, google, qr_code, starGold } from "public";
+import { qr_code, starGold } from "public";
 
 /**
  * Props for `GetStarted`.
@@ -26,15 +23,15 @@ interface IProps {
 /**
  * GetStarted renders a small visual block promoting the Proxima app with QR code and rating copy.
  */
-export const GetStarted: React.FC<IProps> = (props) => {
+export const GetStarted: React.FC<IProps> = () => {
 
-    const { noBorder, blog } = props;
+    // const { noBorder, blog } = props;
 
     return (
         <div>
             <div className="flex flex-row gap-4 justify-center md:justify-start lg:justify-start">
                 <div>
-                    <img src={ (qr_code as any).src } alt="Proxima Logo" className="rounded w-auto h-[120px]" />
+                    <img src={ (qr_code).src } alt="Proxima Logo" className="rounded w-auto h-[120px]" />
                 </div>
                 <div style={ { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", gap: "10px", zIndex: "5" } }>
                     {/* Temporarily deprecated - mobile app download */}
@@ -83,19 +80,19 @@ export const GetStarted: React.FC<IProps> = (props) => {
             </div>
             <span className="flex flex-row py-4 text-white">
                 <span>
-                    <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                    <img src={ (starGold).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                 </span>
                 <span>
-                    <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                    <img src={ (starGold).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                 </span>
                 <span>
-                    <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                    <img src={ (starGold).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                 </span>
                 <span>
-                    <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                    <img src={ (starGold).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                 </span>
                 <span>
-                    <img src={ (starGold as any).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
+                    <img src={ (starGold).src } alt="star_gold" className="w-[30px] h-[20px] object-contain" />
                 </span>
                 4.5 Stars on Apple App Store
             </span>

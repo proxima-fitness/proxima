@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 /**
  * @module HevyExerciseSearchBar
  * Searchable list of Hevy exercise templates: fuzzy search via Fuse, virtual list for performance.
@@ -7,7 +6,7 @@
  * Used by: HevyAddExerciseDialog.
  */
 
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { FixedSizeList as List } from "react-window";
 import Fuse from "fuse.js";
 import { EditIcon, PlusIcon, SearchIcon } from 'lucide-react';
@@ -78,34 +77,28 @@ export const HevyExerciseSearchBar: React.FC<IProps> = (props) => {
 
     const isMobile = useIsMobile();
 
-    const [ filteredItems, setFilteredItems ] = useState<THevyExerciseTemplate[]>(items);
-
-    // TODO: Add these filters back in for the Hevy schema
-    // const [ selectedMuscleGroup, setSelectedMuscleGroup ] = useState<string>("All Muscle Groups");
-    // const [ selectedEquipment, setSelectedEquipment ] = useState<string>("All Equipment");
-    // const [ appliedMuscleGroupFilter, setAppliedMuscleGroupFilter ] = useState<string>();
     const [ appliedSearchBarFilter, setAppliedSearchBarFilter ] = useState<string>();
     // const [ appliedEquipmentFilter, setAppliedEquipmentFilter ] = useState<string>();
 
-    useEffect(() => {
-            let filteredItems = items;
-            // if (appliedMuscleGroupFilter && appliedMuscleGroupFilter !== "All Muscle Groups") {
-            //     const MuscleGroupsKey = MuscleGroups.find(pair => pair.value === appliedMuscleGroupFilter);
-            //     if (MuscleGroupsKey) filteredItems = filteredItems.filter((item: TExercise) => item.muscleGroups.includes(MuscleGroupsKey.label));
-            // }
-            // if (appliedEquipmentFilter && appliedEquipmentFilter !== "All Equipment")  {
-            //     const EquipmentKey = Equipment.find(pair => pair.value === appliedEquipmentFilter);
-            //     if (EquipmentKey) filteredItems = filteredItems.filter((item: TExercise) => item.equipment.includes(EquipmentKey?.label));
-            // }
-            if (appliedSearchBarFilter && appliedSearchBarFilter.trim() !== "") {
-                const normalizedQuery = appliedSearchBarFilter.toLowerCase();
-                const fuse = new Fuse(filteredItems, options);
-                const fuseResults  = fuse?.search(normalizedQuery);
-                filteredItems = (fuseResults?.map((result) => result?.item) ?? []).filter(
-                    (item): item is THevyExerciseTemplate => item != null,
-                );
-            }
-            setFilteredItems(filteredItems);
+    const filteredItems = useMemo(() => {
+        let result = items;
+        // if (appliedMuscleGroupFilter && appliedMuscleGroupFilter !== "All Muscle Groups") {
+        //     const MuscleGroupsKey = MuscleGroups.find(pair => pair.value === appliedMuscleGroupFilter);
+        //     if (MuscleGroupsKey) result = result.filter((item: TExercise) => item.muscleGroups.includes(MuscleGroupsKey.label));
+        // }
+        // if (appliedEquipmentFilter && appliedEquipmentFilter !== "All Equipment")  {
+        //     const EquipmentKey = Equipment.find(pair => pair.value === appliedEquipmentFilter);
+        //     if (EquipmentKey) result = result.filter((item: TExercise) => item.equipment.includes(EquipmentKey?.label));
+        // }
+        if (appliedSearchBarFilter && appliedSearchBarFilter.trim() !== "") {
+            const normalizedQuery = appliedSearchBarFilter.toLowerCase();
+            const fuse = new Fuse(result, options);
+            const fuseResults = fuse?.search(normalizedQuery);
+            result = (fuseResults?.map((searchResult) => searchResult?.item) ?? []).filter(
+                (item): item is THevyExerciseTemplate => item != null,
+            );
+        }
+        return result;
     }, [appliedSearchBarFilter, items]);
 
     const selectItem = (item: THevyExerciseTemplate) => {

@@ -50,8 +50,9 @@ interface IUseTypewriterPlaceholderOptions {
  * Returns an animated placeholder string that types and deletes example
  * prompts in a loop, giving the user visual cues about what they can ask.
  *
- * The animation runs entirely via `setTimeout` chains managed in a single
- * `useEffect`, so it cleans up correctly on unmount or when `enabled` toggles off.
+ * The animation runs via `setTimeout` chains managed in a single `useEffect`.
+ * When disabled, the effect only clears pending timeouts — render derives the
+ * static fallback from `enabled` without resetting state synchronously.
  *
  * @param options - Timing, prefix, and enabled controls (all optional with sensible defaults).
  * @returns A placeholder string suitable for an `<input>` or `<textarea>` element.
@@ -69,18 +70,31 @@ export function useTypewriterPlaceholder({
   const [animationState, setAnimationState] = useState<TAnimationState>("waiting")
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const needsResetRef = useRef(false)
 
   useEffect(() => {
     if (!enabled) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCurrentOptionIndex(0)
-      setDisplayedText("")
-      setAnimationState("waiting")
+      needsResetRef.current = true
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
         timeoutRef.current = null
       }
       return
+    }
+
+    if (needsResetRef.current) {
+      needsResetRef.current = false
+      timeoutRef.current = setTimeout(() => {
+        setCurrentOptionIndex(0)
+        setDisplayedText("")
+        setAnimationState("waiting")
+      }, 0)
+      return () => {
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current)
+          timeoutRef.current = null
+        }
+      }
     }
 
     if (animationState === "waiting") {
@@ -99,24 +113,20 @@ export function useTypewriterPlaceholder({
 
     if (animationState === "typing") {
       if (displayedText.length < currentOption.length) {
-        // Continue typing
         timeoutRef.current = setTimeout(() => {
           setDisplayedText(currentOption.slice(0, displayedText.length + 1))
         }, typingSpeed)
       } else {
-        // Finished typing, pause before deleting
         timeoutRef.current = setTimeout(() => {
           setAnimationState("deleting")
         }, pauseAfterTyping)
       }
     } else if (animationState === "deleting") {
       if (displayedText.length > 0) {
-        // Continue deleting
         timeoutRef.current = setTimeout(() => {
           setDisplayedText((prev) => prev.slice(0, -1))
         }, deletingSpeed)
       } else {
-        // Finished deleting, move to next option
         timeoutRef.current = setTimeout(() => {
           setCurrentOptionIndex((prev) => (prev + 1) % PROMPT_OPTIONS.length)
           setDisplayedText("")
@@ -142,10 +152,13 @@ export function useTypewriterPlaceholder({
     enabled,
   ])
 
+  const prefix = showPrefix ? STATIC_PREFIX : ""
+
+  if (!enabled) {
+    return `${prefix}build...`
+  }
+
   if (animationState === "waiting") return "Loading..."
 
-  const prefix = showPrefix ? STATIC_PREFIX : ""
-  const placeholder = enabled ? `${prefix}${displayedText}` : `${prefix}build...`
-
-  return placeholder
+  return `${prefix}${displayedText}`
 }

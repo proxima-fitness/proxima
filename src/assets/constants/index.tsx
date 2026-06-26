@@ -101,8 +101,7 @@ export const exportOptions = [
             <div className="flex items-center gap-2">
                 <Crown className="w-6 h-6 text-lightGold" />
                 <img
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    src={(hevy_logo as any).src}
+                    src={(hevy_logo).src}
                     alt="Hevy"
                     className="w-full h-6 object-contain"
                 />
@@ -123,7 +122,6 @@ export const exportOptions = [
     //     name: "Macrofactor",
     //     icon: (
     //         <img
-    //             // eslint-disable-next-line @typescript-eslint/no-explicit-any
     //             src={(macrofactor_logo as any).src}
     //             alt="Macrofactor"
     //             className="w-full h-5 object-contain"
@@ -138,8 +136,7 @@ export const exportOptions = [
         name: "Google Sheets",
         icon: (
             <img
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                src={(google_sheets_logo_icon as any).src}
+                src={(google_sheets_logo_icon).src}
                 alt="Google Sheets"
                 className="w-full h-8 object-contain"
             />
