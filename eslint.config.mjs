@@ -7,7 +7,7 @@ import react from 'eslint-plugin-react';
 import prettier from 'eslint-config-prettier';
 import tsParser from '@typescript-eslint/parser';
 
-export default [
+const eslintConfig = [
   ...next,
   ...nextCoreWebVitals,
   ...nextTypescript,
@@ -86,7 +86,20 @@ export default [
       ],
       '@typescript-eslint/ban-ts-comment': [
         'error',
-        { 'ts-ignore': 'allow-with-description' },
+        {
+          'ts-ignore': true,
+          'ts-nocheck': true,
+          'ts-expect-error': true,
+        },
+      ],
+      '@typescript-eslint/no-explicit-any': 'error',
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            'TSAsExpression > TSAsExpression[typeAnnotation.type="TSUnknownKeyword"]',
+          message: 'Avoid "as unknown as" double type assertions.',
+        },
       ],
     },
   },
@@ -95,3 +108,5 @@ export default [
     ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts"]
   }
 ];
+
+export default eslintConfig;

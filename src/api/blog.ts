@@ -79,7 +79,7 @@ export const getBlogById = async (id: number) => {
  * Retrieves a media record from the `media` table by filename.
  *
  * @param filename - The exact filename stored in the media table
- * @returns The media data as a Blob, or undefined on error
+ * @returns The matching media row, or undefined on error
  */
 export const getMediaByFileName = async (filename: string) => {
     try {
@@ -91,7 +91,7 @@ export const getMediaByFileName = async (filename: string) => {
             console.error('Error fetching Media Image:', mediaImageError);
         }
 
-        return mediaImage as unknown as Blob;
+        return mediaImage?.[0];
 
     } catch (error: unknown) {
         console.error('Error fetching Media Image:', error);
