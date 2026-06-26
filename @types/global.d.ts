@@ -1,8 +1,37 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/hooks/supabase";
+import type {
+    TProgram as _TProgram,
+    TFeatureLimits as _TFeatureLimits,
+    TUserDetails as _TUserDetails,
+    TBlog as _TBlog,
+    TPolicyVersionRow as _TPolicyVersionRow,
+    TUserConsentsRow as _TUserConsentsRow,
+    TBlockedUserRow as _TBlockedUserRow,
+    TFollowersRow as _TFollowersRow,
+    TFollowingRow as _TFollowingRow,
+
+    TBackedUpWorkout as _TBackedUpWorkout,
+    TWorkoutExerciseRow as _TWorkoutExerciseRow,
+    THevyExerciseTemplateRow as _THevyExerciseTemplateRow,
+} from "@/types/database";
 
 declare global {
 // Here we will define the global types for the project and the union types
+
+// Re-exports from src/types/database.ts (canonical source of truth for Supabase-backed types)
+type TProgram = _TProgram;
+type TFeatureLimits = _TFeatureLimits;
+type TUserDetails = _TUserDetails;
+type TBlog = _TBlog;
+type TPolicyVersionRow = _TPolicyVersionRow;
+type TUserConsentsRow = _TUserConsentsRow;
+type TBlockedUserRow = _TBlockedUserRow;
+type TFollowersRow = _TFollowersRow;
+type TFollowingRow = _TFollowingRow;
+type TBackedUpWorkout = _TBackedUpWorkout;
+type TWorkoutExerciseRow = _TWorkoutExerciseRow;
+type THevyExerciseTemplateRow = _THevyExerciseTemplateRow;
 
 // Generic Types
 
@@ -26,25 +55,6 @@ type TQuote = {
     author: string;
 }
 
-type TUserDetails = {
-    first_name: string;
-    last_name: string;
-    username: string;
-    bio: string;
-    created_at: string;
-}
-
-type TBlog = {
-    id: number;
-    created_at: string;
-    updated_at: string;
-    title: string;
-    subtitle: string;
-    content: object;
-    time: number;
-    media_url: string; // just the filename (icon.png)
-    image_url?: string; // the public url e.g. (https://api.blog.co/icon.png)
-}
 
 type TFilterGroupOption = {
     component: "badge" | "slider" | "combobox";
@@ -108,29 +118,12 @@ type TMessage = {
 }
 
 
-type TFeatureLimits = {
-    user_id: string;
-    tier: string;
-    has_active_subscription: boolean | null;
-    max_monthly_exports: number;
-    monthly_exports_used: number;
-    remaining_exports: number;
-    max_monthly_llm_requests: number;
-    monthly_llm_requests_used: number;
-    remaining_llm_requests: number;
-};
 
 type TSignUpPendingConsents = {
     platformImprovementOptIn: boolean;
     marketingOptIn: boolean;
 };
 
-type TPolicyVersionRow = {
-    id: string;
-    document_type: string;
-    version_label: string;
-    effective_at: string;
-};
 
 type TPolicyVersionSummary = {
     id: string;
@@ -148,18 +141,6 @@ type TUserConsentsLegalFields = {
     privacy_version_id: string;
 };
 
-type TUserConsentsRow = {
-    user_id: string;
-    terms_version_id: string;
-    privacy_version_id: string;
-    legal_accepted_at: string;
-    platform_improvement_opt_in: boolean;
-    platform_improvement_opt_in_at: string | null;
-    marketing_opt_in: boolean;
-    marketing_opt_in_at: string | null;
-    created_at: string;
-    updated_at: string;
-};
 
 type TOptionalConsentUpdates = {
     platformImprovementOptIn?: boolean;
@@ -306,25 +287,6 @@ type TMapBackedUpWorkoutOptions = {
     previewMaxExercises?: number;
 };
 
-type TWorkoutExerciseRow = Database["public"]["Tables"]["workout_exercises"]["Row"] & {
-    canonical_exercises: Database["public"]["Tables"]["canonical_exercises"]["Row"];
-    workout_sets: Database["public"]["Tables"]["workout_sets"]["Row"][];
-};
-
-type TBackedUpWorkout = Database["public"]["Tables"]["workouts"]["Row"] & {
-    workout_exercises: TWorkoutExerciseRow[];
-};
-
-type THevyExerciseTemplateRow = Pick<
-    Database["public"]["Tables"]["hevy_exercise_templates"]["Row"],
-    | "id"
-    | "title"
-    | "normalized_title"
-    | "type"
-    | "primary_muscle_group"
-    | "secondary_muscle_groups"
-    | "equipment"
->;
 
 type TRoutineResponse = {
     routine: TRoutine;
@@ -420,20 +382,6 @@ interface IPoundsOrKgContextValue {
 }
 
 
-interface IFollowersRow {
-    follower_id: string | null;
-    users: { first_name: string | null; last_name: string | null; email: string | null } | null;
-}
-
-interface IFollowingRow {
-    following_id: string | null;
-    users: { first_name: string | null; last_name: string | null; email: string | null } | null;
-}
-
-/** Blocked users row from blocked_users table. */
-interface IBlockedUserRow {
-    blocked_id: string | null;
-}
 
 interface IProfilePictureContextValue {
 	profilePicture: Blob | null;
@@ -742,21 +690,6 @@ type TProgramPage = {
     schedule: TProgramDetails[];
 }
 
-type TProgram = {
-    id: number;
-    title: string;
-    details: string;
-    program_length: number;
-    workout_duration: number;
-    equipment: string;
-    specialization: string[];
-    difficulty: string[];
-    user_id: string;
-    thumbnail?: Blob;
-    prompt?: string;
-    saves: number;
-    is_coach: boolean;
-}
 
 type TDialog = {
     weekOrder: number;

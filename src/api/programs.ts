@@ -71,7 +71,7 @@ export const getExplorePagePrograms = async (filters?: TProgramFilters, limit?: 
                 }),
             );
 
-            return programsWithThumbnails as unknown as TProgram[];
+            return programsWithThumbnails;
         }
 
         return [];
@@ -87,11 +87,11 @@ export const getExplorePagePrograms = async (filters?: TProgramFilters, limit?: 
  *
  * @returns Array of unique AI programs, or undefined on error
  */
-export const getCommunityAiPrograms = async () => {
+export const getCommunityAiPrograms = async (): Promise<TProgram[] | undefined> => {
     try {
         const { data, error } = await
             supabase.from('programs')
-            .select('prompt, id')
+            .select('id, title, details, program_length, workout_duration, equipment, specialization, difficulty, user_id, saves, prompt')
             .eq('title', 'My AI Program')
             .not('prompt', 'is', null)
             .neq('prompt', '""')
@@ -106,7 +106,7 @@ export const getCommunityAiPrograms = async () => {
                 return true;
             });
 
-            return uniqueData as unknown as TProgram[];
+            return uniqueData;
         }
     } catch (error: unknown) {
         console.error('Error fetching community ai programs:', error);
@@ -121,11 +121,11 @@ export const getCommunityAiPrograms = async () => {
  * @param offset - Pagination offset (default 0)
  * @returns Array of unique AI programs for the requested page
  */
-export const getCommunityAiProgramsPaginated = async (limit: number = 20, offset: number = 0) => {
+export const getCommunityAiProgramsPaginated = async (limit: number = 20, offset: number = 0): Promise<TProgram[]> => {
     try {
         const { data, error } = await
             supabase.from('programs')
-            .select('prompt, id, user_id, saves')
+            .select('id, title, details, program_length, workout_duration, equipment, specialization, difficulty, user_id, saves, prompt')
             .eq('title', 'My AI Program')
             .not('prompt', 'is', null)
             .neq('prompt', '""')
@@ -142,7 +142,7 @@ export const getCommunityAiProgramsPaginated = async (limit: number = 20, offset
                 return true;
             });
 
-            return uniqueData as unknown as TProgram[];
+            return uniqueData;
         }
         return [];
     } catch (error: unknown) {
@@ -158,7 +158,7 @@ export const getCommunityAiProgramsPaginated = async (limit: number = 20, offset
  * @param program_id - The program's primary key
  * @returns Array of program detail objects with nested schedule, or undefined
  */
-export const getExplorePageProgramDetails = async (program_id: number) => {
+export const getExplorePageProgramDetails = async (program_id: number): Promise<TProgramDetails[] | undefined> => {
     try {
             const { data, error } = await supabase
             .from('programs')
@@ -197,12 +197,13 @@ export const getExplorePageProgramDetails = async (program_id: number) => {
             )
             .eq('id', program_id)
             .order('nthWeek', { referencedTable: 'schedule_workouts', ascending: true })
-            .order('nthDay', { referencedTable: 'schedule_workouts', ascending: true });
+            .order('nthDay', { referencedTable: 'schedule_workouts', ascending: true })
+            .returns<TProgramDetails[]>();
 
             if (error) {
                 console.error('Error fetching program details:', error);
             } else if (data && data.length > 0 ) {
-                return data as unknown as TProgramDetails[];
+                return data;
             }
     } catch (error: unknown) {
         console.error('Error fetching program details:', error);
@@ -218,7 +219,7 @@ export const getExplorePageProgramDetails = async (program_id: number) => {
  * @param is_coach - When true, only coach-created programs; when false/undefined, non-coach programs
  * @returns Array of programs with thumbnails, or undefined on error
  */
-export const getPrograms = async (limit?: number, is_coach?: boolean) => {
+export const getPrograms = async (limit?: number, is_coach?: boolean): Promise<TProgram[] | undefined> => {
     try {
         let query = supabase
             .from('programs')
@@ -250,7 +251,7 @@ export const getPrograms = async (limit?: number, is_coach?: boolean) => {
                 }),
             );
 
-            return programsWithThumbnails as unknown as TProgram[];
+            return programsWithThumbnails;
         }
     } catch (error: unknown) {
         console.error('Error fetching explore page programs:', error);
@@ -263,7 +264,7 @@ export const getPrograms = async (limit?: number, is_coach?: boolean) => {
  * @param program_id - The program's primary key
  * @returns Array containing the matching program, or undefined if not found
  */
-export const getProgramByID = async (program_id: number) => {
+export const getProgramByID = async (program_id: number): Promise<TProgram[] | undefined> => {
     try {
         const { data, error } = await supabase
         .from('programs')
@@ -271,7 +272,7 @@ export const getProgramByID = async (program_id: number) => {
         if (error) {
             console.error('Error fetching program by ID:', error);
         } else if (data && data.length > 0 ) {
-            return data as unknown as TProgram[];
+            return data;
         }
     } catch (error: unknown) {
         console.error(`Error fetching program by ID: ${error}`);
@@ -351,21 +352,20 @@ export const getSharedProgram = async (shareId: number): Promise<THevyRoutine[] 
             )
             .eq('id', shareId)
             .order('nthWeek', { referencedTable: 'schedule_workouts', ascending: true })
-            .order('nthDay', { referencedTable: 'schedule_workouts', ascending: true });
+            .order('nthDay', { referencedTable: 'schedule_workouts', ascending: true })
+            .returns<TProgramDetails[]>();
 
             if (error) {
                 console.error('Error fetching program details:', error);
             } else if (data && data.length > 0 ) {
-                const programDetails = data as unknown as TProgramDetails[];
+                const programDetails: TProgramDetails[] = data;
                 if (programDetails && programDetails[0]?.schedule_workouts) {
                     // Sort schedule workouts by week and day
                     const sortedWorkoutsByWeek = sortWorkouts(programDetails[0].schedule_workouts);
 
                     // Convert schedule to Hevy routines
                     const convertedRoutines = await convertToHevyRoutine(sortedWorkoutsByWeek);
-
-
-                    return convertedRoutines as unknown as THevyRoutine[];
+                    return convertedRoutines;
                 }
             }
     } catch (error: unknown) {
@@ -530,7 +530,7 @@ export const getSubscribedPrograms = async (user: User): Promise<TProgram[]> => 
             }),
         );
 
-        return programsWithThumbnails as unknown as TProgram[];
+        return programsWithThumbnails;
     } catch (error: unknown) {
         console.error('Unexpected error fetching subscribed programs:', error);
         return [];

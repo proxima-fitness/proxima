@@ -114,7 +114,7 @@ export const AiProgramGrid: React.FC = () => {
     const { data: programs, isLoading } = useCommunityAiProgramsPaginated(pageSize, offset);
 
     // Extract unique user IDs from all loaded programs
-    const userIds = Array.from(new Set(allPrograms.map(p => p.user_id).filter(Boolean)));
+    const userIds = Array.from(new Set(allPrograms.map(p => p.user_id).filter((id): id is string => id != null)));
 
     // Batch fetch user data for all programs (non-blocking)
     const { data: usersBatchData } = useUsersBatch(userIds);
@@ -162,7 +162,7 @@ export const AiProgramGrid: React.FC = () => {
                     ) : (
                         <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1">
                             {allPrograms.map((item: TProgram) => {
-                                const userData = usersBatchData?.[item.user_id];
+                                const userData = item.user_id ? usersBatchData?.[item.user_id] : undefined;
                                 return (
                                     <ProgramItem
                                         key={item.id}

@@ -123,19 +123,19 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
 
         if (appliedEquipmentFilter && appliedEquipmentFilter.length > 0) {
             filteredItems = filteredItems.filter((item: TProgram) =>
-                item.equipment && appliedEquipmentFilter.some((filter) => item.equipment.includes(filter)),
+                item.equipment && appliedEquipmentFilter.some((filter) => item.equipment!.includes(filter)),
             );
         }
 
         if (appliedSpecializationFilter && appliedSpecializationFilter.length > 0) {
             filteredItems = filteredItems.filter((item: TProgram) =>
-                item.specialization && appliedSpecializationFilter.some((filter) => item.specialization.includes(filter)),
+                item.specialization && appliedSpecializationFilter.some((filter) => item.specialization!.includes(filter)),
             );
         }
 
         if (appliedDifficultyFilter && appliedDifficultyFilter.length > 0) {
             filteredItems = filteredItems.filter((item: TProgram) =>
-                item.difficulty && appliedDifficultyFilter.some((filter) => item.difficulty.includes(filter)),
+                item.difficulty && appliedDifficultyFilter.some((filter) => item.difficulty!.includes(filter)),
             );
         }
 
@@ -177,13 +177,13 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
                             <div className="min-w-0 flex-1 space-y-2">
                                 <div
                                     className={ cn(
-                                        "overflow-hidden rounded-2xl bg-muted/40 ring-1 ring-black/[0.06] dark:bg-muted/25 dark:ring-white/10",
+                                        "overflow-hidden rounded-2xl bg-muted/40 ring-1 ring-black/6 dark:bg-muted/25 dark:ring-white/10",
                                     ) }
                                 >
                                     <Command
                                         className={ cn(
                                             "border-0 bg-transparent shadow-none",
-                                            "[&_[cmdk-input-wrapper]]:border-0 [&_[cmdk-input-wrapper]]:bg-transparent",
+                                            "**:[[cmdk-input-wrapper]]:border-0 **:[[cmdk-input-wrapper]]:bg-transparent",
                                         ) }
                                     >
                                         <CommandInput
@@ -196,10 +196,10 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
                                 <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-[11px] leading-relaxed text-muted-foreground">
                                     <span className="inline-flex items-center gap-1">
                                         <span>Focus search</span>
-                                        <kbd className="pointer-events-none inline-flex h-5 min-w-[1.25rem] select-none items-center justify-center rounded-md bg-muted/70 px-1.5 font-mono text-[10px] font-medium text-muted-foreground dark:bg-muted/50">
+                                        <kbd className="pointer-events-none inline-flex h-5 min-w-5 select-none items-center justify-center rounded-md bg-muted/70 px-1.5 font-mono text-[10px] font-medium text-muted-foreground dark:bg-muted/50">
                                             Ctrl
                                         </kbd>
-                                        <kbd className="pointer-events-none inline-flex h-5 min-w-[1.25rem] select-none items-center justify-center rounded-md bg-muted/70 px-1.5 font-mono text-[10px] font-medium text-muted-foreground dark:bg-muted/50">
+                                        <kbd className="pointer-events-none inline-flex h-5 min-w-5 select-none items-center justify-center rounded-md bg-muted/70 px-1.5 font-mono text-[10px] font-medium text-muted-foreground dark:bg-muted/50">
                                             K
                                         </kbd>
                                         <span className="sr-only">; Command K on Mac</span>
@@ -207,13 +207,13 @@ export const ProgramSearch: React.FC<IProps> = (props) => {
                                     <span className="text-muted-foreground/50" aria-hidden>·</span>
                                     <span className="inline-flex items-center gap-1">
                                         <span>Clear filters</span>
-                                        <kbd className="pointer-events-none inline-flex h-5 min-w-[1.25rem] select-none items-center justify-center rounded-md bg-muted/70 px-1.5 font-mono text-[10px] font-medium text-muted-foreground dark:bg-muted/50">
+                                        <kbd className="pointer-events-none inline-flex h-5 min-w-5 select-none items-center justify-center rounded-md bg-muted/70 px-1.5 font-mono text-[10px] font-medium text-muted-foreground dark:bg-muted/50">
                                             Ctrl
                                         </kbd>
-                                        <kbd className="pointer-events-none inline-flex h-5 min-w-[1.25rem] select-none items-center justify-center rounded-md bg-muted/70 px-1.5 font-mono text-[10px] font-medium text-muted-foreground dark:bg-muted/50">
+                                        <kbd className="pointer-events-none inline-flex h-5 min-w-5 select-none items-center justify-center rounded-md bg-muted/70 px-1.5 font-mono text-[10px] font-medium text-muted-foreground dark:bg-muted/50">
                                             ⇧
                                         </kbd>
-                                        <kbd className="pointer-events-none inline-flex h-5 min-w-[1.25rem] select-none items-center justify-center rounded-md bg-muted/70 px-1.5 font-mono text-[10px] font-medium text-muted-foreground dark:bg-muted/50">
+                                        <kbd className="pointer-events-none inline-flex h-5 min-w-5 select-none items-center justify-center rounded-md bg-muted/70 px-1.5 font-mono text-[10px] font-medium text-muted-foreground dark:bg-muted/50">
                                             C
                                         </kbd>
                                         <span className="sr-only">; Command Shift C on Mac</span>

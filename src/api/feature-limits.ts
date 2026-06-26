@@ -155,7 +155,7 @@ export const getMyFeatureLimits = async (user: User | undefined | null): Promise
             console.error("Error fetching feature limits", error);
             return null;
         }
-        const row = data[0] as unknown as TFeatureLimits;
+        const row: TFeatureLimits | undefined = data[0];
         if (!row) return null;
 
         if (!isTestUser(user)) return row;

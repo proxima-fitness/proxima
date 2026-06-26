@@ -16,7 +16,7 @@ import { supabase } from ".";
  * @param userId - The user whose blocked list to fetch
  * @returns Array of { blocked_id }
  */
-export const getBlockedUsers = async (userId: string): Promise<IBlockedUserRow[]> => {
+export const getBlockedUsers = async (userId: string): Promise<TBlockedUserRow[]> => {
     const { data, error } = await supabase
         .from("blocked_users")
         .select("blocked_id")
@@ -26,7 +26,7 @@ export const getBlockedUsers = async (userId: string): Promise<IBlockedUserRow[]
         console.error("Error fetching blocked users:", error);
         return [];
     }
-    return (data ?? []).filter((row): row is IBlockedUserRow => row.blocked_id != null);
+    return (data ?? []).filter((row): row is TBlockedUserRow => row.blocked_id != null);
 };
 
 /**
@@ -35,7 +35,7 @@ export const getBlockedUsers = async (userId: string): Promise<IBlockedUserRow[]
  * @param userId - The user's id
  * @returns Array of follower rows with nested user info
  */
-export const getFollowers = async (userId: string): Promise<IFollowersRow[]> => {
+export const getFollowers = async (userId: string): Promise<TFollowersRow[]> => {
     try {
         const blockedRows = await getBlockedUsers(userId);
         const blocked_ids = blockedRows.map((u) => u.blocked_id).filter(Boolean) as string[];
@@ -49,13 +49,13 @@ export const getFollowers = async (userId: string): Promise<IFollowersRow[]> => 
             query = query.not("follower_id", "in", `(${blocked_ids.join(",")})`);
         }
 
-        const { data: followers, error } = await query;
+        const { data: followers, error } = await query.returns<TFollowersRow[]>();
 
         if (error) {
             console.error("Error fetching followers:", error);
             return [];
         }
-        return (followers ?? []) as unknown as IFollowersRow[];
+        return followers ?? [];
     } catch (error) {
         console.error("Error fetching followers:", error);
         return [];
@@ -68,7 +68,7 @@ export const getFollowers = async (userId: string): Promise<IFollowersRow[]> => 
  * @param userId - The user's id
  * @returns Array of following rows with nested user info
  */
-export const getFollowing = async (userId: string): Promise<IFollowingRow[]> => {
+export const getFollowing = async (userId: string): Promise<TFollowingRow[]> => {
     try {
         const blockedRows = await getBlockedUsers(userId);
         const blocked_ids = blockedRows.map((u) => u.blocked_id).filter(Boolean) as string[];
@@ -82,13 +82,13 @@ export const getFollowing = async (userId: string): Promise<IFollowingRow[]> => 
             query = query.not("following_id", "in", `(${blocked_ids.join(",")})`);
         }
 
-        const { data: following, error } = await query;
+        const { data: following, error } = await query.returns<TFollowingRow[]>();
 
         if (error) {
             console.error("Error fetching users you follow:", error);
             return [];
         }
-        return (following ?? []) as unknown as IFollowingRow[];
+        return following ?? [];
     } catch (error) {
         console.error("Error fetching users you follow:", error);
         return [];

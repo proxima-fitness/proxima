@@ -591,12 +591,12 @@ export const useOpUserMetadataSSR = async (id: string) => {
  * @param id - The blog post ID (converted to number internally)
  * @returns The blog object cast to TBlog
  */
-export const useBlogByIdSSR = async (id: string) => {
+export const useBlogByIdSSR = async (id: string): Promise<TBlog> => {
     const blog = await getBlogById(Number(id));
     if (!blog) {
-        console.error("Blog not found");
+        throw new Error(`Blog not found: ${id}`);
     }
-    return blog as unknown as TBlog;
+    return blog;
 };
 
 /**
