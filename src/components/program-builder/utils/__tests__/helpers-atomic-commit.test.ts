@@ -63,7 +63,7 @@ const buildWeekPart = (routines: THevyRoutine[]) =>
             exerciseCount: routines.length,
             setCount: routines.length,
         },
-    }) as unknown as UIMessage["parts"][number];
+    }) as UIMessage["parts"][number];
 
 const mutatePart = (operations: Array<Record<string, unknown>>) =>
     ({
@@ -72,7 +72,7 @@ const mutatePart = (operations: Array<Record<string, unknown>>) =>
         state: "output-available",
         input: {},
         output: { operations },
-    }) as unknown as UIMessage["parts"][number];
+    }) as UIMessage["parts"][number];
 
 describe("atomic commit / planProgram duration alignment", () => {
     it("reads durationWeeks from tool-planProgram before last buildWeek (e.g. 11 vs UI 8)", () => {
@@ -96,7 +96,7 @@ describe("atomic commit / planProgram duration alignment", () => {
                             },
                             summary: "11 wk",
                         },
-                    } as unknown as UIMessage["parts"][number],
+                    } as UIMessage["parts"][number],
                     buildWeekPart([minimalRoutine(1), minimalRoutine(2), minimalRoutine(3)]),
                 ],
             },

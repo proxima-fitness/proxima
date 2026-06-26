@@ -232,8 +232,8 @@ describe("updateSet", () => {
             makeDay({
                 exercises: [
                     makeExercise(),
-                    undefined as unknown as THevyExercise,
-                ],
+                    undefined,
+                ] as THevyExercise[],
             }),
         ];
 

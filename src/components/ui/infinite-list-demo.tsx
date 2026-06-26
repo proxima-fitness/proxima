@@ -10,9 +10,9 @@
 
 import { cn } from '@/lib/utils'
 import {
-  SupabaseQueryHandler,
-  SupabaseTableData,
-  SupabaseTableName,
+  TSupabaseQueryHandler,
+  TSupabaseTableData,
+  TSupabaseTableName,
   useInfiniteQuery,
 } from '@/hooks/use-infinite-query'
 import * as React from 'react'
@@ -26,12 +26,12 @@ import * as React from 'react'
  * @param renderNoResults - Shown when list is empty.
  * @param renderSkeleton - Shown while loading (receives count).
  */
-interface IInfiniteListProps<TableName extends SupabaseTableName> {
+interface IInfiniteListProps<TableName extends TSupabaseTableName> {
   tableName: TableName
   columns?: string
   pageSize?: number
-  trailingQuery?: SupabaseQueryHandler<TableName>
-  renderItem: (item: SupabaseTableData<TableName>, index: number) => React.ReactNode
+  trailingQuery?: TSupabaseQueryHandler<TableName>
+  renderItem: (item: TSupabaseTableData<TableName>, index: number) => React.ReactNode
   className?: string
   containerClassName?: string
   renderNoResults?: () => React.ReactNode
@@ -56,7 +56,7 @@ const defaultSkeleton = (count: number) => (
 )
 
 /** Renders a scrollable list with intersection-based load-more. */
-export function InfiniteList<TableName extends SupabaseTableName>({
+export function InfiniteList<TableName extends TSupabaseTableName>({
   tableName,
   columns = '*',
   pageSize = 20,

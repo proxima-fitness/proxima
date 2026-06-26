@@ -646,8 +646,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                             );
                                         }
                                         case "tool-mutateProgram": {
-                                            type TMutateProgramPart = {
-                                                type: "tool-mutateProgram";
+                                            const mutatePart = part as {
                                                 state?: string;
                                                 input?: { operations?: Array<{ op: string }> };
                                                 output?: {
@@ -657,7 +656,6 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 };
                                                 errorText?: string;
                                             };
-                                            const mutatePart = part as unknown as TMutateProgramPart;
                                             const operations =
                                                 mutatePart.output?.operations ?? mutatePart.input?.operations;
                                             const objectivesByRoutine = getMutateProgramObjectives(
@@ -737,14 +735,12 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                             );
                                         }
                                         case "tool-getWorkoutHistory": {
-                                            type TGetWorkoutHistoryPart = {
-                                                type: "tool-getWorkoutHistory";
+                                            const historyPart = part as {
                                                 state?: TToolPart["state"];
                                                 input?: { limit?: number; since?: string };
                                                 output?: TWorkoutHistoryToolOutput;
                                                 errorText?: string;
                                             };
-                                            const historyPart = part as unknown as TGetWorkoutHistoryPart;
                                             const historyOutput = historyPart.output;
                                             const historyHasError =
                                                 historyPart.state === "output-error" ||
@@ -814,13 +810,11 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                             );
                                         }
                                         case "tool-rateProgram": {
-                                            type TRateProgramPart = {
-                                                type: "tool-rateProgram";
+                                            const ratePart = part as {
                                                 state?: TToolPart["state"];
                                                 output?: { score?: IProgramScore; error?: string; message?: string };
                                                 errorText?: string;
                                             };
-                                            const ratePart = part as unknown as TRateProgramPart;
                                             const out = ratePart.output;
                                             const hasScore = Boolean(out?.score && !out?.error);
                                             const rateHasError = Boolean(out?.error) || ratePart.state === "output-error";

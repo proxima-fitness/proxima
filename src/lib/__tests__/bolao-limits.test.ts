@@ -64,11 +64,13 @@ describe("bolao-limits helpers", () => {
     });
 });
 
+function mockSupabaseWithRpc(mock: unknown): Parameters<typeof getServerBolaoPredictorLimits>[0] {
+    return mock as Parameters<typeof getServerBolaoPredictorLimits>[0];
+}
+
 describe("server-bolao-limits", () => {
     const mockRpc = vi.fn();
-    const supabase = { rpc: mockRpc } as unknown as Parameters<
-        typeof getServerBolaoPredictorLimits
-    >[0];
+    const supabase = mockSupabaseWithRpc({ rpc: mockRpc });
     const user = { id: "user-1", email: "user@example.com" } as User;
     const testUser = { id: "test-1", email: "qa@proxima.test" } as User;
 

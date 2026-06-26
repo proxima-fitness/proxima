@@ -116,29 +116,29 @@ describe("shrink 8x4 program to 4x3", () => {
     });
 
     it("normalizeProgramForGrid fills missing exercises/sets", () => {
-        const malformed: THevyRoutine[] = [
+        const malformed = [
             {
                 ...makeDay(1, 0, 1),
-                exercises: [{ ...makeExercise(), sets: undefined as unknown as THevySets[] }],
+                exercises: [{ ...makeExercise(), sets: undefined }],
             },
-            { ...makeDay(2, 0, 2), exercises: undefined as unknown as THevyExercise[] },
-        ];
+            { ...makeDay(2, 0, 2), exercises: undefined },
+        ] as THevyRoutine[];
         const normalized = normalizeProgramForGrid(malformed);
         expect(normalized[0].exercises[0].sets).toEqual([]);
         expect(normalized[1].exercises).toEqual([]);
     });
 
     it("normalizeProgramForGrid drops null exercises and coalesces title", () => {
-        const malformed: THevyRoutine[] = [
+        const malformed = [
             {
                 ...makeDay(1, 0, 1),
                 exercises: [
                     makeExercise(),
-                    undefined as unknown as THevyExercise,
-                    { ...makeExercise(), title: undefined as unknown as string },
+                    undefined,
+                    { ...makeExercise(), title: undefined },
                 ],
             },
-        ];
+        ] as THevyRoutine[];
         const normalized = normalizeProgramForGrid(malformed);
         expect(normalized[0].exercises).toHaveLength(2);
         expect(normalized[0].exercises[1].title).toBe("");

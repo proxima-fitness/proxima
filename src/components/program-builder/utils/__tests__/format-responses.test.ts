@@ -108,7 +108,7 @@ describe("hevyAddExerciseToHevySetsConverter", () => {
         const sets = hevyAddExerciseToHevySetsConverter({
             ...baseAddExercise(),
             weightKg: [null, 0, -5],
-            rpe: [null, 0, undefined as unknown as null],
+            rpe: [null, 0, undefined] as (number | null)[],
         });
         expect(intensityFields(sets)).toEqual([
             { weight_kg: null, rpe: null },

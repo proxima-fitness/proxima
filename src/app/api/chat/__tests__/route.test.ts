@@ -4,7 +4,7 @@ import { sanitizeMessagesWithUnresolvedToolCalls } from "../sanitize-messages";
 describe("sanitizeMessagesWithUnresolvedToolCalls", () => {
     it("returns empty or non-array as-is", () => {
         expect(sanitizeMessagesWithUnresolvedToolCalls([])).toEqual([]);
-        expect(sanitizeMessagesWithUnresolvedToolCalls(null as unknown as unknown[])).toEqual(null);
+        expect(sanitizeMessagesWithUnresolvedToolCalls(JSON.parse("null"))).toEqual(null);
     });
 
     it("returns as-is when last message is not assistant or has no parts", () => {

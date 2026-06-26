@@ -100,7 +100,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
     const mutationsLocked = useIsAgentStreaming();
     const [detailsExercise, setDetailsExercise] = useState<THevyExerciseTemplate | undefined>(undefined);
 
-    const editHandler = (e: React.MouseEvent<HTMLButtonElement>, folder_id: number, dayOrder: number, i: number, exercise: THevyExercise) => {
+    const editHandler = (e: React.MouseEvent<HTMLElement>, folder_id: number, i: number, exercise: THevyExercise) => {
         if (readOnly || mutationsLocked) return;
         if (editMode) {
             e.stopPropagation();
@@ -141,7 +141,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                         : 'bg-extraLightGray dark:bg-midDarkGray';
 
                 const rowProps = {
-                    onClick: readOnly || mutationsLocked ? undefined : (e: React.MouseEvent) => editHandler(e as unknown as React.MouseEvent<HTMLButtonElement>, Number(folder_id), Number(day.order), i, exercise),
+                    onClick: readOnly || mutationsLocked ? undefined : (e: React.MouseEvent<HTMLElement>) => editHandler(e, Number(folder_id), i, exercise),
                     className: `w-full min-h-14 border-gray-200 appearance-none p-0 m-0 text-left font-inherit focus:outline-hidden focus-visible:ring-2 focus-visible:ring-lightSecondary focus-visible:ring-inset ${readOnly || mutationsLocked ? "cursor-default" : "cursor-pointer"} ${rowBackgroundClass} ${supersetColor && !isSelected ? 'border-r-4' : ''}`,
                     style: supersetColor && !isSelected ? borderStyle : {},
                 };

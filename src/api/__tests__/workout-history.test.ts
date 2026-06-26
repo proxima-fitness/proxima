@@ -73,8 +73,8 @@ function createMockDb(seed?: Partial<Record<TTableName, TRow[]>>) {
     return db as typeof db & { tables: typeof tables };
 }
 
-function asDb(mock: ReturnType<typeof createMockDb>): SupabaseClient<Database> {
-    return mock as unknown as SupabaseClient<Database>;
+function asDb(mock: unknown): SupabaseClient<Database> {
+    return mock as SupabaseClient<Database>;
 }
 
 describe("hevy import mapping", () => {

@@ -171,7 +171,7 @@ describe("migrateAnonymousThreadToChat", () => {
     const pathname = "/build-program";
     const searchParams = new URLSearchParams(
         "resume=true&search=build+me+a+program",
-    ) as unknown as import("next/navigation").ReadonlyURLSearchParams;
+    ) as import("next/navigation").ReadonlyURLSearchParams;
 
     beforeEach(() => {
         vi.clearAllMocks();

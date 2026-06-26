@@ -90,8 +90,8 @@ function createReadMockDb(seed?: Partial<Record<TTableName, TRow[]>>) {
     return db as typeof db & { tables: typeof tables };
 }
 
-function asDb(mock: ReturnType<typeof createReadMockDb>): SupabaseClient<Database> {
-    return mock as unknown as SupabaseClient<Database>;
+function asDb(mock: unknown): SupabaseClient<Database> {
+    return mock as SupabaseClient<Database>;
 }
 
 describe("getSyncProgress", () => {
@@ -389,8 +389,8 @@ function createBrowseMockDb(seed: TBrowseWorkoutRow[]) {
     return db;
 }
 
-function asBrowseDb(mock: ReturnType<typeof createBrowseMockDb>): SupabaseClient<Database> {
-    return mock as unknown as SupabaseClient<Database>;
+function asBrowseDb(mock: unknown): SupabaseClient<Database> {
+    return mock as SupabaseClient<Database>;
 }
 
 describe("mapBackedUpWorkoutToHevyRoutine", () => {

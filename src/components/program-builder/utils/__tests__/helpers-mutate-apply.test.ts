@@ -48,7 +48,7 @@ const mutatePart = (operations: Array<Record<string, unknown>>) =>
         state: "output-available",
         input: {},
         output: { operations },
-    }) as unknown as UIMessage["parts"][number];
+    }) as UIMessage["parts"][number];
 
 describe("applyMutateProgramFromMessages", () => {
     it("applies merged operations when status is ready", () => {
@@ -199,7 +199,7 @@ describe("applyMutateProgramFromMessages", () => {
                             exerciseCount: 1,
                             setCount: 1,
                         },
-                    } as unknown as UIMessage["parts"][number],
+                    } as UIMessage["parts"][number],
                     mutatePart([{ op: "edit_day_title", folderIds: [0], dayOrder: 1, title: "Later" }]),
                 ],
             },

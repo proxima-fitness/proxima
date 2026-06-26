@@ -123,8 +123,8 @@ function createSyncMockDb(seed?: Partial<Record<TTableName, TRow[]>>) {
     return db as typeof db & { tables: typeof tables };
 }
 
-function asDb(mock: ReturnType<typeof createSyncMockDb>): SupabaseClient<Database> {
-    return mock as unknown as SupabaseClient<Database>;
+function asDb(mock: unknown): SupabaseClient<Database> {
+    return mock as SupabaseClient<Database>;
 }
 
 describe("computeSyncPage", () => {

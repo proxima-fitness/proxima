@@ -9,6 +9,10 @@ import {
     getServerMyFeatureLimits,
 } from "@/lib/server-feature-limits";
 
+function mockSupabase(mock: unknown): Parameters<typeof getServerMyFeatureLimits>[0] {
+    return mock as Parameters<typeof getServerMyFeatureLimits>[0];
+}
+
 const baseLimits: TFeatureLimits = {
     user_id: "user-1",
     tier: "Free",
@@ -69,7 +73,7 @@ describe("feature-limits test tier helpers", () => {
 
 describe("server-feature-limits", () => {
     const mockRpc = vi.fn();
-    const supabase = { rpc: mockRpc } as unknown as Parameters<typeof getServerMyFeatureLimits>[0];
+    const supabase = mockSupabase({ rpc: mockRpc });
     const user = { id: "user-1", email: "qa@proxima.test" } as User;
 
     beforeEach(() => {

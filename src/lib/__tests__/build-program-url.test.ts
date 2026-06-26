@@ -87,7 +87,7 @@ describe("resolveWorkoutDetailBackLink", () => {
 describe("setBuildProgramChatSearchParam", () => {
     it("calls router.replace with merged params and scroll false", () => {
         const replace = vi.fn();
-        const searchParams = new URLSearchParams("empty=true&shareId=42") as unknown as import("next/navigation").ReadonlyURLSearchParams;
+        const searchParams = new URLSearchParams("empty=true&shareId=42") as import("next/navigation").ReadonlyURLSearchParams;
 
         setBuildProgramChatSearchParam(
             { replace },
@@ -108,7 +108,7 @@ describe("applyBuildProgramMintUrlUpdate", () => {
         const replace = vi.fn();
         const searchParams = new URLSearchParams(
             "search=fix+my+program&shareId=42",
-        ) as unknown as import("next/navigation").ReadonlyURLSearchParams;
+        ) as import("next/navigation").ReadonlyURLSearchParams;
 
         applyBuildProgramMintUrlUpdate(
             { replace },
@@ -129,7 +129,7 @@ describe("applyBuildProgramMintUrlUpdate", () => {
         const replace = vi.fn();
         const searchParams = new URLSearchParams(
             "search=continue&resume=true&empty=true",
-        ) as unknown as import("next/navigation").ReadonlyURLSearchParams;
+        ) as import("next/navigation").ReadonlyURLSearchParams;
 
         applyBuildProgramMintUrlUpdate(
             { replace },
@@ -151,7 +151,7 @@ describe("stripSearchFromBuildProgramUrl", () => {
         const replace = vi.fn();
         const searchParams = new URLSearchParams(
             "search=hello&chat=11111111-1111-4111-8111-111111111111&empty=true",
-        ) as unknown as import("next/navigation").ReadonlyURLSearchParams;
+        ) as import("next/navigation").ReadonlyURLSearchParams;
 
         stripSearchFromBuildProgramUrl({ replace }, "/build-program", searchParams);
 

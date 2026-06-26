@@ -53,6 +53,14 @@ type TProToolsWithWorkoutHistory = ReturnType<typeof getTools> & {
     getWorkoutHistory: TGetWorkoutHistoryTool;
 };
 
+function asTestTool<TInput, TOutput>(tool: Record<string, unknown>): TToolTestHarness<TInput, TOutput> {
+    return tool as TToolTestHarness<TInput, TOutput>;
+}
+
+function mockWorkoutHistoryDb(mock: unknown): TWorkoutHistoryDb {
+    return mock as TWorkoutHistoryDb;
+}
+
 function getProToolsWithWorkoutHistory(
     overrides: Partial<Parameters<typeof getTools>[0]> = {},
 ): TProToolsWithWorkoutHistory {
@@ -163,10 +171,9 @@ describe("chat tools.ts", () => {
             ] as THevyRoutine[];
 
             const tools = getTools({ hevyProgram: programWithNotes });
-            const readProgram = tools.readProgram as unknown as TToolTestHarness<
-                Record<string, never>,
-                { hevyProgram: THevyRoutine[] }
-            >;
+            const readProgram = asTestTool<Record<string, never>, { hevyProgram: THevyRoutine[] }>(
+                tools.readProgram as Record<string, unknown>,
+            );
 
             const output = await readProgram.execute({});
             const modelOutput = await readProgram.toModelOutput({ output });
@@ -555,11 +562,9 @@ describe("chat tools.ts", () => {
     });
 
     describe("mutateProgram tool execute", () => {
-        type TMutateProgramTestTool = TToolTestHarness<{ operations: unknown[] }, unknown>;
-
         it("returns operations on successful preflight", async () => {
             const tools = getTools({ hevyProgram: minimalHevyProgram });
-            const mutateProgram = tools.mutateProgram as unknown as TMutateProgramTestTool;
+            const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram as Record<string, unknown>);
 
             const operations = [
                 { op: "edit_day_title" as const, folderIds: [0], dayOrder: 1, title: "Upper Push" },
@@ -588,7 +593,7 @@ describe("chat tools.ts", () => {
             })) as THevyRoutine[];
 
             const tools = getTools({ hevyProgram: sevenDayProgram });
-            const mutateProgram = tools.mutateProgram as unknown as TMutateProgramTestTool;
+            const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram as Record<string, unknown>);
 
             const output = (await mutateProgram.execute({
                 operations: [{ op: "add_day", folderIds: [0] }],
@@ -609,14 +614,12 @@ describe("chat tools.ts", () => {
     });
 
     describe("getWorkoutHistory tool execute", () => {
-        const mockDb = {
-            rpc: vi.fn(async (name: string) => {
-                if (name === "read_secret") {
-                    return { data: "test-api-key", error: null };
-                }
-                return { data: null, error: null };
-            }),
-        } as unknown as TWorkoutHistoryDb;
+        const mockDb = mockWorkoutHistoryDb({ rpc: vi.fn(async (name: string) => {
+            if (name === "read_secret") {
+                return { data: "test-api-key", error: null };
+            }
+            return { data: null, error: null };
+        }) });
 
         it("clamps limit to 30 and calls getWorkoutsForUser", async () => {
             const tools = getProToolsWithWorkoutHistory({ workoutHistoryDb: mockDb });
@@ -635,9 +638,7 @@ describe("chat tools.ts", () => {
         });
 
         it("returns Hevy-not-connected when read_secret fails", async () => {
-            const noKeyDb = {
-                rpc: vi.fn(async () => ({ data: null, error: { message: "missing" } })),
-            } as unknown as TWorkoutHistoryDb;
+            const noKeyDb = mockWorkoutHistoryDb({ rpc: vi.fn(async () => ({ data: null, error: { message: "missing" } })) });
 
             const tools = getProToolsWithWorkoutHistory({ workoutHistoryDb: noKeyDb });
             const output = (await tools.getWorkoutHistory.execute({ limit: 10 })) as {
@@ -654,9 +655,7 @@ describe("chat tools.ts", () => {
             });
 
             const tools = getProToolsWithWorkoutHistory({
-                workoutHistoryDb: {
-                    rpc: vi.fn(async () => ({ data: "test-api-key", error: null })),
-                } as unknown as TWorkoutHistoryDb,
+                workoutHistoryDb: mockWorkoutHistoryDb({ rpc: vi.fn(async () => ({ data: "test-api-key", error: null })) }),
             });
             const { getWorkoutHistory } = tools;
 

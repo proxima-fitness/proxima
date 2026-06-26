@@ -15,7 +15,6 @@
  */
 
 import { createClient } from '@/utils/supabase/client'
-import { PostgrestQueryBuilder } from '@supabase/postgrest-js'
 import { SupabaseClient } from '@supabase/supabase-js'
 import { useEffect, useRef, useSyncExternalStore } from 'react'
 import { Database } from './supabase'
@@ -29,67 +28,43 @@ const supabase = createClient()
  * --------------------------------------------------------------------------
  */
 
-type SupabaseClientType = Database
+/** Typed Supabase client for compile-time method resolution. */
+type TTypedClient = SupabaseClient<Database>
 
-/** Resolves to Y when T is `any`, N otherwise. Used to provide a safe fallback. */
-type IfAny<T, Y, N> = 0 extends 1 & T ? Y : N
-
-/**
- * Extracts the generic database parameter from the Supabase client type.
- * Falls back to a minimal shape when the client is untyped (`any`).
- */
-type TDatabase =
-  SupabaseClientType extends SupabaseClient<infer U>
-    ? IfAny<
-        U,
-        {
-          public: {
-            Tables: Record<string, unknown>
-            Views: Record<string, unknown>
-            Functions: Record<string, unknown>
-          }
-        },
-        U
-      >
-    : never
-
-/** The `public` schema of the database — change this if targeting a different schema. */
-type DatabaseSchema = TDatabase['public']
+/** The `public` schema of the database. */
+type TDatabaseSchema = Database['public']
 
 /** Union of all table names in the public schema. */
-type SupabaseTableName = keyof DatabaseSchema['Tables']
+type TSupabaseTableName = keyof TDatabaseSchema['Tables']
 
 /** Row type for a given table name. */
-type SupabaseTableData<T extends SupabaseTableName> = DatabaseSchema['Tables'][T]['Row']
+type TSupabaseTableData<T extends TSupabaseTableName> = TDatabaseSchema['Tables'][T]['Row']
 
 /**
- * Return type of `supabase.from(table).select(...)`, parameterised by table name.
- *
- * PostgrestQueryBuilder generic args:
- *   ClientOptions — Record<string, never> (all fields optional)
- *   Schema        — DatabaseSchema
- *   Relation      — the table definition
- *   RelationName  — the table name string
+ * Return type of `typedClient.from(table).select(...)`.
+ * Derived from the client's own types to avoid dual-package mismatches
+ * between top-level and supabase-js-nested `@supabase/postgrest-js`.
  */
-type SupabaseSelectBuilder<T extends SupabaseTableName> = ReturnType<
-  PostgrestQueryBuilder<Record<string, never>, DatabaseSchema, DatabaseSchema['Tables'][T], T>['select']
->
+type TSupabaseSelectBuilder<T extends TSupabaseTableName = TSupabaseTableName> =
+  T extends TSupabaseTableName
+    ? ReturnType<ReturnType<TTypedClient['from']>['select']>
+    : never
 
 /**
  * A transformer applied to the Supabase select builder before execution.
  * Use it to add filters, ordering, etc. Any `.range()` call will be
  * overwritten by the pagination logic.
  */
-type SupabaseQueryHandler<T extends SupabaseTableName> = (
-  query: SupabaseSelectBuilder<T>
-) => SupabaseSelectBuilder<T>
+type TSupabaseQueryHandler<T extends TSupabaseTableName = TSupabaseTableName> = (
+  query: TSupabaseSelectBuilder<T>
+) => TSupabaseSelectBuilder<T>
 
 /**
  * Configuration for {@link useInfiniteQuery}.
  *
  * @template T - A Supabase table name from the public schema.
  */
-interface IUseInfiniteQueryProps<T extends SupabaseTableName> {
+interface IUseInfiniteQueryProps<T extends TSupabaseTableName> {
   /** The Supabase table to paginate over. */
   tableName: T
   /** PostgREST column selection string (default `"*"`). */
@@ -97,7 +72,7 @@ interface IUseInfiniteQueryProps<T extends SupabaseTableName> {
   /** Number of rows fetched per page (default `20`). */
   pageSize?: number
   /** Optional query modifier for filtering/ordering. `.range()` is appended automatically. */
-  trailingQuery?: SupabaseQueryHandler<T>
+  trailingQuery?: TSupabaseQueryHandler<T>
 }
 
 /** Internal pagination state managed by the external store. */
@@ -111,7 +86,7 @@ interface IStoreState<TData> {
   hasInitialFetch: boolean
 }
 
-type Listener = () => void
+type TListener = () => void
 
 /**
  * Creates a standalone pagination store that lives outside of React's state
@@ -121,7 +96,7 @@ type Listener = () => void
  * @param props - Query configuration (table, columns, page size, filters).
  * @returns An object with `getState`, `subscribe`, `fetchNextPage`, and `initialize`.
  */
-function createStore<TData extends SupabaseTableData<T>, T extends SupabaseTableName>(
+function createStore<TData extends TSupabaseTableData<T>, T extends TSupabaseTableName>(
   props: IUseInfiniteQueryProps<T>
 ) {
   const { tableName, columns = '*', pageSize = 20, trailingQuery } = props
@@ -136,7 +111,7 @@ function createStore<TData extends SupabaseTableData<T>, T extends SupabaseTable
     hasInitialFetch: false,
   }
 
-  const listeners = new Set<Listener>()
+  const listeners = new Set<TListener>()
 
   const notify = () => {
     listeners.forEach((listener) => listener())
@@ -153,9 +128,9 @@ function createStore<TData extends SupabaseTableData<T>, T extends SupabaseTable
 
     setState({ isFetching: true })
 
-    let query = supabase
-      .from(tableName as string)
-      .select(columns, { count: 'exact' }) as unknown as SupabaseSelectBuilder<T>
+    let query = (supabase as SupabaseClient<Database>)
+      .from(tableName)
+      .select(columns, { count: 'exact' }) as TSupabaseSelectBuilder
 
     if (trailingQuery) {
       query = trailingQuery(query)
@@ -193,7 +168,7 @@ function createStore<TData extends SupabaseTableData<T>, T extends SupabaseTable
 
   return {
     getState: () => state,
-    subscribe: (listener: Listener) => {
+    subscribe: (listener: TListener) => {
       listeners.add(listener)
       return () => listeners.delete(listener)
     },
@@ -225,8 +200,8 @@ const initialState: unknown = {
  * @returns Paginated data, status flags, and a `fetchNextPage` trigger.
  */
 function useInfiniteQuery<
-  TData extends SupabaseTableData<T>,
-  T extends SupabaseTableName = SupabaseTableName,
+  TData extends TSupabaseTableData<T>,
+  T extends TSupabaseTableName = TSupabaseTableName,
 >(props: IUseInfiniteQueryProps<T>) {
   const storeRef = useRef(createStore<TData, T>(props))
 
@@ -267,8 +242,8 @@ function useInfiniteQuery<
 
 export {
   useInfiniteQuery,
-  type SupabaseQueryHandler,
-  type SupabaseTableData,
-  type SupabaseTableName,
+  type TSupabaseQueryHandler,
+  type TSupabaseTableData,
+  type TSupabaseTableName,
   type IUseInfiniteQueryProps,
 }
