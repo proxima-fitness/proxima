@@ -103,6 +103,12 @@ const eslintConfig = [
       ],
     },
   },
+  {
+    files: ['src/app/(payload)/**/*.ts', 'src/app/(payload)/**/*.tsx'],
+    rules: {
+      '@typescript-eslint/naming-convention': 'off',
+    },
+  },
   prettier,
   {
     ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts"]
