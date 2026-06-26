@@ -21,17 +21,17 @@ import {
 } from "react"
 import { createPortal } from "react-dom"
 
-type FileUploadContextValue = {
+type TFileUploadContextValue = {
   isDragging: boolean
   inputRef: React.RefObject<HTMLInputElement | null>
   multiple?: boolean
   disabled?: boolean
 }
 
-const FileUploadContext = createContext<FileUploadContextValue | null>(null)
+const FileUploadContext = createContext<TFileUploadContextValue | null>(null)
 
 /** @param onFilesAdded - Called with selected/dropped files. @param multiple - Allow multiple files. @param accept - Input accept attribute. @param disabled - Disable input and overlay. */
-export type FileUploadProps = {
+export type TFileUploadProps = {
   onFilesAdded: (files: File[]) => void
   children: React.ReactNode
   multiple?: boolean
@@ -46,7 +46,7 @@ function FileUpload({
   multiple = true,
   accept,
   disabled = false,
-}: FileUploadProps) {
+}: TFileUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
   const dragCounter = useRef(0)
@@ -130,7 +130,7 @@ function FileUpload({
 }
 
 /** @param asChild - When true, merge behavior into single child element. */
-export type FileUploadTriggerProps =
+export type TFileUploadTriggerProps =
   React.ComponentPropsWithoutRef<"button"> & {
     asChild?: boolean
   }
@@ -141,7 +141,7 @@ function FileUploadTrigger({
   className,
   children,
   ...props
-}: FileUploadTriggerProps) {
+}: TFileUploadTriggerProps) {
   const context = useContext(FileUploadContext)
   const handleClick = () => context?.inputRef.current?.click()
 
@@ -172,10 +172,10 @@ function FileUploadTrigger({
   )
 }
 
-type FileUploadContentProps = React.HTMLAttributes<HTMLDivElement>
+type TFileUploadContentProps = React.HTMLAttributes<HTMLDivElement>
 
 /** Full-screen overlay shown while dragging files; portaled to body. Renders only when dragging and mounted. */
-function FileUploadContent({ className, ...props }: FileUploadContentProps) {
+function FileUploadContent({ className, ...props }: TFileUploadContentProps) {
   const context = useContext(FileUploadContext)
   const [mounted, setMounted] = useState(false)
 

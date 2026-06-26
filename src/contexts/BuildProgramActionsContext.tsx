@@ -7,21 +7,21 @@
 
 import { createContext, useContext, useMemo, useRef, type ReactNode, type RefObject } from "react";
 
-type ClearChatFn = () => void;
-type GetPersistChatIdFn = () => string;
+type TClearChatFn = () => void;
+type TGetPersistChatIdFn = () => string;
 
 interface IBuildProgramActionsContext {
-    clearChatRef: RefObject<ClearChatFn | null>;
+    clearChatRef: RefObject<TClearChatFn | null>;
     clearChat: () => void;
     /** Registered on build-program; export reads URL + mint ref at save time. */
-    getPersistChatIdRef: RefObject<GetPersistChatIdFn | null>;
+    getPersistChatIdRef: RefObject<TGetPersistChatIdFn | null>;
 }
 
 const BuildProgramActionsContext = createContext<IBuildProgramActionsContext | undefined>(undefined);
 
 export function BuildProgramActionsProvider({ children }: { children: ReactNode }) {
-    const clearChatRef = useRef<ClearChatFn | null>(null);
-    const getPersistChatIdRef = useRef<GetPersistChatIdFn | null>(null);
+    const clearChatRef = useRef<TClearChatFn | null>(null);
+    const getPersistChatIdRef = useRef<TGetPersistChatIdFn | null>(null);
     const value = useMemo<IBuildProgramActionsContext>(
         () => ({
             clearChatRef,

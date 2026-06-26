@@ -22,7 +22,7 @@ interface IFileWithPreview extends File {
   errors: readonly FileError[]
 }
 
-type UseSupabaseUploadOptions = {
+type TUseSupabaseUploadOptions = {
   /**
    * Name of bucket to upload files to in your Supabase project
    */
@@ -64,7 +64,7 @@ type UseSupabaseUploadOptions = {
 }
 
 /** Convenience type exposing everything returned by {@link useSupabaseUpload}. */
-type UseSupabaseUploadReturn = ReturnType<typeof useSupabaseUpload>
+type TUseSupabaseUploadReturn = ReturnType<typeof useSupabaseUpload>
 
 /**
  * Manages file selection (via drag-and-drop) and upload to a Supabase Storage bucket.
@@ -76,7 +76,7 @@ type UseSupabaseUploadReturn = ReturnType<typeof useSupabaseUpload>
  * @param options - Bucket name, optional path prefix, MIME/size constraints, and Supabase upload flags.
  * @returns Dropzone props, file list with previews, upload status, and an `onUpload` trigger.
  */
-const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
+const useSupabaseUpload = (options: TUseSupabaseUploadOptions) => {
   const {
     bucketName,
     path,
@@ -226,4 +226,4 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
   }
 }
 
-export { useSupabaseUpload, type UseSupabaseUploadOptions, type UseSupabaseUploadReturn }
+export { useSupabaseUpload, type TUseSupabaseUploadOptions, type TUseSupabaseUploadReturn }

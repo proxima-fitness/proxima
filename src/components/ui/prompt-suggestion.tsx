@@ -17,7 +17,7 @@ import { VariantProps } from "class-variance-authority"
  * @property size - Button size.
  * @property highlight - Substring to highlight in children (case-insensitive); enables full-width chip style.
  */
-export type PromptSuggestionProps = {
+export type TPromptSuggestionProps = {
   children: React.ReactNode
   variant?: VariantProps<typeof buttonVariants>["variant"]
   size?: VariantProps<typeof buttonVariants>["size"]
@@ -33,7 +33,7 @@ function PromptSuggestion({
   className,
   highlight,
   ...props
-}: PromptSuggestionProps) {
+}: TPromptSuggestionProps) {
   const isHighlightMode = highlight !== undefined && highlight.trim() !== ""
   const content = typeof children === "string" ? children : ""
 

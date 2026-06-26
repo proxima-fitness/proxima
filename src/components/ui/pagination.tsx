@@ -50,7 +50,7 @@ PaginationItem.displayName = "PaginationItem";
  * @property size - Button size; defaults to "icon".
  * @property href - Target URL (required).
  */
-type PaginationLinkProps = {
+type TPaginationLinkProps = {
     isActive?: boolean;
     size?: IButtonProps["size"];
     href: string; // <-- required now
@@ -62,7 +62,7 @@ const PaginationLink = ({
   isActive,
   size = "icon",
   ...props
-}: PaginationLinkProps) => (
+}: TPaginationLinkProps) => (
     <Link
         aria-current={ isActive ? "page" : undefined }
         className={ cn(

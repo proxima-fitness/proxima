@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /*
  * @module ViewModeThumbnails
  * @description Utility component that lazily fetches and displays a small program thumbnail given its id.

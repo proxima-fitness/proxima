@@ -28,7 +28,7 @@ const PROMPT_OPTIONS = [
 ];
 
 /** Current phase of the typewriter animation cycle. */
-type AnimationState = "waiting" | "typing" | "pausing" | "deleting"
+type TAnimationState = "waiting" | "typing" | "pausing" | "deleting"
 
 /** Tuning knobs for the typewriter animation timing and behaviour. */
 interface IUseTypewriterPlaceholderOptions {
@@ -66,7 +66,7 @@ export function useTypewriterPlaceholder({
 }: IUseTypewriterPlaceholderOptions = {}) {
   const [currentOptionIndex, setCurrentOptionIndex] = useState(0)
   const [displayedText, setDisplayedText] = useState("")
-  const [animationState, setAnimationState] = useState<AnimationState>("waiting")
+  const [animationState, setAnimationState] = useState<TAnimationState>("waiting")
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 

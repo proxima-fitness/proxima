@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /**
  * @module dropzone
  * File dropzone built on useSupabaseUpload: root (Dropzone), content list with upload/remove (DropzoneContent),
@@ -6,7 +7,7 @@
  * Used by: upload flows (e.g. program builder, profile).
  */
 import { cn } from '@/lib/utils'
-import { type UseSupabaseUploadReturn } from '@/hooks/use-supabase-upload'
+import { type TUseSupabaseUploadReturn } from '@/hooks/use-supabase-upload'
 import { Button } from '@/components/ui/button'
 import { CheckCircle, File, Loader2, Upload, X } from 'lucide-react'
 import { createContext, type PropsWithChildren, useCallback, useContext } from 'react'
@@ -25,12 +26,12 @@ export const formatBytes = (
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
 }
 
-type DropzoneContextType = Omit<UseSupabaseUploadReturn, 'getRootProps' | 'getInputProps'>
+type TDropzoneContextType = Omit<TUseSupabaseUploadReturn, 'getRootProps' | 'getInputProps'>
 
-const DropzoneContext = createContext<DropzoneContextType | undefined>(undefined)
+const DropzoneContext = createContext<TDropzoneContextType | undefined>(undefined)
 
 /** Props from useSupabaseUpload plus optional className for the root. */
-type DropzoneProps = UseSupabaseUploadReturn & {
+type TDropzoneProps = TUseSupabaseUploadReturn & {
   className?: string
 }
 
@@ -41,7 +42,7 @@ const Dropzone = ({
   getRootProps,
   getInputProps,
   ...restProps
-}: PropsWithChildren<DropzoneProps>) => {
+}: PropsWithChildren<TDropzoneProps>) => {
   const isSuccess = restProps.isSuccess
   const isActive = restProps.isDragActive
   const isInvalid =

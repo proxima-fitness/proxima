@@ -16,7 +16,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-export type MicStatus = "idle" | "recording" | "transcribing";
+export type TMicStatus = "idle" | "recording" | "transcribing";
 
 interface IUseMicTranscriptionOpts {
   onTranscript: (text: string) => void;
@@ -49,7 +49,7 @@ export function useMicTranscription({
   disabled = false,
   maxDurationMs = 120_000,
 }: IUseMicTranscriptionOpts) {
-  const [status, setStatus] = useState<MicStatus>("idle");
+  const [status, setStatus] = useState<TMicStatus>("idle");
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);

@@ -15,7 +15,7 @@ import remarkGfm from "remark-gfm"
 import { CodeBlock, CodeBlockCode } from "@/components/ui/code-block"
 
 /** @param children - Raw markdown string. @param components - Override react-markdown components. */
-export type MarkdownProps = {
+export type TMarkdownProps = {
   children: string
   id?: string
   className?: string
@@ -96,7 +96,7 @@ function MarkdownComponent({
   id,
   className,
   components = INITIAL_COMPONENTS,
-}: MarkdownProps) {
+}: TMarkdownProps) {
   const generatedId = useId()
   const blockId = id ?? generatedId
   const blocks = useMemo(() => parseMarkdownIntoBlocks(children), [children])

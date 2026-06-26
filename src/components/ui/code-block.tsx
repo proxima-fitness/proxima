@@ -13,13 +13,13 @@ import { useEffect, useState } from "react"
 import { codeToHtml } from "shiki"
 
 /** @param children - Wrapped content (e.g. CodeBlockCode). @param className - Optional container classes. */
-export type CodeBlockProps = {
+export type TCodeBlockProps = {
   children?: React.ReactNode
   className?: string
 } & React.HTMLProps<HTMLDivElement>
 
 /** Container for code display with border and overflow handling. */
-function CodeBlock({ children, className, ...props }: CodeBlockProps) {
+function CodeBlock({ children, className, ...props }: TCodeBlockProps) {
   return (
     <div
       className={cn(
@@ -35,7 +35,7 @@ function CodeBlock({ children, className, ...props }: CodeBlockProps) {
 }
 
 /** @param code - Raw source. @param language - Shiki lang (default tsx). @param theme - Shiki theme (default github-light). */
-export type CodeBlockCodeProps = {
+export type TCodeBlockCodeProps = {
   code: string
   language?: string
   theme?: string
@@ -49,7 +49,7 @@ function CodeBlockCode({
   theme = "github-light",
   className,
   ...props
-}: CodeBlockCodeProps) {
+}: TCodeBlockCodeProps) {
   const [highlightedHtml, setHighlightedHtml] = useState<string | null>(null)
 
   useEffect(() => {
@@ -87,13 +87,13 @@ function CodeBlockCode({
 }
 
 /** Row layout for code block plus actions (e.g. copy button). */
-export type CodeBlockGroupProps = React.HTMLAttributes<HTMLDivElement>
+export type TCodeBlockGroupProps = React.HTMLAttributes<HTMLDivElement>
 
 function CodeBlockGroup({
   children,
   className,
   ...props
-}: CodeBlockGroupProps) {
+}: TCodeBlockGroupProps) {
   return (
     <div
       className={cn("flex items-center justify-between", className)}

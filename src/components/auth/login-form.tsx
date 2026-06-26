@@ -28,12 +28,12 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from 'react-hook-form'
 
 /** Props: div props plus redirectPath (where to send user after successful login; default '/'). */
-type LoginFormProps = React.ComponentPropsWithoutRef<'div'> & {
+type TLoginFormProps = React.ComponentPropsWithoutRef<'div'> & {
   redirectPath?: string;
 };
 
 /** Renders login card with OAuth, email/password form, and Turnstile-gated sign-in. */
-export function LoginForm({ className, redirectPath = '/', ...props }: LoginFormProps) {
+export function LoginForm({ className, redirectPath = '/', ...props }: TLoginFormProps) {
 
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);

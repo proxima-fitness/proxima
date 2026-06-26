@@ -13,7 +13,7 @@
 import { LoginForm } from '@/components/auth/login-form'
 import { ai_program_builder } from 'public'
 
-type PageProps = {
+type TPageProps = {
   searchParams: Promise<{ next?: string }> | { next?: string };
 };
 
@@ -22,7 +22,7 @@ type PageProps = {
  *
  * @param props - Page props; searchParams may be Promise or plain object (Next compat).
  */
-export default async function Page(props: PageProps) {
+export default async function Page(props: TPageProps) {
   const searchParams = await Promise.resolve(props.searchParams);
   const next = searchParams?.next ?? '/';
 

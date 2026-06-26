@@ -10,15 +10,15 @@ import { useTheme } from "next-themes";
 import { Toaster as Sonner } from "sonner";
 
 /** Props forwarded to Sonner; theme derived from useTheme. */
-type ToasterProps = React.ComponentProps<typeof Sonner>;
+type TToasterProps = React.ComponentProps<typeof Sonner>;
 
 /** Renders Sonner with theme and app-specific toast classNames. */
-const Toaster = ({ ...props }: ToasterProps) => {
+const Toaster = ({ ...props }: TToasterProps) => {
   const { theme = "system" } = useTheme();
 
     return (
         <Sonner
-            theme={ theme as ToasterProps["theme"] }
+            theme={ theme as TToasterProps["theme"] }
             className="toaster group"
             toastOptions={ {
                 classNames: {

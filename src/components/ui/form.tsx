@@ -24,15 +24,15 @@ import { Label } from "@/components/ui/label";
 
 const Form = FormProvider;
 
-type FormFieldContextValue<
+type TFormFieldContextValue<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
 > = {
   name: TName
 }
 
-const FormFieldContext = React.createContext<FormFieldContextValue>(
-  {} as FormFieldContextValue,
+const FormFieldContext = React.createContext<TFormFieldContextValue>(
+  {} as TFormFieldContextValue,
 );
 
 /** Wraps Controller and provides field name to useFormField. */
@@ -72,12 +72,12 @@ const useFormField = () => {
   };
 };
 
-type FormItemContextValue = {
+type TFormItemContextValue = {
   id: string
 }
 
-const FormItemContext = React.createContext<FormItemContextValue>(
-  {} as FormItemContextValue,
+const FormItemContext = React.createContext<TFormItemContextValue>(
+  {} as TFormItemContextValue,
 );
 
 /** Wraps a single field; provides id for label/description/message linking. */
