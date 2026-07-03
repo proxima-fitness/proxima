@@ -53,6 +53,7 @@ import {
     getWorkoutsForUser,
 } from '@/api/workout-history-read';
 import { tool } from 'ai';
+import type { TConstraintProfile } from '../constraints';
 
 /** Request-scoped flag: set after first successful buildWeek so the agent cannot call buildWeek twice in one chat turn. */
 export interface IBuildWeekOnceGuard {
@@ -69,6 +70,8 @@ interface IProps {
     hasActiveSubscription?: boolean;
     userId?: string;
     workoutHistoryDb?: TWorkoutHistoryDb;
+    /** Structured constraint profile; when provided, updateConstraintProfile tool is included. */
+    constraintProfile?: TConstraintProfile;
 }
 
 function stripFrontmatter(content: string): string {
@@ -118,6 +121,16 @@ export const planProgramInputSchema = z
         }
     });
 
+/** Add items to an array, skipping duplicates (case-insensitive). */
+function patchStringArray(arr: string[], add?: string[], remove?: string[]): string[] {
+    const removeSet = new Set((remove ?? []).map(s => s.toLowerCase()));
+    const existing = new Set(arr.map(s => s.toLowerCase()));
+    return [
+        ...arr.filter(s => !removeSet.has(s.toLowerCase())),
+        ...(add ?? []).filter(s => !existing.has(s.toLowerCase()) && !removeSet.has(s.toLowerCase())),
+    ];
+}
+
 /**
  * Factory that creates the complete tool set for the chat agent. Captures
  * user-specific exclusion filters and the current program in a closure so
@@ -138,6 +151,7 @@ export function getTools({
     hasActiveSubscription = false,
     userId,
     workoutHistoryDb,
+    constraintProfile,
 }: IProps = {}) {
 
     /** Request-scoped id → canonical title from hevy_exercise_templates (populated by getExerciseList; buildWeek uses it or refetches). */
@@ -234,10 +248,16 @@ export function getTools({
 
         execute: async ({ userRequest, excludeAreas: agentExcludeAreas, excludeEquipment: agentExcludeEquipment, healthIssues: agentHealthIssues }) => {
             try {
-                // Use agent-provided values if available, otherwise fall back to closure values
-                const finalExcludeAreas = agentExcludeAreas || excludeAreas;
-                const finalExcludeEquipment = agentExcludeEquipment || excludeEquipment;
-                const finalHealthIssues = agentHealthIssues || healthIssues;
+                // Use agent-provided values if available, then constraintProfile, then fall back to closure strings
+                const finalExcludeAreas = agentExcludeAreas
+                    || (constraintProfile?.excludedAreas.join(', '))
+                    || excludeAreas;
+                const finalExcludeEquipment = agentExcludeEquipment
+                    || (constraintProfile?.excludedEquipment.join(', '))
+                    || excludeEquipment;
+                const finalHealthIssues = agentHealthIssues
+                    || (constraintProfile?.injuries.join(', '))
+                    || healthIssues;
 
                 // Fetch all available Hevy exercises
                 const exercises = await getHevyExercises();
@@ -888,6 +908,69 @@ export function getTools({
         },
     });
 
+    const updateConstraintProfileTool = tool({
+        description:
+            'Update the active constraint profile when the user mentions new injuries, equipment restrictions, movement limitations, or training preferences mid-conversation. ' +
+            'Call this whenever the user adds or removes a constraint. ' +
+            'Examples: "my shoulder hurts", "I don\'t have access to cables", "no more lunges", "I got a new barbell".',
+        inputSchema: z.object({
+            addInjuries: z.array(z.string()).optional().describe('New injury or health issues to add'),
+            removeInjuries: z.array(z.string()).optional().describe('Injuries that are resolved and should be removed'),
+            addExcludedEquipment: z.array(z.string()).optional().describe('Equipment to exclude'),
+            removeExcludedEquipment: z.array(z.string()).optional().describe('Equipment to allow again'),
+            addExcludedAreas: z.array(z.string()).optional().describe('Muscle areas to exclude'),
+            removeExcludedAreas: z.array(z.string()).optional().describe('Muscle areas to allow again'),
+            addChatRefinements: z.array(z.string()).optional().describe('Free-form training constraints to add, e.g. "no overhead pressing"'),
+            removeChatRefinements: z.array(z.string()).optional().describe('Free-form constraints to remove'),
+            preferences: z.object({
+                splitType: z.string().optional(),
+                exerciseVariability: z.string().optional(),
+                progressionSystem: z.string().optional(),
+                deloadWeek: z.string().optional(),
+                peakWeek: z.string().optional(),
+            }).optional().describe('Preference fields to update (only provided keys are changed)'),
+            rawStatement: z.string().optional().describe("The user's exact words expressing this constraint"),
+        }),
+        execute: async ({ addInjuries, removeInjuries, addExcludedEquipment, removeExcludedEquipment, addExcludedAreas, removeExcludedAreas, addChatRefinements, removeChatRefinements, preferences }) => {
+            if (!constraintProfile) {
+                return { error: 'No active constraint profile in this session.' };
+            }
+
+            const arrayFields = [
+                ['injuries',          addInjuries,          removeInjuries],
+                ['excludedEquipment', addExcludedEquipment, removeExcludedEquipment],
+                ['excludedAreas',     addExcludedAreas,     removeExcludedAreas],
+                ['chatRefinements',   addChatRefinements,   removeChatRefinements],
+            ] as const satisfies [keyof TConstraintProfile, string[] | undefined, string[] | undefined][];
+
+            for (const [field, add, remove] of arrayFields) {
+                constraintProfile[field] = patchStringArray(constraintProfile[field] as string[], add, remove);
+            }
+
+            if (preferences) {
+                Object.assign(
+                    constraintProfile.preferences,
+                    Object.fromEntries(Object.entries(preferences).filter(([, v]) => v)),
+                );
+            }
+
+            return { updatedProfile: constraintProfile };
+        },
+        toModelOutput: async ({ output }) => {
+            if ('error' in output) {
+                return { type: 'text' as const, value: `Error: ${output.error}` };
+            }
+            const p = output.updatedProfile;
+            const summary = [
+                p.injuries.length          && `Injuries: ${p.injuries.join(', ')}`,
+                p.excludedEquipment.length && `Excluded equipment: ${p.excludedEquipment.join(', ')}`,
+                p.excludedAreas.length     && `Excluded areas: ${p.excludedAreas.join(', ')}`,
+                p.chatRefinements.length   && `Refinements: ${p.chatRefinements.join('; ')}`,
+            ].filter(Boolean).join(' | ') || 'No active constraints.';
+            return { type: 'text' as const, value: `Constraint profile updated. ${summary}` };
+        },
+    });
+
     const baseTools = {
         getExerciseList: getExerciseListTool,
         getMoreInfoQuestions: getMoreInfoQuestionsTool,
@@ -899,6 +982,7 @@ export function getTools({
         loadSkill: loadSkillTool,
         readFile: readFileTool,
         bash: bashTool,
+        updateConstraintProfile: updateConstraintProfileTool,
     };
 
     if (hasActiveSubscription && userId && workoutHistoryDb) {

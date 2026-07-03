@@ -21,6 +21,7 @@ import { createClient } from '@/utils/supabase/server';
 import { getServerHasActiveSubscription } from '@/lib/server-feature-limits';
 import { instructions } from './instructions/instructions';
 import { getTools, type IBuildWeekOnceGuard } from './tools/tools';
+import { initializeConstraintProfile } from './constraints';
 import { createSandbox } from './skills/sandbox';
 import { discoverSkills } from './skills/index';
 import z from 'zod';
@@ -99,6 +100,17 @@ async function handleChatPost(req: Request) {
             ? chatSessionId.trim().slice(0, 200)
             : undefined;
 
+        const constraintProfile = initializeConstraintProfile({
+            healthIssues,
+            excludeEquipment,
+            excludeAreas,
+            splitType,
+            exerciseVariability,
+            progressionSystem,
+            deloadWeek,
+            peakWeek,
+        });
+
         return propagateAttributes(
             { userId, sessionId, traceName: 'andy-chat', metadata: { source: 'build-program' } },
             async () => {
@@ -118,6 +130,7 @@ async function handleChatPost(req: Request) {
                     deloadWeek,
                     peakWeek,
                     hasWorkoutHistoryAccess: hasActiveSubscription,
+                    constraintProfile,
                 });
                 const buildWeekOnceGuard: IBuildWeekOnceGuard = { locked: false };
                 const tools = getTools({
@@ -129,6 +142,7 @@ async function handleChatPost(req: Request) {
                     hasActiveSubscription,
                     userId: user?.id,
                     workoutHistoryDb: user ? supabase : undefined,
+                    constraintProfile,
                 });
 
                 const sandbox = createSandbox({ workingDirectory: process.cwd() });
