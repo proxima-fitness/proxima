@@ -54,6 +54,7 @@ import {
 } from '@/api/workout-history-read';
 import { tool } from 'ai';
 import type { TConstraintProfile } from '../constraints';
+import { validateAgainstConstraints } from '../constraints/validate';
 
 /** Request-scoped flag: set after first successful buildWeek so the agent cannot call buildWeek twice in one chat turn. */
 export interface IBuildWeekOnceGuard {
@@ -655,6 +656,24 @@ export function getTools({
                 // Ensure routines are ordered by day
                 builtRoutines.sort((a, b) => Number(a.order) - Number(b.order));
 
+                if (constraintProfile) {
+                    const allExercises = await getHevyExercises();
+                    const templateMap = new Map(allExercises.map(e => [e.id, e]));
+                    const exerciseMeta = builtRoutines.flatMap(r =>
+                        r.exercises.map(e => templateMap.get(e.exercise_template_id) ?? { title: e.title }),
+                    );
+                    const validation = validateAgainstConstraints(constraintProfile, exerciseMeta);
+                    if (!validation.valid) {
+                        const lines = validation.violations
+                            .map(({ exerciseTitle, reason }) => `- ${exerciseTitle}: ${reason}`)
+                            .join('\n');
+                        return {
+                            error: 'constraint_violation',
+                            message: `Fix these exercises and call buildWeek again:\n${lines}`,
+                        };
+                    }
+                }
+
                 if (buildWeekOnceGuard) {
                     buildWeekOnceGuard.locked = true;
                 }
@@ -746,6 +765,30 @@ export function getTools({
                         }
                     } else {
                         resolvedOperations.push(operation);
+                    }
+                }
+
+                if (constraintProfile) {
+                    const allExercises = await getHevyExercises();
+                    const templateMap = new Map(allExercises.map(e => [e.id, e]));
+                    const incomingExercises = resolvedOperations
+                        .filter(op => op.op === 'insert_exercise' || op.op === 'edit_exercise' || op.op === 'swap_exercise_template')
+                        .flatMap(op => {
+                            const id = 'exercise' in op ? op.exercise?.exercise_template_id
+                                : 'to' in op ? (op.to as { exercise_template_id?: string }).exercise_template_id
+                                : undefined;
+                            const tmpl = id ? templateMap.get(id) : undefined;
+                            return tmpl ? [tmpl] : [];
+                        });
+                    const validation = validateAgainstConstraints(constraintProfile, incomingExercises);
+                    if (!validation.valid) {
+                        const lines = validation.violations
+                            .map(({ exerciseTitle, reason }) => `- ${exerciseTitle}: ${reason}`)
+                            .join('\n');
+                        return {
+                            error: 'constraint_violation',
+                            message: `Mutation rejected — constraint violations:\n${lines}`,
+                        };
                     }
                 }
 
