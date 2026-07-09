@@ -55,6 +55,7 @@ import {
 import { tool } from 'ai';
 import type { TConstraintProfile } from '../constraints';
 import { validateAgainstConstraints } from '../constraints/validate';
+import { upsertUserConstraints } from '@/api/user-constraints';
 
 /** Request-scoped flag: set after first successful buildWeek so the agent cannot call buildWeek twice in one chat turn. */
 export interface IBuildWeekOnceGuard {
@@ -974,7 +975,7 @@ export function getTools({
             }).optional().describe('Preference fields to update (only provided keys are changed)'),
             rawStatement: z.string().optional().describe("The user's exact words expressing this constraint"),
         }),
-        execute: async ({ addInjuries, removeInjuries, addExcludedEquipment, removeExcludedEquipment, addExcludedAreas, removeExcludedAreas, addChatRefinements, removeChatRefinements, preferences }) => {
+        execute: async ({ addInjuries, removeInjuries, addExcludedEquipment, removeExcludedEquipment, addExcludedAreas, removeExcludedAreas, addChatRefinements, removeChatRefinements, preferences, rawStatement }) => {
             if (!constraintProfile) {
                 return { error: 'No active constraint profile in this session.' };
             }
@@ -995,6 +996,13 @@ export function getTools({
                     constraintProfile.preferences,
                     Object.fromEntries(Object.entries(preferences).filter(([, v]) => v)),
                 );
+            }
+
+            // Persist to DB for cross-session memory (anonymous users: in-memory only)
+            if (workoutHistoryDb && userId) {
+                await upsertUserConstraints(workoutHistoryDb, userId, constraintProfile, rawStatement).catch(err => {
+                    console.error('[updateConstraintProfile] DB persist failed:', err);
+                });
             }
 
             return { updatedProfile: constraintProfile };

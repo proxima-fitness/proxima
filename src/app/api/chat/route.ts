@@ -22,6 +22,9 @@ import { getServerHasActiveSubscription } from '@/lib/server-feature-limits';
 import { instructions } from './instructions/instructions';
 import { getTools, type IBuildWeekOnceGuard } from './tools/tools';
 import { initializeConstraintProfile } from './constraints';
+import { mergeConstraintProfiles } from './constraints/merge';
+import { getUserConstraints } from '@/api/user-constraints';
+import { getRecentEpisodes } from '@/api/session-episodes';
 import { createSandbox } from './skills/sandbox';
 import { discoverSkills } from './skills/index';
 import z from 'zod';
@@ -100,23 +103,35 @@ async function handleChatPost(req: Request) {
             ? chatSessionId.trim().slice(0, 200)
             : undefined;
 
-        const constraintProfile = initializeConstraintProfile({
-            healthIssues,
-            excludeEquipment,
-            excludeAreas,
-            splitType,
-            exerciseVariability,
-            progressionSystem,
-            deloadWeek,
-            peakWeek,
-        });
-
         return propagateAttributes(
             { userId, sessionId, traceName: 'andy-chat', metadata: { source: 'build-program' } },
             async () => {
                 const sanitizedMessages = sanitizeMessagesWithUnresolvedToolCalls(messages);
 
+                const persistedConstraints = user
+                    ? await getUserConstraints(supabase, user.id)
+                    : null;
+
+                const constraintProfile = mergeConstraintProfiles(
+                    persistedConstraints,
+                    initializeConstraintProfile({
+                        healthIssues,
+                        excludeEquipment,
+                        excludeAreas,
+                        splitType,
+                        exerciseVariability,
+                        progressionSystem,
+                        deloadWeek,
+                        peakWeek,
+                    }),
+                );
+
                 const hasActiveSubscription = user ? await getServerHasActiveSubscription(supabase, user) : false;
+
+                // Fetch episodic memory when editing an existing program
+                const episodes = (user && hevyProgram.length > 0)
+                    ? await getRecentEpisodes(supabase, user.id)
+                    : [];
 
                 const systemPrompt = instructions({
                     hevyProgram,
@@ -131,6 +146,7 @@ async function handleChatPost(req: Request) {
                     peakWeek,
                     hasWorkoutHistoryAccess: hasActiveSubscription,
                     constraintProfile,
+                    episodes,
                 });
                 const buildWeekOnceGuard: IBuildWeekOnceGuard = { locked: false };
                 const tools = getTools({

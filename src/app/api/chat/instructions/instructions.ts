@@ -30,6 +30,11 @@ import type { TConstraintProfile } from '../constraints';
  * @returns The complete system prompt string.
  */
 
+export interface ISessionEpisodeForPrompt {
+    summary: string;
+    created_at: string;
+}
+
 interface IProps {
     hevyProgram: THevyRoutine[];
     daysPerWeek: number;
@@ -45,6 +50,8 @@ interface IProps {
     hasWorkoutHistoryAccess?: boolean;
     /** Structured constraint profile accumulated from questionnaire + mid-chat updates. When present, replaces the questionnaire preferences line. */
     constraintProfile?: TConstraintProfile;
+    /** Recent session episodes for episodic memory (edit-path only). */
+    episodes?: ISessionEpisodeForPrompt[];
 }
 
 function trimOpt(s: string | undefined): string {
@@ -106,6 +113,19 @@ function buildConstraintProfileBlock(profile: TConstraintProfile): string {
     return `## Active Constraint Profile\nHonor all of the following when planning, periodizing, selecting exercises, and building. Respect health/injury entries for exercise selection, volume, and movement choices.\n${lines}`;
 }
 
+function buildEpisodesBlock(episodes: ISessionEpisodeForPrompt[]): string {
+    if (!episodes.length) return '';
+    const lines = episodes
+        .map(e => {
+            const date = new Date(e.created_at).toLocaleDateString('en-US', {
+                month: 'short', day: 'numeric',
+            });
+            return `- ${e.summary} (${date})`;
+        })
+        .join('\n');
+    return `## Previous Session Context\nRecent coaching sessions for this program:\n${lines}`;
+}
+
 export const instructions = ({
     hevyProgram,
     daysPerWeek,
@@ -119,6 +139,7 @@ export const instructions = ({
     peakWeek = '',
     hasWorkoutHistoryAccess = false,
     constraintProfile,
+    episodes = [],
 }: IProps) => {
 
     const workoutHistoryToolLine = hasWorkoutHistoryAccess
@@ -174,6 +195,7 @@ export const instructions = ({
         ${daysPerWeek != null && programLength != null ? `Program builder context: the user has selected ${daysPerWeek} days per week and ${programLength} weeks total. Builder length is the template/duplication setting — changing it does not remove weeks from the live grid; use **mutateProgram** **delete_week** when the user wants fewer weeks on an existing program.` : ''}
         ${constraintProfile ? buildConstraintProfileBlock(constraintProfile) : questionnairePreferencesLine}
         ${hevyProgram?.length ? `A program currently exists (${hevyProgram.length} routines on the grid). Default to **mutate-program** for edits and length changes unless the user explicitly wants a brand-new program from scratch.` : ''}
+        ${hevyProgram?.length && episodes.length ? buildEpisodesBlock(episodes) : ''}
 
         **Upload to Hevy:** You cannot upload the program to Hevy from chat. If the user asks to upload to Hevy, export to Hevy, or sync to Hevy, tell them they must click the **Export** button, go through the Hevy export flow, and click the **Upload** button in that dialog to upload to Hevy.
 
