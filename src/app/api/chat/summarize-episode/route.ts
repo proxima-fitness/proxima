@@ -28,6 +28,16 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'No conversation found' }, { status: 404 });
         }
 
+        // Dedup: skip if episode already exists for this chat
+        const { data: existingEpisode } = await supabase
+            .from('session_episodes')
+            .select('id')
+            .eq('chat_id', chatId)
+            .maybeSingle();
+        if (existingEpisode) {
+            return NextResponse.json({ success: true, deduplicated: true });
+        }
+
         // Get current constraint profile
         const persistedConstraints = await getUserConstraints(supabase, user.id);
         const constraintProfile = persistedConstraints ?? initializeConstraintProfile({});
@@ -35,7 +45,10 @@ export async function POST(req: Request) {
         // Generate summary — map UIMessages to the shape the summarizer expects
         const messagesForSummary = conversation.map(m => ({
             role: m.role ?? 'user',
-            content: typeof m === 'string' ? m : JSON.stringify(m),
+            content: (m.parts ?? [])
+                .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
+                .map(p => p.text)
+                .join(' ') || '',
         }));
         const { summary, keyDecisions } = await generateSessionSummary(
             messagesForSummary,

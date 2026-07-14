@@ -159,13 +159,22 @@ export function getTools({
     /** Request-scoped id → canonical title from hevy_exercise_templates (populated by getExerciseList; buildWeek uses it or refetches). */
     const exerciseIdToTitle = new Map<string, string>();
 
+    /** Cached result of getHevyExercises() to avoid redundant Supabase queries within a single request. */
+    let cachedHevyExercises: Awaited<ReturnType<typeof getHevyExercises>> | null = null;
+
     /** When getExerciseList has not run this turn, load all templates so buildWeek can still validate IDs. */
     async function ensureExerciseIdToTitleMap(): Promise<void> {
-        if (exerciseIdToTitle.size > 0) return;
+        if (exerciseIdToTitle.size > 0 && cachedHevyExercises) return;
         const all = await getHevyExercises();
+        cachedHevyExercises = all;
         for (const ex of all) {
             if (ex?.id) exerciseIdToTitle.set(ex.id, ex.title);
         }
+    }
+
+    async function getCachedHevyExercises() {
+        await ensureExerciseIdToTitleMap();
+        return cachedHevyExercises!;
     }
 
     /**
@@ -262,7 +271,7 @@ export function getTools({
                     || healthIssues;
 
                 // Fetch all available Hevy exercises
-                const exercises = await getHevyExercises();
+                const exercises = await getCachedHevyExercises();
 
                 // Filter exercises based on exclusions
                 let filteredExercises = [...exercises];
@@ -658,7 +667,7 @@ export function getTools({
                 builtRoutines.sort((a, b) => Number(a.order) - Number(b.order));
 
                 if (constraintProfile) {
-                    const allExercises = await getHevyExercises();
+                    const allExercises = await getCachedHevyExercises();
                     const templateMap = new Map(allExercises.map(e => [e.id, e]));
                     const exerciseMeta = builtRoutines.flatMap(r =>
                         r.exercises.map(e => templateMap.get(e.exercise_template_id) ?? { title: e.title }),
@@ -770,14 +779,17 @@ export function getTools({
                 }
 
                 if (constraintProfile) {
-                    const allExercises = await getHevyExercises();
+                    const allExercises = await getCachedHevyExercises();
                     const templateMap = new Map(allExercises.map(e => [e.id, e]));
                     const incomingExercises = resolvedOperations
                         .filter(op => op.op === 'insert_exercise' || op.op === 'edit_exercise' || op.op === 'swap_exercise_template')
                         .flatMap(op => {
-                            const id = 'exercise' in op ? op.exercise?.exercise_template_id
-                                : 'to' in op ? (op.to as { exercise_template_id?: string }).exercise_template_id
-                                : undefined;
+                            let id: string | undefined;
+                            if ('exercise' in op && op.exercise && typeof op.exercise === 'object') {
+                                id = (op.exercise as { exercise_template_id?: string }).exercise_template_id;
+                            } else if ('to' in op && op.to && typeof op.to === 'object') {
+                                id = (op.to as { exercise_template_id?: string }).exercise_template_id;
+                            }
                             const tmpl = id ? templateMap.get(id) : undefined;
                             return tmpl ? [tmpl] : [];
                         });
@@ -918,7 +930,7 @@ export function getTools({
         }),
         execute: async () => {
             try {
-                const templates = await getHevyExercises();
+                const templates = await getCachedHevyExercises();
                 const score = scoreProgramForBodybuilding(hevyProgram ?? [], templates);
                 return { score };
             } catch (error) {

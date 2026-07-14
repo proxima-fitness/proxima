@@ -9,6 +9,12 @@ const summarySchema = z.object({
 
 export type TSessionSummary = z.infer<typeof summarySchema>;
 
+function stripMarkdownFences(raw: string): string {
+    const trimmed = raw.trim();
+    const match = trimmed.match(/^```(?:json)?\s*\n?([\s\S]*?)\n?\s*```$/);
+    return match ? match[1].trim() : trimmed;
+}
+
 interface IChatMessage {
     role: string;
     content: string | Array<{ type: string; text?: string }>;
@@ -50,7 +56,7 @@ Respond with only the JSON object, no markdown fencing.`,
     });
 
     try {
-        const parsed = summarySchema.parse(JSON.parse(text));
+        const parsed = summarySchema.parse(JSON.parse(stripMarkdownFences(text)));
         return parsed;
     } catch {
         // Fallback if JSON parsing fails
