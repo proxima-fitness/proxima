@@ -8,31 +8,30 @@
  * and timeline story sections. Sits under (app)/about/page; receives image
  * assets from the server page.
  *
- * Depends on: Card components, UserContext, AOS, posthog, styles.
+ * Depends on: Card components, UserContext, posthog, styles.
  * Used by: (app)/about/page.tsx.
  */
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useUserContext } from "@/contexts/UserContext";
 import styles, { layout } from "@/style";
-import AOS from 'aos';
-import 'aos/dist/aos.css';
 import posthog from "posthog-js";
 import { useEffect } from "react";
 import { jack, jack_jacked } from "public";
 
+const aboutCardClass =
+    "rounded-3xl [corner-shape:squircle] dark:border-white/10 shadow-md";
+
+const founderImageCornerClass =
+    "rounded-t-3xl md:rounded-tl-3xl md:rounded-bl-3xl md:rounded-tr-none md:rounded-br-none [corner-shape:squircle]";
 
 /**
- * Renders the full About Us content with AOS animations and PostHog page view.
+ * Renders the full About Us content with PostHog page view tracking.
  */
 export function AboutPageClient() {
     const { user } = useUserContext();
 
     useEffect(() => {
-        AOS.init({
-            duration: 1000,
-            once: true,
-        });
         posthog?.capture?.('page_view', { page: '/about', user: user?.id ?? "user_id_unknown" });
     }, [user]);
 
@@ -41,7 +40,7 @@ export function AboutPageClient() {
             <div className={`${styles.paddingX} ${styles.paddingY} relative z-1`}>
                 <div className={`${styles.boxWidth} mx-auto`}>
                     {/* Hero Section */}
-                    <section className={`${styles.flexCenter} flex-col mb-16`} data-aos="fade-up">
+                    <section className={`${styles.flexCenter} flex-col mb-16`}>
                         <h1 className={`${styles.heading2Centered} text-center mb-4`}>
                             <span className="text-black dark:text-white">About Us</span>
                         </h1>
@@ -51,20 +50,20 @@ export function AboutPageClient() {
                     </section>
 
                     {/* Founder Card Section */}
-                    <section className={`${styles.flexCenter} flex-col mb-20`} data-aos="fade-up" data-aos-delay="100">
-                        <Card className="dark:border-white/10  max-w-[600px] md:max-w-[900px] w-full">
+                    <section className={`${styles.flexCenter} flex-col mb-20`}>
+                        <Card className={`${aboutCardClass} max-w-[600px] md:max-w-[900px] w-full`}>
                             <CardHeader className="flex flex-col md:flex-row md:items-center md:gap-6 items-center pb-4 p-0">
                                 <div className="relative h-[400px] w-[400px] max-sm:h-[300px] max-sm:w-full md:h-[300px] md:flex-1 md:w-auto group mb-6 md:mb-0">
-                                    <div className="absolute inset-0 bg-linear-to-br from-secondary/20 to-lightSecondary/20 rounded-xl md:rounded-tl-xl md:rounded-bl-xl md:rounded-tr-none md:rounded-br-none opacity-50 group-hover:opacity-75 transition-opacity duration-300" />
+                                    <div className={`absolute inset-0 bg-linear-to-br from-secondary/20 to-lightSecondary/20 ${founderImageCornerClass} opacity-50 group-hover:opacity-75 transition-opacity duration-300`} />
                                     <img
                                         src={(jack).src}
                                         alt="Jack Hanlon"
-                                        className="relative w-full rounded-t-md md:rounded-tl-md md:rounded-bl-md md:rounded-tr-none md:rounded-br-none h-full object-cover transition-opacity duration-300"
+                                        className={`relative w-full ${founderImageCornerClass} h-full object-cover transition-opacity duration-300`}
                                     />
                                     <img
                                         src={(jack_jacked).src}
                                         alt="Jack Hanlon Jacked"
-                                        className="w-full rounded-t-md md:rounded-tl-md md:rounded-bl-md md:rounded-tr-none md:rounded-br-none h-full object-cover object-[center_20%] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                        className={`w-full ${founderImageCornerClass} h-full object-cover object-[center_20%] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
                                     />
                                 </div>
                                 <div className="text-center md:text-left md:flex md:flex-col md:justify-center md:flex-1">
@@ -83,7 +82,7 @@ export function AboutPageClient() {
                     </section>
 
                     {/* Our Story Heading */}
-                    <section className={`${styles.flexCenter} flex-col mb-12`} data-aos="fade-up" data-aos-delay="200">
+                    <section className={`${styles.flexCenter} flex-col mb-12`}>
                         <div className="max-w-4xl mx-auto w-full">
                             <h2 className="font-main font-semibold xs:text-[48px] text-[40px] text-black dark:text-white xs:leading-[1.2] leading-[1.2] text-center">
                                 From Setbacks to Strength
@@ -92,10 +91,10 @@ export function AboutPageClient() {
                     </section>
 
                     {/* Story Section */}
-                    <section className={`${layout.section} flex-col`} data-aos="fade-up" data-aos-delay="200">
+                    <section className={`${layout.section} flex-col`}>
                         <div className="max-w-4xl mx-auto space-y-8">
                             {/* Story Card 1 */}
-                            <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="300">
+                            <Card className={aboutCardClass}>
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
                                         <div className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
@@ -111,7 +110,7 @@ export function AboutPageClient() {
                             </Card>
 
                             {/* Story Card 2 */}
-                            <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="400">
+                            <Card className={aboutCardClass}>
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
                                         <div className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
@@ -130,7 +129,7 @@ export function AboutPageClient() {
                             </Card>
 
                             {/* Story Card 3 */}
-                            <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="500">
+                            <Card className={aboutCardClass}>
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
                                         <div className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
@@ -146,7 +145,7 @@ export function AboutPageClient() {
                             </Card>
 
                             {/* Story Card 4 */}
-                            <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="600">
+                            <Card className={aboutCardClass}>
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
                                         <div className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
@@ -162,7 +161,7 @@ export function AboutPageClient() {
                             </Card>
 
                             {/* Story Card 5 */}
-                            <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="700">
+                            <Card className={aboutCardClass}>
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
                                         <div className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
@@ -181,7 +180,7 @@ export function AboutPageClient() {
                             </Card>
 
                             {/* Story Card 6 */}
-                            <Card className="dark:border-white/10 shadow-md" data-aos="fade-up" data-aos-delay="800">
+                            <Card className={aboutCardClass}>
                                 <CardContent className="pt-6">
                                     <div className="flex items-start gap-4 mb-4">
                                         <div className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lightSecondary flex items-center justify-center">
