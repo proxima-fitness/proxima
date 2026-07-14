@@ -15,8 +15,9 @@ echo "==> Starting local Supabase..."
 npx supabase start || true
 
 # ── 3. Grab local connection details ────────────────────────────────────
-LOCAL_URL=$(npx supabase status --output json 2>/dev/null | grep -o '"API URL": *"[^"]*"' | head -1 | sed 's/.*: *"//;s/"//')
-LOCAL_ANON_KEY=$(npx supabase status --output json 2>/dev/null | grep -o '"anon key": *"[^"]*"' | head -1 | sed 's/.*: *"//;s/"//')
+LOCAL_STATUS=$(npx supabase status --output json 2>/dev/null || true)
+LOCAL_URL=$(echo "$LOCAL_STATUS" | python3 -c "import sys,json; print(json.load(sys.stdin).get('API_URL',''))" 2>/dev/null || true)
+LOCAL_ANON_KEY=$(echo "$LOCAL_STATUS" | python3 -c "import sys,json; print(json.load(sys.stdin).get('ANON_KEY',''))" 2>/dev/null || true)
 
 if [ -z "$LOCAL_URL" ] || [ -z "$LOCAL_ANON_KEY" ]; then
     echo "ERROR: Could not read local Supabase URL/key from 'supabase status'."
@@ -52,11 +53,126 @@ fi
 echo "==> Running migrations..."
 npx supabase migration up --local
 
-# ── 6. Regenerate types ─────────────────────────────────────────────────
+# ── 6. Seed Hevy exercise templates from API ──────────────────────────
+DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+EXERCISE_COUNT=$(psql "$DB_URL" -tAc "SELECT count(*) FROM public.hevy_exercise_templates;" 2>/dev/null || echo "0")
+
+if [ "$EXERCISE_COUNT" -eq 0 ]; then
+    echo "==> Seeding hevy_exercise_templates from Hevy API..."
+
+    # Resolve Hevy API key: env var, `pass`, or skip
+    HEVY_KEY="${HEVY_API_KEY:-}"
+    if [ -z "$HEVY_KEY" ] && command -v pass &>/dev/null; then
+        HEVY_KEY=$(pass hevy-api 2>/dev/null || true)
+    fi
+    if [ -z "$HEVY_KEY" ]; then
+        echo "   WARNING: No Hevy API key found (set HEVY_API_KEY or add to \`pass hevy-api\`)."
+        echo "   Skipping exercise seed — chat exercise lookup will not work."
+    else
+        python3 -c "
+import urllib.request, json, sys
+
+key = sys.argv[1]
+exercises = []
+page = 1
+while True:
+    req = urllib.request.Request(
+        f'https://api.hevyapp.com/v1/exercise_templates?page={page}&pageSize=100',
+        headers={'api-key': key}
+    )
+    with urllib.request.urlopen(req) as resp:
+        data = json.loads(resp.read())
+    exercises.extend(data['exercise_templates'])
+    if page >= data['page_count']:
+        break
+    page += 1
+
+lines = []
+for e in exercises:
+    eid = e['id'].replace(\"'\", \"''\")
+    title = (e.get('title') or '').replace(\"'\", \"''\")
+    etype = (e.get('type') or '').replace(\"'\", \"''\")
+    pmg = (e.get('primary_muscle_group') or '').replace(\"'\", \"''\")
+    smg = e.get('secondary_muscle_groups') or []
+    smg_sql = 'ARRAY[' + ','.join(f\"'{s}'\" for s in smg) + ']::text[]' if smg else 'NULL'
+    is_custom = 'true' if e.get('is_custom') else 'false'
+    equip = (e.get('equipment') or '').replace(\"'\", \"''\")
+    lines.append(f\"('{eid}','{title}','{etype}','{pmg}',{smg_sql},{is_custom},'{equip}')\")
+
+sql = 'INSERT INTO public.hevy_exercise_templates (id,title,type,primary_muscle_group,secondary_muscle_groups,is_custom,equipment) VALUES\n' + ',\n'.join(lines) + '\nON CONFLICT (id) DO NOTHING;'
+print(sql)
+" "$HEVY_KEY" | psql "$DB_URL" -q
+
+        NEW_COUNT=$(psql "$DB_URL" -tAc "SELECT count(*) FROM public.hevy_exercise_templates;")
+        echo "   Seeded $NEW_COUNT exercises."
+    fi
+else
+    echo "   hevy_exercise_templates already has $EXERCISE_COUNT rows. Skipping seed."
+fi
+
+# ── Restart Kong proxy (can get stale after db reset) ────────────────
+docker restart supabase_kong_proxima_landing >/dev/null 2>&1 || true
+sleep 3
+
+# ── 7. Create test user + seed required rows ─────────────────────────
+TEST_EMAIL="test@localhost.dev"
+TEST_PASSWORD="Password123!"
+
+USER_EXISTS=$(psql "$DB_URL" -tAc "SELECT count(*) FROM auth.users WHERE email = '$TEST_EMAIL';" 2>/dev/null || echo "0")
+
+if [ "$USER_EXISTS" -eq 0 ]; then
+    echo "==> Creating test user ($TEST_EMAIL)..."
+
+    # Sign up via auth API to get a proper JWT-capable user (retry — auth may still be starting)
+    SIGNUP_RESULT=""
+    for i in 1 2 3 4 5; do
+        SIGNUP_RESULT=$(curl -s -X POST "${LOCAL_URL}/auth/v1/signup" \
+            -H "apikey: ${LOCAL_ANON_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{\"email\":\"${TEST_EMAIL}\",\"password\":\"${TEST_PASSWORD}\"}")
+        if echo "$SIGNUP_RESULT" | python3 -c "import sys,json; sys.exit(0 if json.load(sys.stdin).get('user',{}).get('id') else 1)" 2>/dev/null; then
+            break
+        fi
+        echo "   Auth not ready, retrying ($i/5)..."
+        sleep 2
+    done
+
+    TEST_USER_ID=$(echo "$SIGNUP_RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('user',{}).get('id',''))" 2>/dev/null || true)
+
+    if [ -z "$TEST_USER_ID" ]; then
+        echo "   WARNING: Could not create test user. Auth response: $SIGNUP_RESULT"
+    else
+        echo "   Created user: $TEST_USER_ID"
+
+        # Insert public.users row (FK requirement for user_consents etc.)
+        psql "$DB_URL" -q -c "INSERT INTO public.users (id, created_at) VALUES ('$TEST_USER_ID', now()) ON CONFLICT (id) DO NOTHING;"
+
+        # Insert feature_usage row (avoids rate limit issues)
+        psql "$DB_URL" -q -c "INSERT INTO public.feature_usage (user_id, monthly_exports_used, monthly_llm_requests) VALUES ('$TEST_USER_ID', 0, 0) ON CONFLICT (user_id) DO NOTHING;"
+
+        # Store Hevy API key in vault for test user
+        if [ -n "${HEVY_KEY:-}" ]; then
+            psql "$DB_URL" -q -c "SELECT vault.create_secret('$HEVY_KEY', 'hevy_api_key_$TEST_USER_ID', '$TEST_USER_ID');" 2>/dev/null || true
+        fi
+
+        # Set test user in .env
+        sed -i "s|^NEXT_PUBLIC_TEST_USER_EMAILS=.*|NEXT_PUBLIC_TEST_USER_EMAILS=$TEST_EMAIL|" "$ENV_FILE"
+        sed -i "s|^TEST_USER_ID=.*|TEST_USER_ID=$TEST_USER_ID|" "$ENV_FILE"
+
+        echo "   .env updated with test user credentials."
+        echo "   Login: $TEST_EMAIL / $TEST_PASSWORD"
+    fi
+else
+    TEST_USER_ID=$(psql "$DB_URL" -tAc "SELECT id FROM auth.users WHERE email = '$TEST_EMAIL' LIMIT 1;")
+    echo "   Test user already exists ($TEST_USER_ID). Skipping."
+fi
+
+# ── 8. Regenerate types ─────────────────────────────────────────────────
 echo "==> Regenerating TypeScript types..."
-npx supabase gen types --lang=typescript --local 2>/dev/null > "$TYPES_FILE"
+{ echo "/* eslint-disable @typescript-eslint/naming-convention */"; npx supabase gen types --lang=typescript --local 2>/dev/null; } > "$TYPES_FILE"
 
 echo ""
 echo "Done. Local Supabase is running and types are regenerated."
 echo "To stop:  npx supabase stop"
 echo "To revert .env: remove the LOCAL block at the bottom and uncomment the '# PROD #' lines."
+echo "Test login: $TEST_EMAIL / $TEST_PASSWORD"

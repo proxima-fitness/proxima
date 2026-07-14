@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 export type Json =
   | string
   | number
@@ -1420,10 +1421,7 @@ export type Database = {
     }
     Functions: {
       append_raw_statement: {
-        Args: {
-          p_user_id: string
-          p_statement: string
-        }
+        Args: { p_statement: string; p_user_id: string }
         Returns: undefined
       }
       delete_secret: { Args: { secret_name: string }; Returns: string }
