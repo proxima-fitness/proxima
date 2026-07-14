@@ -74,7 +74,7 @@ export function AboutPageClient() {
                                         FOUNDER
                                     </p>
                                     <p className={`text-md pr-4 max-sm:pl-4 pb-4 text-black font-third text-left dark:text-offWhite`}>
-                                        Jack was a Software Engineer before creating Proxima, and an avid lifter with a Bench Press PR of 240lbs. Jack enjoys weightlifting and playing with his two rescue puppies.
+                                        Jack worked as a developer in education before creating Proxima. He enjoys weightlifting and playing with his two rescue puppies.
                                     </p>
                                 </div>
                             </CardHeader>
