@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 export type Json =
   | string
   | number
@@ -1427,13 +1428,6 @@ export type Database = {
         Returns: undefined
       }
       delete_secret: { Args: { secret_name: string }; Returns: string }
-      get_bolao_predictor_limits: {
-        Args: never
-        Returns: {
-          remaining_today: number
-          used_today: boolean
-        }[]
-      }
       get_hevy_key_from_vault: { Args: { p_user_id: string }; Returns: string }
       get_my_feature_limits: {
         Args: never
@@ -1516,12 +1510,6 @@ export type Database = {
         }
       }
       trigger_all_users_hevy_program_sync: { Args: never; Returns: undefined }
-      try_consume_bolao_prediction: {
-        Args: never
-        Returns: {
-          allowed: boolean
-        }[]
-      }
     }
     Enums: {
       source_type: "hevy"
