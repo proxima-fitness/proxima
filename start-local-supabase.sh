@@ -1,8 +1,37 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ENV_FILE=".env"
+# Prefer Next.js local env; fall back to .env
+if [ -f .env.local ]; then
+    ENV_FILE=".env.local"
+elif [ -f .env ]; then
+    ENV_FILE=".env"
+else
+    echo "ERROR: No .env.local or .env found."
+    exit 1
+fi
+
 TYPES_FILE="src/hooks/supabase.ts"
+DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+DB_CONTAINER="supabase_db_proxima_landing"
+
+# BSD sed (macOS) needs `sed -i ''`; GNU sed (Linux) wants `sed -i`
+sed_inplace() {
+    if sed --version >/dev/null 2>&1; then
+        sed -i "$@"
+    else
+        sed -i '' "$@"
+    fi
+}
+
+# Prefer host psql; fall back to container if missing
+run_psql() {
+    if command -v psql >/dev/null 2>&1; then
+        psql "$DB_URL" "$@"
+    else
+        docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres "$@"
+    fi
+}
 
 # ── 1. Init supabase project if no config.toml ──────────────────────────
 if [ ! -f supabase/config.toml ]; then
@@ -25,17 +54,28 @@ if [ -z "$LOCAL_URL" ] || [ -z "$LOCAL_ANON_KEY" ]; then
     exit 1
 fi
 
+if ! command -v psql >/dev/null 2>&1; then
+    if ! docker inspect "$DB_CONTAINER" >/dev/null 2>&1; then
+        echo "ERROR: No host psql and DB container '$DB_CONTAINER' not found."
+        echo "Install psql, or make sure local Supabase is running."
+        exit 1
+    fi
+    echo "   psql:       docker exec ($DB_CONTAINER)"
+else
+    echo "   psql:       host"
+fi
+
+echo "   Env file:   $ENV_FILE"
 echo "   Local URL:  $LOCAL_URL"
 echo "   Anon key:   ${LOCAL_ANON_KEY:0:20}..."
 
-# ── 4. Swap .env to point at local ─────────────────────────────────────
-# Comment out prod, uncomment/set local values
+# ── 4. Swap env file to point at local ─────────────────────────────────
 if grep -q "^NEXT_PUBLIC_REACT_APP_SUPABASE_URL=https://" "$ENV_FILE"; then
-    echo "==> Swapping .env to local Supabase..."
+    echo "==> Swapping $ENV_FILE to local Supabase..."
 
     # Comment out production values
-    sed -i 's|^NEXT_PUBLIC_REACT_APP_SUPABASE_URL=https://|# PROD # NEXT_PUBLIC_REACT_APP_SUPABASE_URL=https://|' "$ENV_FILE"
-    sed -i 's|^NEXT_PUBLIC_REACT_APP_SUPABASE_KEY=eyJ|# PROD # NEXT_PUBLIC_REACT_APP_SUPABASE_KEY=eyJ|' "$ENV_FILE"
+    sed_inplace 's|^NEXT_PUBLIC_REACT_APP_SUPABASE_URL=https://|# PROD # NEXT_PUBLIC_REACT_APP_SUPABASE_URL=https://|' "$ENV_FILE"
+    sed_inplace 's|^NEXT_PUBLIC_REACT_APP_SUPABASE_KEY=eyJ|# PROD # NEXT_PUBLIC_REACT_APP_SUPABASE_KEY=eyJ|' "$ENV_FILE"
 
     # Append local values
     cat >> "$ENV_FILE" <<EOF
@@ -44,35 +84,51 @@ if grep -q "^NEXT_PUBLIC_REACT_APP_SUPABASE_URL=https://" "$ENV_FILE"; then
 NEXT_PUBLIC_REACT_APP_SUPABASE_URL=${LOCAL_URL}
 NEXT_PUBLIC_REACT_APP_SUPABASE_KEY=${LOCAL_ANON_KEY}
 EOF
-    echo "   .env updated. To revert, undo the '# PROD #' comments and remove the LOCAL block."
+    echo "   $ENV_FILE updated. To revert, undo the '# PROD #' comments and remove the LOCAL block."
 else
-    echo "   .env already appears to use local (no https:// URL found). Skipping swap."
+    echo "   $ENV_FILE already appears to use local (no https:// URL found). Skipping swap."
 fi
 
 # ── 5. Run migrations ──────────────────────────────────────────────────
 echo "==> Running migrations..."
 npx supabase migration up --local
 
+# Resolve Hevy API key early (seed + vault): env vars, env file, `pass`, or skip
+HEVY_KEY="${HEVY_API_KEY:-${NEXT_PUBLIC_REACT_APP_HEVY_API_KEY:-}}"
+if [ -z "$HEVY_KEY" ]; then
+    for f in .env.local .env; do
+        if [ -f "$f" ]; then
+            HEVY_KEY=$(grep -E '^(NEXT_PUBLIC_REACT_APP_HEVY_API_KEY|HEVY_API_KEY)=' "$f" \
+                | head -n1 \
+                | cut -d= -f2- \
+                | sed 's/^["'\'']//;s/["'\'']$//' || true)
+            [ -n "$HEVY_KEY" ] && break
+        fi
+    done
+fi
+if [ -z "$HEVY_KEY" ] && command -v pass &>/dev/null; then
+    HEVY_KEY=$(pass hevy-api 2>/dev/null || true)
+fi
+
 # ── 6. Seed Hevy exercise templates from API ──────────────────────────
-DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
-EXERCISE_COUNT=$(psql "$DB_URL" -tAc "SELECT count(*) FROM public.hevy_exercise_templates;" 2>/dev/null || echo "0")
+EXERCISE_COUNT=$(run_psql -tAc "SELECT count(*) FROM public.hevy_exercise_templates;" 2>/dev/null | tr -d '[:space:]' || echo "0")
+EXERCISE_COUNT="${EXERCISE_COUNT:-0}"
 
 if [ "$EXERCISE_COUNT" -eq 0 ]; then
     echo "==> Seeding hevy_exercise_templates from Hevy API..."
 
-    # Resolve Hevy API key: env var, `pass`, or skip
-    HEVY_KEY="${HEVY_API_KEY:-}"
-    if [ -z "$HEVY_KEY" ] && command -v pass &>/dev/null; then
-        HEVY_KEY=$(pass hevy-api 2>/dev/null || true)
-    fi
     if [ -z "$HEVY_KEY" ]; then
-        echo "   WARNING: No Hevy API key found (set HEVY_API_KEY or add to \`pass hevy-api\`)."
+        echo "   WARNING: No Hevy API key found (set NEXT_PUBLIC_REACT_APP_HEVY_API_KEY / HEVY_API_KEY, or add to \`pass hevy-api\`)."
         echo "   Skipping exercise seed — chat exercise lookup will not work."
     else
+        SEED_SQL=$(mktemp)
+        trap 'rm -f "$SEED_SQL"' EXIT
+
         python3 -c "
 import urllib.request, json, sys
 
 key = sys.argv[1]
+out_path = sys.argv[2]
 exercises = []
 page = 1
 while True:
@@ -100,14 +156,37 @@ for e in exercises:
     lines.append(f\"('{eid}','{title}','{etype}','{pmg}',{smg_sql},{is_custom},'{equip}')\")
 
 sql = 'INSERT INTO public.hevy_exercise_templates (id,title,type,primary_muscle_group,secondary_muscle_groups,is_custom,equipment) VALUES\n' + ',\n'.join(lines) + '\nON CONFLICT (id) DO NOTHING;'
-print(sql)
-" "$HEVY_KEY" | psql "$DB_URL" -q
+with open(out_path, 'w', encoding='utf-8', newline='\n') as f:
+    f.write(sql)
+" "$HEVY_KEY" "$SEED_SQL"
 
-        NEW_COUNT=$(psql "$DB_URL" -tAc "SELECT count(*) FROM public.hevy_exercise_templates;")
+        run_psql -q < "$SEED_SQL"
+        rm -f "$SEED_SQL"
+        trap - EXIT
+
+        NEW_COUNT=$(run_psql -tAc "SELECT count(*) FROM public.hevy_exercise_templates;" | tr -d '[:space:]')
         echo "   Seeded $NEW_COUNT exercises."
     fi
 else
-    echo "   hevy_exercise_templates already has $EXERCISE_COUNT rows. Skipping seed."
+    echo "   hevy_exercise_templates already has $EXERCISE_COUNT rows. Skipping Hevy API seed."
+fi
+
+# ── 6b. Seed Proxima warmup templates (WU* — not in Hevy API) ───────
+WARMUP_COUNT=$(run_psql -tAc "SELECT count(*) FROM public.hevy_exercise_templates WHERE id LIKE 'WU%';" 2>/dev/null | tr -d '[:space:]' || echo "0")
+WARMUP_COUNT="${WARMUP_COUNT:-0}"
+WARMUP_FIXTURE="supabase/seed-hevy-warmups.sql"
+
+if [ "$WARMUP_COUNT" -eq 0 ]; then
+    if [ ! -f "$WARMUP_FIXTURE" ]; then
+        echo "   WARNING: $WARMUP_FIXTURE not found — skipping warmup seed."
+    else
+        echo "==> Seeding Proxima warmup exercises from $WARMUP_FIXTURE..."
+        run_psql -q < "$WARMUP_FIXTURE"
+        NEW_WARMUP_COUNT=$(run_psql -tAc "SELECT count(*) FROM public.hevy_exercise_templates WHERE id LIKE 'WU%';" | tr -d '[:space:]')
+        echo "   Seeded $NEW_WARMUP_COUNT warmup exercises."
+    fi
+else
+    echo "   hevy_exercise_templates already has $WARMUP_COUNT warmup (WU*) rows. Skipping warmup seed."
 fi
 
 # ── Restart Kong proxy (can get stale after db reset) ────────────────
@@ -117,8 +196,12 @@ sleep 3
 # ── 7. Create test user + seed required rows ─────────────────────────
 TEST_EMAIL="test@localhost.dev"
 TEST_PASSWORD="Password123!"
+TEST_FIRST_NAME="Test"
+TEST_LAST_NAME="User"
+TEST_USERNAME="test"
 
-USER_EXISTS=$(psql "$DB_URL" -tAc "SELECT count(*) FROM auth.users WHERE email = '$TEST_EMAIL';" 2>/dev/null || echo "0")
+USER_EXISTS=$(run_psql -tAc "SELECT count(*) FROM auth.users WHERE email = '$TEST_EMAIL';" 2>/dev/null | tr -d '[:space:]' || echo "0")
+USER_EXISTS="${USER_EXISTS:-0}"
 
 if [ "$USER_EXISTS" -eq 0 ]; then
     echo "==> Creating test user ($TEST_EMAIL)..."
@@ -143,28 +226,49 @@ if [ "$USER_EXISTS" -eq 0 ]; then
         echo "   WARNING: Could not create test user. Auth response: $SIGNUP_RESULT"
     else
         echo "   Created user: $TEST_USER_ID"
-
-        # Insert public.users row (FK requirement for user_consents etc.)
-        psql "$DB_URL" -q -c "INSERT INTO public.users (id, created_at) VALUES ('$TEST_USER_ID', now()) ON CONFLICT (id) DO NOTHING;"
-
-        # Insert feature_usage row (avoids rate limit issues)
-        psql "$DB_URL" -q -c "INSERT INTO public.feature_usage (user_id, monthly_exports_used, monthly_llm_requests) VALUES ('$TEST_USER_ID', 0, 0) ON CONFLICT (user_id) DO NOTHING;"
-
-        # Store Hevy API key in vault for test user
-        if [ -n "${HEVY_KEY:-}" ]; then
-            psql "$DB_URL" -q -c "SELECT vault.create_secret('$HEVY_KEY', 'hevy_api_key_$TEST_USER_ID', '$TEST_USER_ID');" 2>/dev/null || true
-        fi
-
-        # Set test user in .env
-        sed -i "s|^NEXT_PUBLIC_TEST_USER_EMAILS=.*|NEXT_PUBLIC_TEST_USER_EMAILS=$TEST_EMAIL|" "$ENV_FILE"
-        sed -i "s|^TEST_USER_ID=.*|TEST_USER_ID=$TEST_USER_ID|" "$ENV_FILE"
-
-        echo "   .env updated with test user credentials."
-        echo "   Login: $TEST_EMAIL / $TEST_PASSWORD"
     fi
 else
-    TEST_USER_ID=$(psql "$DB_URL" -tAc "SELECT id FROM auth.users WHERE email = '$TEST_EMAIL' LIMIT 1;")
-    echo "   Test user already exists ($TEST_USER_ID). Skipping."
+    TEST_USER_ID=$(run_psql -tAc "SELECT id FROM auth.users WHERE email = '$TEST_EMAIL' LIMIT 1;" | tr -d '[:space:]')
+    echo "   Test user already exists ($TEST_USER_ID)."
+fi
+
+# Profile + usage (auth signup does not populate public.users locally —
+# handle_new_user exists but has no trigger on auth.users)
+if [ -n "${TEST_USER_ID:-}" ]; then
+    run_psql -q -c "
+INSERT INTO public.users (id, email, first_name, last_name, username, timezone, created_at)
+VALUES (
+    '$TEST_USER_ID',
+    '$TEST_EMAIL',
+    '$TEST_FIRST_NAME',
+    '$TEST_LAST_NAME',
+    '$TEST_USERNAME',
+    'UTC',
+    now()
+)
+ON CONFLICT (id) DO UPDATE SET
+    email = EXCLUDED.email,
+    first_name = EXCLUDED.first_name,
+    last_name = EXCLUDED.last_name,
+    username = EXCLUDED.username,
+    timezone = EXCLUDED.timezone;
+"
+
+    run_psql -q -c "INSERT INTO public.feature_usage (user_id, monthly_exports_used, monthly_llm_requests) VALUES ('$TEST_USER_ID', 0, 0) ON CONFLICT (user_id) DO NOTHING;"
+
+    if [ -n "${HEVY_KEY:-}" ]; then
+        run_psql -q -c "SELECT vault.create_secret('$HEVY_KEY', 'hevy_api_key_$TEST_USER_ID', '$TEST_USER_ID');" 2>/dev/null || true
+    fi
+
+    sed_inplace "s|^NEXT_PUBLIC_TEST_USER_EMAILS=.*|NEXT_PUBLIC_TEST_USER_EMAILS=$TEST_EMAIL|" "$ENV_FILE"
+    if grep -q '^TEST_USER_ID=' "$ENV_FILE"; then
+        sed_inplace "s|^TEST_USER_ID=.*|TEST_USER_ID=$TEST_USER_ID|" "$ENV_FILE"
+    else
+        echo "TEST_USER_ID=$TEST_USER_ID" >> "$ENV_FILE"
+    fi
+
+    echo "   public.users profile: $TEST_FIRST_NAME $TEST_LAST_NAME (@$TEST_USERNAME)"
+    echo "   Login: $TEST_EMAIL / $TEST_PASSWORD"
 fi
 
 # ── 8. Regenerate types ─────────────────────────────────────────────────
@@ -174,5 +278,5 @@ echo "==> Regenerating TypeScript types..."
 echo ""
 echo "Done. Local Supabase is running and types are regenerated."
 echo "To stop:  npx supabase stop"
-echo "To revert .env: remove the LOCAL block at the bottom and uncomment the '# PROD #' lines."
+echo "To revert $ENV_FILE: remove the LOCAL block at the bottom and uncomment the '# PROD #' lines."
 echo "Test login: $TEST_EMAIL / $TEST_PASSWORD"
