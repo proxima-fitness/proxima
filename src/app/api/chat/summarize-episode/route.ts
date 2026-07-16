@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { Json } from '@/hooks/supabase';
 import { createClient } from '@/utils/supabase/server';
-import { getChatHistoryById } from '@/api/chat-history';
 import { getUserConstraints } from '@/api/user-constraints';
 import { insertSessionEpisode } from '@/api/session-episodes';
 import { generateSessionSummary } from '../constraints/summarize';
@@ -22,11 +21,18 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Fetch conversation
-        const conversation = await getChatHistoryById(user, chatId);
-        if (!conversation || conversation.length === 0) {
+        // Fetch conversation using server-side client (RLS-authenticated)
+        const { data: chatRows, error: chatError } = await supabase
+            .from('chat_history')
+            .select('conversation')
+            .eq('user_id', user.id)
+            .eq('id', chatId);
+
+        if (chatError || !chatRows || chatRows.length === 0) {
             return NextResponse.json({ error: 'No conversation found' }, { status: 404 });
         }
+
+        const conversation = chatRows.flatMap(row => row.conversation as Array<{ role?: string; parts?: Array<{ type: string; text?: string }> }> ?? []);
 
         // Dedup: skip if episode already exists for this chat
         const { data: existingEpisode } = await supabase
