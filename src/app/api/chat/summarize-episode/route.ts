@@ -22,8 +22,8 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Fetch conversation
-        const conversation = await getChatHistoryById(user, chatId);
+        // Fetch conversation using server-side client (RLS-authenticated)
+        const conversation = await getChatHistoryById(user, chatId, supabase);
         if (!conversation || conversation.length === 0) {
             return NextResponse.json({ error: 'No conversation found' }, { status: 404 });
         }
