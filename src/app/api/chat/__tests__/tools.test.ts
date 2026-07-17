@@ -611,6 +611,60 @@ describe("chat tools.ts", () => {
             const modelOutput = await mutateProgram.toModelOutput({ output });
             expect(modelOutput.value).toContain("[0] add_day:");
         });
+
+        it("surfaces constraint_violation message via toModelOutput", async () => {
+            const constraintProfile = {
+                injuries: [],
+                excludedEquipment: ["Barbell"],
+                excludedAreas: [],
+                preferences: {
+                    splitType: "",
+                    exerciseVariability: "",
+                    progressionSystem: "",
+                    deloadWeek: "",
+                    peakWeek: "",
+                },
+                chatRefinements: [],
+            };
+
+            const tools = getTools({ hevyProgram: minimalHevyProgram, constraintProfile });
+            const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram as Record<string, unknown>);
+
+            const output = (await mutateProgram.execute({
+                operations: [{
+                    op: "insert_exercise",
+                    folderIds: [0],
+                    dayOrder: 1,
+                    exerciseIndex: 0,
+                    exercise: {
+                        exercise_template_id: "ex-1",
+                        rest_seconds: "90",
+                        sets: [{
+                            type: "normal",
+                            reps: 8,
+                            weight_kg: null,
+                            rpe: 8,
+                            distance_meters: null,
+                            duration_seconds: null,
+                            custom_metric: null,
+                            rep_range: null,
+                        }],
+                    },
+                }],
+            })) as {
+                error?: string;
+                message?: string;
+            };
+
+            expect(output.error).toBe("constraint_violation");
+            expect(typeof output.message).toBe("string");
+            expect(output.message).toMatch(/excluded equipment|Barbell/i);
+
+            const modelOutput = await mutateProgram.toModelOutput({ output });
+            expect(modelOutput.value).toMatch(/excluded equipment|Mutation rejected/i);
+            expect(modelOutput.value).not.toBe("Mutation batch rejected: Unknown validation error");
+            expect(modelOutput.value).not.toContain("Unknown validation error");
+        });
     });
 
     describe("getWorkoutHistory tool execute", () => {

@@ -673,7 +673,7 @@ export function getTools({
                         r.exercises.map(e => templateMap.get(e.exercise_template_id) ?? { title: e.title }),
                     );
                     const validation = validateAgainstConstraints(constraintProfile, exerciseMeta);
-                    if (!validation.valid) {
+                    if (validation.valid === false) {
                         const lines = validation.violations
                             .map(({ exerciseTitle, reason }) => `- ${exerciseTitle}: ${reason}`)
                             .join('\n');
@@ -794,7 +794,7 @@ export function getTools({
                             return tmpl ? [tmpl] : [];
                         });
                     const validation = validateAgainstConstraints(constraintProfile, incomingExercises);
-                    if (!validation.valid) {
+                    if (validation.valid === false) {
                         const lines = validation.violations
                             .map(({ exerciseTitle, reason }) => `- ${exerciseTitle}: ${reason}`)
                             .join('\n');
@@ -831,8 +831,15 @@ export function getTools({
             if (output && typeof output === 'object' && 'error' in output && output.error) {
                 const o = output as {
                     error: string;
+                    message?: string;
                     failures?: Array<{ index: number; op: string; reason: string }>;
                 };
+                if (typeof o.message === 'string' && o.message.length > 0) {
+                    return {
+                        type: 'text' as const,
+                        value: o.message,
+                    };
+                }
                 const failureLines =
                     o.failures?.map((f) => `[${f.index}] ${f.op}: ${f.reason}`).join('; ') ??
                     'Unknown validation error';

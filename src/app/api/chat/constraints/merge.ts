@@ -25,7 +25,6 @@ export function mergeConstraintProfiles(
         chatRefinements: unionStringArrays(persisted.chatRefinements, session.chatRefinements),
     };
 }
-
 /** Case-insensitive union of two string arrays, preserving original casing from the first occurrence. */
 function unionStringArrays(a: string[], b: string[]): string[] {
     const seen = new Set<string>();
@@ -39,3 +38,4 @@ function unionStringArrays(a: string[], b: string[]): string[] {
     }
     return result;
 }
+

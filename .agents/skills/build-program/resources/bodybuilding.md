@@ -6,6 +6,11 @@ Use this file when the user wants a **bodybuilding** or **hypertrophy** program:
 
 ## Shared principles
 
+- **Priorities (never polish lower at expense of higher):** (1) adherence — days/week, session length, equipment, preferences; (2) volume / intensity / frequency; (3) progression; (4) exercise selection; (5) rest/tempo. Explicit user requests always win; if outside these defaults, build what they asked and briefly note the tradeoff.
+- **Split by days:** 2 → full body; 3 → full body (default) or upper/lower/full — not a 3-day bro split unless asked; 4 → upper/lower; 5 → upper/lower/push/pull/legs or rotating full body; 6 → PPL ×2. Hit each major muscle ≥2×/week unless user forces 1×.
+- **Experience:** Beginners — less volume (near MEV), simple full-body or short splits, fixed reps on main lifts, linear/simple progression, no heavy periodization. Intermediates — MAV low–mid, rep ranges + double progression feel. Advanced — higher volume/variation OK. **Start at the low end of MAV**; more volume is a later tool, not the default.
+- **Time budget:** ~45 min ≈ 12–16 working sets/day; ~60 min ≈ 16–22; ~90 min ≈ 24–30. Over budget → cut sets, superset accessories, or shorten isolation rest — don’t silently ship a 2-hour session.
+- **Patterns each week:** squat, hinge, horizontal push, vertical push, horizontal pull, vertical pull; add direct side-delt work for hypertrophy. Prefer long-length variants when choosing isolation (e.g. seated leg curl, incline/preacher curl, overhead triceps extension). Don’t stack two heavy lower compounds (squat + deadlift) back-to-back same day.
 - **Volume landmarks:** MEV = minimum for growth, MAV = best long-term gains, MRV = recoverable max. Values below are **weekly working sets** (hypertrophy-intended hard sets, excluding warmups) for intermediate lifters; beginners use less. This is **not** sets×reps×weight in the program scorecard.
 - **Per session:** 1–3 exercises per muscle, 8–12 sets per muscle per session max (beyond that, systemic fatigue reduces efficiency).
 - **Per week:** 2–5 different exercises per muscle. Match exercise IDs from getExerciseList; use titles below to find the right IDs.
