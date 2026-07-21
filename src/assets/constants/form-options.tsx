@@ -4,6 +4,51 @@ export const sexOptions: TSelectOption[] = [
     { label: "Female", value: "female"},
 ];
 
+/**
+ * Questionnaire advanced / Training profile sex — prefer-not-to-say maps to empty on wire.
+ * Sentinel value matches `TRAINING_PROFILE_UNSET_VALUE` in training-profile-options.
+ */
+export const trainingSexOptions: TSelectOption[] = [
+    { label: "Male", value: "male" },
+    { label: "Female", value: "female" },
+    { label: "Prefer not to say", value: "__unset__" },
+];
+
+/** Physique phase — Training profile / Questionnaire advanced. */
+export const physiquePhaseOptions: TSelectOption[] = [
+    { label: "Bulk", value: "bulk" },
+    { label: "Cut", value: "cut" },
+    { label: "Maintain", value: "maintain" },
+    { label: "Recomp", value: "recomp" },
+];
+
+/** Training focus — CONTEXT closed list (storage slugs). */
+export const trainingFocusOptions: TSelectOption[] = [
+    { label: "Bodybuilding", value: "bodybuilding" },
+    { label: "Powerbuilding", value: "powerbuilding" },
+    { label: "Powerlifting", value: "powerlifting" },
+    { label: "Hyrox", value: "hyrox" },
+    { label: "CrossFit", value: "crossfit" },
+    { label: "Olympic weightlifting", value: "olympic_weightlifting" },
+    { label: "Calisthenics / bodyweight", value: "calisthenics_bodyweight" },
+    { label: "Athletics / sport", value: "athletics_sport" },
+    { label: "Fat loss", value: "fat_loss" },
+    { label: "General fitness", value: "general_fitness" },
+    { label: "Rehab / pain-aware", value: "rehab_pain_aware" },
+];
+
+/**
+ * Activity level short forms for Training profile / Questionnaire advanced.
+ * Distinct from legacy `activityLevelOptions` ("light activity" labels).
+ */
+export const trainingActivityLevelOptions: TSelectOption[] = [
+    { label: "Sedentary", value: "sedentary" },
+    { label: "Light", value: "light" },
+    { label: "Moderate", value: "moderate" },
+    { label: "High", value: "high" },
+    { label: "Extreme", value: "extreme" },
+];
+
 /** Age options (in years) used in onboarding and program tailoring. */
 export const ageOptions: TSelectOption[] = Array.from({ length: 100 - 14 + 1 }, (_, i) => {
     const age = (i + 14).toString();
@@ -111,6 +156,11 @@ export const focusAreasOptions: TSelectOption[] = [
     { label: "Full body", value: "full body"},
 ];
 
+/** Excluded areas — Constraint / Questionnaire core catalog (drops full body). */
+export const excludedAreasOptions: TSelectOption[] = focusAreasOptions.filter(
+    (opt) => opt.value !== "full body",
+);
+
 /** Difficulty level options from beginner to advanced. */
 export const difficultyOptions: TSelectOption[] = [
     { label: "Beginner", value: "beginner"},
@@ -130,11 +180,17 @@ export const healthIssuesOptions: TSelectOption[] = [
 ];
 
 
-/** Sample prompt questions used to inspire users in the program builder. */
-export const sampleQuestions: TQuestion[] = [
+/** Maps a TSelectOption catalog → questionnaire option list. */
+function toQuestionOptions(options: TSelectOption[]): TQuestionOption[] {
+  return options.map((opt) => ({ id: opt.value, label: opt.label }));
+}
+
+/** Questionnaire core — Constraint profile fields (always visible). */
+export const sampleQuestionsCore: TQuestion[] = [
     {
       id: "program-length",
       question: "Program length?",
+      section: "core",
       options: programLengthOptions.map(opt => ({
         id: opt.value,
         label: opt.label === "8 Weeks" ? "8 Weeks (Recommended)" : opt.label
@@ -144,36 +200,40 @@ export const sampleQuestions: TQuestion[] = [
     {
       id: "days-per-week",
       question: "Days per week?",
-      options: dayPerWeekOptions.map(opt => ({
-        id: opt.value,
-        label: opt.label
-      })),
+      section: "core",
+      options: toQuestionOptions(dayPerWeekOptions),
       allowOther: false,
     },
     {
       id: "exclude-equipment",
       question: "Exclude equipment?",
+      section: "core",
       subtitle: { text: "Selected equipment will be excluded from your program—not included." },
       type: "multi-select",
-      options: equipmentOptions.map(opt => ({
-        id: opt.value,
-        label: opt.label
-      })),
+      options: toQuestionOptions(equipmentOptions),
       allowOther: false,
     },
     {
       id: "health-issues",
       question: "Health issues to consider?",
+      section: "core",
       type: "text-with-quickfill",
-      options: healthIssuesOptions.map(opt => ({
-        id: opt.value,
-        label: opt.label
-      })),
+      options: toQuestionOptions(healthIssuesOptions),
+      allowOther: false,
+    },
+    {
+      id: "exclude-areas",
+      question: "Exclude muscle areas?",
+      section: "core",
+      subtitle: { text: "Selected areas will be excluded from your program—not included." },
+      type: "multi-select",
+      options: toQuestionOptions(excludedAreasOptions),
       allowOther: false,
     },
     {
       id: "split-type",
       question: "Preferred split?",
+      section: "core",
       options: [
         { id: "default", label: "Based on your goals (Recommended)" },
         { id: "ppl", label: "PPL (Push, Pull, Legs)" },
@@ -187,6 +247,7 @@ export const sampleQuestions: TQuestion[] = [
     {
       id: "exercise-variability",
       question: "Exercise variability?",
+      section: "core",
       options: [
         { id: "little", label: "Don't vary the exercises (Recommended for strength and hypertrophy programs)" },
         { id: "lots", label: "Vary the exercises (Recommended if you get bored easily)" },
@@ -196,6 +257,7 @@ export const sampleQuestions: TQuestion[] = [
     {
       id: "progression-system",
       question: "Add progressive overload system?",
+      section: "core",
       subtitle: {
         text: "Learn more",
         link: "https://jackproxima.substack.com/p/demystifying-progressive-overload"
@@ -214,6 +276,7 @@ export const sampleQuestions: TQuestion[] = [
     {
       id: "deload-week",
       question: "Add a Deload week?",
+      section: "core",
       options: [
         { id: "yes", label: "Yes ( Add an easier week at the end of the program)" },
         { id: "no", label: "No ( No deload week at the end of the program)" },
@@ -223,6 +286,7 @@ export const sampleQuestions: TQuestion[] = [
     {
       id: "peak-week",
       question: "Do you want a Peak week?",
+      section: "core",
       options: [
         { id: "yes", label: "Yes ( Include a higher-intensity week in the program)" },
         { id: "no", label: "No" },
@@ -232,12 +296,83 @@ export const sampleQuestions: TQuestion[] = [
     {
       id: "warmup-exercises",
       question: "Add warmup exercises?",
+      section: "core",
       options: [
         { id: "yes", label: "Yes ( Include 1–2 prep movements at the start of each day)" },
         { id: "no", label: "No ( Skip separate warmup exercises)" },
       ],
       allowOther: false,
     },
-  ];
+];
+
+/**
+ * Questionnaire advanced — Training profile fields (collapsed by default).
+ * Empty answers valid; do not block build.
+ */
+export const sampleQuestionsAdvanced: TQuestion[] = [
+    {
+      id: "age",
+      question: "Age?",
+      section: "advanced",
+      options: toQuestionOptions(ageOptions),
+      allowOther: false,
+    },
+    {
+      id: "sex",
+      question: "Sex?",
+      section: "advanced",
+      options: toQuestionOptions(trainingSexOptions),
+      allowOther: false,
+    },
+    {
+      id: "height",
+      question: "Height?",
+      section: "advanced",
+      type: "height",
+      options: [],
+      allowOther: false,
+    },
+    {
+      id: "experience-level",
+      question: "Experience level?",
+      section: "advanced",
+      options: toQuestionOptions(difficultyOptions),
+      allowOther: false,
+    },
+    {
+      id: "physique-phase",
+      question: "Physique phase?",
+      section: "advanced",
+      options: toQuestionOptions(physiquePhaseOptions),
+      allowOther: false,
+    },
+    {
+      id: "training-focus",
+      question: "Training focus?",
+      section: "advanced",
+      options: toQuestionOptions(trainingFocusOptions),
+      allowOther: false,
+    },
+    {
+      id: "activity-level",
+      question: "Activity level?",
+      section: "advanced",
+      options: toQuestionOptions(trainingActivityLevelOptions),
+      allowOther: false,
+    },
+    {
+      id: "session-duration",
+      question: "Session duration cap?",
+      section: "advanced",
+      options: toQuestionOptions(workoutDurationOptions),
+      allowOther: false,
+    },
+];
+
+/** Full questionnaire (core + advanced) for getMoreInfoQuestions tool output. */
+export const sampleQuestions: TQuestion[] = [
+  ...sampleQuestionsCore,
+  ...sampleQuestionsAdvanced,
+];
 
 

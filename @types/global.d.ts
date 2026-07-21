@@ -335,7 +335,10 @@ type TQuestion = {
     question: string;
     options: TQuestionOption[];
     allowOther?: boolean;
-    type?: "select" | "multi-select" | "text-with-quickfill";
+    /** Default `select`. `height` = Imperial/Metric toggle → answer stored as cm string. */
+    type?: "select" | "multi-select" | "text-with-quickfill" | "height";
+    /** Default `core`. Advanced = Training profile fields; collapsed until opened. */
+    section?: "core" | "advanced";
     subtitle?: { text: string; link?: string };
 };
 

@@ -1,0 +1,75 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+
+import {
+    sampleQuestions,
+    sampleQuestionsAdvanced,
+    sampleQuestionsCore,
+} from "@/assets/constants/form-options";
+import { isAdvancedQuestion, Questions } from "../questions";
+
+beforeEach(() => {
+    Object.defineProperty(window, "matchMedia", {
+        writable: true,
+        value: vi.fn().mockImplementation((query: string) => ({
+            matches: false,
+            media: query,
+            onchange: null,
+            addListener: vi.fn(),
+            removeListener: vi.fn(),
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn(),
+            dispatchEvent: vi.fn(),
+        })),
+    });
+});
+
+afterEach(() => {
+    cleanup();
+});
+
+describe("questionnaire catalogs", () => {
+    it("core includes exclude-areas and omits Training profile fields", () => {
+        expect(sampleQuestionsCore.some((q) => q.id === "exclude-areas")).toBe(true);
+        expect(sampleQuestionsCore.every((q) => !isAdvancedQuestion(q))).toBe(true);
+        expect(sampleQuestionsAdvanced.every(isAdvancedQuestion)).toBe(true);
+        expect(sampleQuestions).toHaveLength(
+            sampleQuestionsCore.length + sampleQuestionsAdvanced.length,
+        );
+    });
+
+    it("exclude-areas drops full body", () => {
+        const excludeAreas = sampleQuestionsCore.find((q) => q.id === "exclude-areas");
+        expect(excludeAreas?.options.some((o) => o.id === "full body")).toBe(false);
+        expect(excludeAreas?.options.some((o) => o.id === "legs")).toBe(true);
+    });
+});
+
+describe("Questions core / advanced UI", () => {
+    it("keeps advanced collapsed by default and allows empty advanced on Build", () => {
+        const onComplete = vi.fn();
+        render(
+            <Questions
+                questions={sampleQuestions}
+                onComplete={onComplete}
+            />,
+        );
+
+        expect(screen.getByTestId("questionnaire-advanced-trigger")).toBeTruthy();
+        expect(screen.queryByText(/Age\?/)).toBeNull();
+        expect(screen.getByText(/Exclude muscle areas\?/)).toBeTruthy();
+
+        fireEvent.click(screen.getByRole("button", { name: "Build program" }));
+        expect(onComplete).toHaveBeenCalledTimes(1);
+        expect(onComplete.mock.calls[0][0]).not.toHaveProperty("age");
+    });
+
+    it("expands advanced questions when trigger clicked", () => {
+        render(<Questions questions={sampleQuestions} />);
+
+        fireEvent.click(screen.getByTestId("questionnaire-advanced-trigger"));
+        expect(screen.getByText(/Age\?/)).toBeTruthy();
+        expect(screen.getByText(/Training focus\?/)).toBeTruthy();
+        expect(screen.getByText(/Height\?/)).toBeTruthy();
+    });
+});

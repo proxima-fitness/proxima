@@ -2,18 +2,44 @@
 
 /**
  * @module questions
- * Multi-step question flow (single/multi-select, text-with-quickfill) with optional skip and completion callback.
- * Depends on: @/lib/utils, @/components/ui/button, checkbox, input, tooltip, @radix-ui/react-checkbox, lucide-react.
+ * Multi-step question flow (single/multi-select, text-with-quickfill, height) with optional skip and completion callback.
+ * Questionnaire core always visible; Questionnaire advanced collapsed by default.
+ * Depends on: @/lib/utils, UI primitives, training-profile height helpers, lucide-react.
  * Used by: onboarding, program builder, surveys.
  */
 import * as React from "react"
-import { ChevronUp, ChevronDown, CircleHelp, CornerDownLeft, Loader2, X, ChevronsDown, ChevronsUp } from "lucide-react"
+import { ChevronUp, ChevronDown, CircleHelp, CornerDownLeft, Loader2, X, ChevronsDown, ChevronsUp, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
+import {
+  heightCmToImperial,
+  imperialToHeightCm,
+  parseOptionalInt,
+} from "@/components/account/training-profile-draft"
+import {
+  TRAINING_HEIGHT_CM_OPTIONS,
+  TRAINING_HEIGHT_FEET_OPTIONS,
+  TRAINING_HEIGHT_INCHES_OPTIONS,
+  type THeightUnit,
+} from "@/components/account/training-profile-options"
+
+/** True when question belongs to Questionnaire advanced (Training profile). */
+export function isAdvancedQuestion(question: TQuestion): boolean {
+  return question.section === "advanced"
+}
 
 /**
  * Props for the Questions flow.
@@ -218,7 +244,8 @@ function QuestionMultiSelect({
             }
             onToggle(question.id, option.id)
           }
-          const useXIcon = question.id === "exclude-equipment"
+          const useXIcon =
+            question.id === "exclude-equipment" || question.id === "exclude-areas"
 
           return (
             <div
@@ -404,7 +431,113 @@ function QuestionTextWithQuickfill({
   )
 }
 
-/** Renders one question at a time; dispatches by type (select / multi-select / text-with-quickfill). Completes with answers map; "Other" values stored as "other:<text>". */
+/** Props for height question (Imperial/Metric → cm string answer). */
+interface IQuestionHeightProps {
+  question: TQuestion
+  value: string
+  onChange: (questionId: string, cm: string) => void
+  questionIndex: number
+}
+
+function QuestionHeight({
+  question,
+  value,
+  onChange,
+  questionIndex,
+}: IQuestionHeightProps) {
+  const [unit, setUnit] = React.useState<THeightUnit>("metric")
+  const heightCm = parseOptionalInt(value)
+  const imperial = heightCmToImperial(heightCm)
+
+  const setCm = (cm: number | null) => {
+    onChange(question.id, cm == null ? "" : String(cm))
+  }
+
+  return (
+    <>
+      <p className="mb-3 text-sm font-semibold">
+        {questionIndex + 1}. {question.question}
+      </p>
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <span className="text-xs text-muted-foreground">Unit</span>
+        <ToggleGroup
+          type="single"
+          value={unit}
+          onValueChange={(next) => {
+            if (next === "imperial" || next === "metric") setUnit(next)
+          }}
+          variant="outline"
+          size="sm"
+          className="justify-start"
+          aria-label="Height unit"
+        >
+          <ToggleGroupItem value="metric" aria-label="Metric">
+            Metric
+          </ToggleGroupItem>
+          <ToggleGroupItem value="imperial" aria-label="Imperial">
+            Imperial
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+      {unit === "metric" ? (
+        <Select
+          value={heightCm == null ? undefined : String(Math.round(heightCm))}
+          onValueChange={(cm) => setCm(parseOptionalInt(cm))}
+        >
+          <SelectTrigger aria-label="Height in centimeters">
+            <SelectValue placeholder="Select height" />
+          </SelectTrigger>
+          <SelectContent>
+            {TRAINING_HEIGHT_CM_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      ) : (
+        <div className="flex gap-2">
+          <Select
+            value={imperial.feet == null ? undefined : String(imperial.feet)}
+            onValueChange={(feet) =>
+              setCm(imperialToHeightCm(parseOptionalInt(feet), imperial.inches ?? 0))
+            }
+          >
+            <SelectTrigger aria-label="Height feet" className="flex-1">
+              <SelectValue placeholder="ft" />
+            </SelectTrigger>
+            <SelectContent>
+              {TRAINING_HEIGHT_FEET_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={imperial.inches == null ? undefined : String(imperial.inches)}
+            onValueChange={(inches) =>
+              setCm(imperialToHeightCm(imperial.feet ?? 5, parseOptionalInt(inches)))
+            }
+          >
+            <SelectTrigger aria-label="Height inches" className="flex-1">
+              <SelectValue placeholder="in" />
+            </SelectTrigger>
+            <SelectContent>
+              {TRAINING_HEIGHT_INCHES_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+    </>
+  )
+}
+
+/** Renders core + optional advanced (collapsed); dispatches by type. Completes with answers map; "Other" as "other:<text>". */
 export function Questions({
   questions,
   onComplete,
@@ -420,11 +553,25 @@ export function Questions({
   const [visibleIndex, setVisibleIndex] = React.useState(0)
   const [isLargeScreen, setIsLargeScreen] = React.useState(false)
   const [isCollapsed, setIsCollapsed] = React.useState(false)
+  const [advancedOpen, setAdvancedOpen] = React.useState(false)
 
   const containerRef = React.useRef<HTMLDivElement>(null)
   const questionRefs = React.useRef<(HTMLDivElement | null)[]>([])
 
-  const totalQuestions = questions.length
+  const coreQuestions = React.useMemo(
+    () => questions.filter((q) => !isAdvancedQuestion(q)),
+    [questions],
+  )
+  const advancedQuestions = React.useMemo(
+    () => questions.filter(isAdvancedQuestion),
+    [questions],
+  )
+  const visibleQuestions = React.useMemo(
+    () => (advancedOpen ? [...coreQuestions, ...advancedQuestions] : coreQuestions),
+    [advancedOpen, coreQuestions, advancedQuestions],
+  )
+
+  const totalQuestions = visibleQuestions.length
   const letterKeys = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
 
   // Track screen size to disable auto-scrolling on medium and smaller screens
@@ -440,6 +587,32 @@ export function Questions({
     return () => mediaQuery.removeEventListener("change", handleChange)
   }, [])
 
+  const scrollToQuestion = (index: number) => {
+    const target = questionRefs.current[index]
+    const container = containerRef.current
+    if (target && container) {
+      const targetRect = target.getBoundingClientRect()
+      const containerRect = container.getBoundingClientRect()
+      const scrollTop = container.scrollTop + (targetRect.top - containerRect.top)
+      container.scrollTo({
+        top: scrollTop,
+        behavior: "smooth",
+      })
+    }
+  }
+
+  const scrollToNextAfter = (questionId: string) => {
+    if (!isLargeScreen) return
+    const currentIndex = visibleQuestions.findIndex((q) => q.id === questionId)
+    if (currentIndex !== -1 && currentIndex < visibleQuestions.length - 1) {
+      setTimeout(() => {
+        const nextIndex = currentIndex + 1
+        setVisibleIndex(nextIndex)
+        scrollToQuestion(nextIndex)
+      }, 150)
+    }
+  }
+
   // Handler for single-select questions
   const handleOptionSelect = (questionId: string, optionId: string) => {
     if (answers[questionId] === optionId) {
@@ -453,18 +626,7 @@ export function Questions({
       ...prev,
       [questionId]: optionId,
     }))
-
-    // Find current question index and scroll to next (only on large screens)
-    if (isLargeScreen) {
-      const currentIndex = questions.findIndex(q => q.id === questionId)
-      if (currentIndex !== -1 && currentIndex < questions.length - 1) {
-        setTimeout(() => {
-          const nextIndex = currentIndex + 1
-          setVisibleIndex(nextIndex)
-          scrollToQuestion(nextIndex)
-        }, 150) // Small delay to ensure state update completes
-      }
-    }
+    scrollToNextAfter(questionId)
   }
 
   // Handler for single-select "Other" option
@@ -481,18 +643,21 @@ export function Questions({
       ...prev,
       [questionId]: `other:${otherTexts[questionId] || ""}`,
     }))
+    scrollToNextAfter(questionId)
+  }
 
-    // Find current question index and scroll to next (only on large screens)
-    if (isLargeScreen) {
-      const currentIndex = questions.findIndex(q => q.id === questionId)
-      if (currentIndex !== -1 && currentIndex < questions.length - 1) {
-        setTimeout(() => {
-          const nextIndex = currentIndex + 1
-          setVisibleIndex(nextIndex)
-          scrollToQuestion(nextIndex)
-        }, 150)
-      }
+  const handleHeightChange = (questionId: string, cm: string) => {
+    if (!cm) {
+      setAnswers((prev) => {
+        const { [questionId]: _, ...rest } = prev
+        return rest
+      })
+      return
     }
+    setAnswers((prev) => ({
+      ...prev,
+      [questionId]: cm,
+    }))
   }
 
   // Handler for multi-select questions
@@ -563,20 +728,6 @@ export function Questions({
       ...prev,
       [questionId]: text,
     }))
-  }
-
-  const scrollToQuestion = (index: number) => {
-    const target = questionRefs.current[index]
-    const container = containerRef.current
-    if (target && container) {
-      const targetRect = target.getBoundingClientRect()
-      const containerRect = container.getBoundingClientRect()
-      const scrollTop = container.scrollTop + (targetRect.top - containerRect.top)
-      container.scrollTo({
-        top: scrollTop,
-        behavior: "smooth"
-      })
-    }
   }
 
   const handlePrevious = () => {
@@ -654,7 +805,66 @@ export function Questions({
     containerRef.current?.scrollTo({ top: 0, behavior: "smooth" })
   }, [])
 
+  React.useEffect(() => {
+    if (!advancedOpen && visibleIndex >= coreQuestions.length) {
+      setVisibleIndex(Math.max(0, coreQuestions.length - 1))
+    }
+  }, [advancedOpen, coreQuestions.length, visibleIndex])
+
   if (questions.length === 0) return null
+
+  const renderQuestion = (question: TQuestion, questionIndex: number, isLast: boolean) => {
+    const questionType = question.type || "select"
+    const answer = answers[question.id]
+
+    return (
+      <div
+        key={question.id}
+        ref={(el) => { questionRefs.current[questionIndex] = el }}
+        className={cn("p-4", !isLast && "border-b border-dashed")}
+        data-question-id={question.id}
+        data-question-section={question.section ?? "core"}
+      >
+        {questionType === "text-with-quickfill" ? (
+          <QuestionTextWithQuickfill
+            question={question}
+            value={typeof answer === "string" ? answer : ""}
+            onChange={handleTextWithQuickfillChange}
+            questionIndex={questionIndex}
+          />
+        ) : questionType === "multi-select" ? (
+          <QuestionMultiSelect
+            question={question}
+            selectedAnswers={Array.isArray(answer) ? answer : []}
+            otherText={otherTexts[question.id] || ""}
+            onToggle={handleOptionToggle}
+            onOtherToggle={handleOtherToggle}
+            onOtherTextChange={handleOtherTextChange}
+            letterKeys={letterKeys}
+            questionIndex={questionIndex}
+          />
+        ) : questionType === "height" ? (
+          <QuestionHeight
+            question={question}
+            value={typeof answer === "string" ? answer : ""}
+            onChange={handleHeightChange}
+            questionIndex={questionIndex}
+          />
+        ) : (
+          <QuestionSelect
+            question={question}
+            selectedAnswer={typeof answer === "string" ? answer : undefined}
+            otherText={otherTexts[question.id] || ""}
+            onSelect={handleOptionSelect}
+            onOtherSelect={handleOtherSelect}
+            onOtherTextChange={handleOtherTextChange}
+            letterKeys={letterKeys}
+            questionIndex={questionIndex}
+          />
+        )}
+      </div>
+    )
+  }
 
   return (
     <div
@@ -662,6 +872,7 @@ export function Questions({
         "flex w-full max-w-lg flex-col rounded-lg border bg-card text-card-foreground shadow-xs",
         className
       )}
+      data-testid="questionnaire"
     >
       {/* Header */}
       <div className={cn("flex items-center justify-between px-4 py-3", !isCollapsed && "border-b")}>
@@ -702,11 +913,11 @@ export function Questions({
               <ChevronUp className="size-4" />
             </button>
             <span className="min-w-14 text-center">
-              {visibleIndex + 1} of {totalQuestions}
+              {totalQuestions === 0 ? "0 of 0" : `${visibleIndex + 1} of ${totalQuestions}`}
             </span>
             <button
               onClick={handleNext}
-              disabled={visibleIndex === totalQuestions - 1}
+              disabled={totalQuestions === 0 || visibleIndex === totalQuestions - 1}
               className="p-0.5 hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
               aria-label="Next question"
             >
@@ -721,52 +932,44 @@ export function Questions({
         ref={containerRef}
         className="max-h-80 overflow-y-auto scroll-smooth"
       >
-        {questions.map((question, questionIndex) => {
-          const questionType = question.type || "select"
-          const answer = answers[question.id]
-
-          return (
-            <div
-              key={question.id}
-              ref={(el) => { questionRefs.current[questionIndex] = el }}
-              className={cn(
-                "p-4",
-                questionIndex < questions.length - 1 && "border-b border-dashed"
-              )}
+        {coreQuestions.map((question, questionIndex) =>
+          renderQuestion(
+            question,
+            questionIndex,
+            questionIndex === coreQuestions.length - 1 && (!advancedOpen || advancedQuestions.length === 0),
+          ),
+        )}
+        {advancedQuestions.length > 0 && (
+          <Collapsible
+            open={advancedOpen}
+            onOpenChange={setAdvancedOpen}
+            className="border-t"
+          >
+            <CollapsibleTrigger
+              className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+              aria-label={advancedOpen ? "Collapse advanced questions" : "Expand advanced questions"}
+              data-testid="questionnaire-advanced-trigger"
             >
-              {questionType === "text-with-quickfill" ? (
-                <QuestionTextWithQuickfill
-                  question={question}
-                  value={typeof answer === "string" ? answer : ""}
-                  onChange={handleTextWithQuickfillChange}
-                  questionIndex={questionIndex}
-                />
-              ) : questionType === "multi-select" ? (
-                <QuestionMultiSelect
-                  question={question}
-                  selectedAnswers={Array.isArray(answer) ? answer : []}
-                  otherText={otherTexts[question.id] || ""}
-                  onToggle={handleOptionToggle}
-                  onOtherToggle={handleOtherToggle}
-                  onOtherTextChange={handleOtherTextChange}
-                  letterKeys={letterKeys}
-                  questionIndex={questionIndex}
-                />
-              ) : (
-                <QuestionSelect
-                  question={question}
-                  selectedAnswer={typeof answer === "string" ? answer : undefined}
-                  otherText={otherTexts[question.id] || ""}
-                  onSelect={handleOptionSelect}
-                  onOtherSelect={handleOtherSelect}
-                  onOtherTextChange={handleOtherTextChange}
-                  letterKeys={letterKeys}
-                  questionIndex={questionIndex}
-                />
-              )}
-            </div>
-          )
-        })}
+              <span>Advanced (optional)</span>
+              <ChevronRight
+                className={cn(
+                  "size-4 shrink-0 transition-transform",
+                  advancedOpen && "rotate-90",
+                )}
+              />
+            </CollapsibleTrigger>
+            <CollapsibleContent data-testid="questionnaire-advanced-content">
+              {advancedQuestions.map((question, advancedIndex) => {
+                const questionIndex = coreQuestions.length + advancedIndex
+                return renderQuestion(
+                  question,
+                  questionIndex,
+                  advancedIndex === advancedQuestions.length - 1,
+                )
+              })}
+            </CollapsibleContent>
+          </Collapsible>
+        )}
       </div>}
 
       {/* Footer */}

@@ -6291,115 +6291,12 @@ export const healthIssuesOptions: TSelectOption[] = [
 ];
 
 
-/** Sample prompt questions used to inspire users in the program builder. */
-export const sampleQuestions: TQuestion[] = [
-    {
-      id: "program-length",
-      question: "Program length?",
-      options: programLengthOptions.map(opt => ({
-        id: opt.value,
-        label: opt.label === "8 Weeks" ? "8 Weeks (Recommended)" : opt.label
-      })),
-      allowOther: false,
-    },
-    {
-      id: "days-per-week",
-      question: "Days per week?",
-      options: dayPerWeekOptions.map(opt => ({
-        id: opt.value,
-        label: opt.label
-      })),
-      allowOther: false,
-    },
-    {
-      id: "exclude-equipment",
-      question: "Exclude equipment?",
-      subtitle: { text: "Selected equipment will be excluded from your program—not included." },
-      type: "multi-select",
-      options: equipmentOptions.map(opt => ({
-        id: opt.value,
-        label: opt.label
-      })),
-      allowOther: false,
-    },
-    {
-      id: "health-issues",
-      question: "Health issues to consider?",
-      type: "text-with-quickfill",
-      options: healthIssuesOptions.map(opt => ({
-        id: opt.value,
-        label: opt.label
-      })),
-      allowOther: false,
-    },
-    {
-      id: "split-type",
-      question: "Preferred split?",
-      options: [
-        { id: "default", label: "Based on your goals (Recommended)" },
-        { id: "ppl", label: "PPL (Push, Pull, Legs)" },
-        { id: "pplul", label: "PPLUL (Push, Pull, Legs, Upper, Lower)" },
-        { id: "ul", label: "UL (Upper, Lower)" },
-        { id: "fb", label: "FB (Full Body)" },
-        { id: "other", label: "Other" },
-      ],
-      allowOther: true,
-    },
-    {
-      id: "exercise-variability",
-      question: "Exercise variability?",
-      options: [
-        { id: "little", label: "Don't vary the exercises (Recommended for strength and hypertrophy programs)" },
-        { id: "lots", label: "Vary the exercises (Recommended if you get bored easily)" },
-      ],
-      allowOther: true,
-    },
-    {
-      id: "progression-system",
-      question: "Add progressive overload system?",
-      subtitle: {
-        text: "Learn more",
-        link: "https://jackproxima.substack.com/p/demystifying-progressive-overload"
-      },
-      options: [
-        { id: "default", label: "Based on your goals (Recommended)" },
-        { id: "linear", label: "Linear" },
-        { id: "double", label: "Double " },
-        { id: "rpe-based", label: "RPE-based" },
-        { id: "wave-loading", label: "Wave-loading" },
-        { id: "density", label: "Density" },
-        { id: "other", label: "Other" },
-      ],
-      allowOther: true,
-    },
-    {
-      id: "deload-week",
-      question: "Add a Deload week?",
-      options: [
-        { id: "yes", label: "Yes ( Add an easier week at the end of the program)" },
-        { id: "no", label: "No ( No deload week at the end of the program)" },
-      ],
-      allowOther: false,
-    },
-    {
-      id: "peak-week",
-      question: "Do you want a Peak week?",
-      options: [
-        { id: "yes", label: "Yes ( Include a higher-intensity week in the program)" },
-        { id: "no", label: "No" },
-      ],
-      allowOther: false,
-    },
-    {
-      id: "warmup-exercises",
-      question: "Add warmup exercises?",
-      options: [
-        { id: "yes", label: "Yes ( Include 1–2 prep movements at the start of each day)" },
-        { id: "no", label: "No ( Skip separate warmup exercises)" },
-      ],
-      allowOther: false,
-    },
-  ];
+/** Single source: `form-options` (core + advanced questionnaire). */
+export {
+  sampleQuestions,
+  sampleQuestionsCore,
+  sampleQuestionsAdvanced,
+} from "./form-options";
 
 export {
   PROFANITY_ERROR_MESSAGE,

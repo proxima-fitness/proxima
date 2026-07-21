@@ -16,7 +16,12 @@ import { useMemo, useCallback, useState, useRef, useLayoutEffect } from "react"
 import type { RefObject } from "react"
 import type { ChatStatus, FileUIPart } from "ai"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { equipmentOptions, healthIssuesOptions } from "@/assets/constants/form-options"
+import {
+    equipmentOptions,
+    excludedAreasOptions,
+    healthIssuesOptions,
+} from "@/assets/constants/form-options"
+import { TRAINING_PROFILE_UNSET_VALUE } from "@/components/account/training-profile-options"
 import { quickModifyProgramSuggestionChips } from "@/assets/constants/suggestions"
 import { inferDaysPerWeek, inferProgramLength } from "@/components/program-builder/utils/helpers"
 
@@ -121,6 +126,7 @@ export const Agent: React.FC<IProps> = (props) => {
         commitWithUndo,
         daysPerWeek,
         programLength,
+        excludeAreas,
         excludeEquipment,
         healthIssues,
         splitType,
@@ -129,8 +135,14 @@ export const Agent: React.FC<IProps> = (props) => {
         deloadWeek,
         peakWeek,
         warmupExercises,
+        handleSex,
+        handleAge,
         handleDaysPerWeek,
         handleProgramLength,
+        handleWorkoutDuration,
+        handleActivityLevel,
+        handleDifficultyLevel,
+        handleExcludeAreas,
         handleExcludeEquipment,
         handleHealthIssues,
         handleSplitType,
@@ -194,6 +206,7 @@ export const Agent: React.FC<IProps> = (props) => {
         if (programLength) initialAnswers["program-length"] = programLength
         if (daysPerWeek) initialAnswers["days-per-week"] = daysPerWeek
         if (excludeEquipment?.length) initialAnswers["exclude-equipment"] = excludeEquipment.map((o) => o.value)
+        if (excludeAreas?.length) initialAnswers["exclude-areas"] = excludeAreas.map((o) => o.value)
         if (healthIssues?.length) initialAnswers["health-issues"] = healthIssues.map((o) => o.label).join(", ")
         if (splitType) initialAnswers["split-type"] = splitType
         if (exerciseVariability) initialAnswers["exercise-variability"] = exerciseVariability
@@ -210,6 +223,7 @@ export const Agent: React.FC<IProps> = (props) => {
         messages,
         programLength,
         daysPerWeek,
+        excludeAreas,
         excludeEquipment,
         healthIssues,
         splitType,
@@ -237,6 +251,7 @@ export const Agent: React.FC<IProps> = (props) => {
             let programLengthValue: "" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "11" | "12" = ""
             let daysPerWeekValue = ""
             let excludeEquipmentValue: TSelectOption[] = []
+            let excludeAreasValue: TSelectOption[] = []
             let healthIssuesValue: TSelectOption[] = []
 
             if (answers["days-per-week"] && (answers["days-per-week"] as string).length > 0) {
@@ -246,6 +261,9 @@ export const Agent: React.FC<IProps> = (props) => {
             }
             if (answers["exclude-equipment"] && Array.isArray(answers["exclude-equipment"])) {
                 excludeEquipmentValue = convertStringArrayToOptions(answers["exclude-equipment"], equipmentOptions)
+            }
+            if (answers["exclude-areas"] && Array.isArray(answers["exclude-areas"])) {
+                excludeAreasValue = convertStringArrayToOptions(answers["exclude-areas"], excludedAreasOptions)
             }
             const healthIssuesAnswer = answers["health-issues"]
             if (typeof healthIssuesAnswer === "string") {
@@ -277,12 +295,35 @@ export const Agent: React.FC<IProps> = (props) => {
             const warmupExercisesAns = readStr("warmup-exercises")
             if (warmupExercisesAns) handleWarmupExercises(warmupExercisesAns)
 
+            // Questionnaire advanced → Training profile session seed (SP4 persists when signed in)
+            const ageAns = readStr("age")
+            const sexRaw = readStr("sex")
+            const sexAns = sexRaw === TRAINING_PROFILE_UNSET_VALUE ? "" : sexRaw
+            const heightCmAns = readStr("height")
+            const experienceLevelAns = readStr("experience-level")
+            const physiquePhaseAns = readStr("physique-phase")
+            const trainingFocusAns = readStr("training-focus")
+            const activityLevelAns = readStr("activity-level")
+            const sessionDurationAns = readStr("session-duration")
+
+            if (ageAns) handleAge(ageAns)
+            if (sexRaw) handleSex(sexAns)
+            if (experienceLevelAns) {
+                handleDifficultyLevel([{ label: experienceLevelAns, value: experienceLevelAns }])
+            }
+            if (activityLevelAns) handleActivityLevel(activityLevelAns)
+            if (sessionDurationAns) handleWorkoutDuration(sessionDurationAns)
+
             sendMessageWithContext(
                 { text: "Build my program" },
                 {
                     body: {
                         daysPerWeek: daysPerWeekValue ? Number(daysPerWeekValue) : undefined,
                         programLength: programLengthValue ? Number(programLengthValue) : undefined,
+                        excludeAreas:
+                            (excludeAreasValue.length
+                                ? excludeAreasValue.map((area) => area.value).join(", ")
+                                : excludeAreas?.map((area) => area.value).join(", ")) || undefined,
                         excludeEquipment:
                             (excludeEquipmentValue?.length
                                 ? excludeEquipmentValue.map((eq) => eq.value).join(", ")
@@ -294,6 +335,14 @@ export const Agent: React.FC<IProps> = (props) => {
                         deloadWeek: (deloadWeekAns || deloadWeek.trim()) || undefined,
                         peakWeek: (peakWeekAns || peakWeek.trim()) || undefined,
                         warmupExercises: (warmupExercisesAns || warmupExercises.trim()) || undefined,
+                        age: ageAns || undefined,
+                        sex: sexAns || undefined,
+                        heightCm: heightCmAns ? Number(heightCmAns) : undefined,
+                        experienceLevel: experienceLevelAns || undefined,
+                        physiquePhase: physiquePhaseAns || undefined,
+                        trainingFocus: trainingFocusAns || undefined,
+                        activityLevel: activityLevelAns || undefined,
+                        sessionDurationMin: sessionDurationAns ? Number(sessionDurationAns) : undefined,
                     },
                 }
             )
@@ -301,14 +350,21 @@ export const Agent: React.FC<IProps> = (props) => {
             handleDaysPerWeek(daysPerWeekValue)
             handleProgramLength(programLengthValue)
             if (excludeEquipmentValue.length > 0) handleExcludeEquipment(excludeEquipmentValue)
+            if (excludeAreasValue.length > 0) handleExcludeAreas(excludeAreasValue)
             if (healthIssuesValue.length > 0) handleHealthIssues(healthIssuesValue)
         },
         [
             activeQuestionsPayload?.userRequest,
             sendMessageWithContext,
             handleIsBuilding,
+            handleSex,
+            handleAge,
             handleDaysPerWeek,
             handleProgramLength,
+            handleWorkoutDuration,
+            handleActivityLevel,
+            handleDifficultyLevel,
+            handleExcludeAreas,
             handleExcludeEquipment,
             handleHealthIssues,
             handleSplitType,
@@ -320,6 +376,7 @@ export const Agent: React.FC<IProps> = (props) => {
             convertStringArrayToOptions,
             daysPerWeek,
             programLength,
+            excludeAreas,
             excludeEquipment,
             splitType,
             exerciseVariability,

@@ -9,14 +9,14 @@
  */
 import {
     equipmentOptions,
-    focusAreasOptions,
-    sampleQuestions,
+    excludedAreasOptions,
+    sampleQuestionsCore,
 } from "@/assets/constants/form-options";
 
 import type { TConstraintProfile } from "@/app/api/chat/constraints";
 
 function optionsFromQuestion(questionId: string): TSelectOption[] {
-    const question = sampleQuestions.find((q) => q.id === questionId);
+    const question = sampleQuestionsCore.find((q) => q.id === questionId);
     if (!question) return [];
     return question.options.map((opt) => ({
         label: opt.label,
@@ -29,10 +29,8 @@ export const CONSTRAINT_EXCLUDED_EQUIPMENT_OPTIONS: TSelectOption[] = equipmentO
     (opt) => opt.value !== "none",
 );
 
-/** Excluded areas picker — focus-area catalog (drops "full body"). */
-export const CONSTRAINT_EXCLUDED_AREA_OPTIONS: TSelectOption[] = focusAreasOptions.filter(
-    (opt) => opt.value !== "full body",
-);
+/** Excluded areas picker — same catalog as Questionnaire core (drops "full body"). */
+export const CONSTRAINT_EXCLUDED_AREA_OPTIONS: TSelectOption[] = excludedAreasOptions;
 
 /** Preference field → questionnaire single-select options. */
 export const CONSTRAINT_PREFERENCE_OPTIONS = {
