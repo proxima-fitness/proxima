@@ -446,7 +446,17 @@ const MultiSelect = React.forwardRef<TMultiSelectRef, IMultipleSelectorProps>(
             inputRef?.current?.focus();
           } }
         >
-                <div className="relative flex flex-wrap gap-1">
+                <div
+          className={ cn(
+            'relative flex flex-wrap gap-1',
+            !(
+              hideClearAllButton ||
+              disabled ||
+              selected.length < 1 ||
+              selected.filter((s) => s.fixed).length === selected.length
+            ) && 'pr-7',
+          ) }
+        >
                     {selected.map((option) => {
               return (
                   <Badge
@@ -520,7 +530,7 @@ const MultiSelect = React.forwardRef<TMultiSelectRef, IMultipleSelectorProps>(
                 onChange?.(selected.filter((s) => s.fixed));
               } }
               className={ cn(
-                'absolute right-0 h-6 w-6 p-0',
+                'absolute right-0 top-0 h-6 w-6 p-0',
                 (hideClearAllButton ||
                   disabled ||
                   selected.length < 1 ||
@@ -529,7 +539,7 @@ const MultiSelect = React.forwardRef<TMultiSelectRef, IMultipleSelectorProps>(
               ) }
               aria-label="Clear all selections"
             >
-                        <X />
+                        <X className="h-4 w-4" />
                     </button>
                 </div>
             </div>

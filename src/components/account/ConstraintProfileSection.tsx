@@ -180,16 +180,17 @@ function FreeformChipList({
                     ))}
                 </div>
             ) : null}
-            <div className="flex gap-2">
+            <div className="flex min-w-0 items-center gap-2">
                 <Input
                     id={id}
                     value={draftText}
                     onChange={(event) => setDraftText(event.target.value)}
                     onKeyDown={onKeyDown}
                     placeholder={placeholder}
-                    className="flex-1 bg-background"
+                    containerClassName="min-w-0 flex-1"
+                    className="bg-background"
                 />
-                <Button type="button" variant="ghost" onClick={commit}>
+                <Button type="button" variant="ghost" className="shrink-0" onClick={commit}>
                     Add
                 </Button>
             </div>
@@ -216,7 +217,7 @@ function RawStatementsList({ items, onChange }: IRawStatementsListProps) {
             {items.map((item, index) => (
                 <li
                     key={`${item}-${index}`}
-                    className="flex items-start justify-between gap-3 px-3 py-2.5 text-sm"
+                    className="flex items-start justify-between gap-2 px-3 py-2.5 text-sm sm:gap-3"
                 >
                     <span className="min-w-0 flex-1 whitespace-pre-wrap break-words">
                         {item}
@@ -416,11 +417,12 @@ function ConstraintProfileEditor({
                         return (
                             <div
                                 key={key}
-                                className="flex items-center justify-between gap-3 px-3 py-2.5"
+                                data-testid="constraint-preference-row"
+                                className="flex flex-col items-stretch gap-2 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:py-2.5"
                             >
                                 <Label
                                     htmlFor={`constraint-pref-${key}`}
-                                    className="min-w-0 flex-1 text-sm font-normal leading-snug"
+                                    className="shrink-0 text-sm font-normal leading-snug sm:min-w-0 sm:flex-1"
                                 >
                                     {label}
                                 </Label>
@@ -432,7 +434,7 @@ function ConstraintProfileEditor({
                                 >
                                     <SelectTrigger
                                         id={`constraint-pref-${key}`}
-                                        className="w-[min(100%,12rem)] shrink-0 bg-background"
+                                        className="w-full shrink-0 bg-background sm:w-[min(100%,12rem)]"
                                     >
                                         <SelectValue placeholder="Not set" />
                                     </SelectTrigger>
@@ -487,7 +489,7 @@ function ConstraintProfileEditor({
                 />
             </SettingsGroup>
 
-            <div className="mt-2 flex justify-end gap-2 border-t border-border/60 pt-4">
+            <div className="mt-2 flex flex-col-reverse gap-2 border-t border-border/60 pt-4 sm:flex-row sm:justify-end">
                 <Button
                     type="button"
                     variant="ghost"

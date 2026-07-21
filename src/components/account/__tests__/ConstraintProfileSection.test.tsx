@@ -263,4 +263,28 @@ describe("ConstraintProfileSection", () => {
         expect(onDirtyChange).toHaveBeenCalledWith(false);
         expect(saveUserConstraintProfile).not.toHaveBeenCalled();
     });
+
+    it("stacks preference rows on narrow layouts (label above select)", () => {
+        const record = emptyUserConstraintProfileRecord();
+        record.preferences.splitType = "ppl";
+
+        useUserConstraints.mockReturnValue({
+            data: record,
+            isLoading: false,
+            isError: false,
+        });
+
+        renderSection(<ConstraintProfileSection user={user} />);
+
+        const row = screen.getAllByTestId("constraint-preference-row")[0];
+        expect(row.className).toContain("flex-col");
+        expect(row.className).toContain("sm:flex-row");
+
+        const trigger = row.querySelector('[id^="constraint-pref-"]');
+        expect(trigger).toBeTruthy();
+        expect(trigger!.className).toContain("w-full");
+        expect(trigger!.className).toContain("sm:w-[min(100%,12rem)]");
+
+        expect(screen.getByText("Preferred split").textContent).toBe("Preferred split");
+    });
 });

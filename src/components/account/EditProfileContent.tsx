@@ -79,8 +79,8 @@ export function EditProfileContent() {
     }
 
     return (
-        <div className="min-h-screen bg-muted/30 px-4 py-10 text-foreground">
-            <div className="mx-auto max-w-2xl space-y-6">
+        <div className="min-h-screen bg-muted/30 px-3 py-6 text-foreground sm:px-4 sm:py-10">
+            <div className="mx-auto max-w-2xl space-y-5 sm:space-y-6">
                 <div>
                     <Link
                         href="/profile"
@@ -89,17 +89,17 @@ export function EditProfileContent() {
                         <ArrowLeft className="h-4 w-4" aria-hidden />
                         Back to profile
                     </Link>
-                    <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+                    <h1 className="mt-3 text-2xl font-bold tracking-tight sm:mt-4 sm:text-4xl">
                         Edit profile
                     </h1>
-                    <p className="mt-2 text-muted-foreground">
+                    <p className="mt-2 text-sm text-muted-foreground sm:text-base">
                         Update your identity and inspect what the coach remembers about you.
                     </p>
                 </div>
 
                 <section aria-labelledby="identity-heading">
                     <Card className={EDIT_PROFILE_CARD_CLASS}>
-                        <CardHeader>
+                        <CardHeader className="p-4 sm:p-6">
                             <h2
                                 id="identity-heading"
                                 className="font-semibold leading-none tracking-tight"
@@ -110,7 +110,7 @@ export function EditProfileContent() {
                                 Name, username, bio, and profile photo.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
                             <EditProfile
                                 user={user}
                                 onDirtyChange={onIdentityDirtyChange}
@@ -121,7 +121,7 @@ export function EditProfileContent() {
 
                 <section aria-labelledby="constraint-profile-heading">
                     <Card className={EDIT_PROFILE_CARD_CLASS}>
-                        <CardHeader>
+                        <CardHeader className="p-4 sm:p-6">
                             <h2
                                 id="constraint-profile-heading"
                                 className="font-semibold leading-none tracking-tight"
@@ -132,7 +132,7 @@ export function EditProfileContent() {
                                 Training constraints the coach uses when building programs.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
                             <ConstraintProfileSection
                                 user={user}
                                 onDirtyChange={onConstraintDirtyChange}
