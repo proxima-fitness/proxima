@@ -24,6 +24,11 @@ import { getTools, type IBuildWeekOnceGuard } from './tools/tools';
 import { initializeConstraintProfile } from './constraints';
 import { mergeConstraintProfiles } from './constraints/merge';
 import { getUserConstraints } from '@/api/user-constraints';
+import {
+    initializeTrainingProfile,
+    mergeTrainingProfiles,
+} from './training-profile';
+import { getUserTrainingProfile } from '@/api/user-training-profile';
 import { getRecentEpisodes } from '@/api/session-episodes';
 import { createSandbox } from './skills/sandbox';
 import { discoverSkills } from './skills/index';
@@ -75,6 +80,7 @@ const callOptionsSchema = z.object({
  * @param req - Request whose JSON body contains `messages`, `hevyProgram`,
  *   `daysPerWeek`, `programLength`, optional exclusion/health filters, optional
  *   questionnaire fields (`excludeEquipment`, `splitType`, `exerciseVariability`, `progressionSystem`, `deloadWeek`, `peakWeek`, `warmupExercises`),
+ *   optional Training profile seed (`age`, `sex`, `heightCm`, `experienceLevel`, `physiquePhase`, `trainingFocus`, `activityLevel`, `sessionDurationMin`),
  *   and `isInLbs` (user weight display preference; defaults true).
  * @returns A streaming `Response` that the Vercel AI SDK client consumes to
  *   render incremental agent output and tool invocations.
@@ -95,6 +101,14 @@ async function handleChatPost(req: Request) {
             deloadWeek = "",
             peakWeek = "",
             warmupExercises = "",
+            age,
+            sex,
+            heightCm,
+            experienceLevel,
+            physiquePhase,
+            trainingFocus,
+            activityLevel,
+            sessionDurationMin,
             chatSessionId,
             isInLbs = true,
         } = await req.json();
@@ -113,9 +127,12 @@ async function handleChatPost(req: Request) {
             async () => {
                 const sanitizedMessages = sanitizeMessagesWithUnresolvedToolCalls(messages);
 
-                const persistedConstraints = user
-                    ? await getUserConstraints(user.id, supabase)
-                    : null;
+                const [persistedConstraints, persistedTrainingProfile] = user
+                    ? await Promise.all([
+                        getUserConstraints(user.id, supabase),
+                        getUserTrainingProfile(user.id, supabase),
+                    ])
+                    : [null, null];
 
                 const constraintProfile = mergeConstraintProfiles(
                     persistedConstraints,
@@ -129,6 +146,20 @@ async function handleChatPost(req: Request) {
                         deloadWeek,
                         peakWeek,
                         warmupExercises,
+                    }),
+                );
+
+                const trainingProfile = mergeTrainingProfiles(
+                    persistedTrainingProfile,
+                    initializeTrainingProfile({
+                        age,
+                        sex,
+                        heightCm,
+                        experienceLevel,
+                        physiquePhase,
+                        trainingFocus,
+                        activityLevel,
+                        sessionDurationMin,
                     }),
                 );
 
@@ -153,6 +184,7 @@ async function handleChatPost(req: Request) {
                     warmupExercises,
                     hasWorkoutHistoryAccess: hasActiveSubscription,
                     constraintProfile,
+                    trainingProfile,
                     episodes,
                     isInLbs: weightInLbs,
                 });
@@ -164,6 +196,7 @@ async function handleChatPost(req: Request) {
                     userId: user?.id,
                     workoutHistoryDb: user ? supabase : undefined,
                     constraintProfile,
+                    trainingProfile,
                     isInLbs: weightInLbs,
                 });
 

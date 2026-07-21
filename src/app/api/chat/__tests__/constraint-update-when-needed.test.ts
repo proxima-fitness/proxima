@@ -54,6 +54,8 @@ describe("constraint update only when needed", () => {
         expect(skill).not.toMatch(/still call once.*signed-in users get a row/i);
         expect(skill).toMatch(/skip|do not call|only when|non-empty/i);
         expect(skill).toMatch(/updateConstraintProfile/);
+        expect(skill).toMatch(/updateTrainingProfile/);
+        expect(skill).toMatch(/Persist Training Profile/i);
     });
 
     it("chat instructions do not mandate empty update after questionnaire unlock", () => {

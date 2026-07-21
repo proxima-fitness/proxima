@@ -17,13 +17,24 @@ vi.mock("@/api/user-constraints", () => ({
     upsertUserConstraints: vi.fn(async () => {}),
 }));
 
+vi.mock("@/api/user-training-profile", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("@/api/user-training-profile")>();
+    return {
+        ...actual,
+        upsertUserTrainingProfile: vi.fn(async () => {}),
+    };
+});
+
 vi.mock("@/components/program-builder/api/hevy", () => ({
     getHevyExercises: vi.fn(async () => []),
 }));
 
 import { upsertUserConstraints } from "@/api/user-constraints";
+import { upsertUserTrainingProfile } from "@/api/user-training-profile";
+import { initializeTrainingProfile } from "../training-profile";
 
 const upsertUserConstraintsMock = vi.mocked(upsertUserConstraints);
+const upsertUserTrainingProfileMock = vi.mocked(upsertUserTrainingProfile);
 
 type TToolExecuteHarness<TInput, TOpts = undefined> = TOpts extends undefined
     ? { execute: (input: TInput) => Promise<unknown> }
@@ -62,40 +73,46 @@ describe("constraint persist skill scope", () => {
         expect(mutate?.allowedTools?.length).toBeGreaterThan(0);
     });
 
-    it("after build-program skill scope, updateConstraintProfile still available (CORE)", async () => {
+    it("after build-program skill scope, memory tools still available (CORE)", async () => {
         const sandbox = createSandbox({ workingDirectory: process.cwd() });
         const skills = await discoverSkills(sandbox, [".agents/skills"]);
         const build = skills.find((s) => s.name === "build-program");
         expect(build).toBeDefined();
         expect(build!.allowedTools).toContain("updateConstraintProfile");
+        expect(build!.allowedTools).toContain("updateTrainingProfile");
 
         const tools = getTools({
             userId: "user-1",
             workoutHistoryDb: {} as TWorkoutHistoryDb,
             constraintProfile: initializeConstraintProfile({}),
+            trainingProfile: initializeTrainingProfile({}),
         });
 
         const visible = filterToolsForSkillScope(asToolRecord(tools), build!.allowedTools);
 
         expect(visible).toContain("updateConstraintProfile");
+        expect(visible).toContain("updateTrainingProfile");
     });
 
-    it("after mutate-program skill scope, updateConstraintProfile still available (CORE)", async () => {
+    it("after mutate-program skill scope, memory tools still available (CORE)", async () => {
         const sandbox = createSandbox({ workingDirectory: process.cwd() });
         const skills = await discoverSkills(sandbox, [".agents/skills"]);
         const mutate = skills.find((s) => s.name === "mutate-program");
         expect(mutate).toBeDefined();
         expect(mutate!.allowedTools).toContain("updateConstraintProfile");
+        expect(ALWAYS_AVAILABLE_CHAT_TOOLS).toContain("updateTrainingProfile");
 
         const tools = getTools({
             userId: "user-1",
             workoutHistoryDb: {} as TWorkoutHistoryDb,
             constraintProfile: initializeConstraintProfile({}),
+            trainingProfile: initializeTrainingProfile({}),
         });
 
         const visible = filterToolsForSkillScope(asToolRecord(tools), mutate!.allowedTools);
 
         expect(visible).toContain("updateConstraintProfile");
+        expect(visible).toContain("updateTrainingProfile");
     });
 
     it("loadSkill mutates activeToolScope to skill allowlist (includes memory tool)", async () => {
@@ -130,6 +147,7 @@ describe("constraint persist skill scope", () => {
 
         expect(activeToolScope.allowedTools).toEqual(build!.allowedTools);
         expect(activeToolScope.allowedTools).toContain("updateConstraintProfile");
+        expect(activeToolScope.allowedTools).toContain("updateTrainingProfile");
     });
 
     it("updateConstraintProfile upserts when logged-in + db provided", async () => {
@@ -170,5 +188,26 @@ describe("constraint persist skill scope", () => {
 
         await update.execute({ addInjuries: ["knee"] });
         expect(upsertUserConstraintsMock).not.toHaveBeenCalled();
+    });
+
+    it("updateTrainingProfile upserts when logged-in + db provided", async () => {
+        upsertUserTrainingProfileMock.mockClear();
+        const profile = initializeTrainingProfile({});
+        const db = {} as TWorkoutHistoryDb;
+        const tools = getTools({
+            userId: "user-1",
+            workoutHistoryDb: db,
+            trainingProfile: profile,
+        });
+
+        const update = asTestTool<{ age?: number; trainingFocus?: string }>(tools.updateTrainingProfile);
+
+        await update.execute({ age: 32, trainingFocus: "hyrox" });
+
+        expect(upsertUserTrainingProfileMock).toHaveBeenCalledWith(
+            db,
+            "user-1",
+            expect.objectContaining({ age: 32, trainingFocus: "hyrox" }),
+        );
     });
 });

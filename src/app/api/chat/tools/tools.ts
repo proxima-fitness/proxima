@@ -57,6 +57,7 @@ import type { TConstraintProfile } from '../constraints';
 import { splitConstraintCsv } from '../constraints/initialize';
 import { validateAgainstConstraints } from '../constraints/validate';
 import { upsertUserConstraints } from '@/api/user-constraints';
+import { upsertUserTrainingProfile } from '@/api/user-training-profile';
 import {
     canonicalizeConstraintPreferenceValue,
     constraintPreferenceEnumValues,
@@ -98,6 +99,8 @@ interface IProps {
     workoutHistoryDb?: TWorkoutHistoryDb;
     /** Structured constraint profile; when provided, updateConstraintProfile tool is included. Filters getExerciseList. */
     constraintProfile?: TConstraintProfile;
+    /** Structured Training profile; when provided, updateTrainingProfile tool mutates/persists it. */
+    trainingProfile?: TTrainingProfile;
     /** User's weight display preference (true = lbs). Defaults to true to match UI default. */
     isInLbs?: boolean;
 }
@@ -187,6 +190,7 @@ export function getTools({
     userId,
     workoutHistoryDb,
     constraintProfile,
+    trainingProfile,
     isInLbs = true,
 }: IProps = {}) {
 
@@ -1109,6 +1113,122 @@ export function getTools({
         },
     });
 
+    const updateTrainingProfileTool = tool({
+        description:
+            'Persist and update the active Training profile (Agentic memory person facts: age, sex, height, experience, physique phase, training focus, activity level, session duration). ' +
+            'Call after questionnaire unlock only when Questionnaire advanced / Training profile fields are non-empty; skip entirely when empty — do not make empty updates. ' +
+            'Do not block planProgram, getExerciseList, or buildWeek waiting on it. ' +
+            'Set freely when the user states a person fact. Clear a field only on a User-stated change (pass null for that field) or direct the user to Edit profile. ' +
+            'Not the Mutation constraint gate — use updateConstraintProfile for injuries, exclusions, and training preferences. ' +
+            'Examples: questionnaire advanced submit; "I\'m 32"; "I\'m cutting"; "session cap 45 minutes"; "prefer not to say sex" (sex: "").',
+        inputSchema: z.object({
+            age: z.number().int().min(14).max(100).nullable().optional()
+                .describe('Age in years (14–100). null clears on User-stated change only.'),
+            sex: z.enum(['male', 'female', '']).nullable().optional()
+                .describe('male | female | "" (prefer not to say / unset). null clears on User-stated change only.'),
+            heightCm: z.number().min(120).max(230).nullable().optional()
+                .describe('Height in centimeters. null clears on User-stated change only.'),
+            experienceLevel: z.enum(['beginner', 'novice', 'intermediate', 'advanced', '']).nullable().optional()
+                .describe('Experience level catalog id. Empty or null clears on User-stated change only.'),
+            physiquePhase: z.enum(['bulk', 'cut', 'maintain', 'recomp', '']).nullable().optional()
+                .describe('Physique phase catalog id. Empty or null clears on User-stated change only.'),
+            trainingFocus: z.enum([
+                'bodybuilding',
+                'powerbuilding',
+                'powerlifting',
+                'hyrox',
+                'crossfit',
+                'olympic_weightlifting',
+                'calisthenics_bodyweight',
+                'athletics_sport',
+                'fat_loss',
+                'general_fitness',
+                'rehab_pain_aware',
+                '',
+            ]).nullable().optional()
+                .describe('Training focus catalog id. Empty or null clears on User-stated change only.'),
+            activityLevel: z.enum(['sedentary', 'light', 'moderate', 'high', 'extreme', '']).nullable().optional()
+                .describe('Activity level short form. Empty or null clears on User-stated change only.'),
+            sessionDurationMin: z.number().int().min(10).max(180).nullable().optional()
+                .describe('Session duration cap in minutes (10–180). null clears on User-stated change only.'),
+        }),
+        execute: async (input) => {
+            if (!trainingProfile) {
+                return { error: 'No active Training profile in this session.' };
+            }
+
+            const keys = [
+                'age',
+                'sex',
+                'heightCm',
+                'experienceLevel',
+                'physiquePhase',
+                'trainingFocus',
+                'activityLevel',
+                'sessionDurationMin',
+            ] as const;
+
+            const provided = keys.filter((key) => input[key] !== undefined);
+            if (provided.length === 0) {
+                return { skipped: true as const, reason: 'Nothing to persist — empty update skipped.' };
+            }
+
+            for (const key of provided) {
+                const value = input[key];
+                if (key === 'age' || key === 'heightCm' || key === 'sessionDurationMin') {
+                    trainingProfile[key] = value as number | null;
+                } else if (key === 'sex') {
+                    trainingProfile.sex = (value ?? '') as TTrainingSex;
+                } else if (key === 'experienceLevel') {
+                    trainingProfile.experienceLevel = (value ?? '') as TExperienceLevel;
+                } else if (key === 'physiquePhase') {
+                    trainingProfile.physiquePhase = (value ?? '') as TPhysiquePhase;
+                } else if (key === 'trainingFocus') {
+                    trainingProfile.trainingFocus = (value ?? '') as TTrainingFocus;
+                } else if (key === 'activityLevel') {
+                    trainingProfile.activityLevel = (value ?? '') as TActivityLevel;
+                }
+            }
+
+            if (
+                trainingProfile.sessionDurationMin != null &&
+                trainingProfile.sessionDurationMin % 10 !== 0
+            ) {
+                trainingProfile.sessionDurationMin =
+                    Math.round(trainingProfile.sessionDurationMin / 10) * 10;
+            }
+
+            // Persist to DB for cross-session memory (anonymous users: in-memory only)
+            if (workoutHistoryDb && userId) {
+                await upsertUserTrainingProfile(workoutHistoryDb, userId, trainingProfile).catch((err) => {
+                    console.error('[updateTrainingProfile] DB persist failed:', err);
+                });
+            }
+
+            return { updatedProfile: trainingProfile };
+        },
+        toModelOutput: async ({ output }) => {
+            if ('error' in output) {
+                return { type: 'text' as const, value: `Error: ${output.error}` };
+            }
+            if ('skipped' in output && output.skipped) {
+                return { type: 'text' as const, value: output.reason ?? 'Nothing to persist — empty update skipped.' };
+            }
+            const p = output.updatedProfile;
+            const summary = [
+                p.age != null && `Age: ${p.age}`,
+                p.sex && `Sex: ${p.sex}`,
+                p.heightCm != null && `Height: ${p.heightCm} cm`,
+                p.experienceLevel && `Experience: ${p.experienceLevel}`,
+                p.physiquePhase && `Phase: ${p.physiquePhase}`,
+                p.trainingFocus && `Focus: ${p.trainingFocus}`,
+                p.activityLevel && `Activity: ${p.activityLevel}`,
+                p.sessionDurationMin != null && `Session cap: ${p.sessionDurationMin} min`,
+            ].filter(Boolean).join(' | ') || 'No Training profile fields set.';
+            return { type: 'text' as const, value: `Training Profile updated. ${summary}` };
+        },
+    });
+
     const baseTools = {
         getExerciseList: getExerciseListTool,
         getMoreInfoQuestions: getMoreInfoQuestionsTool,
@@ -1121,6 +1241,7 @@ export function getTools({
         readFile: readFileTool,
         bash: bashTool,
         updateConstraintProfile: updateConstraintProfileTool,
+        updateTrainingProfile: updateTrainingProfileTool,
     };
 
     if (hasActiveSubscription && userId && workoutHistoryDb) {

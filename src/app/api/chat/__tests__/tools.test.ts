@@ -29,8 +29,17 @@ vi.mock("@/api/workout-history-read", () => ({
     })),
 }));
 
+vi.mock("@/api/user-training-profile", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("@/api/user-training-profile")>();
+    return {
+        ...actual,
+        upsertUserTrainingProfile: vi.fn(async () => {}),
+    };
+});
+
 import { getHevyExercises } from "@/components/program-builder/api/hevy";
 import { getWorkoutsForUser } from "@/api/workout-history-read";
+import { upsertUserTrainingProfile } from "@/api/user-training-profile";
 import { backedUpWorkoutFixture } from "@/api/__tests__/manual/backed-up-workout.fixture";
 import { mutateProgramInputSchema } from "@/components/program-builder/mutations";
 import {
@@ -39,6 +48,9 @@ import {
     getExerciseListInputSchema,
 } from "@/app/api/chat/tools/tools";
 import { initializeConstraintProfile } from "@/app/api/chat/constraints/initialize";
+import { initializeTrainingProfile } from "@/app/api/chat/training-profile";
+
+const upsertUserTrainingProfileMock = vi.mocked(upsertUserTrainingProfile);
 
 /** Narrow AI SDK Tool to execute + toModelOutput for tests (SDK execute also takes options; tests call with input only). */
 type TToolTestHarness<TInput, TOutput> = {
@@ -119,6 +131,7 @@ describe("chat tools.ts", () => {
         const tools = getTools({});
         expect(tools).toHaveProperty("readProgram");
         expect(tools).toHaveProperty("mutateProgram");
+        expect(tools).toHaveProperty("updateTrainingProfile");
         expect(tools).not.toHaveProperty("modifyProgram");
         expect(tools).not.toHaveProperty("getCurrentProgram");
         expect(tools).not.toHaveProperty("getWorkoutHistory");
@@ -850,6 +863,77 @@ describe("chat tools.ts", () => {
             expect(modelOutput.value).toContain('"weight_kg":100');
             expect(modelOutput.value).toContain('"set_type":"warmup"');
             expect(modelOutput.value).toContain('"rpe":8');
+        });
+    });
+
+    describe("updateTrainingProfile", () => {
+        it("upserts when logged-in + db provided", async () => {
+            upsertUserTrainingProfileMock.mockClear();
+            const profile = initializeTrainingProfile({});
+            const db = {} as TWorkoutHistoryDb;
+            const tools = getTools({
+                userId: "user-1",
+                workoutHistoryDb: db,
+                trainingProfile: profile,
+            });
+
+            const update = asTestTool<
+                { age?: number; experienceLevel?: string; physiquePhase?: string },
+                { updatedProfile?: TTrainingProfile; skipped?: boolean }
+            >(tools.updateTrainingProfile);
+
+            const result = await update.execute({
+                age: 28,
+                experienceLevel: "intermediate",
+                physiquePhase: "bulk",
+            });
+
+            expect(result.updatedProfile).toMatchObject({
+                age: 28,
+                experienceLevel: "intermediate",
+                physiquePhase: "bulk",
+            });
+            expect(upsertUserTrainingProfileMock).toHaveBeenCalledWith(
+                db,
+                "user-1",
+                expect.objectContaining({
+                    age: 28,
+                    experienceLevel: "intermediate",
+                    physiquePhase: "bulk",
+                }),
+            );
+        });
+
+        it("skips upsert when anonymous (no userId)", async () => {
+            upsertUserTrainingProfileMock.mockClear();
+            const profile = initializeTrainingProfile({});
+            const tools = getTools({ trainingProfile: profile });
+
+            const update = asTestTool<{ age?: number }, { updatedProfile?: TTrainingProfile }>(
+                tools.updateTrainingProfile,
+            );
+
+            await update.execute({ age: 30 });
+            expect(profile.age).toBe(30);
+            expect(upsertUserTrainingProfileMock).not.toHaveBeenCalled();
+        });
+
+        it("no-ops empty payload", async () => {
+            upsertUserTrainingProfileMock.mockClear();
+            const profile = initializeTrainingProfile({ age: 25 });
+            const tools = getTools({
+                userId: "user-1",
+                workoutHistoryDb: {} as TWorkoutHistoryDb,
+                trainingProfile: profile,
+            });
+
+            const update = asTestTool<Record<string, never>, { skipped?: boolean }>(
+                tools.updateTrainingProfile,
+            );
+
+            const result = await update.execute({});
+            expect(result.skipped).toBe(true);
+            expect(upsertUserTrainingProfileMock).not.toHaveBeenCalled();
         });
     });
 });

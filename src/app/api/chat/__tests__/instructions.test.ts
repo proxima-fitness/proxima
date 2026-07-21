@@ -6,9 +6,24 @@ import { describe, it, expect, vi } from "vitest";
 import { instructions } from "@/app/api/chat/instructions/instructions";
 import { getTools } from "@/app/api/chat/tools/tools";
 import { initializeConstraintProfile } from "@/app/api/chat/constraints";
+import { initializeTrainingProfile } from "@/app/api/chat/training-profile";
 
 vi.mock("@/api/user-constraints", () => ({
     upsertUserConstraints: vi.fn(async () => {}),
+}));
+
+vi.mock("@/api/user-training-profile", () => ({
+    upsertUserTrainingProfile: vi.fn(async () => {}),
+    emptyUserTrainingProfile: () => ({
+        age: null,
+        sex: "",
+        heightCm: null,
+        experienceLevel: "",
+        physiquePhase: "",
+        trainingFocus: "",
+        activityLevel: "",
+        sessionDurationMin: null,
+    }),
 }));
 
 vi.mock("@/components/program-builder/api/hevy", () => ({
@@ -203,6 +218,47 @@ describe("chat instructions.ts", () => {
             });
 
             expect(prompt).not.toContain("Questionnaire preferences");
+        });
+
+        it("includes Active Training Profile block when any field is set", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+                trainingProfile: initializeTrainingProfile({
+                    age: 28,
+                    sex: "male",
+                    heightCm: 180,
+                    experienceLevel: "intermediate",
+                    physiquePhase: "bulk",
+                    trainingFocus: "powerbuilding",
+                    activityLevel: "moderate",
+                    sessionDurationMin: 60,
+                }),
+            });
+
+            expect(prompt).toContain("## Active Training Profile");
+            expect(prompt).toContain("Age: 28");
+            expect(prompt).toContain("Sex: male");
+            expect(prompt).toContain("Height: 180 cm");
+            expect(prompt).toContain("Experience level: intermediate");
+            expect(prompt).toContain("Physique phase: bulk");
+            expect(prompt).toContain("Training focus: powerbuilding");
+            expect(prompt).toContain("Activity level: moderate");
+            expect(prompt).toContain("Session duration cap: 60 min");
+            expect(prompt).toContain("updateTrainingProfile");
+            expect(prompt).toContain("Training profile persistence");
+        });
+
+        it("omits Active Training Profile block when all fields empty", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+                trainingProfile: initializeTrainingProfile({}),
+            });
+
+            expect(prompt).not.toContain("## Active Training Profile");
         });
 
         it("includes getWorkoutHistory guidance when hasWorkoutHistoryAccess is true", () => {

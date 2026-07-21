@@ -10,6 +10,7 @@ allowedTools:
   - getExerciseList
   - getMoreInfoQuestions
   - updateConstraintProfile
+  - updateTrainingProfile
   - buildWeek
   - mutateProgram
 ---
@@ -22,6 +23,8 @@ allowedTools:
 
 **Persist Constraint Profile (same turn, non-blocking):** On the first turn after questionnaire submit or “Build my program”, call **`updateConstraintProfile` once** **only when there is something to persist** — non-empty questionnaire fields from the Active Constraint Profile / request context that are not yet written to Agentic memory (health → `addInjuries`; exclude equipment → `addExcludedEquipment`; exclude areas → `addExcludedAreas`; split/variability/progression/deload/peak/warmup → `preferences`). This is a background backup — do **not** delay or block **planProgram**, **getExerciseList**, or **buildWeek** waiting on it. Seeing constraints in the Active Constraint Profile does **not** mean they are persisted — if they are non-empty and not yet written, call the tool. **If every field is empty** (e.g. user skipped the questionnaire with no answers): **do not call** `updateConstraintProfile` — empty updates are noise.
 
+**Persist Training Profile (same turn, non-blocking):** On that same unlock turn, call **`updateTrainingProfile` once** **only when Questionnaire advanced / Active Training Profile fields are non-empty** (age, sex, heightCm, experienceLevel, physiquePhase, trainingFocus, activityLevel, sessionDurationMin). Same spirit as Constraint profile — background backup; do **not** block plan/list/build. **If every Training profile field is empty**, **do not call** `updateTrainingProfile`.
+
 After **getExerciseList**, call **buildWeek exactly once** per user request to generate the new program week template (all training days in that single tool call). Do **not** call buildWeek again after it succeeds. Use **mutateProgram** for every post-build change (reps, RPE, rest, titles, notes, and multi-week periodization); never a second buildWeek to fix or tweak the week.
 
 ## Checklist
@@ -30,6 +33,7 @@ After **getExerciseList**, call **buildWeek exactly once** per user request to g
 
 - [ ] **New program:** Brief visible message, then **getMoreInfoQuestions** immediately. Do **not** call **planProgram**, **getExerciseList**, **buildWeek**, or **mutateProgram** until the questionnaire is done or the user clearly continues (e.g. "Build my program"). Then proceed with the steps below.
 - [ ] **Persist Constraint Profile:** On the unlock turn, call **`updateConstraintProfile` once** only if there are non-empty fields to persist (same turn as plan/list/build — non-blocking; skip entirely when empty).
+- [ ] **Persist Training Profile:** On the unlock turn, call **`updateTrainingProfile` once** only if Questionnaire advanced / Training profile fields are non-empty (same turn — non-blocking; skip entirely when empty).
 - [ ] **planProgram** once: structured plan for the full mesocycle (duration, blocks, optional week-by-week progression table). Use questionnaire answers, program builder context (days/week, weeks), and loaded resources (powerlifting/bodybuilding/hyrox/crossfit/weight-loss) where relevant.
 - [ ] getExerciseList with user requirements (respect program builder context for days per week / program length if available).
 - [ ] Select exercises from the returned list (id: title). Use only IDs that appear in the list.
@@ -40,7 +44,7 @@ After **getExerciseList**, call **buildWeek exactly once** per user request to g
 
 ## Tool dependency rule
 
-**getExerciseList** and **planProgram** are **strictly dependent** on the output of the questionnaire. Calling them before the questionnaire is answered is a waste of context and a violation of the workflow. Do not "pre-fetch" the exercise list or begin planning to be proactive — wait for the user's questionnaire answers or explicit go-ahead first. On the unlock turn, call **`updateConstraintProfile`** as a same-turn backup only when there are non-empty fields to persist (does not gate plan/list/build).
+**getExerciseList** and **planProgram** are **strictly dependent** on the output of the questionnaire. Calling them before the questionnaire is answered is a waste of context and a violation of the workflow. Do not "pre-fetch" the exercise list or begin planning to be proactive — wait for the user's questionnaire answers or explicit go-ahead first. On the unlock turn, call **`updateConstraintProfile`** and **`updateTrainingProfile`** as same-turn backups only when there are non-empty fields to persist for each (does not gate plan/list/build).
 
 ## Warmup exercises
 

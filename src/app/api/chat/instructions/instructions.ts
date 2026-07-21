@@ -11,6 +11,7 @@
  */
 
 import type { TConstraintProfile } from '../constraints';
+import { trainingProfileHasAnyField } from '../training-profile';
 
 /**
  * Assembles Andy's system prompt, embedding the user's current Hevy program
@@ -52,6 +53,8 @@ interface IProps {
     hasWorkoutHistoryAccess?: boolean;
     /** Structured constraint profile accumulated from questionnaire + mid-chat updates. When present, replaces the questionnaire preferences line. */
     constraintProfile?: TConstraintProfile;
+    /** Structured Training profile (person facts). Injected when any field is set. */
+    trainingProfile?: TTrainingProfile;
     /** Recent session episodes for episodic memory (edit-path only). */
     episodes?: ISessionEpisodeForPrompt[];
     /**
@@ -124,6 +127,24 @@ function buildConstraintProfileBlock(profile: TConstraintProfile): string {
     return `## Active Constraint Profile\nHonor all of the following when planning, periodizing, selecting exercises, and building. Respect health/injury entries for exercise selection, volume, and movement choices.\n${lines}`;
 }
 
+function buildTrainingProfileBlock(profile: TTrainingProfile): string {
+    if (!trainingProfileHasAnyField(profile)) return '';
+
+    const lines = [
+        profile.age != null && `- Age: ${profile.age}`,
+        profile.sex && `- Sex: ${profile.sex}`,
+        profile.heightCm != null && `- Height: ${profile.heightCm} cm`,
+        profile.experienceLevel && `- Experience level: ${profile.experienceLevel}`,
+        profile.physiquePhase && `- Physique phase: ${profile.physiquePhase}`,
+        profile.trainingFocus && `- Training focus: ${profile.trainingFocus}`,
+        profile.activityLevel && `- Activity level: ${profile.activityLevel}`,
+        profile.sessionDurationMin != null && `- Session duration cap: ${profile.sessionDurationMin} min`,
+    ].filter(Boolean).join('\n');
+
+    if (!lines) return '';
+    return `## Active Training Profile\nPerson facts for coaching context (not hard Mutation constraint gates). Honor when planning volume, phase, focus, and session length.\n${lines}`;
+}
+
 function buildEpisodesBlock(episodes: ISessionEpisodeForPrompt[]): string {
     if (!episodes.length) return '';
     const lines = episodes
@@ -151,6 +172,7 @@ export const instructions = ({
     warmupExercises = '',
     hasWorkoutHistoryAccess = false,
     constraintProfile,
+    trainingProfile,
     episodes = [],
     isInLbs = true,
 }: IProps) => {
@@ -195,6 +217,7 @@ export const instructions = ({
         - bash: Execute a bash command.
         - getMoreInfoQuestions: Opens a questions component to gather additional information before building a workout program.
         - updateConstraintProfile: Persists Constraint profile (Agentic memory) from questionnaire answers and mid-chat constraint changes. Call after questionnaire unlock when there are non-empty fields to persist, and whenever constraints change.
+        - updateTrainingProfile: Persists Training profile (Agentic memory person facts) from Questionnaire advanced answers and mid-chat person-fact changes. Call after questionnaire unlock when there are non-empty Training profile fields to persist, and whenever those facts change.
         - getExerciseList: Provides access to all available Hevy exercises (reference list with IDs and titles).
         - planProgram: Submits a structured multi-week plan (duration, blocks, optional week-by-week progression) before building the first week.
         - readProgram: On-demand full program snapshot from **request start** (does **not** refresh after **buildWeek** in the same turn). Includes notes, reason, sets, and structure. Call when needed — not every turn.
@@ -209,6 +232,8 @@ export const instructions = ({
 
         **Constraint profile — User-stated change (removals):** **Add** freely when you recognize a new constraint. **Remove / relax** only on a **User-stated change** (user asserts the rule no longer applies, e.g. "knee's fine now") or direct the user to **Edit profile**. Never call **removeExcludedEquipment**, **removeInjuries**, **removeExcludedAreas**, or **removeChatRefinements** to make a preferred split, template, or exercise set feasible (e.g. do not drop Exclude Machine because "PPL needs machines"). If the profile conflicts with a requested style, **adapt the program** to the profile — do not edit the profile down.
 
+        **Training profile persistence:** The Active Training Profile in this prompt is in-session context — it does **not** mean Agentic memory is already written. Call **updateTrainingProfile** only when there is something to persist: (1) **After questionnaire** unlock **with non-empty Questionnaire advanced / Training profile fields** — call once in that same turn as a non-blocking backup alongside **planProgram** / **getExerciseList** / **buildWeek** (same spirit as Constraint profile). If every Training profile field is empty, **do not call**. (2) **Any mid-chat person-fact change** (age, sex, height, experience, physique phase, training focus, activity level, session duration): call **updateTrainingProfile** in the same turn. **Set** freely when the user states a fact. **Clear / change** a field only on a **User-stated change** (user asserts the fact no longer applies or gives a new value) or direct them to **Edit profile**. Training profile is **not** the Mutation constraint gate.
+
         **Before mutateProgram (mandatory):** Honor the Active Constraint Profile below. Never leave a training day with zero exercise rows — put a replacement (**insert_exercise** / **edit_exercise**) in the same batch before **delete_exercise**. Mid-chat constraint changes: follow **Constraint profile persistence** above. Op cookbook, targeting, and Exercise objection live in the **mutate-program** skill (and post-build periodization in **build-program**). **buildWeek** / **mutateProgram** hard-reject constraint violations — fix and retry.
 
         **Session size:** When building a program, target **6–7 total exercise rows per training day** in \`buildWeek\` (including 1–2 warmup rows when warmup exercises are yes or unset). If questionnaire prefs say warmup exercises **no**, omit separate warmup rows and still target ~5–6 working exercises per day. Only go below those targets if the user explicitly requested a short session, time cap, deload, or peaking day.
@@ -216,6 +241,7 @@ export const instructions = ({
         **Mandatory skill loading:** When the user's message is clearly requesting to create, build, or generate a **new** workout program, training program, or exercise routine—including the very first message in a new chat—you **must** call \`loadSkill\` with \`build-program\` first. In that same turn, you may only call \`getMoreInfoQuestions\`. Do not call \`getExerciseList\`, \`planProgram\`, or \`buildWeek\` in the same turn as the questionnaire. You must stop, send your visible response, and wait for the user to submit their answers or say "Build my program" before proceeding to exercise selection. For modifying an existing program (edits, swaps, or **changing program length** e.g. "make it 2 weeks", "shorten to 4 weeks"), load the \`mutate-program\` skill instead — not \`build-program\`.
         ${daysPerWeek != null && programLength != null ? `Program builder context: the user has selected ${daysPerWeek} days per week and ${programLength} weeks total. Builder length is the template/duplication setting — changing it does not remove weeks from the live grid; use **mutateProgram** **delete_week** when the user wants fewer weeks on an existing program.` : ''}
         ${constraintProfile ? buildConstraintProfileBlock(constraintProfile) : questionnairePreferencesLine}
+        ${trainingProfile ? buildTrainingProfileBlock(trainingProfile) : ''}
         ${hevyProgram?.length ? `A program currently exists (${hevyProgram.length} routines on the grid). Default to **mutate-program** for edits and length changes unless the user explicitly wants a brand-new program from scratch.` : ''}
         ${hevyProgram?.length && episodes.length ? buildEpisodesBlock(episodes) : ''}
 
