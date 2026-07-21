@@ -67,8 +67,7 @@ describe("constraint persist skill scope", () => {
         const skills = await discoverSkills(sandbox, [".agents/skills"]);
         const build = skills.find((s) => s.name === "build-program");
         expect(build).toBeDefined();
-        // Skill YAML itself may omit memory tools; CORE must still expose them.
-        expect(build!.allowedTools).not.toContain("updateConstraintProfile");
+        expect(build!.allowedTools).toContain("updateConstraintProfile");
 
         const tools = getTools({
             userId: "user-1",
@@ -86,7 +85,7 @@ describe("constraint persist skill scope", () => {
         const skills = await discoverSkills(sandbox, [".agents/skills"]);
         const mutate = skills.find((s) => s.name === "mutate-program");
         expect(mutate).toBeDefined();
-        expect(mutate!.allowedTools).not.toContain("updateConstraintProfile");
+        expect(mutate!.allowedTools).toContain("updateConstraintProfile");
 
         const tools = getTools({
             userId: "user-1",
@@ -99,7 +98,7 @@ describe("constraint persist skill scope", () => {
         expect(visible).toContain("updateConstraintProfile");
     });
 
-    it("loadSkill mutates activeToolScope to skill allowlist (omits memory tool)", async () => {
+    it("loadSkill mutates activeToolScope to skill allowlist (includes memory tool)", async () => {
         const sandbox = createSandbox({ workingDirectory: process.cwd() });
         const skills = await discoverSkills(sandbox, [".agents/skills"]);
         const build = skills.find((s) => s.name === "build-program");
@@ -130,7 +129,7 @@ describe("constraint persist skill scope", () => {
         );
 
         expect(activeToolScope.allowedTools).toEqual(build!.allowedTools);
-        expect(activeToolScope.allowedTools).not.toContain("updateConstraintProfile");
+        expect(activeToolScope.allowedTools).toContain("updateConstraintProfile");
     });
 
     it("updateConstraintProfile upserts when logged-in + db provided", async () => {

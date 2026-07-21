@@ -989,9 +989,13 @@ export function getTools({
 
     const updateConstraintProfileTool = tool({
         description:
-            'Update the active constraint profile when the user mentions new injuries, equipment restrictions, movement limitations, or training preferences mid-conversation. ' +
-            'Call this whenever the user adds or removes a constraint. ' +
-            'Examples: "my shoulder hurts", "I don\'t have access to cables", "no more lunges", "I got a new barbell".',
+            'Persist and update the active Constraint profile (Agentic memory). ' +
+            'REQUIRED after questionnaire unlock (user submitted answers or said "Build my program") — call once in that same turn with all non-empty questionnaire fields; do not block planProgram, getExerciseList, or buildWeek waiting on it. ' +
+            'REQUIRED on any mid-chat add/remove of injuries, excluded equipment, excluded areas, movement restrictions, or training preferences — call in the same turn (prefer before mutateProgram when both apply). ' +
+            'Field map: health/injury → addInjuries; exclude equipment → addExcludedEquipment; exclude areas → addExcludedAreas; ' +
+            'split/variability/progression/deload/peak/warmup → preferences; freeform limits → addChatRefinements. ' +
+            'Always pass rawStatement when the user spoke the constraint in chat. ' +
+            'Examples: questionnaire submit; "my shoulder hurts"; "I don\'t have access to cables"; "no more lunges"; "I got a new barbell".',
         inputSchema: z.object({
             addInjuries: z.array(z.string()).optional().describe('New injury or health issues to add'),
             removeInjuries: z.array(z.string()).optional().describe('Injuries that are resolved and should be removed'),

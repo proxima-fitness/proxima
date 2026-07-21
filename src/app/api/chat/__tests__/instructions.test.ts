@@ -31,6 +31,9 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("Periodization after buildWeek");
             expect(prompt).toContain("Before mutateProgram (mandatory)");
             expect(prompt).toContain("Constraint Profile");
+            expect(prompt).toContain("Constraint profile persistence (mandatory)");
+            expect(prompt).toContain("updateConstraintProfile");
+            expect(prompt).toContain("After questionnaire");
         });
 
         it("includes workflow when program is non-empty", () => {
