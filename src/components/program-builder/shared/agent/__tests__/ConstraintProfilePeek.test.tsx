@@ -132,13 +132,13 @@ describe("ConstraintProfilePeek", () => {
         renderPeek(
             <ConstraintProfilePeek
                 user={user}
-                editProfileHref="/account/edit-profile?from=peek"
+                editProfileHref="/profile/edit?from=peek"
             />,
         );
         openPeek();
 
         expect(screen.getByRole("link", { name: "Edit profile" }).getAttribute("href")).toBe(
-            "/account/edit-profile?from=peek",
+            "/profile/edit?from=peek",
         );
     });
 });

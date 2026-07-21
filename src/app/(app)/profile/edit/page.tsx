@@ -1,11 +1,11 @@
 /**
- * @module (app)/account/edit-profile/page
+ * @module (app)/profile/edit/page
  *
  * Edit profile route for identity and Constraint profile. Sits at
- * src/app/(app)/account/edit-profile/page.tsx; route "/account/edit-profile".
+ * src/app/(app)/profile/edit/page.tsx; route "/profile/edit".
  *
  * Depends on: EditProfileContent.
- * Used by: Next.js (route "/account/edit-profile").
+ * Used by: Next.js (route "/profile/edit").
  */
 
 import { EditProfileContent } from "@/components/account/EditProfileContent";

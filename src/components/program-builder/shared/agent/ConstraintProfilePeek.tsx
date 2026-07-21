@@ -32,7 +32,7 @@ import {
 import { cn } from "@/lib/utils";
 
 /** Default Edit profile route for peek CTA. */
-export const CONSTRAINT_PROFILE_EDIT_HREF = "/account/edit-profile";
+export const CONSTRAINT_PROFILE_EDIT_HREF = "/profile/edit";
 
 const PREFERENCE_LABELS: Record<keyof TConstraintProfile["preferences"], string> = {
     splitType: "Preferred split",
@@ -45,7 +45,7 @@ const PREFERENCE_LABELS: Record<keyof TConstraintProfile["preferences"], string>
 
 export interface IConstraintProfilePeekProps {
     user: User;
-    /** Override Edit profile href (defaults to `/account/edit-profile`). */
+    /** Override Edit profile href (defaults to `/profile/edit`). */
     editProfileHref?: string;
     className?: string;
 }

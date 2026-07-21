@@ -3,11 +3,11 @@
 /**
  * @module account/EditProfileContent
  *
- * Client body for /account/edit-profile: identity section first, Constraint profile
+ * Client body for /profile/edit: identity section first, Constraint profile
  * editor below, dual Save, and page leave warn when either section is dirty.
  *
  * Depends on: UserContext, EditProfile, ConstraintProfileSection, leave guard, ConfirmDialog.
- * Used by: (app)/account/edit-profile/page.tsx.
+ * Used by: (app)/profile/edit/page.tsx.
  */
 
 import { useRef } from "react";

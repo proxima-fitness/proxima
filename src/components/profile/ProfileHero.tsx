@@ -240,7 +240,7 @@ export function ProfileHero() {
                 size="sm"
                 className="w-fit rounded-full bg-lightSecondary px-5 text-white hover:bg-lightSecondary/90"
             >
-                <Link href="/account/edit-profile">
+                <Link href="/profile/edit">
                     Edit profile
                     <PenBoxIcon className="size-4" />
                 </Link>
