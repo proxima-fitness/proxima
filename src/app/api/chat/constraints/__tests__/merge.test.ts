@@ -20,11 +20,19 @@ describe('mergeConstraintProfiles', () => {
         expect(mergeConstraintProfiles(null, session)).toEqual(session);
     });
 
-    it('unions arrays with case-insensitive dedup', () => {
+    it('uses persisted arrays only — does not union with session', () => {
         const persisted = profile({ injuries: ['Bad Knee', 'shoulder pain'] });
         const session = profile({ injuries: ['bad knee', 'wrist issue'] });
         const result = mergeConstraintProfiles(persisted, session);
-        expect(result.injuries).toEqual(['Bad Knee', 'shoulder pain', 'wrist issue']);
+        expect(result.injuries).toEqual(['Bad Knee', 'shoulder pain']);
+    });
+
+    it('remove-from-persisted + stale session injury does not reappear', () => {
+        const persisted = profile({ injuries: ['shoulder pain'] });
+        const session = profile({ injuries: ['bad knee', 'shoulder pain'] });
+        const result = mergeConstraintProfiles(persisted, session);
+        expect(result.injuries).toEqual(['shoulder pain']);
+        expect(result.injuries).not.toContain('bad knee');
     });
 
     it('session preferences win when non-empty', () => {
@@ -52,7 +60,7 @@ describe('mergeConstraintProfiles', () => {
         expect(result.preferences.warmupExercises).toBe('yes');
     });
 
-    it('unions all array fields independently', () => {
+    it('uses persisted for all array fields independently — ignores session arrays', () => {
         const persisted = profile({
             excludedEquipment: ['Band'],
             excludedAreas: ['Legs'],
@@ -64,9 +72,9 @@ describe('mergeConstraintProfiles', () => {
             chatRefinements: ['no supersets', 'prefer compounds'],
         });
         const result = mergeConstraintProfiles(persisted, session);
-        expect(result.excludedEquipment).toEqual(['Band', 'Cable']);
-        expect(result.excludedAreas).toEqual(['Legs', 'Arms']);
-        expect(result.chatRefinements).toEqual(['no supersets', 'prefer compounds']);
+        expect(result.excludedEquipment).toEqual(['Band']);
+        expect(result.excludedAreas).toEqual(['Legs']);
+        expect(result.chatRefinements).toEqual(['no supersets']);
     });
 
     it('handles both profiles empty', () => {

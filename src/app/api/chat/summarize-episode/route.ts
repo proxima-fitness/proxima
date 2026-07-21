@@ -39,7 +39,7 @@ export async function POST(req: Request) {
         }
 
         // Get current constraint profile
-        const persistedConstraints = await getUserConstraints(supabase, user.id);
+        const persistedConstraints = await getUserConstraints(user.id, supabase);
         const constraintProfile = persistedConstraints ?? initializeConstraintProfile({});
 
         // Generate summary — map UIMessages to the shape the summarizer expects

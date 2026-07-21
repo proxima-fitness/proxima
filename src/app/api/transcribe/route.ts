@@ -1,7 +1,7 @@
 /**
  * @module transcribe
  *
- * Audio-to-text API route using AI SDK experimental_transcribe.
+ * Audio-to-text API route using AI SDK `transcribe`.
  * Accepts multipart/form-data with an `audio` file field and returns
  * `{ text }`. Requires OPENAI_API_KEY in the environment.
  *
@@ -9,7 +9,7 @@
  */
 
 import {
-  experimental_transcribe as transcribe,
+  transcribe,
   NoTranscriptGeneratedError,
 } from "ai";
 import { openai } from "@ai-sdk/openai";
@@ -38,7 +38,6 @@ export async function POST(req: Request) {
 
     const buffer = new Uint8Array(await file.arrayBuffer());
 
-    // experimental_transcribe — mark for migration when API stabilises
     const transcript = await transcribe({
       model: openai.transcription("whisper-1"),
       audio: buffer,

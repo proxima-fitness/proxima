@@ -2,8 +2,18 @@ import type { TConstraintProfile } from './types';
 
 /**
  * Merges a persisted constraint profile (from DB) with a session profile
- * (from questionnaire params). Arrays are unioned (deduplicated, case-insensitive).
- * Session preference values win when non-empty, otherwise persisted values are kept.
+ * (from questionnaire params).
+ *
+ * When `persisted` is null: returns session (first-time seed).
+ *
+ * When `persisted` is non-null:
+ * - Array fields (`injuries`, `excludedEquipment`, `excludedAreas`, `chatRefinements`)
+ *   use persisted only — do not union with session. Edit profile removals must stick;
+ *   stale questionnaire/session strings must not resurrect on the next chat turn.
+ * - Preferences: session wins when non-empty; otherwise persisted is kept.
+ *
+ * Tradeoff: new questionnaire array values for users with an existing row must arrive
+ * via `updateConstraintProfile` or Edit profile Save — not merge alone.
  */
 export function mergeConstraintProfiles(
     persisted: TConstraintProfile | null,
@@ -12,9 +22,9 @@ export function mergeConstraintProfiles(
     if (!persisted) return session;
 
     return {
-        injuries: unionStringArrays(persisted.injuries, session.injuries),
-        excludedEquipment: unionStringArrays(persisted.excludedEquipment, session.excludedEquipment),
-        excludedAreas: unionStringArrays(persisted.excludedAreas, session.excludedAreas),
+        injuries: persisted.injuries,
+        excludedEquipment: persisted.excludedEquipment,
+        excludedAreas: persisted.excludedAreas,
         preferences: {
             splitType: session.preferences.splitType || persisted.preferences.splitType,
             exerciseVariability: session.preferences.exerciseVariability || persisted.preferences.exerciseVariability,
@@ -23,20 +33,6 @@ export function mergeConstraintProfiles(
             peakWeek: session.preferences.peakWeek || persisted.preferences.peakWeek,
             warmupExercises: session.preferences.warmupExercises || persisted.preferences.warmupExercises,
         },
-        chatRefinements: unionStringArrays(persisted.chatRefinements, session.chatRefinements),
+        chatRefinements: persisted.chatRefinements,
     };
 }
-/** Case-insensitive union of two string arrays, preserving original casing from the first occurrence. */
-function unionStringArrays(a: string[], b: string[]): string[] {
-    const seen = new Set<string>();
-    const result: string[] = [];
-    for (const item of [...a, ...b]) {
-        const key = item.toLowerCase();
-        if (!seen.has(key)) {
-            seen.add(key);
-            result.push(item);
-        }
-    }
-    return result;
-}
-

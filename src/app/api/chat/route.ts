@@ -13,7 +13,7 @@
  * Used by: Chat.tsx (program-builder agent panel)
  */
 
-import { ToolLoopAgent, createAgentUIStreamResponse, gateway, stepCountIs } from 'ai';
+import { ToolLoopAgent, createAgentUIStreamResponse, gateway, isStepCount } from 'ai';
 import { after } from 'next/server';
 import { observe, propagateAttributes } from '@langfuse/tracing';
 import { langfuseSpanProcessor } from '../../../../instrumentation';
@@ -110,7 +110,7 @@ async function handleChatPost(req: Request) {
                 const sanitizedMessages = sanitizeMessagesWithUnresolvedToolCalls(messages);
 
                 const persistedConstraints = user
-                    ? await getUserConstraints(supabase, user.id)
+                    ? await getUserConstraints(user.id, supabase)
                     : null;
 
                 const constraintProfile = mergeConstraintProfiles(
@@ -192,8 +192,8 @@ async function handleChatPost(req: Request) {
                     tools: tools,
                     toolsContext: skillToolsContext,
                     callOptionsSchema: callOptionsSchema,
-                    stopWhen: stepCountIs(28),
-                    experimental_telemetry: { isEnabled: true },
+                    stopWhen: isStepCount(28),
+                    telemetry: { isEnabled: true },
                     prepareCall: ({ options, ...settings }) => {
                         const CORE_TOOLS = ['loadSkill', 'readFile', 'bash'];
                         let filteredTools = settings.tools;

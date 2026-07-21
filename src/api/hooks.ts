@@ -28,6 +28,9 @@ import { getFollowers, getFollowing } from "./followers";
 import { User } from "@supabase/supabase-js";
 import { getChatHistoryById, getChatIds } from "./chat-history";
 import { getLoggedWorkoutDetail, getLoggedWorkoutPreviews, getProfileCalendarWorkouts, getProfileStatistics, LOGGED_WORKOUT_BROWSE_QUERY_KEY, PROFILE_CALENDAR_QUERY_KEY, PROFILE_STATISTICS_QUERY_KEY, WorkoutNotFoundError } from "./workout-history-browse";
+import {
+    getUserConstraints,
+} from "./user-constraints";
 
 /* ================================
    CLIENT-SIDE RENDERED HOOKS
@@ -448,6 +451,19 @@ export const useLoggedWorkoutBrowse = (user: User | undefined | null, enabled: b
         initialPageParam: null as TWorkoutHistoryCursor | null,
         getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
         enabled: !!user && enabled,
+    });
+};
+
+/**
+ * Loads the signed-in user's Constraint profile record (structured + raw statements).
+ *
+ * @param user - Authenticated user (query disabled when null)
+ */
+export const useUserConstraints = (user: User | undefined | null) => {
+    return useQuery({
+        queryKey: ["user-constraints", user?.id],
+        queryFn: () => getUserConstraints(user!.id),
+        enabled: !!user,
     });
 };
 
