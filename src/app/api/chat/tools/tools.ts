@@ -15,6 +15,7 @@
  *  - mutateProgram - applies typed registry operation batches to the program
  *  - rateProgram - scores the current bodybuilding program (heuristic report card)
  *  - getWorkoutHistory - Pro-only backed-up workout history from Supabase (no live Hevy)
+ *  - getBodyMeasurements - Pro-only backed-up body measurements from Supabase (no live Hevy)
  *
  * Depends on: ai, zod, @/components/program-builder/api/hevy, @/assets/constants
  * Used by: /api/chat/route.ts (passed to ToolLoopAgent)
@@ -48,10 +49,22 @@ import {
     type TWorkoutHistoryToolOutput,
 } from './workout-history';
 import {
+    AGENT_BODY_MEASUREMENTS_MAX,
+    clampBodyMeasurementsLimit,
+    formatBodyMeasurementsForModel,
+    getBodyMeasurementsInputSchema,
+    normalizeMeasuredOnBound,
+    type TBodyMeasurementsToolOutput,
+} from './body-measurements';
+import {
     ensureWorkoutHistoryFresh,
     getSyncProgress,
     getWorkoutsForUser,
 } from '@/api/workout-history-read';
+import {
+    getBodyMeasurementsForUser,
+} from '@/api/body-measurements-read';
+import { readBodyMeasurementsSyncCursor } from '@/api/body-measurements-sync';
 import { tool } from 'ai';
 import type { TConstraintProfile } from '../constraints';
 import { splitConstraintCsv } from '../constraints/initialize';
@@ -967,6 +980,80 @@ export function getTools({
         }),
     });
 
+    const getBodyMeasurementsTool = tool({
+        description:
+            'Returns the user\'s backed-up body measurements from their Hevy sync (Supabase backup — not a live Hevy API call). ' +
+            'Use when they ask about weight, body fat, girths, or trends over time (e.g. "how has my waist changed?"). ' +
+            `Choose the smallest limit that answers the question (typical 5–15; hard cap ${AGENT_BODY_MEASUREMENTS_MAX}). ` +
+            'Use `since` / `until` for time-bounded questions. Latest check-in may already be in the system prompt.',
+        inputSchema: getBodyMeasurementsInputSchema,
+        execute: async ({ limit, since, until }): Promise<TBodyMeasurementsToolOutput> => {
+            try {
+                if (!userId || !workoutHistoryDb) {
+                    return {
+                        error: 'Body measurements unavailable',
+                        message: 'Body measurement history requires an authenticated Pro session.',
+                    };
+                }
+
+                const { data: apiKey, error: keyError } = await workoutHistoryDb.rpc('read_secret', {
+                    secret_name: `hevy_api_key_${userId}`,
+                });
+
+                if (keyError || !apiKey) {
+                    return {
+                        error: 'Hevy not connected',
+                        message: 'No Hevy backup found. The user must connect Hevy in profile settings first.',
+                    };
+                }
+
+                const syncCursor = await readBodyMeasurementsSyncCursor(workoutHistoryDb, userId);
+
+                if (syncCursor.syncError) {
+                    return {
+                        error: 'Sync error',
+                        message: syncCursor.syncError,
+                    };
+                }
+
+                const limitApplied = clampBodyMeasurementsLimit(limit);
+                const sinceBound = normalizeMeasuredOnBound(since);
+                const untilBound = normalizeMeasuredOnBound(until);
+                const page = await getBodyMeasurementsForUser(workoutHistoryDb, userId, {
+                    limit: limitApplied,
+                    since: sinceBound,
+                    until: untilBound,
+                });
+
+                const syncPending =
+                    syncCursor.lastKnownMeasurementCount != null &&
+                    syncCursor.lastSyncedPage != null &&
+                    syncCursor.lastKnownPageCount != null &&
+                    syncCursor.lastSyncedPage < syncCursor.lastKnownPageCount;
+
+                return {
+                    measurements: page.measurements,
+                    totalReturned: page.measurements.length,
+                    limitApplied,
+                    since: sinceBound,
+                    until: untilBound,
+                    hasMore: page.nextCursor != null,
+                    syncPending,
+                };
+            } catch (error) {
+                console.error('Error in getBodyMeasurements tool:', error);
+                return {
+                    error: 'Failed to fetch body measurements',
+                    message: error instanceof Error ? error.message : 'Unknown error',
+                };
+            }
+        },
+        toModelOutput: async ({ output }) => ({
+            type: 'text' as const,
+            value: formatBodyMeasurementsForModel(output as TBodyMeasurementsToolOutput),
+        }),
+    });
+
     const rateProgramTool = tool({
         description:
             'Heuristic report card (volume, frequency, categories, rep variety, session size). ' +
@@ -1248,6 +1335,7 @@ export function getTools({
         return {
             ...baseTools,
             getWorkoutHistory: getWorkoutHistoryTool,
+            getBodyMeasurements: getBodyMeasurementsTool,
         };
     }
 

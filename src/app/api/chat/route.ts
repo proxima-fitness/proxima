@@ -29,6 +29,7 @@ import {
     mergeTrainingProfiles,
 } from './training-profile';
 import { getUserTrainingProfile } from '@/api/user-training-profile';
+import { getLatestBodyMeasurement } from '@/api/body-measurements-read';
 import { getRecentEpisodes } from '@/api/session-episodes';
 import { createSandbox } from './skills/sandbox';
 import { discoverSkills } from './skills/index';
@@ -127,12 +128,13 @@ async function handleChatPost(req: Request) {
             async () => {
                 const sanitizedMessages = sanitizeMessagesWithUnresolvedToolCalls(messages);
 
-                const [persistedConstraints, persistedTrainingProfile] = user
+                const [persistedConstraints, persistedTrainingProfile, latestBodyMeasurement] = user
                     ? await Promise.all([
                         getUserConstraints(user.id, supabase),
                         getUserTrainingProfile(user.id, supabase),
+                        getLatestBodyMeasurement(supabase, user.id),
                     ])
-                    : [null, null];
+                    : [null, null, null];
 
                 const constraintProfile = mergeConstraintProfiles(
                     persistedConstraints,
@@ -183,8 +185,10 @@ async function handleChatPost(req: Request) {
                     peakWeek,
                     warmupExercises,
                     hasWorkoutHistoryAccess: hasActiveSubscription,
+                    hasBodyMeasurementsAccess: hasActiveSubscription,
                     constraintProfile,
                     trainingProfile,
+                    latestBodyMeasurement,
                     episodes,
                     isInLbs: weightInLbs,
                 });

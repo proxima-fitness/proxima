@@ -285,6 +285,109 @@ describe("chat instructions.ts", () => {
             expect(prompt).not.toContain("getWorkoutHistory");
             expect(prompt).not.toContain("Workout history:");
         });
+
+        it("includes Latest Body Measurement block when a measurement is present", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+                latestBodyMeasurement: {
+                    id: "bm-1",
+                    user_id: "user-1",
+                    source: "hevy",
+                    external_id: "2024-08-14",
+                    measured_on: "2024-08-14",
+                    weight_kg: 80.5,
+                    lean_mass_kg: 65,
+                    fat_percent: 18.5,
+                    neck_cm: null,
+                    shoulder_cm: null,
+                    chest_cm: null,
+                    left_bicep_cm: null,
+                    right_bicep_cm: null,
+                    left_forearm_cm: null,
+                    right_forearm_cm: null,
+                    abdomen: null,
+                    waist: 80,
+                    hips: null,
+                    left_thigh: null,
+                    right_thigh: null,
+                    left_calf: null,
+                    right_calf: null,
+                    created_at: "2024-08-14T00:00:00Z",
+                    updated_at: "2024-08-14T00:00:00Z",
+                },
+            });
+
+            expect(prompt).toContain("## Latest Body Measurement");
+            expect(prompt).toContain("Measured on: 2024-08-14");
+            expect(prompt).toContain("Weight: 80.5 kg");
+            expect(prompt).toContain("Waist: 80 cm");
+        });
+
+        it("omits Latest Body Measurement block when absent", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+                latestBodyMeasurement: null,
+            });
+
+            expect(prompt).not.toContain("## Latest Body Measurement");
+        });
+
+        it("includes getBodyMeasurements guidance when hasBodyMeasurementsAccess is true", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+                hasBodyMeasurementsAccess: true,
+            });
+
+            expect(prompt).toContain("getBodyMeasurements");
+            expect(prompt).toContain("Body measurements:");
+            expect(prompt).toContain("measurement history or trends");
+        });
+
+        it("omits getBodyMeasurements guidance for free users but still injects latest when present", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+                hasBodyMeasurementsAccess: false,
+                latestBodyMeasurement: {
+                    id: "bm-1",
+                    user_id: "user-1",
+                    source: "hevy",
+                    external_id: "2024-08-14",
+                    measured_on: "2024-08-14",
+                    weight_kg: 80.5,
+                    lean_mass_kg: null,
+                    fat_percent: null,
+                    neck_cm: null,
+                    shoulder_cm: null,
+                    chest_cm: null,
+                    left_bicep_cm: null,
+                    right_bicep_cm: null,
+                    left_forearm_cm: null,
+                    right_forearm_cm: null,
+                    abdomen: null,
+                    waist: null,
+                    hips: null,
+                    left_thigh: null,
+                    right_thigh: null,
+                    left_calf: null,
+                    right_calf: null,
+                    created_at: "2024-08-14T00:00:00Z",
+                    updated_at: "2024-08-14T00:00:00Z",
+                },
+            });
+
+            expect(prompt).not.toContain("getBodyMeasurements");
+            expect(prompt).not.toContain("Body measurements:");
+            expect(prompt).toContain("## Latest Body Measurement");
+            expect(prompt).toContain("Weight: 80.5 kg");
+        });
         it("includes weight display unit guidance for lbs UI", () => {
             const prompt = instructions({
                 hevyProgram: [],

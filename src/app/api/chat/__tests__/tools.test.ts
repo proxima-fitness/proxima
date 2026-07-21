@@ -29,6 +29,23 @@ vi.mock("@/api/workout-history-read", () => ({
     })),
 }));
 
+vi.mock("@/api/body-measurements-read", () => ({
+    getBodyMeasurementsForUser: vi.fn(async () => ({
+        measurements: [],
+        nextCursor: null,
+    })),
+    getLatestBodyMeasurement: vi.fn(async () => null),
+}));
+
+vi.mock("@/api/body-measurements-sync", () => ({
+    readBodyMeasurementsSyncCursor: vi.fn(async () => ({
+        lastKnownMeasurementCount: 1,
+        lastSyncedPage: 1,
+        lastKnownPageCount: 1,
+        syncError: null,
+    })),
+}));
+
 vi.mock("@/api/user-training-profile", async (importOriginal) => {
     const actual = await importOriginal<typeof import("@/api/user-training-profile")>();
     return {
@@ -39,8 +56,11 @@ vi.mock("@/api/user-training-profile", async (importOriginal) => {
 
 import { getHevyExercises } from "@/components/program-builder/api/hevy";
 import { getWorkoutsForUser } from "@/api/workout-history-read";
+import { getBodyMeasurementsForUser } from "@/api/body-measurements-read";
 import { upsertUserTrainingProfile } from "@/api/user-training-profile";
 import { backedUpWorkoutFixture } from "@/api/__tests__/manual/backed-up-workout.fixture";
+import { hevyBodyMeasurementFixture } from "@/api/__tests__/manual/hevy-body-measurement.fixture";
+import { HEVY_BODY_MEASUREMENT_SOURCE } from "@/api/body-measurements";
 import { mutateProgramInputSchema } from "@/components/program-builder/mutations";
 import {
     getTools,
@@ -49,6 +69,7 @@ import {
 } from "@/app/api/chat/tools/tools";
 import { initializeConstraintProfile } from "@/app/api/chat/constraints/initialize";
 import { initializeTrainingProfile } from "@/app/api/chat/training-profile";
+import type { TBodyMeasurementRow } from "@/api/body-measurements-read";
 
 const upsertUserTrainingProfileMock = vi.mocked(upsertUserTrainingProfile);
 
@@ -63,8 +84,14 @@ type TGetWorkoutHistoryTool = TToolTestHarness<
     unknown
 >;
 
+type TGetBodyMeasurementsTool = TToolTestHarness<
+    { limit: number; since?: string; until?: string },
+    unknown
+>;
+
 type TProToolsWithWorkoutHistory = ReturnType<typeof getTools> & {
     getWorkoutHistory: TGetWorkoutHistoryTool;
+    getBodyMeasurements: TGetBodyMeasurementsTool;
 };
 
 type TBuildWeekInput = {
@@ -135,14 +162,17 @@ describe("chat tools.ts", () => {
         expect(tools).not.toHaveProperty("modifyProgram");
         expect(tools).not.toHaveProperty("getCurrentProgram");
         expect(tools).not.toHaveProperty("getWorkoutHistory");
+        expect(tools).not.toHaveProperty("getBodyMeasurements");
     });
 
-    it("includes getWorkoutHistory only for Pro users with auth context", () => {
+    it("includes getWorkoutHistory and getBodyMeasurements only for Pro users with auth context", () => {
         const freeTools = getTools({ hasActiveSubscription: false, userId: "user-1", workoutHistoryDb: {} as TWorkoutHistoryDb });
         expect(freeTools).not.toHaveProperty("getWorkoutHistory");
+        expect(freeTools).not.toHaveProperty("getBodyMeasurements");
 
         const proTools = getTools({ hasActiveSubscription: true, userId: "user-1", workoutHistoryDb: {} as TWorkoutHistoryDb });
         expect(proTools).toHaveProperty("getWorkoutHistory");
+        expect(proTools).toHaveProperty("getBodyMeasurements");
     });
 
     describe("readProgram tool execute", () => {
@@ -863,6 +893,107 @@ describe("chat tools.ts", () => {
             expect(modelOutput.value).toContain('"weight_kg":100');
             expect(modelOutput.value).toContain('"set_type":"warmup"');
             expect(modelOutput.value).toContain('"rpe":8');
+        });
+    });
+
+    describe("getBodyMeasurements tool execute", () => {
+        const mockDb = mockWorkoutHistoryDb({ rpc: vi.fn(async (name: string) => {
+            if (name === "read_secret") {
+                return { data: "test-api-key", error: null };
+            }
+            return { data: null, error: null };
+        }) });
+
+        const measurementRow: TBodyMeasurementRow = {
+            id: "bm-1",
+            user_id: "user-1",
+            source: HEVY_BODY_MEASUREMENT_SOURCE,
+            external_id: hevyBodyMeasurementFixture.date,
+            measured_on: hevyBodyMeasurementFixture.date,
+            weight_kg: hevyBodyMeasurementFixture.weight_kg ?? null,
+            lean_mass_kg: hevyBodyMeasurementFixture.lean_mass_kg ?? null,
+            fat_percent: hevyBodyMeasurementFixture.fat_percent ?? null,
+            neck_cm: hevyBodyMeasurementFixture.neck_cm ?? null,
+            shoulder_cm: hevyBodyMeasurementFixture.shoulder_cm ?? null,
+            chest_cm: hevyBodyMeasurementFixture.chest_cm ?? null,
+            left_bicep_cm: hevyBodyMeasurementFixture.left_bicep_cm ?? null,
+            right_bicep_cm: hevyBodyMeasurementFixture.right_bicep_cm ?? null,
+            left_forearm_cm: hevyBodyMeasurementFixture.left_forearm_cm ?? null,
+            right_forearm_cm: hevyBodyMeasurementFixture.right_forearm_cm ?? null,
+            abdomen: hevyBodyMeasurementFixture.abdomen ?? null,
+            waist: hevyBodyMeasurementFixture.waist ?? null,
+            hips: hevyBodyMeasurementFixture.hips ?? null,
+            left_thigh: hevyBodyMeasurementFixture.left_thigh ?? null,
+            right_thigh: hevyBodyMeasurementFixture.right_thigh ?? null,
+            left_calf: hevyBodyMeasurementFixture.left_calf ?? null,
+            right_calf: hevyBodyMeasurementFixture.right_calf ?? null,
+            created_at: "2024-08-14T00:00:00Z",
+            updated_at: "2024-08-14T00:00:00Z",
+        };
+
+        it("is omitted for free tier (Pro reject)", () => {
+            const freeTools = getTools({
+                hasActiveSubscription: false,
+                userId: "user-1",
+                workoutHistoryDb: mockDb,
+            });
+            expect(freeTools).not.toHaveProperty("getBodyMeasurements");
+        });
+
+        it("clamps limit to 30 and calls getBodyMeasurementsForUser", async () => {
+            const tools = getProToolsWithWorkoutHistory({ workoutHistoryDb: mockDb });
+            const { getBodyMeasurements } = tools;
+
+            await getBodyMeasurements.execute({
+                limit: 50,
+                since: "2024-05-01T00:00:00.000Z",
+                until: "2024-08-01",
+            });
+
+            expect(getBodyMeasurementsForUser).toHaveBeenCalledWith(
+                mockDb,
+                "user-1",
+                expect.objectContaining({
+                    limit: 30,
+                    since: "2024-05-01",
+                    until: "2024-08-01",
+                }),
+            );
+        });
+
+        it("returns Hevy-not-connected when read_secret fails", async () => {
+            const noKeyDb = mockWorkoutHistoryDb({
+                rpc: vi.fn(async () => ({ data: null, error: { message: "missing" } })),
+            });
+
+            const tools = getProToolsWithWorkoutHistory({ workoutHistoryDb: noKeyDb });
+            const output = (await tools.getBodyMeasurements.execute({ limit: 10 })) as {
+                error?: string;
+                message?: string;
+            };
+            expect(output.error).toBe("Hevy not connected");
+        });
+
+        it("success returns entries and toModelOutput formats them", async () => {
+            vi.mocked(getBodyMeasurementsForUser).mockResolvedValueOnce({
+                measurements: [measurementRow],
+                nextCursor: null,
+            });
+
+            const tools = getProToolsWithWorkoutHistory({ workoutHistoryDb: mockDb });
+            const { getBodyMeasurements } = tools;
+
+            const output = (await getBodyMeasurements.execute({ limit: 10 })) as {
+                measurements?: TBodyMeasurementRow[];
+                totalReturned?: number;
+            };
+            expect(output.totalReturned).toBe(1);
+            expect(output.measurements?.[0]?.weight_kg).toBe(80.5);
+
+            const modelOutput = await getBodyMeasurements.toModelOutput({ output });
+            expect(modelOutput.value).toContain("2024-08-14");
+            expect(modelOutput.value).toContain('"weight_kg":80.5');
+            expect(modelOutput.value).toContain('"fat_percent":18.5');
         });
     });
 

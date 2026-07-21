@@ -10,8 +10,10 @@
  * Used by: /api/chat/route.ts (injected as `instructions` into ToolLoopAgent)
  */
 
+import type { TBodyMeasurementRow } from '@/api/body-measurements-read';
 import type { TConstraintProfile } from '../constraints';
 import { trainingProfileHasAnyField } from '../training-profile';
+import { buildLatestBodyMeasurementBlock } from '../tools/body-measurements';
 
 /**
  * Assembles Andy's system prompt, embedding the user's current Hevy program
@@ -51,10 +53,14 @@ interface IProps {
     warmupExercises?: string;
     /** When true, include getWorkoutHistory tool guidance (Pro-only). */
     hasWorkoutHistoryAccess?: boolean;
+    /** When true, include getBodyMeasurements tool guidance (Pro-only). */
+    hasBodyMeasurementsAccess?: boolean;
     /** Structured constraint profile accumulated from questionnaire + mid-chat updates. When present, replaces the questionnaire preferences line. */
     constraintProfile?: TConstraintProfile;
     /** Structured Training profile (person facts). Injected when any field is set. */
     trainingProfile?: TTrainingProfile;
+    /** Latest backed-up body measurement; injects a short summary when present (all tiers). */
+    latestBodyMeasurement?: TBodyMeasurementRow | null;
     /** Recent session episodes for episodic memory (edit-path only). */
     episodes?: ISessionEpisodeForPrompt[];
     /**
@@ -171,8 +177,10 @@ export const instructions = ({
     peakWeek = '',
     warmupExercises = '',
     hasWorkoutHistoryAccess = false,
+    hasBodyMeasurementsAccess = false,
     constraintProfile,
     trainingProfile,
+    latestBodyMeasurement = null,
     episodes = [],
     isInLbs = true,
 }: IProps) => {
@@ -181,9 +189,19 @@ export const instructions = ({
         ? `- getWorkoutHistory: Returns backed-up logged workouts from the user's Hevy sync (not live Hevy). Use when they ask about past training — weights, reps, sessions, or time-bounded questions like "what did I bench last month?". Pick the smallest limit that answers the question; use \`since\` for date ranges.\n        `
         : '';
 
+    const bodyMeasurementsToolLine = hasBodyMeasurementsAccess
+        ? `- getBodyMeasurements: Returns backed-up body measurements from the user's Hevy sync (not live Hevy). Use when they ask about weight, body fat, girths, or trends over time. Pick the smallest limit that answers the question; use \`since\` / \`until\` for date ranges. Latest check-in may already appear below.\n        `
+        : '';
+
     const workoutHistoryGuidance = hasWorkoutHistoryAccess
         ? `
         **Workout history:** When the user asks about their **logged training** (past sessions, weights, reps, progress over time), call **getWorkoutHistory** — not **readProgram** (which is the program grid, not completed workouts). Choose limit and optional \`since\` based on the question scope. Summarize findings in plain language; do not dump raw history verbatim.
+        `
+        : '';
+
+    const bodyMeasurementsGuidance = hasBodyMeasurementsAccess
+        ? `
+        **Body measurements:** When the user asks about **measurement history or trends** (weight over time, girth changes, body-fat progress), call **getBodyMeasurements**. The Latest Body Measurement block (when present) is the newest check-in only — use the tool for past entries. Summarize in plain language; do not dump raw history verbatim.
         `
         : '';
 
@@ -224,9 +242,9 @@ export const instructions = ({
         - buildWeek: Builds an entire week of routines/days for the workout program in a single call.
         - mutateProgram: Applies typed program mutations (operation batches) to edit the live grid or periodize after buildWeek. See tool description for available ops and batch semantics (array order, fail-all).
         - rateProgram: Scores the current program against bodybuilding-oriented heuristics (volume, frequency, categories, rep variety, session size) and shows a green/yellow/red report card in the UI.
-        ${workoutHistoryToolLine}
+        ${workoutHistoryToolLine}${bodyMeasurementsToolLine}
         **rateProgram:** Call **only** when the user explicitly asks to **rate** their program (e.g. "Rate my program"). Never for improvement tips, reviews, or critiques—use **readProgram** and answer in chat. If you did call it, explain the results in plain language.
-        ${workoutHistoryGuidance}
+        ${workoutHistoryGuidance}${bodyMeasurementsGuidance}
 
         **Constraint profile persistence:** The Active Constraint Profile in this prompt is in-session context — it does **not** mean Agentic memory is already written. Call **updateConstraintProfile** only when there is something to persist: (1) **After questionnaire** unlock (user submitted answers or said "Build my program") **with non-empty fields** — call once in that same turn with those fields as a non-blocking backup alongside **planProgram** / **getExerciseList** / **buildWeek**, not a stop-the-world gate. If the user skipped and every field is empty, **do not call** — nothing to persist. (2) **Any mid-chat constraint change** (injury, equipment, area, movement restriction, preference add/remove): you **must** call **updateConstraintProfile** in the same turn (prefer before **mutateProgram** when both apply). Map health → addInjuries; exclude equipment → addExcludedEquipment; exclude areas → addExcludedAreas; prefs → preferences; freeform limits → addChatRefinements; pass rawStatement when the user spoke in chat.
 
@@ -242,6 +260,7 @@ export const instructions = ({
         ${daysPerWeek != null && programLength != null ? `Program builder context: the user has selected ${daysPerWeek} days per week and ${programLength} weeks total. Builder length is the template/duplication setting — changing it does not remove weeks from the live grid; use **mutateProgram** **delete_week** when the user wants fewer weeks on an existing program.` : ''}
         ${constraintProfile ? buildConstraintProfileBlock(constraintProfile) : questionnairePreferencesLine}
         ${trainingProfile ? buildTrainingProfileBlock(trainingProfile) : ''}
+        ${buildLatestBodyMeasurementBlock(latestBodyMeasurement)}
         ${hevyProgram?.length ? `A program currently exists (${hevyProgram.length} routines on the grid). Default to **mutate-program** for edits and length changes unless the user explicitly wants a brand-new program from scratch.` : ''}
         ${hevyProgram?.length && episodes.length ? buildEpisodesBlock(episodes) : ''}
 
