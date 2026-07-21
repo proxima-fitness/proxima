@@ -772,6 +772,58 @@ interface IBuildWeekOutput {
     error?: string;
     message?: string;
 }
+
+// Training profile (CONTEXT catalogs)
+// Sex: `"male" | "female" | ""` — empty = prefer-not-to-say / unset (DB NULL). No sentinel.
+
+/** Closed sex catalog; empty = prefer not to say / unset. */
+type TTrainingSex = "male" | "female" | "";
+
+/** Experience level catalog (difficultyOptions). */
+type TExperienceLevel = "beginner" | "novice" | "intermediate" | "advanced" | "";
+
+/** Physique phase catalog. */
+type TPhysiquePhase = "bulk" | "cut" | "maintain" | "recomp" | "";
+
+/**
+ * Training focus catalog (CONTEXT **Training focus**).
+ * Slugs are storage IDs; UI labels live in training-profile-options (SP2).
+ */
+type TTrainingFocus =
+    | "bodybuilding"
+    | "powerbuilding"
+    | "powerlifting"
+    | "hyrox"
+    | "crossfit"
+    | "olympic_weightlifting"
+    | "calisthenics_bodyweight"
+    | "athletics_sport"
+    | "fat_loss"
+    | "general_fitness"
+    | "rehab_pain_aware"
+    | "";
+
+/**
+ * Activity level catalog — CONTEXT short forms for the existing 5-option set
+ * (form-options labels map onto these on save in SP2/SP3).
+ */
+type TActivityLevel = "sedentary" | "light" | "moderate" | "high" | "extreme" | "";
+
+/** Structured Training profile used by Edit profile, peek, and chat. */
+type TTrainingProfile = {
+    /** Integer years 14–100; null when unset. */
+    age: number | null;
+    /** Empty string = prefer not to say / unset. */
+    sex: TTrainingSex;
+    /** Canonical height in centimeters; null when unset. */
+    heightCm: number | null;
+    experienceLevel: TExperienceLevel;
+    physiquePhase: TPhysiquePhase;
+    trainingFocus: TTrainingFocus;
+    activityLevel: TActivityLevel;
+    /** Session duration cap in minutes (10–180, step 10); null when unset. */
+    sessionDurationMin: number | null;
+};
 }
 
 export {};

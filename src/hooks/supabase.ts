@@ -1225,6 +1225,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_training_profile: {
+        Row: {
+          activity_level: string | null
+          age: number | null
+          created_at: string
+          experience_level: string | null
+          height_cm: number | null
+          physique_phase: string | null
+          session_duration_min: number | null
+          sex: string | null
+          training_focus: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_level?: string | null
+          age?: number | null
+          created_at?: string
+          experience_level?: string | null
+          height_cm?: number | null
+          physique_phase?: string | null
+          session_duration_min?: number | null
+          sex?: string | null
+          training_focus?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_level?: string | null
+          age?: number | null
+          created_at?: string
+          experience_level?: string | null
+          height_cm?: number | null
+          physique_phase?: string | null
+          session_duration_min?: number | null
+          sex?: string | null
+          training_focus?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       users: {
         Row: {
           bio: string | null
