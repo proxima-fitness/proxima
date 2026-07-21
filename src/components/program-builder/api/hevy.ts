@@ -1334,6 +1334,49 @@ export const getHevyWorkoutCount = async (apiKey: string) => {
 };
 
 /**
+ * Fetches one page of body measurements from the Hevy API.
+ *
+ * Maps to `GET /v1/body_measurements`. Page size max is 10.
+ *
+ * @see https://api.hevyapp.com/docs/#/Body%20Measurements/get_v1_body_measurements
+ * @param apiKey - User's Hevy API key
+ * @param page - 1-based page number
+ * @param pageSize - Items per page (Hevy max 10)
+ * @returns Paginated body-measurements response
+ */
+export const getHevyBodyMeasurementsPage = async (
+    apiKey: string,
+    page: number,
+    pageSize: number = 10,
+): Promise<THevyBodyMeasurementsResponse> => {
+    const response = await defaultFetch<THevyBodyMeasurementsResponse>(
+        `https://api.hevyapp.com/v1/body_measurements?page=${page}&pageSize=${pageSize}`,
+        apiKey,
+    );
+    return response ?? { page, page_count: 0, body_measurements: [] };
+};
+
+/**
+ * Fetches a single body-measurement entry by date from the Hevy API.
+ *
+ * Maps to `GET /v1/body_measurements/{date}`.
+ *
+ * @see https://api.hevyapp.com/docs/#/Body%20Measurements/get_v1_body_measurements__date_
+ * @param apiKey - User's Hevy API key
+ * @param date - Measurement date (YYYY-MM-DD)
+ * @returns The body-measurement entry for that date
+ */
+export const getHevyBodyMeasurementByDate = async (
+    apiKey: string,
+    date: string,
+): Promise<THevyBodyMeasurement> => {
+    return defaultFetch<THevyBodyMeasurement>(
+        `https://api.hevyapp.com/v1/body_measurements/${encodeURIComponent(date)}`,
+        apiKey,
+    );
+};
+
+/**
  * Reads the last-cached Hevy workout count from the Supabase `hevy_workouts_count` table.
  *
  * Compared against the live count from {@link getHevyWorkoutCount} to determine

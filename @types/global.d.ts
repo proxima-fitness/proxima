@@ -194,6 +194,40 @@ type THevyWorkoutsResponse = {
     workouts: THevyWorkout[];
 };
 
+/** One body-measurement entry from `GET /v1/body_measurements` (Hevy OpenAPI BodyMeasurement). */
+type THevyBodyMeasurement = {
+    date: string;
+    weight_kg?: number | null;
+    lean_mass_kg?: number | null;
+    fat_percent?: number | null;
+    neck_cm?: number | null;
+    shoulder_cm?: number | null;
+    chest_cm?: number | null;
+    left_bicep_cm?: number | null;
+    right_bicep_cm?: number | null;
+    left_forearm_cm?: number | null;
+    right_forearm_cm?: number | null;
+    abdomen?: number | null;
+    waist?: number | null;
+    hips?: number | null;
+    left_thigh?: number | null;
+    right_thigh?: number | null;
+    left_calf?: number | null;
+    right_calf?: number | null;
+};
+
+type THevyBodyMeasurementsResponse = {
+    page: number;
+    page_count: number;
+    body_measurements: THevyBodyMeasurement[];
+};
+
+type TBodyMeasurementsDb = SupabaseClient<Database>;
+
+type TImportHevyBodyMeasurementResult =
+    | { status: "upserted"; id: string }
+    | { status: "error"; message: string };
+
 type TWorkoutHistoryDb = SupabaseClient<Database>;
 
 type TImportHevyWorkoutResult =

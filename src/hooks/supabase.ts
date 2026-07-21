@@ -71,6 +71,87 @@ export type Database = {
           },
         ]
       }
+      body_measurements: {
+        Row: {
+          abdomen: number | null
+          chest_cm: number | null
+          created_at: string
+          external_id: string
+          fat_percent: number | null
+          hips: number | null
+          id: string
+          lean_mass_kg: number | null
+          left_bicep_cm: number | null
+          left_calf: number | null
+          left_forearm_cm: number | null
+          left_thigh: number | null
+          measured_on: string
+          neck_cm: number | null
+          right_bicep_cm: number | null
+          right_calf: number | null
+          right_forearm_cm: number | null
+          right_thigh: number | null
+          shoulder_cm: number | null
+          source: Database["public"]["Enums"]["source_type"]
+          updated_at: string
+          user_id: string
+          waist: number | null
+          weight_kg: number | null
+        }
+        Insert: {
+          abdomen?: number | null
+          chest_cm?: number | null
+          created_at?: string
+          external_id: string
+          fat_percent?: number | null
+          hips?: number | null
+          id?: string
+          lean_mass_kg?: number | null
+          left_bicep_cm?: number | null
+          left_calf?: number | null
+          left_forearm_cm?: number | null
+          left_thigh?: number | null
+          measured_on: string
+          neck_cm?: number | null
+          right_bicep_cm?: number | null
+          right_calf?: number | null
+          right_forearm_cm?: number | null
+          right_thigh?: number | null
+          shoulder_cm?: number | null
+          source?: Database["public"]["Enums"]["source_type"]
+          updated_at?: string
+          user_id: string
+          waist?: number | null
+          weight_kg?: number | null
+        }
+        Update: {
+          abdomen?: number | null
+          chest_cm?: number | null
+          created_at?: string
+          external_id?: string
+          fat_percent?: number | null
+          hips?: number | null
+          id?: string
+          lean_mass_kg?: number | null
+          left_bicep_cm?: number | null
+          left_calf?: number | null
+          left_forearm_cm?: number | null
+          left_thigh?: number | null
+          measured_on?: string
+          neck_cm?: number | null
+          right_bicep_cm?: number | null
+          right_calf?: number | null
+          right_forearm_cm?: number | null
+          right_thigh?: number | null
+          shoulder_cm?: number | null
+          source?: Database["public"]["Enums"]["source_type"]
+          updated_at?: string
+          user_id?: string
+          waist?: number | null
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
       canonical_exercise_mappings: {
         Row: {
           canonical_exercise_id: string
