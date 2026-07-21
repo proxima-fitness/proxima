@@ -61,6 +61,7 @@ import { upsertUserTrainingProfile } from "@/api/user-training-profile";
 import { backedUpWorkoutFixture } from "@/api/__tests__/manual/backed-up-workout.fixture";
 import { hevyBodyMeasurementFixture } from "@/api/__tests__/manual/hevy-body-measurement.fixture";
 import { HEVY_BODY_MEASUREMENT_SOURCE } from "@/api/body-measurements";
+import { zodSchema } from "ai";
 import { mutateProgramInputSchema } from "@/components/program-builder/mutations";
 import {
     getTools,
@@ -70,6 +71,23 @@ import {
 import { initializeConstraintProfile } from "@/app/api/chat/constraints/initialize";
 import { initializeTrainingProfile } from "@/app/api/chat/training-profile";
 import type { TBodyMeasurementRow } from "@/api/body-measurements-read";
+
+/** Gemini rejects empty-string members in tool JSON Schema enums. */
+function collectEmptyEnumValues(node: unknown, path = ""): string[] {
+    if (node == null || typeof node !== "object") return [];
+    if (Array.isArray(node)) {
+        return node.flatMap((item, i) => collectEmptyEnumValues(item, `${path}[${i}]`));
+    }
+    const obj = node as Record<string, unknown>;
+    const hits: string[] = [];
+    if (Array.isArray(obj.enum) && obj.enum.some((v) => v === "")) {
+        hits.push(path || "(root)");
+    }
+    for (const [key, value] of Object.entries(obj)) {
+        hits.push(...collectEmptyEnumValues(value, path ? `${path}.${key}` : key));
+    }
+    return hits;
+}
 
 const upsertUserTrainingProfileMock = vi.mocked(upsertUserTrainingProfile);
 
@@ -998,6 +1016,40 @@ describe("chat tools.ts", () => {
     });
 
     describe("updateTrainingProfile", () => {
+        it("JSON Schema enums have no empty-string members (Gemini rejects them)", () => {
+            const tools = getTools({ trainingProfile: initializeTrainingProfile({}) });
+            const schema = zodSchema(
+                (tools.updateTrainingProfile as { inputSchema: Parameters<typeof zodSchema>[0] })
+                    .inputSchema,
+            ).jsonSchema;
+            expect(collectEmptyEnumValues(schema)).toEqual([]);
+        });
+
+        it("clears catalog fields with null (not empty string)", async () => {
+            const profile = initializeTrainingProfile({
+                sex: "male",
+                experienceLevel: "intermediate",
+                trainingFocus: "bodybuilding",
+            });
+            const tools = getTools({ trainingProfile: profile });
+            const update = asTestTool<
+                { sex?: string | null; experienceLevel?: string | null; trainingFocus?: string | null },
+                { updatedProfile?: TTrainingProfile }
+            >(tools.updateTrainingProfile);
+
+            const result = await update.execute({
+                sex: null,
+                experienceLevel: null,
+                trainingFocus: null,
+            });
+
+            expect(result.updatedProfile).toMatchObject({
+                sex: "",
+                experienceLevel: "",
+                trainingFocus: "",
+            });
+        });
+
         it("upserts when logged-in + db provided", async () => {
             upsertUserTrainingProfileMock.mockClear();
             const profile = initializeTrainingProfile({});

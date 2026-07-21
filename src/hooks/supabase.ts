@@ -340,45 +340,6 @@ export type Database = {
           },
         ]
       }
-      hevy_exercise_templates: {
-        Row: {
-          equipment: string | null
-          gif_id: string | null
-          id: string
-          instructions: string[] | null
-          is_custom: boolean | null
-          normalized_title: string | null
-          primary_muscle_group: string | null
-          secondary_muscle_groups: string[] | null
-          title: string | null
-          type: string | null
-        }
-        Insert: {
-          equipment?: string | null
-          gif_id?: string | null
-          id: string
-          instructions?: string[] | null
-          is_custom?: boolean | null
-          normalized_title?: string | null
-          primary_muscle_group?: string | null
-          secondary_muscle_groups?: string[] | null
-          title?: string | null
-          type?: string | null
-        }
-        Update: {
-          equipment?: string | null
-          gif_id?: string | null
-          id?: string
-          instructions?: string[] | null
-          is_custom?: boolean | null
-          normalized_title?: string | null
-          primary_muscle_group?: string | null
-          secondary_muscle_groups?: string[] | null
-          title?: string | null
-          type?: string | null
-        }
-        Relationships: []
-      }
       hevy_body_measurements_count: {
         Row: {
           created_at: string
@@ -419,6 +380,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      hevy_exercise_templates: {
+        Row: {
+          equipment: string | null
+          gif_id: string | null
+          id: string
+          instructions: string[] | null
+          is_custom: boolean | null
+          normalized_title: string | null
+          primary_muscle_group: string | null
+          secondary_muscle_groups: string[] | null
+          title: string | null
+          type: string | null
+        }
+        Insert: {
+          equipment?: string | null
+          gif_id?: string | null
+          id: string
+          instructions?: string[] | null
+          is_custom?: boolean | null
+          normalized_title?: string | null
+          primary_muscle_group?: string | null
+          secondary_muscle_groups?: string[] | null
+          title?: string | null
+          type?: string | null
+        }
+        Update: {
+          equipment?: string | null
+          gif_id?: string | null
+          id?: string
+          instructions?: string[] | null
+          is_custom?: boolean | null
+          normalized_title?: string | null
+          primary_muscle_group?: string | null
+          secondary_muscle_groups?: string[] | null
+          title?: string | null
+          type?: string | null
+        }
+        Relationships: []
       }
       hevy_workouts_count: {
         Row: {

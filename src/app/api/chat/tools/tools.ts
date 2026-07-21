@@ -1200,6 +1200,8 @@ export function getTools({
         },
     });
 
+    // Gemini rejects empty-string enum members in tool JSON Schema ("enum[N]: cannot be empty").
+    // Clear / unset = null only — never "" in z.enum.
     const updateTrainingProfileTool = tool({
         description:
             'Persist and update the active Training profile (Agentic memory person facts: age, sex, height, experience, physique phase, training focus, activity level, session duration). ' +
@@ -1207,18 +1209,18 @@ export function getTools({
             'Do not block planProgram, getExerciseList, or buildWeek waiting on it. ' +
             'Set freely when the user states a person fact. Clear a field only on a User-stated change (pass null for that field) or direct the user to Edit profile. ' +
             'Not the Mutation constraint gate — use updateConstraintProfile for injuries, exclusions, and training preferences. ' +
-            'Examples: questionnaire advanced submit; "I\'m 32"; "I\'m cutting"; "session cap 45 minutes"; "prefer not to say sex" (sex: "").',
+            'Examples: questionnaire advanced submit; "I\'m 32"; "I\'m cutting"; "session cap 45 minutes"; "prefer not to say sex" (sex: null).',
         inputSchema: z.object({
             age: z.number().int().min(14).max(100).nullable().optional()
                 .describe('Age in years (14–100). null clears on User-stated change only.'),
-            sex: z.enum(['male', 'female', '']).nullable().optional()
-                .describe('male | female | "" (prefer not to say / unset). null clears on User-stated change only.'),
+            sex: z.enum(['male', 'female']).nullable().optional()
+                .describe('male | female. null clears / prefer-not-to-say on User-stated change only.'),
             heightCm: z.number().min(120).max(230).nullable().optional()
                 .describe('Height in centimeters. null clears on User-stated change only.'),
-            experienceLevel: z.enum(['beginner', 'novice', 'intermediate', 'advanced', '']).nullable().optional()
-                .describe('Experience level catalog id. Empty or null clears on User-stated change only.'),
-            physiquePhase: z.enum(['bulk', 'cut', 'maintain', 'recomp', '']).nullable().optional()
-                .describe('Physique phase catalog id. Empty or null clears on User-stated change only.'),
+            experienceLevel: z.enum(['beginner', 'novice', 'intermediate', 'advanced']).nullable().optional()
+                .describe('Experience level catalog id. null clears on User-stated change only.'),
+            physiquePhase: z.enum(['bulk', 'cut', 'maintain', 'recomp']).nullable().optional()
+                .describe('Physique phase catalog id. null clears on User-stated change only.'),
             trainingFocus: z.enum([
                 'bodybuilding',
                 'powerbuilding',
@@ -1231,11 +1233,10 @@ export function getTools({
                 'fat_loss',
                 'general_fitness',
                 'rehab_pain_aware',
-                '',
             ]).nullable().optional()
-                .describe('Training focus catalog id. Empty or null clears on User-stated change only.'),
-            activityLevel: z.enum(['sedentary', 'light', 'moderate', 'high', 'extreme', '']).nullable().optional()
-                .describe('Activity level short form. Empty or null clears on User-stated change only.'),
+                .describe('Training focus catalog id. null clears on User-stated change only.'),
+            activityLevel: z.enum(['sedentary', 'light', 'moderate', 'high', 'extreme']).nullable().optional()
+                .describe('Activity level short form. null clears on User-stated change only.'),
             sessionDurationMin: z.number().int().min(10).max(180).nullable().optional()
                 .describe('Session duration cap in minutes (10–180). null clears on User-stated change only.'),
         }),
