@@ -31,6 +31,7 @@ import { getLoggedWorkoutDetail, getLoggedWorkoutPreviews, getProfileCalendarWor
 import {
     getUserConstraints,
 } from "./user-constraints";
+import { getUserTrainingProfile } from "./user-training-profile";
 
 /* ================================
    CLIENT-SIDE RENDERED HOOKS
@@ -463,6 +464,19 @@ export const useUserConstraints = (user: User | undefined | null) => {
     return useQuery({
         queryKey: ["user-constraints", user?.id],
         queryFn: () => getUserConstraints(user!.id),
+        enabled: !!user,
+    });
+};
+
+/**
+ * Loads the signed-in user's Training profile (person facts). Null when no row.
+ *
+ * @param user - Authenticated user (query disabled when null)
+ */
+export const useUserTrainingProfile = (user: User | undefined | null) => {
+    return useQuery({
+        queryKey: ["user-training-profile", user?.id],
+        queryFn: () => getUserTrainingProfile(user!.id),
         enabled: !!user,
     });
 };
