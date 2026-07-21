@@ -995,12 +995,13 @@ export function getTools({
     const updateConstraintProfileTool = tool({
         description:
             'Persist and update the active Constraint profile (Agentic memory). ' +
-            'REQUIRED after questionnaire unlock (user submitted answers or said "Build my program") — call once in that same turn with all non-empty questionnaire fields; do not block planProgram, getExerciseList, or buildWeek waiting on it. ' +
+            'Call after questionnaire unlock only when there are non-empty fields to persist; skip entirely when the user skipped and nothing changed — do not make empty updates. ' +
+            'Do not block planProgram, getExerciseList, or buildWeek waiting on it. ' +
             'REQUIRED on any mid-chat add/remove of injuries, excluded equipment, excluded areas, movement restrictions, or training preferences — call in the same turn (prefer before mutateProgram when both apply). ' +
             'Field map: health/injury → addInjuries; exclude equipment → addExcludedEquipment; exclude areas → addExcludedAreas; ' +
             'split/variability/progression/deload/peak/warmup → preferences; freeform limits → addChatRefinements. ' +
             'Always pass rawStatement when the user spoke the constraint in chat. ' +
-            'Examples: questionnaire submit; "my shoulder hurts"; "I don\'t have access to cables"; "no more lunges"; "I got a new barbell".',
+            'Examples: questionnaire submit with answers; "my shoulder hurts"; "I don\'t have access to cables"; "no more lunges"; "I got a new barbell".',
         inputSchema: z.object({
             addInjuries: z.array(z.string()).optional().describe('New injury or health issues to add'),
             removeInjuries: z.array(z.string()).optional().describe('Injuries that are resolved and should be removed'),
@@ -1023,6 +1024,25 @@ export function getTools({
         execute: async ({ addInjuries, removeInjuries, addExcludedEquipment, removeExcludedEquipment, addExcludedAreas, removeExcludedAreas, addChatRefinements, removeChatRefinements, preferences, rawStatement }) => {
             if (!constraintProfile) {
                 return { error: 'No active constraint profile in this session.' };
+            }
+
+            const hasArrayChange = [
+                addInjuries,
+                removeInjuries,
+                addExcludedEquipment,
+                removeExcludedEquipment,
+                addExcludedAreas,
+                removeExcludedAreas,
+                addChatRefinements,
+                removeChatRefinements,
+            ].some((arr) => (arr?.length ?? 0) > 0);
+            const hasPreferenceChange = Boolean(
+                preferences && Object.values(preferences).some((v) => typeof v === 'string' && v.trim() !== ''),
+            );
+            const hasRawStatement = Boolean(rawStatement?.trim());
+
+            if (!hasArrayChange && !hasPreferenceChange && !hasRawStatement) {
+                return { skipped: true as const, reason: 'Nothing to persist — empty update skipped.' };
             }
 
             const arrayFields = [
@@ -1055,6 +1075,9 @@ export function getTools({
         toModelOutput: async ({ output }) => {
             if ('error' in output) {
                 return { type: 'text' as const, value: `Error: ${output.error}` };
+            }
+            if ('skipped' in output && output.skipped) {
+                return { type: 'text' as const, value: output.reason ?? 'Nothing to persist — empty update skipped.' };
             }
             const p = output.updatedProfile;
             const summary = [

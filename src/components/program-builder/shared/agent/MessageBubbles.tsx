@@ -872,9 +872,13 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                         case "tool-updateConstraintProfile": {
                                             const constraintPart = part as {
                                                 state?: TToolPart["state"];
-                                                output?: { updatedProfile?: unknown; error?: string };
+                                                output?: { updatedProfile?: unknown; error?: string; skipped?: boolean };
                                             };
                                             const toolState: TToolPart["state"] = constraintPart.state ?? "output-available";
+                                            // Empty no-op (skipped questionnaire / nothing to persist) — hide chip
+                                            if (toolState === "output-available" && constraintPart.output?.skipped) {
+                                                return null;
+                                            }
                                             const isDone = toolState === "output-available" && constraintPart.output?.updatedProfile;
                                             return (
                                                 <Tool key={`${message.id}-${index}-constraint`} defaultOpen={false} className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
