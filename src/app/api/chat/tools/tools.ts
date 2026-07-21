@@ -177,6 +177,25 @@ export function getTools({
         return cachedHevyExercises!;
     }
 
+    const sandboxContextSchema = z.object({
+        sandbox: z.custom<ISandbox>(),
+    });
+
+    const loadSkillContextSchema = z.object({
+        sandbox: z.custom<ISandbox>(),
+        skills: z.array(
+            z.object({
+                name: z.string(),
+                description: z.string(),
+                path: z.string(),
+                allowedTools: z.array(z.string()).optional(),
+            }),
+        ),
+        activeToolScope: z.object({
+            allowedTools: z.array(z.string()).nullable(),
+        }),
+    });
+
     /**
      * Title: loadSkillTool
      * Description: Tool to load a skill to get specialized instructions
@@ -187,12 +206,9 @@ export function getTools({
         inputSchema: z.object({
             name: z.string().describe('The skill name to load'),
         }),
-        execute: async ({ name }, { experimental_context }) => {
-            const { sandbox, skills, activeToolScope } = experimental_context as {
-                sandbox: ISandbox;
-                skills: ISkillMetadata[];
-                activeToolScope: { allowedTools: string[] | null };
-            };
+        contextSchema: loadSkillContextSchema,
+        execute: async ({ name }, { context }) => {
+            const { sandbox, skills, activeToolScope } = context;
 
             const skill = skills.find(s => s.name.toLowerCase() === name.toLowerCase());
             if (!skill) {
@@ -222,9 +238,9 @@ export function getTools({
     const readFileTool = tool({
         description: 'Read a file from the filesystem',
         inputSchema: z.object({ path: z.string() }),
-        execute: async ({ path }, { experimental_context }) => {
-            const { sandbox } = experimental_context as { sandbox: ISandbox };
-            return sandbox.readFile(path, 'utf-8');
+        contextSchema: sandboxContextSchema,
+        execute: async ({ path }, { context }) => {
+            return context.sandbox.readFile(path, 'utf-8');
         },
     });
 
@@ -236,9 +252,9 @@ export function getTools({
     const bashTool = tool({
         description: 'Execute a bash command',
         inputSchema: z.object({ command: z.string() }),
-        execute: async ({ command }, { experimental_context }) => {
-            const { sandbox } = experimental_context as { sandbox: ISandbox };
-            return sandbox.exec(command);
+        contextSchema: sandboxContextSchema,
+        execute: async ({ command }, { context }) => {
+            return context.sandbox.exec(command);
         },
     });
 
@@ -991,6 +1007,7 @@ export function getTools({
                 progressionSystem: z.string().optional(),
                 deloadWeek: z.string().optional(),
                 peakWeek: z.string().optional(),
+                warmupExercises: z.string().optional(),
             }).optional().describe('Preference fields to update (only provided keys are changed)'),
             rawStatement: z.string().optional().describe("The user's exact words expressing this constraint"),
         }),

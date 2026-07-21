@@ -6390,6 +6390,15 @@ export const sampleQuestions: TQuestion[] = [
       ],
       allowOther: false,
     },
+    {
+      id: "warmup-exercises",
+      question: "Add warmup exercises?",
+      options: [
+        { id: "yes", label: "Yes ( Include 1–2 prep movements at the start of each day)" },
+        { id: "no", label: "No ( Skip separate warmup exercises)" },
+      ],
+      allowOther: false,
+    },
   ];
 
 export {

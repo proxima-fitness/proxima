@@ -46,6 +46,7 @@ export function useProgramRequestState(options: IUseProgramRequestStateOptions =
     const [progressionSystem, setProgressionSystem] = useState<string>("");
     const [deloadWeek, setDeloadWeek] = useState<string>("");
     const [peakWeek, setPeakWeek] = useState<string>("");
+    const [warmupExercises, setWarmupExercises] = useState<string>("");
     const [explore, toggleExplore] = useReducer((prev: boolean) => !prev, true);
     const [programTitle, setProgramTitle] = useState("My Proxima Program");
 
@@ -75,6 +76,7 @@ export function useProgramRequestState(options: IUseProgramRequestStateOptions =
                 progressionSystem,
                 deloadWeek,
                 peakWeek,
+                warmupExercises,
                 programTitle,
                 explore: explore ? "true" : "false",
             }) as TTextToJsonRequest,
@@ -102,6 +104,7 @@ export function useProgramRequestState(options: IUseProgramRequestStateOptions =
             progressionSystem,
             deloadWeek,
             peakWeek,
+            warmupExercises,
             programTitle,
             explore,
         ]
@@ -128,6 +131,7 @@ export function useProgramRequestState(options: IUseProgramRequestStateOptions =
     const handleProgressionSystem = useCallback((value: string) => setProgressionSystem(value), []);
     const handleDeloadWeek = useCallback((value: string) => setDeloadWeek(value), []);
     const handlePeakWeek = useCallback((value: string) => setPeakWeek(value), []);
+    const handleWarmupExercises = useCallback((value: string) => setWarmupExercises(value), []);
     const handleProgramTitle = useCallback((value: string) => setProgramTitle(value), []);
     const handleExplore = useCallback(() => toggleExplore(), []);
 
@@ -154,6 +158,7 @@ export function useProgramRequestState(options: IUseProgramRequestStateOptions =
         progressionSystem,
         deloadWeek,
         peakWeek,
+        warmupExercises,
         programTitle,
         explore,
         // Derived
@@ -186,6 +191,7 @@ export function useProgramRequestState(options: IUseProgramRequestStateOptions =
         handleProgressionSystem,
         handleDeloadWeek,
         handlePeakWeek,
+        handleWarmupExercises,
         handleProgramTitle,
         handleExplore,
     };

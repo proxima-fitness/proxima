@@ -73,7 +73,7 @@ const callOptionsSchema = z.object({
  *
  * @param req - Request whose JSON body contains `messages`, `hevyProgram`,
  *   `daysPerWeek`, `programLength`, optional exclusion/health filters, and optional
- *   questionnaire fields (`excludeEquipment`, `splitType`, `exerciseVariability`, `progressionSystem`, `deloadWeek`, `peakWeek`).
+ *   questionnaire fields (`excludeEquipment`, `splitType`, `exerciseVariability`, `progressionSystem`, `deloadWeek`, `peakWeek`, `warmupExercises`).
  * @returns A streaming `Response` that the Vercel AI SDK client consumes to
  *   render incremental agent output and tool invocations.
  */
@@ -92,6 +92,7 @@ async function handleChatPost(req: Request) {
             progressionSystem = "",
             deloadWeek = "",
             peakWeek = "",
+            warmupExercises = "",
             chatSessionId,
         } = await req.json();
 
@@ -123,6 +124,7 @@ async function handleChatPost(req: Request) {
                         progressionSystem,
                         deloadWeek,
                         peakWeek,
+                        warmupExercises,
                     }),
                 );
 
@@ -144,6 +146,7 @@ async function handleChatPost(req: Request) {
                     progressionSystem,
                     deloadWeek,
                     peakWeek,
+                    warmupExercises,
                     hasWorkoutHistoryAccess: hasActiveSubscription,
                     constraintProfile,
                     episodes,
@@ -165,6 +168,20 @@ async function handleChatPost(req: Request) {
                 const skills = await discoverSkills(sandbox, ['.agents/skills']);
                 const activeToolScope: { allowedTools: string[] | null } = { allowedTools: null };
 
+                const skillToolsContext = {
+                    loadSkill: {
+                        sandbox,
+                        skills,
+                        activeToolScope,
+                    },
+                    readFile: {
+                        sandbox,
+                    },
+                    bash: {
+                        sandbox,
+                    },
+                };
+
                 const andy = new ToolLoopAgent({
                     model: gateway(
                         'google/gemini-3.1-flash-lite-preview',
@@ -173,6 +190,7 @@ async function handleChatPost(req: Request) {
                         // 'anthropic/claude-sonnet-4.5'
                     instructions: systemPrompt,
                     tools: tools,
+                    toolsContext: skillToolsContext,
                     callOptionsSchema: callOptionsSchema,
                     stopWhen: stepCountIs(28),
                     experimental_telemetry: { isEnabled: true },
@@ -194,10 +212,18 @@ async function handleChatPost(req: Request) {
                             ...settings,
                             tools: filteredTools,
                             instructions: `${settings.instructions}\n\n${buildSkillsPrompt(options.skills)}`,
-                            experimental_context: {
-                                sandbox: options.sandbox,
-                                skills: options.skills,
-                                activeToolScope: options.activeToolScope,
+                            toolsContext: {
+                                loadSkill: {
+                                    sandbox: options.sandbox,
+                                    skills: options.skills,
+                                    activeToolScope: options.activeToolScope,
+                                },
+                                readFile: {
+                                    sandbox: options.sandbox,
+                                },
+                                bash: {
+                                    sandbox: options.sandbox,
+                                },
                             },
                         };
                     },

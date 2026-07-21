@@ -145,6 +145,7 @@ interface IMessageContextBodyInput {
     progressionSystem: string;
     deloadWeek: string;
     peakWeek: string;
+    warmupExercises: string;
 }
 
 function buildMessageContextBody(input: IMessageContextBodyInput) {
@@ -162,6 +163,7 @@ function buildMessageContextBody(input: IMessageContextBodyInput) {
         progressionSystem: trimOrEmpty(input.progressionSystem),
         deloadWeek: trimOrEmpty(input.deloadWeek),
         peakWeek: trimOrEmpty(input.peakWeek),
+        warmupExercises: trimOrEmpty(input.warmupExercises),
         chatSessionId: input.chatId || undefined,
     };
 }
@@ -341,6 +343,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
                 progressionSystem: programRequest.progressionSystem,
                 deloadWeek: programRequest.deloadWeek,
                 peakWeek: programRequest.peakWeek,
+                warmupExercises: programRequest.warmupExercises,
             });
 
             const sendPromise = sendMessage(message, {
@@ -376,6 +379,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             programRequest.progressionSystem,
             programRequest.deloadWeek,
             programRequest.peakWeek,
+            programRequest.warmupExercises,
             incrementLlmRequests,
         ],
     );

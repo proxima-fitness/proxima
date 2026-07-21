@@ -8,7 +8,7 @@ function profile(overrides: Partial<TConstraintProfile> = {}): TConstraintProfil
         injuries: [],
         excludedEquipment: [],
         excludedAreas: [],
-        preferences: { splitType: '', exerciseVariability: '', progressionSystem: '', deloadWeek: '', peakWeek: '' },
+        preferences: { splitType: '', exerciseVariability: '', progressionSystem: '', deloadWeek: '', peakWeek: '', warmupExercises: '' },
         chatRefinements: [],
         ...overrides,
     };
@@ -29,10 +29,10 @@ describe('mergeConstraintProfiles', () => {
 
     it('session preferences win when non-empty', () => {
         const persisted = profile({
-            preferences: { splitType: 'PPL', exerciseVariability: 'high', progressionSystem: 'linear', deloadWeek: '', peakWeek: '' },
+            preferences: { splitType: 'PPL', exerciseVariability: 'high', progressionSystem: 'linear', deloadWeek: '', peakWeek: '', warmupExercises: '' },
         });
         const session = profile({
-            preferences: { splitType: 'Upper/Lower', exerciseVariability: '', progressionSystem: '', deloadWeek: '', peakWeek: '' },
+            preferences: { splitType: 'Upper/Lower', exerciseVariability: '', progressionSystem: '', deloadWeek: '', peakWeek: '', warmupExercises: '' },
         });
         const result = mergeConstraintProfiles(persisted, session);
         expect(result.preferences.splitType).toBe('Upper/Lower');
@@ -42,13 +42,14 @@ describe('mergeConstraintProfiles', () => {
 
     it('persisted preferences kept when session is empty', () => {
         const persisted = profile({
-            preferences: { splitType: 'PPL', exerciseVariability: '', progressionSystem: 'DUP', deloadWeek: 'week 4', peakWeek: '' },
+            preferences: { splitType: 'PPL', exerciseVariability: '', progressionSystem: 'DUP', deloadWeek: 'week 4', peakWeek: '', warmupExercises: 'yes' },
         });
         const session = profile();
         const result = mergeConstraintProfiles(persisted, session);
         expect(result.preferences.splitType).toBe('PPL');
         expect(result.preferences.progressionSystem).toBe('DUP');
         expect(result.preferences.deloadWeek).toBe('week 4');
+        expect(result.preferences.warmupExercises).toBe('yes');
     });
 
     it('unions all array fields independently', () => {

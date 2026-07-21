@@ -9,6 +9,7 @@ interface IInitializeParams {
     progressionSystem?: string;
     deloadWeek?: string;
     peakWeek?: string;
+    warmupExercises?: string;
 }
 
 function splitToArray(value?: string): string[] {
@@ -27,6 +28,7 @@ export function initializeConstraintProfile(params: IInitializeParams): TConstra
             progressionSystem: params.progressionSystem?.trim() ?? '',
             deloadWeek: params.deloadWeek?.trim() ?? '',
             peakWeek: params.peakWeek?.trim() ?? '',
+            warmupExercises: params.warmupExercises?.trim() ?? '',
         },
         chatRefinements: [],
     };

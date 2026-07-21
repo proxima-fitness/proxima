@@ -27,6 +27,7 @@ import type { TConstraintProfile } from '../constraints';
  * @param props.progressionSystem - Questionnaire progression system id (optional).
  * @param props.deloadWeek - Questionnaire deload week yes/no (optional).
  * @param props.peakWeek - Questionnaire peak week yes/no (optional).
+ * @param props.warmupExercises - Questionnaire warmup exercises yes/no (optional).
  * @returns The complete system prompt string.
  */
 
@@ -46,6 +47,7 @@ interface IProps {
     progressionSystem?: string;
     deloadWeek?: string;
     peakWeek?: string;
+    warmupExercises?: string;
     /** When true, include getWorkoutHistory tool guidance (Pro-only). */
     hasWorkoutHistoryAccess?: boolean;
     /** Structured constraint profile accumulated from questionnaire + mid-chat updates. When present, replaces the questionnaire preferences line. */
@@ -67,6 +69,7 @@ function buildQuestionnairePreferencesLine(props: {
     progressionSystem?: string;
     deloadWeek?: string;
     peakWeek?: string;
+    warmupExercises?: string;
 }): string {
     const parts: string[] = [];
     const hi = trimOpt(props.healthIssues);
@@ -83,6 +86,8 @@ function buildQuestionnairePreferencesLine(props: {
     if (dw) parts.push(`Deload week: ${dw}`);
     const pw = trimOpt(props.peakWeek);
     if (pw) parts.push(`Peak week: ${pw}`);
+    const we = trimOpt(props.warmupExercises);
+    if (we) parts.push(`Warmup exercises: ${we}`);
     if (parts.length === 0) return '';
     return `Questionnaire preferences (honor when planning, periodizing, and building; where health or injury is listed, respect it for exercise selection, volume, and movement choices): ${parts.join('; ')}.`;
 }
@@ -96,6 +101,7 @@ function buildConstraintProfileBlock(profile: TConstraintProfile): string {
         Progression: p.progressionSystem,
         'Deload week': p.deloadWeek,
         'Peak week': p.peakWeek,
+        'Warmup exercises': p.warmupExercises,
     }) as [string, string][])
         .filter(([, v]) => v)
         .map(([k, v]) => `${k}: ${v}`)
@@ -137,6 +143,7 @@ export const instructions = ({
     progressionSystem = '',
     deloadWeek = '',
     peakWeek = '',
+    warmupExercises = '',
     hasWorkoutHistoryAccess = false,
     constraintProfile,
     episodes = [],
@@ -160,6 +167,7 @@ export const instructions = ({
         progressionSystem,
         deloadWeek,
         peakWeek,
+        warmupExercises,
     });
 
     return (
@@ -189,7 +197,7 @@ export const instructions = ({
         **Before mutateProgram (mandatory):** (1) Review the Active Constraint Profile below before proposing exercises. (2) If a removal would leave a training day with zero exercise rows, find a replacement first — add **insert_exercise** or **edit_exercise** in the same batch, before **delete_exercise**. (3) If the user mentions a new constraint mid-chat (injury, equipment limit, movement restriction), call **updateConstraintProfile** immediately to record it. Note: **buildWeek** and **mutateProgram** automatically validate exercises against the constraint profile and will reject violations — fix flagged exercises and retry.
         **mutateProgram payloads:** After loading \`mutate-program\`, use one \`exercise\` object per \`insert_exercise\` op (not an exercises array). All slot targeting is **0-based** (\`exerciseIndex\`, \`setIndex\`, exercises[] / sets[] array order). \`dayOrder\` is the Hevy day number (1–7). readProgram omits index fields — use array position only.
 
-        **Session size:** When building a program, target **6–7 total exercise rows per training day** in \`buildWeek\` (including 1–2 warmup rows). Only go below 6 total rows if the user explicitly requested a short session, time cap, deload, or peaking day.
+        **Session size:** When building a program, target **6–7 total exercise rows per training day** in \`buildWeek\` (including 1–2 warmup rows when warmup exercises are yes or unset). If questionnaire prefs say warmup exercises **no**, omit separate warmup rows and still target ~5–6 working exercises per day. Only go below those targets if the user explicitly requested a short session, time cap, deload, or peaking day.
 
         **Mandatory skill loading:** When the user's message is clearly requesting to create, build, or generate a **new** workout program, training program, or exercise routine—including the very first message in a new chat—you **must** call \`loadSkill\` with \`build-program\` first. In that same turn, you may only call \`getMoreInfoQuestions\`. Do not call \`getExerciseList\`, \`planProgram\`, or \`buildWeek\` in the same turn as the questionnaire. You must stop, send your visible response, and wait for the user to submit their answers or say "Build my program" before proceeding to exercise selection. For modifying an existing program (edits, swaps, or **changing program length** e.g. "make it 2 weeks", "shorten to 4 weeks"), load the \`mutate-program\` skill instead — not \`build-program\`.
         ${daysPerWeek != null && programLength != null ? `Program builder context: the user has selected ${daysPerWeek} days per week and ${programLength} weeks total. Builder length is the template/duplication setting — changing it does not remove weeks from the live grid; use **mutateProgram** **delete_week** when the user wants fewer weeks on an existing program.` : ''}

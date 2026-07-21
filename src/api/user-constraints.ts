@@ -30,6 +30,7 @@ export async function getUserConstraints(
             progressionSystem: (data.preferences as Record<string, string>)?.progressionSystem ?? "",
             deloadWeek: (data.preferences as Record<string, string>)?.deloadWeek ?? "",
             peakWeek: (data.preferences as Record<string, string>)?.peakWeek ?? "",
+            warmupExercises: (data.preferences as Record<string, string>)?.warmupExercises ?? "",
         },
         chatRefinements: (data.chat_refinements as string[]) ?? [],
     };

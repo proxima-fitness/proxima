@@ -8,6 +8,7 @@ export type TConstraintProfile = {
         progressionSystem: string;
         deloadWeek: string;
         peakWeek: string;
+        warmupExercises: string;
     };
     /** Free-form constraints detected mid-conversation, e.g. "no overhead pressing", "prefer dumbbells". */
     chatRefinements: string[];

@@ -21,6 +21,7 @@ export function mergeConstraintProfiles(
             progressionSystem: session.preferences.progressionSystem || persisted.preferences.progressionSystem,
             deloadWeek: session.preferences.deloadWeek || persisted.preferences.deloadWeek,
             peakWeek: session.preferences.peakWeek || persisted.preferences.peakWeek,
+            warmupExercises: session.preferences.warmupExercises || persisted.preferences.warmupExercises,
         },
         chatRefinements: unionStringArrays(persisted.chatRefinements, session.chatRefinements),
     };

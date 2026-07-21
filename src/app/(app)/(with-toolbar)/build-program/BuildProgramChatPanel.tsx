@@ -113,6 +113,7 @@ function BuildProgramChatPanelInner({
             progressionSystem={programRequest.progressionSystem}
             deloadWeek={programRequest.deloadWeek}
             peakWeek={programRequest.peakWeek}
+            warmupExercises={programRequest.warmupExercises}
             programTitle={programRequest.programTitle}
             explore={programRequest.explore}
             handleSex={programRequest.handleSex}
@@ -136,6 +137,7 @@ function BuildProgramChatPanelInner({
             handleProgressionSystem={programRequest.handleProgressionSystem}
             handleDeloadWeek={programRequest.handleDeloadWeek}
             handlePeakWeek={programRequest.handlePeakWeek}
+            handleWarmupExercises={programRequest.handleWarmupExercises}
             handleProgramTitle={programRequest.handleProgramTitle}
             handleExplore={programRequest.handleExplore}
             messages={messages}
