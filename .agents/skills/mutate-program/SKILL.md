@@ -20,20 +20,45 @@ allowedTools:
 Before **every** **mutateProgram** call:
 
 1. **Persist constraint changes:** If this turn (or recent unrecorded chat) adds, changes, or removes a constraint (injury, equipment, area, movement restriction, preference), also call **`updateConstraintProfile`** in the same turn with the add/remove fields and `rawStatement` when the user spoke in chat (prefer before **mutateProgram**, but do not block the edit waiting on it). Do not assume the Active Constraint Profile in the prompt is already written to Agentic memory.
-2. **Constraint inventory:** Review the **full conversation** and list every active constraint in the **constraint profile** — questionnaire prefs (health/injury, excluded equipment), available equipment from chat, movement restrictions (no floor work, no kneeling, no single-leg, overhead limits, etc.), exercise or muscle-area exclusions, and any refinements from later messages. Include constraints from earlier turns even if the latest message does not repeat them.
-3. **Compliance check:** Verify each operation in your batch violates **none** of those constraints. Do not swap or insert templates that use excluded equipment or break stated movement restrictions.
+2. **Honor Active Constraint Profile:** Use the **Active Constraint Profile** block in the system prompt as the constraint inventory. Do **not** re-derive constraints by scanning the full conversation alone — the profile is authoritative.
+3. **Compliance check:** Verify each operation in your batch violates **none** of those profile constraints. Do not swap or insert templates that use excluded equipment or break stated movement restrictions.
 4. **No empty days:** If **delete_exercise** (or removing the last exercise on a day) would leave a training day with **zero** exercise rows, find and add a suitable replacement **first** — **insert_exercise** or **edit_exercise** in the **same batch**, ordered before the delete. Use **getExerciseList**; pick a template that honors the constraint profile and preserves the day's training intent.
+
+## Exercise objection
+
+User pushback on one programmed movement (pain, equipment mismatch, can't perform a position, wrong stimulus) is an **Exercise objection** — replace in place, never lone removal.
+
+| Scope | Op |
+|-------|-----|
+| One slot / new movement + sets | **`edit_exercise`** (or **insert_exercise** + **delete_exercise** in the same Program mutation batch if needed) |
+| Same template / equipment-only across the program (sets/rest stay) | **`swap_exercise_template`** (**Template swap**) |
+| Explicit "remove X" / "skip X" only | **`delete_exercise`** |
+
+**Lasting limit vs taste** (same turn as the replace when lasting):
+
+| Wording | Profile update |
+|---------|----------------|
+| Injury / pain (e.g. "hurts my knee") | **`addInjuries`** + `rawStatement` |
+| Missing equipment (e.g. "don't have cables") | **`addExcludedEquipment`** + `rawStatement` |
+| Movement restriction (e.g. "no overhead", "can't kneel") | **`addChatRefinements`** + `rawStatement` |
+| Taste-only (e.g. "too boring", "swap this") | **No** profile update — replace only |
 
 ## Checklist
 
 - [ ] **Persist constraint changes** via **`updateConstraintProfile`** when this turn changes constraints (same turn as mutate — non-blocking backup).
-- [ ] **Constraint gate** (above): persist (if needed) → inventory → compliance → no empty days.
+- [ ] **Constraint gate** (above): persist (if needed) → honor Active Constraint Profile → compliance → no empty days.
+- [ ] **Exercise objection:** replace/swap per table above; lasting limits also update the profile; taste-only does not.
 - [ ] **readProgram** when you need the current program (weeks, days, exercises, sets, notes, reason). `hevyProgram.length` = N total routines (all weeks).
 - [ ] Build **one operations array** with all registry ops for the requested change.
 - [ ] **Equipment / template swaps** (dumbbell-only, barbell → dumbbell, variation replace across program): use **`swap_exercise_template`** — one op per `from_exercise_template_id`; omit **folderIds** / **dayOrder** to hit every week and day.
 - [ ] **Positional edits with new sets** (one slot, new prescription): use **`edit_exercise`** with grid payload (same shape as **insert_exercise**).
 - [ ] For other edits affecting every week/day occurrence: include **folderIds** (and matching **dayOrder**) for each week—or one op with multiple **folderIds** when the change is identical.
 - [ ] Call **mutateProgram** once with the full **operations** array.
+
+## Live grid vs post-build periodization
+
+- **Editing the live grid:** **readProgram** when you need the current program, then **mutateProgram** with **folderIds** (0-based week) and **dayOrder** (1-based day). Shorten/lengthen week count on an existing program with **delete_week** (highest week index first) — do **not** call **planProgram** or **buildWeek** for that.
+- **Periodization right after buildWeek:** Do **not** rely on **readProgram** (snapshot may still be empty). Use builder context, **planProgram**, **buildWeek** output, and the **build-program** skill; **one** **mutateProgram** batch via **folderIds**.
 
 ## Targeting (mutateProgram)
 

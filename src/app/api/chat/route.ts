@@ -158,9 +158,6 @@ async function handleChatPost(req: Request) {
                 });
                 const buildWeekOnceGuard: IBuildWeekOnceGuard = { locked: false };
                 const tools = getTools({
-                    excludeAreas,
-                    excludeEquipment,
-                    healthIssues,
                     hevyProgram,
                     buildWeekOnceGuard,
                     hasActiveSubscription,

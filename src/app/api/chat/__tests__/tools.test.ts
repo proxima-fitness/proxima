@@ -36,7 +36,9 @@ import { mutateProgramInputSchema } from "@/components/program-builder/mutations
 import {
     getTools,
     planProgramInputSchema,
+    getExerciseListInputSchema,
 } from "@/app/api/chat/tools/tools";
+import { initializeConstraintProfile } from "@/app/api/chat/constraints/initialize";
 
 /** Narrow AI SDK Tool to execute + toModelOutput for tests (SDK execute also takes options; tests call with input only). */
 type TToolTestHarness<TInput, TOutput> = {
@@ -424,6 +426,152 @@ describe("chat tools.ts", () => {
 
             expect(output.error).toBeUndefined();
             expect(vi.mocked(getHevyExercises).mock.calls.length).toBe(1);
+        });
+    });
+
+    describe("getExerciseList tool", () => {
+        const multiExerciseTemplates = [
+            {
+                id: "ex-1",
+                title: "Bench Press (Barbell)",
+                type: "weight_reps",
+                primary_muscle_group: "Chest",
+                secondary_muscle_groups: null,
+                is_custom: false,
+                equipment: "Barbell",
+                normalized_title: "bench press barbell",
+                gif_id: null,
+                instructions: null,
+            },
+            {
+                id: "ex-2",
+                title: "Dumbbell Row",
+                type: "weight_reps",
+                primary_muscle_group: "Back",
+                secondary_muscle_groups: null,
+                is_custom: false,
+                equipment: "Dumbbell",
+                normalized_title: "dumbbell row",
+                gif_id: null,
+                instructions: null,
+            },
+            {
+                id: "ex-3",
+                title: "Shoulder Press (Dumbbell)",
+                type: "weight_reps",
+                primary_muscle_group: "Shoulders",
+                secondary_muscle_groups: null,
+                is_custom: false,
+                equipment: "Dumbbell",
+                normalized_title: "shoulder press dumbbell",
+                gif_id: null,
+                instructions: null,
+            },
+        ];
+
+        type TExerciseListOutput = {
+            availableExercises?: Array<{ id: string; title: string }>;
+            totalExercises?: number;
+            parameters?: { userRequest?: string; excludeAreas?: string; excludeEquipment?: string; healthIssues?: string };
+            error?: string;
+        };
+
+        it("schema accepts userRequest only — no agent filter override fields", () => {
+            expect(getExerciseListInputSchema.safeParse({ userRequest: "build me a program" }).success).toBe(true);
+            expect(getExerciseListInputSchema.shape).not.toHaveProperty("excludeAreas");
+            expect(getExerciseListInputSchema.shape).not.toHaveProperty("excludeEquipment");
+            expect(getExerciseListInputSchema.shape).not.toHaveProperty("healthIssues");
+
+            // Extra keys are stripped; they must not become tool inputs
+            const parsed = getExerciseListInputSchema.safeParse({
+                userRequest: "x",
+                excludeAreas: "Chest",
+                excludeEquipment: "Barbell",
+                healthIssues: "knee",
+            });
+            expect(parsed.success).toBe(true);
+            if (parsed.success) {
+                expect(parsed.data).toEqual({ userRequest: "x" });
+                expect(parsed.data).not.toHaveProperty("excludeAreas");
+                expect(parsed.data).not.toHaveProperty("excludeEquipment");
+                expect(parsed.data).not.toHaveProperty("healthIssues");
+            }
+        });
+
+        it("filters from constraintProfile excluded equipment and areas", async () => {
+            vi.mocked(getHevyExercises).mockResolvedValueOnce([...multiExerciseTemplates] as never);
+
+            const constraintProfile = {
+                injuries: [],
+                excludedEquipment: ["Barbell"],
+                excludedAreas: ["Shoulders"],
+                preferences: {
+                    splitType: "",
+                    exerciseVariability: "",
+                    progressionSystem: "",
+                    deloadWeek: "",
+                    peakWeek: "",
+                    warmupExercises: "",
+                },
+                chatRefinements: [],
+            };
+
+            const tools = getTools({ constraintProfile });
+            const getExerciseList = asTestTool<{ userRequest: string }, TExerciseListOutput>(tools.getExerciseList);
+
+            const output = await getExerciseList.execute({ userRequest: "upper body" });
+
+            expect(output.error).toBeUndefined();
+            expect(output.availableExercises?.map((e) => e.id)).toEqual(["ex-2"]);
+            expect(output.totalExercises).toBe(1);
+            expect(output.parameters).toEqual({ userRequest: "upper body" });
+            expect(output.parameters).not.toHaveProperty("healthIssues");
+        });
+
+        it("injuries do not filter the list", async () => {
+            vi.mocked(getHevyExercises).mockResolvedValueOnce([...multiExerciseTemplates] as never);
+
+            const constraintProfile = {
+                injuries: ["knee pain"],
+                excludedEquipment: [],
+                excludedAreas: [],
+                preferences: {
+                    splitType: "",
+                    exerciseVariability: "",
+                    progressionSystem: "",
+                    deloadWeek: "",
+                    peakWeek: "",
+                    warmupExercises: "",
+                },
+                chatRefinements: [],
+            };
+
+            const tools = getTools({ constraintProfile });
+            const getExerciseList = asTestTool<{ userRequest: string }, TExerciseListOutput>(tools.getExerciseList);
+
+            const output = await getExerciseList.execute({ userRequest: "full body" });
+
+            expect(output.availableExercises).toHaveLength(3);
+            expect(output.totalExercises).toBe(3);
+        });
+
+        it("first-time path: initializeConstraintProfile wire strings drive filters", async () => {
+            vi.mocked(getHevyExercises).mockResolvedValueOnce([...multiExerciseTemplates] as never);
+
+            const constraintProfile = initializeConstraintProfile({
+                excludeEquipment: "Barbell",
+                excludeAreas: "Shoulders",
+                healthIssues: "knee",
+            });
+
+            const tools = getTools({ constraintProfile });
+            const getExerciseList = asTestTool<{ userRequest: string }, TExerciseListOutput>(tools.getExerciseList);
+
+            const output = await getExerciseList.execute({ userRequest: "program" });
+
+            expect(output.availableExercises?.map((e) => e.id)).toEqual(["ex-2"]);
+            // Injuries from initialize do not filter the list
+            expect(output.availableExercises).toHaveLength(1);
         });
     });
 

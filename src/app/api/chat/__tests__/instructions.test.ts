@@ -40,15 +40,34 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("build-program");
             expect(prompt).toContain("mutate-program");
             expect(prompt).toContain("first message");
-            expect(prompt).toContain("two flows");
-            expect(prompt).toContain("Periodization after buildWeek");
+            expect(prompt).not.toContain("two flows");
+            expect(prompt).not.toContain("Periodization after buildWeek");
+            expect(prompt).not.toContain("mutateProgram payloads");
+            expect(prompt).not.toContain("list every active constraint");
             expect(prompt).toContain("Before mutateProgram (mandatory)");
+            expect(prompt).toContain("Honor the Active Constraint Profile");
+            expect(prompt).toContain("Exercise objection");
             expect(prompt).toContain("Constraint Profile");
             expect(prompt).toContain("Constraint profile persistence");
             expect(prompt).toContain("updateConstraintProfile");
             expect(prompt).toContain("After questionnaire");
             expect(prompt).toContain("do not call");
             expect(prompt).toContain("nothing to persist");
+        });
+
+        it("keeps thin Before-mutate and User-stated change; drops cut essays", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+            });
+
+            expect(prompt).toContain("Before mutateProgram (mandatory)");
+            expect(prompt).toContain("zero exercise rows");
+            expect(prompt).toContain("Constraint profile persistence");
+            expect(prompt).not.toContain("Program tools — two flows");
+            expect(prompt).not.toContain("All slot targeting is **0-based**");
+            expect(prompt).not.toMatch(/full conversation/i);
         });
 
         it("encodes User-stated change soft policy for constraint removals", () => {

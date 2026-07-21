@@ -209,7 +209,7 @@ Canonical machine-readable flag for a movement restriction (e.g. no floor, no kn
 _Avoid_: Movement flag (too implementation-shaped), exclusion tag (ambiguous with equipment)
 
 **Exercise objection**:
-User pushback on one programmed movement — pain, equipment mismatch, can't perform position (e.g. kneeling), wrong stimulus. Agent treats as replace-in-place on that slot, not removal. Distinct from explicit "remove/skip this exercise" and from program-wide filters (e.g. no single-leg across all days).
+User pushback on one programmed movement — pain, equipment mismatch, can't perform position, or wrong stimulus — resolved by replace-in-place (or program-wide **Template swap** when the same template applies everywhere), never lone removal. Distinct from explicit remove/skip and from program-wide filters. Lasting limits implied by the objection belong in the **Constraint profile**; taste-only swaps do not.
 _Avoid_: Complaint (too informal), exercise feedback (too broad)
 
 **Questionnaire gate**:

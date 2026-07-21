@@ -90,16 +90,13 @@ export interface IBuildWeekOnceGuard {
 }
 
 interface IProps {
-    excludeAreas?: string;
-    excludeEquipment?: string;
-    healthIssues?: string;
     hevyProgram?: THevyRoutine[];
     buildWeekOnceGuard?: IBuildWeekOnceGuard;
     /** When false, getWorkoutHistory is omitted from the tool set (Pro-only). */
     hasActiveSubscription?: boolean;
     userId?: string;
     workoutHistoryDb?: TWorkoutHistoryDb;
-    /** Structured constraint profile; when provided, updateConstraintProfile tool is included. */
+    /** Structured constraint profile; when provided, updateConstraintProfile tool is included. Filters getExerciseList. */
     constraintProfile?: TConstraintProfile;
     /** User's weight display preference (true = lbs). Defaults to true to match UI default. */
     isInLbs?: boolean;
@@ -169,21 +166,21 @@ function patchStringArray(arr: string[], add?: string[], remove?: string[]): str
     ];
 }
 
+/** Exported for tests: getExerciseList accepts userRequest only; filters come from Constraint profile. */
+export const getExerciseListInputSchema = z.object({
+    userRequest: z.string().describe('The user\'s workout request or description'),
+});
+
 /**
  * Factory that creates the complete tool set for the chat agent. Captures
- * user-specific exclusion filters and the current program in a closure so
- * each tool can reference them without extra round-trips.
+ * the Constraint profile and current program in a closure so each tool can
+ * reference them without extra round-trips.
  *
- * @param props.excludeAreas - Comma-separated muscle groups to exclude from exercise selection.
- * @param props.excludeEquipment - Comma-separated equipment types to exclude.
- * @param props.healthIssues - Comma-separated health considerations for exercise filtering.
  * @param props.hevyProgram - The user's current Hevy routines (request-body snapshot for readProgram).
+ * @param props.constraintProfile - In-request Constraint profile; drives getExerciseList filters.
  * @returns An object mapping tool names to Vercel AI SDK tool descriptors.
  */
 export function getTools({
-    excludeAreas,
-    excludeEquipment,
-    healthIssues,
     hevyProgram,
     buildWeekOnceGuard,
     hasActiveSubscription = false,
@@ -302,43 +299,31 @@ export function getTools({
      */
     const getExerciseListTool = tool({
 
-        description: 'Provides access to all available Hevy exercises for building workout programs. Use this tool when users request workout programs. The tool returns a reference list of exercises (ID and title only) - you should then build a complete, well-structured day using exercise IDs, titles, sets, rep_range (for true ranges like 8-12) or reps (for fixed counts like 5 sets x 5 reps), and RPE. For fixed-rep work, set rep_range to null and use reps only. Target 6–7 total exercise rows per training day including warmup(s); see the build-program skill for the session-size default and exceptions.',
-        inputSchema: z.object({
-            userRequest: z.string().describe('The user\'s workout request or description'),
-            excludeAreas: z.string().optional().describe('Comma-separated list of muscle groups to exclude'),
-            excludeEquipment: z.string().optional().describe('Comma-separated list of equipment to exclude'),
-            healthIssues: z.string().optional().describe('Comma-separated list of health issues to consider'),
-        }),
+        description: 'Provides access to all available Hevy exercises for building workout programs. Use this tool when users request workout programs. The tool returns a reference list of exercises (ID and title only) - you should then build a complete, well-structured day using exercise IDs, titles, sets, rep_range (for true ranges like 8-12) or reps (for fixed counts like 5 sets x 5 reps), and RPE. For fixed-rep work, set rep_range to null and use reps only. Target 6–7 total exercise rows per training day including warmup(s); see the build-program skill for the session-size default and exceptions. Exclusion filters come from the Active Constraint Profile — do not pass exclude args.',
+        inputSchema: getExerciseListInputSchema,
 
-        execute: async ({ userRequest, excludeAreas: agentExcludeAreas, excludeEquipment: agentExcludeEquipment, healthIssues: agentHealthIssues }) => {
+        execute: async ({ userRequest }) => {
             try {
-                // Use agent-provided values if available, then constraintProfile, then fall back to closure strings
-                const finalExcludeAreas = agentExcludeAreas
-                    || (constraintProfile?.excludedAreas.join(', '))
-                    || excludeAreas;
-                const finalExcludeEquipment = agentExcludeEquipment
-                    || (constraintProfile?.excludedEquipment.join(', '))
-                    || excludeEquipment;
-                const finalHealthIssues = agentHealthIssues
-                    || (constraintProfile?.injuries.join(', '))
-                    || healthIssues;
+                // Filters only from Constraint profile (route already seeded wire strings via initialize + merge)
+                const excludedEquipment = constraintProfile?.excludedEquipment ?? [];
+                const excludedAreas = constraintProfile?.excludedAreas ?? [];
 
                 // Fetch all available Hevy exercises
                 const exercises = await getCachedHevyExercises();
 
-                // Filter exercises based on exclusions
+                // Filter exercises based on profile exclusions (title / primary-muscle heuristics unchanged)
                 let filteredExercises = [...exercises];
 
-                if (finalExcludeEquipment) {
-                    const excludedEq = finalExcludeEquipment.split(',').map((e) => e.trim().toLowerCase());
+                if (excludedEquipment.length > 0) {
+                    const excludedEq = excludedEquipment.map((e) => e.trim().toLowerCase()).filter(Boolean);
                     filteredExercises = filteredExercises.filter((ex) => {
                         const title = ex.title.toLowerCase();
                         return !excludedEq.some((eq: string) => title.includes(eq));
                     });
                 }
 
-                if (finalExcludeAreas) {
-                    const excludedAreasList = finalExcludeAreas.split(',').map((e) => e.trim().toLowerCase());
+                if (excludedAreas.length > 0) {
+                    const excludedAreasList = excludedAreas.map((e) => e.trim().toLowerCase()).filter(Boolean);
                     filteredExercises = filteredExercises.filter((ex) => {
                         const primaryMuscle = ex.primary_muscle_group?.toLowerCase() || '';
                         return !excludedAreasList.some((area: string) => primaryMuscle.includes(area));
@@ -363,9 +348,6 @@ export function getTools({
                     totalExercises: filteredExercises.length,
                     parameters: {
                         userRequest,
-                        excludeAreas: finalExcludeAreas,
-                        excludeEquipment: finalExcludeEquipment,
-                        healthIssues: finalHealthIssues,
                     },
                     note: 'CRITICAL: You must ONLY use exercise_template_id values that exist in the availableExercises array. Do not invent exercises or use IDs that are not in this list.',
                 };
