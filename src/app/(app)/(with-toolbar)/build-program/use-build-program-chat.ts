@@ -46,6 +46,27 @@ type TProgramRequestState = ReturnType<typeof useProgramRequestState>;
 const chatTransport = new DefaultChatTransport({ api: "/api/chat" });
 const MAX_RETRIES = 2;
 
+/** True when this turn successfully persisted Constraint profile via the agent tool. */
+function turnUpdatedConstraintProfile(messages: TChatMessage[]): boolean {
+    for (const message of messages) {
+        for (const part of message.parts ?? []) {
+            if (part.type !== "tool-updateConstraintProfile") continue;
+            const toolPart = part as {
+                state?: string;
+                output?: { updatedProfile?: unknown; error?: string };
+            };
+            if (
+                toolPart.state === "output-available" &&
+                toolPart.output?.updatedProfile &&
+                !toolPart.output.error
+            ) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 export interface IUseBuildProgramChatOptions {
     user: User | null;
     hevyProgram: THevyRoutine[];
@@ -258,6 +279,17 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         transport: chatTransport,
         messages: initialMessages,
         onFinish: ({ messages: finishedMessages, isAbort, isError }) => {
+            if (
+                user &&
+                !isAbort &&
+                !isError &&
+                turnUpdatedConstraintProfile(finishedMessages)
+            ) {
+                void queryClient.invalidateQueries({
+                    queryKey: ["user-constraints", user.id],
+                });
+            }
+
             const persistChatId = resolvePersistChatId(chatId, pendingMintChatIdRef.current);
             void persistChatHistoryAfterTurn({
                 user,

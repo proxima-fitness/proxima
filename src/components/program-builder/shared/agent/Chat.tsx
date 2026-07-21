@@ -1,8 +1,9 @@
 /**
  * @module Chat
- * Chat input for program builder: suggestions, upgrade banner, PromptInput with attachments and submit/stop. Used inside Agent.
+ * Chat input for program builder: suggestions, upgrade banner, PromptInput with attachments
+ * and submit/stop, plus signed-in Constraint profile peek near the prompt. Used inside Agent.
  * Upgrade banner: shown for Free users always; for subscribed Pro only when LLM credits are 0 (CTA to Pro+); hidden for Pro+.
- * Depends on: prompt-input, attachments, suggestion, UpgradeBanner, useMyFeatureLimits. Used by: Agent.
+ * Depends on: prompt-input, attachments, suggestion, UpgradeBanner, ConstraintProfilePeek, useMyFeatureLimits. Used by: Agent.
  */
 /* eslint-disable @next/next/no-img-element */
 import {
@@ -44,6 +45,8 @@ import type { FileUIPart } from "ai";
 import { memo, useCallback, useState, forwardRef, useMemo } from "react";
 import { useMicTranscription } from "@/hooks/use-mic-transcription";
 import { Questions } from "@/components/ui/questions";
+import { ConstraintProfilePeek } from "@/components/program-builder/shared/agent/ConstraintProfilePeek";
+import type { User } from "@supabase/supabase-js";
 
 /** Props for the chat input container. */
 interface IProps {
@@ -124,6 +127,8 @@ interface IChatInputBodyProps {
   isLoading: boolean;
   outOfCredits: boolean;
   handleStop: () => void;
+  /** Signed-in user for Constraint profile peek; omit when anon. */
+  user: User | null | undefined;
 }
 
 /** Inner input + attachments + submit/stop; desktop stacked, mobile inline row. */
@@ -131,6 +136,7 @@ const ChatInputBody = ({
   isLoading,
   outOfCredits,
   handleStop,
+  user,
 }: IChatInputBodyProps) => {
   const attachments = usePromptInputAttachments();
   const controller = usePromptInputController();
@@ -215,21 +221,24 @@ const ChatInputBody = ({
           className="dark:text-white pl-4 text-base leading-[1.3] sm:text-base md:text-base"
         />
         <PromptInputFooter className="mt-5 flex w-full shrink-0 items-end justify-between gap-2 px-3 pb-3">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={handlePaperclipClick}
-                className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white text-black dark:bg-black dark:text-white hover:bg-white/90"
-                aria-label="Attach files"
-              >
-                <Paperclip className="size-4" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent className="bg-lightSecondary text-white">
-              Attach files
-            </TooltipContent>
-          </Tooltip>
+          <div className="flex shrink-0 items-end gap-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={handlePaperclipClick}
+                  className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white text-black dark:bg-black dark:text-white hover:bg-white/90"
+                  aria-label="Attach files"
+                >
+                  <Paperclip className="size-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="bg-lightSecondary text-white">
+                Attach files
+              </TooltipContent>
+            </Tooltip>
+            {user ? <ConstraintProfilePeek user={user} /> : null}
+          </div>
           <div className="flex shrink-0 flex-row items-end gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
@@ -272,21 +281,24 @@ const ChatInputBody = ({
           alignClass
         )}
       >
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              onClick={handlePaperclipClick}
-              className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white dark:bg-black text-black dark:text-white hover:bg-lightSecondary/90"
-              aria-label="Attach files"
-            >
-              <Paperclip className="size-4 text-black dark:text-white" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent className="bg-lightSecondary text-white">
-            Attach files
-          </TooltipContent>
-        </Tooltip>
+        <div className={cn("flex shrink-0 flex-row gap-1", alignClass)}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={handlePaperclipClick}
+                className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white dark:bg-black text-black dark:text-white hover:bg-lightSecondary/90"
+                aria-label="Attach files"
+              >
+                <Paperclip className="size-4 text-black dark:text-white" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent className="bg-lightSecondary text-white">
+              Attach files
+            </TooltipContent>
+          </Tooltip>
+          {user ? <ConstraintProfilePeek user={user} /> : null}
+        </div>
         <PromptInputTextarea
           placeholder="Ask anything…"
           className="dark:text-white min-h-9 flex-1 min-w-0 py-2 text-base leading-[1.3] max-sm:min-h-8 max-sm:h-auto max-sm:py-1.5 placeholder:text-sm"
@@ -406,6 +418,7 @@ export const Chat = forwardRef<HTMLDivElement, IProps>((props, ref) => {
                 isLoading={isLoading}
                 outOfCredits={outOfCredits}
                 handleStop={handleStop}
+                user={user}
               />
             </PromptInput>
           </PromptInputProvider>

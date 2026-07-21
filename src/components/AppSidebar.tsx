@@ -18,6 +18,7 @@ import {
     UserRound,
     Trash2,
     Shield,
+    PenBoxIcon,
     LockIcon,
     Link2,
     Sun,
@@ -547,6 +548,16 @@ export function AppSidebar() {
                                             )}
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator />
+                                        <DropdownMenuItem asChild>
+                                            <Link
+                                                href="/account/edit-profile"
+                                                className="cursor-pointer flex items-center gap-2"
+                                                onClick={closeMobileSidebar}
+                                            >
+                                                <PenBoxIcon className="h-4 w-4" />
+                                                Edit profile
+                                            </Link>
+                                        </DropdownMenuItem>
                                         <DropdownMenuItem asChild>
                                             <Link
                                                 href="/account/privacy"

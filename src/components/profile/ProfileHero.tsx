@@ -3,7 +3,7 @@
 /**
  * @module ProfileHero
  * Profile header: avatar, Hevy-style stat row (label above number), identity hierarchy,
- * bio, Edit profile. Workouts stat folds in backup sync state with inline pause/play.
+ * bio, Link to Edit profile. Workouts stat folds in backup sync state with inline pause/play.
  *
  * Depends on: UserContext, ProfilePictureContext, useHevySecret, useWorkoutHistorySyncPoller,
  * useUserMetadata, useProfilePictureByID, useUserFullName, useFollowersMyProfile, useFollowingMyProfile
@@ -28,11 +28,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Pause, PenBoxIcon, Play } from "lucide-react";
+import Link from "next/link";
 import { useMemo, type ReactNode } from "react";
-
-interface IProfileHeroProps {
-    onEditProfileClick: () => void;
-}
 
 const STATUS_DOT_CLASS: Record<
     NonNullable<ReturnType<typeof getWorkoutHistorySyncStatus>>,
@@ -84,7 +81,7 @@ function StatCell({
     );
 }
 
-export function ProfileHero({ onEditProfileClick }: IProfileHeroProps) {
+export function ProfileHero() {
     const { user } = useUserContext();
     const { profilePicture: contextProfilePic } = useProfilePictureContext();
     const { data: metaData } = useUserMetadata(user?.id ?? "");
@@ -238,13 +235,15 @@ export function ProfileHero({ onEditProfileClick }: IProfileHeroProps) {
             </div>
 
             <Button
+                asChild
                 variant="default"
                 size="sm"
                 className="w-fit rounded-full bg-lightSecondary px-5 text-white hover:bg-lightSecondary/90"
-                onClick={onEditProfileClick}
             >
-                Edit profile
-                <PenBoxIcon className="size-4" />
+                <Link href="/account/edit-profile">
+                    Edit profile
+                    <PenBoxIcon className="size-4" />
+                </Link>
             </Button>
         </div>
     );
