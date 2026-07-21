@@ -162,9 +162,11 @@ After **readProgram**, build **folderIds** from each routine's `folder_id` for t
 
 **Warmup exercises vs warmup sets:** **Warmup exercises** are separate movements (IDs from **getExerciseList**) at the start of the day to prepare for the session. **Warmup sets** are lighter sets of the same working lift. When adding prep work, add **warmup exercises** with **`"normal"`** sets at low RPE—not only extra `"warmup"`-typed sets on the main lift.
 
+**Questionnaire preference:** If the Active Constraint Profile / questionnaire prefs say **Warmup exercises: no**, do **not** insert separate warmup exercise rows unless the user explicitly asks for warmups in this turn. If yes or unset, follow the rules below.
+
 **Warmups increase the row count — they do not replace working exercises.** Prepending a warmup with **insert_exercise** at **exerciseIndex: 0** inserts an extra row; existing working exercises shift index by one but are all still present. Never remove or omit a working exercise to "make room" for a warmup unless the user explicitly asks to replace it.
 
-- If the user reports an **injury, pain, or limitation**, or asks for better prep, check whether each affected **training day** already begins with **1–2 appropriate warmup exercises**. If the day jumps straight into heavy work, add **1–2 warmup exercises** (bias **two** when injury or limitation is present).
+- If the user reports an **injury, pain, or limitation**, or asks for better prep, check whether each affected **training day** already begins with **1–2 appropriate warmup exercises**. If the day jumps straight into heavy work, add **1–2 warmup exercises** (bias **two** when injury or limitation is present) — unless prefs say warmup exercises **no**.
 - **Prepend** with **insert_exercise** at **exerciseIndex: 0** (before the current first exercise). To insert two warmups in order: **insert the first at index 0**, then **insert the second at index 1** (after the first insert shifts indices). Use **getExerciseList** for valid template IDs and titles; match the day’s movements and any stated limitation.
 - When the change should apply to **every week**, use **folderIds** listing every week index for that **dayOrder** (e.g. day 1 every week in an 8-week program: `folderIds: [0, 1, 2, 3, 4, 5, 6, 7]`, `dayOrder: 1`). Do not edit only week 1.
 

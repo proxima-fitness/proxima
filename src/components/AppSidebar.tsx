@@ -18,6 +18,7 @@ import {
     UserRound,
     Trash2,
     Shield,
+    PenBoxIcon,
     LockIcon,
     Link2,
     Sun,
@@ -27,7 +28,6 @@ import {
     LogIn,
     Info,
     MessageSquarePlus,
-    Trophy,
 } from "lucide-react";
 import {
     Sidebar,
@@ -305,8 +305,6 @@ export function AppSidebar() {
         isTestUser(user) &&
         ((!isMobile && state !== "collapsed") || (isMobile && openMobile));
 
-    const showBolaoNavItem = !isLoading && user && isTestUser(user);
-
     const showRecentChats = isMobile || state !== "collapsed";
 
     return (
@@ -368,20 +366,6 @@ export function AppSidebar() {
                                         </SidebarMenuItem>
                                     );
                                 })}
-                                {showBolaoNavItem && (
-                                    <SidebarMenuItem>
-                                        <SidebarMenuButton
-                                            asChild
-                                            tooltip="Bolao Predictor"
-                                            isActive={pathname === "/bolao"}
-                                        >
-                                            <Link href="/bolao" onClick={closeMobileSidebar}>
-                                                <Trophy className="shrink-0" />
-                                                <span className="font-third">Bolao Predictor</span>
-                                            </Link>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                )}
                             </SidebarMenu>
                         </SidebarGroupContent>
                     </SidebarGroup>
@@ -564,6 +548,16 @@ export function AppSidebar() {
                                             )}
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator />
+                                        <DropdownMenuItem asChild>
+                                            <Link
+                                                href="/account/edit-profile"
+                                                className="cursor-pointer flex items-center gap-2"
+                                                onClick={closeMobileSidebar}
+                                            >
+                                                <PenBoxIcon className="h-4 w-4" />
+                                                Edit profile
+                                            </Link>
+                                        </DropdownMenuItem>
                                         <DropdownMenuItem asChild>
                                             <Link
                                                 href="/account/privacy"

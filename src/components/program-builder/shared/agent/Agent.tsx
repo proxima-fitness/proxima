@@ -59,6 +59,7 @@ interface IProps {
     progressionSystem: string;
     deloadWeek: string;
     peakWeek: string;
+    warmupExercises: string;
     programTitle: string;
     explore: boolean;
     handleSex: (value: string) => void;
@@ -82,6 +83,7 @@ interface IProps {
     handleProgressionSystem: (value: string) => void;
     handleDeloadWeek: (value: string) => void;
     handlePeakWeek: (value: string) => void;
+    handleWarmupExercises: (value: string) => void;
     handleProgramTitle: (value: string) => void;
     handleExplore: () => void;
     // AI agent state (lifted from Agent into parent)
@@ -126,6 +128,7 @@ export const Agent: React.FC<IProps> = (props) => {
         progressionSystem,
         deloadWeek,
         peakWeek,
+        warmupExercises,
         handleDaysPerWeek,
         handleProgramLength,
         handleExcludeEquipment,
@@ -135,6 +138,7 @@ export const Agent: React.FC<IProps> = (props) => {
         handleProgressionSystem,
         handleDeloadWeek,
         handlePeakWeek,
+        handleWarmupExercises,
         messages,
         setMessages,
         sendMessageWithContext,
@@ -196,6 +200,7 @@ export const Agent: React.FC<IProps> = (props) => {
         if (progressionSystem) initialAnswers["progression-system"] = progressionSystem
         if (deloadWeek) initialAnswers["deload-week"] = deloadWeek
         if (peakWeek) initialAnswers["peak-week"] = peakWeek
+        if (warmupExercises) initialAnswers["warmup-exercises"] = warmupExercises
         return {
             questions: toolOutput.questions,
             userRequest: toolOutput.userRequest ?? "",
@@ -212,6 +217,7 @@ export const Agent: React.FC<IProps> = (props) => {
         progressionSystem,
         deloadWeek,
         peakWeek,
+        warmupExercises,
     ])
 
     const [dismissedForMessageId, setDismissedForMessageId] = useState<string | null>(null)
@@ -268,6 +274,8 @@ export const Agent: React.FC<IProps> = (props) => {
             if (deloadWeekAns) handleDeloadWeek(deloadWeekAns)
             const peakWeekAns = readStr("peak-week")
             if (peakWeekAns) handlePeakWeek(peakWeekAns)
+            const warmupExercisesAns = readStr("warmup-exercises")
+            if (warmupExercisesAns) handleWarmupExercises(warmupExercisesAns)
 
             sendMessageWithContext(
                 { text: "Build my program" },
@@ -285,6 +293,7 @@ export const Agent: React.FC<IProps> = (props) => {
                         progressionSystem: (progressionSystemAns || progressionSystem.trim()) || undefined,
                         deloadWeek: (deloadWeekAns || deloadWeek.trim()) || undefined,
                         peakWeek: (peakWeekAns || peakWeek.trim()) || undefined,
+                        warmupExercises: (warmupExercisesAns || warmupExercises.trim()) || undefined,
                     },
                 }
             )
@@ -307,6 +316,7 @@ export const Agent: React.FC<IProps> = (props) => {
             handleProgressionSystem,
             handleDeloadWeek,
             handlePeakWeek,
+            handleWarmupExercises,
             convertStringArrayToOptions,
             daysPerWeek,
             programLength,
@@ -316,6 +326,7 @@ export const Agent: React.FC<IProps> = (props) => {
             progressionSystem,
             deloadWeek,
             peakWeek,
+            warmupExercises,
         ]
     )
 

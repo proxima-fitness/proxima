@@ -1,11 +1,12 @@
 "use client";
 
 /**
- * @module components/dashboard/EditProfile
- * Edit profile form rendered inside the profile page Edit Profile dialog.
- * Fields: first name, last name, username, bio; profile picture display and upload.
- * Depends on: useUserMetadata, updateUserMetadataPublic, useProfilePictureContext, storage/edge-functions, shadcn DialogHeader/Title/Footer, Input, Textarea, Label, Button, Avatar.
- * Used by: DashboardContent (inside DialogContent).
+ * @module components/profile/EditProfile
+ * Identity form for the Edit profile account page: first name, last name, username,
+ * bio, and profile picture upload/display.
+ * Depends on: useUserMetadata, updateUserMetadataPublic, useProfilePictureContext,
+ * storage/edge-functions, Input, Textarea, Label, Button, Avatar.
+ * Used by: EditProfileContent.
  */
 
 import { User } from "@supabase/supabase-js";
@@ -15,7 +16,6 @@ import { postTmpImage, getTmpPublicUrl, postProfilePic } from "@/api/storage";
 import { postNsfwImageDetection } from "@/api/edge-functions";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, useRef, type ChangeEvent } from "react";
-import { DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,31 +35,28 @@ import { v4 as uuidv4 } from "uuid";
 
 interface IEditProfileProps {
     user: User;
-    onSuccess: () => void;
+    onSuccess?: () => void;
+    /** Called when identity form dirty state changes (for page leave warn). */
+    onDirtyChange?: (isDirty: boolean) => void;
 }
 
-export function EditProfile({ user, onSuccess }: IEditProfileProps) {
+export function EditProfile({ user, onSuccess, onDirtyChange }: IEditProfileProps) {
     const { data: metaData, isLoading: loadingMetaData } = useUserMetadata(user.id);
     const { data: profilePicBlob } = useProfilePictureByID(user.id);
 
     if (loadingMetaData || !metaData) {
         return (
-            <>
-                <DialogHeader>
-                    <DialogTitle>Edit Profile</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-6 py-4">
-                    <div className="flex gap-4">
-                        <Skeleton className="h-[90px] w-[90px] rounded-full shrink-0" />
-                        <div className="flex-1 space-y-2">
-                            <Skeleton className="h-10 w-full" />
-                            <Skeleton className="h-10 w-full" />
-                            <Skeleton className="h-10 w-full" />
-                        </div>
+            <div className="space-y-6 py-4">
+                <div className="flex gap-4">
+                    <Skeleton className="h-[90px] w-[90px] rounded-full shrink-0" />
+                    <div className="flex-1 space-y-2">
+                        <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-10 w-full" />
                     </div>
-                    <Skeleton className="h-24 w-full" />
                 </div>
-            </>
+                <Skeleton className="h-24 w-full" />
+            </div>
         );
     }
 
@@ -69,6 +66,7 @@ export function EditProfile({ user, onSuccess }: IEditProfileProps) {
             user={user}
             metaData={metaData}
             onSuccess={onSuccess}
+            onDirtyChange={onDirtyChange}
             profilePicBlob={profilePicBlob}
         />
     );
@@ -77,11 +75,12 @@ export function EditProfile({ user, onSuccess }: IEditProfileProps) {
 interface IEditProfileFormProps {
     user: User;
     metaData: TUserDetails;
-    onSuccess: () => void;
+    onSuccess?: () => void;
+    onDirtyChange?: (isDirty: boolean) => void;
     profilePicBlob: Blob | null | undefined;
 }
 
-function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditProfileFormProps) {
+function EditProfileForm({ user, metaData, onSuccess, onDirtyChange, profilePicBlob }: IEditProfileFormProps) {
     const queryClient = useQueryClient();
     const { setProfilePicture } = useProfilePictureContext();
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -122,6 +121,21 @@ function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditPro
             metaData.username !== userName ||
             metaData.bio !== bio);
 
+    const reportDirtyFor = (next: typeof form) => {
+        onDirtyChange?.(
+            metaData.first_name !== next.firstName ||
+                metaData.last_name !== next.lastName ||
+                metaData.username !== next.userName ||
+                metaData.bio !== next.bio,
+        );
+    };
+
+    const patchForm = (patch: Partial<typeof form>) => {
+        const next = { ...form, ...patch };
+        setForm(next);
+        reportDirtyFor(next);
+    };
+
     const updateMutation = useMutation({
         mutationKey: ["user-metadata", user.id],
         mutationFn: async () => {
@@ -140,7 +154,8 @@ function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditPro
             await queryClient.invalidateQueries({ queryKey: ["full-name", user.id, "user"] });
             await queryClient.invalidateQueries({ queryKey: ["profile-picture", user.id] });
             toast.success("Profile updated");
-            onSuccess();
+            onDirtyChange?.(false);
+            onSuccess?.();
         },
         onError: (error) => {
             if (error instanceof Error && error.message === "Content contains profanity") {
@@ -207,11 +222,8 @@ function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditPro
         .toUpperCase() || "?";
 
     return (
-        <form onSubmit={handleSubmit}>
-            <DialogHeader>
-                <DialogTitle>Edit Profile</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-6 py-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                     <div className="flex flex-col items-start gap-2">
                         <input
@@ -222,7 +234,7 @@ function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditPro
                             aria-hidden
                             onChange={handlePhotoChange}
                         />
-                        <Avatar className="h-[90px] w-[90px] shrink-0 rounded-full border-2 border-border">
+                        <Avatar className="h-[90px] w-[90px] shrink-0 rounded-full border-2 border-border/60">
                             {profilePicUrl ? (
                                 <AvatarImage src={profilePicUrl} alt="" className="object-cover" />
                             ) : null}
@@ -241,42 +253,44 @@ function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditPro
                         </Button>
                     </div>
                     <div className="flex-1 space-y-4 w-full min-w-0">
-                        <div className="space-y-2">
-                            <Label htmlFor="edit-first-name">First name</Label>
-                            <Input
-                                id="edit-first-name"
-                                value={firstName}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    setForm((p) => ({ ...p, firstName: value }));
-                                    setFirstNameProfanity(matcher.getAllMatches(value).length > 0);
-                                }}
-                                placeholder="First name"
-                                className="w-full"
-                            />
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label htmlFor="edit-first-name">First name</Label>
+                                <Input
+                                    id="edit-first-name"
+                                    value={firstName}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        patchForm({ firstName: value });
+                                        setFirstNameProfanity(matcher.getAllMatches(value).length > 0);
+                                    }}
+                                    placeholder="First name"
+                                    className="w-full"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="edit-last-name">Last name</Label>
+                                <Input
+                                    id="edit-last-name"
+                                    value={lastName}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        patchForm({ lastName: value });
+                                        setLastNameProfanity(matcher.getAllMatches(value).length > 0);
+                                    }}
+                                    placeholder="Last name"
+                                    className="w-full"
+                                />
+                            </div>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="edit-last-name">Last name</Label>
-                            <Input
-                                id="edit-last-name"
-                                value={lastName}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    setForm((p) => ({ ...p, lastName: value }));
-                                    setLastNameProfanity(matcher.getAllMatches(value).length > 0);
-                                }}
-                                placeholder="Last name"
-                                className="w-full"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit-username">username *</Label>
+                            <Label htmlFor="edit-username">Username *</Label>
                             <Input
                                 id="edit-username"
                                 value={userName}
                                 onChange={(e) => {
                                     const value = e.target.value.toLowerCase();
-                                    setForm((p) => ({ ...p, userName: value }));
+                                    patchForm({ userName: value });
                                     setUsernameProfanity(matcher.getAllMatches(value).length > 0);
                                     setUsernameTakenError(false);
                                 }}
@@ -302,16 +316,16 @@ function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditPro
                         value={bio}
                         onChange={(e) => {
                             const value = e.target.value;
-                            setForm((p) => ({ ...p, bio: value }));
+                            patchForm({ bio: value });
                             setBioProfanity(matcher.getAllMatches(value).length > 0);
                         }}
-                        placeholder="Enter my Bio here ..."
+                        placeholder="A short bio"
                         className="min-h-[120px] w-full resize-y"
                         maxLength={250}
                     />
                 </div>
             </div>
-            <DialogFooter className="flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+            <div className="flex flex-col items-stretch gap-2 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-end">
                 {hasAnyProfanity && (
                     <p className="text-sm text-destructive font-medium sm:order-first sm:flex-1">
                         Please remove profanity before saving.
@@ -324,7 +338,7 @@ function EditProfileForm({ user, metaData, onSuccess, profilePicBlob }: IEditPro
                 >
                     {updateMutation.isPending ? "Saving…" : "Save"}
                 </Button>
-            </DialogFooter>
+            </div>
         </form>
     );
 }

@@ -38,7 +38,7 @@ import {
     planProgramInputSchema,
 } from "@/app/api/chat/tools/tools";
 
-/** Narrow AI SDK Tool to execute + toModelOutput for tests (SDK returns PromiseLike, not Promise). */
+/** Narrow AI SDK Tool to execute + toModelOutput for tests (SDK execute also takes options; tests call with input only). */
 type TToolTestHarness<TInput, TOutput> = {
     execute: (args: TInput) => Promise<TOutput>;
     toModelOutput: (args: { output: TOutput }) => PromiseLike<{ value: string }>;
@@ -53,7 +53,12 @@ type TProToolsWithWorkoutHistory = ReturnType<typeof getTools> & {
     getWorkoutHistory: TGetWorkoutHistoryTool;
 };
 
-function asTestTool<TInput, TOutput>(tool: Record<string, unknown>): TToolTestHarness<TInput, TOutput> {
+type TBuildWeekInput = {
+    totalDays: number;
+    routines: unknown[];
+};
+
+function asTestTool<TInput, TOutput>(tool: unknown): TToolTestHarness<TInput, TOutput> {
     return tool as TToolTestHarness<TInput, TOutput>;
 }
 
@@ -142,9 +147,9 @@ describe("chat tools.ts", () => {
             ] as THevyRoutine[];
 
             const tools = getTools({ hevyProgram: programWithNotes });
-            const readProgram = tools.readProgram as {
-                execute: (args: Record<string, never>) => Promise<{ hevyProgram: THevyRoutine[] }>;
-            };
+            const readProgram = asTestTool<Record<string, never>, { hevyProgram: THevyRoutine[] }>(
+                tools.readProgram,
+            );
 
             const output = await readProgram.execute({});
             expect(output.hevyProgram).toHaveLength(1);
@@ -172,7 +177,7 @@ describe("chat tools.ts", () => {
 
             const tools = getTools({ hevyProgram: programWithNotes });
             const readProgram = asTestTool<Record<string, never>, { hevyProgram: THevyRoutine[] }>(
-                tools.readProgram as Record<string, unknown>,
+                tools.readProgram,
             );
 
             const output = await readProgram.execute({});
@@ -203,9 +208,7 @@ describe("chat tools.ts", () => {
 
         it("returns routines and counts for valid input", async () => {
             const tools = getTools({});
-            const buildWeek = tools.buildWeek as {
-                execute: (args: { totalDays: number; routines: typeof minimalRoutine[] }) => Promise<unknown>;
-            };
+            const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
 
             const output = (await buildWeek.execute({
                 totalDays: 1,
@@ -231,9 +234,7 @@ describe("chat tools.ts", () => {
 
         it("accepts fixed reps without rep_range (fallback)", async () => {
             const tools = getTools({});
-            const buildWeek = tools.buildWeek as {
-                execute: (args: { totalDays: number; routines: typeof minimalRoutine[] }) => Promise<unknown>;
-            };
+            const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
 
             const fixedRepsRoutine = {
                 ...minimalRoutine,
@@ -258,9 +259,7 @@ describe("chat tools.ts", () => {
 
         it("normalizes degenerate rep_range (start===end) to rep_range null + reps", async () => {
             const tools = getTools({});
-            const buildWeek = tools.buildWeek as {
-                execute: (args: { totalDays: number; routines: typeof minimalRoutine[] }) => Promise<unknown>;
-            };
+            const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
 
             const degenerateRangeRoutine = {
                 ...minimalRoutine,
@@ -285,9 +284,7 @@ describe("chat tools.ts", () => {
 
         it("preserves reps when degenerate rep_range is normalized and reps is already set", async () => {
             const tools = getTools({});
-            const buildWeek = tools.buildWeek as {
-                execute: (args: { totalDays: number; routines: typeof minimalRoutine[] }) => Promise<unknown>;
-            };
+            const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
 
             const degenerateWithRepsRoutine = {
                 ...minimalRoutine,
@@ -312,9 +309,7 @@ describe("chat tools.ts", () => {
 
         it("auto-corrects exercise title to canonical hevy_exercise_templates title", async () => {
             const tools = getTools({});
-            const buildWeek = tools.buildWeek as {
-                execute: (args: { totalDays: number; routines: typeof minimalRoutine[] }) => Promise<unknown>;
-            };
+            const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
 
             const wrongTitleRoutine = {
                 ...minimalRoutine,
@@ -337,9 +332,7 @@ describe("chat tools.ts", () => {
 
         it("rejects unknown exercise_template_id", async () => {
             const tools = getTools({});
-            const buildWeek = tools.buildWeek as {
-                execute: (args: { totalDays: number; routines: typeof minimalRoutine[] }) => Promise<unknown>;
-            };
+            const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
 
             const badIdRoutine = {
                 ...minimalRoutine,
@@ -363,9 +356,7 @@ describe("chat tools.ts", () => {
 
         it("returns error when routines.length !== totalDays", async () => {
             const tools = getTools({});
-            const buildWeek = tools.buildWeek as {
-                execute: (args: { totalDays: number; routines: typeof minimalRoutine[] }) => Promise<unknown>;
-            };
+            const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
 
             const output = (await buildWeek.execute({
                 totalDays: 2,
@@ -379,9 +370,7 @@ describe("chat tools.ts", () => {
         it("rejects a second buildWeek in the same request when buildWeekOnceGuard is set", async () => {
             const buildWeekOnceGuard = { locked: false };
             const tools = getTools({ buildWeekOnceGuard });
-            const buildWeek = tools.buildWeek as {
-                execute: (args: { totalDays: number; routines: typeof minimalRoutine[] }) => Promise<unknown>;
-            };
+            const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
 
             const first = (await buildWeek.execute({
                 totalDays: 1,
@@ -401,9 +390,7 @@ describe("chat tools.ts", () => {
         it("does not lock the guard when the first buildWeek fails", async () => {
             const buildWeekOnceGuard = { locked: false };
             const tools = getTools({ buildWeekOnceGuard });
-            const buildWeek = tools.buildWeek as {
-                execute: (args: { totalDays: number; routines: typeof minimalRoutine[] }) => Promise<unknown>;
-            };
+            const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
 
             const failed = (await buildWeek.execute({
                 totalDays: 2,
@@ -424,12 +411,8 @@ describe("chat tools.ts", () => {
             vi.mocked(getHevyExercises).mockClear();
 
             const tools = getTools({});
-            const getExerciseList = tools.getExerciseList as {
-                execute: (args: { userRequest: string }) => Promise<unknown>;
-            };
-            const buildWeek = tools.buildWeek as {
-                execute: (args: { totalDays: number; routines: typeof minimalRoutine[] }) => Promise<unknown>;
-            };
+            const getExerciseList = asTestTool<{ userRequest: string }, unknown>(tools.getExerciseList);
+            const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
 
             await getExerciseList.execute({ userRequest: "test" });
             expect(vi.mocked(getHevyExercises).mock.calls.length).toBe(1);
@@ -465,9 +448,7 @@ describe("chat tools.ts", () => {
 
         it("returns plan and summary for valid input", async () => {
             const tools = getTools({});
-            const planProgram = tools.planProgram as {
-                execute: (args: typeof validPlan) => Promise<unknown>;
-            };
+            const planProgram = asTestTool<typeof validPlan, unknown>(tools.planProgram);
 
             const output = (await planProgram.execute(validPlan)) as {
                 plan?: unknown;
@@ -528,9 +509,7 @@ describe("chat tools.ts", () => {
             ];
 
             const tools = getTools({ hevyProgram });
-            const rateProgram = tools.rateProgram as {
-                execute: (args: Record<string, never>) => Promise<unknown>;
-            };
+            const rateProgram = asTestTool<Record<string, never>, unknown>(tools.rateProgram);
 
             const output = (await rateProgram.execute({})) as {
                 score?: { emptyProgram?: boolean; summary?: { total: number } };
@@ -564,7 +543,7 @@ describe("chat tools.ts", () => {
     describe("mutateProgram tool execute", () => {
         it("returns operations on successful preflight", async () => {
             const tools = getTools({ hevyProgram: minimalHevyProgram });
-            const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram as Record<string, unknown>);
+            const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram);
 
             const operations = [
                 { op: "edit_day_title" as const, folderIds: [0], dayOrder: 1, title: "Upper Push" },
@@ -593,7 +572,7 @@ describe("chat tools.ts", () => {
             })) as THevyRoutine[];
 
             const tools = getTools({ hevyProgram: sevenDayProgram });
-            const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram as Record<string, unknown>);
+            const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram);
 
             const output = (await mutateProgram.execute({
                 operations: [{ op: "add_day", folderIds: [0] }],
@@ -610,6 +589,61 @@ describe("chat tools.ts", () => {
 
             const modelOutput = await mutateProgram.toModelOutput({ output });
             expect(modelOutput.value).toContain("[0] add_day:");
+        });
+
+        it("surfaces constraint_violation message via toModelOutput", async () => {
+            const constraintProfile = {
+                injuries: [],
+                excludedEquipment: ["Barbell"],
+                excludedAreas: [],
+                preferences: {
+                    splitType: "",
+                    exerciseVariability: "",
+                    progressionSystem: "",
+                    deloadWeek: "",
+                    peakWeek: "",
+                    warmupExercises: "",
+                },
+                chatRefinements: [],
+            };
+
+            const tools = getTools({ hevyProgram: minimalHevyProgram, constraintProfile });
+            const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram);
+
+            const output = (await mutateProgram.execute({
+                operations: [{
+                    op: "insert_exercise",
+                    folderIds: [0],
+                    dayOrder: 1,
+                    exerciseIndex: 0,
+                    exercise: {
+                        exercise_template_id: "ex-1",
+                        rest_seconds: "90",
+                        sets: [{
+                            type: "normal",
+                            reps: 8,
+                            weight_kg: null,
+                            rpe: 8,
+                            distance_meters: null,
+                            duration_seconds: null,
+                            custom_metric: null,
+                            rep_range: null,
+                        }],
+                    },
+                }],
+            })) as {
+                error?: string;
+                message?: string;
+            };
+
+            expect(output.error).toBe("constraint_violation");
+            expect(typeof output.message).toBe("string");
+            expect(output.message).toMatch(/excluded equipment|Barbell/i);
+
+            const modelOutput = await mutateProgram.toModelOutput({ output });
+            expect(modelOutput.value).toMatch(/excluded equipment|Mutation rejected/i);
+            expect(modelOutput.value).not.toBe("Mutation batch rejected: Unknown validation error");
+            expect(modelOutput.value).not.toContain("Unknown validation error");
         });
     });
 

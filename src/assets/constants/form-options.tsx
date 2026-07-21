@@ -220,6 +220,24 @@ export const sampleQuestions: TQuestion[] = [
       ],
       allowOther: false,
     },
+    {
+      id: "peak-week",
+      question: "Do you want a Peak week?",
+      options: [
+        { id: "yes", label: "Yes ( Include a higher-intensity week in the program)" },
+        { id: "no", label: "No" },
+      ],
+      allowOther: false,
+    },
+    {
+      id: "warmup-exercises",
+      question: "Add warmup exercises?",
+      options: [
+        { id: "yes", label: "Yes ( Include 1–2 prep movements at the start of each day)" },
+        { id: "no", label: "No ( Skip separate warmup exercises)" },
+      ],
+      allowOther: false,
+    },
   ];
 
 

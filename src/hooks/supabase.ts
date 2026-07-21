@@ -8,10 +8,30 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.1"
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -158,7 +178,6 @@ export type Database = {
       }
       feature_usage: {
         Row: {
-          bolao_last_used_date: string | null
           created_at: string
           id: string
           monthly_exports_used: number
@@ -166,7 +185,6 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          bolao_last_used_date?: string | null
           created_at?: string
           id?: string
           monthly_exports_used?: number
@@ -174,7 +192,6 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
-          bolao_last_used_date?: string | null
           created_at?: string
           id?: string
           monthly_exports_used?: number
@@ -1022,6 +1039,39 @@ export type Database = {
           },
         ]
       }
+      session_episodes: {
+        Row: {
+          chat_id: string | null
+          constraints_snapshot: Json
+          created_at: string
+          id: string
+          key_decisions: Json
+          program_id: number | null
+          summary: string
+          user_id: string
+        }
+        Insert: {
+          chat_id?: string | null
+          constraints_snapshot?: Json
+          created_at?: string
+          id?: string
+          key_decisions?: Json
+          program_id?: number | null
+          summary: string
+          user_id: string
+        }
+        Update: {
+          chat_id?: string | null
+          constraints_snapshot?: Json
+          created_at?: string
+          id?: string
+          key_decisions?: Json
+          program_id?: number | null
+          summary?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       test_users: {
         Row: {
           created_at: string
@@ -1130,7 +1180,50 @@ export type Database = {
             referencedRelation: "policy_versions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "user_consents_user_id_fkey1"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      user_constraints: {
+        Row: {
+          chat_refinements: Json
+          created_at: string
+          excluded_areas: Json
+          excluded_equipment: Json
+          injuries: Json
+          preferences: Json
+          raw_statements: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chat_refinements?: Json
+          created_at?: string
+          excluded_areas?: Json
+          excluded_equipment?: Json
+          injuries?: Json
+          preferences?: Json
+          raw_statements?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chat_refinements?: Json
+          created_at?: string
+          excluded_areas?: Json
+          excluded_equipment?: Json
+          injuries?: Json
+          preferences?: Json
+          raw_statements?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       users: {
         Row: {
@@ -1280,6 +1373,7 @@ export type Database = {
           external_id: string | null
           id: string
           source: Database["public"]["Enums"]["source_type"] | null
+          source_updated_at: string | null
           started_at: string
           title: string | null
           updated_at: string | null
@@ -1292,6 +1386,7 @@ export type Database = {
           external_id?: string | null
           id: string
           source?: Database["public"]["Enums"]["source_type"] | null
+          source_updated_at?: string | null
           started_at: string
           title?: string | null
           updated_at?: string | null
@@ -1304,6 +1399,7 @@ export type Database = {
           external_id?: string | null
           id?: string
           source?: Database["public"]["Enums"]["source_type"] | null
+          source_updated_at?: string | null
           started_at?: string
           title?: string | null
           updated_at?: string | null
@@ -1324,6 +1420,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      append_raw_statement: {
+        Args: { p_statement: string; p_user_id: string }
+        Returns: undefined
+      }
       delete_secret: { Args: { secret_name: string }; Returns: string }
       get_hevy_key_from_vault: { Args: { p_user_id: string }; Returns: string }
       get_my_feature_limits: {
@@ -1340,25 +1440,25 @@ export type Database = {
           user_id: string
         }[]
       }
-      get_bolao_predictor_limits: {
-        Args: never
-        Returns: {
-          remaining_today: number
-          used_today: boolean
-        }[]
-      }
-      try_consume_bolao_prediction: {
-        Args: never
-        Returns: {
-          allowed: boolean
-        }[]
-      }
       increment_feature_usage: {
         Args: { p_feature: string }
         Returns: undefined
       }
       insert_secret: { Args: { secret: string }; Returns: string }
       read_secret: { Args: { secret_name: string }; Returns: string }
+      revise_backed_up_workout: {
+        Args: {
+          p_description: string
+          p_ended_at: string
+          p_exercises: Json
+          p_sets: Json
+          p_source_updated_at: string
+          p_started_at: string
+          p_title: string
+          p_workout_id: string
+        }
+        Returns: undefined
+      }
       search_programs_by_prefix: {
         Args: { prefix: string }
         Returns: {
@@ -1535,9 +1635,13 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       source_type: ["hevy"],
     },
   },
 } as const
+

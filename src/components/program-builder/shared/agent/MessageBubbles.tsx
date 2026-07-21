@@ -869,6 +869,24 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 </Tool>
                                             );
                                         }
+                                        case "tool-updateConstraintProfile": {
+                                            const constraintPart = part as {
+                                                state?: TToolPart["state"];
+                                                output?: { updatedProfile?: unknown; error?: string };
+                                            };
+                                            const toolState: TToolPart["state"] = constraintPart.state ?? "output-available";
+                                            const isDone = toolState === "output-available" && constraintPart.output?.updatedProfile;
+                                            return (
+                                                <Tool key={`${message.id}-${index}-constraint`} defaultOpen={false} className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
+                                                    <ToolHeader type="tool-updateConstraintProfile" state={toolState} title="Update constraints" />
+                                                    <ToolContent>
+                                                        <p className="text-sm text-muted-foreground px-3 pb-2">
+                                                            {isDone ? "Preferences updated and saved." : "Updating preferences…"}
+                                                        </p>
+                                                    </ToolContent>
+                                                </Tool>
+                                            );
+                                        }
                                         default: {
                                             return null;
                                         }

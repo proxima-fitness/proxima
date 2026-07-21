@@ -30,7 +30,7 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("two flows");
             expect(prompt).toContain("Periodization after buildWeek");
             expect(prompt).toContain("Before mutateProgram (mandatory)");
-            expect(prompt).toContain("constraint profile");
+            expect(prompt).toContain("Constraint Profile");
         });
 
         it("includes workflow when program is non-empty", () => {
@@ -88,7 +88,7 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("Exclude equipment: bodyweight, band");
         });
 
-        it("includes questionnaire preferences when any of split / variability / progression / deload / peak are set", () => {
+        it("includes questionnaire preferences when any of split / variability / progression / deload / peak / warmups are set", () => {
             const prompt = instructions({
                 hevyProgram: [],
                 daysPerWeek: 4,
@@ -98,6 +98,7 @@ describe("chat instructions.ts", () => {
                 progressionSystem: "linear",
                 deloadWeek: "yes",
                 peakWeek: "no",
+                warmupExercises: "yes",
             });
 
             expect(prompt).toContain("Questionnaire preferences");
@@ -106,6 +107,19 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("Progression system: linear");
             expect(prompt).toContain("Deload week: yes");
             expect(prompt).toContain("Peak week: no");
+            expect(prompt).toContain("Warmup exercises: yes");
+        });
+
+        it("includes warmup exercises preference when set alone", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+                warmupExercises: "no",
+            });
+
+            expect(prompt).toContain("Questionnaire preferences");
+            expect(prompt).toContain("Warmup exercises: no");
         });
 
         it("omits questionnaire preferences line when health, exclude equipment, and split-related fields are empty", () => {

@@ -13,7 +13,7 @@
  * Used by: Chat.tsx (program-builder agent panel)
  */
 
-import { ToolLoopAgent, createAgentUIStreamResponse, gateway, stepCountIs } from 'ai';
+import { ToolLoopAgent, createAgentUIStreamResponse, gateway, isStepCount } from 'ai';
 import { after } from 'next/server';
 import { observe, propagateAttributes } from '@langfuse/tracing';
 import { langfuseSpanProcessor } from '../../../../instrumentation';
@@ -21,6 +21,10 @@ import { createClient } from '@/utils/supabase/server';
 import { getServerHasActiveSubscription } from '@/lib/server-feature-limits';
 import { instructions } from './instructions/instructions';
 import { getTools, type IBuildWeekOnceGuard } from './tools/tools';
+import { initializeConstraintProfile } from './constraints';
+import { mergeConstraintProfiles } from './constraints/merge';
+import { getUserConstraints } from '@/api/user-constraints';
+import { getRecentEpisodes } from '@/api/session-episodes';
 import { createSandbox } from './skills/sandbox';
 import { discoverSkills } from './skills/index';
 import z from 'zod';
@@ -69,7 +73,7 @@ const callOptionsSchema = z.object({
  *
  * @param req - Request whose JSON body contains `messages`, `hevyProgram`,
  *   `daysPerWeek`, `programLength`, optional exclusion/health filters, and optional
- *   questionnaire fields (`excludeEquipment`, `splitType`, `exerciseVariability`, `progressionSystem`, `deloadWeek`, `peakWeek`).
+ *   questionnaire fields (`excludeEquipment`, `splitType`, `exerciseVariability`, `progressionSystem`, `deloadWeek`, `peakWeek`, `warmupExercises`).
  * @returns A streaming `Response` that the Vercel AI SDK client consumes to
  *   render incremental agent output and tool invocations.
  */
@@ -88,6 +92,7 @@ async function handleChatPost(req: Request) {
             progressionSystem = "",
             deloadWeek = "",
             peakWeek = "",
+            warmupExercises = "",
             chatSessionId,
         } = await req.json();
 
@@ -104,7 +109,31 @@ async function handleChatPost(req: Request) {
             async () => {
                 const sanitizedMessages = sanitizeMessagesWithUnresolvedToolCalls(messages);
 
+                const persistedConstraints = user
+                    ? await getUserConstraints(user.id, supabase)
+                    : null;
+
+                const constraintProfile = mergeConstraintProfiles(
+                    persistedConstraints,
+                    initializeConstraintProfile({
+                        healthIssues,
+                        excludeEquipment,
+                        excludeAreas,
+                        splitType,
+                        exerciseVariability,
+                        progressionSystem,
+                        deloadWeek,
+                        peakWeek,
+                        warmupExercises,
+                    }),
+                );
+
                 const hasActiveSubscription = user ? await getServerHasActiveSubscription(supabase, user) : false;
+
+                // Fetch episodic memory when editing an existing program
+                const episodes = (user && hevyProgram.length > 0)
+                    ? await getRecentEpisodes(supabase, user.id)
+                    : [];
 
                 const systemPrompt = instructions({
                     hevyProgram,
@@ -117,7 +146,10 @@ async function handleChatPost(req: Request) {
                     progressionSystem,
                     deloadWeek,
                     peakWeek,
+                    warmupExercises,
                     hasWorkoutHistoryAccess: hasActiveSubscription,
+                    constraintProfile,
+                    episodes,
                 });
                 const buildWeekOnceGuard: IBuildWeekOnceGuard = { locked: false };
                 const tools = getTools({
@@ -129,11 +161,26 @@ async function handleChatPost(req: Request) {
                     hasActiveSubscription,
                     userId: user?.id,
                     workoutHistoryDb: user ? supabase : undefined,
+                    constraintProfile,
                 });
 
                 const sandbox = createSandbox({ workingDirectory: process.cwd() });
                 const skills = await discoverSkills(sandbox, ['.agents/skills']);
                 const activeToolScope: { allowedTools: string[] | null } = { allowedTools: null };
+
+                const skillToolsContext = {
+                    loadSkill: {
+                        sandbox,
+                        skills,
+                        activeToolScope,
+                    },
+                    readFile: {
+                        sandbox,
+                    },
+                    bash: {
+                        sandbox,
+                    },
+                };
 
                 const andy = new ToolLoopAgent({
                     model: gateway(
@@ -143,9 +190,10 @@ async function handleChatPost(req: Request) {
                         // 'anthropic/claude-sonnet-4.5'
                     instructions: systemPrompt,
                     tools: tools,
+                    toolsContext: skillToolsContext,
                     callOptionsSchema: callOptionsSchema,
-                    stopWhen: stepCountIs(28),
-                    experimental_telemetry: { isEnabled: true },
+                    stopWhen: isStepCount(28),
+                    telemetry: { isEnabled: true },
                     prepareCall: ({ options, ...settings }) => {
                         const CORE_TOOLS = ['loadSkill', 'readFile', 'bash'];
                         let filteredTools = settings.tools;
@@ -164,10 +212,18 @@ async function handleChatPost(req: Request) {
                             ...settings,
                             tools: filteredTools,
                             instructions: `${settings.instructions}\n\n${buildSkillsPrompt(options.skills)}`,
-                            experimental_context: {
-                                sandbox: options.sandbox,
-                                skills: options.skills,
-                                activeToolScope: options.activeToolScope,
+                            toolsContext: {
+                                loadSkill: {
+                                    sandbox: options.sandbox,
+                                    skills: options.skills,
+                                    activeToolScope: options.activeToolScope,
+                                },
+                                readFile: {
+                                    sandbox: options.sandbox,
+                                },
+                                bash: {
+                                    sandbox: options.sandbox,
+                                },
                             },
                         };
                     },

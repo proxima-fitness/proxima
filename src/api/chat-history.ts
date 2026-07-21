@@ -1,4 +1,4 @@
-import { User } from "@supabase/supabase-js";
+import type { User, SupabaseClient } from "@supabase/supabase-js";
 import type { QueryClient } from "@tanstack/react-query";
 import { supabase } from ".";
 import { CHAT_MESSAGES_KEY } from "@/assets/constants/ui-constants";
@@ -60,13 +60,15 @@ async function chatHistoryRowExists(user: User, chatId: string): Promise<boolean
  * @param user - The authenticated user
  * @param chatId - The chat ID
  */
-export const getChatHistoryById = async (user: User | undefined | null, chatId: string) => {
+export const getChatHistoryById = async (user: User | undefined | null, chatId: string, client?: SupabaseClient) => {
     if (!user || !chatId) {
         return [];
     }
 
+    const db = client ?? supabase;
+
     try {
-        const { data: chatHistory, error: chatHistoryError } = await supabase
+        const { data: chatHistory, error: chatHistoryError } = await db
             .from("chat_history")
             .select("conversation")
             .eq("user_id", user.id)

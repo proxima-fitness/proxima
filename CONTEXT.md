@@ -176,16 +176,20 @@ _Avoid_: syncProgramToHevy in hevy.ts, export sync
 Shared `useNavigateToEditHevyProgram()` used by profile entry points (My Hevy Programs grid, blind-spot Hevy picker). Refetches `useHevyPrograms`, passes routines via router state, and navigates to Edit arrival with `folder` and optional extra query params.
 _Avoid_: navigateToEditHevyProgram helper, inline edit push
 
+**Agentic memory**:
+What the integrated training coach persists about the user across sessions and can use when coaching — inspectable and editable by the user. **Constraint profile** is the first (and currently only) kind.
+_Avoid_: Memories (implies freeform rows), agent knowledge (too vague), user preferences (too broad)
+
 **Constraint profile**:
-Merged training constraints for one builder session — home-prompt inference plus questionnaire answers plus later chat refinements. Authoritative for exercise selection and program edits; agent must not re-ask fields already captured here. Chat may add or override; it does not erase prior answers unless the user explicitly changes them.
-_Avoid_: User preferences (too broad), questionnaire data (implementation-shaped), builder state
+Merged training constraints for one user — home-prompt inference plus questionnaire answers plus later chat refinements. Authoritative for exercise selection and program edits; agent must not re-ask fields already captured here. Chat may add or override; it does not erase prior answers unless the user explicitly changes them. The user-facing name for this kind of Agentic memory (not a separate "constraints" label). When a persisted row exists, array fields (injuries, excluded equipment, excluded areas, chat refinements) are **persisted-only** — merge does not re-union with stale questionnaire/session strings, so Edit profile removals stick across chat turns. Preferences still prefer a non-empty session value. New questionnaire array values for users who already have a row must arrive via chat `updateConstraintProfile` or **Edit profile** Save — not merge alone. When the user manually edits the profile (add, change, or remove), those edits supersede questionnaire answers and chat session inputs that would put a removed constraint back. On **Edit profile**, the Constraint Profile UI maps 1:1 to persisted fields (injuries, excluded equipment, excluded areas, preferences, chat refinements, raw statements) — not renamed umbrella labels. Structured fields are editable; **raw statements** are the user’s exact words captured on agent updates — view and delete only (not freeform invent), so the user can purge wrong audit lines. Deleting a raw statement does not change injuries, equipment, areas, preferences, or chat refinements — those are edited separately. Constraint profile changes use a dedicated Save (separate from identity Save); nothing persists until that Save. On Edit profile, injuries and chat refinements accept freeform add; excluded equipment and excluded areas use fixed pickers (questionnaire option sets); all list fields support remove. Preferences use the same option sets as the questionnaire (not freeform).
+_Avoid_: User preferences (too broad), questionnaire data (implementation-shaped), builder state, constraints (UI label), Other constraints (non-column label), single shared Save with identity, autosave per chip, freeform invent for equipment/areas, freeform preference text, merge re-union of arrays when a row exists
 
 **Equipment constraint**:
 Hybrid equipment rule within the constraint profile: excluded equipment types (questionnaire) plus explicitly available equipment (home prompt, chat). Exercise selection must satisfy both — excluded types out, available types in. Distinct from a single "cables only" label; captures setups like cable machine plus bench attachments.
 _Avoid_: Exclude equipment (exclusion half only), gear list (too informal)
 
 **Available equipment**:
-Positive half of the equipment constraint — what the user explicitly has (e.g. cable machine, adjustable bench, attachments). Merged from home prompt and chat into the constraint profile. Complements excluded equipment from the questionnaire; both apply together.
+Positive half of the equipment constraint — what the user explicitly has (e.g. cable machine, adjustable bench, attachments). Complements excluded equipment from the questionnaire; both apply together. Not yet a first-class editable list on **Edit profile** — may appear only as freeform chat refinements until a dedicated field exists.
 _Avoid_: Allowed gear (informal), equipment list (ambiguous with full Hevy catalog)
 
 **Movement restriction**:
@@ -334,8 +338,16 @@ _Avoid_: Browsewrap banner, dismissible update toast
 Optional opt-in to receive promotional emails and offers from Proxima. Not required for account or product use; default off until explicitly opted in. Collected at sign-up and editable on the dedicated Privacy settings page — not re-prompted on every sign-in.
 _Avoid_: Newsletter signup (too narrow), notifications (in-app vs email)
 
+**Edit profile**:
+Dedicated account page for identity (name, username, bio, photo) and for inspecting/editing **Agentic memory**. Identity section first; Constraint profile section below. Distinct from the profile page (training stats, Hevy programs, recent workouts) and from **Privacy settings**. Replaces the old profile-page dialog. Dual Save — identity and Constraint profile each persist on their own button (**Save constraints** for memory). Constraint profile edits stay in an in-memory draft until **Save constraints**; nothing is written to localStorage. Unsaved identity **or** Constraint profile blocks leave with a warn — stay or discard.
+_Avoid_: Edit profile dialog, profile preferences card, silent discard of unsaved edits, Constraint-profile-first layout, tabs that hide memory, constraint-only leave warn, single shared Save, localStorage draft, autosave per chip
+
+**Constraint profile peek**:
+Read-only condensed Constraint profile summary in build-program chat chrome near the prompt input — separate from token-usage Context. Signed-in users only (hidden when anonymous). Shows non-empty structured sections only (injuries, excluded equipment, excluded areas, preferences, chat refinements); truncates long values. Omits **raw statements** (Edit profile only). When no row or all fields empty: still show the control with empty copy and a link to **Edit profile**. Reflects mid-chat Constraint profile updates in the same session. Link to **Edit profile** for changes; no editing in the builder.
+_Avoid_: Context hover (token usage), inline constraint editor, memories panel, full 1:1 field mirror in builder, hide when empty, stale-until-reopen only, anon session-only peek
+
 **Privacy settings**:
-Dedicated account page reachable from the sidebar account menu. Hosts revocable **Platform improvement consent** and **Marketing consent** toggles. Distinct from Edit profile (identity fields) and from the **Legal acceptance dialog** (required policy gate).
+Dedicated account page reachable from the sidebar account menu. Hosts revocable **Platform improvement consent** and **Marketing consent** toggles. Distinct from **Edit profile** and from the **Legal acceptance dialog** (required policy gate).
 _Avoid_: Profile preferences card, settings (too generic)
 
 **User consents**:

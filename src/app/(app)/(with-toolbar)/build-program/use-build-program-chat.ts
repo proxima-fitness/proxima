@@ -46,6 +46,27 @@ type TProgramRequestState = ReturnType<typeof useProgramRequestState>;
 const chatTransport = new DefaultChatTransport({ api: "/api/chat" });
 const MAX_RETRIES = 2;
 
+/** True when this turn successfully persisted Constraint profile via the agent tool. */
+function turnUpdatedConstraintProfile(messages: TChatMessage[]): boolean {
+    for (const message of messages) {
+        for (const part of message.parts ?? []) {
+            if (part.type !== "tool-updateConstraintProfile") continue;
+            const toolPart = part as {
+                state?: string;
+                output?: { updatedProfile?: unknown; error?: string };
+            };
+            if (
+                toolPart.state === "output-available" &&
+                toolPart.output?.updatedProfile &&
+                !toolPart.output.error
+            ) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 export interface IUseBuildProgramChatOptions {
     user: User | null;
     hevyProgram: THevyRoutine[];
@@ -145,6 +166,7 @@ interface IMessageContextBodyInput {
     progressionSystem: string;
     deloadWeek: string;
     peakWeek: string;
+    warmupExercises: string;
 }
 
 function buildMessageContextBody(input: IMessageContextBodyInput) {
@@ -162,6 +184,7 @@ function buildMessageContextBody(input: IMessageContextBodyInput) {
         progressionSystem: trimOrEmpty(input.progressionSystem),
         deloadWeek: trimOrEmpty(input.deloadWeek),
         peakWeek: trimOrEmpty(input.peakWeek),
+        warmupExercises: trimOrEmpty(input.warmupExercises),
         chatSessionId: input.chatId || undefined,
     };
 }
@@ -256,6 +279,17 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         transport: chatTransport,
         messages: initialMessages,
         onFinish: ({ messages: finishedMessages, isAbort, isError }) => {
+            if (
+                user &&
+                !isAbort &&
+                !isError &&
+                turnUpdatedConstraintProfile(finishedMessages)
+            ) {
+                void queryClient.invalidateQueries({
+                    queryKey: ["user-constraints", user.id],
+                });
+            }
+
             const persistChatId = resolvePersistChatId(chatId, pendingMintChatIdRef.current);
             void persistChatHistoryAfterTurn({
                 user,
@@ -268,6 +302,13 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
                     void queryClient.invalidateQueries({
                         queryKey: ["chat-history", user.id, persistChatId],
                     });
+
+                    // Fire-and-forget episode generation for cross-session memory
+                    fetch('/api/chat/summarize-episode', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ chatId: persistChatId }),
+                    }).catch(() => {}); // non-blocking
                 }
             });
         },
@@ -334,6 +375,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
                 progressionSystem: programRequest.progressionSystem,
                 deloadWeek: programRequest.deloadWeek,
                 peakWeek: programRequest.peakWeek,
+                warmupExercises: programRequest.warmupExercises,
             });
 
             const sendPromise = sendMessage(message, {
@@ -369,6 +411,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             programRequest.progressionSystem,
             programRequest.deloadWeek,
             programRequest.peakWeek,
+            programRequest.warmupExercises,
             incrementLlmRequests,
         ],
     );

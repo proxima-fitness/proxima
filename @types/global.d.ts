@@ -107,6 +107,7 @@ type TTextToJsonRequest = {
     progressionSystem: string; // Questionnaire: progression system option id.
     deloadWeek: string; // Questionnaire: deload week (yes | no).
     peakWeek: string; // Questionnaire: peak week (yes | no).
+    warmupExercises: string; // Questionnaire: warmup exercises (yes | no).
     programTitle: string; // goes into AI Prompt
     explore: string; // goes into AI Prompt
 }
@@ -289,7 +290,7 @@ type TMapBackedUpWorkoutOptions = {
 
 
 type TRoutineResponse = {
-    routine: TRoutine;
+    routine: THevyRoutine;
   };
 
 

@@ -23,12 +23,14 @@ import { getCommunityAiPrograms, getCommunityAiProgramsPaginated, getExplorePage
 import { ANONYMOUS_USER_METADATA, getOpUserId, getUserFullName, getUserMetaData, getUsersBatch } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getHevyApiKey, getHevyCustomExercises, getHevyExercises, getHevyPrograms, getHevyRoutines } from "../components/program-builder/api/hevy";
-import { getBolaoPredictorLimits } from "./bolao-limits";
 import { getMyFeatureLimits } from "./feature-limits";
 import { getFollowers, getFollowing } from "./followers";
 import { User } from "@supabase/supabase-js";
 import { getChatHistoryById, getChatIds } from "./chat-history";
 import { getLoggedWorkoutDetail, getLoggedWorkoutPreviews, getProfileCalendarWorkouts, getProfileStatistics, LOGGED_WORKOUT_BROWSE_QUERY_KEY, PROFILE_CALENDAR_QUERY_KEY, PROFILE_STATISTICS_QUERY_KEY, WorkoutNotFoundError } from "./workout-history-browse";
+import {
+    getUserConstraints,
+} from "./user-constraints";
 
 /* ================================
    CLIENT-SIDE RENDERED HOOKS
@@ -416,19 +418,6 @@ export const useMyFeatureLimits = (user: User | undefined | null) => {
 };
 
 /**
- * Fetches the current user's bolao predictor daily limit (1/day; unlimited for test users).
- *
- * @param user - The Supabase auth user; query disabled when null
- */
-export const useBolaoPredictorLimits = (user: User | undefined | null) => {
-    return useQuery({
-        queryKey: ["bolao-predictor-limits", user?.id],
-        queryFn: () => getBolaoPredictorLimits(user),
-        enabled: !!user,
-    });
-};
-
-/**
  * Fetches one backed-up logged workout for the detail page.
  *
  * @param user - Authenticated user (query disabled when null)
@@ -462,6 +451,19 @@ export const useLoggedWorkoutBrowse = (user: User | undefined | null, enabled: b
         initialPageParam: null as TWorkoutHistoryCursor | null,
         getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
         enabled: !!user && enabled,
+    });
+};
+
+/**
+ * Loads the signed-in user's Constraint profile record (structured + raw statements).
+ *
+ * @param user - Authenticated user (query disabled when null)
+ */
+export const useUserConstraints = (user: User | undefined | null) => {
+    return useQuery({
+        queryKey: ["user-constraints", user?.id],
+        queryFn: () => getUserConstraints(user!.id),
+        enabled: !!user,
     });
 };
 

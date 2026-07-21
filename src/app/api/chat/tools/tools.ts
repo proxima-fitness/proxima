@@ -53,6 +53,9 @@ import {
     getWorkoutsForUser,
 } from '@/api/workout-history-read';
 import { tool } from 'ai';
+import type { TConstraintProfile } from '../constraints';
+import { validateAgainstConstraints } from '../constraints/validate';
+import { upsertUserConstraints } from '@/api/user-constraints';
 
 /** Request-scoped flag: set after first successful buildWeek so the agent cannot call buildWeek twice in one chat turn. */
 export interface IBuildWeekOnceGuard {
@@ -69,6 +72,8 @@ interface IProps {
     hasActiveSubscription?: boolean;
     userId?: string;
     workoutHistoryDb?: TWorkoutHistoryDb;
+    /** Structured constraint profile; when provided, updateConstraintProfile tool is included. */
+    constraintProfile?: TConstraintProfile;
 }
 
 function stripFrontmatter(content: string): string {
@@ -118,6 +123,16 @@ export const planProgramInputSchema = z
         }
     });
 
+/** Add items to an array, skipping duplicates (case-insensitive). */
+function patchStringArray(arr: string[], add?: string[], remove?: string[]): string[] {
+    const removeSet = new Set((remove ?? []).map(s => s.toLowerCase()));
+    const existing = new Set(arr.map(s => s.toLowerCase()));
+    return [
+        ...arr.filter(s => !removeSet.has(s.toLowerCase())),
+        ...(add ?? []).filter(s => !existing.has(s.toLowerCase()) && !removeSet.has(s.toLowerCase())),
+    ];
+}
+
 /**
  * Factory that creates the complete tool set for the chat agent. Captures
  * user-specific exclusion filters and the current program in a closure so
@@ -138,19 +153,48 @@ export function getTools({
     hasActiveSubscription = false,
     userId,
     workoutHistoryDb,
+    constraintProfile,
 }: IProps = {}) {
 
     /** Request-scoped id → canonical title from hevy_exercise_templates (populated by getExerciseList; buildWeek uses it or refetches). */
     const exerciseIdToTitle = new Map<string, string>();
 
+    /** Cached result of getHevyExercises() to avoid redundant Supabase queries within a single request. */
+    let cachedHevyExercises: Awaited<ReturnType<typeof getHevyExercises>> | null = null;
+
     /** When getExerciseList has not run this turn, load all templates so buildWeek can still validate IDs. */
     async function ensureExerciseIdToTitleMap(): Promise<void> {
-        if (exerciseIdToTitle.size > 0) return;
+        if (exerciseIdToTitle.size > 0 && cachedHevyExercises) return;
         const all = await getHevyExercises();
+        cachedHevyExercises = all;
         for (const ex of all) {
             if (ex?.id) exerciseIdToTitle.set(ex.id, ex.title);
         }
     }
+
+    async function getCachedHevyExercises() {
+        await ensureExerciseIdToTitleMap();
+        return cachedHevyExercises!;
+    }
+
+    const sandboxContextSchema = z.object({
+        sandbox: z.custom<ISandbox>(),
+    });
+
+    const loadSkillContextSchema = z.object({
+        sandbox: z.custom<ISandbox>(),
+        skills: z.array(
+            z.object({
+                name: z.string(),
+                description: z.string(),
+                path: z.string(),
+                allowedTools: z.array(z.string()).optional(),
+            }),
+        ),
+        activeToolScope: z.object({
+            allowedTools: z.array(z.string()).nullable(),
+        }),
+    });
 
     /**
      * Title: loadSkillTool
@@ -162,12 +206,9 @@ export function getTools({
         inputSchema: z.object({
             name: z.string().describe('The skill name to load'),
         }),
-        execute: async ({ name }, { experimental_context }) => {
-            const { sandbox, skills, activeToolScope } = experimental_context as {
-                sandbox: ISandbox;
-                skills: ISkillMetadata[];
-                activeToolScope: { allowedTools: string[] | null };
-            };
+        contextSchema: loadSkillContextSchema,
+        execute: async ({ name }, { context }) => {
+            const { sandbox, skills, activeToolScope } = context;
 
             const skill = skills.find(s => s.name.toLowerCase() === name.toLowerCase());
             if (!skill) {
@@ -197,9 +238,9 @@ export function getTools({
     const readFileTool = tool({
         description: 'Read a file from the filesystem',
         inputSchema: z.object({ path: z.string() }),
-        execute: async ({ path }, { experimental_context }) => {
-            const { sandbox } = experimental_context as { sandbox: ISandbox };
-            return sandbox.readFile(path, 'utf-8');
+        contextSchema: sandboxContextSchema,
+        execute: async ({ path }, { context }) => {
+            return context.sandbox.readFile(path, 'utf-8');
         },
     });
 
@@ -211,9 +252,9 @@ export function getTools({
     const bashTool = tool({
         description: 'Execute a bash command',
         inputSchema: z.object({ command: z.string() }),
-        execute: async ({ command }, { experimental_context }) => {
-            const { sandbox } = experimental_context as { sandbox: ISandbox };
-            return sandbox.exec(command);
+        contextSchema: sandboxContextSchema,
+        execute: async ({ command }, { context }) => {
+            return context.sandbox.exec(command);
         },
     });
 
@@ -234,13 +275,19 @@ export function getTools({
 
         execute: async ({ userRequest, excludeAreas: agentExcludeAreas, excludeEquipment: agentExcludeEquipment, healthIssues: agentHealthIssues }) => {
             try {
-                // Use agent-provided values if available, otherwise fall back to closure values
-                const finalExcludeAreas = agentExcludeAreas || excludeAreas;
-                const finalExcludeEquipment = agentExcludeEquipment || excludeEquipment;
-                const finalHealthIssues = agentHealthIssues || healthIssues;
+                // Use agent-provided values if available, then constraintProfile, then fall back to closure strings
+                const finalExcludeAreas = agentExcludeAreas
+                    || (constraintProfile?.excludedAreas.join(', '))
+                    || excludeAreas;
+                const finalExcludeEquipment = agentExcludeEquipment
+                    || (constraintProfile?.excludedEquipment.join(', '))
+                    || excludeEquipment;
+                const finalHealthIssues = agentHealthIssues
+                    || (constraintProfile?.injuries.join(', '))
+                    || healthIssues;
 
                 // Fetch all available Hevy exercises
-                const exercises = await getHevyExercises();
+                const exercises = await getCachedHevyExercises();
 
                 // Filter exercises based on exclusions
                 let filteredExercises = [...exercises];
@@ -635,6 +682,24 @@ export function getTools({
                 // Ensure routines are ordered by day
                 builtRoutines.sort((a, b) => Number(a.order) - Number(b.order));
 
+                if (constraintProfile) {
+                    const allExercises = await getCachedHevyExercises();
+                    const templateMap = new Map(allExercises.map(e => [e.id, e]));
+                    const exerciseMeta = builtRoutines.flatMap(r =>
+                        r.exercises.map(e => templateMap.get(e.exercise_template_id) ?? { title: e.title }),
+                    );
+                    const validation = validateAgainstConstraints(constraintProfile, exerciseMeta);
+                    if (validation.valid === false) {
+                        const lines = validation.violations
+                            .map(({ exerciseTitle, reason }) => `- ${exerciseTitle}: ${reason}`)
+                            .join('\n');
+                        return {
+                            error: 'constraint_violation',
+                            message: `Fix these exercises and call buildWeek again:\n${lines}`,
+                        };
+                    }
+                }
+
                 if (buildWeekOnceGuard) {
                     buildWeekOnceGuard.locked = true;
                 }
@@ -729,6 +794,33 @@ export function getTools({
                     }
                 }
 
+                if (constraintProfile) {
+                    const allExercises = await getCachedHevyExercises();
+                    const templateMap = new Map(allExercises.map(e => [e.id, e]));
+                    const incomingExercises = resolvedOperations
+                        .filter(op => op.op === 'insert_exercise' || op.op === 'edit_exercise' || op.op === 'swap_exercise_template')
+                        .flatMap(op => {
+                            let id: string | undefined;
+                            if ('exercise' in op && op.exercise && typeof op.exercise === 'object') {
+                                id = (op.exercise as { exercise_template_id?: string }).exercise_template_id;
+                            } else if ('to' in op && op.to && typeof op.to === 'object') {
+                                id = (op.to as { exercise_template_id?: string }).exercise_template_id;
+                            }
+                            const tmpl = id ? templateMap.get(id) : undefined;
+                            return tmpl ? [tmpl] : [];
+                        });
+                    const validation = validateAgainstConstraints(constraintProfile, incomingExercises);
+                    if (validation.valid === false) {
+                        const lines = validation.violations
+                            .map(({ exerciseTitle, reason }) => `- ${exerciseTitle}: ${reason}`)
+                            .join('\n');
+                        return {
+                            error: 'constraint_violation',
+                            message: `Mutation rejected — constraint violations:\n${lines}`,
+                        };
+                    }
+                }
+
                 const result = applyOperations(hevyProgram ?? [], resolvedOperations);
                 if (isApplyBatchFailure(result)) {
                     return {
@@ -755,8 +847,15 @@ export function getTools({
             if (output && typeof output === 'object' && 'error' in output && output.error) {
                 const o = output as {
                     error: string;
+                    message?: string;
                     failures?: Array<{ index: number; op: string; reason: string }>;
                 };
+                if (typeof o.message === 'string' && o.message.length > 0) {
+                    return {
+                        type: 'text' as const,
+                        value: o.message,
+                    };
+                }
                 const failureLines =
                     o.failures?.map((f) => `[${f.index}] ${f.op}: ${f.reason}`).join('; ') ??
                     'Unknown validation error';
@@ -854,7 +953,7 @@ export function getTools({
         }),
         execute: async () => {
             try {
-                const templates = await getHevyExercises();
+                const templates = await getCachedHevyExercises();
                 const score = scoreProgramForBodybuilding(hevyProgram ?? [], templates);
                 return { score };
             } catch (error) {
@@ -888,6 +987,77 @@ export function getTools({
         },
     });
 
+    const updateConstraintProfileTool = tool({
+        description:
+            'Update the active constraint profile when the user mentions new injuries, equipment restrictions, movement limitations, or training preferences mid-conversation. ' +
+            'Call this whenever the user adds or removes a constraint. ' +
+            'Examples: "my shoulder hurts", "I don\'t have access to cables", "no more lunges", "I got a new barbell".',
+        inputSchema: z.object({
+            addInjuries: z.array(z.string()).optional().describe('New injury or health issues to add'),
+            removeInjuries: z.array(z.string()).optional().describe('Injuries that are resolved and should be removed'),
+            addExcludedEquipment: z.array(z.string()).optional().describe('Equipment to exclude'),
+            removeExcludedEquipment: z.array(z.string()).optional().describe('Equipment to allow again'),
+            addExcludedAreas: z.array(z.string()).optional().describe('Muscle areas to exclude'),
+            removeExcludedAreas: z.array(z.string()).optional().describe('Muscle areas to allow again'),
+            addChatRefinements: z.array(z.string()).optional().describe('Free-form training constraints to add, e.g. "no overhead pressing"'),
+            removeChatRefinements: z.array(z.string()).optional().describe('Free-form constraints to remove'),
+            preferences: z.object({
+                splitType: z.string().optional(),
+                exerciseVariability: z.string().optional(),
+                progressionSystem: z.string().optional(),
+                deloadWeek: z.string().optional(),
+                peakWeek: z.string().optional(),
+                warmupExercises: z.string().optional(),
+            }).optional().describe('Preference fields to update (only provided keys are changed)'),
+            rawStatement: z.string().optional().describe("The user's exact words expressing this constraint"),
+        }),
+        execute: async ({ addInjuries, removeInjuries, addExcludedEquipment, removeExcludedEquipment, addExcludedAreas, removeExcludedAreas, addChatRefinements, removeChatRefinements, preferences, rawStatement }) => {
+            if (!constraintProfile) {
+                return { error: 'No active constraint profile in this session.' };
+            }
+
+            const arrayFields = [
+                ['injuries',          addInjuries,          removeInjuries],
+                ['excludedEquipment', addExcludedEquipment, removeExcludedEquipment],
+                ['excludedAreas',     addExcludedAreas,     removeExcludedAreas],
+                ['chatRefinements',   addChatRefinements,   removeChatRefinements],
+            ] as const satisfies [keyof TConstraintProfile, string[] | undefined, string[] | undefined][];
+
+            for (const [field, add, remove] of arrayFields) {
+                constraintProfile[field] = patchStringArray(constraintProfile[field] as string[], add, remove);
+            }
+
+            if (preferences) {
+                Object.assign(
+                    constraintProfile.preferences,
+                    Object.fromEntries(Object.entries(preferences).filter(([, v]) => v)),
+                );
+            }
+
+            // Persist to DB for cross-session memory (anonymous users: in-memory only)
+            if (workoutHistoryDb && userId) {
+                await upsertUserConstraints(workoutHistoryDb, userId, constraintProfile, rawStatement).catch(err => {
+                    console.error('[updateConstraintProfile] DB persist failed:', err);
+                });
+            }
+
+            return { updatedProfile: constraintProfile };
+        },
+        toModelOutput: async ({ output }) => {
+            if ('error' in output) {
+                return { type: 'text' as const, value: `Error: ${output.error}` };
+            }
+            const p = output.updatedProfile;
+            const summary = [
+                p.injuries.length          && `Injuries: ${p.injuries.join(', ')}`,
+                p.excludedEquipment.length && `Excluded equipment: ${p.excludedEquipment.join(', ')}`,
+                p.excludedAreas.length     && `Excluded areas: ${p.excludedAreas.join(', ')}`,
+                p.chatRefinements.length   && `Refinements: ${p.chatRefinements.join('; ')}`,
+            ].filter(Boolean).join(' | ') || 'No active constraints.';
+            return { type: 'text' as const, value: `Constraint Profile updated. ${summary}` };
+        },
+    });
+
     const baseTools = {
         getExerciseList: getExerciseListTool,
         getMoreInfoQuestions: getMoreInfoQuestionsTool,
@@ -899,6 +1069,7 @@ export function getTools({
         loadSkill: loadSkillTool,
         readFile: readFileTool,
         bash: bashTool,
+        updateConstraintProfile: updateConstraintProfileTool,
     };
 
     if (hasActiveSubscription && userId && workoutHistoryDb) {
