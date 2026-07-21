@@ -379,6 +379,47 @@ export type Database = {
         }
         Relationships: []
       }
+      hevy_body_measurements_count: {
+        Row: {
+          created_at: string
+          id: string
+          last_known_measurement_count: number | null
+          last_known_page_count: number | null
+          last_synced_page: number | null
+          sync_error: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_known_measurement_count?: number | null
+          last_known_page_count?: number | null
+          last_synced_page?: number | null
+          sync_error?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_known_measurement_count?: number | null
+          last_known_page_count?: number | null
+          last_synced_page?: number | null
+          sync_error?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hevy_body_measurements_count_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hevy_workouts_count: {
         Row: {
           created_at: string
