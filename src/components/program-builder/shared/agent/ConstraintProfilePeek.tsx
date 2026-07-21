@@ -15,7 +15,10 @@ import Link from "next/link";
 import { Brain, ChevronRight } from "lucide-react";
 
 import { useUserConstraints } from "@/api/hooks";
-import type { TConstraintProfile } from "@/app/api/chat/constraints";
+import {
+    formatConstraintPreferenceDisplayValue,
+    type TConstraintPreferenceKey,
+} from "@/components/account/constraint-profile-options";
 import {
     HoverCard,
     HoverCardContent,
@@ -33,15 +36,6 @@ import { cn } from "@/lib/utils";
 
 /** Default Edit profile route for peek CTA. */
 export const CONSTRAINT_PROFILE_EDIT_HREF = "/profile/edit";
-
-const PREFERENCE_LABELS: Record<keyof TConstraintProfile["preferences"], string> = {
-    splitType: "Preferred split",
-    exerciseVariability: "Exercise variability",
-    progressionSystem: "Progression system",
-    deloadWeek: "Deload week",
-    peakWeek: "Peak week",
-    warmupExercises: "Warmup exercises",
-};
 
 export interface IConstraintProfilePeekProps {
     user: User;
@@ -92,9 +86,7 @@ function PreferenceRows({
     if (!preferences) return null;
 
     const rows = (
-        Object.entries(preferences) as Array<
-            [keyof TConstraintProfile["preferences"], string]
-        >
+        Object.entries(preferences) as Array<[TConstraintPreferenceKey, string]>
     ).filter(([, value]) => value.trim() !== "");
 
     if (rows.length === 0) return null;
@@ -109,10 +101,10 @@ function PreferenceRows({
                         className="flex items-baseline justify-between gap-4"
                     >
                         <dt className="text-[13px] leading-[1.4] text-muted-foreground">
-                            {PREFERENCE_LABELS[key]}
+                            {key}
                         </dt>
                         <dd className="max-w-[55%] text-right text-[13px] leading-[1.4] tracking-[-0.01em] text-foreground">
-                            {value}
+                            {formatConstraintPreferenceDisplayValue(key, value)}
                         </dd>
                     </div>
                 ))}

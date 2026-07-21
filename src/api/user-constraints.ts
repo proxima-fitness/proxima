@@ -12,6 +12,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/hooks/supabase";
 import type { TConstraintProfile } from "@/app/api/chat/constraints";
+import { canonicalizeConstraintPreferences } from "@/components/account/constraint-profile-options";
 import { supabase } from ".";
 
 type TSupabase = SupabaseClient<Database>;
@@ -121,6 +122,7 @@ export async function saveUserConstraintProfile(
     record: TUserConstraintProfileRecord,
     client: TSupabase = supabase,
 ): Promise<void> {
+    const preferences = canonicalizeConstraintPreferences(record.preferences);
     const { error } = await client
         .from("user_constraints")
         .upsert(
@@ -129,7 +131,7 @@ export async function saveUserConstraintProfile(
                 injuries: record.injuries,
                 excluded_equipment: record.excludedEquipment,
                 excluded_areas: record.excludedAreas,
-                preferences: record.preferences,
+                preferences,
                 chat_refinements: record.chatRefinements,
                 raw_statements: record.rawStatements,
             },

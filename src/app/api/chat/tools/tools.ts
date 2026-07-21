@@ -56,6 +56,32 @@ import { tool } from 'ai';
 import type { TConstraintProfile } from '../constraints';
 import { validateAgainstConstraints } from '../constraints/validate';
 import { upsertUserConstraints } from '@/api/user-constraints';
+import {
+    canonicalizeConstraintPreferenceValue,
+    constraintPreferenceEnumValues,
+    type TConstraintPreferenceKey,
+} from '@/components/account/constraint-profile-options';
+
+function preferenceEnumField(key: TConstraintPreferenceKey) {
+    const values = constraintPreferenceEnumValues(key);
+    return z
+        .enum(values)
+        .optional()
+        .describe(`Canonical questionnaire option id. Allowed: ${values.join(', ')}`);
+}
+
+/** Exported for tests: preference patch schema for updateConstraintProfile. */
+export const constraintPreferencesUpdateSchema = z
+    .object({
+        splitType: preferenceEnumField('splitType'),
+        exerciseVariability: preferenceEnumField('exerciseVariability'),
+        progressionSystem: preferenceEnumField('progressionSystem'),
+        deloadWeek: preferenceEnumField('deloadWeek'),
+        peakWeek: preferenceEnumField('peakWeek'),
+        warmupExercises: preferenceEnumField('warmupExercises'),
+    })
+    .optional()
+    .describe('Preference fields to update (only provided keys are changed; values must be catalog option ids)');
 
 /** Request-scoped flag: set after first successful buildWeek so the agent cannot call buildWeek twice in one chat turn. */
 export interface IBuildWeekOnceGuard {
@@ -1011,14 +1037,7 @@ export function getTools({
             removeExcludedAreas: z.array(z.string()).optional().describe('Muscle areas to allow again'),
             addChatRefinements: z.array(z.string()).optional().describe('Free-form training constraints to add, e.g. "no overhead pressing"'),
             removeChatRefinements: z.array(z.string()).optional().describe('Free-form constraints to remove'),
-            preferences: z.object({
-                splitType: z.string().optional(),
-                exerciseVariability: z.string().optional(),
-                progressionSystem: z.string().optional(),
-                deloadWeek: z.string().optional(),
-                peakWeek: z.string().optional(),
-                warmupExercises: z.string().optional(),
-            }).optional().describe('Preference fields to update (only provided keys are changed)'),
+            preferences: constraintPreferencesUpdateSchema,
             rawStatement: z.string().optional().describe("The user's exact words expressing this constraint"),
         }),
         execute: async ({ addInjuries, removeInjuries, addExcludedEquipment, removeExcludedEquipment, addExcludedAreas, removeExcludedAreas, addChatRefinements, removeChatRefinements, preferences, rawStatement }) => {
@@ -1057,9 +1076,17 @@ export function getTools({
             }
 
             if (preferences) {
+                const canonicalEntries = (
+                    Object.entries(preferences) as Array<[TConstraintPreferenceKey, string | undefined]>
+                )
+                    .filter(([, v]) => typeof v === 'string' && v.trim() !== '')
+                    .map(([key, v]) => [
+                        key,
+                        canonicalizeConstraintPreferenceValue(key, v as string),
+                    ] as const);
                 Object.assign(
                     constraintProfile.preferences,
-                    Object.fromEntries(Object.entries(preferences).filter(([, v]) => v)),
+                    Object.fromEntries(canonicalEntries),
                 );
             }
 

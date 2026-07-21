@@ -5,7 +5,7 @@
  * Excluded equipment + areas + preferences use fixed option sets (not freeform).
  *
  * Depends on: assets/constants/form-options
- * Used by: ConstraintProfileSection, constraint-profile-draft
+ * Used by: ConstraintProfileSection, constraint-profile-draft, ConstraintProfilePeek, chat tools
  */
 import {
     equipmentOptions,
@@ -93,4 +93,85 @@ export function valuesToSelectOptions(
 /** Converts MultiSelect value list → persisted string[] (canonical option values). */
 export function selectOptionsToValues(options: TSelectOption[]): string[] {
     return options.map((opt) => opt.value).filter((value) => value.trim() !== "");
+}
+
+/** Non-empty tuple of catalog option ids for Zod `z.enum`. */
+export function constraintPreferenceEnumValues(
+    key: TConstraintPreferenceKey,
+): [string, ...string[]] {
+    const values = CONSTRAINT_PREFERENCE_OPTIONS[key].map((opt) => opt.value);
+    if (values.length === 0) {
+        throw new Error(`No preference options for ${key}`);
+    }
+    return values as [string, ...string[]];
+}
+
+const PREFERENCE_ACRONYM_IDS = new Set(["ppl", "pplul", "ul", "fb"]);
+
+/** Short human label from a canonical option id (not full questionnaire copy). */
+export function shortLabelFromPreferenceOptionId(id: string): string {
+    if (PREFERENCE_ACRONYM_IDS.has(id)) return id.toUpperCase();
+    if (id === "rpe-based") return "RPE-based";
+    const [first, ...rest] = id.split("-");
+    if (!first) return id;
+    const titled = first.charAt(0).toUpperCase() + first.slice(1);
+    return rest.length === 0 ? titled : [titled, ...rest].join("-");
+}
+
+function isCatalogValue(key: TConstraintPreferenceKey, value: string): boolean {
+    return CONSTRAINT_PREFERENCE_OPTIONS[key].some((opt) => opt.value === value);
+}
+
+/**
+ * Maps a stored preference string to the catalog option id when resolvable.
+ * Blank → ""; unmatched orphan → trimmed raw (read/display path; tool enum rejects writes).
+ */
+export function canonicalizeConstraintPreferenceValue(
+    key: TConstraintPreferenceKey,
+    raw: string,
+): string {
+    const trimmed = raw.trim();
+    if (!trimmed) return "";
+
+    const resolved = resolveSelectOption(trimmed, CONSTRAINT_PREFERENCE_OPTIONS[key]);
+    return isCatalogValue(key, resolved.value) ? resolved.value : trimmed;
+}
+
+/** Canonicalize every preference field on a profile preferences object. */
+export function canonicalizeConstraintPreferences(
+    preferences: TConstraintProfile["preferences"],
+): TConstraintProfile["preferences"] {
+    return {
+        splitType: canonicalizeConstraintPreferenceValue("splitType", preferences.splitType),
+        exerciseVariability: canonicalizeConstraintPreferenceValue(
+            "exerciseVariability",
+            preferences.exerciseVariability,
+        ),
+        progressionSystem: canonicalizeConstraintPreferenceValue(
+            "progressionSystem",
+            preferences.progressionSystem,
+        ),
+        deloadWeek: canonicalizeConstraintPreferenceValue("deloadWeek", preferences.deloadWeek),
+        peakWeek: canonicalizeConstraintPreferenceValue("peakWeek", preferences.peakWeek),
+        warmupExercises: canonicalizeConstraintPreferenceValue(
+            "warmupExercises",
+            preferences.warmupExercises,
+        ),
+    };
+}
+
+/**
+ * Short display label for peek / UI: catalog id → PPL / Double / No / Little;
+ * orphans stay as stored text.
+ */
+export function formatConstraintPreferenceDisplayValue(
+    key: TConstraintPreferenceKey,
+    raw: string,
+): string {
+    const trimmed = raw.trim();
+    if (!trimmed) return "";
+
+    const canonical = canonicalizeConstraintPreferenceValue(key, trimmed);
+    if (!isCatalogValue(key, canonical)) return trimmed;
+    return shortLabelFromPreferenceOptionId(canonical);
 }

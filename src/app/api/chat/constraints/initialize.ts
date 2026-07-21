@@ -1,3 +1,4 @@
+import { canonicalizeConstraintPreferences } from '@/components/account/constraint-profile-options';
 import type { TConstraintProfile } from './types';
 
 interface IInitializeParams {
@@ -22,14 +23,14 @@ export function initializeConstraintProfile(params: IInitializeParams): TConstra
         injuries: splitToArray(params.healthIssues),
         excludedEquipment: splitToArray(params.excludeEquipment),
         excludedAreas: splitToArray(params.excludeAreas),
-        preferences: {
+        preferences: canonicalizeConstraintPreferences({
             splitType: params.splitType?.trim() ?? '',
             exerciseVariability: params.exerciseVariability?.trim() ?? '',
             progressionSystem: params.progressionSystem?.trim() ?? '',
             deloadWeek: params.deloadWeek?.trim() ?? '',
             peakWeek: params.peakWeek?.trim() ?? '',
             warmupExercises: params.warmupExercises?.trim() ?? '',
-        },
+        }),
         chatRefinements: [],
     };
 }

@@ -94,7 +94,7 @@ describe("ConstraintProfilePeek", () => {
         record.excludedEquipment = ["Band"];
         record.preferences = {
             ...record.preferences,
-            splitType: "PPL",
+            splitType: "ppl",
         };
         record.chatRefinements = ["no floor work"];
         record.rawStatements = ["user said no floor work — should stay hidden"];
@@ -110,8 +110,9 @@ describe("ConstraintProfilePeek", () => {
 
         expect(screen.getByText("knee")).toBeTruthy();
         expect(screen.getByText("Band")).toBeTruthy();
-        expect(screen.getByText("Preferred split")).toBeTruthy();
+        expect(screen.getByText("splitType")).toBeTruthy();
         expect(screen.getByText("PPL")).toBeTruthy();
+        expect(screen.queryByText("Preferred split")).toBeNull();
         expect(screen.getByText("no floor work")).toBeTruthy();
         expect(
             screen.queryByText("user said no floor work — should stay hidden"),
