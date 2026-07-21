@@ -69,3 +69,26 @@ export function parseWeight(displayValue: string, isInLbs: boolean): number | nu
     const roundedDisplay = Math.round(parsed * 4) / 4;
     return isInLbs ? roundedDisplay * LBS_TO_KG : roundedDisplay;
 }
+
+/**
+ * Round a stored kg weight to N decimal places in the user's display unit,
+ * then convert back to kg for storage.
+ *
+ * Use when the user asks to clean up decimals in the unit they see (e.g. whole
+ * lbs): rounding in kg space leaves fractional lbs on screen (60 kg → 132.25 lbs).
+ *
+ * @param weightKg - Stored weight in kilograms
+ * @param isInLbs - Whether the user's UI shows pounds
+ * @param decimals - Decimal places to keep in the display unit (0 = whole units)
+ * @returns Weight in kg that formats to the rounded display value
+ */
+export function roundWeightKgToDisplayDecimals(
+    weightKg: number,
+    isInLbs: boolean,
+    decimals: number,
+): number {
+    const factor = 10 ** Math.max(0, Math.floor(decimals));
+    const display = isInLbs ? weightKg * KG_TO_LBS : weightKg;
+    const roundedDisplay = Math.round(display * factor) / factor;
+    return isInLbs ? roundedDisplay * LBS_TO_KG : roundedDisplay;
+}

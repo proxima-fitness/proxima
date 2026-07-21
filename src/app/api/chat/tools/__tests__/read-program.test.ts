@@ -92,6 +92,39 @@ describe("formatReadProgramForModel", () => {
         expect(formatted).toContain("Main press");
     });
 
+    it("annotates set weights with weight_display in the user's unit", () => {
+        const withWeight: THevyRoutine[] = [
+            {
+                ...sampleProgram()[1],
+                exercises: [
+                    {
+                        ...sampleProgram()[1].exercises[0],
+                        sets: [
+                            {
+                                index: 0,
+                                type: "normal",
+                                weight_kg: 60,
+                                reps: 8,
+                                distance_meters: null,
+                                duration_seconds: null,
+                                rpe: null,
+                                custom_metric: null,
+                                rep_range: null,
+                            },
+                        ],
+                    },
+                ],
+            },
+        ];
+        const lbs = formatReadProgramForModel(withWeight, true);
+        expect(lbs).toContain("User weight display unit: lbs");
+        expect(lbs).toContain('"weight_display":"132.25 lbs"');
+
+        const kg = formatReadProgramForModel(withWeight, false);
+        expect(kg).toContain("User weight display unit: kg");
+        expect(kg).toContain('"weight_display":"60 kg"');
+    });
+
     it("returns empty message when program has no routines", () => {
         expect(formatReadProgramForModel([])).toContain("empty");
     });

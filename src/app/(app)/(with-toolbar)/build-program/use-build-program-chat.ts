@@ -36,6 +36,7 @@ import {
 import type { IChatEntryPlan } from "./resolve-chat-entry";
 import { resolvePersistChatId, shouldRunAutoSend } from "./resolve-chat-entry";
 import type { useProgramRequestState } from "./use-program-request-state";
+import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 
 // ---------------------------------------------------------------------------
 // Types & constants
@@ -167,9 +168,11 @@ interface IMessageContextBodyInput {
     deloadWeek: string;
     peakWeek: string;
     warmupExercises: string;
+    isInLbs: boolean;
 }
 
-function buildMessageContextBody(input: IMessageContextBodyInput) {
+/** Exported for tests — chat request body fields sent with each message. */
+export function buildMessageContextBody(input: IMessageContextBodyInput) {
     const includeProgram = isMessageAboutProgram(input.messageText);
 
     return {
@@ -186,6 +189,7 @@ function buildMessageContextBody(input: IMessageContextBodyInput) {
         peakWeek: trimOrEmpty(input.peakWeek),
         warmupExercises: trimOrEmpty(input.warmupExercises),
         chatSessionId: input.chatId || undefined,
+        isInLbs: input.isInLbs,
     };
 }
 
@@ -210,6 +214,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     const pathname = usePathname();
     const queryClient = useQueryClient();
     const searchParams = useSearchParams();
+    const { isInLbs } = usePoundsOrKgContext();
 
     const search = searchParams.get("search") ?? "";
     const shareId = searchParams.get("shareId") ?? "";
@@ -376,6 +381,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
                 deloadWeek: programRequest.deloadWeek,
                 peakWeek: programRequest.peakWeek,
                 warmupExercises: programRequest.warmupExercises,
+                isInLbs,
             });
 
             const sendPromise = sendMessage(message, {
@@ -412,6 +418,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             programRequest.deloadWeek,
             programRequest.peakWeek,
             programRequest.warmupExercises,
+            isInLbs,
             incrementLlmRequests,
         ],
     );

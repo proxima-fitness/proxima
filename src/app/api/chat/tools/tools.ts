@@ -74,6 +74,8 @@ interface IProps {
     workoutHistoryDb?: TWorkoutHistoryDb;
     /** Structured constraint profile; when provided, updateConstraintProfile tool is included. */
     constraintProfile?: TConstraintProfile;
+    /** User's weight display preference (true = lbs). Defaults to true to match UI default. */
+    isInLbs?: boolean;
 }
 
 function stripFrontmatter(content: string): string {
@@ -154,6 +156,7 @@ export function getTools({
     userId,
     workoutHistoryDb,
     constraintProfile,
+    isInLbs = true,
 }: IProps = {}) {
 
     /** Request-scoped id → canonical title from hevy_exercise_templates (populated by getExerciseList; buildWeek uses it or refetches). */
@@ -452,7 +455,7 @@ export function getTools({
             const o = output as { hevyProgram?: THevyRoutine[] };
             return {
                 type: 'text' as const,
-                value: formatReadProgramForModel(o.hevyProgram ?? []),
+                value: formatReadProgramForModel(o.hevyProgram ?? [], isInLbs),
             };
         },
     });
@@ -545,7 +548,9 @@ export function getTools({
                                                     .describe(
                                                         'RPE (Rate of Perceived Exertion) 1-10; required',
                                                     ),
-                                                weight_kg: z.number().optional().describe('Weight in kg'),
+                                                weight_kg: z.number().optional().describe(
+                                                    'Weight in kg (storage unit). When the user speaks in lbs or asks about display decimals, convert from their UI unit first (lbs × 0.453592).',
+                                                ),
                                             }),
                                         )
                                         .min(1)

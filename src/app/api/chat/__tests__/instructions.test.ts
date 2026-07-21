@@ -163,6 +163,17 @@ describe("chat instructions.ts", () => {
             expect(prompt).not.toContain("getWorkoutHistory");
             expect(prompt).not.toContain("Workout history:");
         });
+        it("includes weight display unit guidance for lbs UI", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+                isInLbs: true,
+            });
+            expect(prompt).toContain("Weight units");
+            expect(prompt).toContain("lbs (pounds)");
+            expect(prompt).toContain("weight_display");
+        });
     });
 });
 

@@ -73,8 +73,9 @@ const callOptionsSchema = z.object({
  * payload, runs the ToolLoopAgent, and returns a streaming UI response.
  *
  * @param req - Request whose JSON body contains `messages`, `hevyProgram`,
- *   `daysPerWeek`, `programLength`, optional exclusion/health filters, and optional
- *   questionnaire fields (`excludeEquipment`, `splitType`, `exerciseVariability`, `progressionSystem`, `deloadWeek`, `peakWeek`, `warmupExercises`).
+ *   `daysPerWeek`, `programLength`, optional exclusion/health filters, optional
+ *   questionnaire fields (`excludeEquipment`, `splitType`, `exerciseVariability`, `progressionSystem`, `deloadWeek`, `peakWeek`, `warmupExercises`),
+ *   and `isInLbs` (user weight display preference; defaults true).
  * @returns A streaming `Response` that the Vercel AI SDK client consumes to
  *   render incremental agent output and tool invocations.
  */
@@ -95,6 +96,7 @@ async function handleChatPost(req: Request) {
             peakWeek = "",
             warmupExercises = "",
             chatSessionId,
+            isInLbs = true,
         } = await req.json();
 
         const supabase = await createClient();
@@ -104,6 +106,7 @@ async function handleChatPost(req: Request) {
         const sessionId = typeof chatSessionId === 'string' && chatSessionId.trim()
             ? chatSessionId.trim().slice(0, 200)
             : undefined;
+        const weightInLbs = isInLbs !== false;
 
         return propagateAttributes(
             { userId, sessionId, traceName: 'andy-chat', metadata: { source: 'build-program' } },
@@ -151,6 +154,7 @@ async function handleChatPost(req: Request) {
                     hasWorkoutHistoryAccess: hasActiveSubscription,
                     constraintProfile,
                     episodes,
+                    isInLbs: weightInLbs,
                 });
                 const buildWeekOnceGuard: IBuildWeekOnceGuard = { locked: false };
                 const tools = getTools({
@@ -163,6 +167,7 @@ async function handleChatPost(req: Request) {
                     userId: user?.id,
                     workoutHistoryDb: user ? supabase : undefined,
                     constraintProfile,
+                    isInLbs: weightInLbs,
                 });
 
                 const sandbox = createSandbox({ workingDirectory: process.cwd() });

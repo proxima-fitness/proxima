@@ -54,6 +54,11 @@ interface IProps {
     constraintProfile?: TConstraintProfile;
     /** Recent session episodes for episodic memory (edit-path only). */
     episodes?: ISessionEpisodeForPrompt[];
+    /**
+     * User's program-builder weight display preference (true = lbs, false = kg).
+     * Storage is always weight_kg; this is what the UI shows.
+     */
+    isInLbs?: boolean;
 }
 
 function trimOpt(s: string | undefined): string {
@@ -147,6 +152,7 @@ export const instructions = ({
     hasWorkoutHistoryAccess = false,
     constraintProfile,
     episodes = [],
+    isInLbs = true,
 }: IProps) => {
 
     const workoutHistoryToolLine = hasWorkoutHistoryAccess
@@ -169,6 +175,11 @@ export const instructions = ({
         peakWeek,
         warmupExercises,
     });
+
+    const weightUnitLabel = isInLbs ? 'lbs (pounds)' : 'kg (kilograms)';
+    const weightUnitsGuidance = `
+        **Weight units:** Program storage is always \`weight_kg\`. The user's builder UI currently shows **${weightUnitLabel}**. When they talk about weights, decimals, rounding, or "whole numbers", judge and round in **that display unit**, then convert to kg for mutateProgram (\`weight_kg\` = lbs × 0.453592 when UI is lbs). Do **not** claim weights are already clean based only on integer \`weight_kg\` — e.g. 60 kg displays as 132.25 lbs. Prefer \`weight_display\` from readProgram over raw kg when checking what the user sees.
+        `;
 
     return (
         `
@@ -209,7 +220,7 @@ export const instructions = ({
         ${hevyProgram?.length && episodes.length ? buildEpisodesBlock(episodes) : ''}
 
         **Upload to Hevy:** You cannot upload the program to Hevy from chat. If the user asks to upload to Hevy, export to Hevy, or sync to Hevy, tell them they must click the **Export** button, go through the Hevy export flow, and click the **Upload** button in that dialog to upload to Hevy.
-
+        ${weightUnitsGuidance}
         Be conversational, helpful, and provide clear explanations about the workouts you create. DO NOT answer questions unrelated to fitness.
     `);
 
