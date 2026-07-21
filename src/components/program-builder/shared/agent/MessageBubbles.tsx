@@ -891,6 +891,28 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 </Tool>
                                             );
                                         }
+                                        case "tool-updateTrainingProfile": {
+                                            const trainingPart = part as {
+                                                state?: TToolPart["state"];
+                                                output?: { updatedProfile?: unknown; error?: string; skipped?: boolean };
+                                            };
+                                            const toolState: TToolPart["state"] = trainingPart.state ?? "output-available";
+                                            // Empty no-op (skipped questionnaire / nothing to persist) — hide chip
+                                            if (toolState === "output-available" && trainingPart.output?.skipped) {
+                                                return null;
+                                            }
+                                            const isDone = toolState === "output-available" && trainingPart.output?.updatedProfile;
+                                            return (
+                                                <Tool key={`${message.id}-${index}-training`} defaultOpen={false} className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
+                                                    <ToolHeader type="tool-updateTrainingProfile" state={toolState} title="Update training profile" />
+                                                    <ToolContent>
+                                                        <p className="text-sm text-muted-foreground px-3 pb-2">
+                                                            {isDone ? "Training profile updated and saved." : "Updating training profile…"}
+                                                        </p>
+                                                    </ToolContent>
+                                                </Tool>
+                                            );
+                                        }
                                         default: {
                                             return null;
                                         }
