@@ -2,7 +2,7 @@
 
 /**
  * @module questions
- * Multi-step question flow (single/multi-select, text-with-quickfill, height) with optional skip and completion callback.
+ * Multi-step question flow (select/dropdown/multi-select, text-with-quickfill, height) with optional skip and completion callback.
  * Questionnaire core always visible; Questionnaire advanced collapsed by default.
  * Depends on: @/lib/utils, UI primitives, training-profile height helpers, lucide-react.
  * Used by: onboarding, program builder, surveys.
@@ -431,6 +431,60 @@ function QuestionTextWithQuickfill({
   )
 }
 
+/** Props for dropdown (Select) single-value question renderer. */
+interface IQuestionDropdownProps {
+  question: TQuestion
+  selectedAnswer: string | undefined
+  onSelect: (questionId: string, optionId: string) => void
+  questionIndex: number
+}
+
+function QuestionDropdown({
+  question,
+  selectedAnswer,
+  onSelect,
+  questionIndex,
+}: IQuestionDropdownProps) {
+  return (
+    <>
+      <p className="mb-3 text-sm font-semibold">
+        {questionIndex + 1}. {question.question}
+      </p>
+      {question.subtitle && (
+        question.subtitle.link ? (
+          <a
+            href={question.subtitle.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mb-3 block text-xs text-muted-foreground hover:text-foreground underline transition-colors"
+          >
+            {question.subtitle.text}
+          </a>
+        ) : (
+          <p className="mb-3 text-xs font-semibold text-lightSecondary">
+            {question.subtitle.text}
+          </p>
+        )
+      )}
+      <Select
+        value={selectedAnswer}
+        onValueChange={(value) => onSelect(question.id, value)}
+      >
+        <SelectTrigger aria-label={question.question} className="w-full bg-background">
+          <SelectValue placeholder="Select..." />
+        </SelectTrigger>
+        <SelectContent>
+          {question.options.map((option) => (
+            <SelectItem key={option.id} value={option.id}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </>
+  )
+}
+
 /** Props for height question (Imperial/Metric → cm string answer). */
 interface IQuestionHeightProps {
   question: TQuestion
@@ -660,6 +714,15 @@ export function Questions({
     }))
   }
 
+  // Handler for dropdown (Select) questions — set only, no toggle-clear
+  const handleDropdownSelect = (questionId: string, optionId: string) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [questionId]: optionId,
+    }))
+    scrollToNextAfter(questionId)
+  }
+
   // Handler for multi-select questions
   const handleOptionToggle = (questionId: string, optionId: string) => {
     setAnswers((prev) => {
@@ -848,6 +911,13 @@ export function Questions({
             question={question}
             value={typeof answer === "string" ? answer : ""}
             onChange={handleHeightChange}
+            questionIndex={questionIndex}
+          />
+        ) : questionType === "dropdown" ? (
+          <QuestionDropdown
+            question={question}
+            selectedAnswer={typeof answer === "string" ? answer : undefined}
+            onSelect={handleDropdownSelect}
             questionIndex={questionIndex}
           />
         ) : (

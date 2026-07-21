@@ -72,4 +72,19 @@ describe("Questions core / advanced UI", () => {
         expect(screen.getByText(/Training focus\?/)).toBeTruthy();
         expect(screen.getByText(/Height\?/)).toBeTruthy();
     });
+
+    it("renders age and session duration as dropdown Selects, not radio option buttons", () => {
+        render(<Questions questions={sampleQuestions} />);
+
+        fireEvent.click(screen.getByTestId("questionnaire-advanced-trigger"));
+
+        expect(sampleQuestionsAdvanced.find((q) => q.id === "age")?.type).toBe("dropdown");
+        expect(sampleQuestionsAdvanced.find((q) => q.id === "session-duration")?.type).toBe(
+            "dropdown",
+        );
+        expect(screen.getByRole("combobox", { name: "Age?" })).toBeTruthy();
+        expect(screen.getByRole("combobox", { name: "Session duration cap?" })).toBeTruthy();
+        expect(screen.queryByRole("button", { name: "Select 14" })).toBeNull();
+        expect(screen.queryByRole("button", { name: "Select 28" })).toBeNull();
+    });
 });

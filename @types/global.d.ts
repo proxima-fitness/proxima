@@ -369,8 +369,8 @@ type TQuestion = {
     question: string;
     options: TQuestionOption[];
     allowOther?: boolean;
-    /** Default `select`. `height` = Imperial/Metric toggle → answer stored as cm string. */
-    type?: "select" | "multi-select" | "text-with-quickfill" | "height";
+    /** Default `select` (radio list). `dropdown` = Select input. `height` = Imperial/Metric → cm string. */
+    type?: "select" | "dropdown" | "multi-select" | "text-with-quickfill" | "height";
     /** Default `core`. Advanced = Training profile fields; collapsed until opened. */
     section?: "core" | "advanced";
     subtitle?: { text: string; link?: string };
