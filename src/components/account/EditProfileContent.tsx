@@ -26,6 +26,9 @@ import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/
 import { Spinner } from "@/components/ui/spinner";
 import { useUserContext } from "@/contexts/UserContext";
 
+const EDIT_PROFILE_CARD_CLASS =
+    "rounded-2xl border border-border/60 bg-card shadow-sm";
+
 /** Renders Edit profile page: identity form + Constraint profile editor + leave warn. */
 export function EditProfileContent() {
     const { user, isLoading: isUserLoading } = useUserContext();
@@ -76,12 +79,12 @@ export function EditProfileContent() {
     }
 
     return (
-        <div className="min-h-screen bg-background px-4 py-10 text-foreground">
+        <div className="min-h-screen bg-muted/30 px-4 py-10 text-foreground">
             <div className="mx-auto max-w-2xl space-y-6">
                 <div>
                     <Link
                         href="/profile"
-                        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                        className="inline-flex items-center gap-1.5 text-sm text-secondary transition-colors hover:text-lightSecondary"
                     >
                         <ArrowLeft className="h-4 w-4" aria-hidden />
                         Back to profile
@@ -95,7 +98,7 @@ export function EditProfileContent() {
                 </div>
 
                 <section aria-labelledby="identity-heading">
-                    <Card>
+                    <Card className={EDIT_PROFILE_CARD_CLASS}>
                         <CardHeader>
                             <h2
                                 id="identity-heading"
@@ -117,7 +120,7 @@ export function EditProfileContent() {
                 </section>
 
                 <section aria-labelledby="constraint-profile-heading">
-                    <Card>
+                    <Card className={EDIT_PROFILE_CARD_CLASS}>
                         <CardHeader>
                             <h2
                                 id="constraint-profile-heading"

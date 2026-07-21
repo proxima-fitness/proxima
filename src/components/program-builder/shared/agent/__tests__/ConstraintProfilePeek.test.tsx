@@ -112,7 +112,8 @@ describe("ConstraintProfilePeek", () => {
 
         expect(screen.getByText("knee")).toBeTruthy();
         expect(screen.getByText("Band")).toBeTruthy();
-        expect(screen.getByText("Preferred split: PPL")).toBeTruthy();
+        expect(screen.getByText("Preferred split")).toBeTruthy();
+        expect(screen.getByText("PPL")).toBeTruthy();
         expect(screen.getByText("no floor work")).toBeTruthy();
         expect(
             screen.queryByText("user said no floor work — should stay hidden"),

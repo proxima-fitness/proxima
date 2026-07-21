@@ -14,6 +14,7 @@ import {
     useState,
     type FormEvent,
     type KeyboardEvent,
+    type ReactNode,
 } from "react";
 import type { User } from "@supabase/supabase-js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -39,7 +40,6 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 
 import {
     addFreeformItem,
@@ -65,6 +65,30 @@ export interface IConstraintProfileSectionProps {
     /** Called whenever draft dirty state changes (for page leave warn). */
     onDirtyChange?: (isDirty: boolean) => void;
     onSaveSuccess?: () => void;
+}
+
+const INSET_GROUP_CLASS =
+    "overflow-hidden rounded-lg border border-border/60 bg-muted/30";
+
+interface ISettingsGroupProps {
+    caption: string;
+    description?: string;
+    children: ReactNode;
+}
+
+/** Caption + inset panel (iOS Settings–style grouped list). */
+function SettingsGroup({ caption, description, children }: ISettingsGroupProps) {
+    return (
+        <div className="space-y-2">
+            <div className="space-y-0.5 px-0.5">
+                <p className="text-xs font-medium text-muted-foreground">{caption}</p>
+                {description ? (
+                    <p className="text-xs text-muted-foreground/80">{description}</p>
+                ) : null}
+            </div>
+            <div className={INSET_GROUP_CLASS}>{children}</div>
+        </div>
+    );
 }
 
 interface IFreeformChipListProps {
@@ -100,27 +124,31 @@ function FreeformChipList({
     };
 
     return (
-        <div className="space-y-2">
-            <Label htmlFor={id}>{label}</Label>
-            <div className="flex flex-wrap gap-2">
-                {items.map((item, index) => (
-                    <Badge
-                        key={`${item}-${index}`}
-                        variant="secondary"
-                        className="gap-1 pr-1 font-normal"
-                    >
-                        <span>{item}</span>
-                        <button
-                            type="button"
-                            className="rounded-sm p-0.5 hover:bg-muted"
-                            aria-label={`Remove ${item}`}
-                            onClick={() => onChange(removeItemAt(items, index))}
+        <div className="space-y-3 p-3">
+            <Label htmlFor={id} className="sr-only">
+                {label}
+            </Label>
+            {items.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                    {items.map((item, index) => (
+                        <Badge
+                            key={`${item}-${index}`}
+                            variant="secondary"
+                            className="gap-1 pr-1 font-normal"
                         >
-                            <X className="h-3 w-3" aria-hidden />
-                        </button>
-                    </Badge>
-                ))}
-            </div>
+                            <span>{item}</span>
+                            <button
+                                type="button"
+                                className="rounded-sm p-0.5 hover:bg-muted"
+                                aria-label={`Remove ${item}`}
+                                onClick={() => onChange(removeItemAt(items, index))}
+                            >
+                                <X className="h-3 w-3" aria-hidden />
+                            </button>
+                        </Badge>
+                    ))}
+                </div>
+            ) : null}
             <div className="flex gap-2">
                 <Input
                     id={id}
@@ -128,9 +156,9 @@ function FreeformChipList({
                     onChange={(event) => setDraftText(event.target.value)}
                     onKeyDown={onKeyDown}
                     placeholder={placeholder}
-                    className="flex-1"
+                    className="flex-1 bg-background"
                 />
-                <Button type="button" variant="outline" onClick={commit}>
+                <Button type="button" variant="ghost" onClick={commit}>
                     Add
                 </Button>
             </div>
@@ -146,16 +174,18 @@ interface IRawStatementsListProps {
 function RawStatementsList({ items, onChange }: IRawStatementsListProps) {
     if (items.length === 0) {
         return (
-            <p className="text-sm text-muted-foreground">No raw statements yet.</p>
+            <p className="px-3 py-3 text-sm text-muted-foreground">
+                No raw statements yet.
+            </p>
         );
     }
 
     return (
-        <ul className="space-y-2">
+        <ul className="divide-y divide-border/60">
             {items.map((item, index) => (
                 <li
                     key={`${item}-${index}`}
-                    className="flex items-start justify-between gap-3 rounded-md border border-border px-3 py-2 text-sm"
+                    className="flex items-start justify-between gap-3 px-3 py-2.5 text-sm"
                 >
                     <span className="min-w-0 flex-1 whitespace-pre-wrap break-words">
                         {item}
@@ -260,143 +290,177 @@ function ConstraintProfileEditor({
     };
 
     return (
-        <form className="space-y-8" onSubmit={handleSave} noValidate>
-            <FreeformChipList
-                id="constraint-injuries"
-                label="Injuries"
-                items={draft.injuries}
-                placeholder="Add an injury or movement restriction"
-                onChange={(injuries) => updateDraft((current) => ({ ...current, injuries }))}
-            />
-
-            <div className="space-y-2">
-                <Label htmlFor="constraint-excluded-equipment">Excluded equipment</Label>
-                <MultiSelect
-                    defaultOptions={CONSTRAINT_EXCLUDED_EQUIPMENT_OPTIONS}
-                    options={CONSTRAINT_EXCLUDED_EQUIPMENT_OPTIONS}
-                    value={valuesToSelectOptions(
-                        draft.excludedEquipment,
-                        CONSTRAINT_EXCLUDED_EQUIPMENT_OPTIONS,
-                    )}
-                    onChange={(options) =>
-                        updateDraft((current) => ({
-                            ...current,
-                            excludedEquipment: selectOptionsToValues(options),
-                        }))
+        <form className="space-y-6" onSubmit={handleSave} noValidate>
+            <SettingsGroup caption="Injuries">
+                <FreeformChipList
+                    id="constraint-injuries"
+                    label="Injuries"
+                    items={draft.injuries}
+                    placeholder="Add an injury or movement restriction"
+                    onChange={(injuries) =>
+                        updateDraft((current) => ({ ...current, injuries }))
                     }
-                    placeholder="Select equipment to exclude"
-                    hidePlaceholderWhenSelected
-                    emptyIndicator={
-                        <p className="text-center text-sm text-muted-foreground">
-                            No equipment found
-                        </p>
-                    }
-                    inputProps={{ id: "constraint-excluded-equipment" }}
                 />
-            </div>
+            </SettingsGroup>
 
-            <div className="space-y-2">
-                <Label htmlFor="constraint-excluded-areas">Excluded areas</Label>
-                <MultiSelect
-                    defaultOptions={CONSTRAINT_EXCLUDED_AREA_OPTIONS}
-                    options={CONSTRAINT_EXCLUDED_AREA_OPTIONS}
-                    value={valuesToSelectOptions(
-                        draft.excludedAreas,
-                        CONSTRAINT_EXCLUDED_AREA_OPTIONS,
-                    )}
-                    onChange={(options) =>
-                        updateDraft((current) => ({
-                            ...current,
-                            excludedAreas: selectOptionsToValues(options),
-                        }))
-                    }
-                    placeholder="Select areas to exclude"
-                    hidePlaceholderWhenSelected
-                    emptyIndicator={
-                        <p className="text-center text-sm text-muted-foreground">
-                            No areas found
-                        </p>
-                    }
-                    inputProps={{ id: "constraint-excluded-areas" }}
-                />
-            </div>
+            <SettingsGroup caption="Equipment & areas">
+                <div className="divide-y divide-border/60">
+                    <div className="space-y-2 p-3">
+                        <Label
+                            htmlFor="constraint-excluded-equipment"
+                            className="text-sm font-normal"
+                        >
+                            Excluded equipment
+                        </Label>
+                        <MultiSelect
+                            defaultOptions={CONSTRAINT_EXCLUDED_EQUIPMENT_OPTIONS}
+                            options={CONSTRAINT_EXCLUDED_EQUIPMENT_OPTIONS}
+                            value={valuesToSelectOptions(
+                                draft.excludedEquipment,
+                                CONSTRAINT_EXCLUDED_EQUIPMENT_OPTIONS,
+                            )}
+                            onChange={(options) =>
+                                updateDraft((current) => ({
+                                    ...current,
+                                    excludedEquipment: selectOptionsToValues(options),
+                                }))
+                            }
+                            placeholder="Select equipment to exclude"
+                            hidePlaceholderWhenSelected
+                            emptyIndicator={
+                                <p className="text-center text-sm text-muted-foreground">
+                                    No equipment found
+                                </p>
+                            }
+                            inputProps={{ id: "constraint-excluded-equipment" }}
+                        />
+                    </div>
+                    <div className="space-y-2 p-3">
+                        <Label
+                            htmlFor="constraint-excluded-areas"
+                            className="text-sm font-normal"
+                        >
+                            Excluded areas
+                        </Label>
+                        <MultiSelect
+                            defaultOptions={CONSTRAINT_EXCLUDED_AREA_OPTIONS}
+                            options={CONSTRAINT_EXCLUDED_AREA_OPTIONS}
+                            value={valuesToSelectOptions(
+                                draft.excludedAreas,
+                                CONSTRAINT_EXCLUDED_AREA_OPTIONS,
+                            )}
+                            onChange={(options) =>
+                                updateDraft((current) => ({
+                                    ...current,
+                                    excludedAreas: selectOptionsToValues(options),
+                                }))
+                            }
+                            placeholder="Select areas to exclude"
+                            hidePlaceholderWhenSelected
+                            emptyIndicator={
+                                <p className="text-center text-sm text-muted-foreground">
+                                    No areas found
+                                </p>
+                            }
+                            inputProps={{ id: "constraint-excluded-areas" }}
+                        />
+                    </div>
+                </div>
+            </SettingsGroup>
 
-            <fieldset className="space-y-4">
-                <legend className="text-sm font-medium">Preferences</legend>
-                {CONSTRAINT_PREFERENCE_FIELDS.map(({ key, label }) => {
-                    const options = CONSTRAINT_PREFERENCE_OPTIONS[key];
-                    const current = draft.preferences[key];
-                    const selectValue = current
-                        ? current
-                        : CONSTRAINT_PREFERENCE_UNSET_VALUE;
-                    const orphan =
-                        current &&
-                        !options.some((opt) => opt.value === current)
-                            ? resolveSelectOption(current, options)
-                            : null;
+            <SettingsGroup caption="Preferences">
+                <div className="divide-y divide-border/60">
+                    {CONSTRAINT_PREFERENCE_FIELDS.map(({ key, label }) => {
+                        const options = CONSTRAINT_PREFERENCE_OPTIONS[key];
+                        const current = draft.preferences[key];
+                        const selectValue = current
+                            ? current
+                            : CONSTRAINT_PREFERENCE_UNSET_VALUE;
+                        const orphan =
+                            current &&
+                            !options.some((opt) => opt.value === current)
+                                ? resolveSelectOption(current, options)
+                                : null;
 
-                    return (
-                        <div key={key} className="space-y-2">
-                            <Label htmlFor={`constraint-pref-${key}`}>{label}</Label>
-                            <Select
-                                value={selectValue}
-                                onValueChange={(value) =>
-                                    handlePreferenceChange(key, value)
-                                }
+                        return (
+                            <div
+                                key={key}
+                                className="flex items-center justify-between gap-3 px-3 py-2.5"
                             >
-                                <SelectTrigger id={`constraint-pref-${key}`}>
-                                    <SelectValue placeholder="Not set" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value={CONSTRAINT_PREFERENCE_UNSET_VALUE}>
-                                        Not set
-                                    </SelectItem>
-                                    {orphan ? (
-                                        <SelectItem value={orphan.value}>
-                                            {orphan.label}
+                                <Label
+                                    htmlFor={`constraint-pref-${key}`}
+                                    className="min-w-0 flex-1 text-sm font-normal leading-snug"
+                                >
+                                    {label}
+                                </Label>
+                                <Select
+                                    value={selectValue}
+                                    onValueChange={(value) =>
+                                        handlePreferenceChange(key, value)
+                                    }
+                                >
+                                    <SelectTrigger
+                                        id={`constraint-pref-${key}`}
+                                        className="w-[min(100%,12rem)] shrink-0 bg-background"
+                                    >
+                                        <SelectValue placeholder="Not set" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem
+                                            value={CONSTRAINT_PREFERENCE_UNSET_VALUE}
+                                        >
+                                            Not set
                                         </SelectItem>
-                                    ) : null}
-                                    {options.map((opt) => (
-                                        <SelectItem key={opt.value} value={opt.value}>
-                                            {opt.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    );
-                })}
-            </fieldset>
+                                        {orphan ? (
+                                            <SelectItem value={orphan.value}>
+                                                {orphan.label}
+                                            </SelectItem>
+                                        ) : null}
+                                        {options.map((opt) => (
+                                            <SelectItem
+                                                key={opt.value}
+                                                value={opt.value}
+                                            >
+                                                {opt.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        );
+                    })}
+                </div>
+            </SettingsGroup>
 
-            <FreeformChipList
-                id="constraint-chat-refinements"
-                label="Chat refinements"
-                items={draft.chatRefinements}
-                placeholder="Add a chat refinement"
-                onChange={(chatRefinements) =>
-                    updateDraft((current) => ({ ...current, chatRefinements }))
-                }
-            />
+            <SettingsGroup caption="Chat refinements">
+                <FreeformChipList
+                    id="constraint-chat-refinements"
+                    label="Chat refinements"
+                    items={draft.chatRefinements}
+                    placeholder="Add a chat refinement"
+                    onChange={(chatRefinements) =>
+                        updateDraft((current) => ({ ...current, chatRefinements }))
+                    }
+                />
+            </SettingsGroup>
 
-            <div className="space-y-2">
-                <Label>Raw statements</Label>
-                <p className="text-xs text-muted-foreground">
-                    View and delete only — statements come from coaching chat.
-                </p>
+            <SettingsGroup
+                caption="Raw statements"
+                description="View and delete only — statements come from coaching chat."
+            >
                 <RawStatementsList
                     items={draft.rawStatements}
                     onChange={(rawStatements) =>
                         updateDraft((current) => ({ ...current, rawStatements }))
                     }
                 />
-            </div>
+            </SettingsGroup>
 
-            <div className="flex justify-end gap-2">
+            <div className="mt-2 flex justify-end gap-2 border-t border-border/60 pt-4">
                 <Button
                     type="button"
-                    variant="outline"
+                    variant="ghost"
                     disabled={!isDirty || saveMutation.isPending}
-                    className={cn(!isDirty && "opacity-60")}
                     onClick={handleReset}
                 >
                     Reset
@@ -404,7 +468,7 @@ function ConstraintProfileEditor({
                 <Button
                     type="submit"
                     disabled={!isDirty || saveMutation.isPending}
-                    className={cn(!isDirty && "opacity-60")}
+                    className="bg-lightSecondary text-white hover:bg-lightSecondary/90"
                 >
                     {saveMutation.isPending ? "Saving…" : "Save constraints"}
                 </Button>

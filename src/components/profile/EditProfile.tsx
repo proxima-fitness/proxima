@@ -234,7 +234,7 @@ function EditProfileForm({ user, metaData, onSuccess, onDirtyChange, profilePicB
                             aria-hidden
                             onChange={handlePhotoChange}
                         />
-                        <Avatar className="h-[90px] w-[90px] shrink-0 rounded-full border-2 border-border">
+                        <Avatar className="h-[90px] w-[90px] shrink-0 rounded-full border-2 border-border/60">
                             {profilePicUrl ? (
                                 <AvatarImage src={profilePicUrl} alt="" className="object-cover" />
                             ) : null}
@@ -253,36 +253,38 @@ function EditProfileForm({ user, metaData, onSuccess, onDirtyChange, profilePicB
                         </Button>
                     </div>
                     <div className="flex-1 space-y-4 w-full min-w-0">
-                        <div className="space-y-2">
-                            <Label htmlFor="edit-first-name">First name</Label>
-                            <Input
-                                id="edit-first-name"
-                                value={firstName}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    patchForm({ firstName: value });
-                                    setFirstNameProfanity(matcher.getAllMatches(value).length > 0);
-                                }}
-                                placeholder="First name"
-                                className="w-full"
-                            />
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label htmlFor="edit-first-name">First name</Label>
+                                <Input
+                                    id="edit-first-name"
+                                    value={firstName}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        patchForm({ firstName: value });
+                                        setFirstNameProfanity(matcher.getAllMatches(value).length > 0);
+                                    }}
+                                    placeholder="First name"
+                                    className="w-full"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="edit-last-name">Last name</Label>
+                                <Input
+                                    id="edit-last-name"
+                                    value={lastName}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        patchForm({ lastName: value });
+                                        setLastNameProfanity(matcher.getAllMatches(value).length > 0);
+                                    }}
+                                    placeholder="Last name"
+                                    className="w-full"
+                                />
+                            </div>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="edit-last-name">Last name</Label>
-                            <Input
-                                id="edit-last-name"
-                                value={lastName}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    patchForm({ lastName: value });
-                                    setLastNameProfanity(matcher.getAllMatches(value).length > 0);
-                                }}
-                                placeholder="Last name"
-                                className="w-full"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit-username">username *</Label>
+                            <Label htmlFor="edit-username">Username *</Label>
                             <Input
                                 id="edit-username"
                                 value={userName}
@@ -317,13 +319,13 @@ function EditProfileForm({ user, metaData, onSuccess, onDirtyChange, profilePicB
                             patchForm({ bio: value });
                             setBioProfanity(matcher.getAllMatches(value).length > 0);
                         }}
-                        placeholder="Enter my Bio here ..."
+                        placeholder="A short bio"
                         className="min-h-[120px] w-full resize-y"
                         maxLength={250}
                     />
                 </div>
             </div>
-            <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-end">
+            <div className="flex flex-col items-stretch gap-2 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-end">
                 {hasAnyProfanity && (
                     <p className="text-sm text-destructive font-medium sm:order-first sm:flex-1">
                         Please remove profanity before saving.

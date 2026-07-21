@@ -12,7 +12,7 @@
 
 import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
-import { Brain } from "lucide-react";
+import { Brain, ChevronRight } from "lucide-react";
 
 import { useUserConstraints } from "@/api/hooks";
 import type { TConstraintProfile } from "@/app/api/chat/constraints";
@@ -51,6 +51,14 @@ export interface IConstraintProfilePeekProps {
     className?: string;
 }
 
+function SectionLabel({ children }: { children: string }) {
+    return (
+        <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground/80">
+            {children}
+        </p>
+    );
+}
+
 function SummarySection({
     title,
     values,
@@ -61,31 +69,57 @@ function SummarySection({
     if (values.length === 0) return null;
 
     return (
-        <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">{title}</p>
-            <ul className="space-y-0.5">
+        <section className="space-y-2">
+            <SectionLabel>{title}</SectionLabel>
+            <ul className="space-y-1.5">
                 {values.map((value) => (
-                    <li key={`${title}-${value}`} className="text-sm leading-snug">
+                    <li
+                        key={`${title}-${value}`}
+                        className="text-[13px] leading-[1.4] tracking-[-0.01em] text-foreground"
+                    >
                         {value}
                     </li>
                 ))}
             </ul>
-        </div>
+        </section>
     );
 }
 
-function preferenceLines(
-    preferences: TConstraintProfileSummary["preferences"],
-): string[] {
-    if (!preferences) return [];
+function PreferenceRows({
+    preferences,
+}: {
+    preferences: TConstraintProfileSummary["preferences"];
+}) {
+    if (!preferences) return null;
 
-    return (
+    const rows = (
         Object.entries(preferences) as Array<
             [keyof TConstraintProfile["preferences"], string]
         >
-    )
-        .filter(([, value]) => value.trim() !== "")
-        .map(([key, value]) => `${PREFERENCE_LABELS[key]}: ${value}`);
+    ).filter(([, value]) => value.trim() !== "");
+
+    if (rows.length === 0) return null;
+
+    return (
+        <section className="space-y-2">
+            <SectionLabel>Preferences</SectionLabel>
+            <dl className="space-y-2.5">
+                {rows.map(([key, value]) => (
+                    <div
+                        key={key}
+                        className="flex items-baseline justify-between gap-4"
+                    >
+                        <dt className="text-[13px] leading-[1.4] text-muted-foreground">
+                            {PREFERENCE_LABELS[key]}
+                        </dt>
+                        <dd className="max-w-[55%] text-right text-[13px] leading-[1.4] tracking-[-0.01em] text-foreground">
+                            {value}
+                        </dd>
+                    </div>
+                ))}
+            </dl>
+        </section>
+    );
 }
 
 function PeekBody({
@@ -103,7 +137,7 @@ function PeekBody({
 }) {
     if (isLoading) {
         return (
-            <div className="flex min-h-16 items-center justify-center py-2">
+            <div className="flex min-h-20 items-center justify-center">
                 <Spinner size="small" />
             </div>
         );
@@ -111,54 +145,62 @@ function PeekBody({
 
     if (isError) {
         return (
-            <p className="text-sm text-destructive">
+            <p className="text-[13px] leading-relaxed text-destructive">
                 Could not load Constraint profile.
             </p>
         );
     }
 
     return (
-        <div className="space-y-3">
-            <div className="space-y-1">
-                <h4 className="text-sm font-semibold">Constraint profile</h4>
-                {isEmpty ? (
-                    <p className="text-sm text-muted-foreground">
-                        No constraints saved yet. Add injuries, equipment, or prefs on
-                        Edit profile.
-                    </p>
-                ) : (
-                    <div className="space-y-3">
-                        <SummarySection title="Injuries" values={summary.injuries ?? []} />
-                        <SummarySection
-                            title="Excluded equipment"
-                            values={summary.excludedEquipment ?? []}
-                        />
-                        <SummarySection
-                            title="Excluded areas"
-                            values={summary.excludedAreas ?? []}
-                        />
-                        <SummarySection
-                            title="Preferences"
-                            values={preferenceLines(summary.preferences)}
-                        />
-                        <SummarySection
-                            title="Chat refinements"
-                            values={summary.chatRefinements ?? []}
-                        />
-                    </div>
-                )}
+        <div className="flex flex-col">
+            <header className="pb-3">
+                <h4 className="text-[15px] font-semibold tracking-[-0.02em] text-foreground">
+                    Constraint profile
+                </h4>
+            </header>
+
+            {isEmpty ? (
+                <p className="pb-4 text-[13px] leading-[1.45] tracking-[-0.01em] text-muted-foreground">
+                    No constraints saved yet. Add injuries, equipment, or prefs on Edit
+                    profile.
+                </p>
+            ) : (
+                <div className="space-y-4 pb-4">
+                    <SummarySection title="Injuries" values={summary.injuries ?? []} />
+                    <SummarySection
+                        title="Excluded equipment"
+                        values={summary.excludedEquipment ?? []}
+                    />
+                    <SummarySection
+                        title="Excluded areas"
+                        values={summary.excludedAreas ?? []}
+                    />
+                    <PreferenceRows preferences={summary.preferences} />
+                    <SummarySection
+                        title="Chat refinements"
+                        values={summary.chatRefinements ?? []}
+                    />
+                </div>
+            )}
+
+            <div className="border-t border-border/60 pt-3">
+                <Link
+                    href={editProfileHref}
+                    className="group inline-flex items-center gap-0.5 text-[13px] font-medium tracking-[-0.01em] text-foreground/80 transition-colors hover:text-foreground"
+                >
+                    Edit profile
+                    <ChevronRight
+                        className="size-3.5 opacity-50 transition-transform group-hover:translate-x-0.5 group-hover:opacity-80"
+                        aria-hidden="true"
+                    />
+                </Link>
             </div>
-            <Link
-                href={editProfileHref}
-                className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline"
-            >
-                Edit profile
-            </Link>
         </div>
     );
 }
 
-const contentClassName = "w-72 max-w-[min(18rem,calc(100vw-2rem))] p-4";
+const contentClassName =
+    "w-80 max-w-[min(20rem,calc(100vw-2rem))] rounded-xl border-border/50 p-5 shadow-lg";
 
 /** Read-only Constraint profile peek control (HoverCard desktop / Popover tap). */
 export function ConstraintProfilePeek({
@@ -186,12 +228,14 @@ export function ConstraintProfilePeek({
         <Button
             type="button"
             variant="ghost"
-            size="sm"
-            className={cn("gap-1.5 text-muted-foreground", className)}
+            size="icon"
+            className={cn(
+                "size-9 shrink-0 rounded-full bg-white text-black dark:bg-black dark:text-white hover:bg-white/90 hover:text-white [&_svg]:text-black dark:[&_svg]:text-white",
+                className,
+            )}
             aria-label="Constraint profile"
         >
             <Brain className="size-4" aria-hidden="true" />
-            <span className="text-xs font-medium">Memory</span>
         </Button>
     );
 
