@@ -14,12 +14,11 @@ vi.mock("@/contexts/UserContext", () => ({
 
 vi.mock("@/api/hooks", () => ({
     useMyFeatureLimits: (...args: unknown[]) => useMyFeatureLimits(...args),
-    useUserConstraints: () => ({ data: null, isLoading: false, isError: false }),
 }));
 
-vi.mock("@/components/program-builder/shared/agent/ConstraintProfilePeek", () => ({
-    ConstraintProfilePeek: ({ user }: { user: User }) => (
-        <div data-testid="constraint-profile-peek">peek:{user.id}</div>
+vi.mock("@/components/program-builder/shared/agent/AgenticMemoryPeekHost", () => ({
+    AgenticMemoryPeekHost: ({ user }: { user: User }) => (
+        <div data-testid="agentic-memory-peek">peek:{user.id}</div>
     ),
 }));
 
@@ -84,7 +83,7 @@ function renderChat(ui: ReactNode) {
     return render(<TooltipProvider>{ui}</TooltipProvider>);
 }
 
-describe("Chat constraint peek", () => {
+describe("Chat agentic memory peek", () => {
     beforeEach(() => {
         useUserContext.mockReset();
         useMyFeatureLimits.mockReset();
@@ -95,7 +94,7 @@ describe("Chat constraint peek", () => {
         cleanup();
     });
 
-    it("mounts Constraint profile peek near prompt when signed in", () => {
+    it("mounts Agentic memory peek near prompt when signed in", () => {
         useUserContext.mockReturnValue({
             user: { id: "user-1" } as User,
         });
@@ -109,12 +108,12 @@ describe("Chat constraint peek", () => {
             />,
         );
 
-        const peeks = screen.getAllByTestId("constraint-profile-peek");
+        const peeks = screen.getAllByTestId("agentic-memory-peek");
         expect(peeks.length).toBeGreaterThan(0);
         expect(peeks[0].textContent).toContain("peek:user-1");
     });
 
-    it("hides Constraint profile peek when anonymous", () => {
+    it("hides Agentic memory peek when anonymous", () => {
         useUserContext.mockReturnValue({ user: null });
 
         renderChat(
@@ -126,6 +125,6 @@ describe("Chat constraint peek", () => {
             />,
         );
 
-        expect(screen.queryByTestId("constraint-profile-peek")).toBeNull();
+        expect(screen.queryByTestId("agentic-memory-peek")).toBeNull();
     });
 });

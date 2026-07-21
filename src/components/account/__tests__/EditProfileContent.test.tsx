@@ -18,6 +18,18 @@ vi.mock("@/components/account/ConstraintProfileSection", () => ({
     ),
 }));
 
+vi.mock("@/components/account/TrainingProfileSection", () => ({
+    TrainingProfileSection: () => (
+        <div data-testid="training-profile-section">Training profile editor</div>
+    ),
+}));
+
+vi.mock("@/components/account/BodyMeasurementsSection", () => ({
+    BodyMeasurementsSection: () => (
+        <div data-testid="body-measurements-section">Body measurements</div>
+    ),
+}));
+
 vi.mock("@/components/account/use-edit-profile-leave-guard", () => ({
     EDIT_PROFILE_LEAVE_TITLE: "Discard unsaved changes?",
     EDIT_PROFILE_LEAVE_DESCRIPTION: "You have unsaved edits.",
@@ -57,7 +69,7 @@ describe("EditProfileContent", () => {
         expect(loginLink.getAttribute("href")).toBe("/auth/login");
     });
 
-    it("renders identity first and mounts Constraint Profile editor", () => {
+    it("mounts identity → Constraint → Training → Body in order", () => {
         useUserContext.mockReturnValue({
             user: { id: "user-1" },
             isLoading: false,
@@ -75,15 +87,45 @@ describe("EditProfileContent", () => {
             name: "Constraint Profile",
         });
         expect(
-            constraintSection.querySelector("[data-testid='constraint-profile-section']"),
+            constraintSection.querySelector(
+                "[data-testid='constraint-profile-section']",
+            ),
+        ).toBeTruthy();
+
+        const trainingSection = screen.getByRole("region", {
+            name: "Training Profile",
+        });
+        expect(
+            trainingSection.querySelector("[data-testid='training-profile-section']"),
+        ).toBeTruthy();
+
+        const bodySection = screen.getByRole("region", {
+            name: "Body Measurements",
+        });
+        expect(
+            bodySection.querySelector("[data-testid='body-measurements-section']"),
         ).toBeTruthy();
 
         const identityHeading = screen.getByRole("heading", { name: "Identity" });
         const constraintHeading = screen.getByRole("heading", {
             name: "Constraint Profile",
         });
+        const trainingHeading = screen.getByRole("heading", {
+            name: "Training Profile",
+        });
+        const bodyHeading = screen.getByRole("heading", {
+            name: "Body Measurements",
+        });
         expect(
             identityHeading.compareDocumentPosition(constraintHeading) &
+                Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+        expect(
+            constraintHeading.compareDocumentPosition(trainingHeading) &
+                Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+        expect(
+            trainingHeading.compareDocumentPosition(bodyHeading) &
                 Node.DOCUMENT_POSITION_FOLLOWING,
         ).toBeTruthy();
 

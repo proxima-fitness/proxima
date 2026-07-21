@@ -5,10 +5,10 @@
  *
  * Read-only Agentic memory peek for build-program chat chrome near the prompt.
  * Accordion: Constraint profile + Training profile + latest body measurement.
- * Props-driven — parent (SP10) wires queries. Unmounted until Chat swap.
+ * Props-driven — AgenticMemoryPeekHost wires React Query.
  *
  * Depends on: constraint-profile-view, agentic-memory-peek-view, Accordion/HoverCard/Popover
- * Used by: Chat footer (SP10)
+ * Used by: AgenticMemoryPeekHost (Chat footer)
  */
 
 import Link from "next/link";
@@ -327,7 +327,6 @@ const contentClassName =
 
 /**
  * Read-only Agentic memory peek control (HoverCard desktop / Popover tap).
- * Unmounted until SP10 swaps Chat off ConstraintProfilePeek.
  */
 export function AgenticMemoryPeek({
     constraintProfile = null,

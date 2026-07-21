@@ -47,15 +47,20 @@ type TProgramRequestState = ReturnType<typeof useProgramRequestState>;
 const chatTransport = new DefaultChatTransport({ api: "/api/chat" });
 const MAX_RETRIES = 2;
 
-/** True when this turn successfully persisted Constraint profile via the agent tool. */
-function turnUpdatedConstraintProfile(messages: TChatMessage[]): boolean {
+type TProfileToolPart = {
+    state?: string;
+    output?: { updatedProfile?: unknown; error?: string };
+};
+
+/** True when a tool part successfully returned `updatedProfile` without error. */
+function turnUpdatedProfileTool(
+    messages: TChatMessage[],
+    toolType: "tool-updateConstraintProfile" | "tool-updateTrainingProfile",
+): boolean {
     for (const message of messages) {
         for (const part of message.parts ?? []) {
-            if (part.type !== "tool-updateConstraintProfile") continue;
-            const toolPart = part as {
-                state?: string;
-                output?: { updatedProfile?: unknown; error?: string };
-            };
+            if (part.type !== toolType) continue;
+            const toolPart = part as TProfileToolPart;
             if (
                 toolPart.state === "output-available" &&
                 toolPart.output?.updatedProfile &&
@@ -284,15 +289,27 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         transport: chatTransport,
         messages: initialMessages,
         onFinish: ({ messages: finishedMessages, isAbort, isError }) => {
-            if (
-                user &&
-                !isAbort &&
-                !isError &&
-                turnUpdatedConstraintProfile(finishedMessages)
-            ) {
-                void queryClient.invalidateQueries({
-                    queryKey: ["user-constraints", user.id],
-                });
+            if (user && !isAbort && !isError) {
+                if (
+                    turnUpdatedProfileTool(
+                        finishedMessages,
+                        "tool-updateConstraintProfile",
+                    )
+                ) {
+                    void queryClient.invalidateQueries({
+                        queryKey: ["user-constraints", user.id],
+                    });
+                }
+                if (
+                    turnUpdatedProfileTool(
+                        finishedMessages,
+                        "tool-updateTrainingProfile",
+                    )
+                ) {
+                    void queryClient.invalidateQueries({
+                        queryKey: ["user-training-profile", user.id],
+                    });
+                }
             }
 
             const persistChatId = resolvePersistChatId(chatId, pendingMintChatIdRef.current);

@@ -3,10 +3,12 @@
 /**
  * @module account/EditProfileContent
  *
- * Client body for /profile/edit: identity section first, Constraint profile
- * editor below, dual Save, and page leave warn when either section is dirty.
+ * Client body for /profile/edit: identity → Constraint profile → Training
+ * profile → Body measurements; separate Saves; leave warn when identity,
+ * constraints, or Training profile is dirty.
  *
- * Depends on: UserContext, EditProfile, ConstraintProfileSection, leave guard, ConfirmDialog.
+ * Depends on: UserContext, EditProfile, ConstraintProfileSection,
+ *   TrainingProfileSection, BodyMeasurementsSection, leave guard, ConfirmDialog.
  * Used by: (app)/profile/edit/page.tsx.
  */
 
@@ -14,7 +16,9 @@ import { useRef } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
+import { BodyMeasurementsSection } from "@/components/account/BodyMeasurementsSection";
 import { ConstraintProfileSection } from "@/components/account/ConstraintProfileSection";
+import { TrainingProfileSection } from "@/components/account/TrainingProfileSection";
 import {
     EDIT_PROFILE_LEAVE_DESCRIPTION,
     EDIT_PROFILE_LEAVE_TITLE,
@@ -29,7 +33,7 @@ import { useUserContext } from "@/contexts/UserContext";
 const EDIT_PROFILE_CARD_CLASS =
     "rounded-2xl border border-border/60 bg-card shadow-sm";
 
-/** Renders Edit profile page: identity form + Constraint profile editor + leave warn. */
+/** Renders Edit profile page: Agentic memory sections + leave warn. */
 export function EditProfileContent() {
     const { user, isLoading: isUserLoading } = useUserContext();
     const {
@@ -38,20 +42,30 @@ export function EditProfileContent() {
         onLeaveDialogOpenChange,
         onDiscardLeave,
     } = useEditProfileLeaveGuard();
-    const dirtyPartsRef = useRef({ identity: false, constraint: false });
+    const dirtyPartsRef = useRef({
+        identity: false,
+        constraint: false,
+        training: false,
+    });
+
+    const syncLeaveDirty = () => {
+        const { identity, constraint, training } = dirtyPartsRef.current;
+        setDirty(identity || constraint || training);
+    };
 
     const onIdentityDirtyChange = (dirty: boolean) => {
         dirtyPartsRef.current.identity = dirty;
-        setDirty(
-            dirtyPartsRef.current.identity || dirtyPartsRef.current.constraint,
-        );
+        syncLeaveDirty();
     };
 
     const onConstraintDirtyChange = (dirty: boolean) => {
         dirtyPartsRef.current.constraint = dirty;
-        setDirty(
-            dirtyPartsRef.current.identity || dirtyPartsRef.current.constraint,
-        );
+        syncLeaveDirty();
+    };
+
+    const onTrainingDirtyChange = (dirty: boolean) => {
+        dirtyPartsRef.current.training = dirty;
+        syncLeaveDirty();
     };
 
     if (isUserLoading) {
@@ -137,6 +151,48 @@ export function EditProfileContent() {
                                 user={user}
                                 onDirtyChange={onConstraintDirtyChange}
                             />
+                        </CardContent>
+                    </Card>
+                </section>
+
+                <section aria-labelledby="training-profile-heading">
+                    <Card className={EDIT_PROFILE_CARD_CLASS}>
+                        <CardHeader className="p-4 sm:p-6">
+                            <h2
+                                id="training-profile-heading"
+                                className="font-semibold leading-none tracking-tight"
+                            >
+                                Training Profile
+                            </h2>
+                            <CardDescription>
+                                Person facts the coach uses for programming context.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+                            <TrainingProfileSection
+                                user={user}
+                                onDirtyChange={onTrainingDirtyChange}
+                            />
+                        </CardContent>
+                    </Card>
+                </section>
+
+                <section aria-labelledby="body-measurements-heading">
+                    <Card className={EDIT_PROFILE_CARD_CLASS}>
+                        <CardHeader className="p-4 sm:p-6">
+                            <h2
+                                id="body-measurements-heading"
+                                className="font-semibold leading-none tracking-tight"
+                            >
+                                Body Measurements
+                            </h2>
+                            <CardDescription>
+                                Latest check-in and recent history from your Hevy backup
+                                (read-only).
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+                            <BodyMeasurementsSection user={user} />
                         </CardContent>
                     </Card>
                 </section>

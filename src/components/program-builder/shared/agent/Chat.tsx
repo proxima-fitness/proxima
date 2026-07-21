@@ -1,9 +1,9 @@
 /**
  * @module Chat
  * Chat input for program builder: suggestions, upgrade banner, PromptInput with attachments
- * and submit/stop, plus signed-in Constraint profile peek near the prompt. Used inside Agent.
+ * and submit/stop, plus signed-in Agentic memory peek near the prompt. Used inside Agent.
  * Upgrade banner: shown for Free users always; for subscribed Pro only when LLM credits are 0 (CTA to Pro+); hidden for Pro+.
- * Depends on: prompt-input, attachments, suggestion, UpgradeBanner, ConstraintProfilePeek, useMyFeatureLimits. Used by: Agent.
+ * Depends on: prompt-input, attachments, suggestion, UpgradeBanner, AgenticMemoryPeekHost, useMyFeatureLimits. Used by: Agent.
  */
 /* eslint-disable @next/next/no-img-element */
 import {
@@ -45,7 +45,7 @@ import type { FileUIPart } from "ai";
 import { memo, useCallback, useState, forwardRef, useMemo } from "react";
 import { useMicTranscription } from "@/hooks/use-mic-transcription";
 import { Questions } from "@/components/ui/questions";
-import { ConstraintProfilePeek } from "@/components/program-builder/shared/agent/ConstraintProfilePeek";
+import { AgenticMemoryPeekHost } from "@/components/program-builder/shared/agent/AgenticMemoryPeekHost";
 import type { User } from "@supabase/supabase-js";
 
 /** Props for the chat input container. */
@@ -127,7 +127,7 @@ interface IChatInputBodyProps {
   isLoading: boolean;
   outOfCredits: boolean;
   handleStop: () => void;
-  /** Signed-in user for Constraint profile peek; omit when anon. */
+  /** Signed-in user for Agentic memory peek; omit when anon. */
   user: User | null | undefined;
 }
 
@@ -237,7 +237,7 @@ const ChatInputBody = ({
                 Attach files
               </TooltipContent>
             </Tooltip>
-            {user ? <ConstraintProfilePeek user={user} /> : null}
+            {user ? <AgenticMemoryPeekHost user={user} /> : null}
           </div>
           <div className="flex shrink-0 flex-row items-end gap-2">
             <Tooltip>
@@ -297,7 +297,7 @@ const ChatInputBody = ({
               Attach files
             </TooltipContent>
           </Tooltip>
-          {user ? <ConstraintProfilePeek user={user} /> : null}
+          {user ? <AgenticMemoryPeekHost user={user} /> : null}
         </div>
         <PromptInputTextarea
           placeholder="Ask anything…"
