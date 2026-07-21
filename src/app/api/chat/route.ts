@@ -29,6 +29,7 @@ import { createSandbox } from './skills/sandbox';
 import { discoverSkills } from './skills/index';
 import z from 'zod';
 import { sanitizeMessagesWithUnresolvedToolCalls } from './sanitize-messages';
+import { ALWAYS_AVAILABLE_CHAT_TOOLS } from './always-available-tools';
 
 // Vercel serverless function timeout - 2 minutes for workout generation
 // This is important for longer programs that may take time to generate
@@ -195,12 +196,11 @@ async function handleChatPost(req: Request) {
                     stopWhen: isStepCount(28),
                     telemetry: { isEnabled: true },
                     prepareCall: ({ options, ...settings }) => {
-                        const CORE_TOOLS = ['loadSkill', 'readFile', 'bash'];
                         let filteredTools = settings.tools;
                         if (options.activeToolScope.allowedTools?.length) {
                             const allowed = new Set([
                                 ...options.activeToolScope.allowedTools,
-                                ...CORE_TOOLS,
+                                ...ALWAYS_AVAILABLE_CHAT_TOOLS,
                             ]);
                             filteredTools = Object.fromEntries(
                                 Object.entries(settings.tools as Record<string, unknown>).filter(
