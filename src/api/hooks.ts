@@ -32,6 +32,18 @@ import {
     getUserConstraints,
 } from "./user-constraints";
 import { getUserTrainingProfile } from "./user-training-profile";
+import {
+    getBodyMeasurementsForUser,
+    getLatestBodyMeasurement,
+    type TBodyMeasurementsQueryOptions,
+} from "./body-measurements-read";
+import { supabase } from ".";
+
+/** React Query key for latest backed-up body measurement. */
+export const LATEST_BODY_MEASUREMENT_QUERY_KEY = ["body-measurements", "latest"] as const;
+
+/** React Query key for body-measurement history pages. */
+export const BODY_MEASUREMENTS_HISTORY_QUERY_KEY = ["body-measurements", "history"] as const;
 
 /* ================================
    CLIENT-SIDE RENDERED HOOKS
@@ -477,6 +489,46 @@ export const useUserTrainingProfile = (user: User | undefined | null) => {
     return useQuery({
         queryKey: ["user-training-profile", user?.id],
         queryFn: () => getUserTrainingProfile(user!.id),
+        enabled: !!user,
+    });
+};
+
+/**
+ * Latest backed-up body measurement for the signed-in user (null when none).
+ *
+ * Uses SP5 read layer via the browser Supabase client (RLS own-rows).
+ *
+ * @param user - Authenticated user (query disabled when null)
+ */
+export const useLatestBodyMeasurement = (user: User | undefined | null) => {
+    return useQuery({
+        queryKey: [...LATEST_BODY_MEASUREMENT_QUERY_KEY, user?.id],
+        queryFn: () => getLatestBodyMeasurement(supabase, user!.id),
+        enabled: !!user,
+    });
+};
+
+/**
+ * Short / paginated body-measurement history for the signed-in user (newest first).
+ *
+ * @param user - Authenticated user (query disabled when null)
+ * @param options - Limit / date window / keyset cursor (defaults match SP5 read)
+ */
+export const useBodyMeasurementsHistory = (
+    user: User | undefined | null,
+    options: TBodyMeasurementsQueryOptions = {},
+) => {
+    return useQuery({
+        queryKey: [
+            ...BODY_MEASUREMENTS_HISTORY_QUERY_KEY,
+            user?.id,
+            options.limit ?? null,
+            options.since ?? null,
+            options.until ?? null,
+            options.cursorMeasuredOn ?? null,
+            options.cursorId ?? null,
+        ],
+        queryFn: () => getBodyMeasurementsForUser(supabase, user!.id, options),
         enabled: !!user,
     });
 };
