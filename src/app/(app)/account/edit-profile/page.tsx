@@ -12,7 +12,7 @@ import { EditProfileContent } from "@/components/account/EditProfileContent";
 
 export const metadata = {
     title: "Edit profile | Proxima Fitness",
-    description: "Edit your identity and Constraint profile.",
+    description: "Edit your identity and Constraint Profile.",
 };
 
 /** Edit profile page; delegates to EditProfileContent. */

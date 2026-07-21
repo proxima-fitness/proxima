@@ -57,7 +57,7 @@ describe("EditProfileContent", () => {
         expect(loginLink.getAttribute("href")).toBe("/auth/login");
     });
 
-    it("renders identity first and mounts Constraint profile editor", () => {
+    it("renders identity first and mounts Constraint Profile editor", () => {
         useUserContext.mockReturnValue({
             user: { id: "user-1" },
             isLoading: false,
@@ -72,7 +72,7 @@ describe("EditProfileContent", () => {
         expect(screen.getByTestId("edit-profile-identity-form")).toBeTruthy();
 
         const constraintSection = screen.getByRole("region", {
-            name: "Constraint profile",
+            name: "Constraint Profile",
         });
         expect(
             constraintSection.querySelector("[data-testid='constraint-profile-section']"),
@@ -80,7 +80,7 @@ describe("EditProfileContent", () => {
 
         const identityHeading = screen.getByRole("heading", { name: "Identity" });
         const constraintHeading = screen.getByRole("heading", {
-            name: "Constraint profile",
+            name: "Constraint Profile",
         });
         expect(
             identityHeading.compareDocumentPosition(constraintHeading) &

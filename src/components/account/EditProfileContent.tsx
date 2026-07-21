@@ -126,7 +126,7 @@ export function EditProfileContent() {
                                 id="constraint-profile-heading"
                                 className="font-semibold leading-none tracking-tight"
                             >
-                                Constraint profile
+                                Constraint Profile
                             </h2>
                             <CardDescription>
                                 Training constraints the coach uses when building programs.

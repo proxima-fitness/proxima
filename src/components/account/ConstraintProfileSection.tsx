@@ -68,7 +68,7 @@ export interface IConstraintProfileSectionProps {
 }
 
 const INSET_GROUP_CLASS =
-    "overflow-hidden rounded-lg border border-border/60 bg-muted/30";
+    "overflow-visible rounded-lg border border-border/60 bg-muted/30";
 
 interface ISettingsGroupProps {
     caption: string;
@@ -496,7 +496,7 @@ export function ConstraintProfileSection({
     if (isError) {
         return (
             <p className="text-sm text-destructive">
-                Could not load Constraint profile. Try again later.
+                Could not load Constraint Profile. Try again later.
             </p>
         );
     }

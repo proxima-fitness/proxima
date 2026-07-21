@@ -16,7 +16,6 @@ import { Brain, ChevronRight } from "lucide-react";
 
 import { useUserConstraints } from "@/api/hooks";
 import type { TConstraintProfile } from "@/app/api/chat/constraints";
-import { Button } from "@/components/ui/button";
 import {
     HoverCard,
     HoverCardContent,
@@ -146,26 +145,26 @@ function PeekBody({
     if (isError) {
         return (
             <p className="text-[13px] leading-relaxed text-destructive">
-                Could not load Constraint profile.
+                Could not load Constraint Profile.
             </p>
         );
     }
 
     return (
         <div className="flex flex-col">
-            <header className="pb-3">
+            <header className="border-b border-border/60 pb-3">
                 <h4 className="text-[15px] font-semibold tracking-[-0.02em] text-foreground">
-                    Constraint profile
+                    Constraint Profile
                 </h4>
             </header>
 
             {isEmpty ? (
-                <p className="pb-4 text-[13px] leading-[1.45] tracking-[-0.01em] text-muted-foreground">
+                <p className="pt-3 pb-4 text-[13px] leading-[1.45] tracking-[-0.01em] text-muted-foreground">
                     No constraints saved yet. Add injuries, equipment, or prefs on Edit
                     profile.
                 </p>
             ) : (
-                <div className="space-y-4 pb-4">
+                <div className="space-y-4 pt-3 pb-4">
                     <SummarySection title="Injuries" values={summary.injuries ?? []} />
                     <SummarySection
                         title="Excluded equipment"
@@ -225,18 +224,16 @@ export function ConstraintProfilePeek({
     );
 
     const trigger = (
-        <Button
+        <button
             type="button"
-            variant="ghost"
-            size="icon"
             className={cn(
-                "size-9 shrink-0 rounded-full bg-white text-black dark:bg-black dark:text-white hover:bg-white/90 hover:text-white [&_svg]:text-black dark:[&_svg]:text-white",
+                "flex size-9 shrink-0 items-center justify-center rounded-full bg-white text-black dark:bg-black dark:text-white hover:bg-white/90",
                 className,
             )}
-            aria-label="Constraint profile"
+            aria-label="Constraint Profile"
         >
-            <Brain className="size-4" aria-hidden="true" />
-        </Button>
+            <Brain className="size-4" strokeWidth={1.5} aria-hidden="true" />
+        </button>
     );
 
     if (tapPrimary) {

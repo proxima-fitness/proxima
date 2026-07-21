@@ -36,7 +36,7 @@ function renderPeek(
 }
 
 function openPeek() {
-    fireEvent.click(screen.getByRole("button", { name: "Constraint profile" }));
+        fireEvent.click(screen.getByRole("button", { name: "Constraint Profile" }));
 }
 
 describe("ConstraintProfilePeek", () => {
@@ -57,7 +57,7 @@ describe("ConstraintProfilePeek", () => {
 
         renderPeek(<ConstraintProfilePeek user={user} />);
 
-        expect(screen.getByRole("button", { name: "Constraint profile" })).toBeTruthy();
+        expect(screen.getByRole("button", { name: "Constraint Profile" })).toBeTruthy();
     });
 
     it("shows loading spinner while constraints load", () => {

@@ -1054,7 +1054,7 @@ export function getTools({
                 p.excludedAreas.length     && `Excluded areas: ${p.excludedAreas.join(', ')}`,
                 p.chatRefinements.length   && `Refinements: ${p.chatRefinements.join('; ')}`,
             ].filter(Boolean).join(' | ') || 'No active constraints.';
-            return { type: 'text' as const, value: `Constraint profile updated. ${summary}` };
+            return { type: 'text' as const, value: `Constraint Profile updated. ${summary}` };
         },
     });
 
