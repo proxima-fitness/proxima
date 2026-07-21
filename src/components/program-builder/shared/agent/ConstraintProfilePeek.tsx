@@ -159,41 +159,42 @@ function PeekBody({
             </header>
 
             {isEmpty ? (
-                <p className="pt-3 pb-4 text-[13px] leading-[1.45] tracking-[-0.01em] text-muted-foreground">
-                    No constraints saved yet. Add injuries, equipment, or prefs on Edit
-                    profile.
+                <p className="pt-3 text-[13px] leading-[1.45] tracking-[-0.01em] text-muted-foreground">
+                    No constraints saved yet.
                 </p>
             ) : (
-                <div className="space-y-4 pt-3 pb-4">
-                    <SummarySection title="Injuries" values={summary.injuries ?? []} />
-                    <SummarySection
-                        title="Excluded equipment"
-                        values={summary.excludedEquipment ?? []}
-                    />
-                    <SummarySection
-                        title="Excluded areas"
-                        values={summary.excludedAreas ?? []}
-                    />
-                    <PreferenceRows preferences={summary.preferences} />
-                    <SummarySection
-                        title="Chat refinements"
-                        values={summary.chatRefinements ?? []}
-                    />
-                </div>
-            )}
+                <>
+                    <div className="space-y-4 pt-3 pb-4">
+                        <SummarySection title="Injuries" values={summary.injuries ?? []} />
+                        <SummarySection
+                            title="Excluded equipment"
+                            values={summary.excludedEquipment ?? []}
+                        />
+                        <SummarySection
+                            title="Excluded areas"
+                            values={summary.excludedAreas ?? []}
+                        />
+                        <PreferenceRows preferences={summary.preferences} />
+                        <SummarySection
+                            title="Chat refinements"
+                            values={summary.chatRefinements ?? []}
+                        />
+                    </div>
 
-            <div className="border-t border-border/60 pt-3">
-                <Link
-                    href={editProfileHref}
-                    className="group inline-flex items-center gap-0.5 text-[13px] font-medium tracking-[-0.01em] text-foreground/80 transition-colors hover:text-foreground"
-                >
-                    Edit profile
-                    <ChevronRight
-                        className="size-3.5 opacity-50 transition-transform group-hover:translate-x-0.5 group-hover:opacity-80"
-                        aria-hidden="true"
-                    />
-                </Link>
-            </div>
+                    <div className="border-t border-border/60 pt-3">
+                        <Link
+                            href={editProfileHref}
+                            className="group inline-flex items-center gap-0.5 text-[13px] font-medium tracking-[-0.01em] text-foreground/80 transition-colors hover:text-foreground"
+                        >
+                            Edit profile
+                            <ChevronRight
+                                className="size-3.5 opacity-50 transition-transform group-hover:translate-x-0.5 group-hover:opacity-80"
+                                aria-hidden="true"
+                            />
+                        </Link>
+                    </div>
+                </>
+            )}
         </div>
     );
 }

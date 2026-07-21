@@ -3,8 +3,9 @@
 /**
  * @module account/ConstraintProfileSection
  *
- * Self-contained Constraint profile editor. Local draft + dedicated Save constraints;
- * reports dirty via onDirtyChange for page leave warn.
+ * Self-contained Constraint profile editor. Empty-state card when no constraints;
+ * otherwise local draft + dedicated Save constraints. Reports dirty via onDirtyChange
+ * for page leave warn.
  *
  * Depends on: useUserConstraints, saveUserConstraintProfile, draft/options helpers, UI
  * Used by: EditProfileContent
@@ -22,7 +23,6 @@ import { X } from "lucide-react";
 import { toast } from "sonner";
 
 import {
-    emptyUserConstraintProfileRecord,
     saveUserConstraintProfile,
     type TUserConstraintProfileRecord,
 } from "@/api/user-constraints";
@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Badge } from "@/components/ui/badge";
+import { isConstraintProfileEmpty } from "@/lib/constraint-profile-view";
 
 import {
     addFreeformItem,
@@ -59,6 +60,36 @@ import {
     valuesToSelectOptions,
     type TConstraintPreferenceKey,
 } from "./constraint-profile-options";
+
+/** True when nothing to edit — structured empty and no raw statements. */
+function isConstraintSectionEmpty(
+    record: TUserConstraintProfileRecord | null | undefined,
+): boolean {
+    if (!record) return true;
+    if (!isConstraintProfileEmpty(record)) return false;
+    return record.rawStatements.length === 0;
+}
+
+/** Narrows to a record with at least one editable field. */
+function hasEditableConstraints(
+    record: TUserConstraintProfileRecord | null | undefined,
+): record is TUserConstraintProfileRecord {
+    return !isConstraintSectionEmpty(record);
+}
+
+function ConstraintProfileEmptyState() {
+    return (
+        <div
+            className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border/60 bg-muted/20 px-6 py-10 text-center"
+            data-testid="constraint-profile-empty-state"
+        >
+            <p className="text-sm font-medium text-foreground">No constraints yet</p>
+            <p className="max-w-sm text-sm text-muted-foreground">
+                Your constraints will appear here as Proxima learns about your health goals
+            </p>
+        </div>
+    );
+}
 
 export interface IConstraintProfileSectionProps {
     user: User;
@@ -477,7 +508,7 @@ function ConstraintProfileEditor({
     );
 }
 
-/** Loads Constraint profile, then mounts keyed editor (reset via remount). */
+/** Loads Constraint profile; empty-state card when none, else keyed editor. */
 export function ConstraintProfileSection({
     user,
     onDirtyChange,
@@ -501,13 +532,15 @@ export function ConstraintProfileSection({
         );
     }
 
-    const initialRecord = data ?? emptyUserConstraintProfileRecord();
+    if (!hasEditableConstraints(data)) {
+        return <ConstraintProfileEmptyState />;
+    }
 
     return (
         <ConstraintProfileEditor
             key={user.id}
             userId={user.id}
-            initialRecord={initialRecord}
+            initialRecord={data}
             onDirtyChange={onDirtyChange}
             onSaveSuccess={onSaveSuccess}
         />

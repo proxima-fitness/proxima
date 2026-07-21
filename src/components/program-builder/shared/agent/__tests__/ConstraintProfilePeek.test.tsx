@@ -18,7 +18,6 @@ vi.mock("@/hooks/use-media-query", () => ({
 }));
 
 import {
-    CONSTRAINT_PROFILE_EDIT_HREF,
     ConstraintProfilePeek,
 } from "../ConstraintProfilePeek";
 
@@ -73,7 +72,7 @@ describe("ConstraintProfilePeek", () => {
         expect(document.querySelector(".animate-spin")).toBeTruthy();
     });
 
-    it("shows empty copy and Edit profile link when no constraints", () => {
+    it("shows empty copy and hides Edit profile link when no constraints", () => {
         useUserConstraints.mockReturnValue({
             data: null,
             isLoading: false,
@@ -84,8 +83,7 @@ describe("ConstraintProfilePeek", () => {
         openPeek();
 
         expect(screen.getByText(/No constraints saved yet/i)).toBeTruthy();
-        const link = screen.getByRole("link", { name: "Edit profile" });
-        expect(link.getAttribute("href")).toBe(CONSTRAINT_PROFILE_EDIT_HREF);
+        expect(screen.queryByRole("link", { name: "Edit profile" })).toBeNull();
         expect(screen.queryByRole("button", { name: "Save constraints" })).toBeNull();
         expect(screen.queryByLabelText("Injuries")).toBeNull();
     });
@@ -121,9 +119,12 @@ describe("ConstraintProfilePeek", () => {
         expect(screen.getByRole("link", { name: "Edit profile" })).toBeTruthy();
     });
 
-    it("uses editProfileHref override", () => {
+    it("uses editProfileHref override when constraints exist", () => {
+        const record = emptyUserConstraintProfileRecord();
+        record.injuries = ["knee"];
+
         useUserConstraints.mockReturnValue({
-            data: emptyUserConstraintProfileRecord(),
+            data: record,
             isLoading: false,
             isError: false,
         });

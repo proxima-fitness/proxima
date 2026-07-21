@@ -68,6 +68,50 @@ describe("ConstraintProfileSection", () => {
         expect(screen.queryByRole("button", { name: "Save constraints" })).toBeNull();
     });
 
+    it("shows empty-state card when no constraints", () => {
+        useUserConstraints.mockReturnValue({
+            data: null,
+            isLoading: false,
+            isError: false,
+        });
+
+        renderSection(<ConstraintProfileSection user={user} />);
+
+        expect(screen.getByTestId("constraint-profile-empty-state")).toBeTruthy();
+        expect(screen.getByText("No constraints yet")).toBeTruthy();
+        expect(screen.queryByRole("button", { name: "Save constraints" })).toBeNull();
+    });
+
+    it("shows empty-state card for fully empty record", () => {
+        useUserConstraints.mockReturnValue({
+            data: emptyUserConstraintProfileRecord(),
+            isLoading: false,
+            isError: false,
+        });
+
+        renderSection(<ConstraintProfileSection user={user} />);
+
+        expect(screen.getByTestId("constraint-profile-empty-state")).toBeTruthy();
+        expect(screen.queryByRole("button", { name: "Save constraints" })).toBeNull();
+    });
+
+    it("shows editor when only raw statements exist", () => {
+        const record = emptyUserConstraintProfileRecord();
+        record.rawStatements = ["user said no floor work"];
+
+        useUserConstraints.mockReturnValue({
+            data: record,
+            isLoading: false,
+            isError: false,
+        });
+
+        renderSection(<ConstraintProfileSection user={user} />);
+
+        expect(screen.queryByTestId("constraint-profile-empty-state")).toBeNull();
+        expect(screen.getByText("user said no floor work")).toBeTruthy();
+        expect(screen.getByRole("button", { name: "Save constraints" })).toBeTruthy();
+    });
+
     it("loads record into draft and reports dirty after freeform add", async () => {
         const record = emptyUserConstraintProfileRecord();
         record.injuries = ["knee"];
@@ -134,8 +178,11 @@ describe("ConstraintProfileSection", () => {
     });
 
     it("persists draft on Save constraints and clears dirty", async () => {
+        const record = emptyUserConstraintProfileRecord();
+        record.injuries = ["knee"];
+
         useUserConstraints.mockReturnValue({
-            data: null,
+            data: record,
             isLoading: false,
             isError: false,
         });
@@ -180,8 +227,11 @@ describe("ConstraintProfileSection", () => {
     });
 
     it("Reset restores baseline draft and clears dirty without saving", async () => {
+        const record = emptyUserConstraintProfileRecord();
+        record.injuries = ["knee"];
+
         useUserConstraints.mockReturnValue({
-            data: emptyUserConstraintProfileRecord(),
+            data: record,
             isLoading: false,
             isError: false,
         });
