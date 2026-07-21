@@ -122,4 +122,48 @@ describe("constraint update only when needed", () => {
         );
         expect(upsertUserConstraintsMock).toHaveBeenCalled();
     });
+
+    it("updateConstraintProfile splits joined CSV add* blobs instead of storing them as one element", async () => {
+        const healthIssues = "knee pain, stiff ankle";
+        const excludeEquipment =
+            "bodyweight, band, suspension, resistance_band, plate, other, none, cardio";
+        const profile = initializeConstraintProfile({ healthIssues, excludeEquipment });
+        const tools = getTools({
+            userId: "user-1",
+            workoutHistoryDb: {} as TWorkoutHistoryDb,
+            constraintProfile: profile,
+        });
+        const update = asTestTool<{
+            addInjuries?: string[];
+            addExcludedEquipment?: string[];
+        }>(tools.updateConstraintProfile);
+
+        const result = await update.execute({
+            addInjuries: [healthIssues],
+            addExcludedEquipment: [excludeEquipment],
+        });
+
+        const updated = (
+            result as {
+                updatedProfile: {
+                    injuries: string[];
+                    excludedEquipment: string[];
+                };
+            }
+        ).updatedProfile;
+
+        expect(updated.injuries).toEqual(["knee pain", "stiff ankle"]);
+        expect(updated.excludedEquipment).toEqual([
+            "bodyweight",
+            "band",
+            "suspension",
+            "resistance_band",
+            "plate",
+            "other",
+            "none",
+            "cardio",
+        ]);
+        expect(updated.injuries.every((s) => !s.includes(","))).toBe(true);
+        expect(updated.excludedEquipment.every((s) => !s.includes(","))).toBe(true);
+    });
 });

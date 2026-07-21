@@ -54,6 +54,7 @@ import {
 } from '@/api/workout-history-read';
 import { tool } from 'ai';
 import type { TConstraintProfile } from '../constraints';
+import { splitConstraintCsv } from '../constraints/initialize';
 import { validateAgainstConstraints } from '../constraints/validate';
 import { upsertUserConstraints } from '@/api/user-constraints';
 import {
@@ -151,13 +152,20 @@ export const planProgramInputSchema = z
         }
     });
 
+/** Expand add/remove args that may contain comma-joined CSV blobs into tokens. */
+function flattenConstraintTokens(values?: string[]): string[] {
+    return (values ?? []).flatMap((v) => splitConstraintCsv(v));
+}
+
 /** Add items to an array, skipping duplicates (case-insensitive). */
 function patchStringArray(arr: string[], add?: string[], remove?: string[]): string[] {
-    const removeSet = new Set((remove ?? []).map(s => s.toLowerCase()));
+    const addFlat = flattenConstraintTokens(add);
+    const removeFlat = flattenConstraintTokens(remove);
+    const removeSet = new Set(removeFlat.map(s => s.toLowerCase()));
     const existing = new Set(arr.map(s => s.toLowerCase()));
     return [
         ...arr.filter(s => !removeSet.has(s.toLowerCase())),
-        ...(add ?? []).filter(s => !existing.has(s.toLowerCase()) && !removeSet.has(s.toLowerCase())),
+        ...addFlat.filter(s => !existing.has(s.toLowerCase()) && !removeSet.has(s.toLowerCase())),
     ];
 }
 

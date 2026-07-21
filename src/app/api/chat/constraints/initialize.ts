@@ -13,16 +13,17 @@ interface IInitializeParams {
     warmupExercises?: string;
 }
 
-function splitToArray(value?: string): string[] {
+/** Split questionnaire/CSV wire strings into constraint tokens (comma-delimited). */
+export function splitConstraintCsv(value?: string): string[] {
     if (!value) return [];
     return value.split(',').map(s => s.trim()).filter(Boolean);
 }
 
 export function initializeConstraintProfile(params: IInitializeParams): TConstraintProfile {
     return {
-        injuries: splitToArray(params.healthIssues),
-        excludedEquipment: splitToArray(params.excludeEquipment),
-        excludedAreas: splitToArray(params.excludeAreas),
+        injuries: splitConstraintCsv(params.healthIssues),
+        excludedEquipment: splitConstraintCsv(params.excludeEquipment),
+        excludedAreas: splitConstraintCsv(params.excludeAreas),
         preferences: canonicalizeConstraintPreferences({
             splitType: params.splitType?.trim() ?? '',
             exerciseVariability: params.exerciseVariability?.trim() ?? '',
