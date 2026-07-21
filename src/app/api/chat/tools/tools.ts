@@ -1023,20 +1023,22 @@ export function getTools({
             'Persist and update the active Constraint profile (Agentic memory). ' +
             'Call after questionnaire unlock only when there are non-empty fields to persist; skip entirely when the user skipped and nothing changed — do not make empty updates. ' +
             'Do not block planProgram, getExerciseList, or buildWeek waiting on it. ' +
-            'REQUIRED on any mid-chat add/remove of injuries, excluded equipment, excluded areas, movement restrictions, or training preferences — call in the same turn (prefer before mutateProgram when both apply). ' +
+            'REQUIRED on any mid-chat add of injuries, excluded equipment, excluded areas, movement restrictions, or training preferences — call in the same turn (prefer before mutateProgram when both apply). ' +
+            'Add freely when you recognize a new constraint. Remove/relax only on a User-stated change (user asserts the rule no longer applies) or direct the user to Edit profile. ' +
+            'Never call removeExcludedEquipment, removeInjuries, removeExcludedAreas, or removeChatRefinements to make a preferred split, template, or exercise set feasible — if profile conflicts with a requested style, adapt the program to the profile; do not edit the profile down. ' +
             'Field map: health/injury → addInjuries; exclude equipment → addExcludedEquipment; exclude areas → addExcludedAreas; ' +
             'split/variability/progression/deload/peak/warmup → preferences; freeform limits → addChatRefinements. ' +
             'Always pass rawStatement when the user spoke the constraint in chat. ' +
-            'Examples: questionnaire submit with answers; "my shoulder hurts"; "I don\'t have access to cables"; "no more lunges"; "I got a new barbell".',
+            'Examples: questionnaire submit with answers; "my shoulder hurts"; "I don\'t have access to cables"; "no more lunges"; "knee\'s fine now" (User-stated change → removeInjuries); "I got a new barbell".',
         inputSchema: z.object({
             addInjuries: z.array(z.string()).optional().describe('New injury or health issues to add'),
-            removeInjuries: z.array(z.string()).optional().describe('Injuries that are resolved and should be removed'),
+            removeInjuries: z.array(z.string()).optional().describe('Injuries resolved per User-stated change only — never remove to make a program style feasible'),
             addExcludedEquipment: z.array(z.string()).optional().describe('Equipment to exclude'),
-            removeExcludedEquipment: z.array(z.string()).optional().describe('Equipment to allow again'),
+            removeExcludedEquipment: z.array(z.string()).optional().describe('Equipment to allow again only on User-stated change — never to enable a preferred split/style'),
             addExcludedAreas: z.array(z.string()).optional().describe('Muscle areas to exclude'),
-            removeExcludedAreas: z.array(z.string()).optional().describe('Muscle areas to allow again'),
+            removeExcludedAreas: z.array(z.string()).optional().describe('Muscle areas to allow again only on User-stated change — never to enable a preferred split/style'),
             addChatRefinements: z.array(z.string()).optional().describe('Free-form training constraints to add, e.g. "no overhead pressing"'),
-            removeChatRefinements: z.array(z.string()).optional().describe('Free-form constraints to remove'),
+            removeChatRefinements: z.array(z.string()).optional().describe('Free-form constraints to remove only on User-stated change — never to enable a preferred split/style'),
             preferences: constraintPreferencesUpdateSchema,
             rawStatement: z.string().optional().describe("The user's exact words expressing this constraint"),
         }),

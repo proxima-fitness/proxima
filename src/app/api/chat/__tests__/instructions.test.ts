@@ -1,6 +1,19 @@
-import { describe, it, expect } from "vitest";
+/**
+ * @vitest-environment node
+ */
+import { describe, it, expect, vi } from "vitest";
 
 import { instructions } from "@/app/api/chat/instructions/instructions";
+import { getTools } from "@/app/api/chat/tools/tools";
+import { initializeConstraintProfile } from "@/app/api/chat/constraints";
+
+vi.mock("@/api/user-constraints", () => ({
+    upsertUserConstraints: vi.fn(async () => {}),
+}));
+
+vi.mock("@/components/program-builder/api/hevy", () => ({
+    getHevyExercises: vi.fn(async () => []),
+}));
 
 describe("chat instructions.ts", () => {
     describe("instructions()", () => {
@@ -36,6 +49,38 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("After questionnaire");
             expect(prompt).toContain("do not call");
             expect(prompt).toContain("nothing to persist");
+        });
+
+        it("encodes User-stated change soft policy for constraint removals", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+            });
+
+            expect(prompt).toContain("User-stated change");
+            expect(prompt).toContain("Edit profile");
+            expect(prompt).toContain("removeExcludedEquipment");
+            expect(prompt).toContain("removeInjuries");
+            expect(prompt).toContain("removeExcludedAreas");
+            expect(prompt).toContain("removeChatRefinements");
+            expect(prompt).toMatch(/never.*preferred split/i);
+            expect(prompt).toMatch(/adapt the program/i);
+            expect(prompt).toMatch(/do not edit the profile down/i);
+        });
+
+        it("updateConstraintProfile tool description mirrors User-stated change soft policy", () => {
+            const tools = getTools({
+                constraintProfile: initializeConstraintProfile({}),
+            });
+            const description =
+                (tools.updateConstraintProfile as { description?: string }).description ?? "";
+
+            expect(description).toContain("User-stated change");
+            expect(description).toContain("Edit profile");
+            expect(description).toMatch(/Never call removeExcludedEquipment/i);
+            expect(description).toMatch(/adapt the program to the profile/i);
+            expect(description).toMatch(/do not edit the profile down/i);
         });
 
         it("includes workflow when program is non-empty", () => {
