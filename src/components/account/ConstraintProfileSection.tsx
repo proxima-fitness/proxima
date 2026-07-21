@@ -252,6 +252,13 @@ function ConstraintProfileEditor({
         saveMutation.mutate(draft);
     };
 
+    const handleReset = () => {
+        if (!isDirty || saveMutation.isPending) return;
+        const next = cloneConstraintProfileDraft(baseline);
+        setDraft(next);
+        onDirtyChange?.(false);
+    };
+
     return (
         <form className="space-y-8" onSubmit={handleSave} noValidate>
             <FreeformChipList
@@ -384,7 +391,16 @@ function ConstraintProfileEditor({
                 />
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-2">
+                <Button
+                    type="button"
+                    variant="outline"
+                    disabled={!isDirty || saveMutation.isPending}
+                    className={cn(!isDirty && "opacity-60")}
+                    onClick={handleReset}
+                >
+                    Reset
+                </Button>
                 <Button
                     type="submit"
                     disabled={!isDirty || saveMutation.isPending}

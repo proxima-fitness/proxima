@@ -178,4 +178,39 @@ describe("ConstraintProfileSection", () => {
             expect(onDirtyChange).toHaveBeenCalledWith(false);
         });
     });
+
+    it("Reset restores baseline draft and clears dirty without saving", async () => {
+        useUserConstraints.mockReturnValue({
+            data: emptyUserConstraintProfileRecord(),
+            isLoading: false,
+            isError: false,
+        });
+
+        const onDirtyChange = vi.fn();
+
+        renderSection(
+            <ConstraintProfileSection user={user} onDirtyChange={onDirtyChange} />,
+        );
+
+        fireEvent.change(screen.getByLabelText("Injuries"), {
+            target: { value: "left knee" },
+        });
+        fireEvent.click(screen.getAllByRole("button", { name: "Add" })[0]);
+
+        expect(screen.getByText("left knee")).toBeTruthy();
+        expect(onDirtyChange).toHaveBeenCalledWith(true);
+
+        fireEvent.click(screen.getByRole("button", { name: "Reset" }));
+
+        expect(screen.queryByText("left knee")).toBeNull();
+        expect(
+            (screen.getByRole("button", { name: "Save constraints" }) as HTMLButtonElement)
+                .disabled,
+        ).toBe(true);
+        expect(
+            (screen.getByRole("button", { name: "Reset" }) as HTMLButtonElement).disabled,
+        ).toBe(true);
+        expect(onDirtyChange).toHaveBeenCalledWith(false);
+        expect(saveUserConstraintProfile).not.toHaveBeenCalled();
+    });
 });
