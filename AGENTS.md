@@ -15,3 +15,7 @@ Single-context layout: `CONTEXT.md` + `docs/adr/` at repo root. See `docs/agents
 ### Strategy docs
 
 Product and investor positioning: `docs/strategy/coaching-vs-programming-positioning.md`.
+
+### Database (Supabase)
+
+In `public` schema migrations, foreign keys to a user must reference **`public.users (id)`**, not `auth.users`. See `.cursor/rules/supabase-migrations.mdc` and existing FKs in `supabase/migrations/00000000000000_baseline.sql`.

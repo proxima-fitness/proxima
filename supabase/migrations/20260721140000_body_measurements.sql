@@ -3,7 +3,7 @@
 
 CREATE TABLE public.body_measurements (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES auth.users (id) ON DELETE CASCADE,
+  user_id uuid NOT NULL REFERENCES public.users (id) ON DELETE CASCADE,
   source public.source_type NOT NULL DEFAULT 'hevy',
   external_id text NOT NULL,
   measured_on date NOT NULL,

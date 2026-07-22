@@ -1,6 +1,6 @@
 CREATE TABLE public.session_episodes (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES auth.users (id) ON DELETE CASCADE,
+  user_id uuid NOT NULL REFERENCES public.users (id) ON DELETE CASCADE,
   chat_id text,
   program_id integer,
   summary text NOT NULL,

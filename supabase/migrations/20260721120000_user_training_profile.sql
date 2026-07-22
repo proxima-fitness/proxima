@@ -1,5 +1,5 @@
 CREATE TABLE public.user_training_profile (
-  user_id uuid PRIMARY KEY REFERENCES auth.users (id) ON DELETE CASCADE,
+  user_id uuid PRIMARY KEY REFERENCES public.users (id) ON DELETE CASCADE,
   age integer,
   sex text,
   height_cm numeric,

@@ -1,5 +1,5 @@
 CREATE TABLE public.user_constraints (
-  user_id uuid PRIMARY KEY REFERENCES auth.users (id) ON DELETE CASCADE,
+  user_id uuid PRIMARY KEY REFERENCES public.users (id) ON DELETE CASCADE,
   injuries jsonb NOT NULL DEFAULT '[]'::jsonb,
   excluded_equipment jsonb NOT NULL DEFAULT '[]'::jsonb,
   excluded_areas jsonb NOT NULL DEFAULT '[]'::jsonb,
