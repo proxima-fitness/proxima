@@ -48,9 +48,85 @@ _Avoid_: Auth transition (too broad), login flow
 Associating a saved program with a chat row by setting `program_id` on the chat. Triggered only on explicit Save when a chat session exists (`?chat=`); optional — program Save does not require chat.
 _Avoid_: Link chat to program (reversed direction), save chat
 
+**Proxima program**:
+The multi-week training block owned in Supabase — single source of truth on the **New path**. Has consecutive weeks, progress on the **Program overview**, and week-at-a-time **Week Export** to Hevy. Distinct from a **Hevy program (edit scope)**, which may exist with no Proxima program. Multiple active Proxima programs allowed in data; overview shows one via carousel.
+_Avoid_: Overarching program, program-in-progress (UI-shaped), Program (alone — ambiguous with Hevy), vault program
+
+**Program overview**:
+Profile surface for **Proxima program** progress: consecutive weeks, **Week complete**, **AI week suggest**, **Week Export**, **Edit program**, **Edit current week**. Shows one program at a time; user swaps among active programs via a carousel. Sits above **Hevy folders** on the profile. Backend / **Hevy program sync** must support more than one active program even though the overview focuses one.
+_Avoid_: Hevy folders (different section), vault browse, forcing a single active program in data
+
+**Hevy folders**:
+Profile grid of the user’s Hevy routine folders (formerly “My Hevy Programs”). Entry for Hevy-only **Edit path** / split builder — outside the preferred **Proxima program** loop. Kept below **Program overview** so power users can still Sync a folder without a program; **Make into a program** promotes into the preferred flow.
+_Avoid_: My Hevy Programs, treating folders as Program overview, implying this is the primary path
+
+**New path**:
+Create and progress a **Proxima program**: build → **Save** to Supabase → Program overview → **Week Export** one week at a time → optional **AI week suggest** between weeks. No Export control on the program builder — Week Export lives only on the Program overview (profile). Not the **Edit path**.
+_Avoid_: New mode (builder UI label), New arrival (entry mechanic only), Export-all workflow, builder Export button
+
+**Save** (New path):
+Persist the builder’s full **Program prescription** to Supabase as the **Proxima program**. Clears dirty state and the undo stack so the current grid becomes the backed-up baseline. Does not push to Hevy. After Save, toast directs the user to profile to **Week Export** week 1 — no auto-navigation required.
+_Avoid_: Sync (Edit-path Hevy push), Update program (Edit current week write-back), Export
+
+**New-path leave guard**:
+When the builder has unsaved **New path** prescription changes (dirty / undo stack) and the user tries to leave, block in-app navigation with **Discard** (drop local changes and navigate) and **Cancel** (close dialog, stay on builder so they can press toolbar **Save**). No Save action inside the dialog. Tab close/refresh may use `beforeunload` when dirty.
+_Avoid_: Edit navigation guard (Sync-oriented), Save and Continue, autosave on leave
+
+**Program–Hevy link**:
+On each **Week Export**, after Hevy creates the week’s routine folder (and routines), Proxima persists that folder’s ID (and routine IDs) against the **Proxima program** + week index in Supabase. That row is the week’s **Hevy week copy** pointer — used for overview progress, read-only completed weeks, **Edit current week**, and **Hevy program sync**. Not title-only match.
+_Avoid_: Title-only match as sole key, in-memory-only (must survive refresh), assuming Hevy folder id == week index
+
+**Edit path**:
+Modify training in the builder and push to Hevy via Sync. Two valid uses: (1) **Edit current week** of a **Proxima program**, or (2) edit a **Hevy program (edit scope)** with no Proxima program — a helpful split builder. Optional promote: **Make into a program**. Distinct from **New path**.
+_Avoid_: Edit mode (UI label only), Edit arrival (entry mechanic), assuming every Edit implies a Proxima program, assuming Sync writes Supabase
+
+**Edit current week**:
+**Edit path** entry that loads only the Proxima program’s current week into the builder. User may open and **Sync** updates anytime while that week is the active **Hevy week copy** (exercise/weight/rep changes for days not yet done). Not a second **Week Export** — one folder per week; Sync updates the linked folder. Default persist is Sync to Hevy only; optional **Update program** writes the **Program prescription**.
+_Avoid_: Edit mode (too broad), full-program Edit, re-Export same week, autosave to Supabase on Sync
+
+**Current week** (overview):
+The highest week number that exists as a Hevy routine folder for this **Proxima program** (via **Program–Hevy link** / `Week N - …` folders). **Edit current week** and mid-week Sync target that folder. Not defined by **Week complete** or calendar date — complete gates the next **Week Export** / **AI week suggest**, not which week is “current.”
+_Avoid_: Calendar week, “latest incomplete week”, assuming current = max schedule-history week
+
+**Program prescription**:
+What the **Proxima program** says the athlete should do — the trainer plan. Survives week-to-week; Export of week N+1 comes from this, not from last week’s Hevy divergences.
+_Avoid_: Program (alone), plan (vague), template (ambiguous with exercise template)
+
+**Week complete**:
+Status on the Program overview that week N of a **Proxima program** is finished. User can tap **Mark week complete**, or the system auto-marks when every day in that week is recorded complete. Day completion is already tracked by **Hevy program sync** via Hevy `workout.routine_id` → folder title `Week N - {title}` → **program schedule history** (not title-fuzzy matching against backup). Unlock trigger for the next-week **AI week suggest** + **Week Export** of N+1.
+_Avoid_: Program complete (whole block), Sync complete, exported (Export ≠ trained)
+
+**Week Export**:
+Push one week of a **Proxima program** to Hevy as a new routine folder plus that week’s routines. Creates the **Program–Hevy link** for that week. Once linked, that week is not Exported again — further Hevy updates use **Edit current week** Sync. Lives only on the **Program overview** — not on the builder.
+_Avoid_: Full-program Export (removed), Save (Supabase only), re-Export same week
+
+**Hevy write quota**:
+Renamed/replaced monthly full-program export limits. **Save** and in-Proxima prescription edits are unlimited. Meter charges every successful Hevy write: **Week Export**, **Edit current week** Sync, and Hevy-only **Edit path** Sync (no Proxima program). Week 1 **Week Export** per program is free; later Week Exports and all Syncs count. Tier numbers updated when the limit is renamed.
+_Avoid_: Week Export quota (too narrow), charging for Save, Sync-free loophole via **Hevy folders**, “monthly exports” full-program wording
+
+**Hevy program sync**:
+Existing edge function (`hevy-program-sync`) that, on new Hevy workouts, marks schedule days complete via `workout.routine_id` and folder title parsing. Auto next-week upload and silent double-progression Hevy writes are **commented out** (not deleted) — reserved for a possible future auto-weight-progression mode; default loop pulls the user back to Proxima for **AI week suggest** + **Week Export** (retention). Needs rewiring so week-complete signals feed the Program overview.
+_Avoid_: Workout history backup (different pipeline), Sync (Edit-path Hevy push), deleting the progression code
+
+**AI week suggest**:
+After **Week complete**, optional progression / exercise tweaks for week N+1. Generated **lazily** when the user opens the **Program overview** (or expands the suggest panel) — not on mark-complete and not on Export click. User may one-click apply into the **Program prescription** for week N+1, or skip and **Week Export** as-is. Distinct from **Edit current week** and from silent double-progression in **Hevy program sync**.
+_Avoid_: Sync dialog summary, modifyProgram (tool), living-loop ad-hoc chat edit, eager cron generation
+
+**Hevy week copy**:
+What is currently in Hevy for a given exported week — the athlete’s working notes for that week, living in that week’s Export folder. Created by **Week Export**; updated by **Edit current week** Sync into that folder. May differ from the **Program prescription** without changing future weeks.
+_Avoid_: Workout (backup) — those are logged completed sets; notes (ambiguous with set notes); active split
+
+**Update program**:
+Optional control on **Edit current week**. Off by default — Sync writes the **Hevy week copy** only. When checked, reveals a scope choice: **this week only** (rewrite that week’s slot in the **Program prescription**) or **all weeks** (apply the same change across the Proxima program). Never implied by Sync alone.
+_Avoid_: Save (New-path persist), Sync (Hevy push), Make into a program (Hevy-only → Proxima program)
+
+**Make into a program**:
+Optional promote from a Hevy-only **Edit path** session. Switches into **New path** with the current split already loaded in the builder and runs the agent so it can expand/update that split into a full multi-week **Proxima program**. User then **Save**s as usual. Never required; Hevy-only Edit + Sync remains supported.
+_Avoid_: Silent one-week Save, forced re-Export of week 1, Update program, convert-without-agent
+
 **Hevy program (edit scope)**:
-One Hevy routine folder and all routines inside it — the unit loaded from the dashboard grid and synced back in Edit mode. Not the builder's multi-week grid; weeks are a Proxima layout layer only.
-_Avoid_: Program (ambiguous with Supabase program), folder (ambiguous)
+One Hevy routine folder and all routines inside it — the unit loaded from the dashboard grid and synced back on the **Edit path**. Not a multi-week **Proxima program**; weeks are a Proxima layout layer only. Informal “split” often means this when there is no Proxima program.
+_Avoid_: Program (ambiguous with Proxima program), folder (ambiguous), Split (overloaded with questionnaire preferred-split / splitType)
 
 **Hevy routine folder ID**:
 Stable Hevy-side identifier for the routine folder a program lives in. Persisted when entering Edit mode; used as the POST target for new routines on Sync. Distinct from week index in the builder.
@@ -69,8 +145,8 @@ Client-only integer identifier on a day in builder state (`id`), assigned sequen
 _Avoid_: id (when meaning Hevy), routine id (ambiguous), UUID dnd key
 
 **Sync (Edit mode)**:
-Push builder changes to the user's existing Hevy program — empty removed routines (PUT, no exercises), PUT updated ones, POST new ones. Each operation retries with exponential backoff on rate limits (same spirit as Export upload). Continue through the batch when one operation exhausts retries; log and toast failures. Do not abort the whole batch on first error.
-_Avoid_: Export (New mode only), upload, DELETE
+Push builder changes to the user's existing Hevy program — empty removed routines (PUT, no exercises), PUT updated ones, POST new ones. Each operation retries with exponential backoff on rate limits (same spirit as Week Export upload). Continue through the batch when one operation exhausts retries; log and toast failures. Do not abort the whole batch on first error.
+_Avoid_: Week Export (overview, New path), Save (Supabase prescription), upload, DELETE
 
 **Sync completion (Edit mode)**:
 After Sync finishes with zero failed operations, show a success toast, invalidate the `useHevyPrograms` React Query cache, then navigate. Toolbar Sync goes to the profile page. Leave-guard **Save and Continue** goes to the user's original destination. The builder is not refreshed in place — the next Edit entry loads fresh routines from a refetched profile fetch.
@@ -117,12 +193,12 @@ Full routine snapshot of active (non-`[Removed]`) routines fetched from Hevy whe
 _Avoid_: hevy-program-in-progress (Edit path), backup file, raw folder pull
 
 **Edit session**:
-An in-progress Edit-mode builder load tied to one Hevy program (edit scope). Hevy account is source of truth for v1; Supabase program vault is not updated on Sync. Session state (`initialHevyProgram`, `initialRoutineIds`, `initialFolderId`, working routines, edit dirty state) lives in an `EditSessionProvider` while Edit arrival is active.
-_Avoid_: Draft (ambiguous with New-mode localStorage draft), edit state
+An in-progress **Edit path** builder load tied to one **Hevy program (edit scope)** (and, on **Edit current week**, to one week of a **Proxima program**). Default Sync writes Hevy only — the **Hevy week copy**. Supabase **Program prescription** updates only when the user explicitly chooses **Update program**. When no Proxima program is attached, Hevy is the sole source of truth. Session state (`initialHevyProgram`, `initialRoutineIds`, `initialFolderId`, working routines, edit dirty state) lives in an `EditSessionProvider` while Edit arrival is active.
+_Avoid_: Draft (ambiguous with New-path localStorage draft), edit state
 
 **Builder draft**:
-The in-progress program persisted in `hevy-program-in-progress` for resume in New mode only. Edit mode does not read or write this key — edit state lives in memory for the session.
-_Avoid_: Edit session payload, New draft vs Edit draft
+Local resume copy in `hevy-program-in-progress` for **unsaved** New-path work only (crash recovery, anon). Cleared on successful **Save**; after Save, Supabase **Proxima program** is SoT. Edit path does not read or write this key.
+_Avoid_: Dual-write forever after Save, Edit session payload, treating draft as Program overview source
 
 **Edit navigation guard**:
 When the user has unsaved Edit-mode changes and tries to leave the builder — including switching New ↔ Edit in the mode menu — block in-app navigation and show a dialog with a Sync change summary (empty / update / add counts), **Save and Continue** (run Sync progress immediately, then navigate to the user's original destination on success), **Discard** (drop local changes and navigate without touching Hevy or invalidating cached profile data), and **Cancel** (stay in builder). Implemented via `useEditLeaveGuard()` (`beforeunload` + `guardNavigation()` on documented exit points: sidebar, breadcrumbs, mode menu, etc.). Tab close or refresh uses the browser `beforeunload` prompt when dirty; it cannot offer Sync. Edit mode never resumes from `hevy-program-in-progress`; the next Edit entry always loads from the profile routines fetch.
@@ -141,11 +217,11 @@ After a successful Sync, invalidate `useHevyPrograms` and leave the builder for 
 _Avoid_: Baseline advance, in-builder reload, resume draft
 
 **Edit arrival**:
-Entering the builder to modify an existing Hevy program — via `/build-program?edit=true&hevy=true&folder={initialFolderId}`. On Edit click from the profile (My Hevy Programs grid or blind-spot Hevy program picker), refetch `useHevyPrograms`, then pass the selected program's routines through router navigation state. Optional query params (e.g. `search=` for stall-analysis dispatch) compose with Edit arrival. The build-program page hydrates from navigation state and does not fetch routines on mount. If navigation state is missing (refresh, direct URL), redirect to the profile page. Not seeded through `localStorage`.
+Entering the builder to modify an existing Hevy program — via `/build-program?edit=true&hevy=true&folder={initialFolderId}`. On Edit click from the profile (**Hevy folders** grid or blind-spot Hevy program picker), refetch `useHevyPrograms`, then pass the selected program's routines through router navigation state. Optional query params (e.g. `search=` for stall-analysis dispatch) compose with Edit arrival. The build-program page hydrates from navigation state and does not fetch routines on mount. If navigation state is missing (refresh, direct URL), redirect to the profile page. Not seeded through `localStorage`.
 _Avoid_: Resume, hevy-program-in-progress (Edit path), build-program fetch
 
 **Edit mode menu**:
-The breadcrumb New/Edit switch. Edit is only selectable when the builder is already on an Edit arrival (`folder` param present). Entering Edit from New is via My Hevy Programs on the dashboard, not the mode menu.
+The breadcrumb New/Edit switch. Edit is only selectable when the builder is already on an Edit arrival (`folder` param present). Entering Edit from New is via **Hevy folders** on the profile, not the mode menu.
 _Avoid_: Mode toggle, program picker
 
 **Edit agent**:
@@ -165,15 +241,15 @@ Whether the current Edit session has unsaved builder changes. Set by any mutatio
 _Avoid_: isDirty (implementation), unsaved flag
 
 **Program versioning**:
-Future capability to track Proxima/Supabase program history over time. Out of scope for v1 Edit Sync; deferred until Hevy-only Sync is stable.
-_Avoid_: Save, sync
+History of a **Proxima program** over time in Supabase. Belongs to the **New path** / Program overview lifecycle (PRO-102 / PRO-176), not to Hevy-only **Edit path** Sync.
+_Avoid_: Save (persist current), Sync (Hevy push)
 
 **Hevy sync module**:
 Edit-mode Sync and rollback logic lives in `hevy_sync.ts` with colocated tests. `hevy.ts` retains HTTP primitives (`putRoutine`, `postRoutine`, `defaultPut`, etc.).
 _Avoid_: syncProgramToHevy in hevy.ts, export sync
 
 **Edit navigation hook**:
-Shared `useNavigateToEditHevyProgram()` used by profile entry points (My Hevy Programs grid, blind-spot Hevy picker). Refetches `useHevyPrograms`, passes routines via router state, and navigates to Edit arrival with `folder` and optional extra query params.
+Shared `useNavigateToEditHevyProgram()` used by profile entry points (**Hevy folders** grid, blind-spot Hevy picker). Refetches `useHevyPrograms`, passes routines via router state, and navigates to Edit arrival with `folder` and optional extra query params.
 _Avoid_: navigateToEditHevyProgram helper, inline edit push
 
 **Agentic memory**:
@@ -333,7 +409,7 @@ Consecutive Sunday-start weeks (US ET, same as profile statistics) with at least
 _Avoid_: Day streak, GitHub streak, streak badge on calendar
 
 **Recent workouts** (profile):
-Horizontal browse feed on the profile page — read-only preview cards for backed-up **Workouts** (≤5 exercises each), newest first, cursor-paginated with load-more. Card header shows title, date, duration, and **Session goal** badge when classifiable. **See more exercises** links to logged workout detail when needed. Shown only when Hevy is connected. Sits after profile statistics and before My Hevy Programs. White card on muted page background per profile Hevy layout.
+Horizontal browse feed on the profile page — read-only preview cards for backed-up **Workouts** (≤5 exercises each), newest first, cursor-paginated with load-more. Card header shows title, date, duration, and **Session goal** badge when classifiable. **See more exercises** links to logged workout detail when needed. Shown only when Hevy is connected. Sits after profile statistics and before **Program overview** / **Hevy folders**. White card on muted page background per profile Hevy layout.
 _Avoid_: Workout feed (ambiguous with social feed), workout history list (too generic)
 
 **Session goal**:

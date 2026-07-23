@@ -262,7 +262,8 @@ function PeekBody({
     return (
         <div className="flex flex-col">
             <header className="border-b border-border/60 pb-3">
-                <h4 className="text-[15px] font-semibold tracking-[-0.02em] text-foreground">
+                <h4 className="flex items-center gap-2 text-[15px] font-semibold tracking-[-0.02em] text-foreground">
+                    <Brain className="size-4 shrink-0" strokeWidth={1.5} aria-hidden="true" />
                     Agentic memory
                 </h4>
             </header>
