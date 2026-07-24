@@ -35,6 +35,7 @@ export function EditProfileContent() {
     const {
         setDirty,
         leaveDialogOpen,
+        pendingHref,
         onLeaveDialogOpenChange,
         onDiscardLeave,
     } = editProfileLeaveGuard.useLeaveGuard();
@@ -201,6 +202,7 @@ export function EditProfileContent() {
                 description={editProfileLeaveGuard.description}
                 cancelLabel="Stay"
                 confirmLabel="Discard"
+                confirmHref={pendingHref ?? undefined}
                 onConfirm={onDiscardLeave}
             />
         </div>

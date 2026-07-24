@@ -2,8 +2,8 @@
  * @module hooks/create-leave-guard
  *
  * Dirty leave warn: `beforeunload`, same-origin link capture, optional
- * `requestLeave()` for router.push exits. Pass dialog copy; each instance
- * has its own dirty mirror (SoT stays with the caller).
+ * `requestLeave()` for programmatic exits. Discard navigates via Next.js
+ * `Link` (`pendingHref` → ConfirmDialog `confirmHref`).
  *
  * Pattern (vercel-react-best-practices):
  * - `setDirty` is a silent mirror of caller SoT (boolean only — no emit / no React state)
@@ -17,7 +17,6 @@
 "use client";
 
 import { useCallback, useSyncExternalStore } from "react";
-import { useRouter } from "next/navigation";
 import { clearBuilderDraft } from "@/lib/builder-draft";
 
 export type TLeaveGuardCopy = {
@@ -103,6 +102,8 @@ export function createLeaveGuard(copy: TLeaveGuardCopy) {
         if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         const target = event.target;
         if (!(target instanceof Element)) return;
+        // Discard itself is a Link inside the dialog — do not re-intercept.
+        if (target.closest('[role="dialog"]')) return;
         const anchor = target.closest("a[href]");
         if (!(anchor instanceof HTMLAnchorElement)) return;
         const href = resolveHref(anchor);
@@ -158,34 +159,32 @@ export function createLeaveGuard(copy: TLeaveGuardCopy) {
     }
 
     function useLeaveGuard() {
-        const { open: leaveDialogOpen } = useSyncExternalStore(
+        const { open: leaveDialogOpen, href: pendingHref } = useSyncExternalStore(
             subscribe,
             () => snapshot,
             () => empty,
         );
-        const router = useRouter();
 
         const onLeaveDialogOpenChange = useCallback((nextOpen: boolean) => {
             if (!nextOpen) close();
         }, []);
 
+        /** Side effects only — navigation is ConfirmDialog `confirmHref` Link. */
         const onDiscardLeave = useCallback(() => {
             const next = pending;
-            close();
-            if (!next) return;
             dirty = false;
-            copy.onDiscard?.();
-            next.beforeNavigate?.();
             bypass = true;
-            router.push(next.href);
+            copy.onDiscard?.();
+            next?.beforeNavigate?.();
             queueMicrotask(() => {
                 bypass = false;
             });
-        }, [router]);
+        }, []);
 
         return {
             setDirty,
             leaveDialogOpen,
+            pendingHref,
             onLeaveDialogOpenChange,
             onDiscardLeave,
         };
@@ -203,8 +202,7 @@ export function createLeaveGuard(copy: TLeaveGuardCopy) {
 
 export const newPathLeaveGuard = createLeaveGuard({
     title: "Discard unsaved changes?",
-    description:
-        "You have unsaved program changes. Cancel to stay and Save from the toolbar, or Discard to leave without saving.",
+    description: "Your changes will be lost.",
     onDiscard: clearBuilderDraft,
 });
 

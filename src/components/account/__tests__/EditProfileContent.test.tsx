@@ -52,6 +52,7 @@ describe("EditProfileContent", () => {
         useLeaveGuard.mockReturnValue({
             setDirty: vi.fn(),
             leaveDialogOpen: false,
+            pendingHref: null,
             onLeaveDialogOpenChange: vi.fn(),
             onDiscardLeave: vi.fn(),
         });

@@ -48,7 +48,7 @@ export function MobileSidebarHeader() {
       </Link>
       {isBuildProgram ? (
         <div className="flex items-center gap-2 min-w-0">
-          <div id="toolbar-save-portal-mobile" />
+          <div id="toolbar-save-portal-mobile" className="empty:hidden" />
           <Suspense fallback={<div className="w-10" aria-hidden />}>
             <BuildProgramToolbarEnd />
           </Suspense>

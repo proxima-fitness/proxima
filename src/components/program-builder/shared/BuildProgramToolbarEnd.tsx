@@ -7,10 +7,7 @@
 
 import { StepButton } from "./StepButton";
 
+/** Sign in / Sync CTA, or null on New path (Save lives in toolbar portal). */
 export function BuildProgramToolbarEnd() {
-    return (
-        <div className="flex items-center gap-2 min-w-0">
-            <StepButton />
-        </div>
-    );
+    return <StepButton />;
 }

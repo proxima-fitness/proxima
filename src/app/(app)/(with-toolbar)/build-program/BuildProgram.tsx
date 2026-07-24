@@ -285,6 +285,7 @@ export function BuildProgram() {
 
     const {
         leaveDialogOpen,
+        pendingHref,
         onLeaveDialogOpenChange,
         onDiscardLeave,
     } = newPathLeaveGuard.useLeaveGuard();
@@ -426,6 +427,7 @@ export function BuildProgram() {
                 description={newPathLeaveGuard.description}
                 cancelLabel="Cancel"
                 confirmLabel="Discard"
+                confirmHref={pendingHref ?? undefined}
                 onConfirm={onDiscardLeave}
             />
         </>

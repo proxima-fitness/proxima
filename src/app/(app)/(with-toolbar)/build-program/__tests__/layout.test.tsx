@@ -29,12 +29,22 @@ describe("build-program layout.tsx", () => {
         expect(className).toContain("flex");
     });
 
-    it("keeps visible Save portal target for ToolbarPortalButtons (ADR 0007)", () => {
+    it("keeps Save portal target for ToolbarPortalButtons (ADR 0007)", () => {
         render(<ProgramBuilderLayout>{null}</ProgramBuilderLayout>);
 
         const savePortal = document.getElementById("toolbar-save-portal");
         expect(savePortal).toBeTruthy();
+        // empty:hidden collapses gap until Save portals in; not permanently hidden
         expect(savePortal?.classList.contains("hidden")).toBe(false);
+        expect(savePortal?.classList.contains("empty:hidden")).toBe(true);
+    });
+
+    it("collapses empty undo portal so Legend–Save gap stays even", () => {
+        render(<ProgramBuilderLayout>{null}</ProgramBuilderLayout>);
+
+        const undoPortal = document.getElementById("toolbar-undo-portal");
+        expect(undoPortal).toBeTruthy();
+        expect(undoPortal?.classList.contains("empty:hidden")).toBe(true);
     });
 });
 

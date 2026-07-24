@@ -36,11 +36,11 @@ export default function ProgramBuilderLayout({ children }: { children: ReactNode
                         <BuildProgramFeedbackDialog />
                         <BuildProgramSetTypesPopover />
                     </div>
-                    <div id="toolbar-undo-portal" />
+                    <div id="toolbar-undo-portal" className="empty:hidden" />
                     <Suspense fallback={null}>
                         <BuildProgramToolbarEnd />
                     </Suspense>
-                    <div id="toolbar-save-portal" />
+                    <div id="toolbar-save-portal" className="empty:hidden" />
                 </div>
             </div>
 

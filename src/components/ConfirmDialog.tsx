@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 interface IConfirmDialogProps {
     open: boolean;
@@ -26,6 +27,8 @@ interface IConfirmDialogProps {
     title: string;
     description?: string;
     onConfirm: () => void;
+    /** When set, confirm renders as Next.js Link (soft nav) instead of a plain button. */
+    confirmHref?: string;
     cancelLabel?: string;
     confirmLabel?: string;
     confirmLoadingLabel?: string;
@@ -50,6 +53,7 @@ export function ConfirmDialog({
     title,
     description,
     onConfirm,
+    confirmHref,
     cancelLabel = "Cancel",
     confirmLabel = "Confirm",
     confirmLoadingLabel,
@@ -80,6 +84,11 @@ export function ConfirmDialog({
     };
 
     const loadingLabel = confirmLoadingLabel ?? confirmLabel;
+    const confirmButtonClassName = cn(
+        preventAutoFocus && "w-full sm:w-auto",
+        confirmClassName,
+    );
+    const confirmDisabledState = isConfirmLoading || confirmDisabled;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -137,18 +146,27 @@ export function ConfirmDialog({
                     >
                         {cancelLabel}
                     </Button>
-                    <Button
-                        type="button"
-                        variant={confirmVariant}
-                        onClick={handleConfirm}
-                        disabled={isConfirmLoading || confirmDisabled}
-                        className={cn(
-                            preventAutoFocus && "w-full sm:w-auto",
-                            confirmClassName,
-                        )}
-                    >
-                        {isConfirmLoading ? loadingLabel : confirmLabel}
-                    </Button>
+                    {confirmHref && !confirmDisabledState ? (
+                        <Button
+                            asChild
+                            variant={confirmVariant}
+                            className={confirmButtonClassName}
+                        >
+                            <Link href={confirmHref} onClick={handleConfirm}>
+                                {isConfirmLoading ? loadingLabel : confirmLabel}
+                            </Link>
+                        </Button>
+                    ) : (
+                        <Button
+                            type="button"
+                            variant={confirmVariant}
+                            onClick={handleConfirm}
+                            disabled={confirmDisabledState}
+                            className={confirmButtonClassName}
+                        >
+                            {isConfirmLoading ? loadingLabel : confirmLabel}
+                        </Button>
+                    )}
                 </DialogFooter>
             </DialogContent>
         </Dialog>
