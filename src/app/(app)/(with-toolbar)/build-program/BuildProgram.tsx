@@ -45,6 +45,14 @@ import {
 import { connectChatToSavedProgram, isChatSessionInsertConfirmed } from "@/api/chat-history";
 import { ToolbarPortalButtons } from "@/components/program-builder/shared/ToolbarPortalButtons";
 import { BuildProgramToolbarTitle } from "@/components/program-builder/shared/BuildProgramToolbarTitle";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { newPathLeaveGuard } from "@/hooks/create-leave-guard";
+import {
+    canWriteBuilderDraft,
+    clearBuilderDraft,
+    enableBuilderDraftWrites,
+    NEW_PATH_SAVE_SUCCESS_TOAST,
+} from "@/lib/builder-draft";
 import { editorReducer, isNewPathDirty } from "./editor-reducer";
 import type { TCommitWithUndoOptions } from "@/components/program-builder/mutations/types";
 import { useProgramRequestState } from "./use-program-request-state";
@@ -148,12 +156,16 @@ export function BuildProgram() {
         hevyProgram: [],
         undoStack: [],
     });
+    const editMode = searchParams.get("edit") === "true";
+    /** Mirror only — SoT is undo stack. Silent assign for beforeunload / link capture. */
+    newPathLeaveGuard.setDirty(!editMode && isNewPathDirty(undoStack.length));
 
     const setProgramFromHydrate = useCallback((program: THevyRoutine[]) => {
         dispatchEditor({ type: "REPLACE_PROGRAM", program: normalizeProgramState(program) });
     }, []);
 
     const commitWithUndo = useCallback((next: THevyRoutine[], options?: TCommitWithUndoOptions) => {
+        enableBuilderDraftWrites();
         dispatchEditor({
             type: "COMMIT_PROGRAM",
             program: normalizeProgramState(next),
@@ -163,6 +175,7 @@ export function BuildProgram() {
 
     const setHevyProgram = useCallback(
         (value: THevyRoutine[] | ((prev: THevyRoutine[]) => THevyRoutine[])) => {
+            enableBuilderDraftWrites();
             if (typeof value === "function") {
                 dispatchEditor({
                     type: "COMMIT_PROGRAM",
@@ -262,12 +275,19 @@ export function BuildProgram() {
     const isMobile = useIsMobile();
 
     const handleUndo = useCallback(() => {
+        enableBuilderDraftWrites();
         dispatchEditor({ type: "UNDO" });
     }, []);
 
     const clearUndoBaseline = useCallback(() => {
         dispatchEditor({ type: "CLEAR_UNDO_BASELINE" });
     }, []);
+
+    const {
+        leaveDialogOpen,
+        onLeaveDialogOpenChange,
+        onDiscardLeave,
+    } = newPathLeaveGuard.useLeaveGuard();
 
     useEffect(() => {
         const savedPosition = localStorage.getItem(SIDEBAR_POSITION_KEY) as "left" | "right" | null;
@@ -365,39 +385,50 @@ export function BuildProgram() {
     const isExpanded = sidebarSize >= EXPANDED_SIZE - 5;
 
     return (
-        <BuildProgramShell
-            key={shellKey}
-            chatHistoryLoading={chatHistoryLoading}
-            initialMessages={chatInitialMessages}
-            user={user}
-            chatId={chatId}
-            search={search}
-            resume={resume}
-            hevyProgram={hevyProgram}
-            setHevyProgram={setHevyProgram}
-            commitWithUndo={commitWithUndo}
-            setProgramFromHydrate={setProgramFromHydrate}
-            orderedProgram={orderedProgram}
-            programRequest={programRequest}
-            isMobile={isMobile}
-            sharedProgramLoadAttempted={sharedProgramLoadAttempted}
-            undoStackLength={undoStack.length}
-            handleUndo={handleUndo}
-            clearUndoBaseline={clearUndoBaseline}
-            sidebarPosition={sidebarPosition}
-            toggleSidebarPosition={toggleSidebarPosition}
-            onToggleExpand={onToggleExpand}
-            handleToggleHide={handleToggleHide}
-            handleOpenChat={handleOpenChat}
-            isExpanded={isExpanded}
-            sidebarPanelRef={sidebarPanelRef}
-            sidebarSize={sidebarSize}
-            onSidebarResize={onSidebarResize}
-            isChatHidden={isChatHidden}
-            mobileTab={mobileTab}
-            setMobileTab={setMobileTab}
-            chatEntryPlan={chatEntryPlan}
-        />
+        <>
+            <BuildProgramShell
+                key={shellKey}
+                chatHistoryLoading={chatHistoryLoading}
+                initialMessages={chatInitialMessages}
+                user={user}
+                chatId={chatId}
+                search={search}
+                resume={resume}
+                hevyProgram={hevyProgram}
+                setHevyProgram={setHevyProgram}
+                commitWithUndo={commitWithUndo}
+                setProgramFromHydrate={setProgramFromHydrate}
+                orderedProgram={orderedProgram}
+                programRequest={programRequest}
+                isMobile={isMobile}
+                sharedProgramLoadAttempted={sharedProgramLoadAttempted}
+                undoStackLength={undoStack.length}
+                handleUndo={handleUndo}
+                clearUndoBaseline={clearUndoBaseline}
+                sidebarPosition={sidebarPosition}
+                toggleSidebarPosition={toggleSidebarPosition}
+                onToggleExpand={onToggleExpand}
+                handleToggleHide={handleToggleHide}
+                handleOpenChat={handleOpenChat}
+                isExpanded={isExpanded}
+                sidebarPanelRef={sidebarPanelRef}
+                sidebarSize={sidebarSize}
+                onSidebarResize={onSidebarResize}
+                isChatHidden={isChatHidden}
+                mobileTab={mobileTab}
+                setMobileTab={setMobileTab}
+                chatEntryPlan={chatEntryPlan}
+            />
+            <ConfirmDialog
+                open={leaveDialogOpen}
+                onOpenChange={onLeaveDialogOpenChange}
+                title={newPathLeaveGuard.title}
+                description={newPathLeaveGuard.description}
+                cancelLabel="Cancel"
+                confirmLabel="Discard"
+                onConfirm={onDiscardLeave}
+            />
+        </>
     );
 }
 
@@ -563,15 +594,13 @@ function BuildProgramShell({
                 programId: String(programId),
                 queryClient,
             });
-            if (connectResult === "linked") {
-                toast.success("Program saved and connected to chat.");
-            } else if (connectResult === "failed") {
-                toast.warning("Program saved, but chat connection failed.");
-                console.error("Chat link failed.");
-            } else {
-                toast.success("Program saved.");
-            }
+            clearBuilderDraft();
             clearUndoBaseline();
+            toast.success(NEW_PATH_SAVE_SUCCESS_TOAST);
+            if (connectResult === "failed") {
+                toast.warning("Chat connection failed.");
+                console.error("Chat link failed.");
+            }
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Save failed.");
             console.error("Save error:", err);
@@ -602,6 +631,7 @@ function BuildProgramShell({
 
         localStorageDebounceRef.current = setTimeout(() => {
             localStorageDebounceRef.current = null;
+            if (!canWriteBuilderDraft()) return;
             if (hevyProgram.length === 0 && resume === "true") {
                 // Don't overwrite on resume
             } else if (hevyProgram.length === 0) {

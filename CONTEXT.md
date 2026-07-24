@@ -69,7 +69,7 @@ Persist the builder’s full **Program prescription** to Supabase as the **Proxi
 _Avoid_: Sync (Edit-path Hevy push), Update program (Edit current week write-back), Export
 
 **New-path leave guard**:
-When the builder has unsaved **New path** prescription changes (dirty / undo stack) and the user tries to leave, block in-app navigation with **Discard** (drop local changes and navigate) and **Cancel** (close dialog, stay on builder so they can press toolbar **Save**). No Save action inside the dialog. Tab close/refresh may use `beforeunload` when dirty.
+When the builder has unsaved **New path** prescription changes (dirty / undo stack) and the user tries to leave, block in-app navigation with **Discard** (wipe **Builder draft** / `hevy-program-in-progress` + related keys, then navigate) and **Cancel** (close dialog, stay on builder so they can press toolbar **Save**). No Save action inside the dialog. Tab close/refresh may use `beforeunload` when dirty. Does not trap browser back.
 _Avoid_: Edit navigation guard (Sync-oriented), Save and Continue, autosave on leave
 
 **Program–Hevy link**:

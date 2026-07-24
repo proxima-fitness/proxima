@@ -14,21 +14,15 @@
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { BUILDER_DRAFT_KEY, clearBuilderDraft } from "@/lib/builder-draft";
 import { Redo2Icon, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { CHAT_MESSAGES_KEY } from "@/assets/constants/ui-constants";
-
-const DRAFT_STORAGE_KEY = "hevy-program-in-progress";
-/** Persisted program request filters; see BuildProgram debounced localStorage write. */
-const HEVY_REQUEST_KEY = "hevy-request";
-/** Persisted prompt title; see BuildProgram debounced localStorage write. */
-const PROMPT_KEY = "prompt";
 
 function readDraftFromStorage(): THevyRoutine[] | undefined {
     if (typeof window === "undefined") return undefined;
     try {
-        const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
+        const raw = localStorage.getItem(BUILDER_DRAFT_KEY);
         if (!raw) return undefined;
         return JSON.parse(raw) as THevyRoutine[];
     } catch {
@@ -45,12 +39,7 @@ export const ResumeDraftBanner: React.FC = () => {
     const [clearDialogOpen, setClearDialogOpen] = useState(false);
 
     const handleClearProgram = () => {
-        if (typeof window !== "undefined") {
-            localStorage.removeItem(DRAFT_STORAGE_KEY);
-            localStorage.removeItem(CHAT_MESSAGES_KEY);
-            localStorage.removeItem(HEVY_REQUEST_KEY);
-            localStorage.removeItem(PROMPT_KEY);
-        }
+        clearBuilderDraft();
         setHevyRoutine(undefined);
     };
 

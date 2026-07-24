@@ -14,6 +14,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { newPathLeaveGuard } from "@/hooks/create-leave-guard";
 import { ChevronsUpDown } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
@@ -41,7 +42,9 @@ export function BuildProgramModeMenu({ className, triggerClassName }: IBuildProg
                 params.delete("edit");
             }
             const qs = params.toString();
-            router.replace(qs ? `${pathname}?${qs}` : pathname);
+            const href = qs ? `${pathname}?${qs}` : pathname;
+            if (newPathLeaveGuard.requestLeave(href)) return;
+            router.replace(href);
         },
         [pathname, router, searchParams]
     );

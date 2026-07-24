@@ -19,16 +19,12 @@ import { ArrowLeft } from "lucide-react";
 import { BodyMeasurementsSection } from "@/components/account/BodyMeasurementsSection";
 import { ConstraintProfileSection } from "@/components/account/ConstraintProfileSection";
 import { TrainingProfileSection } from "@/components/account/TrainingProfileSection";
-import {
-    EDIT_PROFILE_LEAVE_DESCRIPTION,
-    EDIT_PROFILE_LEAVE_TITLE,
-    useEditProfileLeaveGuard,
-} from "@/components/account/use-edit-profile-leave-guard";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditProfile } from "@/components/profile/EditProfile";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { useUserContext } from "@/contexts/UserContext";
+import { editProfileLeaveGuard } from "@/hooks/create-leave-guard";
 
 const EDIT_PROFILE_CARD_CLASS =
     "rounded-2xl border border-border/60 bg-card shadow-sm";
@@ -41,7 +37,7 @@ export function EditProfileContent() {
         leaveDialogOpen,
         onLeaveDialogOpenChange,
         onDiscardLeave,
-    } = useEditProfileLeaveGuard();
+    } = editProfileLeaveGuard.useLeaveGuard();
     const dirtyPartsRef = useRef({
         identity: false,
         constraint: false,
@@ -201,8 +197,8 @@ export function EditProfileContent() {
             <ConfirmDialog
                 open={leaveDialogOpen}
                 onOpenChange={onLeaveDialogOpenChange}
-                title={EDIT_PROFILE_LEAVE_TITLE}
-                description={EDIT_PROFILE_LEAVE_DESCRIPTION}
+                title={editProfileLeaveGuard.title}
+                description={editProfileLeaveGuard.description}
                 cancelLabel="Stay"
                 confirmLabel="Discard"
                 onConfirm={onDiscardLeave}
