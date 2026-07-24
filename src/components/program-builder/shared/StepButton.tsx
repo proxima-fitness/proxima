@@ -1,26 +1,24 @@
 /**
  * @module StepButton
- * CTA for program builder: "Sign in to save" when anonymous; when logged in, "Export"
- * (opens ExportDialog) or disabled "Sync" with a coming-soon tooltip when `edit=true` and `hevy=true`.
- * Depends on: ExportDialog, Tooltip, useUserContext, useSearchParams. Used by: build-program toolbar / steps.
+ * CTA for program builder: "Sign in to save" when anonymous; when logged in with
+ * `edit=true` and `hevy=true`, disabled "Sync" with a coming-soon tooltip.
+ * New-path logged-in users get no Export CTA (Save is the primary persist action; ADR 0007).
+ * Depends on: Tooltip, useUserContext, useSearchParams. Used by: build-program toolbar / steps.
  * Full prior Sync flow (dialog, handlers) is preserved in a comment block at the end of this file for TODO re-enable.
  */
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ArrowRightIcon, ArrowRightToLineIcon, RefreshCw } from "lucide-react";
-import { useState } from "react";
+import { ArrowRightIcon, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ExportDialog } from "./ExportDialog";
 import { useUserContext } from "@/contexts/UserContext";
-import posthog from "posthog-js";
 
 const BUILD_PROGRAM_PATH = "/build-program?resume=true";
 const LOGIN_WITH_NEXT = `/auth/login?next=${encodeURIComponent(BUILD_PROGRAM_PATH)}`;
 
-/** Shows Loading, Sign in link, or Export / Sync; Export opens ExportDialog; Sync is disabled with tooltip. */
+/** Shows Loading, Sign in link, Sync (edit+hevy), or null on New path when logged in. */
 export const StepButton: React.FC = () => {
     const searchParams = useSearchParams();
     const editMode = searchParams.get("edit") === "true";
@@ -28,7 +26,6 @@ export const StepButton: React.FC = () => {
     const isSyncable = editMode && hevyMode;
 
     const { user, isLoading } = useUserContext();
-    const [openExportDialog, setOpenExportDialog] = useState(false);
 
     const primaryPill =
         "rounded-full px-4 gap-2 text-white bg-lightSecondary hover:bg-lightSecondary/90 shadow-sm";
@@ -75,27 +72,8 @@ export const StepButton: React.FC = () => {
         );
     }
 
-    return (
-        <>
-            <Button
-                variant="default"
-                className={primaryPill}
-                onClick={() => {
-                    posthog?.capture?.("opened_export_dialog", { user: user?.id ?? "user_id_unknown" });
-                    setOpenExportDialog(true);
-                }}
-            >
-                <span className="hidden sm:inline">Export</span>
-                <span className="sm:hidden">Export</span>
-                <ArrowRightToLineIcon />
-            </Button>
-            <ExportDialog
-                open={openExportDialog}
-                onOpenChange={setOpenExportDialog}
-                programId={0}
-            />
-        </>
-    );
+    // New path: Export removed (ADR 0007). Save is the primary persist action (toolbar portal).
+    return null;
 };
 
 /*
@@ -104,6 +82,7 @@ export const StepButton: React.FC = () => {
  * import { ConfirmDialog } from "@/components/ConfirmDialog";
  * import { useHevySuccessConfetti } from "./useHevySuccessConfetti";
  * import { toast } from "sonner";
+ * import posthog from "posthog-js";
  *
  * const [openSyncDialog, setOpenSyncDialog] = useState(false);
  * const [isSyncing, setIsSyncing] = useState(false);

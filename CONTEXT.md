@@ -53,16 +53,16 @@ The multi-week training block owned in Supabase — single source of truth on th
 _Avoid_: Overarching program, program-in-progress (UI-shaped), Program (alone — ambiguous with Hevy), vault program
 
 **Program overview**:
-Profile surface for **Proxima program** progress: consecutive weeks, **Week complete**, **AI week suggest**, **Week Export**, **Edit program**, **Edit current week**. Shows one program at a time; user swaps among active programs via a carousel. Sits above **Hevy folders** on the profile. Backend / **Hevy program sync** must support more than one active program even though the overview focuses one.
-_Avoid_: Hevy folders (different section), vault browse, forcing a single active program in data
+Profile surface for **Proxima program** progress: consecutive weeks, **Week complete**, **AI week suggest**, **Edit program**, **Edit current week**. Export destinations removed from the builder (PDF, Hevy / **Week Export**, spreadsheet) live here as a per-program dropdown — not on the builder toolbar. Shows one program at a time; user swaps among active programs via a carousel. Sits above **Hevy folders** on the profile. Backend / **Hevy program sync** must support more than one active program even though the overview focuses one.
+_Avoid_: Hevy folders (different section), vault browse, forcing a single active program in data, builder Export button
 
 **Hevy folders**:
 Profile grid of the user’s Hevy routine folders (formerly “My Hevy Programs”). Entry for Hevy-only **Edit path** / split builder — outside the preferred **Proxima program** loop. Kept below **Program overview** so power users can still Sync a folder without a program; **Make into a program** promotes into the preferred flow.
 _Avoid_: My Hevy Programs, treating folders as Program overview, implying this is the primary path
 
 **New path**:
-Create and progress a **Proxima program**: build → **Save** to Supabase → Program overview → **Week Export** one week at a time → optional **AI week suggest** between weeks. No Export control on the program builder — Week Export lives only on the Program overview (profile). Not the **Edit path**.
-_Avoid_: New mode (builder UI label), New arrival (entry mechanic only), Export-all workflow, builder Export button
+Create and progress a **Proxima program**: build → **Save** to Supabase → Program overview → export via overview dropdown (**Week Export** to Hevy one week at a time; PDF / spreadsheet still available) → optional **AI week suggest** between weeks. No Export control on the program builder — all former builder export methods live only on the Program overview (profile). Not the **Edit path**.
+_Avoid_: New mode (builder UI label), New arrival (entry mechanic only), Export-all-to-Hevy workflow, builder Export button
 
 **Save** (New path):
 Persist the builder’s full **Program prescription** to Supabase as the **Proxima program**. Clears dirty state and the undo stack so the current grid becomes the backed-up baseline. Does not push to Hevy. After Save, toast directs the user to profile to **Week Export** week 1 — no auto-navigation required.
@@ -85,9 +85,8 @@ _Avoid_: Edit mode (UI label only), Edit arrival (entry mechanic), assuming ever
 _Avoid_: Edit mode (too broad), full-program Edit, re-Export same week, autosave to Supabase on Sync
 
 **Current week** (overview):
-The highest week number that exists as a Hevy routine folder for this **Proxima program** (via **Program–Hevy link** / `Week N - …` folders). **Edit current week** and mid-week Sync target that folder. Not defined by **Week complete** or calendar date — complete gates the next **Week Export** / **AI week suggest**, not which week is “current.”
-_Avoid_: Calendar week, “latest incomplete week”, assuming current = max schedule-history week
-
+The highest week number that exists as a Hevy routine folder for this **Proxima program** (via **Program–Hevy link** / `Week N - …` folders). Always the only Exported week that is not yet **Week complete** — **Week Export** of N+1 is blocked until week N is complete. **Edit current week** Sync updates that week’s routines (planned days). Completed sessions are **Workouts** in history — fix those via workout history, not by editing old routines. Stale completed-week folders in Hevy are the user’s to delete; Proxima does not clean them up.
+_Avoid_: Calendar week, Syncing prior Exported weeks, Proxima deleting Hevy folders, editing routines to fix logged workouts
 **Program prescription**:
 What the **Proxima program** says the athlete should do — the trainer plan. Survives week-to-week; Export of week N+1 comes from this, not from last week’s Hevy divergences.
 _Avoid_: Program (alone), plan (vague), template (ambiguous with exercise template)
@@ -97,9 +96,9 @@ Status on the Program overview that week N of a **Proxima program** is finished.
 _Avoid_: Program complete (whole block), Sync complete, exported (Export ≠ trained)
 
 **Week Export**:
-Push one week of a **Proxima program** to Hevy as a new routine folder plus that week’s routines. Creates the **Program–Hevy link** for that week. Once linked, that week is not Exported again — further Hevy updates use **Edit current week** Sync. Lives only on the **Program overview** — not on the builder.
-_Avoid_: Full-program Export (removed), Save (Supabase only), re-Export same week
-
+Push one week of a **Proxima program** to Hevy as a new routine folder plus that week’s routines. Creates the **Program–Hevy link** for that week. Week N+1 Export requires week N **Week complete**. Once linked, that week is not Exported again — further Hevy updates use **Edit current week** Sync until complete. Lives only on the **Program overview** Export dropdown (Hevy option) — not on the builder. Sibling dropdown options (PDF, spreadsheet) are non-Hevy full-prescription exports; they do not create a Program–Hevy link.
+_Avoid_: Full-program Hevy Export (removed), Save (Supabase only), re-Export same week, Export N+1 while N incomplete
+                       
 **Hevy write quota**:
 Renamed/replaced monthly full-program export limits. **Save** and in-Proxima prescription edits are unlimited. Meter charges every successful Hevy write: **Week Export**, **Edit current week** Sync, and Hevy-only **Edit path** Sync (no Proxima program). Week 1 **Week Export** per program is free; later Week Exports and all Syncs count. Tier numbers updated when the limit is renamed.
 _Avoid_: Week Export quota (too narrow), charging for Save, Sync-free loophole via **Hevy folders**, “monthly exports” full-program wording

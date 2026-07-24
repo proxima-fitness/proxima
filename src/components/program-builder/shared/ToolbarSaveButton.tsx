@@ -1,7 +1,7 @@
 /**
  * @module ToolbarSaveButton
- * Save button for the build-program toolbar. Saves program to Proxima and chat history.
- * Depends on: Button. Used by: BuildProgramClient (via portal).
+ * Save button for the build-program toolbar. Persists Program prescription to Supabase.
+ * Depends on: Button. Used by: ToolbarPortalButtons.
  */
 "use client";
 
@@ -14,7 +14,7 @@ interface IToolbarSaveButtonProps {
     isSaving: boolean;
 }
 
-/** Presentational Save button for the toolbar; matches Export button styling. */
+/** Presentational Save button; primary persist CTA (ADR 0007). */
 export const ToolbarSaveButton: React.FC<IToolbarSaveButtonProps> = ({
     onClick,
     disabled,
@@ -23,10 +23,10 @@ export const ToolbarSaveButton: React.FC<IToolbarSaveButtonProps> = ({
     return (
         <Button
             variant="default"
-            className="text-white bg-lightSecondary hover:bg-lightSecondary/80 gap-2"
+            className="rounded-full px-4 gap-2 text-white bg-lightSecondary hover:bg-lightSecondary/90 shadow-sm"
             onClick={onClick}
             disabled={disabled || isSaving}
-            aria-label="Save program and chat"
+            aria-label="Save program"
         >
             {isSaving ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

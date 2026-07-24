@@ -45,7 +45,7 @@ import {
 import { connectChatToSavedProgram, isChatSessionInsertConfirmed } from "@/api/chat-history";
 import { ToolbarPortalButtons } from "@/components/program-builder/shared/ToolbarPortalButtons";
 import { BuildProgramToolbarTitle } from "@/components/program-builder/shared/BuildProgramToolbarTitle";
-import { editorReducer } from "./editor-reducer";
+import { editorReducer, isNewPathDirty } from "./editor-reducer";
 import type { TCommitWithUndoOptions } from "@/components/program-builder/mutations/types";
 import { useProgramRequestState } from "./use-program-request-state";
 import { readAnonymousChatMessages, useBuildProgramChat } from "./use-build-program-chat";
@@ -265,6 +265,10 @@ export function BuildProgram() {
         dispatchEditor({ type: "UNDO" });
     }, []);
 
+    const clearUndoBaseline = useCallback(() => {
+        dispatchEditor({ type: "CLEAR_UNDO_BASELINE" });
+    }, []);
+
     useEffect(() => {
         const savedPosition = localStorage.getItem(SIDEBAR_POSITION_KEY) as "left" | "right" | null;
         if (savedPosition === "left" || savedPosition === "right") {
@@ -379,6 +383,7 @@ export function BuildProgram() {
             sharedProgramLoadAttempted={sharedProgramLoadAttempted}
             undoStackLength={undoStack.length}
             handleUndo={handleUndo}
+            clearUndoBaseline={clearUndoBaseline}
             sidebarPosition={sidebarPosition}
             toggleSidebarPosition={toggleSidebarPosition}
             onToggleExpand={onToggleExpand}
@@ -413,6 +418,7 @@ interface IBuildProgramShellProps {
     sharedProgramLoadAttempted: boolean;
     undoStackLength: number;
     handleUndo: () => void;
+    clearUndoBaseline: () => void;
     sidebarPosition: "left" | "right";
     toggleSidebarPosition: () => void;
     onToggleExpand: () => void;
@@ -445,6 +451,7 @@ function BuildProgramShell({
     sharedProgramLoadAttempted,
     undoStackLength,
     handleUndo,
+    clearUndoBaseline,
     sidebarPosition,
     toggleSidebarPosition,
     onToggleExpand,
@@ -564,13 +571,23 @@ function BuildProgramShell({
             } else {
                 toast.success("Program saved.");
             }
+            clearUndoBaseline();
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Save failed.");
             console.error("Save error:", err);
         } finally {
             setIsSaving(false);
         }
-    }, [user, hevyProgram.length, orderedProgram, programRequest.request, search, queryClient, getPersistChatId]);
+    }, [
+        user,
+        hevyProgram.length,
+        orderedProgram,
+        programRequest.request,
+        search,
+        queryClient,
+        getPersistChatId,
+        clearUndoBaseline,
+    ]);
 
     const localStorageDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const DEBOUNCE_MS = 500;
@@ -677,7 +694,7 @@ function BuildProgramShell({
                 onChange={programRequest.handleProgramTitle}
             />
             <ToolbarPortalButtons
-                canUndo={undoStackLength > 0}
+                canUndo={isNewPathDirty(undoStackLength)}
                 undoDisabled={status === "streaming"}
                 onUndo={onUndo}
                 onSave={handleSave}

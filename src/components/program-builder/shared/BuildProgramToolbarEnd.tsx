@@ -1,6 +1,6 @@
 /**
  * @module BuildProgramToolbarEnd
- * Build-program toolbar right side: Export or Sync button.
+ * Build-program toolbar right side: Sign in (anon) or Sync (edit+hevy). New path has no Export.
  * Depends on: StepButton. Used by: build-program layout, Navbar, MobileSidebarHeader.
  */
 "use client";

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { editorReducer, UNDO_STACK_CAP, type TEditorState } from "../editor-reducer";
+import { editorReducer, isNewPathDirty, UNDO_STACK_CAP, type TEditorState } from "../editor-reducer";
 
 const makeDay = (id: string, title: string): THevyRoutine => ({
     id,
@@ -105,6 +105,35 @@ describe("editorReducer", () => {
 
         expect(replaced.hevyProgram).toEqual(hydrated);
         expect(replaced.undoStack).toHaveLength(0);
+    });
+
+    it("CLEAR_UNDO_BASELINE keeps program and empties undo stack (Save baseline)", () => {
+        const before = [makeDay("1", "Push")];
+        const after = [makeDay("1", "Pull")];
+
+        const committed = editorReducer(
+            initialState(before),
+            { type: "COMMIT_PROGRAM", program: after },
+        );
+        expect(isNewPathDirty(committed.undoStack.length)).toBe(true);
+
+        const cleared = editorReducer(committed, { type: "CLEAR_UNDO_BASELINE" });
+
+        expect(cleared.hevyProgram).toEqual(after);
+        expect(cleared.undoStack).toHaveLength(0);
+        expect(isNewPathDirty(cleared.undoStack.length)).toBe(false);
+    });
+
+    it("CLEAR_UNDO_BASELINE is a no-op when already clean", () => {
+        const program = [makeDay("1", "Push")];
+        const state = initialState(program);
+        expect(editorReducer(state, { type: "CLEAR_UNDO_BASELINE" })).toBe(state);
+    });
+
+    it("isNewPathDirty is true only when undo stack is non-empty", () => {
+        expect(isNewPathDirty(0)).toBe(false);
+        expect(isNewPathDirty(1)).toBe(true);
+        expect(isNewPathDirty(3)).toBe(true);
     });
 
     it(`drops oldest snapshot when stack exceeds cap ${UNDO_STACK_CAP}`, () => {

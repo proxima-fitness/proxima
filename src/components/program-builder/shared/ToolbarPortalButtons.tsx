@@ -4,7 +4,7 @@ import { memo, useState, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import { Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-// import { ToolbarSaveButton } from "@/components/program-builder/shared/ToolbarSaveButton";
+import { ToolbarSaveButton } from "@/components/program-builder/shared/ToolbarSaveButton";
 
 interface IToolbarPortalButtonsProps {
     canUndo: boolean;
@@ -17,23 +17,29 @@ interface IToolbarPortalButtonsProps {
 
 /**
  * Renders Undo and Save buttons into toolbar portal targets (#toolbar-undo-portal,
- * #toolbar-save-portal). Single state + one effect for one re-render after mount.
+ * #toolbar-save-portal, optional #toolbar-save-portal-mobile). Single state + one
+ * effect for one re-render after mount.
  */
 function ToolbarPortalButtonsInner({
     canUndo,
     undoDisabled = false,
     onUndo,
-    // onSave,
-    // saveDisabled,
-    // isSaving,
+    onSave,
+    saveDisabled,
+    isSaving,
 }: IToolbarPortalButtonsProps) {
-    const [targets, setTargets] = useState<{ undo: HTMLElement; save: HTMLElement } | null>(null);
+    const [targets, setTargets] = useState<{
+        undo: HTMLElement;
+        save: HTMLElement[];
+    } | null>(null);
 
     useLayoutEffect(() => {
         const undoEl = document.getElementById("toolbar-undo-portal");
-        const saveEl = document.getElementById("toolbar-save-portal");
-        if (undoEl && saveEl) {
-            queueMicrotask(() => setTargets({ undo: undoEl, save: saveEl }));
+        const saveDesktop = document.getElementById("toolbar-save-portal");
+        const saveMobile = document.getElementById("toolbar-save-portal-mobile");
+        const save = [saveDesktop, saveMobile].filter((el): el is HTMLElement => el != null);
+        if (undoEl && save.length > 0) {
+            queueMicrotask(() => setTargets({ undo: undoEl, save }));
         }
     }, []);
 
@@ -54,20 +60,17 @@ function ToolbarPortalButtonsInner({
         targets.undo
     );
 
-    // const savePortal = createPortal(
-    //     <ToolbarSaveButton
-    //         onClick={onSave}
-    //         disabled={saveDisabled}
-    //         isSaving={isSaving}
-    //     />,
-    //     targets.save
-    // );
+    const savePortals = targets.save.map((el) =>
+        createPortal(
+            <ToolbarSaveButton onClick={onSave} disabled={saveDisabled} isSaving={isSaving} />,
+            el,
+        ),
+    );
 
     return (
         <>
             {undoPortal}
-            { /* temporarily disabled save button */ }
-            {/* {savePortal} */}
+            {savePortals}
         </>
     );
 }

@@ -15,7 +15,14 @@ export type TEditorAction =
           recordUndo?: boolean;
       }
     | { type: "UNDO" }
-    | { type: "REPLACE_PROGRAM"; program: THevyRoutine[] };
+    | { type: "REPLACE_PROGRAM"; program: THevyRoutine[] }
+    /** After successful New-path Save: current grid is baseline; dirty clears. */
+    | { type: "CLEAR_UNDO_BASELINE" };
+
+/** New-path dirty = undo stack non-empty vs last Save (or never Saved). */
+export function isNewPathDirty(undoStackLength: number): boolean {
+    return undoStackLength > 0;
+}
 
 function pushUndoSnapshot(stack: THevyRoutine[][], snapshot: THevyRoutine[]): THevyRoutine[][] {
     const nextStack = [...stack, structuredClone(snapshot)];
@@ -69,6 +76,11 @@ export function editorReducer(state: TEditorState, action: TEditorAction): TEdit
         }
         case "REPLACE_PROGRAM":
             return { hevyProgram: action.program, undoStack: [] };
+        case "CLEAR_UNDO_BASELINE":
+            if (state.undoStack.length === 0) {
+                return state;
+            }
+            return { ...state, undoStack: [] };
         default:
             return state;
     }

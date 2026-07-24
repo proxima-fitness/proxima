@@ -1,7 +1,8 @@
 /**
  * @module ExportDialog
  * Modal to choose export destination (PDF, Hevy, spreadsheet) and render PDF preview or Hevy setup / CSV download.
- * Depends on: ExportProgramCTAButtons, HevyPdfRenderer, ExportToHevySetup, usePoundsOrKgContext, dialog. Used by: StepButton.
+ * Depends on: ExportProgramCTAButtons, HevyPdfRenderer, ExportToHevySetup, usePoundsOrKgContext, dialog.
+ * Kept for Week Export (ADR 0009); builder New-path toolbar no longer opens this (ADR 0007).
  */
 "use client";
 

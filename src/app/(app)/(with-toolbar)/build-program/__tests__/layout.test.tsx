@@ -28,5 +28,13 @@ describe("build-program layout.tsx", () => {
         expect(className).toContain("flex-col");
         expect(className).toContain("flex");
     });
+
+    it("keeps visible Save portal target for ToolbarPortalButtons (ADR 0007)", () => {
+        render(<ProgramBuilderLayout>{null}</ProgramBuilderLayout>);
+
+        const savePortal = document.getElementById("toolbar-save-portal");
+        expect(savePortal).toBeTruthy();
+        expect(savePortal?.classList.contains("hidden")).toBe(false);
+    });
 });
 
