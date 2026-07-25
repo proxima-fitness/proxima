@@ -88,11 +88,11 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                             <img src={(proxima_logo_white).src} alt="Proxima" className="h-14 w-auto dark:hidden block" />
                         </div>
                         <div className="font-tertiary text-6xl max-sm:text-4xl max-sm:px-6 font-bold text-foreground">
-                            Your Unified Training Coach
+                            Programs Built Around Your Life
                         </div>
                         <div className="text-center text-xl font-normal leading-tight px-12 max-sm:text-base max-sm:px-2 text-muted-foreground">
-                            <span className="block">Work, injuries, and no time to program your training?</span>
-                            <span className="block">Proxima builds your program and updates it based on your workouts</span>
+                            <span className="block">Proxima builds your program, makes updates based on your workouts,</span>
+                            <span className="block">and syncs changes to your fitness app</span>
                         </div>
                     </div>
                     <div className="w-full max-w-3xl max-sm:px-2 flex flex-col items-center gap-3">

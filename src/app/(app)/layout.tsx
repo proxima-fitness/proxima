@@ -42,7 +42,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-    title: 'Proxima Fitness | Unified Training Coach',
+    title: 'Proxima Fitness | Programs Built Around Your Life',
     description: 'Describe your goals, get a tailored program, track in your fitness app, and your program adapts with you.',
     manifest: "/manifest.webmanifest",
     icons: {
