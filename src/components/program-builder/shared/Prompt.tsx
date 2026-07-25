@@ -71,7 +71,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                     />
                 </div>
 
-                {/* CTA centers in space above product (in-flow) so laptop heights never overlap. */}
+                {/* CTA centers in space above product slot — same flex budget as before. */}
                 <div className="relative z-10 flex w-full flex-1 flex-col items-center justify-center px-0 py-6">
                     <div className="flex w-full flex-col items-center gap-6 sm:gap-8">
                         <motion.div
@@ -104,9 +104,13 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                     </div>
                 </div>
 
-                {/* Product peek — desktop only, in document flow under CTA. */}
+                {/*
+                  Product peek — desktop only.
+                  Slot height is the flex budget (keeps CTA put). On tall screens the
+                  preview paints taller upward into the gap below the CTA.
+                */}
                 <motion.div
-                    className="relative z-[5] mx-auto mt-2 hidden w-full max-w-5xl shrink-0 px-3 sm:block sm:px-6"
+                    className="hero__product-slot relative z-[5] mx-auto mt-2 hidden w-full max-w-5xl shrink-0 px-3 sm:block sm:px-6 xl:max-w-6xl 2xl:max-w-7xl"
                     initial={reduceMotion ? false : { opacity: 0, y: 32 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.9, delay: 0.32, ease: [0.22, 1, 0.36, 1] }}

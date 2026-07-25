@@ -367,7 +367,7 @@
       0 24px 64px -16px rgba(0, 0, 0, 0.55);
   }
 
-  /* Laptop: shorter peek so CTA keeps room. Tall screens: larger. */
+  /* Laptop: short in-flow peek so CTA keeps room. */
   @media (min-width: 640px) {
     .hero__product-preview {
       max-height: min(22vh, 220px);
@@ -381,9 +381,27 @@
     }
   }
 
+  /*
+   * Tall screens: flex slot stays at the 900px budget (CTA position unchanged).
+   * Peek grows up from slot bottom — only by the safe gap under the CTA (~10–14vh).
+   */
   @media (min-width: 640px) and (min-height: 1100px) {
-    .hero__product-preview {
-      max-height: min(36vh, 340px);
+    .hero__product-slot {
+      height: min(32vh, 300px);
+    }
+
+    .hero__product-slot .hero__product-preview {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-height: calc(min(32vh, 300px) + min(10vh, 120px));
+    }
+  }
+
+  @media (min-width: 1536px) and (min-height: 1200px) {
+    .hero__product-slot .hero__product-preview {
+      max-height: calc(min(32vh, 300px) + min(14vh, 160px));
     }
   }
 
