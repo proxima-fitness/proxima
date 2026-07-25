@@ -291,7 +291,7 @@ LEFT JOIN LATERAL (
 LEFT JOIN LATERAL (
   SELECT prod.name AS product_title
   FROM stripe.subscription_items si
-  JOIN stripe.prices pr ON pr.id = si.price
+  JOIN stripe.prices pr ON pr.id = (si.price #>> '{}')
   JOIN stripe.products prod ON prod.id = pr.product
   WHERE s.id IS NOT NULL AND si.subscription = s.id
   LIMIT 1
@@ -1899,7 +1899,7 @@ CREATE TABLE IF NOT EXISTS "stripe"."checkout_session_line_items" (
     "object" "text" GENERATED ALWAYS AS (("_raw_data" ->> 'object'::"text")) STORED,
     "currency" "text" GENERATED ALWAYS AS (("_raw_data" ->> 'currency'::"text")) STORED,
     "description" "text" GENERATED ALWAYS AS (("_raw_data" ->> 'description'::"text")) STORED,
-    "price" "text" GENERATED ALWAYS AS (("_raw_data" ->> 'price'::"text")) STORED,
+    "price" "jsonb" GENERATED ALWAYS AS (("_raw_data" -> 'price'::"text")) STORED,
     "quantity" integer GENERATED ALWAYS AS ((("_raw_data" ->> 'quantity'::"text"))::integer) STORED,
     "checkout_session" "text" GENERATED ALWAYS AS (("_raw_data" ->> 'checkout_session'::"text")) STORED,
     "id" "text" GENERATED ALWAYS AS (("_raw_data" ->> 'id'::"text")) STORED NOT NULL,
@@ -2556,7 +2556,7 @@ CREATE TABLE IF NOT EXISTS "stripe"."subscription_items" (
     "deleted" boolean GENERATED ALWAYS AS ((("_raw_data" ->> 'deleted'::"text"))::boolean) STORED,
     "metadata" "jsonb" GENERATED ALWAYS AS (("_raw_data" -> 'metadata'::"text")) STORED,
     "quantity" integer GENERATED ALWAYS AS ((("_raw_data" ->> 'quantity'::"text"))::integer) STORED,
-    "price" "text" GENERATED ALWAYS AS (("_raw_data" ->> 'price'::"text")) STORED,
+    "price" "jsonb" GENERATED ALWAYS AS (("_raw_data" -> 'price'::"text")) STORED,
     "subscription" "text" GENERATED ALWAYS AS (("_raw_data" ->> 'subscription'::"text")) STORED,
     "tax_rates" "jsonb" GENERATED ALWAYS AS (("_raw_data" -> 'tax_rates'::"text")) STORED,
     "current_period_end" integer GENERATED ALWAYS AS ((("_raw_data" ->> 'current_period_end'::"text"))::integer) STORED,

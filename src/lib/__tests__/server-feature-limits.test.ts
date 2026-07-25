@@ -23,6 +23,8 @@ const baseLimits: TFeatureLimits = {
     max_monthly_llm_requests: 20,
     monthly_llm_requests_used: 5,
     remaining_llm_requests: 15,
+    period_start: "2026-07-01",
+    resets_on: "2026-08-01",
 };
 
 vi.mock("next/headers", () => ({
@@ -55,6 +57,8 @@ describe("feature-limits test tier helpers", () => {
         expect(result.has_active_subscription).toBe(true);
         expect(result.max_monthly_llm_requests).toBe(100);
         expect(result.remaining_llm_requests).toBe(95);
+        expect(result.period_start).toBe(baseLimits.period_start);
+        expect(result.resets_on).toBe(baseLimits.resets_on);
     });
 
     it("applies Pro+ override as paid", () => {

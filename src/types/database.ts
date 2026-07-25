@@ -45,11 +45,16 @@ export type TProgram = {
 type TFeatureLimitsRpc = Database["public"]["Functions"]["get_my_feature_limits"]["Returns"][number];
 
 /**
- * `has_active_subscription` is widened to `boolean | null` because anonymous
- * users (localStorage-only) set it to `null`.
+ * Widened for anonymous users (localStorage-only): they have no subscription
+ * and no Usage period — the counter is lifetime, so no reset date may be implied.
  */
-export type TFeatureLimits = Omit<TFeatureLimitsRpc, "has_active_subscription"> & {
+export type TFeatureLimits = Omit<
+    TFeatureLimitsRpc,
+    "has_active_subscription" | "period_start" | "resets_on"
+> & {
     has_active_subscription: boolean | null;
+    period_start: string | null;
+    resets_on: string | null;
 };
 
 // ─── Users ──────────────────────────────────────────────────────────────────────
