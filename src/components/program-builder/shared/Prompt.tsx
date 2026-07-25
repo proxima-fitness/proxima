@@ -104,9 +104,9 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                     </div>
                 </div>
 
-                {/* Product peek pinned to hero bottom — does not shift the centered CTA. */}
+                {/* Product peek pinned to hero bottom — desktop only; does not shift the centered CTA. */}
                 <motion.div
-                    className="absolute bottom-[max(5.5rem,calc(env(safe-area-inset-bottom)+4.5rem))] left-0 right-0 z-[5] mx-auto w-full max-w-5xl px-3 sm:px-6"
+                    className="absolute bottom-[max(5.5rem,calc(env(safe-area-inset-bottom)+4.5rem))] left-0 right-0 z-[5] mx-auto hidden w-full max-w-5xl px-3 sm:block sm:px-6"
                     initial={reduceMotion ? false : { opacity: 0, y: 32 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.9, delay: 0.32, ease: [0.22, 1, 0.36, 1] }}
