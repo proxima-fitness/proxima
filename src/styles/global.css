@@ -339,7 +339,7 @@
     );
   }
 
-  /* Product peek under centered CTA — readable slice, dissolve into page. */
+  /* Product peek under CTA — readable slice, dissolve into page. */
   .hero__product-preview {
     max-height: min(34vh, 300px);
     overflow: hidden;
@@ -367,10 +367,23 @@
       0 24px 64px -16px rgba(0, 0, 0, 0.55);
   }
 
+  /* Laptop: shorter peek so CTA keeps room. Tall screens: larger. */
   @media (min-width: 640px) {
     .hero__product-preview {
-      max-height: min(36vh, 340px);
+      max-height: min(22vh, 220px);
       border-radius: 1.25rem 1.25rem 0 0;
+    }
+  }
+
+  @media (min-width: 640px) and (min-height: 900px) {
+    .hero__product-preview {
+      max-height: min(32vh, 300px);
+    }
+  }
+
+  @media (min-width: 640px) and (min-height: 1100px) {
+    .hero__product-preview {
+      max-height: min(36vh, 340px);
     }
   }
 

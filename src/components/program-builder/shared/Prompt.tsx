@@ -71,9 +71,9 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                     />
                 </div>
 
-                {/* Headline + prompt: true vertical center of hero (product excluded from center calc). */}
-                <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center px-0">
-                    <div className="pointer-events-auto flex w-full -translate-y-[4vh] flex-col items-center gap-6 sm:-translate-y-[5vh] sm:gap-8">
+                {/* CTA centers in space above product (in-flow) so laptop heights never overlap. */}
+                <div className="relative z-10 flex w-full flex-1 flex-col items-center justify-center px-0 py-6">
+                    <div className="flex w-full flex-col items-center gap-6 sm:gap-8">
                         <motion.div
                             className="flex flex-col items-center gap-3 text-center"
                             initial={reduceMotion ? false : { opacity: 0, y: 28 }}
@@ -104,9 +104,9 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                     </div>
                 </div>
 
-                {/* Product peek pinned to hero bottom — desktop only; does not shift the centered CTA. */}
+                {/* Product peek — desktop only, in document flow under CTA. */}
                 <motion.div
-                    className="absolute bottom-[max(5.5rem,calc(env(safe-area-inset-bottom)+4.5rem))] left-0 right-0 z-[5] mx-auto hidden w-full max-w-5xl px-3 sm:block sm:px-6"
+                    className="relative z-[5] mx-auto mt-2 hidden w-full max-w-5xl shrink-0 px-3 sm:block sm:px-6"
                     initial={reduceMotion ? false : { opacity: 0, y: 32 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.9, delay: 0.32, ease: [0.22, 1, 0.36, 1] }}
@@ -133,7 +133,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
 
                 <motion.a
                     href="#how-it-works"
-                    className="absolute bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                    className="relative z-20 mt-3 mb-1 flex shrink-0 flex-col items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                     initial={reduceMotion ? false : { opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.6, delay: 0.45, ease: "easeOut" }}
