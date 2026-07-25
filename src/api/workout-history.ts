@@ -146,6 +146,69 @@ async function findExistingWorkoutId(db: TWorkoutHistoryDb, userId: string, exte
 }
 
 /**
+ * Reports whether a backed-up workout already holds at least one exercise.
+ *
+ * A `workouts` row is not proof the import finished: a failure between the workout insert and its
+ * exercises leaves a shell that `findExistingWorkoutId` keeps matching, so the page never completes.
+ *
+ * @param db - Supabase client
+ * @param workoutId - Backup workout row ID
+ * @returns True when the workout has exercises
+ */
+async function hasWorkoutExercises(db: TWorkoutHistoryDb, workoutId: string): Promise<boolean> {
+    const { count, error } = await db
+        .from("workout_exercises")
+        .select("id", { count: "exact", head: true })
+        .eq("workout_id", workoutId);
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    return (count ?? 0) > 0;
+}
+
+/**
+ * Deletes a backup workout along with its exercises and sets, which cascade.
+ *
+ * @param db - Supabase client
+ * @param workoutId - Backup workout row ID
+ * @returns Delete error message, or `null` on success
+ */
+async function deleteWorkout(db: TWorkoutHistoryDb, workoutId: string): Promise<string | null> {
+    const { error } = await db.from("workouts").delete().eq("id", workoutId);
+
+    return error?.message ?? null;
+}
+
+/**
+ * Compensating delete for a workout whose import failed after the `workouts` row landed.
+ *
+ * The Supabase client has no transaction, so this is the rollback and it can itself fail. It never
+ * throws: a leaked shell row is recoverable on the next chunk through the zero-exercise re-import
+ * path, and masking the original failure would be worse.
+ *
+ * @param db - Supabase client
+ * @param workoutId - Workout row to remove
+ */
+async function rollbackPartialImport(db: TWorkoutHistoryDb, workoutId: string): Promise<void> {
+    let message: string | null;
+
+    try {
+        message = await deleteWorkout(db, workoutId);
+    } catch (error: unknown) {
+        message = error instanceof Error ? error.message : String(error);
+    }
+
+    if (message) {
+        console.error("[workout-history] could not roll back partial workout import", {
+            workoutId,
+            message,
+        });
+    }
+}
+
+/**
  * Looks up a seeded canonical exercise mapping for a Hevy template ID.
  *
  * @param db - Supabase client
@@ -515,7 +578,10 @@ export async function resolveCanonicalExerciseId(db: TWorkoutHistoryDb, params: 
 
 /**
  * Imports one Hevy workout into canonical backup tables.
- * Idempotent on `(user_id, source, external_id)` — re-imports return `skipped` without updating rows.
+ *
+ * Idempotent on `(user_id, source, external_id)`, but only a workout that actually holds exercises
+ * counts as imported — a shell left by an earlier failure is deleted and re-imported. Any failure
+ * after the `workouts` insert rolls that row back, so a retry is never blocked by its own wreckage.
  *
  * @param db - Supabase client (user or service role)
  * @param params - Import context
@@ -527,11 +593,19 @@ export async function resolveCanonicalExerciseId(db: TWorkoutHistoryDb, params: 
  */
 export async function importHevyWorkout(db: TWorkoutHistoryDb, params: { userId: string; workout: THevyWorkout; apiKey: string }): Promise<TImportHevyWorkoutResult> {
     const { userId, workout, apiKey } = params;
+    let insertedWorkoutId: string | null = null;
 
     try {
         const existingWorkoutId = await findExistingWorkoutId(db, userId, workout.id);
         if (existingWorkoutId) {
-            return { status: "skipped", workoutId: existingWorkoutId };
+            if (await hasWorkoutExercises(db, existingWorkoutId)) {
+                return { status: "skipped", workoutId: existingWorkoutId };
+            }
+
+            const deleteMessage = await deleteWorkout(db, existingWorkoutId);
+            if (deleteMessage) {
+                return { status: "error", message: deleteMessage };
+            }
         }
 
         const workoutId = uuidv4();
@@ -541,6 +615,8 @@ export async function importHevyWorkout(db: TWorkoutHistoryDb, params: { userId:
         if (workoutError) {
             return { status: "error", message: workoutError.message };
         }
+
+        insertedWorkoutId = workoutId;
 
         for (const exercise of workout.exercises ?? []) {
             const canonicalExerciseId = await resolveCanonicalExerciseId(db, {
@@ -560,6 +636,7 @@ export async function importHevyWorkout(db: TWorkoutHistoryDb, params: { userId:
 
             const { error: exerciseError } = await db.from("workout_exercises").insert(exerciseRow);
             if (exerciseError) {
+                await rollbackPartialImport(db, workoutId);
                 return { status: "error", message: exerciseError.message };
             }
 
@@ -569,6 +646,7 @@ export async function importHevyWorkout(db: TWorkoutHistoryDb, params: { userId:
 
                 const { error: setError } = await db.from("workout_sets").insert(setRow);
                 if (setError) {
+                    await rollbackPartialImport(db, workoutId);
                     return { status: "error", message: setError.message };
                 }
             }
@@ -576,6 +654,10 @@ export async function importHevyWorkout(db: TWorkoutHistoryDb, params: { userId:
 
         return { status: "inserted", workoutId };
     } catch (error) {
+        if (insertedWorkoutId) {
+            await rollbackPartialImport(db, insertedWorkoutId);
+        }
+
         if (isHevyRateLimitError(error)) {
             throw error;
         }
