@@ -17,11 +17,13 @@ import {
     applyBuildProgramMintUrlUpdate,
     stripSearchFromBuildProgramUrl,
 } from "@/lib/build-program-url";
-import { recordLlmRequest } from "@/api/feature-limits";
+import { recordAnonymousLlmRequest } from "@/api/feature-limits";
 import {
     CHAT_MESSAGES_KEY,
     LONG_PROMPT_PLACEHOLDER,
 } from "@/assets/constants/ui-constants";
+import { withRenewsOn } from "@/lib/format-usage-reset-date";
+import { parseUsageCapFromChatError } from "@/lib/usage-cap";
 import {
     getMessageText,
     getTextFromChatMessage,
@@ -240,13 +242,6 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         setHealthIssues,
     } = programRequest;
 
-    const { mutate: incrementLlmRequests } = useMutation({
-        mutationFn: () => recordLlmRequest(user),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["feature-limits"] });
-        },
-    });
-
     const signInMigrationMutation = useMutation({
         mutationFn: (thread: TChatMessage[]) =>
             migrateAnonymousThreadToChat({
@@ -289,6 +284,14 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         transport: chatTransport,
         messages: initialMessages,
         onFinish: ({ messages: finishedMessages, isAbort, isError }) => {
+            // Server consume runs at request start — refresh chrome counter after any
+            // authenticated turn that reached the stream (success, error, or abort).
+            if (user) {
+                void queryClient.invalidateQueries({
+                    queryKey: ["feature-limits", user.id],
+                });
+            }
+
             if (user && !isAbort && !isError) {
                 if (
                     turnUpdatedProfileTool(
@@ -335,6 +338,17 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             });
         },
         onError: (err) => {
+            const usageCap = parseUsageCapFromChatError(err);
+            if (usageCap) {
+                toast.error(
+                    withRenewsOn("You have run out of credits.", usageCap.resets_on),
+                );
+                void queryClient.invalidateQueries({
+                    queryKey: ["feature-limits", user?.id],
+                });
+                setIsBuilding(false);
+                return;
+            }
             console.error("Chat error:", err);
             setGenerationError(err);
             setIsBuilding(false);
@@ -348,16 +362,23 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         setMessages([]);
     }, [resetChatSessionRefs, setMessages]);
 
-    const activeError = generationError || error || null;
+    // Paywall is toast + UpgradeBanner — do not surface AgentGenerationError retry UI.
+    const activeError =
+        parseUsageCapFromChatError(error) || parseUsageCapFromChatError(generationError)
+            ? null
+            : generationError || error || null;
     const isLoading = status === "submitted" || status === "streaming";
 
     const sendMessageWithContext = useCallback<TSendMessageWithContext>(
         async (message, sendOptions) => {
             if (message == null) return;
 
-            incrementLlmRequests(undefined, {
-                onError: (err) => console.error("Failed to record LLM usage", err),
-            });
+            // Authenticated LLM meter lives in POST /api/chat (try_consume). Anonymous
+            // still decrements localStorage here — no auth.uid() / period row.
+            if (!user) {
+                recordAnonymousLlmRequest();
+                void queryClient.invalidateQueries({ queryKey: ["feature-limits"] });
+            }
 
             const hadChatIdAtSend = Boolean(chatId);
             let sessionChatId = chatId;
@@ -436,7 +457,6 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             programRequest.peakWeek,
             programRequest.warmupExercises,
             isInLbs,
-            incrementLlmRequests,
         ],
     );
 

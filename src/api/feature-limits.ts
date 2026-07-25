@@ -6,13 +6,15 @@
  *
  * 1. **Anonymous** — tracked entirely in localStorage (no account needed).
  * 2. **Free / Pro / Pro+** — limits from `get_my_feature_limits` (backed by
- *    `product_usage_limits`), with usage incremented via `increment_feature_usage`.
+ *    `product_usage_limits`). Authenticated LLM consume is server-side
+ *    (`try_consume_feature_usage` in `/api/chat`); exports use
+ *    `tryConsumeMonthlyExport` before Hevy upload.
  * 3. **Test users** — allowlisted emails that can override tier (Free, Pro, Pro+)
  *    via localStorage (mirrored to a cookie for server-side paywall checks).
  *
  * Depends on: ./index (supabase client), @supabase/supabase-js (User type)
- * Used by: hooks.ts (useMyFeatureLimits), program-builder (recordLlmRequest),
- *          export flows (incrementMonthlyExportsUsed)
+ * Used by: hooks.ts (useMyFeatureLimits), anonymous chat meter,
+ *          ExportToHevySetup (tryConsumeMonthlyExport)
  */
 import { supabase } from ".";
 import { User } from "@supabase/supabase-js";
@@ -176,61 +178,53 @@ export const getMyFeatureLimits = async (user: User | undefined | null): Promise
     }
 };
 
-/** Records an LLM request: RPC for logged-in user, or decrement localStorage for anonymous. */
-export const recordLlmRequest = async (user: User | undefined | null): Promise<{ error: Error | null }> => {
-    if (user) {
-        return incrementMonthlyLlmRequests(user);
-    }
-    if (typeof window !== "undefined") {
-        const current = parseInt(localStorage.getItem(ANONYMOUS_LLM_STORAGE_KEY) ?? String(ANONYMOUS_LLM_MAX), 10);
-        const next = Math.max(0, Number.isNaN(current) ? ANONYMOUS_LLM_MAX - 1 : current - 1);
-        localStorage.setItem(ANONYMOUS_LLM_STORAGE_KEY, String(next));
-    }
-    return { error: null };
-};
+/**
+ * Decrement the anonymous localStorage LLM counter.
+ * Authenticated LLM metering is owned by POST /api/chat (`try_consume_feature_usage`).
+ */
+export function recordAnonymousLlmRequest(): void {
+    if (typeof window === "undefined") return;
+    const current = parseInt(
+        localStorage.getItem(ANONYMOUS_LLM_STORAGE_KEY) ?? String(ANONYMOUS_LLM_MAX),
+        10,
+    );
+    const next = Math.max(0, Number.isNaN(current) ? ANONYMOUS_LLM_MAX - 1 : current - 1);
+    localStorage.setItem(ANONYMOUS_LLM_STORAGE_KEY, String(next));
+}
 
+export type TTryConsumeMonthlyExportResult =
+    | { allowed: true }
+    | { allowed: false; error?: Error };
 
-/** Increments the current user's monthly_exports_used in feature_usage. Call after a successful export. */
-export const incrementMonthlyExportsUsed = async (
-    user: User | undefined | null
-): Promise<{ error: Error | null }> => {
+/**
+ * Atomically spend one export against the current Usage period.
+ * Call before starting a Hevy upload (not after success). UI remaining===0 is UX only —
+ * this RPC is the intended client-path gate. Browser→Hevy can still bypass; see ADR 0019.
+ */
+export async function tryConsumeMonthlyExport(
+    user: User | undefined | null,
+): Promise<TTryConsumeMonthlyExportResult> {
     if (!user) {
-        return { error: null };
+        return { allowed: false, error: new Error("not authenticated") };
     }
     try {
-        const { error } = await supabase.rpc("increment_feature_usage", {
+        const { data, error } = await supabase.rpc("try_consume_feature_usage", {
             p_feature: "monthly_exports_used",
         });
         if (error) {
-            console.error("Error incrementing monthly exports used", error);
-            return { error: new Error(error.message) };
+            console.error("Error consuming monthly export", error);
+            return { allowed: false, error: new Error(error.message) };
         }
-        return { error: null };
-    } catch (err) {
-        console.error("Error incrementing monthly exports used", err);
-        return { error: err instanceof Error ? err : new Error(String(err)) };
-    }
-};
-
-/** Increments the current user's monthly_llm_requests in feature_usage. Call after a successful LLM build. */
-export const incrementMonthlyLlmRequests = async (
-    user: User | undefined | null
-): Promise<{ error: Error | null }> => {
-    if (!user) {
-        return { error: null };
-    }
-    try {
-        const { error } = await supabase.rpc("increment_feature_usage", {
-            p_feature: "monthly_llm_requests",
-        });
-        if (error) {
-            console.error("Error incrementing monthly LLM requests", error);
-            return { error: new Error(error.message) };
+        if (!data?.[0]?.allowed) {
+            return { allowed: false };
         }
-        return { error: null };
+        return { allowed: true };
     } catch (err) {
-        console.error("Error incrementing monthly LLM requests", err);
-        return { error: err instanceof Error ? err : new Error(String(err)) };
+        console.error("Error consuming monthly export", err);
+        return {
+            allowed: false,
+            error: err instanceof Error ? err : new Error(String(err)),
+        };
     }
-};
+}
 

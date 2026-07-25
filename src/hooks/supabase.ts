@@ -1726,6 +1726,12 @@ export type Database = {
         }
       }
       trigger_all_users_hevy_program_sync: { Args: never; Returns: undefined }
+      try_consume_feature_usage: {
+        Args: { p_feature: string }
+        Returns: {
+          allowed: boolean
+        }[]
+      }
     }
     Enums: {
       source_type: "hevy"

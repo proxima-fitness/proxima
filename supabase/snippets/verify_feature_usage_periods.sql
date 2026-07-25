@@ -102,7 +102,7 @@ BEGIN
   -- 4. Unknown meters are rejected rather than silently counted as zero.
   v_raised := false;
   BEGIN
-    PERFORM public.increment_feature_usage('bolao_last_used_date');
+    PERFORM public.increment_feature_usage('not_a_real_meter');
   EXCEPTION WHEN others THEN
     v_raised := true;
     IF SQLERRM NOT LIKE 'unknown meter%' THEN
