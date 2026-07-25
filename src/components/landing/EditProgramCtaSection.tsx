@@ -18,7 +18,8 @@ export const EditProgramCtaSection: React.FC = () => {
         <div className="flex flex-col items-center gap-6 px-6 py-8 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
             <div className="flex max-w-xl flex-col gap-2">
                 <h2 className="font-tertiary text-2xl font-semibold text-foreground sm:text-3xl">
-                    Already have a program?
+                    Already have a{" "}
+                    <span className="text-lightSecondary">program</span>?
                 </h2>
                 <p className="font-tertiary text-sm leading-relaxed text-muted-foreground sm:text-base">
                     Connect Hevy and get coaching on the program you already built - refine weak points, swap exercises, and keep progressing.
@@ -27,7 +28,7 @@ export const EditProgramCtaSection: React.FC = () => {
             <Link
                 href="/profile"
                 onClick={handleClick}
-                className="inline-flex shrink-0 items-center gap-2 rounded-full bg-lightSecondary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-lightSecondary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="inline-flex shrink-0 items-center gap-2 rounded-full bg-lightSecondary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-lightSecondary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lightSecondary/40 focus-visible:ring-offset-2"
             >
                 Get started
                 <ArrowRight className="h-4 w-4" aria-hidden />

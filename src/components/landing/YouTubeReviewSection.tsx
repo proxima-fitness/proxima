@@ -25,7 +25,7 @@ export const YouTubeReviewSection: React.FC = () => {
         <div className="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-12 md:gap-16">
             <h2 className="sr-only">Alex Chen reviews Proxima</h2>
 
-            <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black md:col-span-7">
+            <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black shadow-[0_0_0_1px_rgba(51,187,207,0.35),0_0_48px_rgba(51,187,207,0.12)] md:col-span-7">
                 {playing ? (
                     <iframe
                         src={`https://www.youtube-nocookie.com/embed/${YOUTUBE_ID}?autoplay=1`}

@@ -16,6 +16,7 @@ import { PromptTemplate } from "./PromptTemplate";
 import { ResumeDraftBanner } from "../ResumeDraftBanner";
 import posthog from "posthog-js";
 import { ChevronDown } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 
 /** Props for the landing prompt section. */
 interface IProps {
@@ -26,6 +27,7 @@ interface IProps {
 /** Landing hero with prompt input; sets UserContext from userData. */
 export const Prompt: React.FC<IProps> = ({ userData }) => {
     const { setUser } = useUserContext();
+    const reduceMotion = useReducedMotion();
 
     // DO NOT TOUCH THIS -- SETS REACT CONTEXT FOR USERS THAT SIGNED IN WITH AN SSR METHOD
     useEffect(() => {
@@ -52,7 +54,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                     </div>
                     <div className="absolute inset-0 bg-linear-to-b from-white/50 via-transparent to-[#e8eef3] dark:from-background/40 dark:via-transparent dark:to-extraDarkGray/50" />
                 </div>
-                <div className="relative z-10 hidden w-full justify-center px-4 sm:flex">
+                <div className="relative z-10 hidden w-full justify-center sm:flex">
                     <img
                         src={proxima_logo.src}
                         alt="Proxima"
@@ -65,7 +67,12 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                     />
                 </div>
                 <div className="relative z-10 flex w-full flex-1 flex-col items-center justify-center gap-12">
-                    <div className="flex flex-col items-center gap-3 text-center">
+                    <motion.div
+                        className="flex flex-col items-center gap-3 text-center"
+                        initial={reduceMotion ? false : { opacity: 0, y: 28 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.85, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+                    >
                         <div className="max-sm:px-6 font-tertiary text-6xl font-bold text-foreground max-sm:text-4xl">
                             Programs Built Around{" "}
                             <span className="text-lightSecondary">Your Life</span>
@@ -74,22 +81,41 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                             <span className="block">Proxima builds your program, makes updates based on your workouts,</span>
                             <span className="block">and syncs changes to your fitness app</span>
                         </div>
-                    </div>
-                    <div className="flex w-full max-w-3xl max-sm:px-2 flex-col items-center gap-3">
+                    </motion.div>
+                    <motion.div
+                        className="flex w-full max-w-3xl max-sm:px-2 flex-col items-center gap-3"
+                        initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.85, delay: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                    >
                         <ResumeDraftBanner />
                         <PromptTemplate />
                         <p className="text-center font-tertiary text-[0.618rem] text-muted-foreground max-sm:px-2 text-xs sm:text-sm">
                             Start free · Pro from $9.99/mo · Cancel anytime
                         </p>
-                    </div>
+                    </motion.div>
                 </div>
-                <a
+                <motion.a
                     href="#how-it-works"
                     className="absolute bottom-[max(2rem,env(safe-area-inset-bottom))] left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                    initial={reduceMotion ? false : { opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
                 >
                     See how it works
-                    <ChevronDown className="h-5 w-5" aria-hidden />
-                </a>
+                    <motion.span
+                        aria-hidden
+                        className="inline-block"
+                        animate={reduceMotion ? undefined : { y: [0, 6, 0] }}
+                        transition={
+                            reduceMotion
+                                ? undefined
+                                : { duration: 1.6, repeat: Infinity, ease: "easeInOut" }
+                        }
+                    >
+                        <ChevronDown className="h-5 w-5" />
+                    </motion.span>
+                </motion.a>
             </div>
         </>
     );

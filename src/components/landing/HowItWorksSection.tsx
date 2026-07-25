@@ -72,7 +72,7 @@ export const HowItWorksSection: React.FC = () => {
                 ))}
             </ol>
 
-            <BuildProgramCtaButton source="how_it_works" className="mt-12" />
+            <BuildProgramCtaButton source="how_it_works" className="mt-12 flex justify-center" />
         </div>
     );
 };

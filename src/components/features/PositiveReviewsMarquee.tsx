@@ -32,11 +32,11 @@ export function PositiveReviewsMarquee({ quotes }: IPositiveReviewsMarqueeProps)
 
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-y-0 left-0 z-20 w-16 bg-linear-to-r from-white via-white/90 to-transparent sm:w-28 dark:from-darkGray dark:via-darkGray/90"
+        className="pointer-events-none absolute inset-y-0 left-0 z-20 w-16 bg-linear-to-r from-white via-white/90 to-transparent sm:w-28 dark:from-background dark:via-background/90"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-y-0 right-0 z-20 w-16 bg-linear-to-l from-white via-white/90 to-transparent sm:w-28 dark:from-darkGray dark:via-darkGray/90"
+        className="pointer-events-none absolute inset-y-0 right-0 z-20 w-16 bg-linear-to-l from-white via-white/90 to-transparent sm:w-28 dark:from-background dark:via-background/90"
       />
     </div>
   );
