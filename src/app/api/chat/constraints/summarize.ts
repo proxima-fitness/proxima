@@ -41,7 +41,7 @@ export async function generateSessionSummary(
         .join('\n');
 
     const { text } = await generateText({
-        model: gateway('google/gemini-3.1-flash-lite-preview'),
+        model: gateway('google/gemini-3.1-flash-lite'),
         prompt: `Summarize this fitness coaching conversation in 2-3 sentences. Focus on program decisions made and constraints established. Extract key decisions as short strings.
 
 Return a JSON object with this exact shape:

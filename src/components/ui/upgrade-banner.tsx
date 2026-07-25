@@ -68,8 +68,8 @@ export function UpgradeBanner({
       ? exhaustedMessage ?? "You have run out of credits"
       : null
 
-  // Mobile-only expanded/collapsed state; only initialised when collapse is enabled.
-  const [mobileExpanded, setMobileExpanded] = useState<boolean>(() =>
+  // Lazy init OK: banner mounts after client featureLimits fetch, not in SSR HTML.
+  const [mobileExpanded, setMobileExpanded] = useState(() =>
     enableMobileCollapse ? readMobileExpanded() : true
   )
 

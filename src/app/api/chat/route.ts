@@ -224,7 +224,7 @@ async function handleChatPost(req: Request) {
 
                 const andy = new ToolLoopAgent({
                     model: gateway(
-                        'google/gemini-3.1-flash-lite-preview',
+                        'google/gemini-3.1-flash-lite',
                         // 'google/gemini-3-flash'
                     ),
                         // 'anthropic/claude-sonnet-4.5'
