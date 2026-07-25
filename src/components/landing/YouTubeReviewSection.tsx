@@ -3,7 +3,7 @@
 
 /**
  * @module YouTubeReviewSection
- * Alex Chen review block with click-to-load YouTube embed facade.
+ * Alex Chen review with click-to-load YouTube embed facade.
  */
 
 import { useState } from "react";
@@ -22,35 +22,10 @@ export const YouTubeReviewSection: React.FC = () => {
     };
 
     return (
-        <div className="grid gap-golden md:grid-cols-2 md:items-center md:gap-[2.618rem]">
-            <div className="flex flex-col text-center md:text-left">
-                <p className="font-tertiary text-xs font-semibold tracking-[0.12em] text-secondary dark:text-lightSecondary">
-                    Featured Review
-                </p>
-                <figure className="mt-4 flex flex-col">
-                    <blockquote>
-                        <h2 className="font-tertiary text-3xl font-semibold leading-[1.15] tracking-tight text-foreground sm:text-4xl">
-                            &ldquo;Definitely worth trying out.&rdquo;
-                        </h2>
-                    </blockquote>
-                    <figcaption className="mt-goldenSm font-tertiary text-base text-muted-foreground">
-                        &mdash; Alex Chen, Former Provincial Powerlifter
-                    </figcaption>
-                </figure>
-                <p className="mt-[2.618rem] max-w-xl font-tertiary text-base leading-relaxed text-muted-foreground md:max-w-lg">
-                    After paying $160/mo for a nationally-ranked powerlifting coach, Alex Chen put Proxima&apos;s $9.99/mo AI Coach to the test.
-                </p>
-                {!playing ? (
-                    <button
-                        type="button"
-                        onClick={handlePlay}
-                        className="mt-golden self-start text-left font-tertiary text-base font-semibold text-secondary transition-colors hover:text-secondary/80 dark:text-lightSecondary dark:hover:text-lightSecondary/80"
-                    >
-                        Watch his full breakdown &rarr;
-                    </button>
-                ) : null}
-            </div>
-            <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border/60 bg-black/5 shadow-sm dark:bg-black/20">
+        <div className="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-12 md:gap-16">
+            <h2 className="sr-only">Alex Chen reviews Proxima</h2>
+
+            <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black md:col-span-7">
                 {playing ? (
                     <iframe
                         src={`https://www.youtube-nocookie.com/embed/${YOUTUBE_ID}?autoplay=1`}
@@ -70,13 +45,34 @@ export const YouTubeReviewSection: React.FC = () => {
                         <img
                             src={THUMBNAIL_URL}
                             alt=""
-                            className="absolute inset-0 h-full w-full object-cover"
+                            className="absolute inset-0 h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-90"
                         />
-                        <span className="relative z-10 flex h-16 w-16 items-center justify-center rounded-full bg-black/60 text-white transition-transform group-hover:scale-105">
-                            <Play className="h-8 w-8 fill-current" aria-hidden />
+                        <span className="relative z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white text-black shadow-sm transition-transform duration-200 group-hover:scale-105">
+                            <Play className="ml-0.5 h-5 w-5 fill-current" aria-hidden />
                         </span>
                     </button>
                 )}
+            </div>
+
+            <div className="flex flex-col gap-5 md:col-span-5">
+                <blockquote>
+                    <p className="font-tertiary text-2xl font-medium leading-snug tracking-tight text-foreground sm:text-[1.75rem]">
+                        &ldquo;Definitely worth trying out.&rdquo;
+                    </p>
+                </blockquote>
+
+                <div className="flex flex-col gap-0.5">
+                    <p className="font-tertiary text-sm font-medium text-foreground">
+                        Alex Chen
+                    </p>
+                    <p className="font-tertiary text-sm text-muted-foreground">
+                        Former Provincial Powerlifter
+                    </p>
+                </div>
+
+                <p className="font-tertiary text-sm leading-relaxed text-muted-foreground">
+                    After paying $160/mo for a nationally-ranked powerlifting coach, Alex Chen put Proxima&apos;s $9.99/mo AI Coach to the test.
+                </p>
             </div>
         </div>
     );

@@ -10,7 +10,7 @@
 
 import { Prompt } from '@/components/program-builder/shared/Prompt';
 import { PositiveReviewsMosaic } from '@/components/features/PositiveReviewsMosaic';
-import { PwaSection } from '@/components/features/PwaSection';
+// import { PwaSection } from '@/components/features/PwaSection';
 import {
     CredibilityBand,
     EditProgramCtaSection,
@@ -48,9 +48,9 @@ export default async function Page() {
             <LandingSection variant="tint">
                 <EditProgramCtaSection />
             </LandingSection>
-            <LandingSection id="pwa" variant="white">
+            {/* <LandingSection id="pwa" variant="white">
                 <PwaSection />
-            </LandingSection>
+            </LandingSection> */}
         </>
     );
 }
