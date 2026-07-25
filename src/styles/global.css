@@ -289,6 +289,39 @@
     filter: blur(750px);
   }
 
+  /* Homepage hero atmosphere: silver depth (light) / steel spotlight (dark). No brand flood. */
+  .hero__atmosphere {
+    background: radial-gradient(
+      circle at center,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(214, 228, 238, 0.65) 38%,
+      rgba(196, 214, 228, 0.28) 62%,
+      transparent 100%
+    );
+    filter: blur(90px);
+  }
+
+  .hero__atmosphere_secondary {
+    background: radial-gradient(
+      circle at center,
+      rgba(200, 218, 232, 0.45) 0%,
+      rgba(180, 205, 222, 0.18) 50%,
+      transparent 100%
+    );
+    filter: blur(100px);
+  }
+
+  .hero__atmosphere_dark {
+    background: radial-gradient(
+      circle at center,
+      rgba(220, 228, 240, 0.14) 0%,
+      rgba(180, 195, 215, 0.07) 38%,
+      rgba(120, 140, 165, 0.03) 65%,
+      transparent 100%
+    );
+    filter: blur(120px);
+  }
+
   .blue__gradient_light {
     background: radial-gradient(
       circle at center,

@@ -9,8 +9,8 @@ import { useEffect } from "react";
 import { useUserContext } from "@/contexts/UserContext";
 import { User } from "@supabase/supabase-js";
 import {
-    proxima_logo_black,
-    proxima_logo_white,
+    proxima_logo,
+    proxima_logo_dark_full_text,
 } from "public";
 import { PromptTemplate } from "./PromptTemplate";
 import { ResumeDraftBanner } from "../ResumeDraftBanner";
@@ -40,31 +40,42 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
     return (
         <>
             {/* min-h-screen + safe-area padding (not h-screen/100vh) to avoid hero text shifting on mobile PWAs and in-app browsers when chrome resizes */}
-            <div className="min-h-screen flex flex-col items-center justify-center gap-10 relative overflow-hidden pt-[max(2rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))]">
+            <div className="relative flex min-h-screen flex-col items-center overflow-hidden bg-[#f2f5f8] pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))] dark:bg-background">
                 <div className="pointer-events-none absolute inset-0 z-0" aria-hidden>
                     <div className="absolute inset-0 dark:hidden">
-                        <div className="absolute left-1/2 top-1/2 z-0 h-[95%] w-[95%] -translate-x-1/2 -translate-y-1/2 rounded-full white__gradient" />
+                        <div className="absolute left-1/2 top-[44%] z-0 h-[85%] w-[85%] -translate-x-1/2 -translate-y-1/2 rounded-full hero__atmosphere" />
+                        <div className="absolute right-[-5%] top-[12%] z-0 h-[50%] w-[50%] rounded-full hero__atmosphere_secondary" />
+                        <div className="absolute left-[-8%] bottom-[8%] z-0 h-[40%] w-[40%] rounded-full hero__atmosphere_secondary" />
                     </div>
                     <div className="absolute inset-0 hidden dark:block">
-                        <div className="absolute left-1/2 top-1/2 z-0 h-[95%] w-[95%] -translate-x-1/2 -translate-y-1/2 rounded-full white__gradient_dark" />
+                        <div className="absolute left-1/2 top-[46%] z-0 h-[65%] w-[65%] max-w-3xl -translate-x-1/2 -translate-y-1/2 rounded-full hero__atmosphere_dark" />
                     </div>
-                    <div className="absolute inset-0 bg-linear-to-b from-background/35 via-background/15 to-extraLightGray/45 dark:from-darkGray/55 dark:via-darkGray/25 dark:to-extraDarkGray/65" />
+                    <div className="absolute inset-0 bg-linear-to-b from-white/50 via-transparent to-[#e8eef3] dark:from-background/40 dark:via-transparent dark:to-extraDarkGray/50" />
                 </div>
-                <div className="flex flex-col items-center justify-center gap-12 w-full relative z-10">
-                    <div className="text-center flex flex-col items-center gap-3">
-                        <div className="hidden sm:block">
-                            <img src={(proxima_logo_black).src} alt="Proxima" className="h-14 w-auto hidden dark:block" />
-                            <img src={(proxima_logo_white).src} alt="Proxima" className="h-14 w-auto dark:hidden block" />
+                <div className="relative z-10 hidden w-full justify-center px-4 sm:flex">
+                    <img
+                        src={proxima_logo.src}
+                        alt="Proxima"
+                        className="hidden h-11 w-auto dark:block"
+                    />
+                    <img
+                        src={proxima_logo_dark_full_text.src}
+                        alt="Proxima"
+                        className="block h-11 w-auto dark:hidden"
+                    />
+                </div>
+                <div className="relative z-10 flex w-full flex-1 flex-col items-center justify-center gap-12">
+                    <div className="flex flex-col items-center gap-3 text-center">
+                        <div className="max-sm:px-6 font-tertiary text-6xl font-bold text-foreground max-sm:text-4xl">
+                            Programs Built Around{" "}
+                            <span className="text-lightSecondary">Your Life</span>
                         </div>
-                        <div className="font-tertiary text-6xl max-sm:text-4xl max-sm:px-6 font-bold text-foreground">
-                            Programs Built Around Your Life
-                        </div>
-                        <div className="text-center text-xl font-normal leading-tight px-12 max-sm:text-base max-sm:px-2 text-muted-foreground">
+                        <div className="px-12 text-center text-xl font-normal leading-tight text-muted-foreground max-sm:px-2 max-sm:text-base">
                             <span className="block">Proxima builds your program, makes updates based on your workouts,</span>
                             <span className="block">and syncs changes to your fitness app</span>
                         </div>
                     </div>
-                    <div className="w-full max-w-3xl max-sm:px-2 flex flex-col items-center gap-3">
+                    <div className="flex w-full max-w-3xl max-sm:px-2 flex-col items-center gap-3">
                         <ResumeDraftBanner />
                         <PromptTemplate />
                         <p className="text-center font-tertiary text-[0.618rem] text-muted-foreground max-sm:px-2 text-xs sm:text-sm">

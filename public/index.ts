@@ -13,6 +13,7 @@ import add from "./add.svg";
 import apple from "./apple.svg";
 import proxima_logo from "./proxima_logo_blue-04.svg";
 import proxima_logo_white_full_text from "./proxima-logo-white.svg";
+import proxima_logo_dark_full_text from "./proxima-logo-dark.svg";
 import proxima_logo_small from "./proxima_logo_blue_small.svg";
 import icon_background_white from "./icon-background-white.jpg";
 import arnold from "./arnold.jpg";
@@ -80,6 +81,7 @@ export {
     apple,
     proxima_logo,
     proxima_logo_white_full_text,
+    proxima_logo_dark_full_text,
     light_builder,
     dark_builder,
     proxima_logo_black,

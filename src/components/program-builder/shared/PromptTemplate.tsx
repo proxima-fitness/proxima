@@ -228,7 +228,7 @@ const PromptTemplateInput: React.FC<IPromptTemplateInputProps> = ({
 
   return (
     <PromptInput
-      className="dark:bg-darkGray border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 max-sm:pt-0 shadow-2xs focus-within:border focus-within:border-gray-300 transition-all duration-200"
+      className="dark:bg-darkGray border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 max-sm:pt-0 shadow-2xs transition-[border-color,box-shadow] duration-200 focus-within:border-lightSecondary focus-within:shadow-[0_0_0_4px_rgba(51,187,207,0.35)] dark:focus-within:shadow-[0_0_0_4px_rgba(51,187,207,0.45)]"
       accept="image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/csv,application/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,.csv,.xlsx,.xls,.ods"
       multiple
       onSubmit={({ text, files }) => onSend(text, files)}
