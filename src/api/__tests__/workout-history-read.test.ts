@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/hooks/supabase";
-import { HEVY_WORKOUT_SOURCE } from "../workout-history";
+import { HEVY_WORKOUT_SOURCE, UNKNOWN_EXERCISE_TITLE } from "../workout-history";
 import {
     DEFAULT_ENSURE_FRESH_MAX_CHUNKS,
     DEFAULT_WORKOUT_HISTORY_LIMIT,
@@ -435,6 +435,22 @@ describe("mapBackedUpWorkoutToHevyRoutine", () => {
         expect(routine.exercises).toHaveLength(PREVIEW_MAX_EXERCISES);
         expect(routine.exercises.map((exercise) => exercise.index)).toEqual([0, 1, 2]);
         expect(routine.exercises[0].title).toBe("Bench Press (Barbell)");
+    });
+
+    it("falls back to a placeholder title when RLS hides the canonical exercise", () => {
+        const workout: TBackedUpWorkout = {
+            ...backedUpWorkoutFixture,
+            workout_exercises: backedUpWorkoutFixture.workout_exercises.map((exercise, index) =>
+                index === 0 ? { ...exercise, canonical_exercises: null } : exercise,
+            ),
+        };
+
+        const routine = mapBackedUpWorkoutToHevyRoutine(workout);
+
+        expect(routine.exercises[0].title).toBe(UNKNOWN_EXERCISE_TITLE);
+        expect(routine.exercises[0].sets).toHaveLength(
+            backedUpWorkoutFixture.workout_exercises[0].workout_sets.length,
+        );
     });
 });
 

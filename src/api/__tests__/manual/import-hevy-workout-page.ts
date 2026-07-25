@@ -66,7 +66,7 @@ async function main() {
         {
             headers: {
                 accept: "application/json",
-                "api-key": apiKey,
+                "api-key": apiKey!,
             },
         },
     );
@@ -84,7 +84,7 @@ async function main() {
     let failed = 0;
 
     for (const workout of body.workouts ?? []) {
-        const result = await importHevyWorkout(db, { userId: userId!, workout });
+        const result = await importHevyWorkout(db, { userId: userId!, workout, apiKey: apiKey! });
         if (result.status === "inserted") inserted += 1;
         else if (result.status === "skipped") skipped += 1;
         else {

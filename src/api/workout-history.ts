@@ -4,23 +4,54 @@
  * Persists backed-up workout history from connected fitness apps into canonical
  * Supabase tables (workouts → workout_exercises → workout_sets).
  *
- * Depends on: @/hooks/supabase (generated types), uuid
+ * Depends on: @/hooks/supabase (generated types), program-builder/api/hevy, api/supabase-admin, uuid
  * Used by: workout history sync orchestration (01c), optional dev import script
  */
 import { v4 as uuidv4 } from "uuid";
 import type { TablesInsert } from "@/hooks/supabase";
+import {
+    getHevyExerciseTemplate,
+    isHevyRateLimitError,
+} from "@/components/program-builder/api/hevy";
+import { getServiceRoleClient } from "./supabase-admin";
 
 export const HEVY_WORKOUT_SOURCE = "hevy" as const;
 
+/** Postgres unique-violation SQLSTATE, returned by PostgREST as `error.code`. */
+const UNIQUE_VIOLATION = "23505";
+
+/** Canonical exercise insert with the pre-generated ID the resolver returns on success. */
+type TCanonicalExerciseInsert = TablesInsert<"canonical_exercises"> & { id: string };
+
+/** Title used when a canonical exercise row is missing or not readable by the caller. */
+export const UNKNOWN_EXERCISE_TITLE = "Unknown exercise";
+
 /**
- * Normalizes an exercise title for canonical exercise deduplication.
- * Lowercases and collapses whitespace to match seed migration grouping.
+ * Normalizes an exercise title into the canonical identity key.
+ * Lowercases, collapses whitespace, and trims — word order and parentheses are preserved,
+ * matching `normalized_title` in the ownership migration.
  *
  * @param title - Raw exercise title from Hevy or a fallback label
  * @returns Normalized title string
  */
 export function normalizeExerciseTitle(title: string): string {
     return title.toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Builds the lossy match key used to *suggest* merges and promotions.
+ * Token-sorted and parens-stripped, mirroring `public.exercise_match_key`. Never an identity key:
+ * it merges movements that differ only in word order.
+ *
+ * @param title - Raw exercise title
+ * @returns Token-sorted match key
+ */
+export function exerciseMatchKey(title: string): string {
+    return normalizeExerciseTitle(title.replace(/[()]/g, ""))
+        .split(" ")
+        .filter(Boolean)
+        .sort()
+        .join(" ");
 }
 
 /**
@@ -160,22 +191,83 @@ async function lookupHevyExerciseTemplate(db: TWorkoutHistoryDb, templateId: str
 }
 
 /**
+ * Returns the mapped canonical exercise ID only when the syncing user may read that row.
+ *
+ * `canonical_exercise_mappings` is world-readable and keyed globally on
+ * `(source, external_exercise_id)`, so it can hand one user a mapping to another user's
+ * **Custom movement**. Ownership is checked here rather than left to RLS, because the manual
+ * import script runs as service role and bypasses policies.
+ *
+ * @param db - Supabase client
+ * @param canonicalExerciseId - Canonical exercise ID the mapping points at
+ * @param userId - Proxima user ID performing the import
+ * @returns The canonical exercise ID when readable, otherwise `null`
+ */
+async function lookupReadableCanonicalExercise(db: TWorkoutHistoryDb, canonicalExerciseId: string, userId: string): Promise<string | null> {
+    const { data, error } = await db
+        .from("canonical_exercises")
+        .select("id, user_id")
+        .eq("id", canonicalExerciseId)
+        .maybeSingle();
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    if (!data || (data.user_id !== null && data.user_id !== userId)) {
+        return null;
+    }
+
+    return data.id;
+}
+
+/**
+ * Finds a canonical exercise by normalized title inside one ownership scope.
+ * Never searches across owners — a title-only lookup fuses two users' private movements.
+ *
+ * @param db - Supabase client
+ * @param userId - Owner to search within, or `null` for the global library
+ * @param normalizedTitle - Identity key from {@link normalizeExerciseTitle}
+ * @returns Canonical exercise ID when one exists in that scope, otherwise `null`
+ */
+async function lookupCanonicalExerciseInScope(db: TWorkoutHistoryDb, userId: string | null, normalizedTitle: string): Promise<string | null> {
+    const query = db
+        .from("canonical_exercises")
+        .select("id")
+        .eq("normalized_title", normalizedTitle);
+
+    const { data, error } = await (
+        userId === null ? query.is("user_id", null) : query.eq("user_id", userId)
+    ).maybeSingle();
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    return data?.id ?? null;
+}
+
+/**
  * Builds a `canonical_exercises` insert row from template metadata or a workout fallback title.
  *
- * @param template - Mirrored Hevy template when available
+ * `normalized_title` is always derived here: the mirror's own `normalized_title` uses the older
+ * token-sorted scheme, and mixing the two schemes is what put two identity keys under one index.
+ *
+ * @param template - Template metadata (mirrored row or freshly fetched) when available
  * @param fallbackTitle - Exercise title from the logged workout
  * @param id - Pre-generated UUID for the new canonical exercise row
+ * @param userId - Owner for a **Custom movement**, or `null` for a **Global canonical**
  * @returns Insert payload for a new canonical exercise
  */
-function buildCanonicalExerciseInsert(template: THevyExerciseTemplateRow | null, fallbackTitle: string, id: string): TablesInsert<"canonical_exercises"> {
+export function buildCanonicalExerciseInsert(template: THevyExerciseTemplateRow | null, fallbackTitle: string, id: string, userId: string | null): TCanonicalExerciseInsert {
     const title = (template?.title ?? fallbackTitle).trim() || fallbackTitle;
-    const normalizedTitle =
-        template?.normalized_title?.trim() || normalizeExerciseTitle(title);
 
     return {
         id,
+        user_id: userId,
         title,
-        normalized_title: normalizedTitle,
+        normalized_title: normalizeExerciseTitle(title),
+        match_key: exerciseMatchKey(title),
         exercise_type: template?.type ?? null,
         primary_muscle_group: template?.primary_muscle_group ?? null,
         secondary_muscle_groups: template?.secondary_muscle_groups ?? null,
@@ -184,30 +276,46 @@ function buildCanonicalExerciseInsert(template: THevyExerciseTemplateRow | null,
 }
 
 /**
- * Resolves a Hevy template ID to a canonical exercise ID.
- * Uses `canonical_exercise_mappings` when seeded; otherwise creates a lazy canonical
- * exercise plus mapping (enriched from `hevy_exercise_templates` when present).
+ * Inserts a canonical exercise, recovering the winner when a concurrent chunk inserted first.
+ * The scoped unique indexes make the conflict the signal to re-select rather than to fail.
+ *
+ * @param db - Supabase client
+ * @param row - Insert payload from {@link buildCanonicalExerciseInsert}
+ * @returns The canonical exercise ID that now holds this title in this scope
+ */
+async function insertCanonicalExercise(db: TWorkoutHistoryDb, row: TCanonicalExerciseInsert): Promise<string> {
+    const { error } = await db.from("canonical_exercises").insert(row);
+
+    if (!error) {
+        return row.id;
+    }
+
+    if (error.code !== UNIQUE_VIOLATION) {
+        throw new Error(error.message);
+    }
+
+    const existingId = await lookupCanonicalExerciseInScope(
+        db,
+        row.user_id ?? null,
+        row.normalized_title,
+    );
+
+    if (!existingId) {
+        throw new Error(error.message);
+    }
+
+    return existingId;
+}
+
+/**
+ * Points a Hevy template ID at a canonical exercise, ignoring an existing mapping.
+ * A retry after a partial import is a no-op rather than a duplicate-key error.
  *
  * @param db - Supabase client
  * @param templateId - Hevy `exercise_template_id`
- * @param exerciseTitle - Title from the logged workout (fallback when template mirror missing)
- * @returns Canonical exercise UUID
+ * @param canonicalExerciseId - Canonical exercise to map to
  */
-export async function resolveCanonicalExerciseId(db: TWorkoutHistoryDb, templateId: string, exerciseTitle: string): Promise<string> {
-    const existingMapping = await lookupCanonicalExerciseMapping(db, templateId);
-    if (existingMapping) {
-        return existingMapping;
-    }
-
-    const template = await lookupHevyExerciseTemplate(db, templateId);
-    const canonicalExerciseId = uuidv4();
-    const canonicalExercise = buildCanonicalExerciseInsert(template, exerciseTitle, canonicalExerciseId);
-
-    const { error: exerciseError } = await db.from("canonical_exercises").insert(canonicalExercise);
-    if (exerciseError) {
-        throw new Error(exerciseError.message);
-    }
-
+async function upsertCanonicalExerciseMapping(db: TWorkoutHistoryDb, templateId: string, canonicalExerciseId: string): Promise<void> {
     const mapping: TablesInsert<"canonical_exercise_mappings"> = {
         id: uuidv4(),
         source: HEVY_WORKOUT_SOURCE,
@@ -215,12 +323,194 @@ export async function resolveCanonicalExerciseId(db: TWorkoutHistoryDb, template
         canonical_exercise_id: canonicalExerciseId,
     };
 
-    const { error: mappingError } = await db.from("canonical_exercise_mappings").insert(mapping);
-    if (mappingError) {
-        throw new Error(mappingError.message);
+    const { error } = await db
+        .from("canonical_exercise_mappings")
+        .upsert(mapping, { onConflict: "source,external_exercise_id", ignoreDuplicates: true });
+
+    if (error) {
+        throw new Error(error.message);
+    }
+}
+
+/**
+ * Mirrors a Hevy library template the local `hevy_exercise_templates` copy was missing.
+ *
+ * This is how the mirror keeps up with Hevy's library without a scheduled resync: whichever user
+ * logs the new movement first repairs the shared copy for everyone. The write goes through the
+ * service-role client because the mirror is global data — widening its RLS to `authenticated`
+ * would let any client write the shared exercise library.
+ *
+ * @param db - Supabase client, used when no service-role credentials are configured
+ * @param template - Template as returned by the Hevy API
+ */
+async function mirrorHevyExerciseTemplate(db: TWorkoutHistoryDb, template: THevyExerciseTemplate): Promise<void> {
+    const mirrorDb = getServiceRoleClient() ?? db;
+
+    const { error } = await mirrorDb.from("hevy_exercise_templates").upsert(
+        {
+            id: template.id,
+            title: template.title,
+            // Hevy's own normalized_title, kept in the mirror's existing token-sorted scheme.
+            normalized_title: template.normalized_title ?? null,
+            type: template.type ?? null,
+            primary_muscle_group: template.primary_muscle_group ?? null,
+            secondary_muscle_groups: template.secondary_muscle_groups ?? null,
+            equipment: template.equipment ?? null,
+            is_custom: template.is_custom ?? false,
+            gif_id: template.gif_id ?? null,
+            instructions: template.instructions ?? null,
+        },
+        { onConflict: "id", ignoreDuplicates: true },
+    );
+
+    if (error) {
+        console.warn("[workout-history] could not mirror Hevy exercise template", {
+            templateId: template.id,
+            message: error.message,
+        });
+    }
+}
+
+/**
+ * Narrows a Hevy API template to the columns the canonical row is built from.
+ */
+function toTemplateRow(template: THevyExerciseTemplate): THevyExerciseTemplateRow {
+    return {
+        id: template.id,
+        title: template.title,
+        normalized_title: template.normalized_title,
+        type: template.type,
+        primary_muscle_group: template.primary_muscle_group,
+        secondary_muscle_groups: template.secondary_muscle_groups,
+        equipment: template.equipment,
+    };
+}
+
+/**
+ * Asks Hevy for one template, treating anything but a rate limit as "unknown".
+ * A rate limit propagates so the chunk backs off instead of persisting a `sync_error`.
+ *
+ * @param apiKey - Syncing user's Hevy API key
+ * @param templateId - Hevy `exercise_template_id`
+ * @returns The template, or `null` when Hevy does not know it or could not be reached
+ */
+async function fetchHevyExerciseTemplateOrNull(apiKey: string, templateId: string): Promise<THevyExerciseTemplate | null> {
+    try {
+        return await getHevyExerciseTemplate(apiKey, templateId);
+    } catch (error: unknown) {
+        if (isHevyRateLimitError(error)) {
+            throw error;
+        }
+
+        console.warn("[workout-history] Hevy exercise template lookup failed", {
+            templateId,
+            message: error instanceof Error ? error.message : String(error),
+        });
+
+        return null;
+    }
+}
+
+/**
+ * Creates a canonical exercise and, unless suppressed, the mapping that points at it.
+ *
+ * @param db - Supabase client
+ * @param params - Creation context
+ * @param params.template - Template metadata when known
+ * @param params.title - Exercise title from the logged workout
+ * @param params.userId - Owner, or `null` for a **Global canonical**
+ * @param params.templateId - Hevy `exercise_template_id`
+ * @param params.writeMapping - False when an existing mapping must be left pointing where it is
+ * @returns Canonical exercise UUID
+ */
+async function createCanonicalExercise(db: TWorkoutHistoryDb, params: { template: THevyExerciseTemplateRow | null; title: string; userId: string | null; templateId: string; writeMapping: boolean }): Promise<string> {
+    const row = buildCanonicalExerciseInsert(
+        params.template,
+        params.title,
+        uuidv4(),
+        params.userId,
+    );
+
+    const canonicalExerciseId = await insertCanonicalExercise(db, row);
+
+    if (params.writeMapping) {
+        await upsertCanonicalExerciseMapping(db, params.templateId, canonicalExerciseId);
     }
 
     return canonicalExerciseId;
+}
+
+/**
+ * Resolves a Hevy template ID to a canonical exercise ID, deciding who owns the row.
+ *
+ * Mapping hit wins when the mapped row is readable; a mirror hit is a **Global canonical**
+ * (library movement or **Proxima supplemental**); a mirror miss asks Hevy, because a missing
+ * mirror row is not proof the exercise is custom. When Hevy cannot be reached the exercise is
+ * owned privately: a wrongly-private row can be promoted later, a wrongly-global one leaks.
+ *
+ * @param db - Supabase client
+ * @param params - Resolution context
+ * @param params.templateId - Hevy `exercise_template_id`
+ * @param params.exerciseTitle - Title from the logged workout
+ * @param params.userId - Proxima user ID performing the import
+ * @param params.apiKey - Syncing user's Hevy API key
+ * @returns Canonical exercise UUID
+ * @throws {HevyRateLimitError} When Hevy rate-limits the template lookup
+ */
+export async function resolveCanonicalExerciseId(db: TWorkoutHistoryDb, params: { templateId: string; exerciseTitle: string; userId: string; apiKey: string }): Promise<string> {
+    const { templateId, exerciseTitle, userId, apiKey } = params;
+
+    const mappedId = await lookupCanonicalExerciseMapping(db, templateId);
+    if (mappedId) {
+        const readableId = await lookupReadableCanonicalExercise(db, mappedId, userId);
+        if (readableId) {
+            return readableId;
+        }
+
+        // The mapping points at another user's Custom movement — most often the same Hevy custom
+        // template reaching two accounts through routine sharing. Resolve in this user's own scope
+        // and leave the globally-keyed mapping row alone; it cannot hold a second owner.
+        return createCanonicalExercise(db, {
+            template: null,
+            title: exerciseTitle,
+            userId,
+            templateId,
+            writeMapping: false,
+        });
+    }
+
+    const mirroredTemplate = await lookupHevyExerciseTemplate(db, templateId);
+    if (mirroredTemplate) {
+        return createCanonicalExercise(db, {
+            template: mirroredTemplate,
+            title: exerciseTitle,
+            userId: null,
+            templateId,
+            writeMapping: true,
+        });
+    }
+
+    const hevyTemplate = await fetchHevyExerciseTemplateOrNull(apiKey, templateId);
+
+    if (hevyTemplate && !hevyTemplate.is_custom) {
+        await mirrorHevyExerciseTemplate(db, hevyTemplate);
+
+        return createCanonicalExercise(db, {
+            template: toTemplateRow(hevyTemplate),
+            title: exerciseTitle,
+            userId: null,
+            templateId,
+            writeMapping: true,
+        });
+    }
+
+    return createCanonicalExercise(db, {
+        template: hevyTemplate ? toTemplateRow(hevyTemplate) : null,
+        title: exerciseTitle,
+        userId,
+        templateId,
+        writeMapping: true,
+    });
 }
 
 /**
@@ -231,10 +521,12 @@ export async function resolveCanonicalExerciseId(db: TWorkoutHistoryDb, template
  * @param params - Import context
  * @param params.userId - Proxima user ID owning the backup
  * @param params.workout - Completed workout from the Hevy API
+ * @param params.apiKey - Syncing user's Hevy API key, for exercise ownership resolution
  * @returns Insert outcome: `inserted`, `skipped` (duplicate), or `error`
+ * @throws {HevyRateLimitError} When Hevy rate-limits a template lookup, so the caller backs off
  */
-export async function importHevyWorkout(db: TWorkoutHistoryDb, params: { userId: string; workout: THevyWorkout }): Promise<TImportHevyWorkoutResult> {
-    const { userId, workout } = params;
+export async function importHevyWorkout(db: TWorkoutHistoryDb, params: { userId: string; workout: THevyWorkout; apiKey: string }): Promise<TImportHevyWorkoutResult> {
+    const { userId, workout, apiKey } = params;
 
     try {
         const existingWorkoutId = await findExistingWorkoutId(db, userId, workout.id);
@@ -251,11 +543,12 @@ export async function importHevyWorkout(db: TWorkoutHistoryDb, params: { userId:
         }
 
         for (const exercise of workout.exercises ?? []) {
-            const canonicalExerciseId = await resolveCanonicalExerciseId(
-                db,
-                exercise.exercise_template_id,
-                exercise.title,
-            );
+            const canonicalExerciseId = await resolveCanonicalExerciseId(db, {
+                templateId: exercise.exercise_template_id,
+                exerciseTitle: exercise.title,
+                userId,
+                apiKey,
+            });
 
             const workoutExerciseId = uuidv4();
             const exerciseRow = mapHevyExerciseToInsert(
@@ -283,6 +576,10 @@ export async function importHevyWorkout(db: TWorkoutHistoryDb, params: { userId:
 
         return { status: "inserted", workoutId };
     } catch (error) {
+        if (isHevyRateLimitError(error)) {
+            throw error;
+        }
+
         const message = error instanceof Error ? error.message : "Unknown import error";
         return { status: "error", message };
     }

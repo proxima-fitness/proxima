@@ -190,35 +190,49 @@ export type Database = {
           equipment: string | null
           exercise_type: string | null
           id: string
+          match_key: string | null
           normalized_title: string
           primary_muscle_group: string | null
           secondary_muscle_groups: string[] | null
           title: string
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string
           equipment?: string | null
           exercise_type?: string | null
           id?: string
+          match_key?: string | null
           normalized_title: string
           primary_muscle_group?: string | null
           secondary_muscle_groups?: string[] | null
           title: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string
           equipment?: string | null
           exercise_type?: string | null
           id?: string
+          match_key?: string | null
           normalized_title?: string
           primary_muscle_group?: string | null
           secondary_muscle_groups?: string[] | null
           title?: string
           updated_at?: string | null
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "canonical_exercises_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       chat_history: {
         Row: {
@@ -299,30 +313,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      feature_usage_pre_period_snapshot: {
-        Row: {
-          created_at: string | null
-          id: string | null
-          monthly_exports_used: number | null
-          monthly_llm_requests: number | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string | null
-          monthly_exports_used?: number | null
-          monthly_llm_requests?: number | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string | null
-          monthly_exports_used?: number | null
-          monthly_llm_requests?: number | null
-          user_id?: string | null
-        }
-        Relationships: []
       }
       feedback: {
         Row: {
@@ -423,6 +413,7 @@ export type Database = {
           id: string
           instructions: string[] | null
           is_custom: boolean | null
+          is_proxima_supplemental: boolean
           normalized_title: string | null
           primary_muscle_group: string | null
           secondary_muscle_groups: string[] | null
@@ -435,6 +426,7 @@ export type Database = {
           id: string
           instructions?: string[] | null
           is_custom?: boolean | null
+          is_proxima_supplemental?: boolean
           normalized_title?: string | null
           primary_muscle_group?: string | null
           secondary_muscle_groups?: string[] | null
@@ -447,6 +439,7 @@ export type Database = {
           id?: string
           instructions?: string[] | null
           is_custom?: boolean | null
+          is_proxima_supplemental?: boolean
           normalized_title?: string | null
           primary_muscle_group?: string | null
           secondary_muscle_groups?: string[] | null
@@ -1648,6 +1641,7 @@ export type Database = {
         Returns: undefined
       }
       delete_secret: { Args: { secret_name: string }; Returns: string }
+      exercise_match_key: { Args: { p_title: string }; Returns: string }
       get_hevy_key_from_vault: { Args: { p_user_id: string }; Returns: string }
       get_my_feature_limits: {
         Args: never

@@ -58,6 +58,66 @@ export const defaultFetch = async <T>(url: string, apiKey: string): Promise<T> =
     return (await response.json()) as T;
 };
 
+/** Thrown when Hevy returns HTTP 429 — callers back off instead of persisting the failure. */
+export class HevyRateLimitError extends Error {
+    constructor(message = "HTTP GET error! Status: 429") {
+        super(message);
+        this.name = "HevyRateLimitError";
+    }
+}
+
+/** True when a Hevy fetch error is HTTP 429. */
+export function isHevyRateLimitError(error: unknown): boolean {
+    const message = error instanceof Error ? error.message : String(error);
+    return message.includes("Status: 429");
+}
+
+/**
+ * Fetches a single exercise template by ID from the Hevy API.
+ *
+ * Maps to `GET /v1/exercise_templates/{id}`. Used when the `hevy_exercise_templates` mirror
+ * misses a template, to tell a stale mirror apart from a genuine custom exercise. 5xx gets a
+ * short in-request retry; 429 fails fast so the caller can back off.
+ *
+ * @param apiKey - User's Hevy API key
+ * @param templateId - Hevy `exercise_template_id`
+ * @returns The template, or `null` when Hevy does not know the ID
+ * @throws {HevyRateLimitError} On HTTP 429
+ */
+export const getHevyExerciseTemplate = async (
+    apiKey: string,
+    templateId: string,
+): Promise<THevyExerciseTemplate | null> => {
+    const url = `https://api.hevyapp.com/v1/exercise_templates/${encodeURIComponent(templateId)}`;
+
+    for (let retry = 0; retry <= RATE_LIMIT_MAX_RETRIES; retry++) {
+        try {
+            const template = await defaultFetch<THevyExerciseTemplate | null>(url, apiKey);
+            return template ?? null;
+        } catch (error: unknown) {
+            if (isHevyRateLimitError(error)) {
+                throw new HevyRateLimitError(
+                    error instanceof Error ? error.message : undefined,
+                );
+            }
+
+            const message = error instanceof Error ? error.message : "";
+
+            if (message.includes("Status: 404")) {
+                return null;
+            }
+
+            if (!/Status: 5\d\d/.test(message) || retry >= RATE_LIMIT_MAX_RETRIES) {
+                throw error;
+            }
+
+            await delay(Math.min(8_000, 1_000 * Math.pow(2, retry)));
+        }
+    }
+
+    throw new Error("Hevy exercise template fetch failed after retries");
+};
+
 /**
  * Fetches all user-created custom exercise templates from the Hevy API.
  *
