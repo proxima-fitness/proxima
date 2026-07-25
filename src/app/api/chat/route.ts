@@ -18,7 +18,10 @@ import { after } from 'next/server';
 import { observe, propagateAttributes } from '@langfuse/tracing';
 import { langfuseSpanProcessor } from '../../../../instrumentation';
 import { createClient } from '@/utils/supabase/server';
-import { getServerHasActiveSubscription } from '@/lib/server-feature-limits';
+import {
+    tryConsumeMonthlyLlmRequest,
+    usageCapResponse,
+} from '@/lib/server-feature-limits';
 import { instructions } from './instructions/instructions';
 import { getTools, type IBuildWeekOnceGuard } from './tools/tools';
 import { initializeConstraintProfile } from './constraints';
@@ -117,6 +120,28 @@ async function handleChatPost(req: Request) {
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
+        // Authenticated LLM meter: consume before any model/stream work (ADR 0019).
+        // Paywall: 402 + { error: "usage_cap", feature: "monthly_llm_requests", resets_on? }.
+        // Anonymous: no RPC; client localStorage remains the only meter.
+        let hasActiveSubscription = false;
+        if (user) {
+            const consume = await tryConsumeMonthlyLlmRequest(supabase, user);
+            if (!consume.ok) {
+                if (consume.reason === 'usage_cap') {
+                    return usageCapResponse({ resets_on: consume.resets_on });
+                }
+                console.error('try_consume_feature_usage failed:', consume.error);
+                return new Response(
+                    JSON.stringify({ error: 'Failed to process chat request' }),
+                    {
+                        status: 500,
+                        headers: { 'Content-Type': 'application/json' },
+                    },
+                );
+            }
+            hasActiveSubscription = Boolean(consume.limits?.has_active_subscription);
+        }
+
         const userId = user?.id?.slice(0, 200) || undefined;
         const sessionId = typeof chatSessionId === 'string' && chatSessionId.trim()
             ? chatSessionId.trim().slice(0, 200)
@@ -164,8 +189,6 @@ async function handleChatPost(req: Request) {
                         sessionDurationMin,
                     }),
                 );
-
-                const hasActiveSubscription = user ? await getServerHasActiveSubscription(supabase, user) : false;
 
                 // Fetch episodic memory when editing an existing program
                 const episodes = (user && hevyProgram.length > 0)
@@ -224,7 +247,7 @@ async function handleChatPost(req: Request) {
 
                 const andy = new ToolLoopAgent({
                     model: gateway(
-                        'google/gemini-3.1-flash-lite-preview',
+                        'google/gemini-3.1-flash-lite',
                         // 'google/gemini-3-flash'
                     ),
                         // 'anthropic/claude-sonnet-4.5'

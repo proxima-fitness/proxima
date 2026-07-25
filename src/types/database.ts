@@ -111,7 +111,8 @@ export type TFollowingRow = {
 // ─── Workout history (already DB-derived, moved from global.d.ts) ───────────────
 
 export type TWorkoutExerciseRow = Database["public"]["Tables"]["workout_exercises"]["Row"] & {
-    canonical_exercises: Database["public"]["Tables"]["canonical_exercises"]["Row"];
+    /** Null when RLS hides the canonical row — a Custom movement owned by another user. */
+    canonical_exercises: Database["public"]["Tables"]["canonical_exercises"]["Row"] | null;
     workout_sets: Database["public"]["Tables"]["workout_sets"]["Row"][];
 };
 

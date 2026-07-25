@@ -20,6 +20,7 @@ import {
     getSinceIsoForWeekRange,
 } from "./workout-history-statistics";
 import { getLocalMonthUtcBounds } from "./workout-history-calendar";
+import { UNKNOWN_EXERCISE_TITLE } from "./workout-history";
 import {
     aggregateSessionsByTemplateId,
     transformSessionsToExercise,
@@ -106,7 +107,7 @@ function mapBackedUpExerciseToHevyExercise(
 ): THevyExercise {
     return {
         index: arrayIndex,
-        title: exercise.canonical_exercises.title,
+        title: exercise.canonical_exercises?.title ?? UNKNOWN_EXERCISE_TITLE,
         notes: exercise.notes ?? "",
         rest_seconds: null,
         exercise_template_id: exercise.source_exercise_id ?? "",

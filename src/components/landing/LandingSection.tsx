@@ -1,6 +1,6 @@
 /**
  * @module LandingSection
- * Shared section shell for homepage bands - teal tint or white surfaces with consistent padding.
+ * Shared section shell for homepage bands - alternating elevated / recessed surfaces.
  */
 
 import { cn } from "@/lib/utils";
@@ -13,9 +13,10 @@ interface ILandingSectionProps {
     className?: string;
 }
 
+/** Dark: tint stays blueGray/40 (How it works unchanged); white recesses for contrast. */
 const variantClasses: Record<TLandingSectionVariant, string> = {
-    white: "bg-white dark:bg-darkGray",
-    tint: "bg-extraLightGray dark:bg-blueGray/40",
+    white: "bg-white dark:bg-background",
+    tint: "bg-[#f2f5f8] dark:bg-blueGray/40",
 };
 
 export const LandingSection: React.FC<ILandingSectionProps> = ({

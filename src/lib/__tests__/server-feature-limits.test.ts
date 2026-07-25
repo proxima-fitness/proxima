@@ -5,8 +5,11 @@ import {
     parseTestTierOverride,
 } from "@/api/feature-limits";
 import {
+    USAGE_CAP_ERROR,
     getServerHasActiveSubscription,
     getServerMyFeatureLimits,
+    tryConsumeMonthlyLlmRequest,
+    usageCapResponse,
 } from "@/lib/server-feature-limits";
 
 function mockSupabase(mock: unknown): Parameters<typeof getServerMyFeatureLimits>[0] {
@@ -120,5 +123,87 @@ describe("server-feature-limits", () => {
         } as Awaited<ReturnType<typeof cookies>>);
 
         await expect(getServerHasActiveSubscription(supabase, user)).resolves.toBe(true);
+    });
+});
+
+describe("usageCapResponse", () => {
+    it("returns 402 with stable usage_cap body", async () => {
+        const res = usageCapResponse({ resets_on: "2026-08-01" });
+        expect(res.status).toBe(402);
+        await expect(res.json()).resolves.toEqual({
+            error: USAGE_CAP_ERROR,
+            feature: "monthly_llm_requests",
+            resets_on: "2026-08-01",
+        });
+    });
+});
+
+describe("tryConsumeMonthlyLlmRequest", () => {
+    const mockRpc = vi.fn();
+    const supabase = mockSupabase({ rpc: mockRpc });
+    const user = { id: "user-1", email: "qa@proxima.test" } as User;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.mocked(isTestUser).mockReturnValue(false);
+    });
+
+    it("returns usage_cap without try_consume when remaining is 0 (QA / override)", async () => {
+        mockRpc.mockResolvedValueOnce({
+            data: [{ ...baseLimits, remaining_llm_requests: 0 }],
+            error: null,
+        });
+
+        const result = await tryConsumeMonthlyLlmRequest(supabase, user);
+
+        expect(result).toEqual({
+            ok: false,
+            reason: "usage_cap",
+            resets_on: "2026-08-01",
+        });
+        expect(mockRpc).toHaveBeenCalledTimes(1);
+        expect(mockRpc).toHaveBeenCalledWith("get_my_feature_limits");
+    });
+
+    it("consumes under cap and returns limits", async () => {
+        mockRpc
+            .mockResolvedValueOnce({ data: [baseLimits], error: null })
+            .mockResolvedValueOnce({ data: [{ allowed: true }], error: null });
+
+        const result = await tryConsumeMonthlyLlmRequest(supabase, user);
+
+        expect(result).toEqual({ ok: true, limits: baseLimits });
+        expect(mockRpc).toHaveBeenNthCalledWith(2, "try_consume_feature_usage", {
+            p_feature: "monthly_llm_requests",
+        });
+    });
+
+    it("returns usage_cap when RPC denies at real tier ceiling", async () => {
+        mockRpc
+            .mockResolvedValueOnce({ data: [baseLimits], error: null })
+            .mockResolvedValueOnce({ data: [{ allowed: false }], error: null });
+
+        const result = await tryConsumeMonthlyLlmRequest(supabase, user);
+
+        expect(result).toEqual({
+            ok: false,
+            reason: "usage_cap",
+            resets_on: "2026-08-01",
+        });
+    });
+
+    it("returns rpc_error when try_consume fails", async () => {
+        mockRpc
+            .mockResolvedValueOnce({ data: [baseLimits], error: null })
+            .mockResolvedValueOnce({ data: null, error: { message: "boom" } });
+
+        const result = await tryConsumeMonthlyLlmRequest(supabase, user);
+
+        expect(result.ok).toBe(false);
+        if (!result.ok && result.reason === "rpc_error") {
+            expect(result.error.message).toBe("boom");
+        } else {
+            expect.fail("expected rpc_error");
+        }
     });
 });

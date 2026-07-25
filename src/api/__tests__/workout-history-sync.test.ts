@@ -50,6 +50,17 @@ function matchFilters(row: TRow, filters: Array<{ column: string; value: unknown
     return filters.every((filter) => row[filter.column] === filter.value);
 }
 
+/** Removes matching rows in place and returns them, so table references stay stable. */
+function removeRows(rows: TRow[], predicate: (row: TRow) => boolean): TRow[] {
+    const removed = rows.filter(predicate);
+    const kept = rows.filter((row) => !predicate(row));
+
+    rows.length = 0;
+    rows.push(...kept);
+
+    return removed;
+}
+
 function createSyncMockDb(seed?: Partial<Record<TTableName, TRow[]>>) {
     const tables: Record<TTableName, TRow[]> = {
         workouts: [],
@@ -67,6 +78,7 @@ function createSyncMockDb(seed?: Partial<Record<TTableName, TRow[]>>) {
             const filters: Array<{ column: string; value: unknown }> = [];
             let head = false;
             let exactCount = false;
+            let deleting = false;
 
             const builder = {
                 select(_columns?: string, options?: { count?: string; head?: boolean }) {
@@ -76,6 +88,10 @@ function createSyncMockDb(seed?: Partial<Record<TTableName, TRow[]>>) {
                 },
                 eq(column: string, value: unknown) {
                     filters.push({ column, value });
+                    return builder;
+                },
+                delete() {
+                    deleting = true;
                     return builder;
                 },
                 async maybeSingle() {
@@ -106,6 +122,12 @@ function createSyncMockDb(seed?: Partial<Record<TTableName, TRow[]>>) {
                     return builder;
                 },
                 then(resolve: (value: { count: number | null; error: null }) => void) {
+                    if (deleting) {
+                        removeRows(tables[table], (row) => matchFilters(row, filters));
+                        resolve({ count: null, error: null });
+                        return;
+                    }
+
                     if (head && exactCount) {
                         const count = tables[table].filter((row) => matchFilters(row, filters)).length;
                         resolve({ count, error: null });
@@ -125,6 +147,23 @@ function createSyncMockDb(seed?: Partial<Record<TTableName, TRow[]>>) {
 
 function asDb(mock: unknown): SupabaseClient<Database> {
     return mock as SupabaseClient<Database>;
+}
+
+/** Seeds a workout that already finished importing (has ≥1 exercise), so re-sync skips it. */
+function seedFinishedWorkout(
+    mockDb: ReturnType<typeof createSyncMockDb>,
+    params: { id: string; externalId: string },
+): void {
+    mockDb.tables.workouts.push({
+        id: params.id,
+        user_id: USER_ID,
+        source: HEVY_WORKOUT_SOURCE,
+        external_id: params.externalId,
+    });
+    mockDb.tables.workout_exercises.push({
+        id: `exercise-${params.id}`,
+        workout_id: params.id,
+    });
 }
 
 describe("computeSyncPage", () => {
@@ -269,12 +308,7 @@ describe("runSyncChunk", () => {
     });
 
     it("uses delta page 1 when live count grew after prior full sync", async () => {
-        mockDb.tables.workouts.push({
-            id: "w1",
-            user_id: USER_ID,
-            source: HEVY_WORKOUT_SOURCE,
-            external_id: hevyWorkoutFixture.id,
-        });
+        seedFinishedWorkout(mockDb, { id: "w1", externalId: hevyWorkoutFixture.id });
         mockDb.tables.hevy_workouts_count.push({
             user_id: USER_ID,
             last_known_workout_count: 1,
@@ -378,11 +412,9 @@ describe("runSyncChunk", () => {
         }));
 
         for (const workout of pageSevenWorkouts) {
-            mockDb.tables.workouts.push({
+            seedFinishedWorkout(mockDb, {
                 id: `existing-${workout.id}`,
-                user_id: USER_ID,
-                source: HEVY_WORKOUT_SOURCE,
-                external_id: workout.id,
+                externalId: workout.id,
             });
         }
 

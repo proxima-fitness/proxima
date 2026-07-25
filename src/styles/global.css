@@ -281,12 +281,110 @@
   .white__gradient {
     background: radial-gradient(
       circle at center,
-      rgba(224, 231, 255, 0.5) 0%,
-      rgba(167, 139, 250, 0.4) 30%,
-      rgba(76, 29, 149, 0.3) 60%,
+      rgba(224, 231, 255, 0.75) 0%,
+      rgba(167, 139, 250, 0.6) 30%,
+      rgba(76, 29, 149, 0.45) 60%,
       rgba(76, 29, 149, 0) 100%
     );
     filter: blur(750px);
+  }
+
+  /* Homepage hero atmosphere: cool steel depth (light) / steel spotlight (dark). No brand flood. */
+  .hero__atmosphere {
+    background: radial-gradient(
+      circle at center,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(196, 214, 228, 0.72) 36%,
+      rgba(168, 192, 212, 0.32) 62%,
+      transparent 100%
+    );
+    filter: blur(90px);
+  }
+
+  .hero__atmosphere_secondary {
+    background: radial-gradient(
+      circle at center,
+      rgba(170, 196, 216, 0.5) 0%,
+      rgba(148, 178, 202, 0.2) 50%,
+      transparent 100%
+    );
+    filter: blur(100px);
+  }
+
+  .hero__atmosphere_dark {
+    background: radial-gradient(
+      circle at center,
+      rgba(220, 228, 240, 0.14) 0%,
+      rgba(180, 195, 215, 0.07) 38%,
+      rgba(120, 140, 165, 0.03) 65%,
+      transparent 100%
+    );
+    filter: blur(120px);
+  }
+
+  /* Soft edge falloff — intentional composition, not a photo overlay. */
+  .hero__vignette {
+    background: radial-gradient(
+      ellipse 75% 65% at 50% 42%,
+      transparent 50%,
+      rgba(20, 40, 60, 0.07) 100%
+    );
+  }
+
+  .dark .hero__vignette {
+    background: radial-gradient(
+      ellipse 75% 65% at 50% 42%,
+      transparent 48%,
+      rgba(0, 0, 0, 0.35) 100%
+    );
+  }
+
+  /* Product peek under CTA — readable slice, dissolve into page. */
+  .hero__product-preview {
+    max-height: min(34vh, 300px);
+    overflow: hidden;
+    border-radius: 1rem 1rem 0 0;
+    box-shadow:
+      0 0 0 1px rgba(15, 40, 60, 0.08),
+      0 24px 64px -20px rgba(15, 40, 60, 0.28);
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      #000 0%,
+      #000 50%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      #000 0%,
+      #000 50%,
+      transparent 100%
+    );
+  }
+
+  .dark .hero__product-preview {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.08),
+      0 24px 64px -16px rgba(0, 0, 0, 0.55);
+  }
+
+  /* Laptop: shorter peek so CTA keeps room. Tall screens: larger. */
+  @media (min-width: 640px) {
+    .hero__product-preview {
+      max-height: min(22vh, 220px);
+      border-radius: 1.25rem 1.25rem 0 0;
+    }
+  }
+
+  @media (min-width: 640px) and (min-height: 900px) {
+    .hero__product-preview {
+      max-height: min(32vh, 300px);
+    }
+  }
+
+  @media (min-width: 640px) and (min-height: 1100px) {
+    .hero__product-preview {
+      max-height: min(36vh, 340px);
+    }
   }
 
   .blue__gradient_light {

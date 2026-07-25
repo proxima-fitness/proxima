@@ -22,6 +22,8 @@
 import {
     defaultFetch,
     delay,
+    HevyRateLimitError,
+    isHevyRateLimitError,
     RATE_LIMIT_MAX_RETRIES,
 } from "@/components/program-builder/api/hevy";
 import {
@@ -29,10 +31,6 @@ import {
     HEVY_BODY_MEASUREMENTS_PAGE_SIZE,
     importHevyBodyMeasurement,
 } from "./body-measurements";
-import {
-    HevyRateLimitError,
-    isHevyRateLimitError,
-} from "./workout-history-sync";
 
 /** Body measurements per Hevy API page for backup chunks (API max 10). */
 export const BODY_MEASUREMENTS_SYNC_PAGE_SIZE = HEVY_BODY_MEASUREMENTS_PAGE_SIZE;

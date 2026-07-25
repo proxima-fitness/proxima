@@ -14,8 +14,8 @@ import { connectChatToSavedProgram } from "@/api/chat-history";
 import { useBuildProgramActions } from "@/contexts/BuildProgramActionsContext";
 import { useUserContext } from "@/contexts/UserContext";
 import { useHevySecret, useMyFeatureLimits } from "@/api/hooks";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { incrementMonthlyExportsUsed } from "@/api/feature-limits";
+import { useQueryClient } from "@tanstack/react-query";
+import { tryConsumeMonthlyExport } from "@/api/feature-limits";
 import { withRenewsOn } from "@/lib/format-usage-reset-date";
 import {
     deleteHevyApiKey,
@@ -75,7 +75,7 @@ interface IExportToHevySetupProps {
     onUploadStateChange?: (uploading: boolean) => void;
     /** When provided, used instead of reading from localStorage. Allows callers (e.g. program slug page) to pass routines directly without touching the build-program localStorage key. */
     hevyRoutines?: THevyRoutine[];
-    /** When true, skips monthly export limit checks and usage increment (used for free pre-made program exports). */
+    /** When true, skips try_consume / export-cap UX (used for free pre-made program exports). */
     skipUsageTracking?: boolean;
     /** Called after a successful Hevy upload (e.g. to increment program saves). */
     onExportSuccess?: () => void;
@@ -90,12 +90,6 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
     const queryClient = useQueryClient();
     const { data: hevyApiKey } = useHevySecret(user);
     const { data: featureLimits } = useMyFeatureLimits(user);
-    const { mutate: incrementExportsUsed } = useMutation({
-        mutationFn: () => incrementMonthlyExportsUsed(user),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["feature-limits", user?.id] });
-        },
-    });
 
     const isFree = featureLimits?.has_active_subscription !== true;
     const atExportLimit = skipUsageTracking
@@ -296,6 +290,28 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
             return;
         }
 
+        // Spend one export unit before any Hevy write. Denied → paywall, no upload.
+        if (!skipUsageTracking) {
+            const consume = await tryConsumeMonthlyExport(user);
+            void queryClient.invalidateQueries({ queryKey: ["feature-limits", user.id] });
+            if (!consume.allowed) {
+                const message = withRenewsOn(
+                    isFree
+                        ? "You're out of monthly exports."
+                        : "You've run out of monthly exports.",
+                    featureLimits?.resets_on,
+                );
+                toast.error(message);
+                console.error(`${HEVY_EXPORT_LOG_PREFIX} export_failed`, message, consume.error);
+                posthog?.capture?.("export_failed", {
+                    user: user.id,
+                    destination: "hevy",
+                    error: "usage_cap",
+                });
+                return;
+            }
+        }
+
         setShowExportSuccess(false);
         resetConfetti();
 
@@ -430,11 +446,6 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                 });
                 setShowExportSuccess(true);
                 fireConfetti();
-                if (!skipUsageTracking) {
-                    incrementExportsUsed(undefined, {
-                        onError: (err) => console.error("Failed to record export usage", err),
-                    });
-                }
                 onExportSuccess?.();
                 return;
             }
@@ -455,11 +466,6 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                 posthog?.capture?.("exported_program", { user: user?.id ?? "user_id_unknown", destination: "hevy" });
                 setShowExportSuccess(true);
                 fireConfetti();
-                if (!skipUsageTracking) {
-                    incrementExportsUsed(undefined, {
-                        onError: (err) => console.error("Failed to record export usage", err),
-                    });
-                }
                 onExportSuccess?.();
             }
         } catch (err) {

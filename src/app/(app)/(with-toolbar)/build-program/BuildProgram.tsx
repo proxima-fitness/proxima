@@ -8,7 +8,7 @@
  * layout; drives useChat, program state, and tool calls.
  *
  * Depends on: useChat, UserContext, HevyContext, resizable panels,
- * Agent, ProgramRoutineView, program-builder utils, API (getSharedProgram, recordLlmRequest).
+ * Agent, ProgramRoutineView, program-builder utils, API (getSharedProgram).
  * Used by: build-program/page.tsx.
  */
 

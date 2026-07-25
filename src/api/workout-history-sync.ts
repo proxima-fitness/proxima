@@ -24,6 +24,10 @@ import {
 
     delay,
 
+    HevyRateLimitError,
+
+    isHevyRateLimitError,
+
     RATE_LIMIT_MAX_RETRIES,
 
 } from "@/components/program-builder/api/hevy";
@@ -48,31 +52,6 @@ const WORKOUT_SYNC_LOG_PREFIX = "[workout-history-sync]";
 
 
 
-/** Thrown when Hevy returns HTTP 429 — caller should back off (not persist as sync_error). */
-
-export class HevyRateLimitError extends Error {
-
-    constructor(message = "HTTP GET error! Status: 429") {
-
-        super(message);
-
-        this.name = "HevyRateLimitError";
-
-    }
-
-}
-
-
-
-/** True when a Hevy fetch error is HTTP 429. */
-
-export function isHevyRateLimitError(error: unknown): boolean {
-
-    const message = error instanceof Error ? error.message : String(error);
-
-    return message.includes("Status: 429");
-
-}
 
 
 
@@ -580,7 +559,19 @@ export async function runSyncChunk(db: TWorkoutHistoryDb,params: { userId: strin
 
     for (const workout of workouts) {
 
-        const result = await importHevyWorkout(db, { userId, workout });
+        let result: TImportHevyWorkoutResult;
+
+        try {
+
+            result = await importHevyWorkout(db, { userId, workout, apiKey });
+
+        } catch (error: unknown) {
+
+            // Resolving exercise ownership can hit Hevy; a 429 there must back off, not persist.
+
+            return handleHevyFetchFailure(db, userId, error, backedUpCount, hevyCount);
+
+        }
 
         if (result.status === "error") {
 
