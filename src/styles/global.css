@@ -281,9 +281,9 @@
   .white__gradient {
     background: radial-gradient(
       circle at center,
-      rgba(224, 231, 255, 0.5) 0%,
-      rgba(167, 139, 250, 0.4) 30%,
-      rgba(76, 29, 149, 0.3) 60%,
+      rgba(224, 231, 255, 0.75) 0%,
+      rgba(167, 139, 250, 0.6) 30%,
+      rgba(76, 29, 149, 0.45) 60%,
       rgba(76, 29, 149, 0) 100%
     );
     filter: blur(750px);

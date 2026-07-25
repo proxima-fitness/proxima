@@ -2,15 +2,13 @@
 "use client";
 /**
  * @module Prompt
- * Landing hero: title, subtitle, prompt input, and product-preview backdrop. Syncs SSR user into UserContext.
+ * Landing hero: title, subtitle, prompt input, and gradient backdrop. Syncs SSR user into UserContext.
  * Depends on: PromptTemplate, ResumeDraftBanner, UserContext. Used by: build-program/landing.
  */
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useUserContext } from "@/contexts/UserContext";
 import { User } from "@supabase/supabase-js";
 import {
-    dark_builder,
-    light_builder,
     proxima_logo_black,
     proxima_logo_white,
 } from "public";
@@ -28,9 +26,6 @@ interface IProps {
 /** Landing hero with prompt input; sets UserContext from userData. */
 export const Prompt: React.FC<IProps> = ({ userData }) => {
     const { setUser } = useUserContext();
-    const [showLightPreview, setShowLightPreview] = useState(true);
-    const [showDarkPreview, setShowDarkPreview] = useState(true);
-    const showProductPreview = showLightPreview || showDarkPreview;
 
     // DO NOT TOUCH THIS -- SETS REACT CONTEXT FOR USERS THAT SIGNED IN WITH AN SSR METHOD
     useEffect(() => {
@@ -47,36 +42,10 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
             {/* min-h-screen + safe-area padding (not h-screen/100vh) to avoid hero text shifting on mobile PWAs and in-app browsers when chrome resizes */}
             <div className="min-h-screen flex flex-col items-center justify-center gap-10 relative overflow-hidden pt-[max(2rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))]">
                 <div className="pointer-events-none absolute inset-0 z-0" aria-hidden>
-                    {showProductPreview && (
-                        <>
-                            {showLightPreview && (
-                                <img
-                                    src={(light_builder).src}
-                                    alt=""
-                                    className="absolute inset-0 h-full w-full scale-105 object-cover object-center opacity-75 blur-sm dark:hidden xl:hidden"
-                                    loading="eager"
-                                    fetchPriority="high"
-                                    decoding="async"
-                                    onError={() => setShowLightPreview(false)}
-                                />
-                            )}
-                            {showDarkPreview && (
-                                <img
-                                    src={(dark_builder).src}
-                                    alt=""
-                                    className="absolute inset-0 hidden h-full w-full scale-105 object-cover object-center opacity-55 blur-md dark:block xl:dark:hidden"
-                                    loading="eager"
-                                    fetchPriority="high"
-                                    decoding="async"
-                                    onError={() => setShowDarkPreview(false)}
-                                />
-                            )}
-                        </>
-                    )}
-                    <div className="absolute inset-0 hidden xl:block dark:xl:hidden">
+                    <div className="absolute inset-0 dark:hidden">
                         <div className="absolute left-1/2 top-1/2 z-0 h-[95%] w-[95%] -translate-x-1/2 -translate-y-1/2 rounded-full white__gradient" />
                     </div>
-                    <div className="absolute inset-0 hidden dark:xl:block">
+                    <div className="absolute inset-0 hidden dark:block">
                         <div className="absolute left-1/2 top-1/2 z-0 h-[95%] w-[95%] -translate-x-1/2 -translate-y-1/2 rounded-full white__gradient_dark" />
                     </div>
                     <div className="absolute inset-0 bg-linear-to-b from-background/35 via-background/15 to-extraLightGray/45 dark:from-darkGray/55 dark:via-darkGray/25 dark:to-extraDarkGray/65" />
