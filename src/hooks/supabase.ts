@@ -150,7 +150,15 @@ export type Database = {
           waist?: number | null
           weight_kg?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "body_measurements_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       canonical_exercise_mappings: {
         Row: {
@@ -263,31 +271,58 @@ export type Database = {
           id: string
           monthly_exports_used: number
           monthly_llm_requests: number
-          user_id: string | null
+          period_start: string
+          user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
           monthly_exports_used?: number
           monthly_llm_requests?: number
-          user_id?: string | null
+          period_start?: string
+          user_id: string
         }
         Update: {
           created_at?: string
           id?: string
           monthly_exports_used?: number
           monthly_llm_requests?: number
-          user_id?: string | null
+          period_start?: string
+          user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "feature_usage_user_id_fkey"
             columns: ["user_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
+      }
+      feature_usage_pre_period_snapshot: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          monthly_exports_used: number | null
+          monthly_llm_requests: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          monthly_exports_used?: number | null
+          monthly_llm_requests?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          monthly_exports_used?: number | null
+          monthly_llm_requests?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       feedback: {
         Row: {
@@ -1192,7 +1227,15 @@ export type Database = {
           summary?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "session_episodes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       test_users: {
         Row: {
@@ -1345,7 +1388,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_constraints_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_training_profile: {
         Row: {
@@ -1387,7 +1438,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_training_profile_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       users: {
         Row: {
@@ -1598,8 +1657,10 @@ export type Database = {
           max_monthly_llm_requests: number
           monthly_exports_used: number
           monthly_llm_requests_used: number
+          period_start: string
           remaining_exports: number
           remaining_llm_requests: number
+          resets_on: string
           tier: string
           user_id: string
         }[]

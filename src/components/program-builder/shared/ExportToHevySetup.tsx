@@ -16,6 +16,7 @@ import { useUserContext } from "@/contexts/UserContext";
 import { useHevySecret, useMyFeatureLimits } from "@/api/hooks";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { incrementMonthlyExportsUsed } from "@/api/feature-limits";
+import { withRenewsOn } from "@/lib/format-usage-reset-date";
 import {
     deleteHevyApiKey,
     getSaveProgramToSupabaseFailureDetail,
@@ -689,9 +690,12 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                                 )}
                                 {atExportLimit && (
                                     <p className="text-sm text-muted-foreground">
-                                        {isFree
-                                            ? "You're out of monthly exports."
-                                            : "You've ran out of your monthly exports, exports will renew next month."}
+                                        {withRenewsOn(
+                                            isFree
+                                                ? "You're out of monthly exports."
+                                                : "You've run out of monthly exports.",
+                                            featureLimits?.resets_on,
+                                        )}
                                     </p>
                                 )}
                                 <div className="flex flex-wrap items-center gap-3">

@@ -127,6 +127,8 @@ function getAnonymousLimits(): TFeatureLimits {
             max_monthly_llm_requests: ANONYMOUS_LLM_MAX,
             monthly_llm_requests_used: 0,
             remaining_llm_requests: ANONYMOUS_LLM_MAX,
+            period_start: null,
+            resets_on: null,
         };
     }
     const stored = parseInt(localStorage.getItem(ANONYMOUS_LLM_STORAGE_KEY) ?? String(ANONYMOUS_LLM_MAX), 10);
@@ -141,6 +143,8 @@ function getAnonymousLimits(): TFeatureLimits {
         max_monthly_llm_requests: ANONYMOUS_LLM_MAX,
         monthly_llm_requests_used: ANONYMOUS_LLM_MAX - remaining,
         remaining_llm_requests: remaining,
+        period_start: null,
+        resets_on: null,
     };
 }
 

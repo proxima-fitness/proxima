@@ -104,6 +104,10 @@ _Avoid_: Full-program Export (removed), Save (Supabase only), re-Export same wee
 Renamed/replaced monthly full-program export limits. **Save** and in-Proxima prescription edits are unlimited. Meter charges every successful Hevy write: **Week Export**, **Edit current week** Sync, and Hevy-only **Edit path** Sync (no Proxima program). Week 1 **Week Export** per program is free; later Week Exports and all Syncs count. Tier numbers updated when the limit is renamed.
 _Avoid_: Week Export quota (too narrow), charging for Save, Sync-free loophole via **Hevy folders**, “monthly exports” full-program wording
 
+**Usage period**:
+The calendar month (UTC) that one `feature_usage` row counts. One row per user per month, keyed `(user_id, period_start)` where `period_start` is the 1st. The row is created lazily by the first metered action that month, so an **absent row means zero used** and quota resets with no scheduled job. `get_my_feature_limits` reads only the current period's row and returns `resets_on` (the 1st of next month), surfaced in copy only when the user is out of usage. Anonymous users have no usage period — their localStorage counter is lifetime. Not the Stripe billing period: free users have no subscription, and Stripe period columns move between sync-engine versions.
+_Avoid_: Billing period (Stripe-anchored), monthly reset (implies a cron job), lifetime usage (pre-migration behaviour), showing the reset date before the user is blocked
+
 **Hevy program sync**:
 Existing edge function (`hevy-program-sync`) that, on new Hevy workouts, marks schedule days complete via `workout.routine_id` and folder title parsing. Auto next-week upload and silent double-progression Hevy writes are **commented out** (not deleted) — reserved for a possible future auto-weight-progression mode; default loop pulls the user back to Proxima for **AI week suggest** + **Week Export** (retention). Needs rewiring so week-complete signals feed the Program overview.
 _Avoid_: Workout history backup (different pipeline), Sync (Edit-path Hevy push), deleting the progression code

@@ -39,6 +39,7 @@ import {
 import { cn } from "@/lib/utils";
 import { UpgradeBanner } from "@/components/ui/upgrade-banner";
 import { useMyFeatureLimits } from "@/api/hooks";
+import { withRenewsOn } from "@/lib/format-usage-reset-date";
 import { useUserContext } from "@/contexts/UserContext";
 import { quickTriggerSuggestionChips } from "@/assets/constants/suggestions";
 import type { FileUIPart } from "ai";
@@ -387,8 +388,8 @@ export const Chat = forwardRef<HTMLDivElement, IProps>((props, ref) => {
             isProOnlyTier && outOfCredits ? "Upgrade to Pro+" : undefined
           }
           exhaustedMessage={
-            isProOnlyTier && outOfCredits
-              ? "You have run out of credits"
+            outOfCredits
+              ? withRenewsOn("You have run out of credits.", featureLimits.resets_on)
               : undefined
           }
           enableMobileCollapse
