@@ -289,13 +289,13 @@
     filter: blur(750px);
   }
 
-  /* Homepage hero atmosphere: silver depth (light) / steel spotlight (dark). No brand flood. */
+  /* Homepage hero atmosphere: cool steel depth (light) / steel spotlight (dark). No brand flood. */
   .hero__atmosphere {
     background: radial-gradient(
       circle at center,
       rgba(255, 255, 255, 1) 0%,
-      rgba(214, 228, 238, 0.65) 38%,
-      rgba(196, 214, 228, 0.28) 62%,
+      rgba(196, 214, 228, 0.72) 36%,
+      rgba(168, 192, 212, 0.32) 62%,
       transparent 100%
     );
     filter: blur(90px);
@@ -304,8 +304,8 @@
   .hero__atmosphere_secondary {
     background: radial-gradient(
       circle at center,
-      rgba(200, 218, 232, 0.45) 0%,
-      rgba(180, 205, 222, 0.18) 50%,
+      rgba(170, 196, 216, 0.5) 0%,
+      rgba(148, 178, 202, 0.2) 50%,
       transparent 100%
     );
     filter: blur(100px);
@@ -320,6 +320,58 @@
       transparent 100%
     );
     filter: blur(120px);
+  }
+
+  /* Soft edge falloff — intentional composition, not a photo overlay. */
+  .hero__vignette {
+    background: radial-gradient(
+      ellipse 75% 65% at 50% 42%,
+      transparent 50%,
+      rgba(20, 40, 60, 0.07) 100%
+    );
+  }
+
+  .dark .hero__vignette {
+    background: radial-gradient(
+      ellipse 75% 65% at 50% 42%,
+      transparent 48%,
+      rgba(0, 0, 0, 0.35) 100%
+    );
+  }
+
+  /* Product peek under centered CTA — readable slice, dissolve into page. */
+  .hero__product-preview {
+    max-height: min(34vh, 300px);
+    overflow: hidden;
+    border-radius: 1rem 1rem 0 0;
+    box-shadow:
+      0 0 0 1px rgba(15, 40, 60, 0.08),
+      0 24px 64px -20px rgba(15, 40, 60, 0.28);
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      #000 0%,
+      #000 50%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      #000 0%,
+      #000 50%,
+      transparent 100%
+    );
+  }
+
+  .dark .hero__product-preview {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.08),
+      0 24px 64px -16px rgba(0, 0, 0, 0.55);
+  }
+
+  @media (min-width: 640px) {
+    .hero__product-preview {
+      max-height: min(36vh, 340px);
+      border-radius: 1.25rem 1.25rem 0 0;
+    }
   }
 
   .blue__gradient_light {
