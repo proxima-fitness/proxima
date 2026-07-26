@@ -684,57 +684,6 @@ export type Database = {
         }
         Relationships: []
       }
-      program_week_suggestions: {
-        Row: {
-          based_on_week: number
-          changes: Json
-          created_at: string
-          generated_at: string
-          id: string
-          program_id: number
-          summary: string
-          target_week: number
-          user_id: string
-        }
-        Insert: {
-          based_on_week: number
-          changes?: Json
-          created_at?: string
-          generated_at?: string
-          id?: string
-          program_id: number
-          summary: string
-          target_week: number
-          user_id: string
-        }
-        Update: {
-          based_on_week?: number
-          changes?: Json
-          created_at?: string
-          generated_at?: string
-          id?: string
-          program_id?: number
-          summary?: string
-          target_week?: number
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "program_week_suggestions_program_id_fkey"
-            columns: ["program_id"]
-            isOneToOne: false
-            referencedRelation: "programs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "program_week_suggestions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       program_hevy_week_links: {
         Row: {
           completed_at: string | null
@@ -899,6 +848,57 @@ export type Database = {
           },
           {
             foreignKeyName: "program_subscribers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      program_week_suggestions: {
+        Row: {
+          based_on_week: number
+          changes: Json
+          created_at: string
+          generated_at: string
+          id: string
+          program_id: number
+          summary: string
+          target_week: number
+          user_id: string
+        }
+        Insert: {
+          based_on_week: number
+          changes?: Json
+          created_at?: string
+          generated_at?: string
+          id?: string
+          program_id: number
+          summary: string
+          target_week: number
+          user_id: string
+        }
+        Update: {
+          based_on_week?: number
+          changes?: Json
+          created_at?: string
+          generated_at?: string
+          id?: string
+          program_id?: number
+          summary?: string
+          target_week?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_week_suggestions_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_week_suggestions_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"

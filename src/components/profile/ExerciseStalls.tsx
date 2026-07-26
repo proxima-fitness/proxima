@@ -172,7 +172,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                     return (
                         <Card
                             key={exercise.name}
-                            className="flex h-full w-full flex-col box-border border border-l-4 border-border dark:bg-blueGray dark:border dark:border-l-4"
+                            className="flex h-full w-full flex-col box-border border border-l-4 border-border/60 bg-muted/20 shadow-none"
                             style={{ borderLeftColor: colorValue }}
                         >
                             <CardContent className="flex flex-1 flex-col p-3">

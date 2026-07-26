@@ -103,7 +103,7 @@ describe("weekLogWindow", () => {
     it("spans Export → Week complete", () => {
         expect(
             weekLogWindow(link(2, "2026-07-15T00:00:00.000Z", "2026-07-08T00:00:00.000Z")),
-        ).toEqual({
+        ).toMatchObject({
             since: "2026-07-08T00:00:00.000Z",
             until: "2026-07-15T00:00:00.000Z",
         });
@@ -112,17 +112,24 @@ describe("weekLogWindow", () => {
     it("falls back to now when the week has no completed_at", () => {
         const now = new Date("2026-07-20T00:00:00.000Z");
 
-        expect(weekLogWindow(link(2, null, "2026-07-08T00:00:00.000Z"), now)).toEqual({
+        expect(weekLogWindow(link(2, null, "2026-07-08T00:00:00.000Z"), now)).toMatchObject({
             since: "2026-07-08T00:00:00.000Z",
             until: "2026-07-20T00:00:00.000Z",
         });
+    });
+
+    it("reads back past Export so sessions open across it are still fetched", () => {
+        expect(
+            weekLogWindow(link(2, "2026-07-15T00:00:00.000Z", "2026-07-08T00:00:00.000Z"))
+                .fetchSince,
+        ).toBe("2026-07-07T00:00:00.000Z");
     });
 });
 
 describe("filterWorkoutsInWindow", () => {
     const window = { since: "2026-07-08T00:00:00.000Z", until: "2026-07-15T00:00:00.000Z" };
 
-    function logged(startedAt: string | undefined): THevyRoutine {
+    function logged(startedAt: string | undefined, endedAt?: string): THevyRoutine {
         return {
             id: `w-${startedAt ?? "none"}`,
             title: "Session",
@@ -130,6 +137,7 @@ describe("filterWorkoutsInWindow", () => {
             notes: "",
             exercises: [],
             started_at: startedAt,
+            ended_at: endedAt,
         };
     }
 
@@ -152,6 +160,33 @@ describe("filterWorkoutsInWindow", () => {
 
     it("drops sessions with no start timestamp", () => {
         expect(filterWorkoutsInWindow([logged(undefined)], window)).toEqual([]);
+    });
+
+    it("keeps a session started before Export but finished inside the week", () => {
+        const result = filterWorkoutsInWindow(
+            [logged("2026-07-07T18:00:00.000Z", "2026-07-08T09:00:00.000Z")],
+            window,
+        );
+
+        expect(result).toHaveLength(1);
+    });
+
+    it("keeps a session still running when the week was marked complete", () => {
+        const result = filterWorkoutsInWindow(
+            [logged("2026-07-14T23:00:00.000Z", "2026-07-15T01:00:00.000Z")],
+            window,
+        );
+
+        expect(result).toHaveLength(1);
+    });
+
+    it("drops a session that finished before the week was exported", () => {
+        expect(
+            filterWorkoutsInWindow(
+                [logged("2026-07-06T10:00:00.000Z", "2026-07-06T11:00:00.000Z")],
+                window,
+            ),
+        ).toEqual([]);
     });
 });
 

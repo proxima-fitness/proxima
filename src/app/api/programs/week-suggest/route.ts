@@ -9,7 +9,9 @@
  * No monthly LLM meter — company-borne cost (automatic panel open, not a
  * user-initiated chat turn). Results cache in `program_week_suggestions`
  * (one row per program + completed week); re-open / remount returns cache
- * without another model call. No prescription writes — applying is Sub-plan 3.
+ * without another model call. A week with no logged sessions is *not* cached:
+ * the backup mirror may still be syncing, and a "no data logged" summary would
+ * outlive the gap. Prescription writes live in ./apply (Sub-plan 3).
  *
  * Depends on: @/utils/supabase/server, program-hevy-links, program-prescription,
  *             program-week-suggestions, workout-history-read, ./input, ./generate
@@ -178,12 +180,23 @@ export async function POST(request: Request) {
         const backedUpWorkouts = await getAllWorkoutsSinceForUser(
             supabase,
             user.id,
-            logWindow.since,
+            logWindow.fetchSince,
         );
         const loggedWorkouts = filterWorkoutsInWindow(
             backedUpWorkouts.map((workout) => mapBackedUpWorkoutToHevyRoutine(workout)),
             logWindow,
         );
+
+        // Without logs the model can only restate the week — and caching that
+        // would freeze it even after the Hevy backup catches up. Say so instead.
+        if (loggedWorkouts.length === 0) {
+            return notReady(
+                programId,
+                "no_logged_sessions",
+                `No logged sessions backed up for week ${basedOnWeek} yet. If you just finished training, give the Hevy sync a moment and reopen this.`,
+                { basedOnWeek, targetWeek },
+            );
+        }
 
         let generated;
         try {

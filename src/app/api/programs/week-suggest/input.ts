@@ -56,7 +56,8 @@ export type TWeekSuggestNotReadyCode =
     | "no_completed_week"
     | "program_complete"
     | "already_exported"
-    | "no_target_prescription";
+    | "no_target_prescription"
+    | "no_logged_sessions";
 
 export type TWeekSuggestOk = {
     status: "ok";
@@ -178,8 +179,26 @@ export function resolveWeekSuggestTarget(
 }
 
 /**
+ * How far before a week's Export a session may have started and still count.
+ * A Hevy session open across the Export (started before, finished after) is
+ * normal — the athlete starts the app, then the week is pushed.
+ */
+export const WEEK_LOG_LOOKBACK_MS = 24 * 60 * 60 * 1000;
+
+export type TWeekLogWindow = {
+    /** Week's Export (link created). */
+    since: string;
+    /** Week complete, or now when the week is still open. */
+    until: string;
+    /** Lower bound for the backup read — `since` minus the session lookback. */
+    fetchSince: string;
+};
+
+/**
  * Window of logged sessions that count as the completed week's training.
- * Starts at the week's Export (link created) and ends at Week complete.
+ * Spans the week's Export (link created) to Week complete; `fetchSince` widens
+ * the read so a session that began before Export is still fetched and can be
+ * judged by {@link filterWorkoutsInWindow}.
  *
  * @param link - Program–Hevy link for the completed week
  * @param now - Fallback upper bound when `completed_at` is unset
@@ -187,18 +206,29 @@ export function resolveWeekSuggestTarget(
 export function weekLogWindow(
     link: TWeekSuggestLinkInput,
     now: Date = new Date(),
-): { since: string; until: string } {
+): TWeekLogWindow {
+    const since = link.created_at;
+    const sinceMs = Date.parse(since);
+
     return {
-        since: link.created_at,
+        since,
         until: link.completed_at ?? now.toISOString(),
+        fetchSince: Number.isNaN(sinceMs)
+            ? since
+            : new Date(sinceMs - WEEK_LOG_LOOKBACK_MS).toISOString(),
     };
 }
 
 /**
- * Keeps logged workouts inside the completed week's window, oldest first.
+ * Keeps logged workouts that overlap the completed week's window, oldest first.
+ *
+ * Overlap, not containment: a session counts when it *ended* after the week was
+ * exported and *started* before the week was marked complete. Matching on
+ * `started_at` alone drops every session left open across the Export — which is
+ * most of them when a week is exported mid-session.
  *
  * @param workouts - Logged workouts as Hevy routines (backup mirror)
- * @param window - `since`/`until` ISO bounds from {@link weekLogWindow}
+ * @param window - Bounds from {@link weekLogWindow}
  */
 export function filterWorkoutsInWindow(
     workouts: readonly THevyRoutine[],
@@ -213,7 +243,10 @@ export function filterWorkoutsInWindow(
             if (Number.isNaN(startedAt)) {
                 return false;
             }
-            return startedAt >= since && startedAt <= until;
+            const endedAtRaw = workout.ended_at ? Date.parse(workout.ended_at) : NaN;
+            const endedAt = Number.isNaN(endedAtRaw) ? startedAt : endedAtRaw;
+
+            return endedAt >= since && startedAt <= until;
         })
         .sort((a, b) => (a.started_at ?? "").localeCompare(b.started_at ?? ""))
         .slice(0, MAX_LOGGED_WORKOUTS_IN_PROMPT);

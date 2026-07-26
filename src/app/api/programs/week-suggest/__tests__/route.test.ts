@@ -44,13 +44,18 @@ vi.mock("@/api/program-week-suggestions", () => ({
 
 vi.mock("@/api/workout-history-read", () => ({
     getAllWorkoutsSinceForUser: mockGetWorkoutsSince,
-    mapBackedUpWorkoutToHevyRoutine: (workout: { id: string; started_at: string }) => ({
+    mapBackedUpWorkoutToHevyRoutine: (workout: {
+        id: string;
+        started_at: string;
+        ended_at?: string;
+    }) => ({
         id: workout.id,
         title: "Logged session",
         folder_id: null,
         notes: "",
         exercises: [],
         started_at: workout.started_at,
+        ended_at: workout.ended_at,
     }),
 }));
 
@@ -262,11 +267,6 @@ describe("POST /api/programs/week-suggest", () => {
         const { POST } = await import("../route");
         await POST(request());
 
-        expect(mockGetWorkoutsSince).toHaveBeenCalledWith(
-            expect.anything(),
-            USER.id,
-            "2026-07-08T00:00:00.000Z",
-        );
         const input = mockGenerate.mock.calls[0][0];
         expect(input.loggedWorkouts.map((workout: THevyRoutine) => workout.id)).toEqual([
             "in-window",
@@ -307,6 +307,54 @@ describe("POST /api/programs/week-suggest", () => {
             targetWeek: 3,
         });
         expect(mockGenerate).not.toHaveBeenCalled();
+    });
+
+    it("reads the backup from before Export so open sessions are fetched", async () => {
+        const { POST } = await import("../route");
+        await POST(request());
+
+        expect(mockGetWorkoutsSince).toHaveBeenCalledWith(
+            expect.anything(),
+            USER.id,
+            "2026-07-07T00:00:00.000Z",
+        );
+    });
+
+    it("counts a session that started before Export and ended inside the week", async () => {
+        mockGetWorkoutsSince.mockResolvedValue([
+            {
+                id: "w-open",
+                started_at: "2026-07-07T18:00:00.000Z",
+                ended_at: "2026-07-08T09:30:00.000Z",
+            },
+        ]);
+
+        const { POST } = await import("../route");
+        const res = await POST(request());
+
+        await expect(res.json()).resolves.toMatchObject({ status: "ok" });
+        expect(mockGenerate).toHaveBeenCalledWith(
+            expect.objectContaining({
+                loggedWorkouts: [expect.objectContaining({ id: "w-open" })],
+            }),
+        );
+    });
+
+    it("does not generate or cache a week with nothing logged", async () => {
+        mockGetWorkoutsSince.mockResolvedValue([]);
+
+        const { POST } = await import("../route");
+        const res = await POST(request());
+
+        expect(res.status).toBe(200);
+        await expect(res.json()).resolves.toMatchObject({
+            status: "not_ready",
+            code: "no_logged_sessions",
+            basedOnWeek: 2,
+            targetWeek: 3,
+        });
+        expect(mockGenerate).not.toHaveBeenCalled();
+        expect(mockSaveCached).not.toHaveBeenCalled();
     });
 
     it("rejects anonymous callers", async () => {
