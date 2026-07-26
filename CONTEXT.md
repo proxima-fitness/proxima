@@ -125,8 +125,8 @@ Edge function (`hevy-program-sync`) that, on new Hevy workouts, marks schedule d
 _Avoid_: Workout history backup (different pipeline), Sync (Edit-path Hevy push), deleting the progression code, `Week N - …` title parse as match key, midnight fan-out cron
 
 **AI week suggest**:
-After **Week complete**, optional progression / exercise tweaks for week N+1. Generated **lazily** when the user opens the **Program overview** (or expands the suggest panel) — not on mark-complete and not on Export click. User may one-click apply into the **Program prescription** for week N+1, or skip and **Week Export** as-is. Distinct from **Edit current week** and from silent double-progression in **Hevy program sync**.
-_Avoid_: Sync dialog summary, modifyProgram (tool), living-loop ad-hoc chat edit, eager cron generation
+After **Week complete**, optional progression / exercise tweaks for week N+1. Generated **lazily** when the user opens the **Program overview** (or expands the suggest panel) — not on mark-complete and not on Export click. Cached once per program + completed week (`program_week_suggestions`); remount / reopen returns cache (no monthly LLM meter — company-borne). User may one-click apply into the **Program prescription** for week N+1, or skip and **Week Export** as-is. Distinct from **Edit current week** and from silent double-progression in **Hevy program sync**.
+_Avoid_: Sync dialog summary, modifyProgram (tool), living-loop ad-hoc chat edit, eager cron generation, billing week-suggest against monthly LLM quota
 
 **Hevy week copy**:
 What is currently in Hevy for a given exported week — the athlete’s working notes for that week, living in that week’s Export folder. Created by **Week Export**; updated by **Edit current week** Sync into that folder. May differ from the **Program prescription** without changing future weeks.
