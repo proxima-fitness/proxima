@@ -549,8 +549,8 @@ export const generateHevySets = (exercise: TSavedWorkoutExercise): THevySets[] =
     );
 
     for (let i = 0; i < maxSets; i++) {
-        const rr = exercise.reps_range?.[i];
-        const hasRepRange = rr != null && Array.isArray(rr) && rr.length >= 2;
+        const rr = exercise.reps_range?.[i] ?? null;
+        const hasRepRange = rr != null;
         const weight = exercise.weights?.[i];
         const rpeVal = exercise?.rpe
             ? (exercise.rpe[i] ?? null)

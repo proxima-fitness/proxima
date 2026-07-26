@@ -22,7 +22,11 @@ import { validate as validateUuid } from "uuid";
 import { getMaxFolderId } from "@/components/program-builder/utils";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/api/index";
-import { convertHevyOutputIntoInput, mapSupabaseExerciseTemplateRowToPostExercise } from "./hevy_export";
+import {
+    buildRepsRange2DForDb,
+    convertHevyOutputIntoInput,
+    mapSupabaseExerciseTemplateRowToPostExercise,
+} from "./hevy_export";
 import { HEVY_OMIT_REASON, RATE_LIMIT_EXHAUSTED_MESSAGE } from "@/assets/constants/ui-constants";
 
 /** Max pages when listing Hevy exercise templates (100 templates per page). */
@@ -669,16 +673,8 @@ async function runSaveProgramToSupabase(
                     }
 
                     const reps = exercise.sets?.map((set) => set.reps) ?? null;
-                    const repsRangeFromSets =
-                        exercise.sets?.map((set) =>
-                            set.rep_range != null
-                                ? ([set.rep_range.start, set.rep_range.end] as [number, number])
-                                : null,
-                        ) ?? null;
-                    const reps_range =
-                        repsRangeFromSets == null || repsRangeFromSets.every((r) => r == null)
-                            ? null
-                            : repsRangeFromSets;
+                    // Rectangular number[][] only — null holes in multi-dim float4[] fail insert.
+                    const reps_range = buildRepsRange2DForDb(exercise.sets);
                     const timeTaken = exercise.sets?.map((set) => set.duration_seconds) ?? null;
                     const weights = exercise.sets?.map((set) => set.weight_kg) ?? null;
                     const rpe = exercise.sets?.map((set) => set.rpe) ?? null;

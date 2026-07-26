@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { editorReducer, isNewPathDirty, UNDO_STACK_CAP, type TEditorState } from "../editor-reducer";
+import {
+    editorReducer,
+    isNewPathDirty,
+    isNewPathSaveDirty,
+    UNDO_STACK_CAP,
+    type TEditorState,
+} from "../editor-reducer";
 
 const makeDay = (id: string, title: string): THevyRoutine => ({
     id,
@@ -134,6 +140,13 @@ describe("editorReducer", () => {
         expect(isNewPathDirty(0)).toBe(false);
         expect(isNewPathDirty(1)).toBe(true);
         expect(isNewPathDirty(3)).toBe(true);
+    });
+
+    it("isNewPathSaveDirty: never Saved with program is dirty; after baseline uses undo stack", () => {
+        expect(isNewPathSaveDirty(0, false, true)).toBe(true);
+        expect(isNewPathSaveDirty(0, false, false)).toBe(false);
+        expect(isNewPathSaveDirty(0, true, true)).toBe(false);
+        expect(isNewPathSaveDirty(1, true, true)).toBe(true);
     });
 
     it(`drops oldest snapshot when stack exceeds cap ${UNDO_STACK_CAP}`, () => {

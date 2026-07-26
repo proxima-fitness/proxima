@@ -715,7 +715,7 @@ type TIntensityTypes = {
 
 type TRepsTypes = {
     reps?: number[];
-    reps_range?: number[][];
+    reps_range?: Array<[number, number] | null>;
     reps_max?: number[];
     amrap?: string[];
     time_taken?: number[];
@@ -763,9 +763,11 @@ type TScheduleWorkouts = {
 }
 
 type TSavedWorkoutExercise = {
-    reps?: number[];
+    /** Per-set fixed reps; null when that set uses a range. */
+    reps?: Array<number | null>;
     reps_max?: number[];
-    reps_range?: number[][];
+    /** Per-set `[start, end]`; null = no range for that set. Flat DB `real[]` is encode/decode-only. */
+    reps_range?: Array<[number, number] | null>;
     time_taken?: number[];
     time_range?: number[][];
     amrap?: string[];
@@ -777,10 +779,10 @@ type TSavedWorkoutExercise = {
 }
 
 type TAPIProgramWorkoutExercises = {
-    reps?: number[];
+    reps?: Array<number | null>;
     weights?: number[];
     reps_max?: number[];
-    reps_range?: number[][] ;
+    reps_range?: Array<[number, number] | null>;
     rpe?: number[];
     rpe_range?: number[][];
     time_taken?: number[];

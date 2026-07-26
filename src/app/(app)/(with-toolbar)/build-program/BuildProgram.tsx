@@ -27,7 +27,7 @@ import { normalizeProgramState } from "@/components/program-builder/utils/helper
 import { ProgramEditor } from "./ProgramEditor";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { getSharedProgram } from "@/api/programs";
+import { getSharedProgram, postNewProgramSubscriber } from "@/api/programs";
 import { CHAT_MESSAGES_KEY, COLLAPSED_SIZE, EXPANDED_SIZE, LONG_PROMPT_PLACEHOLDER, SIDEBAR_POSITION_KEY, SIDEBAR_SIZE_KEY } from "@/assets/constants/ui-constants";
 import { emptyHevyProgram } from "@/assets/constants";
 import { getMessageText } from "@/components/program-builder/utils/helpers";
@@ -53,7 +53,7 @@ import {
     enableBuilderDraftWrites,
     NEW_PATH_SAVE_SUCCESS_TOAST,
 } from "@/lib/builder-draft";
-import { editorReducer, isNewPathDirty } from "./editor-reducer";
+import { editorReducer, isNewPathDirty, isNewPathSaveDirty } from "./editor-reducer";
 import type { TCommitWithUndoOptions } from "@/components/program-builder/mutations/types";
 import { useProgramRequestState } from "./use-program-request-state";
 import { readAnonymousChatMessages, useBuildProgramChat } from "./use-build-program-chat";
@@ -156,9 +156,16 @@ export function BuildProgram() {
         hevyProgram: [],
         undoStack: [],
     });
+    /** True after a successful New-path Save this session (undo baseline established). */
+    const [hasSaveBaseline, setHasSaveBaseline] = useState(false);
     const editMode = searchParams.get("edit") === "true";
-    /** Mirror only — SoT is undo stack. Silent assign for beforeunload / link capture. */
-    newPathLeaveGuard.setDirty(!editMode && isNewPathDirty(undoStack.length));
+    const newPathDirty = isNewPathSaveDirty(
+        undoStack.length,
+        hasSaveBaseline,
+        hevyProgram.length > 0,
+    );
+    /** Mirror only — SoT is save baseline + undo stack. Silent assign for beforeunload / link capture. */
+    newPathLeaveGuard.setDirty(!editMode && newPathDirty);
 
     const setProgramFromHydrate = useCallback((program: THevyRoutine[]) => {
         dispatchEditor({ type: "REPLACE_PROGRAM", program: normalizeProgramState(program) });
@@ -281,6 +288,7 @@ export function BuildProgram() {
 
     const clearUndoBaseline = useCallback(() => {
         dispatchEditor({ type: "CLEAR_UNDO_BASELINE" });
+        setHasSaveBaseline(true);
     }, []);
 
     const {
@@ -404,6 +412,7 @@ export function BuildProgram() {
                 isMobile={isMobile}
                 sharedProgramLoadAttempted={sharedProgramLoadAttempted}
                 undoStackLength={undoStack.length}
+                hasSaveBaseline={hasSaveBaseline}
                 handleUndo={handleUndo}
                 clearUndoBaseline={clearUndoBaseline}
                 sidebarPosition={sidebarPosition}
@@ -450,6 +459,7 @@ interface IBuildProgramShellProps {
     isMobile: boolean;
     sharedProgramLoadAttempted: boolean;
     undoStackLength: number;
+    hasSaveBaseline: boolean;
     handleUndo: () => void;
     clearUndoBaseline: () => void;
     sidebarPosition: "left" | "right";
@@ -483,6 +493,7 @@ function BuildProgramShell({
     isMobile,
     sharedProgramLoadAttempted,
     undoStackLength,
+    hasSaveBaseline,
     handleUndo,
     clearUndoBaseline,
     sidebarPosition,
@@ -556,6 +567,7 @@ function BuildProgramShell({
     }, [tryRunSignInMigration, trySendInitialPrompt, sharedProgramLoadAttempted]);
 
     const handleSave = useCallback(async () => {
+        if (isLoading) return;
         if (!user) {
             toast.error("Sign in to save.");
             return;
@@ -590,6 +602,14 @@ function BuildProgramShell({
                 }
             }
 
+            const subscriberError = await postNewProgramSubscriber(user, String(programId));
+            if (subscriberError) {
+                toast.error("Program saved but failed to add to My Programs.");
+                console.error("Failed to add program to My Programs.", subscriberError);
+                return;
+            }
+            queryClient.invalidateQueries({ queryKey: ["subscribed-programs", user.id] });
+
             const connectResult = await connectChatToSavedProgram({
                 user,
                 persistChatId: getPersistChatId(),
@@ -610,6 +630,7 @@ function BuildProgramShell({
             setIsSaving(false);
         }
     }, [
+        isLoading,
         user,
         hevyProgram.length,
         orderedProgram,
@@ -730,7 +751,17 @@ function BuildProgramShell({
                 undoDisabled={status === "streaming"}
                 onUndo={onUndo}
                 onSave={handleSave}
-                saveDisabled={!user || hevyProgram.length === 0 || messages.length === 0}
+                saveDisabled={
+                    !user
+                    || isSaving
+                    || isLoading
+                    || messages.length === 0
+                    || !isNewPathSaveDirty(
+                        undoStackLength,
+                        hasSaveBaseline,
+                        hevyProgram.length > 0,
+                    )
+                }
                 isSaving={isSaving}
             />
             {isChatHidden && (

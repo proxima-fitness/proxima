@@ -19,9 +19,24 @@ export type TEditorAction =
     /** After successful New-path Save: current grid is baseline; dirty clears. */
     | { type: "CLEAR_UNDO_BASELINE" };
 
-/** New-path dirty = undo stack non-empty vs last Save (or never Saved). */
+/** Undo-stack dirty only (after a Save baseline exists). */
 export function isNewPathDirty(undoStackLength: number): boolean {
     return undoStackLength > 0;
+}
+
+/**
+ * New-path Save/leave dirty: never Saved with a program, or undo stack non-empty vs last Save.
+ * ADR 0007 — Save clears baseline; further edits re-dirty.
+ */
+export function isNewPathSaveDirty(
+    undoStackLength: number,
+    hasSaveBaseline: boolean,
+    hasProgram: boolean,
+): boolean {
+    if (!hasSaveBaseline) {
+        return hasProgram;
+    }
+    return isNewPathDirty(undoStackLength);
 }
 
 function pushUndoSnapshot(stack: THevyRoutine[][], snapshot: THevyRoutine[]): THevyRoutine[][] {

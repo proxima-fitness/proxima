@@ -12,7 +12,7 @@ export const BUILDER_REQUEST_KEY = "hevy-request";
 export const BUILDER_PROMPT_KEY = "prompt";
 
 export const NEW_PATH_SAVE_SUCCESS_TOAST =
-    "Program saved — export week 1 from your profile.";
+    "Program saved. Export week 1 from your profile.";
 
 /** After Discard/Clear/Save, block debounced re-writes until the next dirty edit. */
 let draftWriteEnabled = true;

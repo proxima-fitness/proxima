@@ -227,10 +227,10 @@ export const ProgramPreview: React.FC<IProps> = (props) => {
                                                         )}
                                                         { exercise?.reps_range && (
                                                             exercise.reps_range.every((range, i, arr) => JSON.stringify(range) === JSON.stringify(arr[0])) ? (
-                                                                <div>{ exercise.reps_range[0][0]}-{exercise.reps_range[0][1] } Reps</div>
+                                                                <div>{ exercise.reps_range[0]?.[0]}-{exercise.reps_range[0]?.[1] } Reps</div>
                                                             ) : (
                                                                 exercise.reps_range.map((range, index) => (
-                                                                    <div key={ index }>{range[0]} - {range[1]} Reps</div>
+                                                                    <div key={ index }>{range?.[0]} - {range?.[1]} Reps</div>
                                                                 ))
                                                             )
                                                         )}

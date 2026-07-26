@@ -866,8 +866,13 @@ export const convertProgramCreatorExerciseToAddExercise = (programCreatorExercis
     // Populate data fields
     const reps = reps_type?.reps || reps_type?.reps_max || reps_type?.time_taken || amrapAsNumber(reps_type?.amrap) || []; // AMRAP NEEDS TO BE FIXED HERE
     const intensityData = intensity?.percent_rm || intensity?.rpe || intensity?.weights || [];
-    const repsWithTimeAndRepRange =
-      reps_type?.reps_range || reps_type?.time_range || [];
+    // Form state is dense `number[][]`; drop null holes from nullable reps_range.
+    const repsWithTimeAndRepRange: number[][] =
+      reps_type?.reps_range
+        ?.filter((range): range is [number, number] => range != null)
+        .map((range) => [range[0], range[1]]) ??
+      reps_type?.time_range ??
+      [];
     const intensityDataWithRPERange = intensity?.rpe_range || [];
 
     // Return the mapped TAddExercise object
