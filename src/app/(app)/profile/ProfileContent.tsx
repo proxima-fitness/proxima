@@ -24,14 +24,12 @@ import { ProfileCalendarSection } from "@/components/profile/ProfileCalendarSect
 import { ProgramOverviewSection } from "@/components/profile/ProgramOverviewSection";
 import { RecentWorkoutsSection } from "@/components/profile/RecentWorkoutsSection";
 import { ResumeDraftBanner } from "@/components/program-builder/ResumeDraftBanner";
+import { PROFILE_SECTION_CARD_CLASS } from "@/components/profile/profileSectionChrome";
 import styles from "../../../style";
 import { Card } from "@/components/ui/card";
 
 const PROFILE_PAGE_X =
     "max-sm:px-3 sm:px-12 md:px-16 lg:px-20 xl:px-24";
-
-const PROFILE_CARD_CLASS =
-    "rounded-2xl border border-border/60 bg-card px-3 py-3 shadow-sm sm:px-4 sm:py-4";
 
 /**
  * Renders profile sections; fetches Hevy key and programs for the current user.
@@ -58,7 +56,7 @@ export function ProfileContent() {
                 </div>
 
                 {user ? (
-                    <Card className={PROFILE_CARD_CLASS}>
+                    <Card className={PROFILE_SECTION_CARD_CLASS}>
                         <ProfileHero />
                     </Card>
                 ) : null}
@@ -76,7 +74,7 @@ export function ProfileContent() {
                     ) : null}
                 </div>
 
-                <Card className={PROFILE_CARD_CLASS}>
+                <Card className={PROFILE_SECTION_CARD_CLASS}>
                     <BlindSpotAnalysisSection
                         hevyPrograms={hevyPrograms}
                         isLoadingHevy={isLoadingHevy}

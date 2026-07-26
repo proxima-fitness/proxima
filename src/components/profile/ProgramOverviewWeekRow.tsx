@@ -56,7 +56,7 @@ export function ProgramOverviewWeekRow({
         <li
             className={cn(
                 "flex flex-col gap-2 border-b border-border/40 py-2.5 last:border-b-0",
-                status === "current" && "bg-muted/30 px-2 -mx-2 rounded-lg sm:px-3 sm:-mx-3",
+                status === "current" && "bg-muted/30 px-2 -mx-2 sm:px-3 sm:-mx-3",
             )}
         >
             <div className="flex items-center justify-between gap-3">

@@ -126,11 +126,13 @@ describe("ProgramOverviewSection", () => {
 
         renderSection(<ProgramOverviewSection />);
 
+        expect(screen.getByRole("heading", { name: "Program overview" })).toBeTruthy();
         expect(screen.getByTestId("program-overview-slider")).toBeTruthy();
-        expect(screen.getByText("Strength Block A")).toBeTruthy();
+        expect(screen.getByRole("heading", { name: "Strength Block A" })).toBeTruthy();
         expect(screen.getByText(/8-week · Powerbuilding/)).toBeTruthy();
-        expect(screen.getByText("Hyrox Prep")).toBeTruthy();
+        expect(screen.getByRole("heading", { name: "Hyrox Prep" })).toBeTruthy();
         expect(screen.getByText(/6-week · Hyrox/)).toBeTruthy();
+        expect(screen.queryByText(/Active program/i)).toBeNull();
         expect(screen.getByTestId("week-list-11").textContent).toContain(
             "Strength Block A:weeks:8",
         );

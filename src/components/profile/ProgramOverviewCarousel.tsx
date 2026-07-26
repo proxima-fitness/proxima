@@ -132,7 +132,7 @@ export function ProgramOverviewCarousel({
     return (
         <div
             className={cn(
-                "program-overview-carousel relative rounded-2xl bg-gradient-to-b from-muted/40 to-transparent px-1 py-1 sm:px-10",
+                "program-overview-carousel relative px-1 py-1 sm:px-10",
                 className,
             )}
         >
@@ -142,16 +142,7 @@ export function ProgramOverviewCarousel({
                     return (
                         <div key={program.id} className="px-1 outline-none">
                             <div className="px-1 py-3 text-center sm:py-4">
-                                <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground/80">
-                                    Active program
-                                    {canPage ? (
-                                        <span className="normal-case tracking-normal text-muted-foreground/60">
-                                            {" "}
-                                            · {i + 1} of {count}
-                                        </span>
-                                    ) : null}
-                                </p>
-                                <h3 className="mt-2 text-balance font-main text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                                <h3 className="text-balance font-main text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
                                     {program.title}
                                 </h3>
                                 {meta ? (

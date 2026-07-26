@@ -7,7 +7,7 @@
  *
  * Depends on: useSubscribedPrograms, useHevyPrograms, UserContext,
  *             ProgramOverviewCarousel, ProgramOverviewWeekList,
- *             ProgramOverviewHevyMirror
+ *             ProgramOverviewHevyMirror, profileSectionChrome
  * Used by: ProfileContent
  */
 
@@ -23,15 +23,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ProgramOverviewCarousel } from "./ProgramOverviewCarousel";
 import { ProgramOverviewHevyMirror } from "./ProgramOverviewHevyMirror";
 import { ProgramOverviewWeekList } from "./ProgramOverviewWeekList";
-
-const PROFILE_CARD_CLASS =
-    "rounded-2xl border border-border/60 bg-card px-4 py-5 shadow-sm sm:px-6 sm:py-6";
+import {
+    PROFILE_SECTION_CARD_CLASS,
+    ProfileSectionHeader,
+} from "./profileSectionChrome";
 
 function OverviewSkeleton() {
     return (
         <div className="space-y-4 pt-4" aria-hidden>
             <div className="flex flex-col items-center gap-2 py-4">
-                <Skeleton className="h-3 w-28" />
                 <Skeleton className="h-8 w-56 sm:w-72" />
                 <Skeleton className="h-4 w-36" />
             </div>
@@ -64,39 +64,32 @@ export function ProgramOverviewSection() {
 
     return (
         <section aria-labelledby="program-overview-heading">
-            <Card className={PROFILE_CARD_CLASS}>
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                    <div className="min-w-0 space-y-1">
-                        <h2
-                            id="program-overview-heading"
-                            className="flex items-center gap-1.5 text-lg font-semibold tracking-tight text-foreground"
-                        >
-                            <Layers className="size-4 shrink-0 opacity-80" aria-hidden />
-                            Program overview
-                        </h2>
-                        <p className="text-sm text-muted-foreground">
-                            Swipe between your active programs.
-                        </p>
-                    </div>
-                    {user ? (
-                        <Link
-                            href="/build-program?empty=true"
-                            className="shrink-0"
-                            target="_self"
-                            rel="noopener noreferrer"
-                        >
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="rounded-full border-border/80"
+            <Card className={PROFILE_SECTION_CARD_CLASS}>
+                <ProfileSectionHeader
+                    id="program-overview-heading"
+                    icon={<Layers className="size-4 shrink-0 opacity-80" aria-hidden />}
+                    title="Program overview"
+                    action={
+                        user ? (
+                            <Link
+                                href="/build-program?empty=true"
+                                className="shrink-0"
+                                target="_self"
+                                rel="noopener noreferrer"
                             >
-                                New program
-                                <Plus className="size-4" aria-hidden />
-                            </Button>
-                        </Link>
-                    ) : null}
-                </div>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="rounded-full border-border/80"
+                                >
+                                    New program
+                                    <Plus className="size-4" aria-hidden />
+                                </Button>
+                            </Link>
+                        ) : null
+                    }
+                />
 
                 {isLoading ? (
                     <OverviewSkeleton />
@@ -110,7 +103,7 @@ export function ProgramOverviewSection() {
                     </p>
                 ) : !programs || programs.length === 0 ? (
                     <div className="mt-5 space-y-6">
-                        <div className="rounded-2xl border border-dashed border-border/60 bg-muted/20 px-5 py-8 text-center">
+                        <div className="px-1 py-6 text-center">
                             <p className="text-base font-medium tracking-tight text-foreground">
                                 No active programs yet
                             </p>

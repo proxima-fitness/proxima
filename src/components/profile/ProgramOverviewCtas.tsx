@@ -160,7 +160,7 @@ export function ProgramOverviewCtas({
 
     return (
         <div className="mx-auto flex w-full max-w-md flex-col gap-3 px-1">
-            <div className="flex flex-wrap items-center justify-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button
@@ -219,7 +219,7 @@ export function ProgramOverviewCtas({
             </div>
 
             {!gate.allowed && !linksLoading ? (
-                <p className="text-center text-xs text-muted-foreground">{gate.reason}</p>
+                <p className="text-xs text-muted-foreground">{gate.reason}</p>
             ) : null}
 
             {isUploading && uploadProgress ? (

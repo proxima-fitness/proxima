@@ -141,8 +141,8 @@ function MirrorFolderRow({
         <div
             className={
                 folder.isCurrent
-                    ? "flex items-center gap-3 rounded-xl border border-lightSecondary/30 bg-muted/40 px-3 py-2.5"
-                    : "flex items-center gap-3 rounded-xl border border-border/50 bg-muted/20 px-3 py-2.5"
+                    ? "flex items-center gap-3 bg-muted/30 px-1 py-2.5 sm:px-2"
+                    : "flex items-center gap-3 px-1 py-2.5 sm:px-2"
             }
         >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -152,7 +152,13 @@ function MirrorFolderRow({
                 className="h-5 w-auto shrink-0 object-contain opacity-90"
             />
             <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-foreground">
+                <p
+                    className={
+                        folder.isCurrent
+                            ? "truncate text-sm font-medium text-lightSecondary"
+                            : "truncate text-sm font-medium text-foreground"
+                    }
+                >
                     {folder.program.program_title || "Hevy folder"}
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -212,10 +218,8 @@ export function ProgramOverviewHevyMirror({
         }
         return (
             <div className="mx-auto w-full max-w-md px-1">
-                <h4 className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground/80">
-                    Hevy mirror
-                </h4>
-                <p className="mt-2 text-center text-sm text-muted-foreground">
+                <h4 className="text-xs text-muted-foreground">Hevy mirror</h4>
+                <p className="mt-2 text-sm text-muted-foreground">
                     Week Export creates this program&apos;s Hevy week copy here.
                 </p>
             </div>
@@ -237,19 +241,20 @@ export function ProgramOverviewHevyMirror({
 
     return (
         <div className="mx-auto w-full max-w-md px-1">
-            <h4 className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground/80">
-                Hevy mirror
-            </h4>
-            <ul className="mt-2 flex list-none flex-col gap-2 p-0" aria-label="Hevy mirror">
+            <h4 className="text-xs text-muted-foreground">Hevy mirror</h4>
+            <ul className="mt-1 flex list-none flex-col p-0" aria-label="Hevy mirror">
                 {folders.map((folder) => {
                     const isFirstOther =
                         showOtherHeading &&
                         folder.weekLabel == null &&
                         folders.find((f) => f.weekLabel == null)?.key === folder.key;
                     return (
-                        <li key={folder.key} className="list-none">
+                        <li
+                            key={folder.key}
+                            className="list-none border-b border-border/40 last:border-b-0"
+                        >
                             {isFirstOther ? (
-                                <p className="pb-1.5 pt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
+                                <p className="pb-1 pt-2 text-xs text-muted-foreground">
                                     Other Hevy folders
                                 </p>
                             ) : null}
