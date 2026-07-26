@@ -38,6 +38,7 @@ import {
     type TBodyMeasurementsQueryOptions,
 } from "./body-measurements-read";
 import { getProgramHevyWeekLinks } from "./program-hevy-links";
+import { getProgramScheduleHistoryDays } from "./program-schedule-history";
 import { supabase } from ".";
 
 /** React Query key for latest backed-up body measurement. */
@@ -48,6 +49,9 @@ export const BODY_MEASUREMENTS_HISTORY_QUERY_KEY = ["body-measurements", "histor
 
 /** React Query key for Program–Hevy week links by program. */
 export const PROGRAM_HEVY_LINKS_QUERY_KEY = ["program-hevy-links"] as const;
+
+/** React Query key for program schedule-history day rows by program. */
+export const PROGRAM_SCHEDULE_HISTORY_QUERY_KEY = ["program-schedule-history"] as const;
 
 /* ================================
    CLIENT-SIDE RENDERED HOOKS
@@ -495,6 +499,23 @@ export const useProgramHevyWeekLinks = (programId: number | undefined) => {
         queryKey: [...PROGRAM_HEVY_LINKS_QUERY_KEY, programId],
         queryFn: () => getProgramHevyWeekLinks(programId!),
         enabled: programId != null,
+    });
+};
+
+/**
+ * Schedule-history day-complete rows for one Proxima program (overview status).
+ *
+ * @param programId - Proxima program id (query disabled when undefined)
+ * @param userId - Owner user id (query disabled when undefined)
+ */
+export const useProgramScheduleHistoryDays = (
+    programId: number | undefined,
+    userId: string | undefined,
+) => {
+    return useQuery({
+        queryKey: [...PROGRAM_SCHEDULE_HISTORY_QUERY_KEY, programId, userId],
+        queryFn: () => getProgramScheduleHistoryDays(programId!, userId!),
+        enabled: programId != null && !!userId,
     });
 };
 

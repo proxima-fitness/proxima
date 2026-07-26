@@ -5,7 +5,7 @@
  * Gates Export via Program–Hevy links + Week complete (manual mark until ADR 0011).
  *
  * Depends on: ProgramOverviewExportWeek, useProgramHevyWeekLinks, useHevySecret, UserContext
- * Used by: MyProgramsVault (profile Programs tab)
+ * Used by: thin Week Export entry points (overview CTAs own primary Export)
  */
 
 "use client";
@@ -28,6 +28,10 @@ import {
     exportProgramWeekToHevy,
     nextExportableWeek,
 } from "./ProgramOverviewExportWeek";
+import {
+    readManualCompletedWeeks,
+    writeManualCompletedWeeks,
+} from "./ProgramOverviewWeekStatus";
 
 type TUploadProgress = {
     uploaded: number;
@@ -40,36 +44,6 @@ export type TProgramOverviewExportWeekCTAProps = {
     programId: number;
     programTitle: string;
 };
-
-function completedWeeksStorageKey(programId: number): string {
-    return `proxima-week-complete:${programId}`;
-}
-
-function readCompletedWeeks(programId: number): number[] {
-    if (typeof window === "undefined") {
-        return [];
-    }
-    try {
-        const raw = window.localStorage.getItem(completedWeeksStorageKey(programId));
-        if (!raw) {
-            return [];
-        }
-        const parsed: unknown = JSON.parse(raw);
-        if (!Array.isArray(parsed)) {
-            return [];
-        }
-        return parsed.filter((n): n is number => Number.isInteger(n) && n >= 1);
-    } catch {
-        return [];
-    }
-}
-
-function writeCompletedWeeks(programId: number, weeks: number[]): void {
-    if (typeof window === "undefined") {
-        return;
-    }
-    window.localStorage.setItem(completedWeeksStorageKey(programId), JSON.stringify(weeks));
-}
 
 /**
  * Renders Export week N button, gate-aware disable, and temp Mark week complete.
@@ -86,7 +60,9 @@ export function ProgramOverviewExportWeekCTA({
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState<TUploadProgress | null>(null);
     // Lazy init from localStorage; remount via key when programId changes (rerender-lazy-state-init).
-    const [completedWeeks, setCompletedWeeks] = useState(() => readCompletedWeeks(programId));
+    const [completedWeeks, setCompletedWeeks] = useState(() =>
+        readManualCompletedWeeks(programId),
+    );
 
     const linkedWeeks = links.map((link) => link.nth_week);
     const currentLinkedWeek =
@@ -103,7 +79,7 @@ export function ProgramOverviewExportWeekCTA({
         const next = Array.from(new Set([...completedWeeks, currentLinkedWeek])).sort(
             (a, b) => a - b,
         );
-        writeCompletedWeeks(programId, next);
+        writeManualCompletedWeeks(programId, next);
         setCompletedWeeks(next);
         toast.success(`Marked week ${currentLinkedWeek} complete.`);
     };

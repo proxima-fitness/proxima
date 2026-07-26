@@ -23,6 +23,7 @@ import {
     useMyFeatureLimits,
     useSubscribedPrograms,
 } from "@/api/hooks";
+import { useNavigateToEditHevyProgram } from "@/hooks/useNavigateToEditHevyProgram";
 import {
     fetchWorkoutHistorySyncProgress,
     isWorkoutHistorySyncInProgress,
@@ -131,6 +132,7 @@ export function BlindSpotAnalysisSection({
 }: TBlindSpotAnalysisSectionProps) {
     const router = useRouter();
     const queryClient = useQueryClient();
+    const navigateToEditHevyProgram = useNavigateToEditHevyProgram();
     const { user } = useUserContext();
     const { isInLbs } = usePoundsOrKgContext();
     const { data: hevyApiKey } = useHevySecret(user);
@@ -192,19 +194,12 @@ export function BlindSpotAnalysisSection({
         (program: THevyProgramItem) => {
             if (!exploreFixesExercise) return;
             const search = buildStallSearchString(exploreFixesExercise, isInLbs, isPro);
-            for (const routine of program.program) {
-                routine.folder_id = 0;
-            }
-            localStorage.setItem("hevy-program-in-progress", JSON.stringify(program.program));
-            const params = new URLSearchParams({
-                resume: "true",
-                search,
+            void navigateToEditHevyProgram(program, { extraParams: { search } }).then(() => {
+                setExploreFixesDialogOpen(false);
+                setExploreFixesExercise(null);
             });
-            router.push(`/build-program?${params.toString()}`);
-            setExploreFixesDialogOpen(false);
-            setExploreFixesExercise(null);
         },
-        [exploreFixesExercise, isInLbs, isPro, router],
+        [exploreFixesExercise, isInLbs, isPro, navigateToEditHevyProgram],
     );
 
     const filteredAndSorted = useMemo(() => {

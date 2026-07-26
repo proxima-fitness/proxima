@@ -2,16 +2,14 @@
 
 /**
  * @module HevyProgramsGrid
- * Grid of synced Hevy programs: each card shows program title, paginated routine list, and Edit button.
- * Edit persists program to localStorage and navigates to build-program. Empty state renders nothing.
- * Depends on: BUILD_PROGRAM_EMPTY_URL, hevy_logo, Button, Skeleton, DropdownMenu.
- * Used by: ConditionalHevyGrid, DashboardContent; HevyProgramItem type by BlindSpotAnalysisSection.
+ * Legacy grid of synced Hevy programs (retired from profile — ADR 0010 / 04).
+ * Hevy mirror on Program overview owns Edit-path entry. Kept for potential reuse.
+ * Depends on: hevy_logo, Button, Skeleton, DropdownMenu, useNavigateToEditHevyProgram.
  */
 
 import { useState } from "react";
 import Link from "next/link";
 import { NotepadTextIcon, EditIcon, ChevronLeft, ChevronRight, ChevronDown, Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { hevy_logo } from "public";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,7 +18,7 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { normalizeRoutineTitlesForBuilder } from "@/components/program-builder/utils/format-responses";
+import { useNavigateToEditHevyProgram } from "@/hooks/useNavigateToEditHevyProgram";
 
 const ROUTINES_PER_PAGE = 4;
 
@@ -129,12 +127,10 @@ interface IProps {
 }
 
 export const HevyProgramsGrid: React.FC<IProps> = ({ hevyPrograms, isLoadingHevy }) => {
-    const router = useRouter();
+    const navigateToEditHevyProgram = useNavigateToEditHevyProgram();
 
     const handleEditProgram = (program: THevyProgramItem): void => {
-        const normalized = normalizeRoutineTitlesForBuilder(program.program);
-        localStorage.setItem("hevy-program-in-progress", JSON.stringify(normalized));
-        router.push("/build-program?resume=true&edit=true&hevy=true");
+        void navigateToEditHevyProgram(program);
     };
 
     if (isLoadingHevy) {

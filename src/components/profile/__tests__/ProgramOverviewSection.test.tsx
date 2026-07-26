@@ -15,6 +15,12 @@ vi.mock("@/contexts/UserContext", () => ({
 
 vi.mock("@/api/hooks", () => ({
     useSubscribedPrograms: (...args: unknown[]) => useSubscribedPrograms(...args),
+    useHevySecret: () => ({ data: undefined }),
+    useHevyPrograms: () => ({ data: [], isLoading: false }),
+}));
+
+vi.mock("../ProgramOverviewHevyMirror", () => ({
+    ProgramOverviewHevyMirror: () => <div data-testid="hevy-mirror-stub" />,
 }));
 
 // Avoid react-slick → enquire.js (needs matchMedia). Stub renders slides only.
@@ -27,6 +33,22 @@ vi.mock("react-slick", () => ({
 vi.mock("slick-carousel/slick/slick.css", () => ({}));
 vi.mock("slick-carousel/slick/slick-theme.css", () => ({}));
 vi.mock("../ProgramOverviewCarousel.css", () => ({}));
+
+vi.mock("../ProgramOverviewWeekList", () => ({
+    ProgramOverviewWeekList: ({
+        programId,
+        programTitle,
+        programLength,
+    }: {
+        programId: number;
+        programTitle: string;
+        programLength: number | null;
+    }) => (
+        <div data-testid={`week-list-${programId}`}>
+            {programTitle}:weeks:{programLength ?? "none"}
+        </div>
+    ),
+}));
 
 import { ProgramOverviewSection } from "../ProgramOverviewSection";
 
@@ -90,6 +112,9 @@ describe("ProgramOverviewSection", () => {
 
         expect(screen.getByText("No active programs yet")).toBeTruthy();
         expect(screen.getByRole("link", { name: /Start a program/i })).toBeTruthy();
+        expect(screen.getByTestId("hevy-mirror-stub")).toBeTruthy();
+        expect(screen.queryByText("My Programs")).toBeNull();
+        expect(screen.queryByText("My Hevy Programs")).toBeNull();
     });
 
     it("renders a slide per subscribed program", () => {
@@ -106,5 +131,11 @@ describe("ProgramOverviewSection", () => {
         expect(screen.getByText(/8-week · Powerbuilding/)).toBeTruthy();
         expect(screen.getByText("Hyrox Prep")).toBeTruthy();
         expect(screen.getByText(/6-week · Hyrox/)).toBeTruthy();
+        expect(screen.getByTestId("week-list-11").textContent).toContain(
+            "Strength Block A:weeks:8",
+        );
+        expect(screen.getByTestId("week-list-22").textContent).toContain(
+            "Hyrox Prep:weeks:6",
+        );
     });
 });

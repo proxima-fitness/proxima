@@ -53,8 +53,8 @@ The multi-week training block owned in Supabase — single source of truth on th
 _Avoid_: Overarching program, program-in-progress (UI-shaped), Program (alone — ambiguous with Hevy), vault program
 
 **Program overview**:
-Per-**Proxima program** profile panel: consecutive weeks, **Week complete**, **AI week suggest**, **Edit program**, **Edit current week**, plus that program’s **Hevy mirror**. Export destinations removed from the builder (PDF, Hevy / **Week Export**, spreadsheet) live here as a per-program dropdown — not on the builder toolbar. Active programs each get an overview; those overviews are carousel slides — swipe/page to switch (one overview visible). Replaces profile **My Programs** vault browse. Target layout: top of a single profile scroll (Stats/Programs tabs transitional — drop once the carousel of compact overviews lands). Backend / **Hevy program sync** must support more than one active program.
-_Avoid_: Carousel as title-only picker above a shared body, separate My Programs / My Hevy Programs sections, permanent Stats/Programs tabs, vault browse on profile, forcing a single active program in data, builder Export button
+Per-**Proxima program** profile panel: consecutive weeks, **Week complete**, **AI week suggest**, **Edit program**, **Edit current week**, plus that program’s **Hevy mirror**. Export destinations removed from the builder (PDF, Hevy / **Week Export**, spreadsheet) live here as a per-program **Export** dropdown on each overview slide — Hevy option is gated **Week Export**; PDF / spreadsheet export the full **Program prescription**. Active programs each get an overview; those overviews are carousel slides — swipe/page to switch (one overview visible). Replaces profile **My Programs** vault browse. Lives at the top of a single profile scroll (no Stats/Programs tabs). Backend / **Hevy program sync** must support more than one active program.
+_Avoid_: Carousel as title-only picker above a shared body, separate My Programs / My Hevy Programs sections, Stats/Programs tabs, vault browse on profile, forcing a single active program in data, builder Export button
 
 **Hevy mirror**:
 Subsection of a **Program overview** slide for that program’s active Hevy week copy (via **Program–Hevy link**) and for Hevy-only folders with no Proxima program — Edit path / split builder entry and **Make into a program**. Replaces the old standalone profile **Hevy folders** / “My Hevy Programs” grid.
@@ -89,7 +89,7 @@ _Avoid_: Edit mode (UI label only), Edit arrival (entry mechanic), assuming ever
 _Avoid_: Edit mode (too broad), full-program Edit, re-Export same week, autosave to Supabase on Sync
 
 **Current week** (overview):
-The highest week number with a **Program–Hevy link** for this **Proxima program** (`max(nth_week)`). Always the only Exported week that is not yet **Week complete** — **Week Export** of N+1 is blocked until week N is complete. **Edit current week** Sync updates that week’s routines (planned days). Completed sessions are **Workouts** in history — fix those via workout history, not by editing old routines. Stale completed-week folders in Hevy are the user’s to delete; Proxima does not clean them up. Folder titles like `Week N - …` are human labels only — not how current week is computed.
+The highest week number with a **Program–Hevy link** for this **Proxima program** that is not yet **Week complete** (link `max(nth_week)` among incomplete linked weeks; when every linked week is complete, overview shows no Current row). **Week Export** of N+1 is blocked until week N is complete. **Edit current week** Sync updates that week’s routines (planned days). Completed sessions are **Workouts** in history — fix those via workout history, not by editing old routines. Stale completed-week folders in Hevy are the user’s to delete; Proxima does not clean them up. Folder titles like `Week N - …` are human labels only — not how current week is computed. Overview week rows also show **Not exported** (no link) and **Complete**.
 _Avoid_: Calendar week, Syncing prior Exported weeks, Proxima deleting Hevy folders, editing routines to fix logged workouts, deriving current week from Hevy folder titles
 **Program prescription**:
 What the **Proxima program** says the athlete should do — the trainer plan. Survives week-to-week; Export of week N+1 comes from this, not from last week’s Hevy divergences.
@@ -416,7 +416,7 @@ Consecutive Sunday-start weeks (US ET, same as profile statistics) with at least
 _Avoid_: Day streak, GitHub streak, streak badge on calendar
 
 **Recent workouts** (profile):
-Horizontal browse feed on the profile page — read-only preview cards for backed-up **Workouts** (≤5 exercises each), newest first, cursor-paginated with load-more. Card header shows title, date, duration, and **Session goal** badge when classifiable. **See more exercises** links to logged workout detail when needed. Shown only when Hevy is connected. Sits below profile statistics (and below **Program overview** once Stats/Programs tabs are dropped). White card on muted page background per profile Hevy layout.
+Horizontal browse feed on the profile page — read-only preview cards for backed-up **Workouts** (≤5 exercises each), newest first, cursor-paginated with load-more. Card header shows title, date, duration, and **Session goal** badge when classifiable. **See more exercises** links to logged workout detail when needed. Shown only when Hevy is connected. Sits below **Program overview**, profile statistics, and blind spot on the single profile scroll. White card on muted page background per profile Hevy layout.
 _Avoid_: Workout feed (ambiguous with social feed), workout history list (too generic)
 
 **Session goal**:

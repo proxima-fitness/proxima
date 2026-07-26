@@ -1,11 +1,13 @@
 /**
  * @module ProgramOverviewSection
  *
- * Profile Program overview shell (ADR 0010 sub-plan 1): section header +
- * carousel of per-program overviews (one slide = one active program).
- * Week rows / Export / Hevy mirror fill each slide in later sub-plans.
+ * Profile Program overview shell (ADR 0010): section header + carousel of
+ * per-program overviews (one slide = one active program). Week rows, Export /
+ * Edit CTAs, and Hevy mirror mount inside each slide.
  *
- * Depends on: useSubscribedPrograms, UserContext, ProgramOverviewCarousel
+ * Depends on: useSubscribedPrograms, useHevyPrograms, UserContext,
+ *             ProgramOverviewCarousel, ProgramOverviewWeekList,
+ *             ProgramOverviewHevyMirror
  * Used by: ProfileContent
  */
 
@@ -13,12 +15,14 @@
 
 import Link from "next/link";
 import { Layers, Plus } from "lucide-react";
-import { useSubscribedPrograms } from "@/api/hooks";
+import { useHevyPrograms, useHevySecret, useSubscribedPrograms } from "@/api/hooks";
 import { useUserContext } from "@/contexts/UserContext";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProgramOverviewCarousel } from "./ProgramOverviewCarousel";
+import { ProgramOverviewHevyMirror } from "./ProgramOverviewHevyMirror";
+import { ProgramOverviewWeekList } from "./ProgramOverviewWeekList";
 
 const PROFILE_CARD_CLASS =
     "rounded-2xl border border-border/60 bg-card px-4 py-5 shadow-sm sm:px-6 sm:py-6";
@@ -31,7 +35,11 @@ function OverviewSkeleton() {
                 <Skeleton className="h-8 w-56 sm:w-72" />
                 <Skeleton className="h-4 w-36" />
             </div>
-            <Skeleton className="h-16 w-full rounded-xl" />
+            <div className="mx-auto w-full max-w-md space-y-2 px-1 pt-2">
+                <Skeleton className="h-9 w-full rounded-lg" />
+                <Skeleton className="h-9 w-full rounded-lg" />
+                <Skeleton className="h-9 w-full rounded-lg" />
+            </div>
         </div>
     );
 }
@@ -41,6 +49,11 @@ function OverviewSkeleton() {
  */
 export function ProgramOverviewSection() {
     const { user, isLoading: userLoading } = useUserContext();
+    const { data: hevyApiKey } = useHevySecret(user);
+    const { data: hevyPrograms, isLoading: isLoadingHevy } = useHevyPrograms(
+        user,
+        hevyApiKey ?? "",
+    );
     const {
         data: programs,
         isLoading: programsLoading,
@@ -96,35 +109,42 @@ export function ProgramOverviewSection() {
                         Couldn&apos;t load programs. Try again later.
                     </p>
                 ) : !programs || programs.length === 0 ? (
-                    <div className="mt-5 rounded-2xl border border-dashed border-border/60 bg-muted/20 px-5 py-8 text-center">
-                        <p className="text-base font-medium tracking-tight text-foreground">
-                            No active programs yet
-                        </p>
-                        <p className="mx-auto mt-1.5 max-w-sm text-sm text-muted-foreground">
-                            Save a Proxima program to track weeks, export to Hevy, and keep
-                            progress here. Your Hevy mirror will show under the active program.
-                        </p>
-                        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-                            <Link href="/build-program?empty=true">
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    className="rounded-full bg-lightSecondary text-white hover:bg-lightSecondary/90"
-                                >
-                                    Start a program
-                                </Button>
-                            </Link>
-                            <Link href="/programs">
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="outline"
-                                    className="rounded-full border-border/80"
-                                >
-                                    Explore programs
-                                </Button>
-                            </Link>
+                    <div className="mt-5 space-y-6">
+                        <div className="rounded-2xl border border-dashed border-border/60 bg-muted/20 px-5 py-8 text-center">
+                            <p className="text-base font-medium tracking-tight text-foreground">
+                                No active programs yet
+                            </p>
+                            <p className="mx-auto mt-1.5 max-w-sm text-sm text-muted-foreground">
+                                Save a Proxima program to track weeks, export to Hevy, and keep
+                                progress here. Edit Hevy-only folders from the mirror below.
+                            </p>
+                            <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+                                <Link href="/build-program?empty=true">
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        className="rounded-full bg-lightSecondary text-white hover:bg-lightSecondary/90"
+                                    >
+                                        Start a program
+                                    </Button>
+                                </Link>
+                                <Link href="/programs">
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="outline"
+                                        className="rounded-full border-border/80"
+                                    >
+                                        Explore programs
+                                    </Button>
+                                </Link>
+                            </div>
                         </div>
+                        <ProgramOverviewHevyMirror
+                            hevyOnly
+                            hevyPrograms={hevyPrograms}
+                            isLoadingHevy={Boolean(hevyApiKey) && isLoadingHevy}
+                        />
                     </div>
                 ) : (
                     <div className="pt-4">
@@ -135,7 +155,16 @@ export function ProgramOverviewSection() {
                                 programLength: p.program_length,
                                 specialization: p.specialization,
                             }))}
-                        />
+                        >
+                            {(program) => (
+                                <ProgramOverviewWeekList
+                                    key={program.id}
+                                    programId={program.id}
+                                    programTitle={program.title}
+                                    programLength={program.programLength}
+                                />
+                            )}
+                        </ProgramOverviewCarousel>
                     </div>
                 )}
             </Card>

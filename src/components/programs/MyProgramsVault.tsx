@@ -2,10 +2,10 @@
 
 /*
  * @module MyProgramsVault
- * @description Dashboard section that surfaces a user’s saved workout programs, including loading, empty, and error states.
+ * @description Legacy vault grid of saved Proxima programs (retired from profile —
+ * ADR 0010 / 04; Program overview carousel owns active programs). Kept for potential reuse.
  * @dependsOn User context, subscribed program query hooks, program card presentation components,
  *            thin Week Export CTA (ADR 0009), and PostHog analytics.
- * @usedBy Authenticated profile page to act as a permanent vault for user-owned programs.
  */
 
 /**
