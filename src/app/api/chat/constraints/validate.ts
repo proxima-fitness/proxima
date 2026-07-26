@@ -1,3 +1,4 @@
+import { sanitizeExcludedEquipment } from './initialize';
 import type { TConstraintProfile } from './types';
 
 export type TConstraintViolation = {
@@ -25,8 +26,9 @@ export function validateAgainstConstraints(
     profile: TConstraintProfile,
     exercises: TExerciseMeta[],
 ): TValidationResult {
+    const excludedEquipment = sanitizeExcludedEquipment(profile.excludedEquipment);
     const violations = exercises.flatMap(({ title, equipment, primary_muscle_group }) => [
-        matchesAny(equipment, profile.excludedEquipment) && {
+        matchesAny(equipment, excludedEquipment) && {
             exerciseTitle: title,
             reason: `uses excluded equipment: ${equipment}`,
         },

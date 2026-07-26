@@ -67,7 +67,7 @@ import {
 import { readBodyMeasurementsSyncCursor } from '@/api/body-measurements-sync';
 import { tool } from 'ai';
 import type { TConstraintProfile } from '../constraints';
-import { splitConstraintCsv } from '../constraints/initialize';
+import { sanitizeExcludedEquipment, splitConstraintCsv } from '../constraints/initialize';
 import { validateAgainstConstraints } from '../constraints/validate';
 import { upsertUserConstraints } from '@/api/user-constraints';
 import { upsertUserTrainingProfile } from '@/api/user-training-profile';
@@ -322,7 +322,9 @@ export function getTools({
         execute: async ({ userRequest }) => {
             try {
                 // Filters only from Constraint profile (route already seeded wire strings via initialize + merge)
-                const excludedEquipment = constraintProfile?.excludedEquipment ?? [];
+                const excludedEquipment = sanitizeExcludedEquipment(
+                    constraintProfile?.excludedEquipment ?? [],
+                );
                 const excludedAreas = constraintProfile?.excludedAreas ?? [];
 
                 // Fetch all available Hevy exercises
@@ -1157,6 +1159,9 @@ export function getTools({
             for (const [field, add, remove] of arrayFields) {
                 constraintProfile[field] = patchStringArray(constraintProfile[field] as string[], add, remove);
             }
+            constraintProfile.excludedEquipment = sanitizeExcludedEquipment(
+                constraintProfile.excludedEquipment,
+            );
 
             if (preferences) {
                 const canonicalEntries = (

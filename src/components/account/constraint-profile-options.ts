@@ -8,7 +8,7 @@
  * Used by: ConstraintProfileSection, constraint-profile-draft, ConstraintProfilePeek, chat tools
  */
 import {
-    equipmentOptions,
+    excludeEquipmentOptions,
     excludedAreasOptions,
     sampleQuestionsCore,
 } from "@/assets/constants/form-options";
@@ -25,9 +25,7 @@ function optionsFromQuestion(questionId: string): TSelectOption[] {
 }
 
 /** Excluded equipment picker — questionnaire exclude-equipment set (drops "none"). */
-export const CONSTRAINT_EXCLUDED_EQUIPMENT_OPTIONS: TSelectOption[] = equipmentOptions.filter(
-    (opt) => opt.value !== "none",
-);
+export const CONSTRAINT_EXCLUDED_EQUIPMENT_OPTIONS: TSelectOption[] = excludeEquipmentOptions;
 
 /** Excluded areas picker — same catalog as Questionnaire core (drops "full body"). */
 export const CONSTRAINT_EXCLUDED_AREA_OPTIONS: TSelectOption[] = excludedAreasOptions;

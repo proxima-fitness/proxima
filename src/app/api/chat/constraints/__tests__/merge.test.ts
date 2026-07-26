@@ -81,4 +81,10 @@ describe('mergeConstraintProfiles', () => {
         const result = mergeConstraintProfiles(profile(), profile());
         expect(result).toEqual(profile());
     });
+
+    it('strips Hevy "none" sentinel from persisted excludedEquipment', () => {
+        const persisted = profile({ excludedEquipment: ['Band', 'none'] });
+        const result = mergeConstraintProfiles(persisted, profile());
+        expect(result.excludedEquipment).toEqual(['Band']);
+    });
 });

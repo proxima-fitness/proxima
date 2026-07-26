@@ -19,10 +19,18 @@ export function splitConstraintCsv(value?: string): string[] {
     return value.split(',').map(s => s.trim()).filter(Boolean);
 }
 
+/**
+ * Hevy uses equipment `"none"` for no-equipment / bodyweight-adjacent templates.
+ * That sentinel must never be treated as an exclusion target (blocks warmups/mobility).
+ */
+export function sanitizeExcludedEquipment(values: string[]): string[] {
+    return values.filter((v) => v.trim().toLowerCase() !== 'none');
+}
+
 export function initializeConstraintProfile(params: IInitializeParams): TConstraintProfile {
     return {
         injuries: splitConstraintCsv(params.healthIssues),
-        excludedEquipment: splitConstraintCsv(params.excludeEquipment),
+        excludedEquipment: sanitizeExcludedEquipment(splitConstraintCsv(params.excludeEquipment)),
         excludedAreas: splitConstraintCsv(params.excludeAreas),
         preferences: canonicalizeConstraintPreferences({
             splitType: params.splitType?.trim() ?? '',

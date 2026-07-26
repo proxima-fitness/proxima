@@ -162,9 +162,9 @@ describe("constraint update only when needed", () => {
             "resistance_band",
             "plate",
             "other",
-            "none",
             "cardio",
         ]);
+        expect(updated.excludedEquipment).not.toContain("none");
         expect(updated.injuries.every((s) => !s.includes(","))).toBe(true);
         expect(updated.excludedEquipment.every((s) => !s.includes(","))).toBe(true);
     });

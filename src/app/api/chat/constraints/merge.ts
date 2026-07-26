@@ -1,3 +1,4 @@
+import { sanitizeExcludedEquipment } from './initialize';
 import type { TConstraintProfile } from './types';
 
 /**
@@ -19,11 +20,16 @@ export function mergeConstraintProfiles(
     persisted: TConstraintProfile | null,
     session: TConstraintProfile,
 ): TConstraintProfile {
-    if (!persisted) return session;
+    if (!persisted) {
+        return {
+            ...session,
+            excludedEquipment: sanitizeExcludedEquipment(session.excludedEquipment),
+        };
+    }
 
     return {
         injuries: persisted.injuries,
-        excludedEquipment: persisted.excludedEquipment,
+        excludedEquipment: sanitizeExcludedEquipment(persisted.excludedEquipment),
         excludedAreas: persisted.excludedAreas,
         preferences: {
             splitType: session.preferences.splitType || persisted.preferences.splitType,
