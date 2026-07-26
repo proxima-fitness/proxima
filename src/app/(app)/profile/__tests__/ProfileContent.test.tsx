@@ -86,15 +86,16 @@ describe("ProfileContent", () => {
         renderContent(<ProfileContent />);
 
         const overview = screen.getByTestId("program-overview");
+        const calendar = screen.getByTestId("profile-calendar");
         const stats = screen.getByTestId("profile-stats");
         const blindSpot = screen.getByTestId("blind-spot");
         const recent = screen.getByTestId("recent-workouts");
 
-        expect(overview.compareDocumentPosition(stats) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(overview.compareDocumentPosition(calendar) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(calendar.compareDocumentPosition(stats) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
         expect(stats.compareDocumentPosition(blindSpot) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
         expect(blindSpot.compareDocumentPosition(recent) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
         expect(screen.getByTestId("profile-hero")).toBeTruthy();
-        expect(screen.getByTestId("profile-calendar")).toBeTruthy();
     });
 
     it("hides hero and recent workouts when logged out / Hevy disconnected", () => {

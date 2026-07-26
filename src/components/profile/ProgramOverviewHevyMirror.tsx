@@ -1,22 +1,28 @@
 /**
  * @module ProgramOverviewHevyMirror
  *
- * Hevy mirror subsection for a Program overview slide (ADR 0010 / 04):
- * that program’s linked Hevy week copy, plus Hevy-only folders for Edit path.
- * Replaces standalone “My Hevy Programs” grid.
+ * Hevy mirror subsection for a Program overview slide (ADR 0020 / 04):
+ * full-width; Current week folder primary; other folders behind disclosure.
+ * Hevy-only empty overview lists all folders for Edit path entry.
  *
- * Depends on: useNavigateToEditHevyProgram, Button, Skeleton, hevy_logo
+ * Depends on: useNavigateToEditHevyProgram, Button, Skeleton, Collapsible, hevy_logo
  * Used by: ProgramOverviewWeekList, ProgramOverviewSection (empty state)
  */
 
 "use client";
 
 import { useState } from "react";
-import { EditIcon } from "lucide-react";
+import { ChevronRight, EditIcon } from "lucide-react";
 import { hevy_logo } from "public";
 import type { TProgramHevyWeekLink } from "@/api/program-hevy-links";
 import { Button } from "@/components/ui/button";
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import { useNavigateToEditHevyProgram } from "@/hooks/useNavigateToEditHevyProgram";
 
 export type TProgramOverviewHevyMirrorProps = {
@@ -57,7 +63,11 @@ function currentLinkedWeek(
     return incomplete.length > 0 ? Math.max(...incomplete) : null;
 }
 
-function buildMirrorFolders(
+/**
+ * Build mirror rows: linked weeks (Current first), then unlinked Hevy folders.
+ * Hevy-only / no links → flat list of every folder.
+ */
+export function buildMirrorFolders(
     hevyPrograms: readonly THevyProgramItem[],
     links: readonly TProgramHevyWeekLink[],
     completedWeeks: readonly number[],
@@ -127,6 +137,16 @@ function buildMirrorFolders(
     return [...linked, ...others];
 }
 
+/** Primary = Current week copy; secondary = everything else (disclosure). */
+export function partitionMirrorFolders(folders: readonly TMirrorFolder[]): {
+    primary: TMirrorFolder[];
+    secondary: TMirrorFolder[];
+} {
+    const primary = folders.filter((f) => f.isCurrent);
+    const secondary = folders.filter((f) => !f.isCurrent);
+    return { primary, secondary };
+}
+
 function MirrorFolderRow({
     folder,
     onEdit,
@@ -187,6 +207,35 @@ function MirrorFolderRow({
     );
 }
 
+function MirrorFolderList({
+    folders,
+    busyKey,
+    onEdit,
+}: {
+    folders: readonly TMirrorFolder[];
+    busyKey: string | null;
+    onEdit: (folder: TMirrorFolder) => void;
+}) {
+    return (
+        <ul className="mt-1 flex list-none flex-col p-0" aria-label="In Hevy">
+            {folders.map((folder) => (
+                <li
+                    key={folder.key}
+                    className="list-none border-b border-border/40 last:border-b-0"
+                >
+                    <MirrorFolderRow
+                        folder={folder}
+                        busy={busyKey === folder.key}
+                        onEdit={() => {
+                            onEdit(folder);
+                        }}
+                    />
+                </li>
+            ))}
+        </ul>
+    );
+}
+
 /**
  * Compact Hevy mirror list for one overview slide (or empty-state Hevy-only).
  */
@@ -199,10 +248,11 @@ export function ProgramOverviewHevyMirror({
 }: TProgramOverviewHevyMirrorProps) {
     const navigateToEdit = useNavigateToEditHevyProgram();
     const [busyKey, setBusyKey] = useState<string | null>(null);
+    const [othersOpen, setOthersOpen] = useState(false);
 
     if (isLoadingHevy) {
         return (
-            <div className="mx-auto w-full max-w-md space-y-2 px-1" aria-hidden>
+            <div className="w-full space-y-2 px-1" aria-hidden>
                 <Skeleton className="h-3 w-24" />
                 <Skeleton className="h-14 w-full rounded-xl" />
             </div>
@@ -217,17 +267,14 @@ export function ProgramOverviewHevyMirror({
             return null;
         }
         return (
-            <div className="mx-auto w-full max-w-md px-1">
-                <h4 className="text-xs text-muted-foreground">Hevy mirror</h4>
+            <div className="w-full px-1">
+                <h4 className="text-xs text-muted-foreground">In Hevy</h4>
                 <p className="mt-2 text-sm text-muted-foreground">
                     Week Export creates this program&apos;s Hevy week copy here.
                 </p>
             </div>
         );
     }
-
-    const linkedCount = folders.filter((f) => f.weekLabel != null).length;
-    const showOtherHeading = !hevyOnly && linkedCount > 0 && folders.some((f) => f.weekLabel == null);
 
     const handleEdit = async (folder: TMirrorFolder) => {
         if (busyKey) return;
@@ -239,36 +286,56 @@ export function ProgramOverviewHevyMirror({
         }
     };
 
+    // Hevy-only: list every folder (Edit path entry). Linked: Current primary + disclosure.
+    const useDisclosure = !hevyOnly && links.length > 0;
+    const { primary, secondary } = useDisclosure
+        ? partitionMirrorFolders(folders)
+        : { primary: folders, secondary: [] as TMirrorFolder[] };
+
     return (
-        <div className="mx-auto w-full max-w-md px-1">
-            <h4 className="text-xs text-muted-foreground">Hevy mirror</h4>
-            <ul className="mt-1 flex list-none flex-col p-0" aria-label="Hevy mirror">
-                {folders.map((folder) => {
-                    const isFirstOther =
-                        showOtherHeading &&
-                        folder.weekLabel == null &&
-                        folders.find((f) => f.weekLabel == null)?.key === folder.key;
-                    return (
-                        <li
-                            key={folder.key}
-                            className="list-none border-b border-border/40 last:border-b-0"
-                        >
-                            {isFirstOther ? (
-                                <p className="pb-1 pt-2 text-xs text-muted-foreground">
-                                    Other Hevy folders
-                                </p>
-                            ) : null}
-                            <MirrorFolderRow
-                                folder={folder}
-                                busy={busyKey === folder.key}
-                                onEdit={() => {
-                                    void handleEdit(folder);
-                                }}
-                            />
-                        </li>
-                    );
-                })}
-            </ul>
+        <div className="w-full px-1">
+            <h4 className="text-xs text-muted-foreground">In Hevy</h4>
+            {primary.length > 0 ? (
+                <MirrorFolderList
+                    folders={primary}
+                    busyKey={busyKey}
+                    onEdit={(folder) => {
+                        void handleEdit(folder);
+                    }}
+                />
+            ) : null}
+            {secondary.length > 0 ? (
+                <Collapsible open={othersOpen} onOpenChange={setOthersOpen} className="mt-1">
+                    <CollapsibleTrigger
+                        className="flex w-full items-center justify-between gap-2 py-2 text-left text-xs text-muted-foreground hover:text-foreground"
+                        aria-label={
+                            othersOpen
+                                ? "Collapse other weeks in Hevy"
+                                : "Expand other weeks in Hevy"
+                        }
+                    >
+                        <span>
+                            Other weeks in Hevy ({secondary.length})
+                        </span>
+                        <ChevronRight
+                            className={cn(
+                                "size-3.5 shrink-0 transition-transform",
+                                othersOpen && "rotate-90",
+                            )}
+                            aria-hidden
+                        />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                        <MirrorFolderList
+                            folders={secondary}
+                            busyKey={busyKey}
+                            onEdit={(folder) => {
+                                void handleEdit(folder);
+                            }}
+                        />
+                    </CollapsibleContent>
+                </Collapsible>
+            ) : null}
         </div>
     );
 }

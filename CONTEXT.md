@@ -65,8 +65,8 @@ Read-only glance at one week of the **Program prescription** inside a **Program 
 _Avoid_: Week detail (builder edit), name-only exercise lists, horizontal multi-day strip without paging, treating preview as editable Sync surface
 
 **Hevy mirror**:
-Subsection of a **Program overview** slide for that program’s active Hevy week copy (via **Program–Hevy link**) and for Hevy-only folders with no Proxima program — Edit path / split builder entry and **Make into a program**. Default density: **Current week** folder primary; other Hevy folders behind a disclosure. Replaces the old standalone profile **Hevy folders** / “My Hevy Programs” grid.
-_Avoid_: My Hevy Programs, Hevy folders (as a separate profile section), treating mirror as equal primary to the week rail / **Week preview**, always listing every folder expanded
+Subsection of a **Program overview** slide for that program’s active Hevy week copy (via **Program–Hevy link**) and for Hevy-only folders with no Proxima program — Edit path / split builder entry and **Make into a program**. UI label: **In Hevy** (not “Hevy mirror” — domain term only). Default density: **Current week** folder primary; other weeks behind a disclosure (“Other weeks in Hevy”). Replaces the old standalone profile **Hevy folders** / “My Hevy Programs” grid.
+_Avoid_: My Hevy Programs, Hevy folders (as a separate profile section), shipping “Hevy mirror” as user-facing copy, treating mirror as equal primary to the week rail / **Week preview**, always listing every folder expanded
 
 **Hevy folders** (retired UI label):
 Former name for the standalone profile Hevy grid. Do not ship as its own section — use **Hevy mirror** inside **Program overview**. Folder/routine objects in Hevy APIs are still “folders” in engineering talk.

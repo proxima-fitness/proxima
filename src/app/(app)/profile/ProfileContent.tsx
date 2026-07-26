@@ -4,7 +4,7 @@
  * @module (app)/profile/ProfileContent
  *
  * Client profile body: single scroll on muted background — hero (when signed
- * in), Program overview first, then statistics/calendar, blind spot, recent
+ * in), Program overview first, then calendar/statistics, blind spot, recent
  * workouts (ADR 0010 / 05). Resume-draft banner sits above the stack.
  *
  * Depends on: UserContext, useHevyPrograms/useHevySecret, ProfileHero,
@@ -64,14 +64,14 @@ export function ProfileContent() {
                 <ProgramOverviewSection />
 
                 <div className="grid gap-4 lg:grid-cols-5 lg:items-stretch">
-                    <div className="h-full lg:col-span-3">
-                        <ProfileStatisticsSection hevyConnected={hevyConnected} />
-                    </div>
                     {hevyConnected ? (
                         <div className="h-full lg:col-span-2">
                             <ProfileCalendarSection />
                         </div>
                     ) : null}
+                    <div className="h-full lg:col-span-3">
+                        <ProfileStatisticsSection hevyConnected={hevyConnected} />
+                    </div>
                 </div>
 
                 <Card className={PROFILE_SECTION_CARD_CLASS}>
