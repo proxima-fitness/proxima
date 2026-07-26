@@ -314,30 +314,6 @@ export type Database = {
           },
         ]
       }
-      feature_usage_pre_period_snapshot: {
-        Row: {
-          created_at: string | null
-          id: string | null
-          monthly_exports_used: number | null
-          monthly_llm_requests: number | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string | null
-          monthly_exports_used?: number | null
-          monthly_llm_requests?: number | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string | null
-          monthly_exports_used?: number | null
-          monthly_llm_requests?: number | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       feedback: {
         Row: {
           created_at: string
@@ -704,6 +680,54 @@ export type Database = {
           product_title?: string | null
         }
         Relationships: []
+      }
+      program_hevy_week_links: {
+        Row: {
+          created_at: string
+          hevy_folder_id: number
+          hevy_routine_ids: string[]
+          id: string
+          nth_week: number
+          program_id: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          hevy_folder_id: number
+          hevy_routine_ids?: string[]
+          id?: string
+          nth_week: number
+          program_id: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          hevy_folder_id?: number
+          hevy_routine_ids?: string[]
+          id?: string
+          nth_week?: number
+          program_id?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_hevy_week_links_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_hevy_week_links_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       program_history: {
         Row: {

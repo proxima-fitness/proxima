@@ -37,6 +37,7 @@ import {
     getLatestBodyMeasurement,
     type TBodyMeasurementsQueryOptions,
 } from "./body-measurements-read";
+import { getProgramHevyWeekLinks } from "./program-hevy-links";
 import { supabase } from ".";
 
 /** React Query key for latest backed-up body measurement. */
@@ -44,6 +45,9 @@ export const LATEST_BODY_MEASUREMENT_QUERY_KEY = ["body-measurements", "latest"]
 
 /** React Query key for body-measurement history pages. */
 export const BODY_MEASUREMENTS_HISTORY_QUERY_KEY = ["body-measurements", "history"] as const;
+
+/** React Query key for Program–Hevy week links by program. */
+export const PROGRAM_HEVY_LINKS_QUERY_KEY = ["program-hevy-links"] as const;
 
 /* ================================
    CLIENT-SIDE RENDERED HOOKS
@@ -477,6 +481,20 @@ export const useUserConstraints = (user: User | undefined | null) => {
         queryKey: ["user-constraints", user?.id],
         queryFn: () => getUserConstraints(user!.id),
         enabled: !!user,
+    });
+};
+
+/**
+ * Program–Hevy week links for one Proxima program (ascending nth_week).
+ * Current week = max nth_week among rows (see getCurrentLinkedWeek).
+ *
+ * @param programId - Proxima program id (query disabled when undefined)
+ */
+export const useProgramHevyWeekLinks = (programId: number | undefined) => {
+    return useQuery({
+        queryKey: [...PROGRAM_HEVY_LINKS_QUERY_KEY, programId],
+        queryFn: () => getProgramHevyWeekLinks(programId!),
+        enabled: programId != null,
     });
 };
 
