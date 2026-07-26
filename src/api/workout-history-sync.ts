@@ -36,6 +36,8 @@ import {
 
     HEVY_WORKOUT_SOURCE,
 
+    deleteBackedUpWorkoutByExternalId,
+
     importHevyWorkout,
 
 } from "./workout-history";
@@ -295,13 +297,13 @@ export async function countBackedUpWorkouts(db: TWorkoutHistoryDb,userId: string
 
  */
 
-export async function readSyncCursor(db: TWorkoutHistoryDb,userId: string): Promise<{ lastKnownWorkoutCount: number | null; lastSyncedPage: number | null; syncError: string | null }> {
+export async function readSyncCursor(db: TWorkoutHistoryDb,userId: string): Promise<{ lastKnownWorkoutCount: number | null; lastSyncedPage: number | null; syncError: string | null; lastWorkoutEventsAt: string | null }> {
 
     const { data, error } = await db
 
         .from("hevy_workouts_count")
 
-        .select("last_known_workout_count, last_synced_page, sync_error")
+        .select("last_known_workout_count, last_synced_page, sync_error, last_workout_events_at")
 
         .eq("user_id", userId)
 
@@ -325,6 +327,8 @@ export async function readSyncCursor(db: TWorkoutHistoryDb,userId: string): Prom
 
         syncError: data?.sync_error ?? null,
 
+        lastWorkoutEventsAt: data?.last_workout_events_at ?? null,
+
     };
 
 }
@@ -337,7 +341,7 @@ export async function readSyncCursor(db: TWorkoutHistoryDb,userId: string): Prom
 
  */
 
-export async function upsertHevyWorkoutsCountCursor(db: TWorkoutHistoryDb,userId: string,patch: { lastKnownWorkoutCount?: number; lastSyncedPage?: number | null; syncError?: string | null }): Promise<void> {
+export async function upsertHevyWorkoutsCountCursor(db: TWorkoutHistoryDb,userId: string,patch: { lastKnownWorkoutCount?: number; lastSyncedPage?: number | null; syncError?: string | null; lastWorkoutEventsAt?: string }): Promise<void> {
 
     const row: Record<string, unknown> = {
 
@@ -364,6 +368,12 @@ export async function upsertHevyWorkoutsCountCursor(db: TWorkoutHistoryDb,userId
     if (patch.syncError !== undefined) {
 
         row.sync_error = patch.syncError;
+
+    }
+
+    if (patch.lastWorkoutEventsAt !== undefined) {
+
+        row.last_workout_events_at = patch.lastWorkoutEventsAt;
 
     }
 
@@ -839,4 +849,144 @@ export function getWorkoutHistorySyncStatus(
 
 }
 
+/** Events per page from Hevy's delta feed (same ceiling as the workouts list). */
+export const WORKOUT_EVENTS_PAGE_SIZE = 10;
 
+/** Pages of events consumed in one pass before yielding to the next run. */
+export const WORKOUT_EVENTS_MAX_PAGES = 10;
+
+/** First-run lookback when no events cursor exists yet. */
+export const WORKOUT_EVENTS_BOOTSTRAP_DAYS = 30;
+
+export type TWorkoutEventsSyncResult = {
+    /** Events read from Hevy. */
+    scanned: number;
+    /** Workouts inserted or replaced from an `updated` event. */
+    imported: number;
+    /** Backed-up workouts removed because Hevy no longer has them. */
+    deleted: number;
+    /** False when the page budget ran out — the cursor is left where it was. */
+    complete: boolean;
+};
+
+/**
+ * Fetches one page of Hevy's workout events feed (429 → fast fail; 5xx → retry).
+ */
+async function fetchHevyWorkoutEventsPage(
+    apiKey: string,
+    page: number,
+    pageSize: number,
+    since: string,
+): Promise<THevyWorkoutEventsResponse> {
+    const url =
+        `https://api.hevyapp.com/v1/workouts/events` +
+        `?page=${page}&pageSize=${pageSize}&since=${encodeURIComponent(since)}`;
+
+    return fetchHevyGetWithRetry<THevyWorkoutEventsResponse>(url, apiKey);
+}
+
+/**
+ * Applies Hevy's workout events to the backup mirror since the stored cursor.
+ *
+ * {@link runSyncChunk} is count-driven and therefore blind to anything that
+ * leaves Hevy's total unchanged: an edited session, a re-finished one, or a
+ * delete-and-relog. The events feed states those explicitly, so this is what
+ * keeps the mirror's contents — and its count — equal to Hevy's.
+ *
+ * The cursor only advances after a complete pass; a rate-limited or truncated
+ * run re-reads the same events next time, which is safe because importing and
+ * deleting by Hevy id are both idempotent.
+ *
+ * @param db - Supabase client (user or service role)
+ * @param params - Sync context
+ * @param params.userId - Proxima user ID owning the backup rows
+ * @param params.apiKey - Syncing user's Hevy API key
+ * @param params.since - Override the stored cursor (ISO 8601)
+ * @param params.maxPages - Page budget (default {@link WORKOUT_EVENTS_MAX_PAGES})
+ * @throws {HevyRateLimitError} When Hevy rate-limits a page or a template lookup
+ */
+export async function syncHevyWorkoutEvents(
+    db: TWorkoutHistoryDb,
+    params: { userId: string; apiKey: string; since?: string; maxPages?: number },
+): Promise<TWorkoutEventsSyncResult> {
+    const { userId, apiKey } = params;
+    const maxPages = Math.max(1, params.maxPages ?? WORKOUT_EVENTS_MAX_PAGES);
+    const startedAt = new Date().toISOString();
+
+    let since = params.since;
+    if (!since) {
+        const { lastWorkoutEventsAt } = await readSyncCursor(db, userId);
+        since =
+            lastWorkoutEventsAt ??
+            new Date(
+                Date.now() - WORKOUT_EVENTS_BOOTSTRAP_DAYS * 24 * 60 * 60 * 1000,
+            ).toISOString();
+    }
+
+    let scanned = 0;
+    let imported = 0;
+    let deleted = 0;
+    let complete = true;
+
+    for (let page = 1; page <= maxPages; page += 1) {
+        const response = await fetchHevyWorkoutEventsPage(
+            apiKey,
+            page,
+            WORKOUT_EVENTS_PAGE_SIZE,
+            since,
+        );
+        const events = response.events ?? [];
+
+        if (events.length === 0) {
+            break;
+        }
+
+        for (const event of events) {
+            scanned += 1;
+
+            if (event.type === "deleted") {
+                if (await deleteBackedUpWorkoutByExternalId(db, userId, event.id)) {
+                    deleted += 1;
+                }
+                continue;
+            }
+
+            const result = await importHevyWorkout(db, {
+                userId,
+                workout: event.workout,
+                apiKey,
+            });
+
+            if (result.status === "error") {
+                logSyncEvent(userId, "events_import_failed", {
+                    page,
+                    workoutId: event.workout.id,
+                    message: result.message,
+                });
+                continue;
+            }
+
+            if (result.status === "inserted") {
+                imported += 1;
+            }
+        }
+
+        if (response.page_count != null && page >= response.page_count) {
+            break;
+        }
+
+        if (page === maxPages) {
+            complete = false;
+        }
+    }
+
+    if (complete) {
+        // Stamp the request's start, not "now": events raised while this pass
+        // was running must still be picked up by the next one.
+        await upsertHevyWorkoutsCountCursor(db, userId, { lastWorkoutEventsAt: startedAt });
+    }
+
+    logSyncEvent(userId, "events_sync_done", { since, scanned, imported, deleted, complete });
+
+    return { scanned, imported, deleted, complete };
+}

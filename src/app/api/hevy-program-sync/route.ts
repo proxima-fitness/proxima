@@ -5,12 +5,17 @@
  * Gates on Hevy workout count vs last_hevy_program_sync_count, then invokes
  * the hevy-program-sync edge function. No midnight cron.
  *
- * Depends on: @/utils/supabase/server, fetchHevyWorkoutCount, SUPABASE_SECRET_KEY
+ * Also reconciles the workout backup mirror from Hevy's events feed on the way
+ * through: edits and deletions leave the workout count untouched, so nothing
+ * else on this path would ever notice them, and the mirror drifts from Hevy.
+ *
+ * Depends on: @/utils/supabase/server, fetchHevyWorkoutCount,
+ *             syncHevyWorkoutEvents, SUPABASE_SECRET_KEY
  */
 
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { fetchHevyWorkoutCount } from "@/api/workout-history-sync";
+import { fetchHevyWorkoutCount, syncHevyWorkoutEvents } from "@/api/workout-history-sync";
 import { shouldInvokeHevyProgramSync } from "@/api/hevy-program-sync";
 
 /**
@@ -49,6 +54,21 @@ export async function POST() {
 
         const lastSyncCount = cursor?.last_hevy_program_sync_count ?? 0;
         const workoutsCount = await fetchHevyWorkoutCount(apiKey);
+
+        // Mirror upkeep, not day-completion: runs even when the count gate below
+        // says "nothing new", because that gate is exactly what a deletion or an
+        // edit slips past. Never fails the sync — worst case the mirror waits.
+        try {
+            const events = await syncHevyWorkoutEvents(supabase, {
+                userId: user.id,
+                apiKey,
+            });
+            if (events.imported > 0 || events.deleted > 0) {
+                console.info("hevy workout mirror reconciled:", events);
+            }
+        } catch (eventsError) {
+            console.warn("hevy workout events sync failed:", eventsError);
+        }
 
         if (!shouldInvokeHevyProgramSync(workoutsCount, lastSyncCount)) {
             return NextResponse.json({

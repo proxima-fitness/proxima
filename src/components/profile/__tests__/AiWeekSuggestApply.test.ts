@@ -40,7 +40,7 @@ describe("applyWeekSuggestion", () => {
             "/api/programs/week-suggest/apply",
             expect.objectContaining({
                 method: "POST",
-                body: JSON.stringify({ programId: 42, targetWeek: 4 }),
+                body: JSON.stringify({ programId: 42, targetWeek: 4, isInLbs: true }),
             }),
         );
     });

@@ -31,6 +31,7 @@ import {
     updateProgramTitle,
 } from "@/api/programs";
 import { useUserContext } from "@/contexts/UserContext";
+import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -104,6 +105,7 @@ export function ProgramOverviewCtas({
     canRenameTitle = false,
 }: TProgramOverviewCtasProps) {
     const { user } = useUserContext();
+    const { isInLbs } = usePoundsOrKgContext();
     const { data: hevyApiKey } = useHevySecret(user);
     const queryClient = useQueryClient();
 
@@ -220,7 +222,11 @@ export function ProgramOverviewCtas({
 
         setIsApplyingSuggestion(true);
         try {
-            const result = await applyWeekSuggestion(programId, suggestion.targetWeek);
+            const result = await applyWeekSuggestion(
+                programId,
+                suggestion.targetWeek,
+                isInLbs,
+            );
 
             if (result.status === "not_ready") {
                 toast.error(describeApplyResult(result));

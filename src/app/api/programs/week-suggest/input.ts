@@ -20,7 +20,11 @@ import {
     addExerciseNotesSchema,
     updateSetSchema,
 } from "@/components/program-builder/mutations/schemas";
-import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
+import {
+    formatWeight,
+    getWeightUnit,
+    snapWeightKgToDisplayQuarter,
+} from "@/lib/weightUtils";
 
 /** Max suggested changes kept from one generation (panel stays skimmable). */
 export const MAX_WEEK_SUGGEST_CHANGES = 12;
@@ -376,6 +380,8 @@ export function buildWeekSuggestPrompt(input: TWeekSuggestPromptInput): string {
         "- Progress what was hit cleanly; hold or reduce what was missed or logged at high RPE.",
         "- No changes at all is a valid answer — return an empty `changes` array with a summary saying the week stands.",
         `- Weights are stored in kg. The client reads ${unit}; keep increments sensible in ${unit} (${isInLbs ? "2.5–5 lbs" : "1–2.5 kg"} on most lifts).`,
+        `- Choose \`weight_kg\` so ${unit} lands on a plate step (.00 / .25 / .50 / .75). Prefer whole ${unit} on most lifts; .5 is fine for small jumps; .25/.75 are rare.`,
+        `- Never leave float junk like 209.99 ${unit} — that is a kg↔lbs conversion artifact, not a real load.`,
         `- At most ${MAX_WEEK_SUGGEST_CHANGES} changes. Prefer few, high-signal ones.`,
         "- Do not add, remove, swap, or reorder exercises or days.",
         "",
@@ -417,17 +423,53 @@ function operationExistsInWeek(
 }
 
 /**
+ * Snaps every `update_set.weight_kg` to a clean quarter in the display unit.
+ * Idempotent; leaves non-weight patches alone.
+ *
+ * @param changes - Validated week-suggest changes
+ * @param isInLbs - User weight display preference
+ */
+export function snapWeekSuggestWeights(
+    changes: readonly TWeekSuggestChange[],
+    isInLbs: boolean,
+): TWeekSuggestChange[] {
+    return changes.map((change) => {
+        const { operation } = change;
+        if (operation.op !== "update_set" || operation.set.weight_kg == null) {
+            return change;
+        }
+        return {
+            ...change,
+            operation: {
+                ...operation,
+                set: {
+                    ...operation.set,
+                    weight_kg: snapWeightKgToDisplayQuarter(
+                        operation.set.weight_kg,
+                        isInLbs,
+                    ),
+                },
+            },
+        };
+    });
+}
+
+/**
  * Pins every change to week N+1 and drops ones that miss the prescription.
  * Guarantees "apply touches week N+1 only" before the panel ever sees a change.
+ * Snaps `weight_kg` to a clean quarter in the user's display unit so Hevy
+ * never gets 209.99 lbs from a "nice" kg float.
  *
  * @param changes - Validated model changes
  * @param targetWeek - 1-based week N+1
  * @param targetWeekPrescription - Week N+1 routines the ops must resolve against
+ * @param isInLbs - User weight display preference (drives the snap unit)
  */
 export function normalizeWeekSuggestChanges(
     changes: readonly TWeekSuggestChange[],
     targetWeek: number,
     targetWeekPrescription: readonly THevyRoutine[],
+    isInLbs: boolean = true,
 ): { changes: TWeekSuggestChange[]; dropped: number } {
     const kept: TWeekSuggestChange[] = [];
     let dropped = 0;
@@ -451,5 +493,5 @@ export function normalizeWeekSuggestChanges(
         kept.push({ description: change.description, operation });
     }
 
-    return { changes: kept, dropped };
+    return { changes: snapWeekSuggestWeights(kept, isInLbs), dropped };
 }

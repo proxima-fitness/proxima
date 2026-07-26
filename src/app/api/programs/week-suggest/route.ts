@@ -36,10 +36,10 @@ import {
     saveProgramWeekSuggestion,
 } from "@/api/program-week-suggestions";
 import {
-    ensureWorkoutHistoryFresh,
     getAllWorkoutsSinceForUser,
     mapBackedUpWorkoutToHevyRoutine,
 } from "@/api/workout-history-read";
+import { syncHevyWorkoutEvents } from "@/api/workout-history-sync";
 import type { Json } from "@/hooks/supabase";
 import { createClient } from "@/utils/supabase/server";
 import { generateWeekSuggestion } from "./generate";
@@ -47,6 +47,7 @@ import {
     filterWorkoutsInWindow,
     normalizeWeekSuggestChanges,
     resolveWeekSuggestTarget,
+    snapWeekSuggestWeights,
     weekLogWindow,
     weekSuggestChangeSchema,
     type TWeekSuggestChange,
@@ -58,10 +59,10 @@ import {
 export const maxDuration = 60;
 
 /**
- * Newest-first backup pages pulled before reading a week's logs. Three pages
- * (30 sessions) covers any single week; the background poller owns backfill.
+ * Event pages consumed before judging a week. Enough for a week of churn; the
+ * background poller still owns backfill of older workouts.
  */
-const WEEK_SUGGEST_SYNC_MAX_CHUNKS = 3;
+const WEEK_SUGGEST_EVENT_PAGES = 5;
 
 const cachedChangesSchema = z.array(weekSuggestChangeSchema);
 
@@ -74,10 +75,13 @@ function parseCachedChanges(raw: unknown): TWeekSuggestChange[] | null {
  * Pulls the newest Hevy sessions into the backup mirror before reading a week.
  *
  * Week complete is driven by `hevy-program-sync`, which reads Hevy directly and
- * never writes `workouts`; the mirror is filled by a separate chunked poller.
- * So the moment a user marks a week complete, the sessions that week is made of
- * are routinely not backed up yet. Best-effort — a failed nudge degrades to the
- * `no_logged_sessions` answer, never a failed generation.
+ * never writes `workouts`; the mirror is filled by a separate count-driven
+ * poller. So when a user marks a week complete, that week's sessions are
+ * routinely missing from the mirror — or present but stale, because an edited,
+ * re-finished, or deleted-and-relogged session leaves Hevy's total unchanged
+ * and never trips the count cursor. Hevy's events feed states all three.
+ * Best-effort: a failed pass degrades to the `no_logged_sessions` answer,
+ * never a failed generation.
  *
  * @param client - Request-scoped Supabase client
  * @param userId - Signed-in user id (owner of the backup rows)
@@ -95,10 +99,10 @@ async function ensureWeekLogsFresh(
             return;
         }
 
-        await ensureWorkoutHistoryFresh(client, {
+        await syncHevyWorkoutEvents(client, {
             userId,
             apiKey,
-            maxChunks: WEEK_SUGGEST_SYNC_MAX_CHUNKS,
+            maxPages: WEEK_SUGGEST_EVENT_PAGES,
         });
     } catch (syncError) {
         console.warn("week-suggest: backup freshness nudge failed:", syncError);
@@ -202,7 +206,10 @@ export async function POST(request: Request) {
         if (cached) {
             const changes = parseCachedChanges(cached.changes);
             if (changes) {
-                return okResponse({ ...cached, changes });
+                return okResponse({
+                    ...cached,
+                    changes: snapWeekSuggestWeights(changes, isInLbs),
+                });
             }
             // Corrupt cache → drop row so the new insert is first-write again.
             await deleteProgramWeekSuggestion(supabase, programId, basedOnWeek);
@@ -271,6 +278,7 @@ export async function POST(request: Request) {
             generated.changes,
             targetWeek,
             targetWeekPrescription,
+            isInLbs,
         );
 
         if (dropped > 0) {

@@ -58,7 +58,9 @@ const CACHED_CHANGE = {
     },
 };
 
-function request(body: unknown = { programId: PROGRAM_ID, targetWeek: 4 }): Request {
+function request(
+    body: unknown = { programId: PROGRAM_ID, targetWeek: 4, isInLbs: false },
+): Request {
     return new Request("http://localhost/api/programs/week-suggest/apply", {
         method: "POST",
         body: JSON.stringify(body),
@@ -109,6 +111,7 @@ describe("POST /api/programs/week-suggest/apply", () => {
             request({
                 programId: PROGRAM_ID,
                 targetWeek: 4,
+                isInLbs: false,
                 changes: [
                     {
                         description: "Injected",
@@ -130,6 +133,36 @@ describe("POST /api/programs/week-suggest/apply", () => {
             targetWeek: 4,
             operations: [CACHED_CHANGE.operation],
         });
+    });
+
+    it("snaps dirty kg→lbs floats before writing", async () => {
+        mockGetCached.mockResolvedValue({
+            programId: PROGRAM_ID,
+            basedOnWeek: 3,
+            targetWeek: 4,
+            summary: "Week 3 was clean.",
+            changes: [
+                {
+                    description: "Squat: → 210 lbs",
+                    operation: {
+                        op: "update_set",
+                        folderIds: [3],
+                        dayOrder: 1,
+                        exerciseIndex: 0,
+                        setIndex: 0,
+                        set: { weight_kg: 95.25 },
+                    },
+                },
+            ],
+            generatedAt: "2026-07-21T09:00:00.000Z",
+        });
+
+        await POST(request({ programId: PROGRAM_ID, targetWeek: 4, isInLbs: true }));
+
+        const ops = mockApply.mock.calls[0]?.[1]?.operations as Array<{
+            set?: { weight_kg?: number };
+        }>;
+        expect(ops[0]?.set?.weight_kg).toBeCloseTo(210 * 0.453592, 6);
     });
 
     it("reports skipped changes the prescription could not store", async () => {

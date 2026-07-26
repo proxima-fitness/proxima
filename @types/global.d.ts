@@ -194,6 +194,22 @@ type THevyWorkoutsResponse = {
     workouts: THevyWorkout[];
 };
 
+/**
+ * One entry from `GET /v1/workouts/events?since=` — Hevy's delta feed.
+ * A created or edited session arrives as `updated` with the full workout; a
+ * removed one as `deleted` with only its id. This is the only signal that
+ * reports deletions, which never move the workout count.
+ */
+type THevyWorkoutEvent =
+    | { type: "updated"; workout: THevyWorkout }
+    | { type: "deleted"; id: string; deleted_at: string };
+
+type THevyWorkoutEventsResponse = {
+    page: number;
+    page_count: number;
+    events: THevyWorkoutEvent[];
+};
+
 /** One body-measurement entry from `GET /v1/body_measurements` (Hevy OpenAPI BodyMeasurement). */
 type THevyBodyMeasurement = {
     date: string;

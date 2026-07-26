@@ -311,6 +311,7 @@ describe("hevy import mapping", () => {
             description: workout.description,
             started_at: workout.start_time,
             ended_at: workout.end_time,
+            source_updated_at: null,
         });
     });
 
@@ -451,6 +452,8 @@ describe("importHevyWorkout", () => {
             user_id: USER_ID,
             source: HEVY_WORKOUT_SOURCE,
             external_id: workout.id,
+            started_at: workout.start_time,
+            ended_at: workout.end_time,
         });
         mockDb.tables.workout_exercises.push({
             id: "existing-exercise-id",
@@ -469,6 +472,61 @@ describe("importHevyWorkout", () => {
         expect(mockDb.tables.workouts).toHaveLength(1);
         expect(mockDb.tables.workout_exercises).toHaveLength(1);
         expect(mockDb.tables.workout_sets).toHaveLength(0);
+    });
+
+    it("re-imports a session Hevy has since changed", async () => {
+        // Same Hevy id, later timestamps: the athlete re-finished or edited it.
+        mockDb.tables.workouts.push({
+            id: "existing-workout-id",
+            user_id: USER_ID,
+            source: HEVY_WORKOUT_SOURCE,
+            external_id: workout.id,
+            started_at: "2024-06-10T08:00:00.000Z",
+            ended_at: "2024-06-10T08:30:00.000Z",
+        });
+        mockDb.tables.workout_exercises.push({
+            id: "existing-exercise-id",
+            workout_id: "existing-workout-id",
+            canonical_exercise_id: CANONICAL_KNOWN_ID,
+            sort_order: 0,
+        });
+
+        const result = await importHevyWorkout(asDb(mockDb), {
+            userId: USER_ID,
+            workout,
+            apiKey: API_KEY,
+        });
+
+        expect(result.status).toBe("inserted");
+        expect(mockDb.tables.workouts).toHaveLength(1);
+        expect(mockDb.tables.workouts[0].started_at).toBe(workout.start_time);
+        expect(mockDb.tables.workouts[0].ended_at).toBe(workout.end_time);
+    });
+
+    it("keeps a session Hevy has not touched since the last import", async () => {
+        mockDb.tables.workouts.push({
+            id: "existing-workout-id",
+            user_id: USER_ID,
+            source: HEVY_WORKOUT_SOURCE,
+            external_id: workout.id,
+            started_at: workout.start_time,
+            ended_at: workout.end_time,
+            source_updated_at: "2024-06-11T00:00:00.000Z",
+        });
+        mockDb.tables.workout_exercises.push({
+            id: "existing-exercise-id",
+            workout_id: "existing-workout-id",
+            canonical_exercise_id: CANONICAL_KNOWN_ID,
+            sort_order: 0,
+        });
+
+        const result = await importHevyWorkout(asDb(mockDb), {
+            userId: USER_ID,
+            workout: { ...workout, updated_at: "2024-06-10T10:20:00.000Z" },
+            apiKey: API_KEY,
+        });
+
+        expect(result).toEqual({ status: "skipped", workoutId: "existing-workout-id" });
     });
 
     it("still imports the workout when the Hevy template lookup fails", async () => {

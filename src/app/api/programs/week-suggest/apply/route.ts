@@ -31,6 +31,7 @@ import { getProgramWeekSuggestion } from "@/api/program-week-suggestions";
 import { createClient } from "@/utils/supabase/server";
 import {
     resolveWeekSuggestTarget,
+    snapWeekSuggestWeights,
     weekSuggestChangeSchema,
     type TWeekSuggestApplyResponse,
     type TWeekSuggestNotReadyCode,
@@ -57,15 +58,16 @@ function notReady(
 /**
  * POST /api/programs/week-suggest/apply — write week N+1's suggested changes.
  *
- * Body: `{ programId: number, targetWeek?: number }` (`targetWeek` is the week
- * the open panel showed; a mismatch means the panel is stale).
+ * Body: `{ programId: number, targetWeek?: number, isInLbs?: boolean }`
+ * (`targetWeek` is the week the open panel showed; a mismatch means the panel
+ * is stale. `isInLbs` snaps weights to clean plate steps before write.)
  * 200 `{ status: "applied" | "not_ready", … }`, 400 bad body, 401 signed out,
  * 404 unknown program, 409 stale panel or nothing generated yet.
  */
 export async function POST(request: Request) {
     try {
         const body = (await request.json().catch(() => null)) as
-            | { programId?: unknown; targetWeek?: unknown }
+            | { programId?: unknown; targetWeek?: unknown; isInLbs?: unknown }
             | null;
         const programId = Number(body?.programId);
 
@@ -79,6 +81,8 @@ export async function POST(request: Request) {
         if (expectedWeek != null && !Number.isInteger(expectedWeek)) {
             return NextResponse.json({ error: "targetWeek invalid" }, { status: 400 });
         }
+
+        const isInLbs = body?.isInLbs !== false;
 
         const supabase = await createClient();
         const {
@@ -144,9 +148,10 @@ export async function POST(request: Request) {
             );
         }
 
-        const operations: TPrescriptionWriteOperation[] = parsed.data.map(
-            (change) => change.operation,
-        );
+        const operations: TPrescriptionWriteOperation[] = snapWeekSuggestWeights(
+            parsed.data,
+            isInLbs,
+        ).map((change) => change.operation);
 
         const result = await applyWeekSetUpdates(supabase, {
             programId,

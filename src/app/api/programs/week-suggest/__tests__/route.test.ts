@@ -11,7 +11,7 @@ const {
     mockSaveCached,
     mockDeleteCached,
     mockGenerate,
-    mockEnsureFresh,
+    mockSyncEvents,
     mockRpc,
 } = vi.hoisted(() => ({
     mockGetUser: vi.fn(),
@@ -23,7 +23,7 @@ const {
     mockSaveCached: vi.fn(),
     mockDeleteCached: vi.fn(),
     mockGenerate: vi.fn(),
-    mockEnsureFresh: vi.fn(),
+    mockSyncEvents: vi.fn(),
     mockRpc: vi.fn(),
 }));
 
@@ -49,8 +49,11 @@ vi.mock("@/api/program-week-suggestions", () => ({
     deleteProgramWeekSuggestion: mockDeleteCached,
 }));
 
+vi.mock("@/api/workout-history-sync", () => ({
+    syncHevyWorkoutEvents: mockSyncEvents,
+}));
+
 vi.mock("@/api/workout-history-read", () => ({
-    ensureWorkoutHistoryFresh: mockEnsureFresh,
     getAllWorkoutsSinceForUser: mockGetWorkoutsSince,
     mapBackedUpWorkoutToHevyRoutine: (workout: {
         id: string;
@@ -74,7 +77,7 @@ vi.mock("../generate", () => ({
 const PROGRAM_ID = 42;
 const USER = { id: "user-1" } as User;
 
-function request(body: unknown = { programId: PROGRAM_ID }): Request {
+function request(body: unknown = { programId: PROGRAM_ID, isInLbs: false }): Request {
     return new Request("http://localhost/api/programs/week-suggest", {
         method: "POST",
         body: JSON.stringify(body),
@@ -157,7 +160,7 @@ describe("POST /api/programs/week-suggest", () => {
             { id: "w1", started_at: "2026-07-10T10:00:00.000Z" },
         ]);
         mockRpc.mockResolvedValue({ data: "hevy-key", error: null });
-        mockEnsureFresh.mockResolvedValue({ done: true });
+        mockSyncEvents.mockResolvedValue({ scanned: 3, imported: 1, deleted: 0, complete: true });
         mockGetCached.mockResolvedValue(null);
         mockDeleteCached.mockResolvedValue(undefined);
         mockSaveCached.mockImplementation(
@@ -350,18 +353,18 @@ describe("POST /api/programs/week-suggest", () => {
         );
     });
 
-    it("catches the backup mirror up before reading the week's logs", async () => {
+    it("applies Hevy's workout events before reading the week's logs", async () => {
         const { POST } = await import("../route");
         await POST(request());
 
         expect(mockRpc).toHaveBeenCalledWith("read_secret", {
             secret_name: `hevy_api_key_${USER.id}`,
         });
-        expect(mockEnsureFresh).toHaveBeenCalledWith(
+        expect(mockSyncEvents).toHaveBeenCalledWith(
             expect.anything(),
-            expect.objectContaining({ userId: USER.id, apiKey: "hevy-key" }),
+            expect.objectContaining({ userId: USER.id, apiKey: "hevy-key", maxPages: 5 }),
         );
-        expect(mockEnsureFresh.mock.invocationCallOrder[0]).toBeLessThan(
+        expect(mockSyncEvents.mock.invocationCallOrder[0]).toBeLessThan(
             mockGetWorkoutsSince.mock.invocationCallOrder[0],
         );
     });
@@ -372,12 +375,12 @@ describe("POST /api/programs/week-suggest", () => {
         const { POST } = await import("../route");
         const res = await POST(request());
 
-        expect(mockEnsureFresh).not.toHaveBeenCalled();
+        expect(mockSyncEvents).not.toHaveBeenCalled();
         await expect(res.json()).resolves.toMatchObject({ status: "ok" });
     });
 
-    it("still generates when the freshness nudge fails", async () => {
-        mockEnsureFresh.mockRejectedValue(new Error("hevy 429"));
+    it("still generates when the refresh fails", async () => {
+        mockSyncEvents.mockRejectedValue(new Error("hevy 429"));
 
         const { POST } = await import("../route");
         const res = await POST(request());

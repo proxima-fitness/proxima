@@ -455,6 +455,7 @@ export type Database = {
           last_hevy_program_sync_count: number
           last_known_workout_count: number | null
           last_synced_page: number | null
+          last_workout_events_at: string | null
           sync_error: string | null
           updated_at: string | null
           user_id: string | null
@@ -465,6 +466,7 @@ export type Database = {
           last_hevy_program_sync_count?: number
           last_known_workout_count?: number | null
           last_synced_page?: number | null
+          last_workout_events_at?: string | null
           sync_error?: string | null
           updated_at?: string | null
           user_id?: string | null
@@ -475,6 +477,7 @@ export type Database = {
           last_hevy_program_sync_count?: number
           last_known_workout_count?: number | null
           last_synced_page?: number | null
+          last_workout_events_at?: string | null
           sync_error?: string | null
           updated_at?: string | null
           user_id?: string | null

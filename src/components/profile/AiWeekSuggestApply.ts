@@ -41,16 +41,18 @@ function errorMessage(body: TApplyErrorBody | null, status: number): string {
  *
  * @param programId - Proxima program id
  * @param targetWeek - Week the open panel is suggesting (staleness guard)
+ * @param isInLbs - User weight display preference (snaps weights before write)
  * @throws {WeekSuggestApplyError} On any non-2xx response
  */
 export async function applyWeekSuggestion(
     programId: number,
     targetWeek: number,
+    isInLbs: boolean = true,
 ): Promise<TWeekSuggestApplyResponse> {
     const response = await fetch("/api/programs/week-suggest/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ programId, targetWeek }),
+        body: JSON.stringify({ programId, targetWeek, isInLbs }),
     });
 
     if (!response.ok) {

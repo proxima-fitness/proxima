@@ -11,6 +11,7 @@ import {
     type TWeekSuggestChange,
     type TWeekSuggestLinkInput,
 } from "../input";
+import { LBS_TO_KG } from "@/lib/weightUtils";
 
 function link(
     nthWeek: number,
@@ -232,6 +233,7 @@ describe("buildWeekSuggestPrompt", () => {
         expect(prompt).toContain("`folderIds` is always [2]");
         expect(prompt).toContain("1–2.5 kg");
         expect(prompt).toContain("60 kg (60 kg)");
+        expect(prompt).toContain("plate step");
     });
 
     it("says an empty batch is allowed", () => {
@@ -297,6 +299,31 @@ describe("normalizeWeekSuggestChanges", () => {
             operation: operation as TWeekSuggestChange["operation"],
         };
     }
+
+    it("snaps weight_kg to a clean quarter in the display unit", () => {
+        const { changes, dropped } = normalizeWeekSuggestChanges(
+            [
+                change({
+                    op: "update_set",
+                    folderIds: [2],
+                    dayOrder: 1,
+                    exerciseIndex: 0,
+                    setIndex: 0,
+                    set: { weight_kg: 95.25 },
+                }),
+            ],
+            TARGET_WEEK,
+            targetWeekPrescription,
+            true,
+        );
+
+        expect(dropped).toBe(0);
+        const op = changes[0].operation;
+        expect(op.op).toBe("update_set");
+        if (op.op === "update_set") {
+            expect(op.set.weight_kg).toBeCloseTo(210 * LBS_TO_KG, 6);
+        }
+    });
 
     it("retargets every operation to week N+1", () => {
         const { changes, dropped } = normalizeWeekSuggestChanges(
