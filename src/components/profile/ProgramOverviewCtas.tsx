@@ -1,9 +1,10 @@
 /**
  * @module ProgramOverviewCtas
  *
- * Per-slide overview CTAs (ADR 0010 / 03): Export dropdown (Hevy Week Export /
- * PDF / spreadsheet), Edit program, AI week suggest mount (empty until 0012).
- * Week Export upload via ADR 0009 helpers; PDF/CSV reuse ExportDialog destinations.
+ * Per-slide overview chrome + CTAs (ADR 0010 / 03, ADR 0020 / 01): title + meta
+ * left, Export dropdown (Hevy Week Export / PDF / spreadsheet) + Edit program
+ * right; AI week suggest mount (empty until 0012). Week Export via ADR 0009;
+ * PDF/CSV reuse ExportDialog destinations.
  *
  * Depends on: ExportDialog, ProgramOverviewExportWeek, hooks, Button,
  *             DropdownMenu, Progress
@@ -49,17 +50,36 @@ type TUploadProgress = {
 export type TProgramOverviewCtasProps = {
     programId: number;
     programTitle: string;
+    programLength: number | null;
+    specialization?: string[] | null;
     linkedWeeks: readonly number[];
     completedWeeks: readonly number[];
     linksLoading: boolean;
 };
 
+function formatProgramMeta(
+    programLength: number | null,
+    specialization: string[] | null | undefined,
+): string | null {
+    const parts: string[] = [];
+    if (programLength != null && programLength > 0) {
+        parts.push(`${programLength}-week`);
+    }
+    const specializationLabel = specialization?.filter(Boolean).join(" · ");
+    if (specializationLabel) {
+        parts.push(specializationLabel);
+    }
+    return parts.length > 0 ? parts.join(" · ") : null;
+}
+
 /**
- * Program-level Export / Edit program / AI suggest slot for one overview slide.
+ * Program chrome (title | Export / Edit) + AI suggest slot for one overview slide.
  */
 export function ProgramOverviewCtas({
     programId,
     programTitle,
+    programLength,
+    specialization = null,
     linkedWeeks,
     completedWeeks,
     linksLoading,
@@ -79,6 +99,7 @@ export function ProgramOverviewCtas({
     const gate = evaluateWeekExportGate(nthWeek, linkedWeeks, completedWeeks);
     const hevyDisabled =
         isUploading || !user || !hevyApiKey || linksLoading || !gate.allowed || fileLoading;
+    const meta = formatProgramMeta(programLength, specialization);
 
     const handleWeekExport = async () => {
         if (!user) {
@@ -159,68 +180,83 @@ export function ProgramOverviewCtas({
     };
 
     return (
-        <div className="mx-auto flex w-full max-w-md flex-col gap-3 px-1">
-            <div className="flex flex-wrap items-center gap-2">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+        <div className="flex w-full flex-col gap-3 px-1">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                <div className="min-w-0 space-y-0.5">
+                    <h3 className="text-balance text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                        {programTitle}
+                    </h3>
+                    {meta ? (
+                        <p className="text-sm text-muted-foreground">{meta}</p>
+                    ) : null}
+                </div>
+
+                <div className="flex shrink-0 flex-col items-stretch gap-1.5 sm:items-end">
+                    <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    className="rounded-full bg-lightSecondary text-white hover:bg-lightSecondary/90"
+                                    disabled={isUploading || fileLoading}
+                                >
+                                    <Upload className="size-3.5" aria-hidden />
+                                    Export
+                                    <ChevronDown className="size-3.5 opacity-80" aria-hidden />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="min-w-[14rem]">
+                                <DropdownMenuItem
+                                    disabled={hevyDisabled}
+                                    title={!gate.allowed ? gate.reason : undefined}
+                                    onSelect={() => {
+                                        void handleWeekExport();
+                                    }}
+                                >
+                                    Week Export · week {nthWeek}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    disabled={fileLoading || isUploading}
+                                    onSelect={() => {
+                                        void openFileExport("pdf");
+                                    }}
+                                >
+                                    PDF
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    disabled={fileLoading || isUploading}
+                                    onSelect={() => {
+                                        void openFileExport("spreadsheet");
+                                    }}
+                                >
+                                    Spreadsheet
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
                         <Button
                             type="button"
                             size="sm"
-                            className="rounded-full bg-lightSecondary text-white hover:bg-lightSecondary/90"
-                            disabled={isUploading || fileLoading}
+                            variant="outline"
+                            className="rounded-full border-border/80"
+                            asChild
                         >
-                            <Upload className="size-3.5" aria-hidden />
-                            Export
-                            <ChevronDown className="size-3.5 opacity-80" aria-hidden />
+                            {/* Stub until ADR 0014 Edit program arrival */}
+                            <Link href={`/build-program?shareId=${programId}`}>
+                                <Pencil className="size-3.5" aria-hidden />
+                                Edit program
+                            </Link>
                         </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="center" className="min-w-[14rem]">
-                        <DropdownMenuItem
-                            disabled={hevyDisabled}
-                            title={!gate.allowed ? gate.reason : undefined}
-                            onSelect={() => {
-                                void handleWeekExport();
-                            }}
-                        >
-                            Week Export · week {nthWeek}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            disabled={fileLoading || isUploading}
-                            onSelect={() => {
-                                void openFileExport("pdf");
-                            }}
-                        >
-                            PDF
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            disabled={fileLoading || isUploading}
-                            onSelect={() => {
-                                void openFileExport("spreadsheet");
-                            }}
-                        >
-                            Spreadsheet
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                    </div>
 
-                <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="rounded-full border-border/80"
-                    asChild
-                >
-                    {/* Stub until ADR 0014 Edit program arrival */}
-                    <Link href={`/build-program?shareId=${programId}`}>
-                        <Pencil className="size-3.5" aria-hidden />
-                        Edit program
-                    </Link>
-                </Button>
+                    {!gate.allowed && !linksLoading ? (
+                        <p className="text-xs text-muted-foreground sm:text-right">
+                            {gate.reason}
+                        </p>
+                    ) : null}
+                </div>
             </div>
-
-            {!gate.allowed && !linksLoading ? (
-                <p className="text-xs text-muted-foreground">{gate.reason}</p>
-            ) : null}
 
             {isUploading && uploadProgress ? (
                 <div className="flex flex-col gap-2 rounded-xl border border-border/50 bg-muted/20 px-3 py-2.5">

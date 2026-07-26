@@ -1,12 +1,13 @@
 /**
  * @module ProgramOverviewWeekStatus
  *
- * Pure week-status derivation for Program overview rows (ADR 0010 / 02).
- * Statuses: not exported / current / complete. Completion inputs come from
- * schedule-history auto flags + temp manual marks (ADR 0011 owns mark UI).
+ * Pure week-status derivation for Program overview (ADR 0010 / 02, ADR 0020 / 02).
+ * Statuses: not exported / current / complete. Selected-week defaults.
+ * Completion inputs: schedule-history auto flags + temp manual marks.
  *
  * Depends on: none
- * Used by: ProgramOverviewWeekList, ProgramOverviewExportWeekCTA (manual marks)
+ * Used by: ProgramOverviewWeekList, ProgramOverviewWeekRail,
+ *          ProgramOverviewExportWeekCTA (manual marks)
  */
 
 export type TProgramOverviewWeekStatus = "not_exported" | "current" | "complete";
@@ -175,4 +176,35 @@ export function weekStatusLabel(status: TProgramOverviewWeekStatus): string {
         case "not_exported":
             return "Not exported";
     }
+}
+
+/**
+ * Default **Selected week** for overview rail: **Current week**, else week 1.
+ *
+ * @param rows - Derived week status rows (consecutive)
+ */
+export function defaultSelectedWeek(
+    rows: readonly TProgramOverviewWeekRowModel[],
+): number | null {
+    if (rows.length === 0) {
+        return null;
+    }
+    const current = rows.find((row) => row.status === "current");
+    return current?.week ?? rows[0]!.week;
+}
+
+/**
+ * Resolve Selected week: keep explicit pick if still in rows, else default.
+ *
+ * @param selectedWeek - User pick (null = use default)
+ * @param rows - Derived week status rows
+ */
+export function resolveSelectedWeek(
+    selectedWeek: number | null,
+    rows: readonly TProgramOverviewWeekRowModel[],
+): number | null {
+    if (selectedWeek != null && rows.some((row) => row.week === selectedWeek)) {
+        return selectedWeek;
+    }
+    return defaultSelectedWeek(rows);
 }

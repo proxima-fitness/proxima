@@ -1,18 +1,18 @@
 /**
  * @module ProgramOverviewSection
  *
- * Profile Program overview shell (ADR 0010): section header + carousel of
- * per-program overviews (one slide = one active program). Week rows, Export /
- * Edit CTAs, and Hevy mirror mount inside each slide.
+ * Profile Program overview shell (ADR 0010 / 0020): section header, program
+ * picker buttons when multiple active programs, then one overview body
+ * (chrome, week rail + preview, Hevy mirror).
  *
  * Depends on: useSubscribedPrograms, useHevyPrograms, UserContext,
- *             ProgramOverviewCarousel, ProgramOverviewWeekList,
- *             ProgramOverviewHevyMirror, profileSectionChrome
+ *             ProgramOverviewWeekList, ProgramOverviewHevyMirror, profileSectionChrome
  * Used by: ProfileContent
  */
 
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Layers, Plus } from "lucide-react";
 import { useHevyPrograms, useHevySecret, useSubscribedPrograms } from "@/api/hooks";
@@ -20,7 +20,7 @@ import { useUserContext } from "@/contexts/UserContext";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ProgramOverviewCarousel } from "./ProgramOverviewCarousel";
+import { cn } from "@/lib/utils";
 import { ProgramOverviewHevyMirror } from "./ProgramOverviewHevyMirror";
 import { ProgramOverviewWeekList } from "./ProgramOverviewWeekList";
 import {
@@ -31,9 +31,19 @@ import {
 function OverviewSkeleton() {
     return (
         <div className="space-y-4 pt-4" aria-hidden>
-            <div className="flex flex-col items-center gap-2 py-4">
-                <Skeleton className="h-8 w-56 sm:w-72" />
-                <Skeleton className="h-4 w-36" />
+            <div className="flex gap-2 px-1">
+                <Skeleton className="h-8 w-28 rounded-full" />
+                <Skeleton className="h-8 w-32 rounded-full" />
+            </div>
+            <div className="flex flex-col gap-3 px-1 py-2 sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-2">
+                    <Skeleton className="h-8 w-56 sm:w-72" />
+                    <Skeleton className="h-4 w-36" />
+                </div>
+                <div className="flex gap-2 sm:justify-end">
+                    <Skeleton className="h-8 w-24 rounded-full" />
+                    <Skeleton className="h-8 w-28 rounded-full" />
+                </div>
             </div>
             <div className="mx-auto w-full max-w-md space-y-2 px-1 pt-2">
                 <Skeleton className="h-9 w-full rounded-lg" />
@@ -45,7 +55,7 @@ function OverviewSkeleton() {
 }
 
 /**
- * Program overview section — one focused Proxima program, carousel when many.
+ * Program overview section — one focused Proxima program; picker when many.
  */
 export function ProgramOverviewSection() {
     const { user, isLoading: userLoading } = useUserContext();
@@ -59,8 +69,19 @@ export function ProgramOverviewSection() {
         isLoading: programsLoading,
         isError,
     } = useSubscribedPrograms(user);
+    const [selectedProgramId, setSelectedProgramId] = useState<number | null>(null);
 
     const isLoading = userLoading || (!!user && programsLoading);
+
+    const activePrograms = programs ?? [];
+    const resolvedProgramId =
+        selectedProgramId != null && activePrograms.some((p) => p.id === selectedProgramId)
+            ? selectedProgramId
+            : (activePrograms[0]?.id ?? null);
+    const selectedProgram =
+        resolvedProgramId != null
+            ? (activePrograms.find((p) => p.id === resolvedProgramId) ?? null)
+            : null;
 
     return (
         <section aria-labelledby="program-overview-heading">
@@ -139,27 +160,46 @@ export function ProgramOverviewSection() {
                             isLoadingHevy={Boolean(hevyApiKey) && isLoadingHevy}
                         />
                     </div>
-                ) : (
-                    <div className="pt-4">
-                        <ProgramOverviewCarousel
-                            programs={programs.map((p) => ({
-                                id: p.id,
-                                title: p.title,
-                                programLength: p.program_length,
-                                specialization: p.specialization,
-                            }))}
-                        >
-                            {(program) => (
-                                <ProgramOverviewWeekList
-                                    key={program.id}
-                                    programId={program.id}
-                                    programTitle={program.title}
-                                    programLength={program.programLength}
-                                />
-                            )}
-                        </ProgramOverviewCarousel>
+                ) : selectedProgram ? (
+                    <div className="space-y-4 pt-4">
+                        {activePrograms.length > 1 ? (
+                            <div
+                                className="flex flex-wrap gap-2 px-1"
+                                role="tablist"
+                                aria-label="Active programs"
+                            >
+                                {activePrograms.map((program) => {
+                                    const selected = program.id === selectedProgram.id;
+                                    return (
+                                        <button
+                                            key={program.id}
+                                            type="button"
+                                            role="tab"
+                                            aria-selected={selected}
+                                            onClick={() => setSelectedProgramId(program.id)}
+                                            className={cn(
+                                                "max-w-full truncate rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
+                                                selected
+                                                    ? "border-lightSecondary/50 bg-lightSecondary/15 text-foreground"
+                                                    : "border-border/60 text-muted-foreground hover:bg-muted/40 hover:text-foreground",
+                                            )}
+                                        >
+                                            {program.title}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        ) : null}
+
+                        <ProgramOverviewWeekList
+                            key={selectedProgram.id}
+                            programId={selectedProgram.id}
+                            programTitle={selectedProgram.title}
+                            programLength={selectedProgram.program_length}
+                            specialization={selectedProgram.specialization}
+                        />
                     </div>
-                )}
+                ) : null}
             </Card>
         </section>
     );

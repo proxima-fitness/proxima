@@ -1,8 +1,8 @@
 /**
- * Smoke tests for Program overview section shell + carousel (ADR 0010 / 01).
+ * Smoke tests for Program overview section shell + program picker (ADR 0020).
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 
@@ -23,31 +23,34 @@ vi.mock("../ProgramOverviewHevyMirror", () => ({
     ProgramOverviewHevyMirror: () => <div data-testid="hevy-mirror-stub" />,
 }));
 
-// Avoid react-slick → enquire.js (needs matchMedia). Stub renders slides only.
-vi.mock("react-slick", () => ({
-    default: ({ children }: { children?: ReactNode }) => (
-        <div data-testid="program-overview-slider">{children}</div>
-    ),
-}));
-
-vi.mock("slick-carousel/slick/slick.css", () => ({}));
-vi.mock("slick-carousel/slick/slick-theme.css", () => ({}));
-vi.mock("../ProgramOverviewCarousel.css", () => ({}));
-
 vi.mock("../ProgramOverviewWeekList", () => ({
     ProgramOverviewWeekList: ({
         programId,
         programTitle,
         programLength,
+        specialization,
     }: {
         programId: number;
         programTitle: string;
         programLength: number | null;
-    }) => (
-        <div data-testid={`week-list-${programId}`}>
-            {programTitle}:weeks:{programLength ?? "none"}
-        </div>
-    ),
+        specialization?: string[] | null;
+    }) => {
+        const metaParts: string[] = [];
+        if (programLength != null && programLength > 0) {
+            metaParts.push(`${programLength}-week`);
+        }
+        const specializationLabel = specialization?.filter(Boolean).join(" · ");
+        if (specializationLabel) {
+            metaParts.push(specializationLabel);
+        }
+        return (
+            <div data-testid={`week-list-${programId}`}>
+                <h3>{programTitle}</h3>
+                {metaParts.length > 0 ? <p>{metaParts.join(" · ")}</p> : null}
+                {programTitle}:weeks:{programLength ?? "none"}
+            </div>
+        );
+    },
 }));
 
 import { ProgramOverviewSection } from "../ProgramOverviewSection";
@@ -117,7 +120,7 @@ describe("ProgramOverviewSection", () => {
         expect(screen.queryByText("My Hevy Programs")).toBeNull();
     });
 
-    it("renders a slide per subscribed program", () => {
+    it("shows one program body and picker tabs when multiple programs", () => {
         useSubscribedPrograms.mockReturnValue({
             data: [programA, programB],
             isLoading: false,
@@ -127,17 +130,32 @@ describe("ProgramOverviewSection", () => {
         renderSection(<ProgramOverviewSection />);
 
         expect(screen.getByRole("heading", { name: "Program overview" })).toBeTruthy();
-        expect(screen.getByTestId("program-overview-slider")).toBeTruthy();
+        expect(screen.getByRole("tablist", { name: "Active programs" })).toBeTruthy();
+        expect(screen.getByRole("tab", { name: "Strength Block A" })).toBeTruthy();
+        expect(screen.getByRole("tab", { name: "Hyrox Prep" })).toBeTruthy();
+        expect(screen.getByTestId("week-list-11")).toBeTruthy();
+        expect(screen.queryByTestId("week-list-22")).toBeNull();
         expect(screen.getByRole("heading", { name: "Strength Block A" })).toBeTruthy();
         expect(screen.getByText(/8-week · Powerbuilding/)).toBeTruthy();
+
+        fireEvent.click(screen.getByRole("tab", { name: "Hyrox Prep" }));
+
+        expect(screen.queryByTestId("week-list-11")).toBeNull();
+        expect(screen.getByTestId("week-list-22")).toBeTruthy();
         expect(screen.getByRole("heading", { name: "Hyrox Prep" })).toBeTruthy();
         expect(screen.getByText(/6-week · Hyrox/)).toBeTruthy();
-        expect(screen.queryByText(/Active program/i)).toBeNull();
-        expect(screen.getByTestId("week-list-11").textContent).toContain(
-            "Strength Block A:weeks:8",
-        );
-        expect(screen.getByTestId("week-list-22").textContent).toContain(
-            "Hyrox Prep:weeks:6",
-        );
+    });
+
+    it("hides picker when only one program", () => {
+        useSubscribedPrograms.mockReturnValue({
+            data: [programA],
+            isLoading: false,
+            isError: false,
+        });
+
+        renderSection(<ProgramOverviewSection />);
+
+        expect(screen.queryByRole("tablist", { name: "Active programs" })).toBeNull();
+        expect(screen.getByTestId("week-list-11")).toBeTruthy();
     });
 });

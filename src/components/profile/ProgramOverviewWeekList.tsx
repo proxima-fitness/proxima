@@ -1,18 +1,21 @@
 /**
  * @module ProgramOverviewWeekList
  *
- * Per-program overview slide body (ADR 0010 / 02–04): week rows + status,
- * program CTAs (Export / Edit / AI slot), Mark complete, Hevy mirror.
+ * Per-program overview slide body (ADR 0010 / 02–04, ADR 0020 / 01–03): chrome
+ * (title | Export / Edit), week rail + Selected week preview, Mark week complete,
+ * Hevy mirror.
  *
  * Depends on: useProgramHevyWeekLinks, useProgramScheduleHistoryDays, useHevyPrograms,
- *             UserContext, ProgramOverviewWeekStatus, ProgramOverviewWeekRow,
- *             ProgramOverviewCtas, ProgramOverviewHevyMirror
+ *             UserContext, ProgramOverviewWeekStatus, ProgramOverviewWeekRail,
+ *             ProgramOverviewWeekPreview, ProgramOverviewCtas, ProgramOverviewHevyMirror
  * Used by: ProgramOverviewSection (carousel children)
  */
 
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { Check, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import {
     useHevyPrograms,
@@ -21,15 +24,19 @@ import {
     useProgramScheduleHistoryDays,
 } from "@/api/hooks";
 import { useUserContext } from "@/contexts/UserContext";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProgramOverviewCtas } from "./ProgramOverviewCtas";
 import { ProgramOverviewHevyMirror } from "./ProgramOverviewHevyMirror";
-import { ProgramOverviewWeekRow } from "./ProgramOverviewWeekRow";
+import { ProgramOverviewWeekPreview } from "./ProgramOverviewWeekPreview";
+import { ProgramOverviewWeekRail } from "./ProgramOverviewWeekRail";
 import {
     deriveCompletedWeeksFromScheduleHistory,
     deriveProgramOverviewWeekStatuses,
     mergeCompletedWeeks,
     readManualCompletedWeeks,
+    resolveSelectedWeek,
+    weekStatusLabel,
     writeManualCompletedWeeks,
 } from "./ProgramOverviewWeekStatus";
 
@@ -37,37 +44,47 @@ export type TProgramOverviewWeekListProps = {
     programId: number;
     programTitle: string;
     programLength: number | null;
+    specialization?: string[] | null;
 };
 
 function WeekListSkeleton() {
     return (
         <div className="space-y-4" aria-hidden>
-            <div className="flex justify-center gap-2">
-                <Skeleton className="h-8 w-24 rounded-full" />
-                <Skeleton className="h-8 w-28 rounded-full" />
+            <div className="flex flex-col gap-3 px-1 sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-2">
+                    <Skeleton className="h-8 w-56 sm:w-72" />
+                    <Skeleton className="h-4 w-36" />
+                </div>
+                <div className="flex gap-2 sm:justify-end">
+                    <Skeleton className="h-8 w-24 rounded-full" />
+                    <Skeleton className="h-8 w-28 rounded-full" />
+                </div>
             </div>
-            <ul className="space-y-0">
-                {Array.from({ length: 4 }, (_, i) => (
-                    <li
-                        key={i}
-                        className="flex items-center justify-between border-b border-border/40 py-2.5 last:border-b-0"
-                    >
-                        <Skeleton className="h-4 w-16" />
-                        <Skeleton className="h-3.5 w-20" />
-                    </li>
-                ))}
-            </ul>
+            <div className="flex flex-col gap-3 md:flex-row md:items-start md:gap-4">
+                <div className="flex gap-2 overflow-hidden md:hidden">
+                    <Skeleton className="h-12 w-20 shrink-0 rounded-full" />
+                    <Skeleton className="h-12 w-20 shrink-0 rounded-full" />
+                    <Skeleton className="h-12 w-20 shrink-0 rounded-full" />
+                </div>
+                <div className="hidden w-40 shrink-0 space-y-2 md:block">
+                    <Skeleton className="h-9 w-full rounded-lg" />
+                    <Skeleton className="h-9 w-full rounded-lg" />
+                    <Skeleton className="h-9 w-full rounded-lg" />
+                </div>
+                <Skeleton className="h-28 min-w-0 flex-1 rounded-xl" />
+            </div>
         </div>
     );
 }
 
 /**
- * Week rows + CTAs for one active Proxima program (inside that program’s slide).
+ * Week rail + Selected week panel for one active Proxima program slide.
  */
 export function ProgramOverviewWeekList({
     programId,
     programTitle,
     programLength,
+    specialization = null,
 }: TProgramOverviewWeekListProps) {
     const { user } = useUserContext();
     const { data: hevyApiKey } = useHevySecret(user);
@@ -84,6 +101,7 @@ export function ProgramOverviewWeekList({
     const [manualCompleted, setManualCompleted] = useState(() =>
         readManualCompletedWeeks(programId),
     );
+    const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
 
     const isLoading = linksLoading || (!!user && historyLoading);
 
@@ -115,6 +133,13 @@ export function ProgramOverviewWeekList({
             ? deriveProgramOverviewWeekStatuses(weekCount, linkedWeeks, completedWeeks)
             : [];
 
+    const resolvedSelected = resolveSelectedWeek(selectedWeek, rows);
+    const selectedRow =
+        resolvedSelected != null
+            ? (rows.find((row) => row.week === resolvedSelected) ?? null)
+            : null;
+    const selectedIsCurrent = selectedRow?.status === "current";
+
     const handleMarkComplete = (week: number) => {
         const next = Array.from(new Set([...manualCompleted, week])).sort((a, b) => a - b);
         writeManualCompletedWeeks(programId, next);
@@ -127,31 +152,78 @@ export function ProgramOverviewWeekList({
             <ProgramOverviewCtas
                 programId={programId}
                 programTitle={programTitle}
+                programLength={programLength}
+                specialization={specialization}
                 linkedWeeks={linkedWeeks}
                 completedWeeks={completedWeeks}
                 linksLoading={linksLoading}
             />
 
-            {weekCount < 1 ? (
-                <p className="px-1 py-2 text-center text-sm text-muted-foreground">
+            {weekCount < 1 || resolvedSelected == null || selectedRow == null ? (
+                <p className="px-1 py-2 text-sm text-muted-foreground">
                     No weeks on this program yet.
                 </p>
             ) : (
-                <ul className="mx-auto w-full max-w-md px-1" aria-label="Program weeks">
-                    {rows.map((row) => (
-                        <ProgramOverviewWeekRow
-                            key={row.week}
-                            week={row.week}
-                            status={row.status}
+                <div className="flex flex-col gap-3 px-1 md:flex-row md:items-start md:gap-4">
+                    <ProgramOverviewWeekRail
+                        rows={rows}
+                        selectedWeek={resolvedSelected}
+                        onSelectWeek={setSelectedWeek}
+                    />
+
+                    <div
+                        className="min-w-0 flex-1 rounded-xl border border-border/40 bg-muted/20 px-3 py-3 sm:px-4"
+                        data-selected-week={resolvedSelected}
+                        data-week-status={selectedRow.status}
+                    >
+                        <div className="flex flex-wrap items-baseline justify-between gap-2">
+                            <h4 className="text-base font-semibold tracking-tight text-foreground">
+                                Week {resolvedSelected}
+                            </h4>
+                            <span className="text-xs tracking-wide text-muted-foreground sm:text-sm">
+                                {weekStatusLabel(selectedRow.status)}
+                            </span>
+                        </div>
+
+                        <ProgramOverviewWeekPreview
+                            key={`${programId}-${resolvedSelected}`}
                             programId={programId}
-                            showActions={row.status === "current"}
-                            canMarkComplete={
-                                row.status === "current" && !completedWeeks.includes(row.week)
-                            }
-                            onMarkComplete={() => handleMarkComplete(row.week)}
+                            nthWeek={resolvedSelected}
                         />
-                    ))}
-                </ul>
+
+                        {selectedIsCurrent ? (
+                            <div className="mt-3 flex flex-wrap items-center gap-2">
+                                {!completedWeeks.includes(resolvedSelected) ? (
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="outline"
+                                        className="h-8 rounded-full"
+                                        onClick={() => handleMarkComplete(resolvedSelected)}
+                                    >
+                                        <Check className="size-3.5" aria-hidden />
+                                        Mark week complete
+                                    </Button>
+                                ) : null}
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-8 rounded-full text-muted-foreground"
+                                    asChild
+                                >
+                                    {/* Stub until ADR 0013 Hevy-folder Edit current week arrival */}
+                                    <Link
+                                        href={`/build-program?shareId=${programId}&editWeek=${resolvedSelected}`}
+                                    >
+                                        <Pencil className="size-3.5" aria-hidden />
+                                        Edit week
+                                    </Link>
+                                </Button>
+                            </div>
+                        ) : null}
+                    </div>
+                </div>
             )}
 
             <ProgramOverviewHevyMirror

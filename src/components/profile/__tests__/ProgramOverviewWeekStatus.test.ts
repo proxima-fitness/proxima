@@ -3,9 +3,11 @@
  */
 import { describe, expect, it } from "vitest";
 import {
+    defaultSelectedWeek,
     deriveCompletedWeeksFromScheduleHistory,
     deriveProgramOverviewWeekStatuses,
     mergeCompletedWeeks,
+    resolveSelectedWeek,
     weekStatusLabel,
 } from "../ProgramOverviewWeekStatus";
 
@@ -111,5 +113,53 @@ describe("weekStatusLabel", () => {
         expect(weekStatusLabel("not_exported")).toBe("Not exported");
         expect(weekStatusLabel("current")).toBe("Current");
         expect(weekStatusLabel("complete")).toBe("Complete");
+    });
+});
+
+describe("defaultSelectedWeek", () => {
+    it("returns null for empty rows", () => {
+        expect(defaultSelectedWeek([])).toBeNull();
+    });
+
+    it("prefers Current week", () => {
+        expect(
+            defaultSelectedWeek([
+                { week: 1, status: "complete" },
+                { week: 2, status: "current" },
+                { week: 3, status: "not_exported" },
+            ]),
+        ).toBe(2);
+    });
+
+    it("falls back to week 1 when no Current", () => {
+        expect(
+            defaultSelectedWeek([
+                { week: 1, status: "not_exported" },
+                { week: 2, status: "not_exported" },
+            ]),
+        ).toBe(1);
+        expect(
+            defaultSelectedWeek([
+                { week: 1, status: "complete" },
+                { week: 2, status: "complete" },
+            ]),
+        ).toBe(1);
+    });
+});
+
+describe("resolveSelectedWeek", () => {
+    const rows = [
+        { week: 1, status: "complete" as const },
+        { week: 2, status: "current" as const },
+        { week: 3, status: "not_exported" as const },
+    ];
+
+    it("keeps an explicit pick still in rows", () => {
+        expect(resolveSelectedWeek(3, rows)).toBe(3);
+    });
+
+    it("falls back to default when pick missing or null", () => {
+        expect(resolveSelectedWeek(null, rows)).toBe(2);
+        expect(resolveSelectedWeek(9, rows)).toBe(2);
     });
 });
