@@ -4,12 +4,12 @@
  * @module (app)/profile/ProfileContent
  *
  * Client profile body: Hevy-style card stack on muted background — header with Stats/Programs
- * tabs, then tab panels for statistics/blind-spot/recent workouts vs Hevy + vault programs.
+ * tabs, then tab panels for statistics/blind-spot/recent workouts vs Program overview + Hevy + vault.
  * Resume-draft banner sits above the card stack.
  *
  * Depends on: UserContext, useHevyPrograms/useHevySecret, ProfileHero,
- * ProfileCalendarSection, BlindSpotAnalysisSection, RecentWorkoutsSection, HevyProgramsGrid, MyProgramsVault,
- * ResumeDraftBanner.
+ * ProfileCalendarSection, BlindSpotAnalysisSection, RecentWorkoutsSection,
+ * ProgramOverviewSection, HevyProgramsGrid, MyProgramsVault, ResumeDraftBanner.
  * Used by: (app)/profile/page.tsx.
  */
 
@@ -20,6 +20,7 @@ import { BlindSpotAnalysisSection } from "@/components/profile/BlindSpotAnalysis
 import { ProfileHero } from "@/components/profile/ProfileHero";
 import { ProfileStatisticsSection } from "@/components/profile/ProfileStatisticsSection";
 import { ProfileCalendarSection } from "@/components/profile/ProfileCalendarSection";
+import { ProgramOverviewSection } from "@/components/profile/ProgramOverviewSection";
 import { RecentWorkoutsSection } from "@/components/profile/RecentWorkoutsSection";
 import { HevyProgramsGrid } from "@/components/program-builder/hevy/HevyProgramsGrid";
 import { ResumeDraftBanner } from "@/components/program-builder/ResumeDraftBanner";
@@ -99,6 +100,8 @@ export function ProfileContent() {
                         </TabsContent>
 
                         <TabsContent value="programs" className="mt-0 flex flex-col gap-4">
+                            <ProgramOverviewSection />
+
                             {showHevyCard ? (
                                 <Card className={PROFILE_CARD_CLASS}>
                                     <HevyProgramsGrid
@@ -136,6 +139,8 @@ export function ProfileContent() {
                         </Card>
 
                         {hevyConnected ? <RecentWorkoutsSection /> : null}
+
+                        <ProgramOverviewSection />
 
                         {showHevyCard ? (
                             <Card className={PROFILE_CARD_CLASS}>

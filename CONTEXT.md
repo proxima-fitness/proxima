@@ -49,16 +49,20 @@ Associating a saved program with a chat row by setting `program_id` on the chat.
 _Avoid_: Link chat to program (reversed direction), save chat
 
 **Proxima program**:
-The multi-week training block owned in Supabase — single source of truth on the **New path**. Has consecutive weeks, progress on the **Program overview**, and week-at-a-time **Week Export** to Hevy. Distinct from a **Hevy program (edit scope)**, which may exist with no Proxima program. Multiple active Proxima programs allowed in data; overview shows one via carousel.
+The multi-week training block owned in Supabase — single source of truth on the **New path**. Has consecutive weeks, progress on its **Program overview**, and week-at-a-time **Week Export** to Hevy. Distinct from a **Hevy program (edit scope)**, which may exist with no Proxima program. Multiple active Proxima programs allowed in data; each has its own overview slide in the profile carousel.
 _Avoid_: Overarching program, program-in-progress (UI-shaped), Program (alone — ambiguous with Hevy), vault program
 
 **Program overview**:
-Profile surface for **Proxima program** progress: consecutive weeks, **Week complete**, **AI week suggest**, **Edit program**, **Edit current week**. Export destinations removed from the builder (PDF, Hevy / **Week Export**, spreadsheet) live here as a per-program dropdown — not on the builder toolbar. Shows one program at a time; user swaps among active programs via a carousel. Sits above **Hevy folders** on the profile. Backend / **Hevy program sync** must support more than one active program even though the overview focuses one.
-_Avoid_: Hevy folders (different section), vault browse, forcing a single active program in data, builder Export button
+Per-**Proxima program** profile panel: consecutive weeks, **Week complete**, **AI week suggest**, **Edit program**, **Edit current week**, plus that program’s **Hevy mirror**. Export destinations removed from the builder (PDF, Hevy / **Week Export**, spreadsheet) live here as a per-program dropdown — not on the builder toolbar. Active programs each get an overview; those overviews are carousel slides — swipe/page to switch (one overview visible). Replaces profile **My Programs** vault browse. Target layout: top of a single profile scroll (Stats/Programs tabs transitional — drop once the carousel of compact overviews lands). Backend / **Hevy program sync** must support more than one active program.
+_Avoid_: Carousel as title-only picker above a shared body, separate My Programs / My Hevy Programs sections, permanent Stats/Programs tabs, vault browse on profile, forcing a single active program in data, builder Export button
 
-**Hevy folders**:
-Profile grid of the user’s Hevy routine folders (formerly “My Hevy Programs”). Entry for Hevy-only **Edit path** / split builder — outside the preferred **Proxima program** loop. Kept below **Program overview** so power users can still Sync a folder without a program; **Make into a program** promotes into the preferred flow.
-_Avoid_: My Hevy Programs, treating folders as Program overview, implying this is the primary path
+**Hevy mirror**:
+Subsection of a **Program overview** slide for that program’s active Hevy week copy (via **Program–Hevy link**) and for Hevy-only folders with no Proxima program — Edit path / split builder entry and **Make into a program**. Replaces the old standalone profile **Hevy folders** / “My Hevy Programs” grid.
+_Avoid_: My Hevy Programs, Hevy folders (as a separate profile section), treating mirror as equal primary to week rows
+
+**Hevy folders** (retired UI label):
+Former name for the standalone profile Hevy grid. Do not ship as its own section — use **Hevy mirror** inside **Program overview**. Folder/routine objects in Hevy APIs are still “folders” in engineering talk.
+_Avoid_: Reviving My Hevy Programs / Hevy folders as a top-level profile card
 
 **New path**:
 Create and progress a **Proxima program**: build → **Save** to Supabase → Program overview → export via overview dropdown (**Week Export** to Hevy one week at a time; PDF / spreadsheet still available) → optional **AI week suggest** between weeks. No Export control on the program builder — all former builder export methods live only on the Program overview (profile). Not the **Edit path**.
@@ -101,7 +105,7 @@ _Avoid_: Full-program Hevy Export (removed), Save (Supabase only), re-Export sam
                        
 **Hevy write quota**:
 Renamed/replaced monthly full-program export limits. **Save** and in-Proxima prescription edits are unlimited. Meter charges every successful Hevy write: **Week Export**, **Edit current week** Sync, and Hevy-only **Edit path** Sync (no Proxima program). Week 1 **Week Export** per program is free; later Week Exports and all Syncs count. Tier numbers updated when the limit is renamed.
-_Avoid_: Week Export quota (too narrow), charging for Save, Sync-free loophole via **Hevy folders**, “monthly exports” full-program wording
+_Avoid_: Week Export quota (too narrow), charging for Save, Sync-free loophole via **Hevy mirror** / Hevy-only Edit, “monthly exports” full-program wording
 
 **Usage period**:
 The calendar month (UTC) that one `feature_usage` row counts. One row per user per month, keyed `(user_id, period_start)` where `period_start` is the 1st. The row is created lazily by the first metered action that month, so an **absent row means zero used** and quota resets with no scheduled job. `get_my_feature_limits` reads only the current period's row and returns `resets_on` (the 1st of next month), surfaced in copy only when the user is out of usage. Anonymous users have no usage period — their localStorage counter is lifetime. Not the Stripe billing period: free users have no subscription, and Stripe period columns move between sync-engine versions.
@@ -220,11 +224,11 @@ After a successful Sync, invalidate `useHevyPrograms` and leave the builder for 
 _Avoid_: Baseline advance, in-builder reload, resume draft
 
 **Edit arrival**:
-Entering the builder to modify an existing Hevy program — via `/build-program?edit=true&hevy=true&folder={initialFolderId}`. On Edit click from the profile (**Hevy folders** grid or blind-spot Hevy program picker), refetch `useHevyPrograms`, then pass the selected program's routines through router navigation state. Optional query params (e.g. `search=` for stall-analysis dispatch) compose with Edit arrival. The build-program page hydrates from navigation state and does not fetch routines on mount. If navigation state is missing (refresh, direct URL), redirect to the profile page. Not seeded through `localStorage`.
+Entering the builder to modify an existing Hevy program — via `/build-program?edit=true&hevy=true&folder={initialFolderId}`. On Edit click from the profile (**Hevy mirror** subsection or blind-spot Hevy program picker), refetch `useHevyPrograms`, then pass the selected program's routines through router navigation state. Optional query params (e.g. `search=` for stall-analysis dispatch) compose with Edit arrival. The build-program page hydrates from navigation state and does not fetch routines on mount. If navigation state is missing (refresh, direct URL), redirect to the profile page. Not seeded through `localStorage`.
 _Avoid_: Resume, hevy-program-in-progress (Edit path), build-program fetch
 
 **Edit mode menu**:
-The breadcrumb New/Edit switch. Edit is only selectable when the builder is already on an Edit arrival (`folder` param present). Entering Edit from New is via **Hevy folders** on the profile, not the mode menu.
+The breadcrumb New/Edit switch. Edit is only selectable when the builder is already on an Edit arrival (`folder` param present). Entering Edit from New is via **Hevy mirror** on the profile, not the mode menu.
 _Avoid_: Mode toggle, program picker
 
 **Edit agent**:
@@ -252,7 +256,7 @@ Edit-mode Sync and rollback logic lives in `hevy_sync.ts` with colocated tests. 
 _Avoid_: syncProgramToHevy in hevy.ts, export sync
 
 **Edit navigation hook**:
-Shared `useNavigateToEditHevyProgram()` used by profile entry points (**Hevy folders** grid, blind-spot Hevy picker). Refetches `useHevyPrograms`, passes routines via router state, and navigates to Edit arrival with `folder` and optional extra query params.
+Shared `useNavigateToEditHevyProgram()` used by profile entry points (**Hevy mirror** subsection, blind-spot Hevy picker). Refetches `useHevyPrograms`, passes routines via router state, and navigates to Edit arrival with `folder` and optional extra query params.
 _Avoid_: navigateToEditHevyProgram helper, inline edit push
 
 **Agentic memory**:
@@ -400,7 +404,7 @@ Muted subline under the **Profile statistics** "This week" headline — `{N} wor
 _Avoid_: Consistency score (too vague), on-track label (deferred judgment copy)
 
 **Profile calendar**:
-Month grid beside **Profile statistics** on the profile Stats tab (Sunday-start week row, US convention — same as profile statistics) — one highlighted day per calendar date that has at least one backed-up **Workout**, using the same local workout date shown on workout history browse cards (workout start, not finish). One highlight per day regardless of how many workouts that day. **Today** (user's local calendar date) always gets a distinct ring outline; when today also has a workout, the teal workout circle keeps its fill and adds a contrasting ring. User can navigate to any month across full synced backup history (independent of profile statistics’ 4/12-week chart range); highlights load per visible month and refill silently as backup sync adds workouts (no sync status copy on the calendar card). Month navigation is unbounded — empty grids before the first workout or after today are allowed; future months show no highlights. Hovering, focusing, or tapping a highlighted day opens the same tooltip (tap-to-open on touch; dismiss on outside tap) listing each backed-up **Workout** that day — title, duration, date, and a **See Workout** link to **Logged workout detail** — stacked when multiple sessions share a date. Opens on the current calendar month by default. Free for all Hevy-connected users with backup data (not Pro-gated). Shown only when Hevy is connected (same gate as **Recent workouts**). Distinct from profile statistics (weekly Duration/Reps/Volume aggregates).
+Month grid beside **Profile statistics** on the profile (Sunday-start week row, US convention — same as profile statistics) — one highlighted day per calendar date that has at least one backed-up **Workout**, using the same local workout date shown on workout history browse cards (workout start, not finish). One highlight per day regardless of how many workouts that day. **Today** (user's local calendar date) always gets a distinct ring outline; when today also has a workout, the teal workout circle keeps its fill and adds a contrasting ring. User can navigate to any month across full synced backup history (independent of profile statistics’ 4/12-week chart range); highlights load per visible month and refill silently as backup sync adds workouts (no sync status copy on the calendar card). Month navigation is unbounded — empty grids before the first workout or after today are allowed; future months show no highlights. Hovering, focusing, or tapping a highlighted day opens the same tooltip (tap-to-open on touch; dismiss on outside tap) listing each backed-up **Workout** that day — title, duration, date, and a **See Workout** link to **Logged workout detail** — stacked when multiple sessions share a date. Opens on the current calendar month by default. Free for all Hevy-connected users with backup data (not Pro-gated). Shown only when Hevy is connected (same gate as **Recent workouts**). Distinct from profile statistics (weekly Duration/Reps/Volume aggregates).
 _Avoid_: Activity calendar (too generic), workout calendar (ambiguous with builder schedule)
 
 **Profile header**:
@@ -412,7 +416,7 @@ Consecutive Sunday-start weeks (US ET, same as profile statistics) with at least
 _Avoid_: Day streak, GitHub streak, streak badge on calendar
 
 **Recent workouts** (profile):
-Horizontal browse feed on the profile page — read-only preview cards for backed-up **Workouts** (≤5 exercises each), newest first, cursor-paginated with load-more. Card header shows title, date, duration, and **Session goal** badge when classifiable. **See more exercises** links to logged workout detail when needed. Shown only when Hevy is connected. Sits after profile statistics and before **Program overview** / **Hevy folders**. White card on muted page background per profile Hevy layout.
+Horizontal browse feed on the profile page — read-only preview cards for backed-up **Workouts** (≤5 exercises each), newest first, cursor-paginated with load-more. Card header shows title, date, duration, and **Session goal** badge when classifiable. **See more exercises** links to logged workout detail when needed. Shown only when Hevy is connected. Sits below profile statistics (and below **Program overview** once Stats/Programs tabs are dropped). White card on muted page background per profile Hevy layout.
 _Avoid_: Workout feed (ambiguous with social feed), workout history list (too generic)
 
 **Session goal**:
