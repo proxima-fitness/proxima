@@ -3,11 +3,11 @@
  *
  * Per-slide overview chrome + CTAs (ADR 0010 / 03, ADR 0020 / 01): title + meta
  * left, Export dropdown (Hevy Week Export / PDF / spreadsheet) + Edit program
- * right; AI week suggest mount (empty until 0012). Week Export via ADR 0009;
- * PDF/CSV reuse ExportDialog destinations.
+ * right; AI week suggest disclosure below (ADR 0012 / 02). Week Export via
+ * ADR 0009; PDF/CSV reuse ExportDialog destinations.
  *
- * Depends on: ExportDialog, ProgramOverviewExportWeek, hooks, Button,
- *             DropdownMenu, Progress
+ * Depends on: ExportDialog, ProgramOverviewExportWeek, AiWeekSuggestPanel, hooks,
+ *             Button, DropdownMenu, Progress
  * Used by: ProgramOverviewWeekList
  */
 
@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ExportDialog } from "@/components/program-builder/shared/ExportDialog";
 import { RATE_LIMIT_EXHAUSTED_MESSAGE } from "@/assets/constants/ui-constants";
+import { AiWeekSuggestPanel } from "./AiWeekSuggestPanel";
 import {
     evaluateWeekExportGate,
     exportProgramWeekToHevy,
@@ -73,7 +74,7 @@ function formatProgramMeta(
 }
 
 /**
- * Program chrome (title | Export / Edit) + AI suggest slot for one overview slide.
+ * Program chrome (title | Export / Edit) + AI week suggest for one overview slide.
  */
 export function ProgramOverviewCtas({
     programId,
@@ -288,8 +289,12 @@ export function ProgramOverviewCtas({
                 </div>
             ) : null}
 
-            {/* AI week suggest mount — content in ADR 0012 */}
-            <div data-ai-week-suggest-slot aria-label="AI week suggest" />
+            <AiWeekSuggestPanel
+                programId={programId}
+                linkedWeeks={linkedWeeks}
+                completedWeeks={completedWeeks}
+                programLength={programLength}
+            />
 
             <ExportDialog
                 open={fileExportOpen}
