@@ -15,6 +15,10 @@
  * edits that would leave `reps_range` jagged, which multi-dimensional
  * Postgres arrays cannot store.
  *
+ * Every row update selects the row back: RLS drops a disallowed UPDATE without
+ * raising an error, so "no error" is not evidence of a write (the missing
+ * owner UPDATE policy is `20260726190000_program_workout_exercises_update_policy`).
+ *
  * Server-safe: callers pass the client, like `program-prescription`.
  *
  * Depends on: @supabase/supabase-js, @/hooks/supabase, program-prescription,
@@ -286,13 +290,23 @@ export async function applyWeekSetUpdates(
         // cells; round-tripping through JSON keeps one honest boundary cast.
         const payload = JSON.parse(JSON.stringify(update.patch)) as TExerciseUpdate;
 
-        const { error } = await client
+        const { data, error } = await client
             .from("program_workout_exercises")
             .update(payload)
-            .eq("id", update.exerciseId);
+            .eq("id", update.exerciseId)
+            .select("id");
 
         if (error) {
             throw error;
+        }
+
+        // An UPDATE that RLS filters out changes zero rows and raises no error.
+        // Selecting the row back is the only way to tell "wrote it" from
+        // "silently dropped it" — never report an unwritten change as applied.
+        if (!data || data.length === 0) {
+            throw new Error(
+                `Prescription exercise ${update.exerciseId} was not updated (row missing or not writable)`,
+            );
         }
     }
 

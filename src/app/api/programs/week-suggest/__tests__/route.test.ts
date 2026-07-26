@@ -11,6 +11,8 @@ const {
     mockSaveCached,
     mockDeleteCached,
     mockGenerate,
+    mockEnsureFresh,
+    mockRpc,
 } = vi.hoisted(() => ({
     mockGetUser: vi.fn(),
     mockGetLinks: vi.fn(),
@@ -21,10 +23,15 @@ const {
     mockSaveCached: vi.fn(),
     mockDeleteCached: vi.fn(),
     mockGenerate: vi.fn(),
+    mockEnsureFresh: vi.fn(),
+    mockRpc: vi.fn(),
 }));
 
 vi.mock("@/utils/supabase/server", () => ({
-    createClient: vi.fn(async () => ({ auth: { getUser: mockGetUser } })),
+    createClient: vi.fn(async () => ({
+        auth: { getUser: mockGetUser },
+        rpc: mockRpc,
+    })),
 }));
 
 vi.mock("@/api/program-hevy-links", () => ({
@@ -43,6 +50,7 @@ vi.mock("@/api/program-week-suggestions", () => ({
 }));
 
 vi.mock("@/api/workout-history-read", () => ({
+    ensureWorkoutHistoryFresh: mockEnsureFresh,
     getAllWorkoutsSinceForUser: mockGetWorkoutsSince,
     mapBackedUpWorkoutToHevyRoutine: (workout: {
         id: string;
@@ -148,6 +156,8 @@ describe("POST /api/programs/week-suggest", () => {
         mockGetWorkoutsSince.mockResolvedValue([
             { id: "w1", started_at: "2026-07-10T10:00:00.000Z" },
         ]);
+        mockRpc.mockResolvedValue({ data: "hevy-key", error: null });
+        mockEnsureFresh.mockResolvedValue({ done: true });
         mockGetCached.mockResolvedValue(null);
         mockDeleteCached.mockResolvedValue(undefined);
         mockSaveCached.mockImplementation(
@@ -338,6 +348,42 @@ describe("POST /api/programs/week-suggest", () => {
                 loggedWorkouts: [expect.objectContaining({ id: "w-open" })],
             }),
         );
+    });
+
+    it("catches the backup mirror up before reading the week's logs", async () => {
+        const { POST } = await import("../route");
+        await POST(request());
+
+        expect(mockRpc).toHaveBeenCalledWith("read_secret", {
+            secret_name: `hevy_api_key_${USER.id}`,
+        });
+        expect(mockEnsureFresh).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.objectContaining({ userId: USER.id, apiKey: "hevy-key" }),
+        );
+        expect(mockEnsureFresh.mock.invocationCallOrder[0]).toBeLessThan(
+            mockGetWorkoutsSince.mock.invocationCallOrder[0],
+        );
+    });
+
+    it("skips the nudge when the user has no Hevy key", async () => {
+        mockRpc.mockResolvedValue({ data: null, error: null });
+
+        const { POST } = await import("../route");
+        const res = await POST(request());
+
+        expect(mockEnsureFresh).not.toHaveBeenCalled();
+        await expect(res.json()).resolves.toMatchObject({ status: "ok" });
+    });
+
+    it("still generates when the freshness nudge fails", async () => {
+        mockEnsureFresh.mockRejectedValue(new Error("hevy 429"));
+
+        const { POST } = await import("../route");
+        const res = await POST(request());
+
+        await expect(res.json()).resolves.toMatchObject({ status: "ok" });
+        expect(mockGenerate).toHaveBeenCalled();
     });
 
     it("does not generate or cache a week with nothing logged", async () => {

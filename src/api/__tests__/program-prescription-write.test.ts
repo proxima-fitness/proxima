@@ -232,14 +232,23 @@ describe("applyWeekSetUpdates", () => {
         const eqProgram = vi.fn(() => ({ eq: eqWeek }));
         const select = vi.fn(() => ({ eq: eqProgram }));
 
-        const eqId = vi.fn(async () => ({ error: null }));
+        const selectWritten = vi.fn(
+            async (): Promise<{
+                data: { id: string }[] | null;
+                error: Error | null;
+            }> => ({
+                data: [{ id: "ex-bench" }],
+                error: null,
+            }),
+        );
+        const eqId = vi.fn(() => ({ select: selectWritten }));
         const update = vi.fn(() => ({ eq: eqId }));
 
         const from = vi.fn((table: string) =>
             table === "schedule_workouts" ? { select } : { update },
         );
 
-        return { client: asDb({ from }), from, eqWeek, update, eqId };
+        return { client: asDb({ from }), from, eqWeek, update, eqId, selectWritten };
     }
 
     it("reads and writes the target week only", async () => {
@@ -284,8 +293,8 @@ describe("applyWeekSetUpdates", () => {
     });
 
     it("throws when a row update fails", async () => {
-        const { client, eqId } = mockClient(WEEK_DAYS);
-        eqId.mockResolvedValueOnce({ error: new Error("rls") });
+        const { client, selectWritten } = mockClient(WEEK_DAYS);
+        selectWritten.mockResolvedValueOnce({ data: null, error: new Error("rls") });
 
         await expect(
             applyWeekSetUpdates(client, {
@@ -294,5 +303,19 @@ describe("applyWeekSetUpdates", () => {
                 operations: [updateSet()],
             }),
         ).rejects.toThrow("rls");
+    });
+
+    it("refuses to report success when the write changed no row", async () => {
+        // RLS filters a disallowed UPDATE silently: zero rows, no error.
+        const { client, selectWritten } = mockClient(WEEK_DAYS);
+        selectWritten.mockResolvedValueOnce({ data: [], error: null });
+
+        await expect(
+            applyWeekSetUpdates(client, {
+                programId: 42,
+                targetWeek: 4,
+                operations: [updateSet()],
+            }),
+        ).rejects.toThrow("was not updated");
     });
 });

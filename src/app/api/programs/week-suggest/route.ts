@@ -6,6 +6,10 @@
  * **Week complete** link, the prescription for weeks N and N+1, and week N's
  * logged sessions, then asks the model for a week N+1 change batch.
  *
+ * Week N's sessions come from the workout backup mirror, which lags the sync
+ * that drives Week complete, so the route nudges the backup first
+ * ({@link ensureWeekLogsFresh}).
+ *
  * No monthly LLM meter — company-borne cost (automatic panel open, not a
  * user-initiated chat turn). Results cache in `program_week_suggestions`
  * (one row per program + completed week); re-open / remount returns cache
@@ -32,6 +36,7 @@ import {
     saveProgramWeekSuggestion,
 } from "@/api/program-week-suggestions";
 import {
+    ensureWorkoutHistoryFresh,
     getAllWorkoutsSinceForUser,
     mapBackedUpWorkoutToHevyRoutine,
 } from "@/api/workout-history-read";
@@ -52,11 +57,52 @@ import {
 /** One model round-trip plus a few reads — well under the chat route's budget. */
 export const maxDuration = 60;
 
+/**
+ * Newest-first backup pages pulled before reading a week's logs. Three pages
+ * (30 sessions) covers any single week; the background poller owns backfill.
+ */
+const WEEK_SUGGEST_SYNC_MAX_CHUNKS = 3;
+
 const cachedChangesSchema = z.array(weekSuggestChangeSchema);
 
 function parseCachedChanges(raw: unknown): TWeekSuggestChange[] | null {
     const parsed = cachedChangesSchema.safeParse(raw);
     return parsed.success ? parsed.data : null;
+}
+
+/**
+ * Pulls the newest Hevy sessions into the backup mirror before reading a week.
+ *
+ * Week complete is driven by `hevy-program-sync`, which reads Hevy directly and
+ * never writes `workouts`; the mirror is filled by a separate chunked poller.
+ * So the moment a user marks a week complete, the sessions that week is made of
+ * are routinely not backed up yet. Best-effort — a failed nudge degrades to the
+ * `no_logged_sessions` answer, never a failed generation.
+ *
+ * @param client - Request-scoped Supabase client
+ * @param userId - Signed-in user id (owner of the backup rows)
+ */
+async function ensureWeekLogsFresh(
+    client: Awaited<ReturnType<typeof createClient>>,
+    userId: string,
+): Promise<void> {
+    try {
+        const { data: apiKey, error } = await client.rpc("read_secret", {
+            secret_name: `hevy_api_key_${userId}`,
+        });
+
+        if (error || typeof apiKey !== "string" || apiKey.length === 0) {
+            return;
+        }
+
+        await ensureWorkoutHistoryFresh(client, {
+            userId,
+            apiKey,
+            maxChunks: WEEK_SUGGEST_SYNC_MAX_CHUNKS,
+        });
+    } catch (syncError) {
+        console.warn("week-suggest: backup freshness nudge failed:", syncError);
+    }
 }
 
 function notReady(
@@ -177,6 +223,10 @@ export async function POST(request: Request) {
         }
 
         const logWindow = weekLogWindow(completedLink);
+
+        // The week was marked complete moments ago; catch the mirror up first.
+        await ensureWeekLogsFresh(supabase, user.id);
+
         const backedUpWorkouts = await getAllWorkoutsSinceForUser(
             supabase,
             user.id,
