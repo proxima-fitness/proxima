@@ -399,6 +399,35 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("lbs (pounds)");
             expect(prompt).toContain("weight_display");
         });
+
+        it("tells anonymous users to sign in before Export (not click Export)", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+                isSignedIn: false,
+            });
+            expect(prompt).toContain("Upload to Hevy");
+            expect(prompt).toContain("not** signed in");
+            expect(prompt).toContain("Sign in");
+            expect(prompt).toContain("sign in first");
+            expect(prompt).toContain("Do **not** tell an unsigned-in user to click Export");
+            expect(prompt).not.toContain("They are signed in");
+        });
+
+        it("tells signed-in users to use Export then Upload", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+                isSignedIn: true,
+            });
+            expect(prompt).toContain("Upload to Hevy");
+            expect(prompt).toContain("They are signed in");
+            expect(prompt).toContain("**Export** button");
+            expect(prompt).toContain("**Upload**");
+            expect(prompt).not.toContain("sign in first");
+        });
     });
 });
 

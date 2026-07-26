@@ -143,7 +143,7 @@ export function RecentWorkoutsSection() {
                 />
 
                 {isLoading ? (
-                    <div className="flex gap-4 overflow-x-auto pb-2 pt-4 sm:px-5 md:px-6">
+                    <div className="flex gap-4 overflow-x-auto pb-2 pt-4">
                         <PreviewCardSkeleton />
                         <PreviewCardSkeleton />
                     </div>
@@ -180,10 +180,10 @@ export function RecentWorkoutsSection() {
                         No backed-up workouts yet. Log a workout in Hevy to see it here.
                     </p>
                 ) : (
-                    <div className="relative overflow-hidden pt-4 sm:overflow-visible">
+                    <div className="relative overflow-hidden pt-4">
                         <div
                             ref={scrollContainerRef}
-                            className="flex gap-4 overflow-x-auto pb-2 sm:px-5 md:px-6 snap-x snap-mandatory"
+                            className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory"
                         >
                             {previewItems.map((item) => (
                                 <div
@@ -240,9 +240,9 @@ export function RecentWorkoutsSection() {
                             <Button
                                 type="button"
                                 onClick={handleScrollLeft}
-                                variant="outline"
+                                variant="ghost"
                                 size="icon"
-                                className="absolute left-0 top-1/2 z-10 hidden h-12 w-12 -translate-x-[calc(100%+1rem)] -translate-y-1/2 items-center justify-center rounded-full border-2 bg-white/90 p-0 shadow-lg transition-opacity hover:bg-white dark:bg-lightSecondary dark:hover:bg-lightSecondary sm:flex"
+                                className="absolute left-2 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border-2 border-black/10 bg-white/40 p-0 text-foreground shadow-md backdrop-blur-sm hover:bg-white/60 hover:text-foreground focus-visible:ring-foreground/20 dark:border-white/15 dark:bg-black/30 dark:hover:bg-black/45 sm:flex"
                                 aria-label="Scroll left"
                             >
                                 <ChevronLeft className="h-6 w-6" />
@@ -252,9 +252,9 @@ export function RecentWorkoutsSection() {
                             <Button
                                 type="button"
                                 onClick={handleScrollRight}
-                                variant="outline"
+                                variant="ghost"
                                 size="icon"
-                                className="absolute right-0 top-1/2 z-10 hidden h-12 w-12 translate-x-[calc(100%+1rem)] -translate-y-1/2 items-center justify-center rounded-full border-2 bg-white/90 p-0 shadow-lg transition-opacity hover:bg-white dark:bg-lightSecondary dark:hover:bg-lightSecondary sm:flex"
+                                className="absolute right-2 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border-2 border-black/10 bg-white/40 p-0 text-foreground shadow-md backdrop-blur-sm hover:bg-white/60 hover:text-foreground focus-visible:ring-foreground/20 dark:border-white/15 dark:bg-black/30 dark:hover:bg-black/45 sm:flex"
                                 aria-label="Scroll right"
                             >
                                 <ChevronRight className="h-6 w-6" />

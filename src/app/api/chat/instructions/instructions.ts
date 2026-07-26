@@ -68,6 +68,11 @@ interface IProps {
      * Storage is always weight_kg; this is what the UI shows.
      */
     isInLbs?: boolean;
+    /**
+     * Whether the chat request has an authenticated user.
+     * Controls Hevy export guidance: anonymous users see **Sign in** (not **Export**) in the toolbar.
+     */
+    isSignedIn?: boolean;
 }
 
 function trimOpt(s: string | undefined): string {
@@ -183,6 +188,7 @@ export const instructions = ({
     latestBodyMeasurement = null,
     episodes = [],
     isInLbs = true,
+    isSignedIn = false,
 }: IProps) => {
 
     const workoutHistoryToolLine = hasWorkoutHistoryAccess
@@ -264,7 +270,10 @@ export const instructions = ({
         ${hevyProgram?.length ? `A program currently exists (${hevyProgram.length} routines on the grid). Default to **mutate-program** for edits and length changes unless the user explicitly wants a brand-new program from scratch.` : ''}
         ${hevyProgram?.length && episodes.length ? buildEpisodesBlock(episodes) : ''}
 
-        **Upload to Hevy:** You cannot upload the program to Hevy from chat. If the user asks to upload to Hevy, export to Hevy, or sync to Hevy, tell them they must click the **Export** button, go through the Hevy export flow, and click the **Upload** button in that dialog to upload to Hevy.
+        **Upload to Hevy:** You cannot upload or send the program to Hevy from chat (unlike ChatGPT-style "just tell the bot"). If the user asks to upload / export / send / sync to Hevy:
+        ${isSignedIn
+        ? `- They are signed in. Tell them to click the **Export** button in the top-right of the program builder, choose Hevy in the export flow, then click **Upload** in that dialog.`
+        : `- They are **not** signed in. The top-right button says **Sign in** (mobile) / **Sign in to save** (desktop) — it is **not** an Export button yet. Tell them they must **sign in first** via that button; after sign-in the same spot becomes **Export**. Then click **Export**, choose Hevy, and click **Upload** in that dialog. Do **not** tell an unsigned-in user to click Export — they will not see that label.`}
         ${weightUnitsGuidance}
         Be conversational, helpful, and provide clear explanations about the workouts you create. DO NOT answer questions unrelated to fitness.
     `);
