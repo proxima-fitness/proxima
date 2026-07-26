@@ -50,6 +50,8 @@ export type TProgramOverviewWeekListProps = {
     programTitle: string;
     programLength: number | null;
     specialization?: string[] | null;
+    /** Owner-only: Program overview title rename. */
+    canRenameTitle?: boolean;
 };
 
 function WeekListSkeleton() {
@@ -90,6 +92,7 @@ export function ProgramOverviewWeekList({
     programTitle,
     programLength,
     specialization = null,
+    canRenameTitle = false,
 }: TProgramOverviewWeekListProps) {
     const { user } = useUserContext();
     const { data: hevyApiKey } = useHevySecret(user);
@@ -169,6 +172,7 @@ export function ProgramOverviewWeekList({
                 linkedWeeks={linkedWeeks}
                 completedWeeks={completedWeeks}
                 linksLoading={linksLoading}
+                canRenameTitle={canRenameTitle}
             />
 
             {weekCount < 1 || resolvedSelected == null || selectedRow == null ? (

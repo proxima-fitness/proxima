@@ -205,6 +205,9 @@ export function ProgramOverviewSection() {
                             programTitle={selectedProgram.title}
                             programLength={selectedProgram.program_length}
                             specialization={selectedProgram.specialization}
+                            canRenameTitle={
+                                !!user && selectedProgram.user_id === user.id
+                            }
                         />
                     </div>
                 ) : null}

@@ -58,26 +58,66 @@ export type TWeekSuggestNotReadyCode =
     | "already_exported"
     | "no_target_prescription";
 
-export type TWeekSuggestResponse =
+export type TWeekSuggestOk = {
+    status: "ok";
+    programId: number;
+    /** Completed week the suggestion reads from. */
+    basedOnWeek: number;
+    /** Week the changes target (basedOnWeek + 1). */
+    targetWeek: number;
+    summary: string;
+    changes: TWeekSuggestChange[];
+    generatedAt: string;
+};
+
+export type TWeekSuggestNotReady = {
+    status: "not_ready";
+    programId: number;
+    code: TWeekSuggestNotReadyCode;
+    message: string;
+    basedOnWeek?: number;
+    targetWeek?: number;
+};
+
+export type TWeekSuggestResponse = TWeekSuggestOk | TWeekSuggestNotReady;
+
+/**
+ * Narrows a suggest response to a generated suggestion.
+ * An explicit predicate — discriminant narrowing through React Query's
+ * `data` is version-sensitive and broke the production typecheck.
+ *
+ * @param response - Suggest response, or nothing fetched yet
+ */
+export function isWeekSuggestOk(
+    response: TWeekSuggestResponse | undefined | null,
+): response is TWeekSuggestOk {
+    return response?.status === "ok";
+}
+
+/**
+ * Narrows a suggest response to the "nothing to suggest yet" case.
+ *
+ * @param response - Suggest response, or nothing fetched yet
+ */
+export function isWeekSuggestNotReady(
+    response: TWeekSuggestResponse | undefined | null,
+): response is TWeekSuggestNotReady {
+    return response?.status === "not_ready";
+}
+
+/** Apply outcome for one cached suggestion (ADR 0012 / 03). */
+export type TWeekSuggestApplyResponse =
     | {
-          status: "ok";
+          status: "applied";
           programId: number;
-          /** Completed week the suggestion reads from. */
-          basedOnWeek: number;
-          /** Week the changes target (basedOnWeek + 1). */
+          /** Week the prescription writes landed in (basedOnWeek + 1). */
           targetWeek: number;
-          summary: string;
-          changes: TWeekSuggestChange[];
-          generatedAt: string;
+          /** Suggested changes written to the prescription. */
+          applied: number;
+          /** Changes the prescription cannot store (notes, stale indexes). */
+          skipped: number;
       }
-    | {
-          status: "not_ready";
-          programId: number;
-          code: TWeekSuggestNotReadyCode;
-          message: string;
-          basedOnWeek?: number;
-          targetWeek?: number;
-      };
+    | TWeekSuggestNotReady;
 
 export type TWeekSuggestLinkInput = {
     nth_week: number;

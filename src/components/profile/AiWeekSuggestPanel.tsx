@@ -7,7 +7,8 @@
  * The server caches one generation per program + completed week, so re-opening
  * (or a remount) replays the same suggestion without another model call.
  *
- * Apply lands in Sub-plan 3 — pass `onApply` to enable the button.
+ * Apply is the caller's job (ADR 0012 / 03): pass `onApply` to enable the
+ * button, or omit it to render the suggestion read-only.
  *
  * Depends on: react-query, PoundsOrKgContext, Collapsible, Button, Skeleton,
  *             week-suggest response types
@@ -19,9 +20,11 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, Sparkles } from "lucide-react";
-import type {
-    TWeekSuggestChange,
-    TWeekSuggestResponse,
+import {
+    isWeekSuggestNotReady,
+    isWeekSuggestOk,
+    type TWeekSuggestChange,
+    type TWeekSuggestResponse,
 } from "@/app/api/programs/week-suggest/input";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { Button } from "@/components/ui/button";
@@ -33,7 +36,11 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-/** Query key root — Sub-plan 3 invalidates this after an apply. */
+/**
+ * Query key root. Applying does not invalidate it: the cached suggestion is
+ * keyed by completed week and its operations set absolute values, so what the
+ * panel shows stays true (and re-applying is a no-op).
+ */
 export const AI_WEEK_SUGGEST_QUERY_KEY = ["ai-week-suggest"] as const;
 
 export type TAiWeekSuggestPanelProps = {
@@ -164,8 +171,8 @@ export function AiWeekSuggestPanel({
         return null;
     }
 
-    const suggestion = data?.status === "ok" ? data : null;
-    const notReady = data?.status === "not_ready" ? data : null;
+    const suggestion = isWeekSuggestOk(data) ? data : null;
+    const notReady = isWeekSuggestNotReady(data) ? data : null;
     const generatedAt = suggestion ? formatGeneratedAt(suggestion.generatedAt) : null;
 
     return (
@@ -252,11 +259,10 @@ export function AiWeekSuggestPanel({
                                     type="button"
                                     size="sm"
                                     className="h-8 rounded-full bg-lightSecondary text-white hover:bg-lightSecondary/90"
-                                    // Apply write lands in ADR 0012 / 03.
                                     disabled={!onApply || isApplying}
                                     title={
                                         onApply
-                                            ? undefined
+                                            ? `Writes these changes into week ${suggestion.targetWeek} of your program`
                                             : "Applying suggestions is coming soon."
                                     }
                                     onClick={() =>

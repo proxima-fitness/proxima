@@ -2,12 +2,16 @@
  * @module ProgramOverviewCtas
  *
  * Per-slide overview chrome + CTAs (ADR 0010 / 03, ADR 0020 / 01): title + meta
- * left, Export dropdown (Hevy Week Export / PDF / spreadsheet) + Edit program
- * right; AI week suggest disclosure below (ADR 0012 / 02). Week Export via
- * ADR 0009; PDF/CSV reuse ExportDialog destinations.
+ * left (owner can rename), Export dropdown (Hevy Week Export / PDF / spreadsheet)
+ * + Edit program right; AI week suggest disclosure below (ADR 0012 / 02). Week
+ * Export via ADR 0009; PDF/CSV reuse ExportDialog destinations.
  *
- * Depends on: ExportDialog, ProgramOverviewExportWeek, AiWeekSuggestPanel, hooks,
- *             Button, DropdownMenu, Progress
+ * Applying a suggestion (ADR 0012 / 03) writes the prescription for week N+1
+ * and refreshes the Week preview read; Export stays a separate, explicit step.
+ *
+ * Depends on: ExportDialog, ProgramOverviewExportWeek, AiWeekSuggestPanel,
+ *             AiWeekSuggestApply, ProgramOverviewWeekPreview, hooks,
+ *             updateProgramTitle, ConfirmDialog, Button, DropdownMenu, Progress
  * Used by: ProgramOverviewWeekList
  */
 
@@ -22,7 +26,12 @@ import {
     PROGRAM_HEVY_LINKS_QUERY_KEY,
     useHevySecret,
 } from "@/api/hooks";
+import {
+    MAX_PROGRAM_TITLE_LENGTH,
+    updateProgramTitle,
+} from "@/api/programs";
 import { useUserContext } from "@/contexts/UserContext";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -33,6 +42,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ExportDialog } from "@/components/program-builder/shared/ExportDialog";
 import { RATE_LIMIT_EXHAUSTED_MESSAGE } from "@/assets/constants/ui-constants";
+import {
+    applyWeekSuggestion,
+    describeApplyResult,
+    WeekSuggestApplyError,
+} from "./AiWeekSuggestApply";
 import { AiWeekSuggestPanel } from "./AiWeekSuggestPanel";
 import {
     evaluateWeekExportGate,
@@ -40,6 +54,7 @@ import {
     loadPrescriptionHevyRoutines,
     nextExportableWeek,
 } from "./ProgramOverviewExportWeek";
+import { PROGRAM_PRESCRIPTION_HEVY_QUERY_KEY } from "./ProgramOverviewWeekPreview";
 
 type TUploadProgress = {
     uploaded: number;
@@ -56,6 +71,8 @@ export type TProgramOverviewCtasProps = {
     linkedWeeks: readonly number[];
     completedWeeks: readonly number[];
     linksLoading: boolean;
+    /** Owner-only: show rename control next to the title. */
+    canRenameTitle?: boolean;
 };
 
 function formatProgramMeta(
@@ -84,6 +101,7 @@ export function ProgramOverviewCtas({
     linkedWeeks,
     completedWeeks,
     linksLoading,
+    canRenameTitle = false,
 }: TProgramOverviewCtasProps) {
     const { user } = useUserContext();
     const { data: hevyApiKey } = useHevySecret(user);
@@ -95,6 +113,10 @@ export function ProgramOverviewCtas({
     const [fileExportId, setFileExportId] = useState<"pdf" | "spreadsheet" | null>(null);
     const [fileRoutines, setFileRoutines] = useState<THevyRoutine[] | null>(null);
     const [fileLoading, setFileLoading] = useState(false);
+    const [renameOpen, setRenameOpen] = useState(false);
+    const [renameDraft, setRenameDraft] = useState(programTitle);
+    const [isRenaming, setIsRenaming] = useState(false);
+    const [isApplyingSuggestion, setIsApplyingSuggestion] = useState(false);
 
     const nthWeek = nextExportableWeek(linkedWeeks);
     const gate = evaluateWeekExportGate(nthWeek, linkedWeeks, completedWeeks);
@@ -180,13 +202,108 @@ export function ProgramOverviewCtas({
         }
     };
 
+    /**
+     * Writes the open suggestion into the prescription for week N+1.
+     * The server re-reads its cached changes; `targetWeek` only guards against
+     * a panel left open across a Week complete or Week Export.
+     *
+     * @param suggestion - Target week from the panel (changes stay server-side)
+     */
+    const handleApplySuggestion = async (suggestion: { targetWeek: number }) => {
+        if (isApplyingSuggestion) {
+            return;
+        }
+        if (!user) {
+            toast.error("Sign in to apply suggestions.");
+            return;
+        }
+
+        setIsApplyingSuggestion(true);
+        try {
+            const result = await applyWeekSuggestion(programId, suggestion.targetWeek);
+
+            if (result.status === "not_ready") {
+                toast.error(describeApplyResult(result));
+                return;
+            }
+
+            // Prescription changed under the Week preview read.
+            void queryClient.invalidateQueries({
+                queryKey: [...PROGRAM_PRESCRIPTION_HEVY_QUERY_KEY, programId],
+            });
+            toast.success(describeApplyResult(result));
+        } catch (error) {
+            toast.error(
+                error instanceof WeekSuggestApplyError
+                    ? error.message
+                    : "Couldn't apply the suggestion. Try again.",
+            );
+        } finally {
+            setIsApplyingSuggestion(false);
+        }
+    };
+
+    const openRename = () => {
+        setRenameDraft(programTitle);
+        setRenameOpen(true);
+    };
+
+    const handleRenameConfirm = async () => {
+        if (!user || isRenaming) {
+            return;
+        }
+        const trimmed = renameDraft.trim();
+        if (!trimmed || trimmed === programTitle.trim()) {
+            setRenameOpen(false);
+            return;
+        }
+
+        setIsRenaming(true);
+        const result = await updateProgramTitle(user, programId, trimmed);
+        setIsRenaming(false);
+
+        if (!result.success) {
+            toast.error(result.error);
+            return;
+        }
+
+        queryClient.setQueryData<TProgram[] | undefined>(
+            ["subscribed-programs", user.id],
+            (prev) =>
+                prev?.map((program) =>
+                    program.id === programId
+                        ? { ...program, title: result.title }
+                        : program,
+                ),
+        );
+        void queryClient.invalidateQueries({
+            queryKey: ["subscribed-programs", user.id],
+        });
+        setRenameOpen(false);
+        toast.success("Program renamed.");
+    };
+
     return (
         <div className="flex w-full flex-col gap-3 px-1">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                 <div className="min-w-0 space-y-0.5">
-                    <h3 className="text-balance text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-                        {programTitle}
-                    </h3>
+                    <div className="flex min-w-0 items-center gap-1.5">
+                        <h3 className="min-w-0 text-balance text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                            {programTitle}
+                        </h3>
+                        {canRenameTitle ? (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="size-8 shrink-0 text-muted-foreground hover:text-foreground"
+                                aria-label="Rename program"
+                                onClick={openRename}
+                            >
+                                <Pencil className="size-3.5" aria-hidden />
+                            </Button>
+                        ) : null}
+                    </div>
                     {meta ? (
                         <p className="text-sm text-muted-foreground">{meta}</p>
                     ) : null}
@@ -294,6 +411,10 @@ export function ProgramOverviewCtas({
                 linkedWeeks={linkedWeeks}
                 completedWeeks={completedWeeks}
                 programLength={programLength}
+                isApplying={isApplyingSuggestion}
+                onApply={(suggestion) => {
+                    void handleApplySuggestion(suggestion);
+                }}
             />
 
             <ExportDialog
@@ -308,6 +429,30 @@ export function ProgramOverviewCtas({
                 programId={programId}
                 initialExportId={fileExportId}
                 hevyRoutines={fileRoutines}
+            />
+
+            <ConfirmDialog
+                open={renameOpen}
+                onOpenChange={(open) => {
+                    if (!open && !isRenaming) {
+                        setRenameOpen(false);
+                    }
+                }}
+                title="Rename program"
+                confirmLabel="Save"
+                confirmLoadingLabel="Saving…"
+                confirmVariant="default"
+                confirmClassName="bg-lightSecondary text-white hover:bg-lightSecondary/90"
+                isConfirmLoading={isRenaming}
+                closeOnConfirm={false}
+                confirmDisabled={!renameDraft.trim()}
+                inputPlaceholder="Program title"
+                inputValue={renameDraft}
+                onInputChange={setRenameDraft}
+                inputMaxLength={MAX_PROGRAM_TITLE_LENGTH}
+                onConfirm={() => {
+                    void handleRenameConfirm();
+                }}
             />
         </div>
     );

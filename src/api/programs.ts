@@ -589,3 +589,61 @@ export const deleteProgramSubscriber = async (user_id: string, program_id: strin
         console.error("Error removing program subscription", error);
     }
 };
+
+/** Display-title cap for Program overview rename (DB allows under 1000). */
+export const MAX_PROGRAM_TITLE_LENGTH = 200;
+
+export type TUpdateProgramTitleResult =
+    | { success: true; title: string }
+    | { success: false; error: string };
+
+/**
+ * Renames a Proxima program the authenticated user owns.
+ * Scoped by `user_id` so subscribed community programs cannot be retitled.
+ *
+ * @param user - Authenticated owner
+ * @param programId - Programs primary key
+ * @param title - New display title (trimmed; empty rejected)
+ */
+export const updateProgramTitle = async (
+    user: User | undefined | null,
+    programId: number,
+    title: string,
+): Promise<TUpdateProgramTitleResult> => {
+    const trimmed = title.trim();
+    if (!user || !Number.isFinite(programId) || programId <= 0 || !trimmed) {
+        return { success: false, error: "Missing required fields" };
+    }
+
+    const nextTitle = trimmed.slice(0, MAX_PROGRAM_TITLE_LENGTH);
+
+    try {
+        const { data, error } = await supabase
+            .from("programs")
+            .update({ title: nextTitle })
+            .eq("id", programId)
+            .eq("user_id", user.id)
+            .select("id")
+            .maybeSingle();
+
+        if (error) {
+            console.error("Error updating program title:", error);
+            return {
+                success: false,
+                error: error.message ?? "Error updating program title",
+            };
+        }
+
+        if (!data) {
+            return {
+                success: false,
+                error: "Program not found or you don't own it",
+            };
+        }
+
+        return { success: true, title: nextTitle };
+    } catch (error: unknown) {
+        console.error("Error updating program title:", error);
+        return { success: false, error: "Error updating program title" };
+    }
+};

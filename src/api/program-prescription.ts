@@ -13,7 +13,7 @@
  * `workout-history-read`.
  *
  * Depends on: @supabase/supabase-js, @/hooks/supabase
- * Used by: /api/programs/week-suggest (ADR 0012)
+ * Used by: /api/programs/week-suggest, program-prescription-write (ADR 0012)
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/hooks/supabase";
@@ -140,6 +140,34 @@ export function buildPrescriptionSets(exercise: TPrescriptionExerciseRow): THevy
 }
 
 /**
+ * Days in day order — array position + 1 is the `dayOrder` an operation targets.
+ *
+ * @param days - `schedule_workouts` rows for a single week
+ */
+export function sortPrescriptionDays(
+    days: readonly TPrescriptionDayRow[],
+): TPrescriptionDayRow[] {
+    return [...days].sort((a, b) => (a.nthDay ?? 0) - (b.nthDay ?? 0));
+}
+
+/**
+ * Exercises in insertion order — array position is the 0-based `exerciseIndex`.
+ *
+ * @param exercises - `program_workout_exercises` rows for a single day
+ */
+export function sortPrescriptionExercises(
+    exercises: readonly TPrescriptionExerciseRow[],
+): TPrescriptionExerciseRow[] {
+    return [...exercises].sort((a, b) => {
+        const byCreated = (a.created_at ?? "").localeCompare(b.created_at ?? "");
+        if (byCreated !== 0) {
+            return byCreated;
+        }
+        return (a.id ?? "").localeCompare(b.id ?? "");
+    });
+}
+
+/**
  * Maps prescription day rows for one week to Hevy routines (display order).
  * Days sort by `nthDay`; exercises keep insertion order (`created_at`, then id).
  *
@@ -150,16 +178,10 @@ export function mapPrescriptionWeekToRoutines(
     days: readonly TPrescriptionDayRow[],
     nthWeek: number,
 ): THevyRoutine[] {
-    const sortedDays = [...days].sort((a, b) => (a.nthDay ?? 0) - (b.nthDay ?? 0));
+    const sortedDays = sortPrescriptionDays(days);
 
     return sortedDays.map((day, dayIndex) => {
-        const exercises = [...(day.program_workout_exercises ?? [])].sort((a, b) => {
-            const byCreated = (a.created_at ?? "").localeCompare(b.created_at ?? "");
-            if (byCreated !== 0) {
-                return byCreated;
-            }
-            return (a.id ?? "").localeCompare(b.id ?? "");
-        });
+        const exercises = sortPrescriptionExercises(day.program_workout_exercises ?? []);
 
         return {
             id: day.id ?? String(dayIndex + 1),
@@ -214,17 +236,19 @@ export async function getProgramPrescriptionMeta(
 }
 
 /**
- * Prescription week N as Hevy routines (empty when the week has no days).
+ * Raw day + exercise rows for one prescription week (row ids intact).
+ * The apply path (ADR 0012 / 03) writes through these ids; the week filter is
+ * what keeps a write inside a single week.
  *
  * @param client - Supabase client (user-scoped server client on the API path)
  * @param programId - Proxima program id
  * @param nthWeek - 1-based week number
  */
-export async function getPrescriptionWeekRoutines(
+export async function getPrescriptionWeekRows(
     client: TSupabase,
     programId: number,
     nthWeek: number,
-): Promise<THevyRoutine[]> {
+): Promise<TPrescriptionDayRow[]> {
     if (!Number.isInteger(nthWeek) || nthWeek < 1) {
         return [];
     }
@@ -241,5 +265,21 @@ export async function getPrescriptionWeekRoutines(
         throw error;
     }
 
-    return mapPrescriptionWeekToRoutines(data ?? [], nthWeek);
+    return data ?? [];
+}
+
+/**
+ * Prescription week N as Hevy routines (empty when the week has no days).
+ *
+ * @param client - Supabase client (user-scoped server client on the API path)
+ * @param programId - Proxima program id
+ * @param nthWeek - 1-based week number
+ */
+export async function getPrescriptionWeekRoutines(
+    client: TSupabase,
+    programId: number,
+    nthWeek: number,
+): Promise<THevyRoutine[]> {
+    const days = await getPrescriptionWeekRows(client, programId, nthWeek);
+    return mapPrescriptionWeekToRoutines(days, nthWeek);
 }
