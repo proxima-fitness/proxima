@@ -1589,6 +1589,35 @@ export const postRoutineFolders = async (title: string, apiKey: string) => {
 
 
 
+/** Folder + routine IDs created by a one-folder Week Export (for Program–Hevy link). */
+export type THevyOneFolderUploadIds = {
+    hevyFolderId: number;
+    hevyRoutineIds: string[];
+};
+
+export type TPostProgramToHevyOneFolderResult =
+    | { success: true; data: THevyOneFolderUploadIds; createdNewHevyCustomTemplates: number }
+    | { success: false; data: unknown };
+
+/** Pulls routine id from Hevy POST /v1/routines body (`{ id }` or `{ routine: { id } }`). */
+export function extractHevyCreatedRoutineId(response: unknown): string | null {
+    if (!response || typeof response !== "object") {
+        return null;
+    }
+    const body = response as Record<string, unknown>;
+    if (typeof body.id === "string" && body.id.length > 0) {
+        return body.id;
+    }
+    const routine = body.routine;
+    if (routine && typeof routine === "object") {
+        const nestedId = (routine as Record<string, unknown>).id;
+        if (typeof nestedId === "string" && nestedId.length > 0) {
+            return nestedId;
+        }
+    }
+    return null;
+}
+
 /**
  * Uploads a week's worth of routines to Hevy inside a single routine folder.
  *
@@ -1606,7 +1635,7 @@ export const postRoutineFolders = async (title: string, apiKey: string) => {
  * @param programTitle - Program title metadata (first element's title is used)
  * @param onProgress - Optional callback receiving upload counts and rate-limit countdowns
  * @param user - Authenticated user; required to remap Proxima custom template IDs to Hevy before upload
- * @returns `{ success: true, data: [] }` on success, or `{ success: false, data: Error }`
+ * @returns `{ success: true, data: { hevyFolderId, hevyRoutineIds } }` on success, or `{ success: false, data: Error }`
  */
 export const postProgramToHevyOneFolder = async (
     hevyRoutines: THevyRoutine[],
@@ -1615,7 +1644,7 @@ export const postProgramToHevyOneFolder = async (
     programTitle: TProgramTitle[] | undefined,
     user: User,
     onProgress?: THevyUploadProgressCallback,
-) => {
+): Promise<TPostProgramToHevyOneFolderResult> => {
     let routinesToUpload = hevyRoutines;
     const resolved = await resolveCustomExerciseTemplatesForHevyUpload(user, apiKey, hevyRoutines, onProgress);
     if (resolved.success === false) {
@@ -1661,13 +1690,21 @@ export const postProgramToHevyOneFolder = async (
             return { success: false, data: new Error("Routine folder not found") };
         }
 
+        const createdRoutineIds: string[] = [];
         for (let batchStart = 0; batchStart < routinesToUpload.length; batchStart += ROUTINES_BATCH_SIZE) {
             const batchEnd = Math.min(batchStart + ROUTINES_BATCH_SIZE, routinesToUpload.length);
             for (let i = batchStart; i < batchEnd; i++) {
                 for (let retry = 0; retry <= RATE_LIMIT_MAX_RETRIES; retry++) {
                     try {
                         onProgress?.(i + 1, total, 'uploading');
-                        await postRoutine(convertHevyOutputIntoInput(routinesToUpload[i], folderId.id), apiKey);
+                        const created = await postRoutine(
+                            convertHevyOutputIntoInput(routinesToUpload[i], folderId.id),
+                            apiKey,
+                        );
+                        const routineId = extractHevyCreatedRoutineId(created);
+                        if (routineId) {
+                            createdRoutineIds.push(routineId);
+                        }
                         break;
                     } catch (error: unknown) {
                         if (retry >= RATE_LIMIT_MAX_RETRIES) {
@@ -1683,7 +1720,24 @@ export const postProgramToHevyOneFolder = async (
             }
         }
 
-        return { success: true, data: [], createdNewHevyCustomTemplates };
+        let hevyRoutineIds = createdRoutineIds;
+        if (hevyRoutineIds.length < routinesToUpload.length) {
+            const folderRoutines = await getRoutinesInFolder(apiKey, folderId.id);
+            hevyRoutineIds = folderRoutines.map((routine) => routine.id);
+        }
+
+        if (hevyRoutineIds.length === 0) {
+            return {
+                success: false,
+                data: new Error("Hevy folder created but no routine IDs were returned"),
+            };
+        }
+
+        return {
+            success: true,
+            data: { hevyFolderId: folderId.id, hevyRoutineIds },
+            createdNewHevyCustomTemplates,
+        };
     } catch (error: unknown) {
         console.error("Error saving program to Hevy", error);
         return { success: false, data: error };

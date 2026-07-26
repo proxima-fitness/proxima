@@ -3,7 +3,8 @@
 /*
  * @module MyProgramsVault
  * @description Dashboard section that surfaces a user’s saved workout programs, including loading, empty, and error states.
- * @dependsOn User context, subscribed program query hooks, program card presentation components, and PostHog analytics.
+ * @dependsOn User context, subscribed program query hooks, program card presentation components,
+ *            thin Week Export CTA (ADR 0009), and PostHog analytics.
  * @usedBy Authenticated profile page to act as a permanent vault for user-owned programs.
  */
 
@@ -12,6 +13,7 @@
  */
 import { useSubscribedPrograms } from "@/api/hooks";
 import { useUserContext } from "@/contexts/UserContext";
+import { ProgramOverviewExportWeekCTA } from "@/components/profile/ProgramOverviewExportWeekCTA";
 import { ProgramCard } from "./ProgramCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
@@ -154,6 +156,16 @@ export const MyProgramsVault = () => {
                         </Button>
                     </Link>
                 </div>
+            </div>
+            {/* Thin Week Export entry until ADR 0010 overview layout */}
+            <div className="flex flex-col gap-2 pb-6">
+                {programs.map((program) => (
+                    <ProgramOverviewExportWeekCTA
+                        key={program.id}
+                        programId={program.id}
+                        programTitle={program.title}
+                    />
+                ))}
             </div>
             <div className="grid grid-cols-3 gap-5 max-sm:grid-cols-1 max-md:grid-cols-2 pb-8">
                 {programs.map((program) => (

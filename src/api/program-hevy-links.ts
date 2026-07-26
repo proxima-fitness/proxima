@@ -5,7 +5,7 @@
  * Current week = max(nth_week) for a program; absent → null.
  *
  * Depends on: @supabase/supabase-js, @/hooks/supabase, ./index
- * Used by: Week Export (ADR 0009), Program overview (ADR 0010) — no callers yet
+ * Used by: Week Export (`exportProgramWeekToHevy`), Program overview (ADR 0010)
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/hooks/supabase";
