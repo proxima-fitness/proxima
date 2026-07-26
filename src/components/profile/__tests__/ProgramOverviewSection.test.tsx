@@ -19,6 +19,10 @@ vi.mock("@/api/hooks", () => ({
     useHevyPrograms: () => ({ data: [], isLoading: false }),
 }));
 
+vi.mock("@/hooks/useHevyProgramSyncOnDemand", () => ({
+    useHevyProgramSyncOnDemand: vi.fn(),
+}));
+
 vi.mock("../ProgramOverviewHevyMirror", () => ({
     ProgramOverviewHevyMirror: () => <div data-testid="hevy-mirror-stub" />,
 }));

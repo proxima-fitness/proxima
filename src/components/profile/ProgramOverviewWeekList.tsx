@@ -1,13 +1,14 @@
 /**
  * @module ProgramOverviewWeekList
  *
- * Per-program overview slide body (ADR 0010 / 02–04, ADR 0020 / 01–03): chrome
- * (title | Export / Edit), week rail + Selected week preview, Mark week complete,
- * Hevy mirror.
+ * Per-program overview slide body (ADR 0010 / 02–04, ADR 0020 / 01–03,
+ * ADR 0011 / 04): chrome (title | Export / Edit), week rail + Selected week
+ * preview, Mark week complete, Hevy mirror.
  *
  * Depends on: useProgramHevyWeekLinks, useProgramScheduleHistoryDays, useHevyPrograms,
- *             UserContext, ProgramOverviewWeekStatus, ProgramOverviewWeekRail,
- *             ProgramOverviewWeekPreview, ProgramOverviewCtas, ProgramOverviewHevyMirror
+ *             useProgramWeekComplete, UserContext, ProgramOverviewWeekStatus,
+ *             ProgramOverviewWeekRail, ProgramOverviewWeekPreview,
+ *             ProgramOverviewCtas, ProgramOverviewHevyMirror
  * Used by: ProgramOverviewSection (carousel children)
  */
 
@@ -23,6 +24,10 @@ import {
     useProgramHevyWeekLinks,
     useProgramScheduleHistoryDays,
 } from "@/api/hooks";
+import {
+    useAutoMarkProgramWeeksComplete,
+    useMarkProgramWeekComplete,
+} from "@/hooks/useProgramWeekComplete";
 import { useUserContext } from "@/contexts/UserContext";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,13 +36,13 @@ import { ProgramOverviewHevyMirror } from "./ProgramOverviewHevyMirror";
 import { ProgramOverviewWeekPreview } from "./ProgramOverviewWeekPreview";
 import { ProgramOverviewWeekRail } from "./ProgramOverviewWeekRail";
 import {
+    deriveCompletedWeeksFromLinks,
     deriveCompletedWeeksFromScheduleHistory,
     deriveProgramOverviewWeekStatuses,
     mergeCompletedWeeks,
-    readManualCompletedWeeks,
     resolveSelectedWeek,
     weekStatusLabel,
-    writeManualCompletedWeeks,
+    weeksNeedingAutoMark,
 } from "./ProgramOverviewWeekStatus";
 
 export type TProgramOverviewWeekListProps = {
@@ -97,17 +102,8 @@ export function ProgramOverviewWeekList({
         programId,
         user?.id,
     );
-    // Remount via key={programId} from parent so lazy init resets per program.
-    const [manualCompleted, setManualCompleted] = useState(() =>
-        readManualCompletedWeeks(programId),
-    );
     const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
-
-    const isLoading = linksLoading || (!!user && historyLoading);
-
-    if (isLoading) {
-        return <WeekListSkeleton />;
-    }
+    const markComplete = useMarkProgramWeekComplete(programId);
 
     const linkedWeeks = links.map((link) => link.nth_week);
     const expectedDaysByWeek = new Map<number, number>();
@@ -115,11 +111,21 @@ export function ProgramOverviewWeekList({
         expectedDaysByWeek.set(link.nth_week, link.hevy_routine_ids?.length ?? 0);
     }
 
+    const persistedCompleted = deriveCompletedWeeksFromLinks(links);
     const autoCompleted = deriveCompletedWeeksFromScheduleHistory(
         historyDays,
         expectedDaysByWeek,
     );
-    const completedWeeks = mergeCompletedWeeks(autoCompleted, manualCompleted);
+    const completedWeeks = mergeCompletedWeeks(autoCompleted, persistedCompleted);
+    const autoMarkWeeks = weeksNeedingAutoMark(autoCompleted, persistedCompleted);
+
+    useAutoMarkProgramWeeksComplete(programId, autoMarkWeeks);
+
+    const isLoading = linksLoading || (!!user && historyLoading);
+
+    if (isLoading) {
+        return <WeekListSkeleton />;
+    }
 
     const weekCount =
         programLength != null && programLength > 0
@@ -141,10 +147,16 @@ export function ProgramOverviewWeekList({
     const selectedIsCurrent = selectedRow?.status === "current";
 
     const handleMarkComplete = (week: number) => {
-        const next = Array.from(new Set([...manualCompleted, week])).sort((a, b) => a - b);
-        writeManualCompletedWeeks(programId, next);
-        setManualCompleted(next);
-        toast.success(`Marked week ${week} complete.`);
+        markComplete.mutate(week, {
+            onSuccess: () => {
+                toast.success(`Marked week ${week} complete.`);
+            },
+            onError: (err) => {
+                const message =
+                    err instanceof Error ? err.message : "Could not mark week complete.";
+                toast.error(message);
+            },
+        });
     };
 
     return (
@@ -199,6 +211,7 @@ export function ProgramOverviewWeekList({
                                         size="sm"
                                         variant="outline"
                                         className="h-8 rounded-full"
+                                        disabled={markComplete.isPending}
                                         onClick={() => handleMarkComplete(resolvedSelected)}
                                     >
                                         <Check className="size-3.5" aria-hidden />

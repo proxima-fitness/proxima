@@ -5,6 +5,8 @@ import {
     getCurrentLinkedWeek,
     getProgramHevyWeekLink,
     getProgramHevyWeekLinks,
+    markProgramWeekComplete,
+    markProgramWeeksComplete,
     upsertProgramHevyWeekLink,
     type TUpsertProgramHevyWeekLinkInput,
 } from "../program-hevy-links";
@@ -20,6 +22,7 @@ type TRow = {
     nth_week: number;
     hevy_folder_id: number;
     hevy_routine_ids: string[];
+    completed_at: string | null;
     created_at: string;
     updated_at: string;
 };
@@ -42,20 +45,31 @@ function createMockDb(seed?: TRow[]) {
             }
 
             const filters: TFilter[] = [];
+            const nullFilters: string[] = [];
+            const inFilters: Array<{ column: string; values: unknown[] }> = [];
             const orderCols: Array<{ column: keyof TRow; ascending: boolean }> = [];
             let limitN: number | null = null;
-            let pendingUpsert: Omit<TRow, "id" | "created_at" | "updated_at"> | null = null;
+            let pendingUpsert: Partial<TRow> | null = null;
+            let pendingUpdate: Partial<TRow> | null = null;
             let selectCols: string | null = null;
 
             const applyFilters = (): TRow[] => {
                 let result = rows.filter((row) => matchFilters(row, filters));
+                for (const col of nullFilters) {
+                    result = result.filter((row) => row[col as keyof TRow] == null);
+                }
+                for (const { column, values } of inFilters) {
+                    result = result.filter((row) =>
+                        values.includes(row[column as keyof TRow]),
+                    );
+                }
                 if (orderCols.length > 0) {
                     result = [...result].sort((a, b) => {
                         for (const order of orderCols) {
                             const av = a[order.column];
                             const bv = b[order.column];
                             if (av === bv) continue;
-                            const cmp = av < bv ? -1 : 1;
+                            const cmp = av! < bv! ? -1 : 1;
                             return order.ascending ? cmp : -cmp;
                         }
                         return 0;
@@ -84,6 +98,17 @@ function createMockDb(seed?: TRow[]) {
                     filters.push({ column, value });
                     return builder;
                 },
+                in(column: string, values: unknown[]) {
+                    inFilters.push({ column, values });
+                    return builder;
+                },
+                is(column: string, value: null) {
+                    if (value !== null) {
+                        throw new Error("Mock only supports .is(col, null)");
+                    }
+                    nullFilters.push(column);
+                    return builder;
+                },
                 order(column: string, opts: { ascending: boolean }) {
                     orderCols.push({
                         column: column as keyof TRow,
@@ -95,8 +120,14 @@ function createMockDb(seed?: TRow[]) {
                     limitN = n;
                     return builder;
                 },
+                update(patch: Partial<TRow>) {
+                    pendingUpdate = patch;
+                    return builder;
+                },
                 upsert(
-                    row: Omit<TRow, "id" | "created_at" | "updated_at">,
+                    row: Omit<TRow, "id" | "created_at" | "updated_at" | "completed_at"> & {
+                        completed_at?: string | null;
+                    },
                     opts: { onConflict?: string },
                 ) {
                     if (opts.onConflict !== "program_id,nth_week") {
@@ -120,6 +151,7 @@ function createMockDb(seed?: TRow[]) {
                             id: `link-${idSeq}`,
                             created_at: now,
                             updated_at: now,
+                            completed_at: row.completed_at ?? null,
                             ...row,
                         });
                     }
@@ -135,10 +167,29 @@ function createMockDb(seed?: TRow[]) {
                         pendingUpsert = null;
                         return { data: project(match), error: null };
                     }
+                    if (pendingUpdate) {
+                        const matched = applyFilters();
+                        const now = "2026-07-25T12:00:00Z";
+                        for (const row of matched) {
+                            Object.assign(row, pendingUpdate, { updated_at: now });
+                        }
+                        pendingUpdate = null;
+                        return { data: project(matched[0]), error: null };
+                    }
                     const matched = applyFilters();
                     return { data: project(matched[0]), error: null };
                 },
                 then(resolve: (value: { data: unknown; error: null }) => void) {
+                    if (pendingUpdate) {
+                        const matched = applyFilters();
+                        const now = "2026-07-25T12:00:00Z";
+                        for (const row of matched) {
+                            Object.assign(row, pendingUpdate, { updated_at: now });
+                        }
+                        pendingUpdate = null;
+                        resolve({ data: matched, error: null });
+                        return;
+                    }
                     const matched = applyFilters();
                     if (selectCols === "nth_week") {
                         resolve({
@@ -256,5 +307,33 @@ describe("program-hevy-links helpers", () => {
         const fetched = await getProgramHevyWeekLink(PROGRAM_ID, 1, asDb(mock));
         expect(fetched?.hevy_folder_id).toBe(200);
         expect(fetched?.hevy_routine_ids).toEqual(["new-a"]);
+    });
+
+    it("markProgramWeekComplete sets completed_at", async () => {
+        await upsertProgramHevyWeekLink(input({ nthWeek: 1 }), asDb(mock));
+
+        const marked = await markProgramWeekComplete(PROGRAM_ID, 1, asDb(mock));
+        expect(marked.completed_at).toBeTruthy();
+
+        const fetched = await getProgramHevyWeekLink(PROGRAM_ID, 1, asDb(mock));
+        expect(fetched?.completed_at).toBe(marked.completed_at);
+    });
+
+    it("markProgramWeeksComplete skips already-complete weeks", async () => {
+        await upsertProgramHevyWeekLink(input({ nthWeek: 1 }), asDb(mock));
+        await upsertProgramHevyWeekLink(input({ nthWeek: 2, hevyFolderId: 2 }), asDb(mock));
+        await markProgramWeekComplete(PROGRAM_ID, 1, asDb(mock));
+        const firstCompletedAt = mock.rows.find((r) => r.nth_week === 1)?.completed_at;
+
+        await markProgramWeeksComplete(PROGRAM_ID, [1, 2], asDb(mock));
+
+        expect(mock.rows.find((r) => r.nth_week === 1)?.completed_at).toBe(firstCompletedAt);
+        expect(mock.rows.find((r) => r.nth_week === 2)?.completed_at).toBeTruthy();
+    });
+
+    it("markProgramWeekComplete throws when link missing", async () => {
+        await expect(markProgramWeekComplete(PROGRAM_ID, 9, asDb(mock))).rejects.toThrow(
+            /No Program–Hevy link/,
+        );
     });
 });

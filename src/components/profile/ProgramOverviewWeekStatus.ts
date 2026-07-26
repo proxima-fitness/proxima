@@ -1,13 +1,13 @@
 /**
  * @module ProgramOverviewWeekStatus
  *
- * Pure week-status derivation for Program overview (ADR 0010 / 02, ADR 0020 / 02).
- * Statuses: not exported / current / complete. Selected-week defaults.
- * Completion inputs: schedule-history auto flags + temp manual marks.
+ * Pure week-status derivation for Program overview (ADR 0010 / 02, ADR 0020 / 02,
+ * ADR 0011 / 04). Statuses: not exported / current / complete.
+ * Completion inputs: link `completed_at` + schedule-history auto flags.
  *
  * Depends on: none
  * Used by: ProgramOverviewWeekList, ProgramOverviewWeekRail,
- *          ProgramOverviewExportWeekCTA (manual marks)
+ *          ProgramOverviewExportWeekCTA
  */
 
 export type TProgramOverviewWeekStatus = "not_exported" | "current" | "complete";
@@ -22,46 +22,29 @@ export type TScheduleHistoryDay = {
     nthDay: number;
 };
 
-/** localStorage key for temp manual Week complete marks (until ADR 0011). */
-export function completedWeeksStorageKey(programId: number): string {
-    return `proxima-week-complete:${programId}`;
-}
+export type TLinkCompletionRow = {
+    nth_week: number;
+    completed_at: string | null;
+};
 
 /**
- * Reads manual Week complete marks for a program (browser only).
+ * Weeks with `completed_at` set on the Program–Hevy link.
  *
- * @param programId - Proxima program id
+ * @param links - Link rows for the program
  */
-export function readManualCompletedWeeks(programId: number): number[] {
-    if (typeof window === "undefined") {
-        return [];
-    }
-    try {
-        const raw = window.localStorage.getItem(completedWeeksStorageKey(programId));
-        if (!raw) {
-            return [];
+export function deriveCompletedWeeksFromLinks(
+    links: readonly TLinkCompletionRow[],
+): number[] {
+    const weeks: number[] = [];
+    for (const link of links) {
+        if (!Number.isInteger(link.nth_week) || link.nth_week < 1) {
+            continue;
         }
-        const parsed: unknown = JSON.parse(raw);
-        if (!Array.isArray(parsed)) {
-            return [];
+        if (link.completed_at != null) {
+            weeks.push(link.nth_week);
         }
-        return parsed.filter((n): n is number => Number.isInteger(n) && n >= 1);
-    } catch {
-        return [];
     }
-}
-
-/**
- * Persists manual Week complete marks (browser only).
- *
- * @param programId - Proxima program id
- * @param weeks - 1-based completed week numbers
- */
-export function writeManualCompletedWeeks(programId: number, weeks: number[]): void {
-    if (typeof window === "undefined") {
-        return;
-    }
-    window.localStorage.setItem(completedWeeksStorageKey(programId), JSON.stringify(weeks));
+    return weeks.sort((a, b) => a - b);
 }
 
 /**
@@ -103,16 +86,32 @@ export function deriveCompletedWeeksFromScheduleHistory(
 }
 
 /**
- * Merge auto (schedule history) + manual completion flags, unique sorted.
+ * Merge auto (schedule history) + persisted (link) completion flags, unique sorted.
  *
  * @param autoCompleted - Weeks complete from schedule history
- * @param manualCompleted - Weeks marked complete manually
+ * @param persistedCompleted - Weeks with link.completed_at
  */
 export function mergeCompletedWeeks(
     autoCompleted: readonly number[],
-    manualCompleted: readonly number[],
+    persistedCompleted: readonly number[],
 ): number[] {
-    return Array.from(new Set([...autoCompleted, ...manualCompleted])).sort((a, b) => a - b);
+    return Array.from(new Set([...autoCompleted, ...persistedCompleted])).sort(
+        (a, b) => a - b,
+    );
+}
+
+/**
+ * Linked weeks ready to persist as Week complete (auto detection, not yet on link).
+ *
+ * @param autoCompleted - Weeks complete from schedule history
+ * @param persistedCompleted - Weeks with link.completed_at
+ */
+export function weeksNeedingAutoMark(
+    autoCompleted: readonly number[],
+    persistedCompleted: readonly number[],
+): number[] {
+    const persisted = new Set(persistedCompleted);
+    return autoCompleted.filter((w) => !persisted.has(w));
 }
 
 /**

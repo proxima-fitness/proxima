@@ -1,10 +1,11 @@
 /**
  * @module ProgramOverviewExportWeekCTA
  *
- * Thin overview Week Export CTA + progress fragment (ADR 0009).
- * Gates Export via Program–Hevy links + Week complete (manual mark until ADR 0011).
+ * Thin overview Week Export CTA + progress fragment (ADR 0009, ADR 0011 / 04).
+ * Gates Export via Program–Hevy links + Week complete (`completed_at` on link).
  *
- * Depends on: ProgramOverviewExportWeek, useProgramHevyWeekLinks, useHevySecret, UserContext
+ * Depends on: ProgramOverviewExportWeek, useProgramHevyWeekLinks, useHevySecret,
+ *             useProgramWeekComplete, UserContext
  * Used by: thin Week Export entry points (overview CTAs own primary Export)
  */
 
@@ -18,7 +19,12 @@ import {
     PROGRAM_HEVY_LINKS_QUERY_KEY,
     useHevySecret,
     useProgramHevyWeekLinks,
+    useProgramScheduleHistoryDays,
 } from "@/api/hooks";
+import {
+    useAutoMarkProgramWeeksComplete,
+    useMarkProgramWeekComplete,
+} from "@/hooks/useProgramWeekComplete";
 import { useUserContext } from "@/contexts/UserContext";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -29,8 +35,10 @@ import {
     nextExportableWeek,
 } from "./ProgramOverviewExportWeek";
 import {
-    readManualCompletedWeeks,
-    writeManualCompletedWeeks,
+    deriveCompletedWeeksFromLinks,
+    deriveCompletedWeeksFromScheduleHistory,
+    mergeCompletedWeeks,
+    weeksNeedingAutoMark,
 } from "./ProgramOverviewWeekStatus";
 
 type TUploadProgress = {
@@ -46,8 +54,7 @@ export type TProgramOverviewExportWeekCTAProps = {
 };
 
 /**
- * Renders Export week N button, gate-aware disable, and temp Mark week complete.
- * Parent must `key={programId}` so localStorage lazy-init resets per program (no effect).
+ * Renders Export week N button, gate-aware disable, and Mark week complete.
  */
 export function ProgramOverviewExportWeekCTA({
     programId,
@@ -56,15 +63,29 @@ export function ProgramOverviewExportWeekCTA({
     const { user } = useUserContext();
     const { data: hevyApiKey } = useHevySecret(user);
     const { data: links = [], isLoading: linksLoading } = useProgramHevyWeekLinks(programId);
+    const { data: historyDays = [] } = useProgramScheduleHistoryDays(programId, user?.id);
     const queryClient = useQueryClient();
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState<TUploadProgress | null>(null);
-    // Lazy init from localStorage; remount via key when programId changes (rerender-lazy-state-init).
-    const [completedWeeks, setCompletedWeeks] = useState(() =>
-        readManualCompletedWeeks(programId),
-    );
+    const markComplete = useMarkProgramWeekComplete(programId);
 
     const linkedWeeks = links.map((link) => link.nth_week);
+    const expectedDaysByWeek = new Map<number, number>();
+    for (const link of links) {
+        expectedDaysByWeek.set(link.nth_week, link.hevy_routine_ids?.length ?? 0);
+    }
+
+    const persistedCompleted = deriveCompletedWeeksFromLinks(links);
+    const autoCompleted = deriveCompletedWeeksFromScheduleHistory(
+        historyDays,
+        expectedDaysByWeek,
+    );
+    const completedWeeks = mergeCompletedWeeks(autoCompleted, persistedCompleted);
+    useAutoMarkProgramWeeksComplete(
+        programId,
+        weeksNeedingAutoMark(autoCompleted, persistedCompleted),
+    );
+
     const currentLinkedWeek =
         linkedWeeks.length > 0 ? Math.max(...linkedWeeks) : null;
     const nthWeek = nextExportableWeek(linkedWeeks);
@@ -76,12 +97,16 @@ export function ProgramOverviewExportWeekCTA({
         if (currentLinkedWeek == null) {
             return;
         }
-        const next = Array.from(new Set([...completedWeeks, currentLinkedWeek])).sort(
-            (a, b) => a - b,
-        );
-        writeManualCompletedWeeks(programId, next);
-        setCompletedWeeks(next);
-        toast.success(`Marked week ${currentLinkedWeek} complete.`);
+        markComplete.mutate(currentLinkedWeek, {
+            onSuccess: () => {
+                toast.success(`Marked week ${currentLinkedWeek} complete.`);
+            },
+            onError: (err) => {
+                const message =
+                    err instanceof Error ? err.message : "Could not mark week complete.";
+                toast.error(message);
+            },
+        });
     };
 
     const handleExport = async () => {
@@ -166,7 +191,7 @@ export function ProgramOverviewExportWeekCTA({
                             size="sm"
                             variant="outline"
                             className="rounded-full"
-                            disabled={isUploading}
+                            disabled={isUploading || markComplete.isPending}
                             onClick={handleMarkComplete}
                         >
                             <Check className="mr-1.5 size-3.5" aria-hidden />

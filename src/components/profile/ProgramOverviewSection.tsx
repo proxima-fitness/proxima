@@ -6,7 +6,8 @@
  * (chrome, week rail + preview, Hevy mirror).
  *
  * Depends on: useSubscribedPrograms, useHevyPrograms, UserContext,
- *             ProgramOverviewWeekList, ProgramOverviewHevyMirror, profileSectionChrome
+ *             useHevyProgramSyncOnDemand (ADR 0011), ProgramOverviewWeekList,
+ *             ProgramOverviewHevyMirror, profileSectionChrome
  * Used by: ProfileContent
  */
 
@@ -17,6 +18,7 @@ import Link from "next/link";
 import { Layers, Plus } from "lucide-react";
 import { useHevyPrograms, useHevySecret, useSubscribedPrograms } from "@/api/hooks";
 import { useUserContext } from "@/contexts/UserContext";
+import { useHevyProgramSyncOnDemand } from "@/hooks/useHevyProgramSyncOnDemand";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -71,6 +73,9 @@ export function ProgramOverviewSection() {
     } = useSubscribedPrograms(user);
     const [selectedProgramId, setSelectedProgramId] = useState<number | null>(null);
 
+    // ADR 0011: on-demand hevy-program-sync via React Query (Hevy connected)
+    useHevyProgramSyncOnDemand(Boolean(user && hevyApiKey), user?.id);
+
     const isLoading = userLoading || (!!user && programsLoading);
 
     const activePrograms = programs ?? [];
@@ -84,7 +89,10 @@ export function ProgramOverviewSection() {
             : null;
 
     return (
-        <section aria-labelledby="program-overview-heading">
+        <section
+            aria-labelledby="program-overview-heading"
+            className="[&_button]:cursor-pointer"
+        >
             <Card className={PROFILE_SECTION_CARD_CLASS}>
                 <ProfileSectionHeader
                     id="program-overview-heading"

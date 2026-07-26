@@ -452,6 +452,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          last_hevy_program_sync_count: number
           last_known_workout_count: number | null
           last_synced_page: number | null
           sync_error: string | null
@@ -461,6 +462,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          last_hevy_program_sync_count?: number
           last_known_workout_count?: number | null
           last_synced_page?: number | null
           sync_error?: string | null
@@ -470,6 +472,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          last_hevy_program_sync_count?: number
           last_known_workout_count?: number | null
           last_synced_page?: number | null
           sync_error?: string | null
@@ -683,6 +686,7 @@ export type Database = {
       }
       program_hevy_week_links: {
         Row: {
+          completed_at: string | null
           created_at: string
           hevy_folder_id: number
           hevy_routine_ids: string[]
@@ -693,6 +697,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          completed_at?: string | null
           created_at?: string
           hevy_folder_id: number
           hevy_routine_ids?: string[]
@@ -703,6 +708,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          completed_at?: string | null
           created_at?: string
           hevy_folder_id?: number
           hevy_routine_ids?: string[]

@@ -4,11 +4,13 @@
 import { describe, expect, it } from "vitest";
 import {
     defaultSelectedWeek,
+    deriveCompletedWeeksFromLinks,
     deriveCompletedWeeksFromScheduleHistory,
     deriveProgramOverviewWeekStatuses,
     mergeCompletedWeeks,
     resolveSelectedWeek,
     weekStatusLabel,
+    weeksNeedingAutoMark,
 } from "../ProgramOverviewWeekStatus";
 
 describe("deriveProgramOverviewWeekStatuses", () => {
@@ -102,9 +104,34 @@ describe("deriveCompletedWeeksFromScheduleHistory", () => {
     });
 });
 
+describe("deriveCompletedWeeksFromLinks", () => {
+    it("returns weeks with completed_at set", () => {
+        expect(
+            deriveCompletedWeeksFromLinks([
+                { nth_week: 2, completed_at: "2026-07-25T12:00:00Z" },
+                { nth_week: 1, completed_at: null },
+                { nth_week: 3, completed_at: "2026-07-26T12:00:00Z" },
+            ]),
+        ).toEqual([2, 3]);
+    });
+
+    it("returns empty when nothing complete", () => {
+        expect(
+            deriveCompletedWeeksFromLinks([{ nth_week: 1, completed_at: null }]),
+        ).toEqual([]);
+    });
+});
+
 describe("mergeCompletedWeeks", () => {
     it("unions and sorts", () => {
         expect(mergeCompletedWeeks([2, 1], [3, 1])).toEqual([1, 2, 3]);
+    });
+});
+
+describe("weeksNeedingAutoMark", () => {
+    it("returns auto weeks not yet persisted", () => {
+        expect(weeksNeedingAutoMark([1, 2], [1])).toEqual([2]);
+        expect(weeksNeedingAutoMark([1], [1])).toEqual([]);
     });
 });
 

@@ -105,7 +105,7 @@ What the **Proxima program** says the athlete should do — the trainer plan. Su
 _Avoid_: Program (alone), plan (vague), template (ambiguous with exercise template)
 
 **Week complete**:
-Status on the Program overview that week N of a **Proxima program** is finished. User can tap **Mark week complete**, or the system auto-marks when every day in that week is recorded complete. Day completion is tracked by **Hevy program sync** via Hevy `workout.routine_id` → **Program–Hevy link** → **program schedule history**. No link for that routine → no day-complete write. Not title parse, not fuzzy match against **Workout history backup**. Unlock trigger for the next-week **AI week suggest** + **Week Export** of N+1.
+Status on the Program overview that week N of a **Proxima program** is finished. Persisted as `completed_at` on that week’s **Program–Hevy link**. User can tap **Mark week complete**, or the system auto-marks (and writes `completed_at`) when every day in that week is recorded complete. Day completion is tracked by **Hevy program sync** via Hevy `workout.routine_id` → **Program–Hevy link** → **program schedule history**. No link for that routine → no day-complete write. Not title parse, not fuzzy match against **Workout history backup**. Unlock trigger for the next-week **AI week suggest** + **Week Export** of N+1.
 _Avoid_: Program complete (whole block), Sync complete, exported (Export ≠ trained), folder-title day matching
 
 **Week Export**:
@@ -121,7 +121,7 @@ The calendar month (UTC) that one `feature_usage` row counts. One row per user p
 _Avoid_: Billing period (Stripe-anchored), monthly reset (implies a cron job), lifetime usage (pre-migration behaviour), showing the reset date before the user is blocked
 
 **Hevy program sync**:
-Edge function (`hevy-program-sync`) that, on new Hevy workouts, marks schedule days complete via `workout.routine_id` → **Program–Hevy link** → **program schedule history**. No matching link → skip day-complete (do not fall back to folder title). Invoked **on demand** when the user opens profile / **Program overview** and new workouts need processing — not via midnight cron (`trigger_all_users_hevy_program_sync` retired). Auto next-week upload and silent double-progression Hevy writes are **commented out** (not deleted) — reserved for a possible future auto-weight-progression mode; default loop pulls the user back to Proxima for **AI week suggest** + **Week Export** (retention). Week-complete signals feed the Program overview (ADR 0011).
+Edge function (`hevy-program-sync`) that, on new Hevy workouts, marks schedule days complete via `workout.routine_id` → **Program–Hevy link** → **program schedule history**. No matching link → skip day-complete (do not fall back to folder title). Invoked **on demand** when the user opens profile / **Program overview** and new workouts need processing — not via midnight cron (`trigger_all_users_hevy_program_sync` retired). Auto next-week upload, silent double-progression Hevy writes, and post-sync workout-summary email are **commented out** (not deleted) — email is redundant when sync only runs while the user is already in-app; reserved for a possible future re-engagement product. Default loop pulls the user back to Proxima for **AI week suggest** + **Week Export** (retention). Week-complete signals feed the Program overview (ADR 0011).
 _Avoid_: Workout history backup (different pipeline), Sync (Edit-path Hevy push), deleting the progression code, `Week N - …` title parse as match key, midnight fan-out cron
 
 **AI week suggest**:
