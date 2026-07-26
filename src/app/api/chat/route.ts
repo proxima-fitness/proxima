@@ -214,6 +214,7 @@ async function handleChatPost(req: Request) {
                     latestBodyMeasurement,
                     episodes,
                     isInLbs: weightInLbs,
+                    isSignedIn: Boolean(user),
                 });
                 const buildWeekOnceGuard: IBuildWeekOnceGuard = { locked: false };
                 const tools = getTools({
