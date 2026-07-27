@@ -45,7 +45,7 @@ describe("HevyDayCard read-only variant", () => {
         cleanup();
     });
 
-    it("renders title, date, duration, and exercises without builder chrome", () => {
+    it("renders title, date, duration, and exercises without builder shell", () => {
         const day = mapBackedUpWorkoutToHevyRoutine(backedUpWorkoutFixture);
 
         render(<HevyDayCard variant="read-only" day={day} />);

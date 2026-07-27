@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Imperative bridge for build-program actions callable from app chrome (e.g. sidebar).
+ * Imperative bridge for build-program actions callable from app shell (e.g. sidebar).
  * BuildProgram registers `clearChat` during render; callers invoke it on user action.
  */
 

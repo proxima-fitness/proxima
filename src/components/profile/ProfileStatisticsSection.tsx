@@ -49,7 +49,7 @@ import { fetchWorkoutHistorySyncProgress } from "@/api/workout-history-sync";
 import {
     PROFILE_SECTION_CARD_CLASS,
     ProfileSectionHeader,
-} from "./profileSectionChrome";
+} from "./profileSectionShell";
 
 type TMetric = "duration" | "reps" | "volume";
 type TWeekRange = 4 | 12;

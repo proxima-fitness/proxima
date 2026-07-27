@@ -492,7 +492,7 @@ export const CodeBlockContent = ({
  * High-level convenience component that wires together the container,
  * context, and content for a standard code block.
  *
- * Use this when you do not need a custom header or additional chrome.
+ * Use this when you do not need a custom header or additional shell.
  */
 export const CodeBlock = ({
   code,

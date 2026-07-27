@@ -3,7 +3,7 @@
 /*
  * @module ProgramSearch
  * @description Search and filter surface for browsing workout programs with text search, keyboard shortcuts, and structured filters.
- * @dependsOn Command input primitives, filter configuration constants, program search API, program card components, coaches/community toggle; section layout (no card chrome).
+ * @dependsOn Command input primitives, filter configuration constants, program search API, program card components, coaches/community toggle; section layout (no card shell).
  * @usedBy Program listing pages to provide a discoverable interface over coach and community programs.
  */
 

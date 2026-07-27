@@ -45,7 +45,7 @@ import { STALL_PROMPT } from "@/assets/constants/ui-constants";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
 import { ExerciseStalls } from "./ExerciseStalls";
-import { ProfileSectionHeader } from "./profileSectionChrome";
+import { ProfileSectionHeader } from "./profileSectionShell";
 import Link from "next/link";
 import { ChartLineIcon, RefreshCwIcon } from "lucide-react";
 

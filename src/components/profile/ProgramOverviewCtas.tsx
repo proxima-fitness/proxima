@@ -1,7 +1,7 @@
 /**
  * @module ProgramOverviewCtas
  *
- * Per-slide overview chrome + CTAs (ADR 0010 / 03, ADR 0020 / 01): title + meta
+ * Per-slide overview shell + CTAs (ADR 0010 / 03, ADR 0020 / 01): title + meta
  * left (owner can rename), Export dropdown (Hevy Week Export / PDF / spreadsheet)
  * + Edit program right; AI week suggest disclosure below (ADR 0012 / 02). Week
  * Export via ADR 0009; PDF/CSV reuse ExportDialog destinations.
@@ -92,7 +92,7 @@ function formatProgramMeta(
 }
 
 /**
- * Program chrome (title | Export / Edit) + AI week suggest for one overview slide.
+ * Program shell (title | Export / Edit) + AI week suggest for one overview slide.
  */
 export function ProgramOverviewCtas({
     programId,

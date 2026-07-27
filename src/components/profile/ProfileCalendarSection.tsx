@@ -33,7 +33,7 @@ import { cn } from "@/lib/utils";
 import {
     PROFILE_SECTION_CARD_CLASS,
     ProfileSectionHeader,
-} from "./profileSectionChrome";
+} from "./profileSectionShell";
 
 const WEEKDAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"] as const;
 

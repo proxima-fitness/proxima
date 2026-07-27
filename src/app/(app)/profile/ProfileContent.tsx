@@ -24,7 +24,7 @@ import { ProfileCalendarSection } from "@/components/profile/ProfileCalendarSect
 import { ProgramOverviewSection } from "@/components/profile/ProgramOverviewSection";
 import { RecentWorkoutsSection } from "@/components/profile/RecentWorkoutsSection";
 import { ResumeDraftBanner } from "@/components/program-builder/ResumeDraftBanner";
-import { PROFILE_SECTION_CARD_CLASS } from "@/components/profile/profileSectionChrome";
+import { PROFILE_SECTION_CARD_CLASS } from "@/components/profile/profileSectionShell";
 import styles from "../../../style";
 import { Card } from "@/components/ui/card";
 

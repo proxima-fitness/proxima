@@ -1,5 +1,5 @@
 /**
- * @module profileSectionChrome
+ * @module profileSectionShell
  *
  * Shared profile section Card class + header (icon / title / description / action).
  * One outer surface per profile section — no nested decorative cards.

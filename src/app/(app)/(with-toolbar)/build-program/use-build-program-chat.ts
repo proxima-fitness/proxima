@@ -284,7 +284,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         transport: chatTransport,
         messages: initialMessages,
         onFinish: ({ messages: finishedMessages, isAbort, isError }) => {
-            // Server consume runs at request start — refresh chrome counter after any
+            // Server consume runs at request start — refresh shell counter after any
             // authenticated turn that reached the stream (success, error, or abort).
             if (user) {
                 void queryClient.invalidateQueries({

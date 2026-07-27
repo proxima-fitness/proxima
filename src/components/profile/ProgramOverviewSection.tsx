@@ -3,11 +3,11 @@
  *
  * Profile Program overview shell (ADR 0010 / 0020): section header, program
  * picker buttons when multiple active programs, then one overview body
- * (chrome, week rail + preview, Hevy mirror).
+ * (shell, week rail + preview, Hevy mirror).
  *
  * Depends on: useSubscribedPrograms, useHevyPrograms, UserContext,
  *             useHevyProgramSyncOnDemand (ADR 0011), ProgramOverviewWeekList,
- *             ProgramOverviewHevyMirror, profileSectionChrome
+ *             ProgramOverviewHevyMirror, profileSectionShell
  * Used by: ProfileContent
  */
 
@@ -28,7 +28,7 @@ import { ProgramOverviewWeekList } from "./ProgramOverviewWeekList";
 import {
     PROFILE_SECTION_CARD_CLASS,
     ProfileSectionHeader,
-} from "./profileSectionChrome";
+} from "./profileSectionShell";
 
 function OverviewSkeleton() {
     return (

@@ -3,7 +3,7 @@
 /**
  * @module program-builder/shared/agent/ConstraintProfilePeek
  *
- * Read-only Constraint profile peek for build-program chat chrome near the prompt.
+ * Read-only Constraint profile peek for build-program chat shell near the prompt.
  * Condensed summary via toConstraintProfileSummary; link to Edit profile; no edit controls.
  *
  * Depends on: useUserConstraints, constraint-profile-view, HoverCard/Popover UI

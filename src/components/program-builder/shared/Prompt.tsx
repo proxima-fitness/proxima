@@ -44,7 +44,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
 
     return (
         <>
-            {/* min-h-screen + safe-area padding (not h-screen/100vh) to avoid hero text shifting on mobile PWAs and in-app browsers when chrome resizes */}
+            {/* min-h-screen + safe-area padding (not h-screen/100vh) to avoid hero text shifting on mobile PWAs and in-app browsers when shell resizes */}
             <div className="relative flex min-h-screen flex-col items-center overflow-hidden bg-[#e8eef3] pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] dark:bg-background">
                 <div className="pointer-events-none absolute inset-0 z-0" aria-hidden>
                     <div className="absolute inset-0 dark:hidden">

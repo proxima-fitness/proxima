@@ -2,7 +2,7 @@
  * @module (app)/auth/layout
  *
  * Layout for auth routes (login, sign-up, forgot-password, etc.). Pass-through
- * only; no chrome. Sits at src/app/(app)/auth/layout.tsx; wraps all /auth/* routes.
+ * only; no shell. Sits at src/app/(app)/auth/layout.tsx; wraps all /auth/* routes.
  *
  * Depends on: none.
  * Used by: All (app)/auth/* pages.

@@ -28,7 +28,7 @@ import { ChevronLeft, ChevronRight, History, Loader2 } from "lucide-react";
 import {
     PROFILE_SECTION_CARD_CLASS,
     ProfileSectionHeader,
-} from "./profileSectionChrome";
+} from "./profileSectionShell";
 import { cn } from "@/lib/utils";
 
 function PreviewCardSkeleton() {
