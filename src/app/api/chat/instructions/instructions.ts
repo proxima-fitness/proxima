@@ -70,9 +70,14 @@ interface IProps {
     isInLbs?: boolean;
     /**
      * Whether the chat request has an authenticated user.
-     * Controls Hevy export guidance: anonymous users see **Sign in** (not **Export**) in the toolbar.
+     * Used with hasHevyApiKey for Hevy export gate / Week Export guidance.
      */
-    isSignedIn?: boolean;
+    isAuthenticated?: boolean;
+    /**
+     * Whether a Hevy API key is present in the vault (boolean only — never the secret).
+     * Used with isAuthenticated for Hevy export gate call rules.
+     */
+    hasHevyApiKey?: boolean;
 }
 
 function trimOpt(s: string | undefined): string {
@@ -188,7 +193,8 @@ export const instructions = ({
     latestBodyMeasurement = null,
     episodes = [],
     isInLbs = true,
-    isSignedIn = false,
+    isAuthenticated = false,
+    hasHevyApiKey = false,
 }: IProps) => {
 
     const workoutHistoryToolLine = hasWorkoutHistoryAccess
@@ -240,6 +246,7 @@ export const instructions = ({
         - readFile: Read a file from the filesystem.
         - bash: Execute a bash command.
         - getMoreInfoQuestions: Opens a questions component to gather additional information before building a workout program.
+        - openHevyExportGate: Opens the Hevy export gate footer (sign-in / Hevy API key prerequisites only). Call only for clear Hevy-export intent when the program grid is non-empty and at least one prerequisite is missing.
         - updateConstraintProfile: Persists Constraint profile (Agentic memory) from questionnaire answers and mid-chat constraint changes. Call after questionnaire unlock when there are non-empty fields to persist, and whenever constraints change.
         - updateTrainingProfile: Persists Training profile (Agentic memory person facts) from Questionnaire advanced answers and mid-chat person-fact changes. Call after questionnaire unlock when there are non-empty Training profile fields to persist, and whenever those facts change.
         - getExerciseList: Provides access to all available Hevy exercises (reference list with IDs and titles).
@@ -270,10 +277,11 @@ export const instructions = ({
         ${hevyProgram?.length ? `A program currently exists (${hevyProgram.length} routines on the grid). Default to **mutate-program** for edits and length changes unless the user explicitly wants a brand-new program from scratch.` : ''}
         ${hevyProgram?.length && episodes.length ? buildEpisodesBlock(episodes) : ''}
 
-        **Upload to Hevy:** You cannot upload or send the program to Hevy from chat (unlike ChatGPT-style "just tell the bot"). If the user asks to upload / export / send / sync to Hevy:
-        ${isSignedIn
-        ? `- They are signed in. Tell them to click the **Export** button in the top-right of the program builder, choose Hevy in the export flow, then click **Upload** in that dialog.`
-        : `- They are **not** signed in. The top-right button says **Sign in** (mobile) / **Sign in to save** (desktop) — it is **not** an Export button yet. Tell them they must **sign in first** via that button; after sign-in the same spot becomes **Export**. Then click **Export**, choose Hevy, and click **Upload** in that dialog. Do **not** tell an unsigned-in user to click Export — they will not see that label.`}
+        **Upload to Hevy / Week Export:** You cannot upload or send the program to Hevy from chat (unlike ChatGPT-style "just tell the bot"). Session flags: authenticated = **${isAuthenticated ? 'yes' : 'no'}**; Hevy API key on file = **${hasHevyApiKey ? 'yes' : 'no'}** (boolean presence only — never ask for or repeat a key). If the user asks to upload / export / send / sync / push to Hevy:
+        - **Empty program:** Do **not** call **openHevyExportGate**. Tell them to build (or finish) a program first — the gate only applies when there is something on the grid to **Save** / **Week Export**.
+        - **Questionnaire gate active:** If **getMoreInfoQuestions** is still open / unanswered, do **not** call **openHevyExportGate**. Tell them to dismiss or complete the questionnaire before attempting to export to Hevy.
+        - **Both prerequisites done** (authenticated **and** Hevy API key on file): Do **not** call **openHevyExportGate**. Text only: toolbar **Save** (if needed) → open profile → **Program overview** → **Week Export**. Never tell them to click **Export** in the builder toolbar — New path has **Save** there; Hevy push is **Week Export** on profile.
+        - **At least one prerequisite missing** + non-empty program + clear Hevy-export intent: Call **openHevyExportGate** once. In that same turn's visible reply, say: finish the gate steps → toolbar **Save** → profile **Week Export**. The gate only collects sign-in / Hevy API key; it does not **Save** or run **Week Export** for them.
         ${weightUnitsGuidance}
         Be conversational, helpful, and provide clear explanations about the workouts you create. DO NOT answer questions unrelated to fitness.
     `);

@@ -4,6 +4,7 @@ import { USAGE_CAP_ERROR } from "@/lib/usage-cap";
 
 const {
     mockGetUser,
+    mockRpc,
     mockTryConsume,
     mockUsageCapResponse,
     mockCreateAgentUIStreamResponse,
@@ -23,6 +24,7 @@ const {
     );
     return {
         mockGetUser: vi.fn(),
+        mockRpc: vi.fn(async () => ({ data: null, error: null })),
         mockTryConsume: vi.fn(),
         mockUsageCapResponse,
         mockCreateAgentUIStreamResponse: vi.fn(
@@ -38,6 +40,7 @@ const {
 vi.mock("@/utils/supabase/server", () => ({
     createClient: vi.fn(async () => ({
         auth: { getUser: mockGetUser },
+        rpc: mockRpc,
     })),
 }));
 
