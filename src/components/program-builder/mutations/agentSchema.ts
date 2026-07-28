@@ -18,7 +18,7 @@ import {
     updateSetSchema,
 } from "./schemas";
 
-/** Agent-exposed ops only — tuple must stay in sync with `agentExposed: true` in catalog. */
+/** Agent-exposed ops only - tuple must stay in sync with `agentExposed: true` in catalog. */
 export const agentProgramOperationSchema = z.discriminatedUnion("op", [
     insertExerciseSchema,
     editExerciseSchema,
@@ -37,7 +37,7 @@ export const agentProgramOperationSchema = z.discriminatedUnion("op", [
 
 export type TAgentProgramOperation = z.infer<typeof agentProgramOperationSchema>;
 
-/** Same input as mutateProgram tool — exported for tests. */
+/** Same input as mutateProgram tool - exported for tests. */
 export const mutateProgramInputSchema = z.object({
     operations: z
         .array(z.preprocess(normalizeAgentOperationInput, agentProgramOperationSchema))
@@ -50,14 +50,14 @@ export const mutateProgramInputSchema = z.object({
 export type TMutateProgramInput = z.infer<typeof mutateProgramInputSchema>;
 
 const MUTATE_PROGRAM_INDEXING_GUIDE =
-    "**Indexing:** folderIds = 0-based week (array, e.g. `[0]`). dayOrder = Hevy day number (1–7). " +
+    "**Indexing:** folderIds = 0-based week (array, e.g. `[0]`). dayOrder = Hevy day number (1-7). " +
     "exerciseIndex, setIndex, and array positions are **0-based** (first exercise → 0, first set → 0). " +
-    "readProgram lists exercises[] and sets[] in order — use that array position for targeting.\n" +
-    "**Nested objects:** pass object fields (`exercise`, `to`, `set`, etc.) as nested objects in tool args — never JSON strings. **insert_exercise:** one `exercise` per op (not an `exercises` array). **`exerciseIndex` is required** on every insert_exercise (empty day → 0; append → exercises.length from readProgram). Title optional — resolved from template ID.\n" +
+    "readProgram lists exercises[] and sets[] in order - use that array position for targeting.\n" +
+    "**Nested objects:** pass object fields (`exercise`, `to`, `set`, etc.) as nested objects in tool args - never JSON strings. **insert_exercise:** one `exercise` per op (not an `exercises` array). **`exerciseIndex` is required** on every insert_exercise (empty day → 0; append → exercises.length from readProgram). Title optional - resolved from template ID.\n" +
     "**Op choice:** rename day → edit_day_title; replace one slot → edit_exercise; add rows → insert_exercise (one per row); tweak reps/RPE → update_set.\n";
 
 const MUTATE_PROGRAM_INSERT_EXAMPLE =
-    'Example insert_exercise (first row on empty day — exerciseIndex 0):\n{ "op": "insert_exercise", "folderIds": [0], "dayOrder": 1, "exerciseIndex": 0, "exercise": { "exercise_template_id": "ID", "rest_seconds": "90", "sets": [{ "type": "normal", "reps": 8, "weight_kg": null, "rpe": 8, "distance_meters": null, "duration_seconds": null, "custom_metric": null, "rep_range": null }] } }';
+    'Example insert_exercise (first row on empty day - exerciseIndex 0):\n{ "op": "insert_exercise", "folderIds": [0], "dayOrder": 1, "exerciseIndex": 0, "exercise": { "exercise_template_id": "ID", "rest_seconds": "90", "sets": [{ "type": "normal", "reps": 8, "weight_kg": null, "rpe": 8, "distance_meters": null, "duration_seconds": null, "custom_metric": null, "rep_range": null }] } }';
 
 /** Auto-generated tool description from registry metadata. */
 export function buildMutateProgramToolDescription(): string {
@@ -69,7 +69,7 @@ export function buildMutateProgramToolDescription(): string {
         "Apply typed mutations to the workout program. Send an **operations** array; ops run in order. " +
         "**Fail-all:** if any operation is invalid, the entire batch is rejected and nothing is applied. " +
         "Target days with **folderIds** (0-based week index, always an array e.g. `[0]`) and **dayOrder** (1-based day within week). " +
-        "readProgram shows `folder_id` on each routine — map to **folderIds: [folder_id]**, not `folderId`.\n\n" +
+        "readProgram shows `folder_id` on each routine - map to **folderIds: [folder_id]**, not `folderId`.\n\n" +
         MUTATE_PROGRAM_INDEXING_GUIDE +
         "\n" +
         MUTATE_PROGRAM_INSERT_EXAMPLE +

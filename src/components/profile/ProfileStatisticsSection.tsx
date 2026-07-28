@@ -363,7 +363,7 @@ export function ProfileStatisticsSection({ hevyConnected }: IProps) {
                                                 className="size-3 shrink-0 animate-spin"
                                                 aria-hidden
                                             />
-                                            Still syncing older workouts — chart may update.
+                                            Still syncing older workouts - chart may update.
                                         </p>
                                     ) : null}
                                 </>

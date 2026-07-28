@@ -30,7 +30,7 @@ function hasOptionalConsentFields(body: TPutUserConsentsBody): boolean {
     return body.platformImprovementOptIn !== undefined || body.marketingOptIn !== undefined;
 }
 
-/** GET /api/user-consents — authenticated user's consent row or null. */
+/** GET /api/user-consents - authenticated user's consent row or null. */
 export async function GET() {
     try {
         const supabase = await createClient();
@@ -51,7 +51,7 @@ export async function GET() {
     }
 }
 
-/** PUT /api/user-consents — upsert legal acceptance and/or optional toggles. */
+/** PUT /api/user-consents - upsert legal acceptance and/or optional toggles. */
 export async function PUT(request: Request) {
     try {
         const supabase = await createClient();

@@ -11,7 +11,7 @@ import { createClient } from "@/utils/supabase/server";
 import { runSyncChunk } from "@/api/workout-history-sync";
 
 /**
- * POST /api/workout-history/sync — import one Hevy workouts page.
+ * POST /api/workout-history/sync - import one Hevy workouts page.
  */
 export async function POST() {
     try {

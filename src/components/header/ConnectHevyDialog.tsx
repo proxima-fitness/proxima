@@ -10,12 +10,11 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { useState } from "react";
-import { postHevyApikey, updateHevyApiKey } from "../program-builder/api/hevy";
+import { connectHevyKey, HEVY_API_KEY_SAVED_MESSAGE } from "../program-builder/api/connect-hevy-key";
 import { triggerWorkoutHistorySync } from "@/api/workout-history-sync";
 import { triggerBodyMeasurementsSync } from "@/api/body-measurements-sync";
 import { useUserContext } from "@/contexts/UserContext";
 import { toast } from "sonner";
-import { validate } from "uuid";
 import { useQueryClient } from "@tanstack/react-query";
 import { useHevySecret } from "@/api/hooks";
 import { LockIcon, LockOpenIcon } from "lucide-react";
@@ -46,38 +45,29 @@ export const ConnectHevyDialog: React.FC<IProps> = (props) => {
     const [inputValue, setInputValue] = useState(hevyApiKey ?? "");
     const queryClient = useQueryClient();
 
+    const isUpdate = Boolean(hevyApiKey && hevyApiKey.length > 0);
+
     // Validate the candidate API key and either update or create it, then refresh dependent queries.
     const handleConnectHevy = async () => {
-        const isValidUuid = validate(inputValue);
-        if (isValidUuid) {
-            if (hevyApiKey && hevyApiKey.length > 0) {
-                if ( user !== null ) {
-                    const updatedApiKey = await updateHevyApiKey(user, inputValue);
-                    if (updatedApiKey) {
-                        toast.success("Hevy API Key saved successfully");
-                        queryClient.invalidateQueries({ queryKey: [ "hevy_api_key" ] });
-                        queryClient.invalidateQueries({ queryKey: ["exercise-stalls-analysis", user?.id] });
-                        triggerWorkoutHistorySync();
-                        triggerBodyMeasurementsSync();
-                    }
-                }
-            } else {
-                if (user !== null) {
-                    const newApiKey = await postHevyApikey(user,inputValue);
-                    if (newApiKey && newApiKey.success) {
-                        toast.success("Hevy API Key saved successfully");
-                        queryClient.invalidateQueries({ queryKey: [ "hevy_api_key" ] });
-                        queryClient.invalidateQueries({ queryKey: ["exercise-stalls-analysis", user?.id] });
-                        triggerWorkoutHistorySync();
-                        triggerBodyMeasurementsSync();
-                        handleOpenConnectHevyDialog(false);
-                    } else {
-                        toast.error(`Error saving Hevy API Key: ${ newApiKey && newApiKey?.data ? JSON.stringify(newApiKey.data) : "Unknown error" }`);
-                    }
-                }
-            }
-        } else {
-            toast.error("Invalid Hevy API Key");
+        if (user === null) return;
+
+        const result = await connectHevyKey({
+            user,
+            apiKey: inputValue,
+            existingApiKey: hevyApiKey,
+            queryClient,
+        });
+
+        if (result.status !== "saved") {
+            toast.error(result.message);
+            return;
+        }
+
+        toast.success(HEVY_API_KEY_SAVED_MESSAGE);
+        triggerWorkoutHistorySync();
+        triggerBodyMeasurementsSync();
+        if (!isUpdate) {
+            handleOpenConnectHevyDialog(false);
         }
     };
     return (

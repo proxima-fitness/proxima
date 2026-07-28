@@ -537,7 +537,7 @@ describe("chat tools.ts", () => {
             error?: string;
         };
 
-        it("schema accepts userRequest only — no agent filter override fields", () => {
+        it("schema accepts userRequest only - no agent filter override fields", () => {
             expect(getExerciseListInputSchema.safeParse({ userRequest: "build me a program" }).success).toBe(true);
             expect(getExerciseListInputSchema.shape).not.toHaveProperty("excludeAreas");
             expect(getExerciseListInputSchema.shape).not.toHaveProperty("excludeEquipment");
@@ -642,7 +642,7 @@ describe("chat tools.ts", () => {
             goal: "Powerlifting strength with hypertrophy base",
             daysPerWeek: 4,
             blocks: [
-                { name: "Accumulation", weeks: [1, 2, 3], intent: "Volume, RPE 6–8" },
+                { name: "Accumulation", weeks: [1, 2, 3], intent: "Volume, RPE 6-8" },
                 { name: "Intensification", weeks: [4, 5, 6], intent: "Heavier" },
                 { name: "Peak", weeks: [7, 8], intent: "Taper" },
             ],

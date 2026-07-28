@@ -3,7 +3,7 @@
 -- Before: one mutable row per user, counters that never reset, so quota needed
 -- manual zeroing and no month-over-month history existed.
 -- After: one row per (user_id, period_start), created lazily by the first
--- metered action of the month — an absent row means zero used, so reset is
+-- metered action of the month - an absent row means zero used, so reset is
 -- emergent and needs no scheduled job.
 --
 -- Destructive by design: lifetime counters are snapshotted to a throwaway table
@@ -57,8 +57,8 @@ ALTER TABLE public.feature_usage
 
 COMMENT ON TABLE public.feature_usage IS 'One row per user per Usage period (calendar month, UTC). Created lazily by the first metered action of the month, so an absent row means zero used.';
 COMMENT ON COLUMN public.feature_usage."period_start" IS 'First day of the Usage period this row counts (1st of the month, UTC). Not the Stripe billing period.';
-COMMENT ON COLUMN public.feature_usage."monthly_exports_used" IS 'Exports charged to this row''s Usage period only — not lifetime.';
-COMMENT ON COLUMN public.feature_usage."monthly_llm_requests" IS 'LLM calls charged to this row''s Usage period only — not lifetime.';
+COMMENT ON COLUMN public.feature_usage."monthly_exports_used" IS 'Exports charged to this row''s Usage period only - not lifetime.';
+COMMENT ON COLUMN public.feature_usage."monthly_llm_requests" IS 'LLM calls charged to this row''s Usage period only - not lifetime.';
 
 -- 4. Write path: period computed server-side, one row per (user, month).
 CREATE OR REPLACE FUNCTION "public"."increment_feature_usage"("p_feature" "text") RETURNS "void"

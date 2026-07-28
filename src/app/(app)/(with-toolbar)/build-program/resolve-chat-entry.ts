@@ -35,14 +35,14 @@ export interface IResolveChatEntryPlanInput {
     shareId: string;
     sidebarRowKnown: boolean;
     sendPathConfirmed: boolean;
-    /** Sidebar / pre-mint arrival — not session mint. */
+    /** Sidebar / pre-mint arrival - not session mint. */
     chatNavigationArrival: boolean;
     sharedProgramLoadAttempted: boolean;
     hevyProgramLength: number;
     chatHistorySuccess: boolean;
     /** Count of messages in `CHAT_MESSAGES_KEY` (caller reads localStorage each render). */
     anonLocalMessageCount: number;
-    /** Sidebar New Chat (`?empty=true` without `?chat=`) — skip sign-in migration bootstrap. */
+    /** Sidebar New Chat (`?empty=true` without `?chat=`) - skip sign-in migration bootstrap. */
     explicitNewChat: boolean;
 }
 
@@ -50,7 +50,7 @@ export interface IBuildShellKeyContext {
     chatId: string;
     user: User | null;
     chatHistorySuccess: boolean;
-    /** User arrived with `?chat=` or switched sidebar chats — not session mint mid-send. */
+    /** User arrived with `?chat=` or switched sidebar chats - not session mint mid-send. */
     chatNavigationArrival: boolean;
 }
 
@@ -60,7 +60,7 @@ export function isChatNavigationArrivalAtMount(urlChatId: string): boolean {
 }
 
 export interface IChatNavigationLatch {
-    /** Sidebar / pre-mint arrival — not session mint. */
+    /** Sidebar / pre-mint arrival - not session mint. */
     latched: boolean;
     prevChatId: string;
     /** Set after New Chat reset; cleared on sidebar latch or session mint. */
@@ -92,11 +92,11 @@ export function resetChatNavigationLatchForArrival(
 }
 
 export interface IAdvanceChatNavigationLatchOptions {
-    /** Chat id appears in sidebar list — distinguishes sidebar pick from session mint. */
+    /** Chat id appears in sidebar list - distinguishes sidebar pick from session mint. */
     sidebarRowKnown?: boolean;
-    /** Send-path insert confirmed — session mint / sign-in migration must not latch. */
+    /** Send-path insert confirmed - session mint / sign-in migration must not latch. */
     sendPathConfirmed?: boolean;
-    /** `?empty=true` still in URL — session mint on New Chat page, not sidebar navigation. */
+    /** `?empty=true` still in URL - session mint on New Chat page, not sidebar navigation. */
     hasEmptyParam?: boolean;
 }
 
@@ -125,7 +125,7 @@ export function advanceChatNavigationLatch(
             !options?.hasEmptyParam &&
             latch.prevChatId === chatId
         ) {
-            // Sidebar list loaded after URL already had ?chat= (post–New Chat pick).
+            // Sidebar list loaded after URL already had ?chat= (post-New Chat pick).
             latched = true;
         }
     }
@@ -152,7 +152,7 @@ export interface IShouldRunAutoSendContext {
     sharedProgramLoadAttempted: boolean;
     /** Trimmed `search` param already consumed by D1 in this shell lifetime. */
     lastHandledSearch: string;
-    /** Sign-in migration insert in flight — D1 must wait. */
+    /** Sign-in migration insert in flight - D1 must wait. */
     signInMigrationPending?: boolean;
 }
 
@@ -199,7 +199,7 @@ export function resolveSendPathConfirmed(chatId: string, sessionInsertConfirmed:
     return Boolean(chatId && sessionInsertConfirmed);
 }
 
-/** Chat id for persistence — URL first, mint ref fallback until `?chat=` propagates. */
+/** Chat id for persistence - URL first, mint ref fallback until `?chat=` propagates. */
 export function resolvePersistChatId(urlChatId: string, pendingMintChatId: string): string {
     return urlChatId || pendingMintChatId;
 }
@@ -251,7 +251,7 @@ export function resolveChatEntryPlan(input: IResolveChatEntryPlanInput): IChatEn
         chatNavigationArrival,
     });
 
-    // Remount only for sidebar chat navigation — not when mint adds ?chat= mid-send.
+    // Remount only for sidebar chat navigation - not when mint adds ?chat= mid-send.
     const shellStability: TShellStability =
         user &&
         chatId &&
@@ -356,7 +356,7 @@ export function shouldRunAutoSend(plan: IChatEntryPlan, ctx: IShouldRunAutoSendC
     return plan.autoSend === "when-search-ready";
 }
 
-/** @deprecated Use `shouldRunAutoSend` — kept for tests migrating from initial-prompt. */
+/** @deprecated Use `shouldRunAutoSend` - kept for tests migrating from initial-prompt. */
 export function shouldDeferInitialSend(args: {
     shareId: string;
     hevyProgramLength: number;

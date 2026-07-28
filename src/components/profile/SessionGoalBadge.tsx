@@ -11,7 +11,7 @@ interface ISessionGoalBadgeProps {
     day: Pick<THevyRoutine, "exercises">;
 }
 
-/** Session goal pill — hidden when workout has no qualifying working sets. */
+/** Session goal pill - hidden when workout has no qualifying working sets. */
 export function SessionGoalBadge({ day }: ISessionGoalBadgeProps) {
     const goal = classifySessionGoal(day);
     if (!goal) return null;

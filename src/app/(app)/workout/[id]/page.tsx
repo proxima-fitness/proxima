@@ -16,7 +16,7 @@ export const metadata = {
 };
 
 /**
- * Workout detail page shell — delegates to client content.
+ * Workout detail page shell - delegates to client content.
  *
  * @param props.params - Dynamic route segment (backup workout id)
  */

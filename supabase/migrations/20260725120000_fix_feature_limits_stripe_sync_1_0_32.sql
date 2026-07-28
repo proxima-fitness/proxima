@@ -5,7 +5,7 @@
 --   1. stripe.subscription_items.price changed from text (_raw_data ->> 'price') to
 --      jsonb (_raw_data -> 'price'). The old `pr.id = si.price` join raised
 --      "operator does not exist: text = jsonb", which failed the whole RPC for every
---      caller — so has_active_subscription resolved to false for paying subscribers.
+--      caller - so has_active_subscription resolved to false for paying subscribers.
 --
 --   2. stripe.subscriptions.current_period_end is now always NULL; Stripe moved the
 --      field onto subscription items. Ordering by it no longer picks a deterministic

@@ -28,7 +28,7 @@ export const UNKNOWN_EXERCISE_TITLE = "Unknown exercise";
 
 /**
  * Normalizes an exercise title into the canonical identity key.
- * Lowercases, collapses whitespace, and trims — word order and parentheses are preserved,
+ * Lowercases, collapses whitespace, and trims - word order and parentheses are preserved,
  * matching `normalized_title` in the ownership migration.
  *
  * @param title - Raw exercise title from Hevy or a fallback label
@@ -286,7 +286,7 @@ async function lookupReadableCanonicalExercise(db: TWorkoutHistoryDb, canonicalE
 
 /**
  * Finds a canonical exercise by normalized title inside one ownership scope.
- * Never searches across owners — a title-only lookup fuses two users' private movements.
+ * Never searches across owners - a title-only lookup fuses two users' private movements.
  *
  * @param db - Supabase client
  * @param userId - Owner to search within, or `null` for the global library
@@ -400,7 +400,7 @@ async function upsertCanonicalExerciseMapping(db: TWorkoutHistoryDb, templateId:
  *
  * This is how the mirror keeps up with Hevy's library without a scheduled resync: whichever user
  * logs the new movement first repairs the shared copy for everyone. The write goes through the
- * service-role client because the mirror is global data — widening its RLS to `authenticated`
+ * service-role client because the mirror is global data - widening its RLS to `authenticated`
  * would let any client write the shared exercise library.
  *
  * @param db - Supabase client, used when no service-role credentials are configured
@@ -530,7 +530,7 @@ export async function resolveCanonicalExerciseId(db: TWorkoutHistoryDb, params: 
             return readableId;
         }
 
-        // The mapping points at another user's Custom movement — most often the same Hevy custom
+        // The mapping points at another user's Custom movement - most often the same Hevy custom
         // template reaching two accounts through routine sharing. Resolve in this user's own scope
         // and leave the globally-keyed mapping row alone; it cannot hold a second owner.
         return createCanonicalExercise(db, {
@@ -580,7 +580,7 @@ export async function resolveCanonicalExerciseId(db: TWorkoutHistoryDb, params: 
  * Imports one Hevy workout into canonical backup tables.
  *
  * Idempotent on `(user_id, source, external_id)`, but only a workout that actually holds exercises
- * counts as imported — a shell left by an earlier failure is deleted and re-imported. Any failure
+ * counts as imported - a shell left by an earlier failure is deleted and re-imported. Any failure
  * after the `workouts` insert rolls that row back, so a retry is never blocked by its own wreckage.
  *
  * @param db - Supabase client (user or service role)

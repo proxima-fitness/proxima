@@ -4,15 +4,15 @@ Build impressive biceps with maximum efficiency using this comprehensive, scienc
 
 ## Bicep Training Essentials (TL;DR)
 
-- **Weekly Volume:** 8–20 sets per week for most trainees (beginners can grow with 6–10 sets)
-- **Training Frequency:** 3–6 times per week for optimal results
-- **Best Rep Ranges:** 10–20 reps (moderate) for 50% of volume, split remaining between 5–10 and 20–30 reps
-- **Key Insight:** Back training provides significant bicep stimulus — adjust direct bicep work accordingly
-- **Exercise Categories:** Use 5 types — basic curls, supination exercises, peak contraction, stretch positions, and compound movements
+- **Weekly Volume:** 8-20 sets per week for most trainees (beginners can grow with 6-10 sets)
+- **Training Frequency:** 3-6 times per week for optimal results
+- **Best Rep Ranges:** 10-20 reps (moderate) for 50% of volume, split remaining between 5-10 and 20-30 reps
+- **Key Insight:** Back training provides significant bicep stimulus - adjust direct bicep work accordingly
+- **Exercise Categories:** Use 5 types - basic curls, supination exercises, peak contraction, stretch positions, and compound movements
 
 ## Understanding Bicep Development
 
-The biceps brachii is a two-headed muscle responsible for elbow flexion and forearm supination. While biceps receive significant indirect stimulation from back training—especially underhand grip exercises—direct bicep training is essential for maximizing arm development and creating the impressive upper body physique most trainees desire.
+The biceps brachii is a two-headed muscle responsible for elbow flexion and forearm supination. While biceps receive significant indirect stimulation from back training-especially underhand grip exercises-direct bicep training is essential for maximizing arm development and creating the impressive upper body physique most trainees desire.
 
 ### Why Direct Bicep Training Matters
 
@@ -40,13 +40,13 @@ Now, let's look at some common values for these Volume Landmarks. You can use th
 
 | MV   | MEV   | MAV    | MRV    | MAV\*P | MRV\*P |
 |------|-------|--------|--------|--------|--------|
-| 6–8  | 8–10  | 14–20  | 20–26  | 20–26  | 26–35  |
+| 6-8  | 8-10  | 14-20  | 20-26  | 20-26  | 26-35  |
 
 ### Important Volume Notes
 
-- These are the landmarks for serious, intermediate lifters. Folks who have been training (mostly) whole body for 3–7 years. If you're a beginner, all your volume landmarks are likely substantially lower, so ease in and focus on improving your technique with low volumes and steady progressions with load. If you're advanced, your volume landmarks will be similar to the intermediate ones listed, especially assuming you've been perfecting your technique on the exercises and finding which exercises and rep ranges work best for you.
+- These are the landmarks for serious, intermediate lifters. Folks who have been training (mostly) whole body for 3-7 years. If you're a beginner, all your volume landmarks are likely substantially lower, so ease in and focus on improving your technique with low volumes and steady progressions with load. If you're advanced, your volume landmarks will be similar to the intermediate ones listed, especially assuming you've been perfecting your technique on the exercises and finding which exercises and rep ranges work best for you.
 - These are averages for many people and it's possible you're significantly higher or lower than these numbers. We recommend starting on the low end and tracking your recovery from week to week in the muscle (you're recovering if every week your muscles heal completely and return to their strongest or beyond by next week). Eventually, you'll have a very good idea of your volume landmarks.
-- If you greatly reduce your total body volume and focus more of your efforts on your target muscles (and perhaps 2–3 other major muscle groups as primary focus, with the rest on secondary focus), they can recover from more and grow bigger than ever. The best way to optimize for such phases is by assigning 3–4 weekly sessions to the target muscle so that you can ramp up to the highest weekly volumes. This is tough to do in just 1–2 weekly sessions, as you are likely to exceed the 8–12 set per muscle per session maximum, beyond which systemic fatigue makes more training within that session very inefficient. You can do such specialization phases multiple times per year.
+- If you greatly reduce your total body volume and focus more of your efforts on your target muscles (and perhaps 2-3 other major muscle groups as primary focus, with the rest on secondary focus), they can recover from more and grow bigger than ever. The best way to optimize for such phases is by assigning 3-4 weekly sessions to the target muscle so that you can ramp up to the highest weekly volumes. This is tough to do in just 1-2 weekly sessions, as you are likely to exceed the 8-12 set per muscle per session maximum, beyond which systemic fatigue makes more training within that session very inefficient. You can do such specialization phases multiple times per year.
 - If you haven't trained biceps directly, you can grow them quite a bit with only back training. If you've trained them directly and hard, you can keep most or even all of their size (MV) with no direct biceps work if you do lots of back training, especially if some of it is of the underhand grip variety. But, for maximum biceps size, you'll need to train them directly on top of their normal back training. If you train very little or no back, then you'll need much more biceps training than if back was also trained.
 
 ## Best Bicep Exercises
@@ -120,15 +120,15 @@ The truth about bicep curls: Only squats might be more commonly ROM-abused than 
 
 ## Optimal Loading and Rep Ranges
 
-In general, like all muscles, the biceps benefit from weights in the 30%–85% 1RM range, which in many people roughly translates to a weight that results in between 5 and 30 reps on a first set taken to failure. We can split this range into heavy (5–10), moderate (10–20), and light (20–30) categories, as there are tradeoffs to make between all of them.
+In general, like all muscles, the biceps benefit from weights in the 30%-85% 1RM range, which in many people roughly translates to a weight that results in between 5 and 30 reps on a first set taken to failure. We can split this range into heavy (5-10), moderate (10-20), and light (20-30) categories, as there are tradeoffs to make between all of them.
 
 ### Rep Range Distribution Strategy
 
-The first point on loading is that the biceps, like most muscles, seem to benefit from some training in all three of the rep ranges listed above. Because the moderate (10–20 rep) range often offers the best tradeoff between stimulus, fatigue, injury risk, and slow/fast fiber specificity, and mind-muscle connection, an argument can be made that a first-time program design could have most weekly working sets for the biceps in this range, perhaps up to about 50% of them. The other 50% can perhaps be split evenly between the heavy (5–10) and light (20–30) rep ranges, as loading range diversity has been shown to be a potential benefit in its own right.
+The first point on loading is that the biceps, like most muscles, seem to benefit from some training in all three of the rep ranges listed above. Because the moderate (10-20 rep) range often offers the best tradeoff between stimulus, fatigue, injury risk, and slow/fast fiber specificity, and mind-muscle connection, an argument can be made that a first-time program design could have most weekly working sets for the biceps in this range, perhaps up to about 50% of them. The other 50% can perhaps be split evenly between the heavy (5-10) and light (20-30) rep ranges, as loading range diversity has been shown to be a potential benefit in its own right.
 
 ### Rep Range Considerations
 
-While the 10–20 range can support nearly all types of exercises, the other ranges have some practical delineations. For example, exercises that require a high degree of mind-muscle connection to have best effects may not be optimally effective in the 5–10 rep range, like spider curls, for example. Such exercises are perhaps also not ideal for the 20–30 rep range because the duration of the sets and the physical pain toward the end of them might cause the lifter to focus on just getting through the set or pushing as hard as possible instead of on the mind-muscle connection.
+While the 10-20 range can support nearly all types of exercises, the other ranges have some practical delineations. For example, exercises that require a high degree of mind-muscle connection to have best effects may not be optimally effective in the 5-10 rep range, like spider curls, for example. Such exercises are perhaps also not ideal for the 20-30 rep range because the duration of the sets and the physical pain toward the end of them might cause the lifter to focus on just getting through the set or pushing as hard as possible instead of on the mind-muscle connection.
 
 ### Weekly Sequencing
 
@@ -136,9 +136,9 @@ When constructing a weekly training plan, it's probably a good idea to train the
 
 ### Sample Weekly Arrangement
 
-- **Monday:** Barbell Curls 3 sets, 5–10 reps
-- **Wednesday:** Spider Curls 6 sets, 10–20 reps
-- **Friday:** Cable Curls 3 sets, 20–30 reps
+- **Monday:** Barbell Curls 3 sets, 5-10 reps
+- **Wednesday:** Spider Curls 6 sets, 10-20 reps
+- **Friday:** Cable Curls 3 sets, 20-30 reps
 
 Based on your personal responses to each of the main rep ranges, you can adjust how much volume you perform in any of them. For example, if you notice that you get a better stimulus (pumps, soreness, mind-muscle connection, etc.) and lower fatigue (joint stress, systemic fatigue, joint soreness, etc.) in some of the ranges vs. others, you can do more sets in those ranges and a bit less in others, though you should in most cases still include at least some work in the least productive ranges.
 
@@ -151,7 +151,7 @@ When determining how long to rest between any two sets in training, our goal is 
 3. Has the cardiorespiratory system recovered enough to remove it as a limiting factor to target muscle performance?
 4. Have synergist muscles in the exercise being performed recovered enough to remove them as a limiting factors to target muscle performance?
 
-It might take only 1–2 minutes to recover very well (let's say, 90%) on all of those factors, but because set to set recovery is asymptotic in nature, it might take another 3 minutes to get to 95% recovery and another 10 minutes more to get to 99% recovery. Since you only have so much time to spend in the gym, 10 "90% recovered sets" in 45 minutes of training is a much more anabolic stimulus than only 3 "99% recovered" sets in that same amount of time.
+It might take only 1-2 minutes to recover very well (let's say, 90%) on all of those factors, but because set to set recovery is asymptotic in nature, it might take another 3 minutes to get to 95% recovery and another 10 minutes more to get to 99% recovery. Since you only have so much time to spend in the gym, 10 "90% recovered sets" in 45 minutes of training is a much more anabolic stimulus than only 3 "99% recovered" sets in that same amount of time.
 
 ### Practical Rest Time Assessment
 
@@ -168,13 +168,13 @@ If you can get the green light on all of these, you're probably ready to do anot
 
 ## Training Frequency Optimization
 
-There are two main considerations for determining training frequency. The first is the duration of the increase in muscle growth seen after a bout of training between MEV and MRV. If such an increase in muscle growth lasts 7 days, then perhaps a once a week frequency is optimal. If such an increase lasts only a day, then perhaps 6 days a week for the same muscle group is much better. While direct research on muscle growth timecourses is very limited, it seems that typical training might cause a reliable 24–48 hour increase in muscle growth. This would mean that if muscle growth elevation was the only variable of concern with regards to frequency, we should train every muscle 3–6 times per week.
+There are two main considerations for determining training frequency. The first is the duration of the increase in muscle growth seen after a bout of training between MEV and MRV. If such an increase in muscle growth lasts 7 days, then perhaps a once a week frequency is optimal. If such an increase lasts only a day, then perhaps 6 days a week for the same muscle group is much better. While direct research on muscle growth timecourses is very limited, it seems that typical training might cause a reliable 24-48 hour increase in muscle growth. This would mean that if muscle growth elevation was the only variable of concern with regards to frequency, we should train every muscle 3-6 times per week.
 
 ### Finding Your Optimal Frequency
 
 How do you determine what training frequency is appropriate for you? You can start by training your biceps at per-session MEV volumes. After each session, you note when soreness has abated and when you feel recovered enough psychologically to attempt another overloading workout. When you're ready, and no later, go back to the gym and train biceps again, with volumes just a bit higher than MEV (using a standard set progression approach).
 
-**Starting expectations:** Just so that you have some expectation of where to start, most individuals can recover from biceps training at a timecourse that allows for 3–6 sessions of biceps per week at MEV–MRV volumes. However, only through direct experimentation on yourself can you tell where in this range is best for you and if maybe you're even outside of this range.
+**Starting expectations:** Just so that you have some expectation of where to start, most individuals can recover from biceps training at a timecourse that allows for 3-6 sessions of biceps per week at MEV-MRV volumes. However, only through direct experimentation on yourself can you tell where in this range is best for you and if maybe you're even outside of this range.
 
 **Frequency and back training:** Please note that when you're determining your biceps training frequency, you'll have to juggle it a bit with your back training frequency, as unrecovered biceps can impede your back training, and even back training itself can tax your biceps enough to require a frequency reduction for direct biceps training.
 
@@ -182,19 +182,19 @@ How do you determine what training frequency is appropriate for you? You can sta
 
 There are a few relevant timescales in periodization:
 
-- The repetition (1–9 seconds)
-- The set (5–30 repetitions)
-- The exercise (1–5 sets)
-- The session (2–6 exercises)
-- The day (0–2 sessions)
+- The repetition (1-9 seconds)
+- The set (5-30 repetitions)
+- The exercise (1-5 sets)
+- The session (2-6 exercises)
+- The day (0-2 sessions)
 - The microcycle (usually 1 week of training)
-- The mesocycle (3–12 weeks)
-- The block (1–4 mesocycles)
-- The macrocycle (1–4 blocks)
+- The mesocycle (3-12 weeks)
+- The block (1-4 mesocycles)
+- The macrocycle (1-4 blocks)
 
 ### Mesocycle Structure
 
-A mesocycle is composed of two phases: the accumulation phase and the deload phase. The accumulation phase lasts as long as it takes to hit systemic MRV, which, because fatigue accumulates in MEV+ training, has to happen at some point. For beginners with very high recovery abilities, it can take up to 12 weeks of increasingly more demanding training for systemic MRV to be reached and a deload to be required. For very advanced lifters that have very strong, large, and volume-resistant muscles, it can take only 3–4 weeks of accumulation training to reach systemic MRV and need to deload.
+A mesocycle is composed of two phases: the accumulation phase and the deload phase. The accumulation phase lasts as long as it takes to hit systemic MRV, which, because fatigue accumulates in MEV+ training, has to happen at some point. For beginners with very high recovery abilities, it can take up to 12 weeks of increasingly more demanding training for systemic MRV to be reached and a deload to be required. For very advanced lifters that have very strong, large, and volume-resistant muscles, it can take only 3-4 weeks of accumulation training to reach systemic MRV and need to deload.
 
 ### Weekly Progression Strategy
 
@@ -212,35 +212,35 @@ The training block is a sequence of mesocycles strung together for one unifying 
 
 **Example Block Progression for Biceps:**
 
-- **Meso 1:** Monday Barbell Curls (5–10), Thursday Dumbbell Curls (10–20)
-- **Meso 2:** Monday Barbell Curls (5–10), Wednesday Dumbbell Curls (10–20), Friday Cable Curls (10–20)
-- **Meso 3:** Monday Barbell Curls (5–10), Wednesday Dumbbell Curls (10–20), Friday Cable Curls (10–20), Saturday Spider Curls (20–30)
+- **Meso 1:** Monday Barbell Curls (5-10), Thursday Dumbbell Curls (10-20)
+- **Meso 2:** Monday Barbell Curls (5-10), Wednesday Dumbbell Curls (10-20), Friday Cable Curls (10-20)
+- **Meso 3:** Monday Barbell Curls (5-10), Wednesday Dumbbell Curls (10-20), Friday Cable Curls (10-20), Saturday Spider Curls (20-30)
 
 ## Advanced Training Modalities
 
 ### Straight Sets
 
-Straight sets are sets performed to 0–4 RIR, with enough rest time to recover all 4 limiting factors (see the rest time section above for details). The biceps respond well to straight sets, especially for more systemically fatiguing exercises like barbell and EZ bar curls.
+Straight sets are sets performed to 0-4 RIR, with enough rest time to recover all 4 limiting factors (see the rest time section above for details). The biceps respond well to straight sets, especially for more systemically fatiguing exercises like barbell and EZ bar curls.
 
 ### Down Sets
 
-Down sets are straight sets, but with less weight (usually 10–20% less) than the previous straight sets. By lowering the weight, you can keep reps over 5 per set, and/or keep the mind-muscle connection high and keep technique excellent to continue to have a high stimulus to fatigue ratio in every set of that exercise. It's quite easy to lose a good mind-muscle connection with the biceps when the reps drop off with heavy weight, so down sets can come in very handy after a few straight sets of curls.
+Down sets are straight sets, but with less weight (usually 10-20% less) than the previous straight sets. By lowering the weight, you can keep reps over 5 per set, and/or keep the mind-muscle connection high and keep technique excellent to continue to have a high stimulus to fatigue ratio in every set of that exercise. It's quite easy to lose a good mind-muscle connection with the biceps when the reps drop off with heavy weight, so down sets can come in very handy after a few straight sets of curls.
 
 ### Giant Sets
 
-Giant sets give you a certain weight to lift, an RIR range to hit (usually 0–4 RIR), and a goal of total reps over as many sets as it takes. An example is aiming to do 100 lbs for however many sets it takes to get 60 total reps, while taking normal rest between each set. Giant sets can come in very handy for biceps when you're really trying to work on your mind-muscle connection, which rep-chasing can impede significantly on exercises like curls, where "feeling it the most in the bicep" and "making sure to get another rep" can be quite divergent at times.
+Giant sets give you a certain weight to lift, an RIR range to hit (usually 0-4 RIR), and a goal of total reps over as many sets as it takes. An example is aiming to do 100 lbs for however many sets it takes to get 60 total reps, while taking normal rest between each set. Giant sets can come in very handy for biceps when you're really trying to work on your mind-muscle connection, which rep-chasing can impede significantly on exercises like curls, where "feeling it the most in the bicep" and "making sure to get another rep" can be quite divergent at times.
 
 ### Myoreps
 
-Myoreps are just like straight sets in that they must check all 4 recovery boxes before doing another set. However, they are different in two ways. First, while the first set is usually between 10–20 reps (0–2 RIR), the next multiple sets only rest long enough to get between 5 and 10 reps each. Myoreps can be excellent for biceps, especially on cable and machine setups where re-racking weight doesn't take a lot of energy. The one thing to watch out for is that the forearm muscles are often the curling synergists last to recover, so make sure your technique or grip attachment involves them the least and that you wait until they are recovered before going again.
+Myoreps are just like straight sets in that they must check all 4 recovery boxes before doing another set. However, they are different in two ways. First, while the first set is usually between 10-20 reps (0-2 RIR), the next multiple sets only rest long enough to get between 5 and 10 reps each. Myoreps can be excellent for biceps, especially on cable and machine setups where re-racking weight doesn't take a lot of energy. The one thing to watch out for is that the forearm muscles are often the curling synergists last to recover, so make sure your technique or grip attachment involves them the least and that you wait until they are recovered before going again.
 
 ### Drop Sets
 
-Drop sets are exactly like myoreps, but with even shorter rest times because weight is reduced by 10–20% on average between each set. Drop sets are nearly ideal for cable biceps work. Just make sure you're getting close to true failure on each set, as this gets difficult when the weight is really light. Anything below 30% 1RM probably can't reliably bring you to local muscular failure, so this load acts as an automatic cutoff to further drop setting.
+Drop sets are exactly like myoreps, but with even shorter rest times because weight is reduced by 10-20% on average between each set. Drop sets are nearly ideal for cable biceps work. Just make sure you're getting close to true failure on each set, as this gets difficult when the weight is really light. Anything below 30% 1RM probably can't reliably bring you to local muscular failure, so this load acts as an automatic cutoff to further drop setting.
 
 ### Pre-Exhaust Supersets
 
-These supersets begin with an isolation exercise for a given muscle group, and with no rest after taking it to 0–2 RIR, end with a compound exercise to which the target muscle is a big contributor. Tough to do with biceps, but possible. Pre-exhausting with cable curls and then moving into underhand pulldowns or underhand machine rows might be a good idea to try.
+These supersets begin with an isolation exercise for a given muscle group, and with no rest after taking it to 0-2 RIR, end with a compound exercise to which the target muscle is a big contributor. Tough to do with biceps, but possible. Pre-exhausting with cable curls and then moving into underhand pulldowns or underhand machine rows might be a good idea to try.
 
 ### Occlusion Sets
 
@@ -258,37 +258,37 @@ The following sample programs demonstrate practical application of the principle
 
 | Day      | Exercise       | Week 1                    | Week 2                    | Week 3                    | Week 4                    | Deload                    |
 |----------|----------------|---------------------------|---------------------------|---------------------------|---------------------------|---------------------------|
-| Monday   | Barbell Curls  | 3 sets, 5–10 reps, 80 lb, 3 RIR | 4 sets, 85 lb, 2 RIR | 4 sets, 90 lb, 1 RIR | 5 sets, 95 lb, 0 RIR | 2 sets, 2–5 reps, 80 lb, 5+ RIR |
-| Wednesday| Dumbbell Curls | 3 sets, 10–20 reps, 25 lb, 3 RIR | 4 sets, 25 lb, 2 RIR | 4 sets, 30 lb, 1 RIR | 5 sets, 30 lb, 0 RIR | 2 sets, 2–5 reps, 25 lb, 5+ RIR |
-| Friday   | Incline Curls  | 3 sets, 10–20 reps, 20 lb, 3 RIR | 4 sets, 20 lb, 2 RIR | 4 sets, 25 lb, 1 RIR | 5 sets, 25 lb, 0 RIR | 2 sets, 5–10 reps, 15 lb, 5+ RIR |
+| Monday   | Barbell Curls  | 3 sets, 5-10 reps, 80 lb, 3 RIR | 4 sets, 85 lb, 2 RIR | 4 sets, 90 lb, 1 RIR | 5 sets, 95 lb, 0 RIR | 2 sets, 2-5 reps, 80 lb, 5+ RIR |
+| Wednesday| Dumbbell Curls | 3 sets, 10-20 reps, 25 lb, 3 RIR | 4 sets, 25 lb, 2 RIR | 4 sets, 30 lb, 1 RIR | 5 sets, 30 lb, 0 RIR | 2 sets, 2-5 reps, 25 lb, 5+ RIR |
+| Friday   | Incline Curls  | 3 sets, 10-20 reps, 20 lb, 3 RIR | 4 sets, 20 lb, 2 RIR | 4 sets, 25 lb, 1 RIR | 5 sets, 25 lb, 0 RIR | 2 sets, 5-10 reps, 15 lb, 5+ RIR |
 
 ### Meso 2 - Increased Frequency and Volume
 
 | Day      | Exercise             | Week 1                    | Week 2                    | Week 3                    | Week 4                    | Deload                    |
 |----------|----------------------|---------------------------|---------------------------|---------------------------|---------------------------|---------------------------|
-| Monday   | Barbell Curls        | 4 sets, 5–10 reps, 85 lb, 3 RIR | 5 sets, 90 lb, 2 RIR | 5 sets, 95 lb, 1 RIR | 6 sets, 100 lb, 0 RIR | 2 sets, 2–5 reps, 85 lb, 5+ RIR |
-| Wednesday| Dumbbell Curls       | 4 sets, 10–20 reps, 25 lb, 3 RIR | 5 sets, 30 lb, 2 RIR | 5 sets, 30 lb, 1 RIR | 6 sets, 35 lb, 0 RIR | 2 sets, 2–5 reps, 25 lb, 5+ RIR |
-| Friday   | Incline Curls        | 4 sets, 10–20 reps, 20 lb, 3 RIR | 5 sets, 20 lb, 2 RIR | 5 sets, 25 lb, 1 RIR | 6 sets, 25 lb, 0 RIR | 2 sets, 5–10 reps, 15 lb, 5+ RIR |
-| Saturday | Machine Preacher Curls| 3 sets, 10–20 reps, 50 lb, 3 RIR | 4 sets, 55 lb, 2 RIR | 4 sets, 60 lb, 1 RIR | 5 sets, 65 lb, 0 RIR | 2 sets, 5–10 reps, 25 lb, 5+ RIR |
+| Monday   | Barbell Curls        | 4 sets, 5-10 reps, 85 lb, 3 RIR | 5 sets, 90 lb, 2 RIR | 5 sets, 95 lb, 1 RIR | 6 sets, 100 lb, 0 RIR | 2 sets, 2-5 reps, 85 lb, 5+ RIR |
+| Wednesday| Dumbbell Curls       | 4 sets, 10-20 reps, 25 lb, 3 RIR | 5 sets, 30 lb, 2 RIR | 5 sets, 30 lb, 1 RIR | 6 sets, 35 lb, 0 RIR | 2 sets, 2-5 reps, 25 lb, 5+ RIR |
+| Friday   | Incline Curls        | 4 sets, 10-20 reps, 20 lb, 3 RIR | 5 sets, 20 lb, 2 RIR | 5 sets, 25 lb, 1 RIR | 6 sets, 25 lb, 0 RIR | 2 sets, 5-10 reps, 15 lb, 5+ RIR |
+| Saturday | Machine Preacher Curls| 3 sets, 10-20 reps, 50 lb, 3 RIR | 4 sets, 55 lb, 2 RIR | 4 sets, 60 lb, 1 RIR | 5 sets, 65 lb, 0 RIR | 2 sets, 5-10 reps, 25 lb, 5+ RIR |
 
 ### Meso 3 - Peak Volume Phase
 
 | Day      | Exercise             | Week 1                    | Week 2                    | Week 3                    | Week 4                    | Deload                    |
 |----------|----------------------|---------------------------|---------------------------|---------------------------|---------------------------|---------------------------|
-| Monday   | Barbell Curls        | 5 sets, 5–10 reps, 90 lb, 3 RIR | 6 sets, 95 lb, 2 RIR | 6 sets, 100 lb, 1 RIR | 7 sets, 105 lb, 0 RIR | 2 sets, 2–5 reps, 90 lb, 5+ RIR |
-| Wednesday| Dumbbell Curls       | 5 sets, 10–20 reps, 30 lb, 3 RIR | 6 sets, 30 lb, 2 RIR | 6 sets, 35 lb, 1 RIR | 7 sets, 35 lb, 0 RIR | 2 sets, 2–5 reps, 30 lb, 5+ RIR |
-| Thursday | Incline Curls        | 5 sets, 10–20 reps, 25 lb, 3 RIR | 6 sets, 25 lb, 2 RIR | 6 sets, 25 lb, 1 RIR | 7 sets, 25 lb, 0 RIR | 2 sets, 5–10 reps, 12.5 lb, 5+ RIR |
-| Friday   | Machine Preacher Curls| 4 sets, 10–20 reps, 55 lb, 3 RIR | 6 sets, 60 lb, 2 RIR | 6 sets, 65 lb, 1 RIR | 7 sets, 70 lb, 0 RIR | 2 sets, 5–10 reps, 25 lb, 5+ RIR |
-| Saturday | Spider Curls         | 3 sets, 20–30 reps, 15 lb, 3 RIR | 4 sets, 15 lb, 2 RIR | 4 sets, 15 lb, 1 RIR | 5 sets, 15 lb, 0 RIR | 2 sets, 15–10 reps, 7.5 lb, 5+ RIR |
+| Monday   | Barbell Curls        | 5 sets, 5-10 reps, 90 lb, 3 RIR | 6 sets, 95 lb, 2 RIR | 6 sets, 100 lb, 1 RIR | 7 sets, 105 lb, 0 RIR | 2 sets, 2-5 reps, 90 lb, 5+ RIR |
+| Wednesday| Dumbbell Curls       | 5 sets, 10-20 reps, 30 lb, 3 RIR | 6 sets, 30 lb, 2 RIR | 6 sets, 35 lb, 1 RIR | 7 sets, 35 lb, 0 RIR | 2 sets, 2-5 reps, 30 lb, 5+ RIR |
+| Thursday | Incline Curls        | 5 sets, 10-20 reps, 25 lb, 3 RIR | 6 sets, 25 lb, 2 RIR | 6 sets, 25 lb, 1 RIR | 7 sets, 25 lb, 0 RIR | 2 sets, 5-10 reps, 12.5 lb, 5+ RIR |
+| Friday   | Machine Preacher Curls| 4 sets, 10-20 reps, 55 lb, 3 RIR | 6 sets, 60 lb, 2 RIR | 6 sets, 65 lb, 1 RIR | 7 sets, 70 lb, 0 RIR | 2 sets, 5-10 reps, 25 lb, 5+ RIR |
+| Saturday | Spider Curls         | 3 sets, 20-30 reps, 15 lb, 3 RIR | 4 sets, 15 lb, 2 RIR | 4 sets, 15 lb, 1 RIR | 5 sets, 15 lb, 0 RIR | 2 sets, 15-10 reps, 7.5 lb, 5+ RIR |
 
 ### Meso 4 (Resensitization) - Volume Reduction
 
 | Day     | Exercise       | Week 1                    | Week 2                    | Week 3                    | Deload                    |
 |---------|----------------|---------------------------|---------------------------|---------------------------|---------------------------|
-| Monday  | Barbell Curls  | 3 sets, 5–10 reps, 90 lb, 3 RIR | 3 sets, 95 lb, 2 RIR | 3 sets, 100 lb, 1 RIR | 2 sets, 2–5 reps, 90 lb, 5+ RIR |
-| Thursday| Dumbbell Curls | 3 sets, 5–10 reps, 40 lb, 3 RIR | 3 sets, 45 lb, 2 RIR | 3 sets, 50 lb, 1 RIR | 2 sets, 2–5 reps, 20 lb, 5+ RIR |
+| Monday  | Barbell Curls  | 3 sets, 5-10 reps, 90 lb, 3 RIR | 3 sets, 95 lb, 2 RIR | 3 sets, 100 lb, 1 RIR | 2 sets, 2-5 reps, 90 lb, 5+ RIR |
+| Thursday| Dumbbell Curls | 3 sets, 5-10 reps, 40 lb, 3 RIR | 3 sets, 45 lb, 2 RIR | 3 sets, 50 lb, 1 RIR | 2 sets, 2-5 reps, 20 lb, 5+ RIR |
 
-**Programming Notes – RIR Color Guide:**
+**Programming Notes - RIR Color Guide:**
 
 - Green (5+ RIR) = Easy/Recovery
 - Yellow (3 RIR) = Moderate
@@ -305,5 +305,5 @@ This comprehensive guide provides everything you need to develop impressive bice
 1. **Start with adequate back training:** Ensure you're doing sufficient pulling movements before adding high volumes of direct bicep work.
 2. **Focus on full range of motion:** Go all the way down for the stretch and squeeze at the top.
 3. **Emphasize mind-muscle connection:** Feel your biceps working rather than just moving weight.
-4. **Use diverse rep ranges:** 50% moderate (10–20), 25% heavy (5–10), 25% light (20–30).
+4. **Use diverse rep ranges:** 50% moderate (10-20), 25% heavy (5-10), 25% light (20-30).
 5. **Progress systematically:** Add weight when you can complete all reps with good form.

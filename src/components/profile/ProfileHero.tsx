@@ -133,7 +133,7 @@ export function ProfileHero() {
     const syncStatus = hevyConnected ? getWorkoutHistorySyncStatus(progress) : null;
     const workoutsLoading = hevyConnected && !progress;
     const workoutsValue = !hevyConnected
-        ? "—"
+        ? "-"
         : syncStatus === "synced"
           ? String(progress?.backedUpCount ?? 0)
           : `${progress?.backedUpCount ?? 0} / ${progress?.hevyCount ?? 0}`;

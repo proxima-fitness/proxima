@@ -83,7 +83,7 @@ export const programMutationCatalog: TProgramMutationDefinition[] = [
     defineProgramMutation({
         id: "edit_exercise",
         description:
-            "Replace an exercise at a 0-based index using grid payload (exercise_template_id, sets[], rest_seconds, optional title/reason) — same shape as insert_exercise.",
+            "Replace an exercise at a 0-based index using grid payload (exercise_template_id, sets[], rest_seconds, optional title/reason) - same shape as insert_exercise.",
         schema: editExerciseSchema,
         run: (program, args) =>
             runScopedMutation(args.folderIds, (folderIds) =>

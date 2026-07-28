@@ -1,6 +1,6 @@
 /**
  * Shared usage-cap paywall contract (ADR 0019).
- * Safe for client + server — no Next.js server-only imports.
+ * Safe for client + server - no Next.js server-only imports.
  */
 
 export const USAGE_CAP_ERROR = "usage_cap" as const;

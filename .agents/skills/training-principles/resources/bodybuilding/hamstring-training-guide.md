@@ -4,15 +4,15 @@ Build powerful, well-developed hamstrings with this comprehensive, science-based
 
 ## 🎯 Hamstring Training Essentials (TL;DR)
 
-- **Weekly Volume:** 2-8 sets per week for most trainees (start low — hamstrings respond to very little volume)
+- **Weekly Volume:** 2-8 sets per week for most trainees (start low - hamstrings respond to very little volume)
 - **Training Frequency:** 2-3 times per week works best for most people
 - **Best Rep Ranges:** 5-10 reps for hip hinges, 10-30 reps for leg curls
 - **Key Exercises:** Stiff-legged deadlifts, lying leg curls, seated leg curls, good mornings
-- **Critical Point:** Full range of motion with deep stretch is essential — hamstrings are designed to be stretched under load
+- **Critical Point:** Full range of motion with deep stretch is essential - hamstrings are designed to be stretched under load
 
 ## Understanding Hamstring Development
 
-The hamstrings are a biarticulate muscle group, crossing both the hip and knee joints, which allows them to be stretched far more than most muscles in the body. This unique anatomy makes them incredibly responsive to proper training — often requiring much lower volumes than other muscle groups while delivering exceptional growth when trained with perfect technique and full range of motion.
+The hamstrings are a biarticulate muscle group, crossing both the hip and knee joints, which allows them to be stretched far more than most muscles in the body. This unique anatomy makes them incredibly responsive to proper training - often requiring much lower volumes than other muscle groups while delivering exceptional growth when trained with perfect technique and full range of motion.
 
 The hamstring complex consists of three main muscles: the biceps femoris, semitendinosus, and semimembranosus. These muscles work together in two primary movement patterns that must both be trained for complete development:
 
@@ -296,7 +296,7 @@ This comprehensive guide provides everything you need to develop powerful, well-
 ## 🎯 Action Steps for Hamstring Success
 
 1. **Start conservatively:** Begin with MEV volumes (2-4 sets per week) and only increase if recovery allows
-2. **Master the stretch:** Emphasize full range of motion on all movements — hamstrings grow from being stretched under load
+2. **Master the stretch:** Emphasize full range of motion on all movements - hamstrings grow from being stretched under load
 3. **Include both patterns:** Train hip hinge movements AND knee flexion movements every week
-4. **Control the tempo:** Never bounce out of the stretched position — pause and control every rep
+4. **Control the tempo:** Never bounce out of the stretched position - pause and control every rep
 5. **Progress systematically:** Add weight conservatively while maintaining perfect form and full range of motion

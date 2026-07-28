@@ -47,6 +47,7 @@ import { memo, useCallback, useState, forwardRef, useMemo } from "react";
 import { useMicTranscription } from "@/hooks/use-mic-transcription";
 import { Questions } from "@/components/ui/questions";
 import { AgenticMemoryPeekHost } from "@/components/program-builder/shared/agent/AgenticMemoryPeekHost";
+import { HevyExportGate } from "@/components/program-builder/shared/agent/HevyExportGate";
 import type { User } from "@supabase/supabase-js";
 
 /** Props for the chat input container. */
@@ -62,6 +63,10 @@ interface IProps {
   onQuestionsSkip?: () => void;
   /** Called when user dismisses the questions without building (e.g. close button). */
   onQuestionsDismiss?: () => void;
+  /** When true, show Hevy export gate footer instead of PromptInput (questionnaire wins if both set). */
+  showHevyExportGate?: boolean;
+  onHevyExportGateDismiss?: () => void;
+  onHevyExportGateComplete?: () => void;
   isBuilding?: boolean;
   /** Override the default suggestion chip labels (defaults to quickTriggerSuggestionChips). */
   suggestionChips?: string[];
@@ -352,6 +357,9 @@ export const Chat = forwardRef<HTMLDivElement, IProps>((props, ref) => {
     onQuestionsComplete,
     onQuestionsSkip,
     onQuestionsDismiss,
+    showHevyExportGate = false,
+    onHevyExportGateDismiss,
+    onHevyExportGateComplete,
     isBuilding = false,
     suggestionChips = quickTriggerSuggestionChips,
   } = props;
@@ -364,10 +372,12 @@ export const Chat = forwardRef<HTMLDivElement, IProps>((props, ref) => {
     featureLimits != null &&
     (!featureLimits.has_active_subscription || (isProOnlyTier && outOfCredits));
   const showQuestions = questionsPayload != null && questionsPayload.questions?.length > 0;
+  /** Questionnaire footer wins if both somehow present. */
+  const showGate = showHevyExportGate && !showQuestions;
 
   return (
     <div ref={ref} className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl shrink-0 px-3 pb-3 md:px-5 md:pb-5 max-sm:fixed max-sm:bottom-[calc(70px+max(0.5rem,env(safe-area-inset-bottom)))] max-sm:left-0 max-sm:right-0 max-sm:px-4 max-sm:bg-background max-sm:dark:bg-extraDarkGray pt-4 max-sm:pt-2">
-      {showSuggestions && !showQuestions && (
+      {showSuggestions && !showQuestions && !showGate && (
         <Suggestions className="mb-3">
           {suggestionChips.map((label) => (
             <Suggestion
@@ -407,6 +417,14 @@ export const Chat = forwardRef<HTMLDivElement, IProps>((props, ref) => {
               onDismiss={onQuestionsDismiss}
               isBuilding={isBuilding}
               isLoading={isLoading}
+            />
+          </div>
+        ) : showGate ? (
+          <div className="min-w-0 flex-1 sm:bg-white bg-extraLightGray dark:bg-darkGray relative z-10 p-0 rounded-md max-sm:pt-0 shadow-2xs overflow-hidden">
+            <HevyExportGate
+              className="w-full min-w-full"
+              onDismiss={() => onHevyExportGateDismiss?.()}
+              onComplete={() => onHevyExportGateComplete?.()}
             />
           </div>
         ) : (

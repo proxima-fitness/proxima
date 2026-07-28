@@ -125,7 +125,7 @@ export interface IProps {
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Anonymous session restore — read once at `useChat` init when `!chatId && !user`. */
+/** Anonymous session restore - read once at `useChat` init when `!chatId && !user`. */
 export function readAnonymousChatMessages(): TChatMessage[] {
     if (typeof window === "undefined") return [];
 
@@ -178,7 +178,7 @@ interface IMessageContextBodyInput {
     isInLbs: boolean;
 }
 
-/** Exported for tests — chat request body fields sent with each message. */
+/** Exported for tests - chat request body fields sent with each message. */
 export function buildMessageContextBody(input: IMessageContextBodyInput) {
     const includeProgram = isMessageAboutProgram(input.messageText);
 
@@ -226,7 +226,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     const search = searchParams.get("search") ?? "";
     const shareId = searchParams.get("shareId") ?? "";
 
-    /** Minted id until URL `?chat=` propagates (send handler only — not render). */
+    /** Minted id until URL `?chat=` propagates (send handler only - not render). */
     const pendingMintChatIdRef = useRef("");
 
     const {
@@ -284,7 +284,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         transport: chatTransport,
         messages: initialMessages,
         onFinish: ({ messages: finishedMessages, isAbort, isError }) => {
-            // Server consume runs at request start — refresh chrome counter after any
+            // Server consume runs at request start - refresh chrome counter after any
             // authenticated turn that reached the stream (success, error, or abort).
             if (user) {
                 void queryClient.invalidateQueries({
@@ -362,7 +362,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         setMessages([]);
     }, [resetChatSessionRefs, setMessages]);
 
-    // Paywall is toast + UpgradeBanner — do not surface AgentGenerationError retry UI.
+    // Paywall is toast + UpgradeBanner - do not surface AgentGenerationError retry UI.
     const activeError =
         parseUsageCapFromChatError(error) || parseUsageCapFromChatError(generationError)
             ? null
@@ -374,7 +374,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             if (message == null) return;
 
             // Authenticated LLM meter lives in POST /api/chat (try_consume). Anonymous
-            // still decrements localStorage here — no auth.uid() / period row.
+            // still decrements localStorage here - no auth.uid() / period row.
             if (!user) {
                 recordAnonymousLlmRequest();
                 void queryClient.invalidateQueries({ queryKey: ["feature-limits"] });

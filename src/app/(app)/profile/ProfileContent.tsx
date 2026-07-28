@@ -3,7 +3,7 @@
 /**
  * @module (app)/profile/ProfileContent
  *
- * Client profile body: Hevy-style card stack on muted background — header with Stats/Programs
+ * Client profile body: Hevy-style card stack on muted background - header with Stats/Programs
  * tabs, then tab panels for statistics/blind-spot/recent workouts vs Hevy + vault programs.
  * Resume-draft banner sits above the card stack.
  *

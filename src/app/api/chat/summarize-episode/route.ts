@@ -42,7 +42,7 @@ export async function POST(req: Request) {
         const persistedConstraints = await getUserConstraints(user.id, supabase);
         const constraintProfile = persistedConstraints ?? initializeConstraintProfile({});
 
-        // Generate summary — map UIMessages to the shape the summarizer expects
+        // Generate summary - map UIMessages to the shape the summarizer expects
         const messagesForSummary = conversation.map(m => ({
             role: m.role ?? 'user',
             content: (m.parts ?? [])

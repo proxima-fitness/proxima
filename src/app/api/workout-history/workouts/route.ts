@@ -15,7 +15,7 @@ import {
 } from "@/api/workout-history-read";
 
 /**
- * GET /api/workout-history/workouts — cursor-paginated logged workout previews.
+ * GET /api/workout-history/workouts - cursor-paginated logged workout previews.
  *
  * Query: `limit`, `cursorStartedAt`, `cursorId`, `preview=true` (caps exercises at 3).
  */

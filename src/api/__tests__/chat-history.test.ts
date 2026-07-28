@@ -140,7 +140,7 @@ describe("ensureChatSessionOnSend", () => {
         resetChatHistorySessionForTests();
     });
 
-    it("mints chat id and inserts once (no router — URL synced by caller)", async () => {
+    it("mints chat id and inserts once (no router - URL synced by caller)", async () => {
         mockMaybeSingle.mockResolvedValueOnce({ data: null, error: null });
         mockSingle.mockResolvedValueOnce({ data: { id: chatId }, error: null });
 

@@ -10,7 +10,7 @@ const STREAMING_FAILURE = "Can't edit the program while the assistant is respond
 
 /**
  * Run a catalog mutation against `ctx.program` and commit on success.
- * Does not toast — callers (e.g. ProgramMutationContext) surface failures.
+ * Does not toast - callers (e.g. ProgramMutationContext) surface failures.
  */
 export function runProgramMutation(
     id: string,

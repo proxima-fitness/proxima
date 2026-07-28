@@ -461,7 +461,7 @@ export async function runBodyMeasurementsSyncChunkRequest(): Promise<TSyncChunkR
 
 /**
  * Fire-and-forget backfill after Hevy connect (browser only).
- * Loops chunks until done, sync error, or give-up — no separate poller UI.
+ * Loops chunks until done, sync error, or give-up - no separate poller UI.
  */
 export function triggerBodyMeasurementsSync(): void {
     void (async () => {

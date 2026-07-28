@@ -8,7 +8,7 @@
  * Pattern (vercel-react-best-practices):
  * - `setDirty` only from event handlers (rerender-move-effect-to-event)
  * - DOM listeners wired once via subscribe (advanced-init-once)
- * - Dialog UI via useSyncExternalStore — no useEffect, no render-time mutation
+ * - Dialog UI via useSyncExternalStore - no useEffect, no render-time mutation
  *
  * Depends on: next/navigation (router for discard navigation).
  * Used by: EditProfileContent.
@@ -41,7 +41,7 @@ const serverSnapshot: TLeaveGuardSnapshot = {
     pendingHref: null,
 };
 
-/** Browser-only flag — updated from event handlers, read by DOM listeners. */
+/** Browser-only flag - updated from event handlers, read by DOM listeners. */
 let dirty = false;
 let bypassNavigation = false;
 let dialogSnapshot: TLeaveGuardSnapshot = serverSnapshot;

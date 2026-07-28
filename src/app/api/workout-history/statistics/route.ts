@@ -15,9 +15,9 @@ function parseWeeksParam(value: string | null): 4 | 12 {
 }
 
 /**
- * GET /api/workout-history/statistics — weekly Duration/Reps aggregates.
+ * GET /api/workout-history/statistics - weekly Duration/Reps aggregates.
  *
- * Query: `weeks` — `12` (default) or `4`
+ * Query: `weeks` - `12` (default) or `4`
  */
 export async function GET(request: NextRequest) {
     try {

@@ -322,7 +322,7 @@ export function BlindSpotAnalysisSection({
                     </p>
                     {isSyncing ? (
                         <p className="text-xs text-muted-foreground mt-1">
-                            Backup still syncing — results may update as more workouts arrive.
+                            Backup still syncing - results may update as more workouts arrive.
                         </p>
                     ) : null}
                 </div>

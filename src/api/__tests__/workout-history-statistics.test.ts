@@ -17,7 +17,7 @@ import {
     workoutTotalVolumeKg,
 } from "../workout-history-statistics";
 
-/** Monday 2024-06-10 15:00 UTC — week of Sun Jun 9 in US ET. */
+/** Monday 2024-06-10 15:00 UTC - week of Sun Jun 9 in US ET. */
 const REFERENCE_DATE = new Date("2024-06-10T15:00:00.000Z");
 
 describe("workout-history-statistics", () => {

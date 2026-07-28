@@ -12,7 +12,7 @@ function uniqueSortedFolderIds(program: THevyRoutine[], dayOrder?: number): numb
 
 /**
  * When the agent targets a day but omits folderIds, infer every week that has that dayOrder.
- * Runs at apply time (program snapshot available) — not during SDK tool-arg validation.
+ * Runs at apply time (program snapshot available) - not during SDK tool-arg validation.
  */
 export function inferMissingFolderIds(
     program: THevyRoutine[],

@@ -4,10 +4,10 @@
  * Converts between the multiple data representations used across the program
  * builder pipeline. The system juggles three exercise/program schemas:
  *
- *   1. **TProgramCreatorDay** – Proxima's legacy internal format (flat reps_type / intensity objects)
- *   2. **THevyRoutine / THevyExercise / THevySets** – The Hevy API format used for syncing
- *   3. **TScheduleWorkouts** – The scheduling/display format consumed by the calendar UI
- *   4. **TAddExercise / THevyAddExercise** – Transient form-state shapes from the "add exercise" dialog
+ *   1. **TProgramCreatorDay** - Proxima's legacy internal format (flat reps_type / intensity objects)
+ *   2. **THevyRoutine / THevyExercise / THevySets** - The Hevy API format used for syncing
+ *   3. **TScheduleWorkouts** - The scheduling/display format consumed by the calendar UI
+ *   4. **TAddExercise / THevyAddExercise** - Transient form-state shapes from the "add exercise" dialog
  *
  * This module also provides CSV export helpers that flatten Hevy routines into
  * a spreadsheet-friendly format (using papaparse), and drag-and-drop helpers
@@ -94,8 +94,8 @@ function parseWeekAndDay(title: string): { week: number; day: number } | null {
 
 function stripWeekDayLabels(title: string): string {
     return title
-        .replace(/Week\s+\d+\s*[-–—]\s*/i, "")
-        .replace(/\s*[-–—]\s*Day\s+\d+/i, "")
+        .replace(/Week\s+\d+\s*[---]\s*/i, "")
+        .replace(/\s*[---]\s*Day\s+\d+/i, "")
         .trim();
 }
 
@@ -455,7 +455,7 @@ function hevyCsvHeaderLabel(column: THevyCsvDataColumn): string {
 
 /**
  * Returns true when all sets in an exercise share identical rep metric, type,
- * weight, and RPE — meaning they can be collapsed into a single CSV row with
+ * weight, and RPE - meaning they can be collapsed into a single CSV row with
  * `sets_count > 1`. Mirrors the display logic in HevyExerciseVisualizer.
  *
  * @param sets - Array of sets for one exercise

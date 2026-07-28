@@ -25,10 +25,15 @@ import { TRAINING_PROFILE_UNSET_VALUE } from "@/components/account/training-prof
 import { quickModifyProgramSuggestionChips } from "@/assets/constants/suggestions"
 import { inferDaysPerWeek, inferProgramLength } from "@/components/program-builder/utils/helpers"
 
+import { toast } from "sonner"
+import { useUserContext } from "@/contexts/UserContext"
+import { useHevySecret } from "@/api/hooks"
 import { Chat } from "./Chat"
 import { Navbar } from "./Navbar"
 import { MessageBubbles } from "./MessageBubbles"
 import { LiveAgentProgress } from "./LiveAgentProgress"
+import { findHevyExportGateMessageId } from "./hevy-export-gate"
+import { HEVY_EXPORT_GATE_COMPLETE_TOAST } from "./HevyExportGate"
 
 /** Props for the agent container (navbar, messages, chat input, and all filter/program/send state). */
 interface IProps {
@@ -174,6 +179,11 @@ export const Agent: React.FC<IProps> = (props) => {
     const chatFooterRef = useRef<HTMLDivElement>(null);
     const [measuredFooterHeight, setMeasuredFooterHeight] = useState<number | null>(null);
     const isMobile = useIsMobile();
+    const { user } = useUserContext();
+    const { data: hevyApiKey } = useHevySecret(user);
+    /** Both gate steps already satisfied - hide footer (no effect / no toast; toast is SP3 save event). */
+    const hevyExportPrerequisitesMet =
+        user != null && Boolean(hevyApiKey && hevyApiKey.length > 0);
 
     useLayoutEffect(() => {
         if (!isMobile) return;
@@ -235,9 +245,30 @@ export const Agent: React.FC<IProps> = (props) => {
     ])
 
     const [dismissedForMessageId, setDismissedForMessageId] = useState<string | null>(null)
+    const [hevyGateDismissedForMessageId, setHevyGateDismissedForMessageId] = useState<string | null>(null)
     const lastMessage = messages[messages.length - 1]
     const showQuestionsPayload =
         activeQuestionsPayload && dismissedForMessageId !== lastMessage?.id ? activeQuestionsPayload : null
+
+    /** Questionnaire wins the footer - never swap Hevy gate over an active survey. */
+    const hevyExportGateMessageId = useMemo(
+        () => (showQuestionsPayload ? null : findHevyExportGateMessageId(messages)),
+        [messages, showQuestionsPayload],
+    )
+    const showHevyExportGate =
+        hevyExportGateMessageId != null &&
+        hevyGateDismissedForMessageId !== hevyExportGateMessageId &&
+        !hevyExportPrerequisitesMet
+
+    const handleHevyExportGateDismiss = useCallback(() => {
+        if (hevyExportGateMessageId) setHevyGateDismissedForMessageId(hevyExportGateMessageId)
+    }, [hevyExportGateMessageId])
+
+    const handleHevyExportGateComplete = useCallback(() => {
+        if (!hevyExportGateMessageId) return
+        toast.success(HEVY_EXPORT_GATE_COMPLETE_TOAST)
+        setHevyGateDismissedForMessageId(hevyExportGateMessageId)
+    }, [hevyExportGateMessageId])
 
     const convertStringArrayToOptions = useCallback((values: string[], options: TSelectOption[]): TSelectOption[] => {
         return values
@@ -460,12 +491,17 @@ export const Agent: React.FC<IProps> = (props) => {
                 isLoading={isLoading}
                 handleSubmit={handleSubmit}
                 handleStop={handleStop}
-                showSuggestions={messages.length === 0 && !showQuestionsPayload && !isLoading}
+                showSuggestions={
+                    messages.length === 0 && !showQuestionsPayload && !showHevyExportGate && !isLoading
+                }
                 suggestionChips={hevyProgram.length > 0 ? quickModifyProgramSuggestionChips : undefined}
                 questionsPayload={showQuestionsPayload}
                 onQuestionsComplete={handleQuestionsComplete}
                 onQuestionsSkip={handleQuestionsSkip}
                 onQuestionsDismiss={() => lastMessage?.id && setDismissedForMessageId(lastMessage.id)}
+                showHevyExportGate={showHevyExportGate}
+                onHevyExportGateDismiss={handleHevyExportGateDismiss}
+                onHevyExportGateComplete={handleHevyExportGateComplete}
                 isBuilding={isBuilding}
             />
         </div>

@@ -39,7 +39,7 @@ if [ ! -f supabase/config.toml ]; then
     npx supabase init
 fi
 
-# ── 2. Start local Supabase (idempotent — skips if already running) ─────
+# ── 2. Start local Supabase (idempotent - skips if already running) ─────
 echo "==> Starting local Supabase..."
 npx supabase start || true
 
@@ -119,7 +119,7 @@ if [ "$EXERCISE_COUNT" -eq 0 ]; then
 
     if [ -z "$HEVY_KEY" ]; then
         echo "   WARNING: No Hevy API key found (set NEXT_PUBLIC_REACT_APP_HEVY_API_KEY / HEVY_API_KEY, or add to \`pass hevy-api\`)."
-        echo "   Skipping exercise seed — chat exercise lookup will not work."
+        echo "   Skipping exercise seed - chat exercise lookup will not work."
     else
         SEED_SQL=$(mktemp)
         trap 'rm -f "$SEED_SQL"' EXIT
@@ -171,14 +171,14 @@ else
     echo "   hevy_exercise_templates already has $EXERCISE_COUNT rows. Skipping Hevy API seed."
 fi
 
-# ── 6b. Seed Proxima warmup templates (WU* — not in Hevy API) ───────
+# ── 6b. Seed Proxima warmup templates (WU* - not in Hevy API) ───────
 WARMUP_COUNT=$(run_psql -tAc "SELECT count(*) FROM public.hevy_exercise_templates WHERE id LIKE 'WU%';" 2>/dev/null | tr -d '[:space:]' || echo "0")
 WARMUP_COUNT="${WARMUP_COUNT:-0}"
 WARMUP_FIXTURE="supabase/seed-hevy-warmups.sql"
 
 if [ "$WARMUP_COUNT" -eq 0 ]; then
     if [ ! -f "$WARMUP_FIXTURE" ]; then
-        echo "   WARNING: $WARMUP_FIXTURE not found — skipping warmup seed."
+        echo "   WARNING: $WARMUP_FIXTURE not found - skipping warmup seed."
     else
         echo "==> Seeding Proxima warmup exercises from $WARMUP_FIXTURE..."
         run_psql -q < "$WARMUP_FIXTURE"
@@ -206,7 +206,7 @@ USER_EXISTS="${USER_EXISTS:-0}"
 if [ "$USER_EXISTS" -eq 0 ]; then
     echo "==> Creating test user ($TEST_EMAIL)..."
 
-    # Sign up via auth API to get a proper JWT-capable user (retry — auth may still be starting)
+    # Sign up via auth API to get a proper JWT-capable user (retry - auth may still be starting)
     SIGNUP_RESULT=""
     for i in 1 2 3 4 5; do
         SIGNUP_RESULT=$(curl -s -X POST "${LOCAL_URL}/auth/v1/signup" \
@@ -232,7 +232,7 @@ else
     echo "   Test user already exists ($TEST_USER_ID)."
 fi
 
-# Profile + usage (auth signup does not populate public.users locally —
+# Profile + usage (auth signup does not populate public.users locally -
 # handle_new_user exists but has no trigger on auth.users)
 if [ -n "${TEST_USER_ID:-}" ]; then
     run_psql -q -c "

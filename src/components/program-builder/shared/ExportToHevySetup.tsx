@@ -21,17 +21,15 @@ import {
     deleteHevyApiKey,
     getSaveProgramToSupabaseFailureDetail,
     isSaveProgramToSupabaseSuccess,
-    postHevyApikey,
     postProgramToHevy,
     postProgramToHevyOneFolder,
     saveProgramToSupabase,
-    updateHevyApiKey,
 } from "../api/hevy";
+import { connectHevyKey, HEVY_API_KEY_SAVED_MESSAGE } from "../api/connect-hevy-key";
 import { triggerWorkoutHistorySync } from "@/api/workout-history-sync";
 import { MAIN_DISCOUNT_PERCENT, MAIN_DISCOUNT_CODE, RATE_LIMIT_EXHAUSTED_MESSAGE } from "@/assets/constants/ui-constants";
 import { postNewProgramSubscriber } from "@/api/programs";
 import { toast } from "sonner";
-import { validate } from "uuid";
 import { Check, Crown, ExternalLink, Key, Upload } from "lucide-react";
 import {
     Accordion,
@@ -136,34 +134,22 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
 
     const handleConnectHevy = async () => {
         if (!user) return;
-        const isValidUuid = validate(inputValue);
-        if (!isValidUuid) {
-            toast.error("Invalid Hevy API Key");
+
+        const result = await connectHevyKey({
+            user,
+            apiKey: inputValue,
+            existingApiKey: hevyApiKey,
+            queryClient,
+        });
+
+        if (result.status !== "saved") {
+            toast.error(result.message);
             return;
         }
-        if (hevyApiKey && hevyApiKey.length > 0) {
-            const updated = await updateHevyApiKey(user, inputValue);
-            if (updated) {
-                toast.success("Hevy API Key saved successfully");
-                queryClient.invalidateQueries({ queryKey: ["hevy_api_key"] });
-                queryClient.invalidateQueries({ queryKey: ["exercise-stalls-analysis", user?.id] });
-                triggerWorkoutHistorySync();
-                setIsEditingApiKey(false);
-            }
-        } else {
-            const result = await postHevyApikey(user, inputValue);
-            if (result?.success) {
-                toast.success("Hevy API Key saved successfully");
-                queryClient.invalidateQueries({ queryKey: ["hevy_api_key"] });
-                queryClient.invalidateQueries({ queryKey: ["exercise-stalls-analysis", user?.id] });
-                triggerWorkoutHistorySync();
-                setIsEditingApiKey(false);
-            } else {
-                toast.error(
-                    `Error saving Hevy API Key: ${result?.data ? JSON.stringify(result.data) : "Unknown error"}`
-                );
-            }
-        }
+
+        toast.success(HEVY_API_KEY_SAVED_MESSAGE);
+        triggerWorkoutHistorySync();
+        setIsEditingApiKey(false);
     };
 
     const handleRemoveHevy = async () => {

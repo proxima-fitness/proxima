@@ -58,7 +58,7 @@ export async function getServerHasActiveSubscription(
 
 /**
  * Non-stream paywall body for authenticated usage caps.
- * Status 402 — Payment Required. Client maps `error === "usage_cap"`.
+ * Status 402 - Payment Required. Client maps `error === "usage_cap"`.
  */
 export function usageCapResponse(options?: {
     feature?: TUsageCapFeature;
@@ -88,7 +88,7 @@ export function usageCapResponse(options?: {
  *
  * Test-tier Free with remaining 0 returns paywall without consuming (so QA can
  * simulate empty quota above a real paid Stripe tier). Real caps always go
- * through the RPC — cookie cannot raise a Free user's SQL ceiling.
+ * through the RPC - cookie cannot raise a Free user's SQL ceiling.
  */
 export async function tryConsumeMonthlyLlmRequest(
     supabase: SupabaseClient,

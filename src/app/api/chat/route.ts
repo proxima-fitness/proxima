@@ -44,7 +44,7 @@ import { ALWAYS_AVAILABLE_CHAT_TOOLS } from './always-available-tools';
 // This is important for longer programs that may take time to generate
 export const maxDuration = 120;
 
-/** Presence-only vault check — never returns the Hevy API key string. */
+/** Presence-only vault check - never returns the Hevy API key string. */
 async function hasHevyApiKey(
     supabase: Awaited<ReturnType<typeof createClient>>,
     userId: string,

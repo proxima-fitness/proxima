@@ -58,7 +58,7 @@ export const defaultFetch = async <T>(url: string, apiKey: string): Promise<T> =
     return (await response.json()) as T;
 };
 
-/** Thrown when Hevy returns HTTP 429 — callers back off instead of persisting the failure. */
+/** Thrown when Hevy returns HTTP 429 - callers back off instead of persisting the failure. */
 export class HevyRateLimitError extends Error {
     constructor(message = "HTTP GET error! Status: 429") {
         super(message);
@@ -523,9 +523,9 @@ function delayMs(ms: number): Promise<void> {
  * Persists an AI-generated program to the Proxima Supabase database.
  *
  * Inserts rows into three tables in sequence:
- *   1. `programs` – top-level program metadata (title, equipment, etc.)
- *   2. `schedule_workouts` – one row per workout day per week
- *   3. `program_workout_exercises` – individual exercises linked to schedule rows
+ *   1. `programs` - top-level program metadata (title, equipment, etc.)
+ *   2. `schedule_workouts` - one row per workout day per week
+ *   3. `program_workout_exercises` - individual exercises linked to schedule rows
  *
  * Exercise template IDs are validated against the `hevy_exercise_templates` table.
  * If an exercise ID is missing or invalid, the function falls back to a

@@ -2,9 +2,9 @@
  * @module api/index
  *
  * Central Supabase client initialization and environment configuration for the
- * Proxima app. Exports two Supabase clients — one for the main application
+ * Proxima app. Exports two Supabase clients - one for the main application
  * database (with SSR-aware cookie-based auth) and one for the separate blog
- * database — along with shared environment constants such as the captcha site key.
+ * database - along with shared environment constants such as the captcha site key.
  *
  * All other API modules (`authentication`, `programs`, `users`, etc.) import
  * their Supabase client from this file, making it the single source of truth

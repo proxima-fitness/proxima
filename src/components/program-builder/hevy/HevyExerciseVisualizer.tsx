@@ -45,7 +45,7 @@ interface IProps {
     removeFromSuperset: (exerciseIndex: number) => void;
     /** Global Hevy exercise library from parent (for thumbnails); undefined while loading. */
     hevyExercises?: THevyExerciseTemplate[];
-    /** Read-only logged workout rows — no edit/delete/add-note actions. */
+    /** Read-only logged workout rows - no edit/delete/add-note actions. */
     readOnly?: boolean;
 }
 

@@ -2,7 +2,7 @@
  * Formats a Usage period `resets_on` date (YYYY-MM-DD from Postgres) for blocked-state copy.
  *
  * Parses as a local calendar date so timezone offset cannot shift the day.
- * Locale comes from the runtime — no hardcoded `en-US`.
+ * Locale comes from the runtime - no hardcoded `en-US`.
  *
  * @returns e.g. "Aug 1", or empty string when the input is missing/invalid
  */
@@ -18,7 +18,7 @@ export function formatUsageResetDate(resetsOn: string | null | undefined): strin
 
 /**
  * Appends " Renews on {date}." when `resets_on` is present; otherwise returns `base` unchanged.
- * Anonymous users have no Usage period — omit the sentence entirely.
+ * Anonymous users have no Usage period - omit the sentence entirely.
  */
 export function withRenewsOn(base: string, resetsOn: string | null | undefined): string {
     const formatted = formatUsageResetDate(resetsOn);

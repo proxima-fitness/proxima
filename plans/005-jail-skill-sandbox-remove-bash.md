@@ -3,8 +3,8 @@
 > **Executor instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before moving to the
 > next step. If anything in the "STOP conditions" section occurs, stop and
-> report — do not improvise. When done, update the status row for this plan
-> in `plans/README.md` — unless a reviewer dispatched you and told they
+> report - do not improvise. When done, update the status row for this plan
+> in `plans/README.md` - unless a reviewer dispatched you and told they
 > maintain the index.
 >
 > **Drift check (run first)**: `git diff --stat 7e07cdf..HEAD -- src/app/api/chat/skills/sandbox.ts src/app/api/chat/tools/tools.ts src/app/api/chat/route.ts @types/global.d.ts`
@@ -16,14 +16,14 @@
 
 - **Priority**: P1
 - **Effort**: M
-- **Risk**: MED — skills must keep loading via `readFile` / `readdir` under `.agents/skills`
+- **Risk**: MED - skills must keep loading via `readFile` / `readdir` under `.agents/skills`
 - **Depends on**: none
 - **Category**: security
 - **Planned at**: commit `7e07cdf`, 2026-07-17
 
 ## Why this matters
 
-The chat “sandbox” is not a sandbox. `createSandbox({ workingDirectory: process.cwd() })` uses host `fs` and `child_process.exec` with no path jail and no command allowlist. The agent always has `bash` in `CORE_TOOLS` (`route.ts`), so a tool call can run arbitrary shell on the Next.js server and read files outside the skills tree (`path.resolve` ignores the root when given an absolute path). Skills only need to discover and read markdown under `.agents/skills` — they do not need shell.
+The chat “sandbox” is not a sandbox. `createSandbox({ workingDirectory: process.cwd() })` uses host `fs` and `child_process.exec` with no path jail and no command allowlist. The agent always has `bash` in `CORE_TOOLS` (`route.ts`), so a tool call can run arbitrary shell on the Next.js server and read files outside the skills tree (`path.resolve` ignores the root when given an absolute path). Skills only need to discover and read markdown under `.agents/skills` - they do not need shell.
 
 ## Current state
 
@@ -53,11 +53,11 @@ export function createSandbox({ workingDirectory }: { workingDirectory: string }
 }
 ```
 
-`@types/global.d.ts` (~398–405): `ISandbox` has `readFile`, `readdir`, `exec`.
+`@types/global.d.ts` (~398-405): `ISandbox` has `readFile`, `readdir`, `exec`.
 
 `src/app/api/chat/route.ts` (~164, ~180): `createSandbox({ workingDirectory: process.cwd() })`; `CORE_TOOLS = ['loadSkill', 'readFile', 'bash']`.
 
-`src/app/api/chat/tools/tools.ts` (~236–242): `bashTool` calls `sandbox.exec(command)`; included in `baseTools` as `bash`.
+`src/app/api/chat/tools/tools.ts` (~236-242): `bashTool` calls `sandbox.exec(command)`; included in `baseTools` as `bash`.
 
 Skill frontmatter (e.g. `.agents/skills/build-program/SKILL.md`) lists domain tools only; body text tells the model to use `readFile` for resources under `.agents/skills/...`. `bash` is not required by skill workflows.
 
@@ -65,8 +65,8 @@ Skill frontmatter (e.g. `.agents/skills/build-program/SKILL.md`) lists domain to
 
 1. **Path jail** in `sandbox.ts`: resolve paths so the final absolute path must stay under `workingDirectory` (reject absolute escapes and `..` traversal). Use `path.resolve` + `path.relative` (or equivalent) and throw a clear error if outside.
 2. **Disable host exec**: `exec` must not call `child_process`. Prefer removing `bash` tool + dropping `exec` from `ISandbox`, OR keep `exec` as a stub that rejects with a fixed error. Prefer **remove bash tool + remove/stub exec** so there is no agent entrypoint.
-3. **CORE_TOOLS**: change to `['loadSkill', 'readFile']` only — no `bash`.
-4. **workingDirectory**: keep `process.cwd()` for skill discovery **or** pass a tighter root if easy (e.g. resolve to repo `.agents` only) — optional; path jail is mandatory either way.
+3. **CORE_TOOLS**: change to `['loadSkill', 'readFile']` only - no `bash`.
+4. **workingDirectory**: keep `process.cwd()` for skill discovery **or** pass a tighter root if easy (e.g. resolve to repo `.agents` only) - optional; path jail is mandatory either way.
 
 Do **not** write exploit commands, PoCs, or sample payloads in code, comments, or tests. Tests should use relative paths and assert rejection for `..` / absolute paths without demonstrating a full attack chain.
 
@@ -85,14 +85,14 @@ Do **not** write exploit commands, PoCs, or sample payloads in code, comments, o
 
 - `src/app/api/chat/skills/sandbox.ts`
 - `src/app/api/chat/skills/__tests__/sandbox.test.ts` (create)
-- `src/app/api/chat/tools/tools.ts` — remove `bashTool` and `bash` from returned tools
-- `src/app/api/chat/route.ts` — drop `bash` from `CORE_TOOLS`
-- `@types/global.d.ts` — update `ISandbox` if `exec` removed
+- `src/app/api/chat/tools/tools.ts` - remove `bashTool` and `bash` from returned tools
+- `src/app/api/chat/route.ts` - drop `bash` from `CORE_TOOLS`
+- `@types/global.d.ts` - update `ISandbox` if `exec` removed
 
 **Out of scope**:
 
 - Real container/WASM sandbox products
-- Changing skill markdown content (unless a reference to `bash` tool must be removed — grep first; only edit if an instruction tells the agent to run shell)
+- Changing skill markdown content (unless a reference to `bash` tool must be removed - grep first; only edit if an instruction tells the agent to run shell)
 - Constraint merge / mutateProgram plans
 - Deploy/infra firewall rules
 
@@ -118,7 +118,7 @@ Implement `resolvePath` (name as you like) that:
 3. Ensures the result is equal to root or a subdirectory (on Windows, use a case-normalization approach consistent with Node; `relative` starting with `..` or absolute ⇒ reject).
 4. `readFile` / `readdir` use the jailed path; on reject, throw `Error` with a short safe message (e.g. `Path escapes sandbox root`).
 
-Remove `child_process` import. If `ISandbox.exec` remains, implement as `async () => { throw new Error('exec is disabled'); }` — but prefer removing `exec` from the interface and all call sites.
+Remove `child_process` import. If `ISandbox.exec` remains, implement as `async () => { throw new Error('exec is disabled'); }` - but prefer removing `exec` from the interface and all call sites.
 
 **Verify**: no `child_process` import in `sandbox.ts`.
 
@@ -130,7 +130,7 @@ In `route.ts`: `CORE_TOOLS = ['loadSkill', 'readFile']`.
 
 Update `@types/global.d.ts` `ISandbox` to match (drop `exec` if removed).
 
-Grep repo for `sandbox.exec` / `bashTool` / `tools.bash` / `'bash'` in chat skill tooling — fix compile breaks only within scope.
+Grep repo for `sandbox.exec` / `bashTool` / `tools.bash` / `'bash'` in chat skill tooling - fix compile breaks only within scope.
 
 **Verify**: `rg -n "bashTool|sandbox\\.exec|CORE_TOOLS" src/app/api/chat` shows no bash tool / no exec usage (CORE_TOOLS without bash).
 
@@ -150,7 +150,7 @@ Do not assert on secrets, env files, or OS-specific sensitive paths in expectati
 
 ### Step 5: Manual skill sanity (read-only check)
 
-From repo root, mentally / via a tiny test: `createSandbox({ workingDirectory: process.cwd() })` can `readdir('.agents/skills')` and `readFile` one known `SKILL.md` — optionally encode as a test with cwd = repo root if stable in CI.
+From repo root, mentally / via a tiny test: `createSandbox({ workingDirectory: process.cwd() })` can `readdir('.agents/skills')` and `readFile` one known `SKILL.md` - optionally encode as a test with cwd = repo root if stable in CI.
 
 **Verify**: discoverSkills path still works (existing chat flow); if you have a unit test for discoverSkills, run it.
 
@@ -180,13 +180,13 @@ From repo root, mentally / via a tiny test: `createSandbox({ workingDirectory: p
 
 ## STOP conditions
 
-- A skill or production path **requires** shell execution — STOP and report which skill/command; do not re-enable unrestricted exec
-- Path jail breaks `discoverSkills` after two fix attempts — report failing path strings (not a PoC)
-- Platform path edge case (Windows drive letters) unclear after two attempts — STOP with details for advisor
-- Request to add “safe command allowlist” that still shells out — out of scope; stick to disable exec
+- A skill or production path **requires** shell execution - STOP and report which skill/command; do not re-enable unrestricted exec
+- Path jail breaks `discoverSkills` after two fix attempts - report failing path strings (not a PoC)
+- Platform path edge case (Windows drive letters) unclear after two attempts - STOP with details for advisor
+- Request to add “safe command allowlist” that still shells out - out of scope; stick to disable exec
 
 ## Maintenance notes
 
 - Reviewer: confirm `loadSkill` + `readFile` still in CORE_TOOLS so scoped skills can load resources.
-- If a future skill needs compute, use a dedicated allowlisted Node API — never restore raw `exec`.
+- If a future skill needs compute, use a dedicated allowlisted Node API - never restore raw `exec`.
 - Hard Rule reminder for any docs: never paste runnable attack commands into plans/PRs.

@@ -22,9 +22,9 @@ A deficit on one day does not “fix” a surplus on other days. What matters is
 
 ## The diet approach
 
-### High-volume, low–calorie-density foods
+### High-volume, low-calorie-density foods
 
-Prefer meals that fill you up for fewer calories—large portions of lower-calorie-density foods—instead of tiny portions of very calorie-dense meals. The goal is to reduce hunger and the urge to binge on hyper-palatable junk.
+Prefer meals that fill you up for fewer calories-large portions of lower-calorie-density foods-instead of tiny portions of very calorie-dense meals. The goal is to reduce hunger and the urge to binge on hyper-palatable junk.
 
 ### Prioritize protein
 
@@ -44,7 +44,7 @@ Build a plan you can **enjoy and repeat**. Food choices you like make adherence 
 
 ### Lifestyle, not a temporary diet
 
-Lasting results come from **sustainable habits** you can maintain—not a short crash phase you abandon afterward.
+Lasting results come from **sustainable habits** you can maintain-not a short crash phase you abandon afterward.
 
 ### Avoid extremes
 

@@ -3,8 +3,8 @@
 > **Executor instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before moving to the
 > next step. If anything in the "STOP conditions" section occurs, stop and
-> report — do not improvise. When done, update the status row for this plan
-> in `plans/README.md` — unless a reviewer dispatched you and told they
+> report - do not improvise. When done, update the status row for this plan
+> in `plans/README.md` - unless a reviewer dispatched you and told they
 > maintain the index.
 >
 > **Drift check (run first)**: `git diff --stat 7e07cdf..HEAD -- src/app/api/chat/tools/tools.ts src/app/api/chat/__tests__/tools.test.ts`
@@ -23,23 +23,23 @@
 
 ## Why this matters
 
-When `mutateProgram` rejects a batch for constraint violations, `execute` returns `{ error: 'constraint_violation', message: '...' }` with exercise titles and reasons. The model never sees that text: `toModelOutput` only formats a `failures` array and falls back to `"Unknown validation error"` when `failures` is absent. The agent cannot fix flagged exercises and retries blind. `buildWeek` already surfaces `output.message` — mutate must match for message-only errors while keeping indexed-failure formatting for apply/preflight failures.
+When `mutateProgram` rejects a batch for constraint violations, `execute` returns `{ error: 'constraint_violation', message: '...' }` with exercise titles and reasons. The model never sees that text: `toModelOutput` only formats a `failures` array and falls back to `"Unknown validation error"` when `failures` is absent. The agent cannot fix flagged exercises and retries blind. `buildWeek` already surfaces `output.message` - mutate must match for message-only errors while keeping indexed-failure formatting for apply/preflight failures.
 
 ## Current state
 
-- `src/app/api/chat/tools/tools.ts` — `mutateProgramTool` execute + `toModelOutput`
-- `src/app/api/chat/__tests__/tools.test.ts` — vitest; mocks `getHevyExercises` with `ex-1` / Barbell / Chest
+- `src/app/api/chat/tools/tools.ts` - `mutateProgramTool` execute + `toModelOutput`
+- `src/app/api/chat/__tests__/tools.test.ts` - vitest; mocks `getHevyExercises` with `ex-1` / Barbell / Chest
 
-Execute returns message-only error (~801–804):
+Execute returns message-only error (~801-804):
 
 ```ts
 return {
     error: 'constraint_violation',
-    message: `Mutation rejected — constraint violations:\n${lines}`,
+    message: `Mutation rejected - constraint violations:\n${lines}`,
 };
 ```
 
-`toModelOutput` ignores `message` (~830–842):
+`toModelOutput` ignores `message` (~830-842):
 
 ```ts
 toModelOutput: async ({ output }) => {
@@ -60,7 +60,7 @@ toModelOutput: async ({ output }) => {
 },
 ```
 
-Exemplar — `buildWeek` `toModelOutput` (~707–712) uses `output.message`.
+Exemplar - `buildWeek` `toModelOutput` (~707-712) uses `output.message`.
 
 CONTEXT: **Constraint profile** is authoritative; `mutateProgram` must reject violations so the agent can fix and retry.
 
@@ -78,8 +78,8 @@ No `typecheck` script in this repo. Do not invent one.
 
 **In scope**:
 
-- `src/app/api/chat/tools/tools.ts` — `mutateProgramTool.toModelOutput` only
-- `src/app/api/chat/__tests__/tools.test.ts` — add test(s) under `describe("mutateProgram tool execute")`
+- `src/app/api/chat/tools/tools.ts` - `mutateProgramTool.toModelOutput` only
+- `src/app/api/chat/__tests__/tools.test.ts` - add test(s) under `describe("mutateProgram tool execute")`
 
 **Out of scope**:
 

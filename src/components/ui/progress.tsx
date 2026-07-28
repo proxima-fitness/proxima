@@ -1,6 +1,6 @@
 /**
  * @module progress
- * Determinate progress bar (0–100) built on Radix Progress.
+ * Determinate progress bar (0-100) built on Radix Progress.
  * Depends on: @radix-ui/react-progress, @/lib/utils.
  * Used by: uploads, quotas, onboarding steps, upgrade-banner.
  */

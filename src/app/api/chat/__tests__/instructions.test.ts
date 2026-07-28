@@ -81,7 +81,7 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("Before mutateProgram (mandatory)");
             expect(prompt).toContain("zero exercise rows");
             expect(prompt).toContain("Constraint profile persistence");
-            expect(prompt).not.toContain("Program tools — two flows");
+            expect(prompt).not.toContain("Program tools - two flows");
             expect(prompt).not.toContain("All slot targeting is **0-based**");
             expect(prompt).not.toMatch(/full conversation/i);
         });

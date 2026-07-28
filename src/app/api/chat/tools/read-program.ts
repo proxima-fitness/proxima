@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
 
-/** Same input as readProgram tool — exported for tests. */
+/** Same input as readProgram tool - exported for tests. */
 export const readProgramInputSchema = z.object({});
 
 /** Sort routines by week (folder_id) then day (order, 1-based string). */
@@ -51,7 +51,7 @@ function exerciseForModel(exercise: THevyExercise, isInLbs: boolean): THevyExerc
 }
 
 /**
- * Full program JSON for the LLM after readProgram — not a summary.
+ * Full program JSON for the LLM after readProgram - not a summary.
  * Annotates each set with `weight_display` in the user's UI unit so the model
  * does not judge "clean decimals" from integer `weight_kg` alone.
  */
@@ -72,7 +72,7 @@ export function formatReadProgramForModel(
     return (
         `Program snapshot (${program.length} routines). ` +
         `User weight display unit: ${unit} (storage remains weight_kg; weight_display is what the user sees). ` +
-        "Sorted by folder_id (week, 0-based) then order (day number 1–7). " +
+        "Sorted by folder_id (week, 0-based) then order (day number 1-7). " +
         "For mutateProgram: folderIds: [folder_id], dayOrder: order (folderIds is an array). " +
         "Target exercises and sets by 0-based array position: first exercise → exerciseIndex 0, first set → setIndex 0. " +
         "exercises[] and sets[] order is the index; index fields are omitted from this snapshot.\n\n" +

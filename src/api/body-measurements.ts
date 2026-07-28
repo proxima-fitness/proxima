@@ -16,7 +16,7 @@ export const HEVY_BODY_MEASUREMENTS_PAGE_SIZE = 10;
 
 /**
  * Maps a Hevy body-measurement payload to a `body_measurements` insert/upsert row.
- * Hevy has no separate entry id — `external_id` is the measurement date (YYYY-MM-DD).
+ * Hevy has no separate entry id - `external_id` is the measurement date (YYYY-MM-DD).
  *
  * @param entry - Body measurement from the Hevy API
  * @param userId - Proxima user ID owning the backup row
@@ -53,7 +53,7 @@ export function mapHevyBodyMeasurementToInsert(
 
 /**
  * Imports one Hevy body-measurement entry into the backup table.
- * Idempotent upsert on `(user_id, source, external_id)` — re-imports overwrite fields.
+ * Idempotent upsert on `(user_id, source, external_id)` - re-imports overwrite fields.
  *
  * @param db - Supabase client (user or service role)
  * @param params - Import context

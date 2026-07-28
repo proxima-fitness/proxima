@@ -2,7 +2,7 @@
  * @module account/training-profile-draft
  *
  * Pure helpers for Training profile Edit draft: clone, dirty check, height convert.
- * Persist only via Save training profile — draft stays local until then.
+ * Persist only via Save training profile - draft stays local until then.
  *
  * Depends on: TTrainingProfile, emptyUserTrainingProfile
  * Used by: TrainingProfileSection
@@ -53,7 +53,7 @@ export type TImperialHeight = {
     inches: number;
 };
 
-/** Splits total inches into feet + inches (0–11). */
+/** Splits total inches into feet + inches (0-11). */
 export function splitImperialHeight(totalInches: number): TImperialHeight {
     const safe = Math.max(0, Math.round(totalInches));
     return {

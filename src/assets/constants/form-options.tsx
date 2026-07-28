@@ -5,7 +5,7 @@ export const sexOptions: TSelectOption[] = [
 ];
 
 /**
- * Questionnaire advanced / Training profile sex — prefer-not-to-say maps to empty on wire.
+ * Questionnaire advanced / Training profile sex - prefer-not-to-say maps to empty on wire.
  * Sentinel value matches `TRAINING_PROFILE_UNSET_VALUE` in training-profile-options.
  */
 export const trainingSexOptions: TSelectOption[] = [
@@ -14,7 +14,7 @@ export const trainingSexOptions: TSelectOption[] = [
     { label: "Prefer not to say", value: "__unset__" },
 ];
 
-/** Physique phase — Training profile / Questionnaire advanced. */
+/** Physique phase - Training profile / Questionnaire advanced. */
 export const physiquePhaseOptions: TSelectOption[] = [
     { label: "Bulk", value: "bulk" },
     { label: "Cut", value: "cut" },
@@ -22,7 +22,7 @@ export const physiquePhaseOptions: TSelectOption[] = [
     { label: "Recomp", value: "recomp" },
 ];
 
-/** Training focus — CONTEXT closed list (storage slugs). */
+/** Training focus - CONTEXT closed list (storage slugs). */
 export const trainingFocusOptions: TSelectOption[] = [
     { label: "Bodybuilding", value: "bodybuilding" },
     { label: "Powerbuilding", value: "powerbuilding" },
@@ -156,7 +156,7 @@ export const focusAreasOptions: TSelectOption[] = [
     { label: "Full body", value: "full body"},
 ];
 
-/** Excluded areas — Constraint / Questionnaire core catalog (drops full body). */
+/** Excluded areas - Constraint / Questionnaire core catalog (drops full body). */
 export const excludedAreasOptions: TSelectOption[] = focusAreasOptions.filter(
     (opt) => opt.value !== "full body",
 );
@@ -185,7 +185,7 @@ function toQuestionOptions(options: TSelectOption[]): TQuestionOption[] {
   return options.map((opt) => ({ id: opt.value, label: opt.label }));
 }
 
-/** Questionnaire core — Constraint profile fields (always visible). */
+/** Questionnaire core - Constraint profile fields (always visible). */
 export const sampleQuestionsCore: TQuestion[] = [
     {
       id: "program-length",
@@ -208,7 +208,7 @@ export const sampleQuestionsCore: TQuestion[] = [
       id: "exclude-equipment",
       question: "Exclude equipment?",
       section: "core",
-      subtitle: { text: "Selected equipment will be excluded from your program—not included." },
+      subtitle: { text: "Selected equipment will be excluded from your program-not included." },
       type: "multi-select",
       options: toQuestionOptions(equipmentOptions),
       allowOther: false,
@@ -225,7 +225,7 @@ export const sampleQuestionsCore: TQuestion[] = [
       id: "exclude-areas",
       question: "Exclude muscle areas?",
       section: "core",
-      subtitle: { text: "Selected areas will be excluded from your program—not included." },
+      subtitle: { text: "Selected areas will be excluded from your program-not included." },
       type: "multi-select",
       options: toQuestionOptions(excludedAreasOptions),
       allowOther: false,
@@ -298,7 +298,7 @@ export const sampleQuestionsCore: TQuestion[] = [
       question: "Add warmup exercises?",
       section: "core",
       options: [
-        { id: "yes", label: "Yes ( Include 1–2 prep movements at the start of each day)" },
+        { id: "yes", label: "Yes ( Include 1-2 prep movements at the start of each day)" },
         { id: "no", label: "No ( Skip separate warmup exercises)" },
       ],
       allowOther: false,
@@ -306,7 +306,7 @@ export const sampleQuestionsCore: TQuestion[] = [
 ];
 
 /**
- * Questionnaire advanced — Training profile fields (collapsed by default).
+ * Questionnaire advanced - Training profile fields (collapsed by default).
  * Empty answers valid; do not block build.
  */
 export const sampleQuestionsAdvanced: TQuestion[] = [

@@ -90,7 +90,7 @@ describe("AgenticMemoryPeek", () => {
             splitType: "ppl",
         };
         constraints.chatRefinements = ["no floor work"];
-        constraints.rawStatements = ["user said no floor work — should stay hidden"];
+        constraints.rawStatements = ["user said no floor work - should stay hidden"];
 
         const training = {
             ...emptyUserTrainingProfile(),
@@ -113,7 +113,7 @@ describe("AgenticMemoryPeek", () => {
         expect(screen.getByText("PPL")).toBeTruthy();
         expect(screen.getByText("no floor work")).toBeTruthy();
         expect(
-            screen.queryByText("user said no floor work — should stay hidden"),
+            screen.queryByText("user said no floor work - should stay hidden"),
         ).toBeNull();
 
         expect(screen.getByText("Constraint profile")).toBeTruthy();

@@ -139,7 +139,7 @@ type TGetProfileCalendarParams = {
  * Fetches backed-up workouts for one local calendar month (profile calendar).
  *
  * @param params.year - Calendar year
- * @param params.month - Calendar month (1–12)
+ * @param params.month - Calendar month (1-12)
  * @param params.timezoneOffsetMinutes - `Date.getTimezoneOffset()` from the browser
  * @param signal - Optional abort signal (React Query)
  */

@@ -40,7 +40,7 @@ import { SessionGoalBadge } from "@/components/profile/SessionGoalBadge";
 interface IProps {
     /** The day (routine) data: id, order, title, exercises, notes. */
     day: THevyRoutine;
-    /** Read-only backup workout card — hides builder chrome. */
+    /** Read-only backup workout card - hides builder chrome. */
     variant?: "read-only";
     /** Total exercises when preview is capped (logged variant). */
     totalExerciseCount?: number;

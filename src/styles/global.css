@@ -322,7 +322,7 @@
     filter: blur(120px);
   }
 
-  /* Soft edge falloff — intentional composition, not a photo overlay. */
+  /* Soft edge falloff - intentional composition, not a photo overlay. */
   .hero__vignette {
     background: radial-gradient(
       ellipse 75% 65% at 50% 42%,
@@ -339,7 +339,7 @@
     );
   }
 
-  /* Product peek under CTA — readable slice, dissolve into page. */
+  /* Product peek under CTA - readable slice, dissolve into page. */
   .hero__product-preview {
     max-height: min(34vh, 300px);
     overflow: hidden;
@@ -383,7 +383,7 @@
 
   /*
    * Tall screens: flex slot stays at the 900px budget (CTA position unchanged).
-   * Peek grows up from slot bottom — only by the safe gap under the CTA (~10–14vh).
+   * Peek grows up from slot bottom - only by the safe gap under the CTA (~10-14vh).
    */
   @media (min-width: 640px) and (min-height: 1100px) {
     .hero__product-slot {

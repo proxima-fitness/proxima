@@ -6,7 +6,7 @@
  * on prerequisite data (e.g. `enabled: !!user`), and returns standard React
  * Query result objects.
  *
- * The file also contains "SSR hooks" — async functions named `use*SSR` that
+ * The file also contains "SSR hooks" - async functions named `use*SSR` that
  * are called directly in server components / `getServerSideProps` to prefetch
  * data without React Query.
  *
@@ -289,7 +289,7 @@ export const useFollowingMyProfile = (id: string, user: User | undefined | null)
  *
  * @param user - The authenticated user
  * @param chatId - The chat ID
- * @param options.enabled - When false, skips fetch (e.g. until send-time insert confirms — Sub-plan 2 gate)
+ * @param options.enabled - When false, skips fetch (e.g. until send-time insert confirms - Sub-plan 2 gate)
  */
 export const useChatHistory = (
     user: User | undefined | null,
@@ -559,7 +559,7 @@ export const useProfileStatistics = (
  * @param user - Authenticated user (query disabled when null)
  * @param enabled - When false, skips fetch
  * @param year - Visible calendar year
- * @param month - Visible calendar month (1–12)
+ * @param month - Visible calendar month (1-12)
  */
 export const useProfileCalendar = (
     user: User | undefined | null,
