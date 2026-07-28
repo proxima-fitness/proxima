@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 const LOGIN_WITH_NEXT = `/auth/login?next=${encodeURIComponent("/build-program?resume=true")}`;
 
 export const HEVY_EXPORT_GATE_COMPLETE_TOAST =
-    "You're set - Save from the toolbar, then Week Export on your profile.";
+    "You're set - Now Press Export in the top right corner";
 
 interface IProps {
     onDismiss: () => void;
@@ -118,12 +118,14 @@ export function HevyExportGate({ onDismiss, onComplete, className }: IProps) {
                         <p className="text-sm text-muted-foreground">
                             Sign in to connect Hevy and push this program from your profile.
                         </p>
-                        <Link href={LOGIN_WITH_NEXT} data-testid="hevy-export-gate-sign-in-link">
-                            <Button className="rounded-full bg-lightSecondary px-4 text-white hover:bg-lightSecondary/90">
-                                Sign in
-                                <ArrowRightIcon className="size-4" />
-                            </Button>
-                        </Link>
+                        <div className="flex justify-end">
+                            <Link href={LOGIN_WITH_NEXT} data-testid="hevy-export-gate-sign-in-link">
+                                <Button className="rounded-full bg-lightSecondary px-4 text-white hover:bg-lightSecondary/90">
+                                    Sign in
+                                    <ArrowRightIcon className="size-4" />
+                                </Button>
+                            </Link>
+                        </div>
                     </div>
                 ) : null}
 
@@ -166,14 +168,16 @@ export function HevyExportGate({ onDismiss, onComplete, className }: IProps) {
                                 {errorMessage}
                             </p>
                         ) : null}
-                        <Button
-                            className="w-fit rounded-full bg-lightSecondary px-5 text-white hover:bg-lightSecondary/90"
-                            onClick={handleConnect}
-                            disabled={isSaving || isHevyLoading || !inputValue.trim()}
-                            data-testid="hevy-export-gate-key-connect"
-                        >
-                            {isSaving ? "Connecting…" : "Connect"}
-                        </Button>
+                        <div className="flex justify-end">
+                            <Button
+                                className="w-fit rounded-full bg-lightSecondary px-5 text-white hover:bg-lightSecondary/90"
+                                onClick={handleConnect}
+                                disabled={isSaving || isHevyLoading || !inputValue.trim()}
+                                data-testid="hevy-export-gate-key-connect"
+                            >
+                                {isSaving ? "Connecting…" : "Connect"}
+                            </Button>
+                        </div>
                     </div>
                 ) : null}
             </div>
