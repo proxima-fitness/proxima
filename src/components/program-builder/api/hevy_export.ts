@@ -130,7 +130,7 @@ function isMeaningfulRpe(r: number | null | undefined): r is number {
  * (the API does not surface per-set RPE on routine create).
  *
  * - All sets share the same RPE → `RPE 7`
- * - Otherwise one token per set, `–` when no target, e.g. `RPE –·–·7·7`
+ * - Otherwise one token per set, `-` when no target, e.g. `RPE -·-·7·7`
  */
 export function formatRpeLineFromSets(sets: THevySets[]): string | null {
     if (sets.length === 0) return null;

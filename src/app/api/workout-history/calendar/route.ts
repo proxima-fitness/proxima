@@ -1,7 +1,7 @@
 /**
  * @module workout-history/calendar
  *
- * Profile calendar month query — lightweight workout rows for day highlights.
+ * Profile calendar month query - lightweight workout rows for day highlights.
  *
  * Depends on: @/utils/supabase/server, api/workout-history-read
  */
@@ -43,9 +43,9 @@ function parseTimezoneOffsetParam(value: string | null): number | null {
 }
 
 /**
- * GET /api/workout-history/calendar — workouts in one local calendar month.
+ * GET /api/workout-history/calendar - workouts in one local calendar month.
  *
- * Query: `year`, `month` (1–12), `tzOffset` (`Date.getTimezoneOffset()` minutes)
+ * Query: `year`, `month` (1-12), `tzOffset` (`Date.getTimezoneOffset()` minutes)
  */
 export async function GET(request: NextRequest) {
     try {

@@ -2,7 +2,7 @@
 
 /**
  * @module (app)/workout/[id]/WorkoutDetailBackLink
- * Context-aware back link for workout detail — program builder or profile.
+ * Context-aware back link for workout detail - program builder or profile.
  */
 
 import Link from "next/link";
@@ -59,7 +59,7 @@ function WorkoutNotFoundBackLinkInner() {
     );
 }
 
-/** Back link for not-found — reads return context from URL query. */
+/** Back link for not-found - reads return context from URL query. */
 export function WorkoutNotFoundBackLink() {
     return (
         <Suspense

@@ -1,7 +1,7 @@
 /**
  * @module chat/tools/body-measurements
  *
- * Agent body measurements tool — schema, limit cap, prompt summary, and
+ * Agent body measurements tool - schema, limit cap, prompt summary, and
  * structured model output for backed-up Hevy measurements (no live Hevy fetch).
  *
  * Depends on: zod, api/body-measurements-read
@@ -72,7 +72,7 @@ type TMeasurementForModel = {
     right_calf: number | null;
 };
 
-/** Full measurement JSON for the LLM — metric storage units. */
+/** Full measurement JSON for the LLM - metric storage units. */
 export function bodyMeasurementsForModel(
     measurements: TBodyMeasurementRow[],
 ): TMeasurementForModel[] {
@@ -134,7 +134,7 @@ export function formatBodyMeasurementsForModel(output: TBodyMeasurementsToolOutp
     if (since) headerParts.push(`since ${since.slice(0, 10)}`);
     if (until) headerParts.push(`until ${until.slice(0, 10)}`);
     headerParts.push(`limit ${limitApplied}`);
-    if (hasMore) headerParts.push('(more available — increase limit or narrow date window if needed)');
+    if (hasMore) headerParts.push('(more available - increase limit or narrow date window if needed)');
     if (syncPending) headerParts.push('(sync may still be catching up)');
 
     const payload = bodyMeasurementsForModel(measurements);

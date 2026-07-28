@@ -92,6 +92,8 @@ describe("constraint persist skill scope", () => {
 
         expect(visible).toContain("updateConstraintProfile");
         expect(visible).toContain("updateTrainingProfile");
+        expect(ALWAYS_AVAILABLE_CHAT_TOOLS).toContain("openHevyExportGate");
+        expect(visible).toContain("openHevyExportGate");
     });
 
     it("after mutate-program skill scope, memory tools still available (CORE)", async () => {
@@ -101,6 +103,7 @@ describe("constraint persist skill scope", () => {
         expect(mutate).toBeDefined();
         expect(mutate!.allowedTools).toContain("updateConstraintProfile");
         expect(ALWAYS_AVAILABLE_CHAT_TOOLS).toContain("updateTrainingProfile");
+        expect(ALWAYS_AVAILABLE_CHAT_TOOLS).toContain("openHevyExportGate");
 
         const tools = getTools({
             userId: "user-1",
@@ -113,6 +116,7 @@ describe("constraint persist skill scope", () => {
 
         expect(visible).toContain("updateConstraintProfile");
         expect(visible).toContain("updateTrainingProfile");
+        expect(visible).toContain("openHevyExportGate");
     });
 
     it("loadSkill mutates activeToolScope to skill allowlist (includes memory tool)", async () => {

@@ -17,7 +17,7 @@ import { supabase } from ".";
 
 type TSupabase = SupabaseClient<Database>;
 
-/** Persisted Constraint profile row for Edit profile / peek — includes raw statements. */
+/** Persisted Constraint profile row for Edit profile / peek - includes raw statements. */
 export type TUserConstraintProfileRecord = TConstraintProfile & {
     rawStatements: string[];
 };
@@ -73,7 +73,7 @@ export async function getUserConstraints(
 }
 
 /**
- * Upserts the constraint profile for a user (agent chat path — server client required).
+ * Upserts the constraint profile for a user (agent chat path - server client required).
  * Appends rawStatement to the raw_statements audit trail if provided.
  */
 export async function upsertUserConstraints(

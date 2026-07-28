@@ -18,7 +18,7 @@ import {
 } from "@/api/workout-history-read";
 
 /**
- * POST /api/hevy/exercise-history — backup-based stall analysis per exercise template.
+ * POST /api/hevy/exercise-history - backup-based stall analysis per exercise template.
  *
  * Body: `{ exerciseTemplateIds?: string[] }`
  */

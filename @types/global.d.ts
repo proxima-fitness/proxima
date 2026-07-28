@@ -484,7 +484,13 @@ type THevyRoutineFolder = {
 }
 
 type THevyRoutine = {
-    id: string; // The routine ID
+    id: string; // Builder key: ordinal string, minted locally. Not a Hevy id on the Edit path.
+    /**
+     * Hevy-side routine UUID, set only for routines loaded from a Hevy folder
+     * (ADR 0013 / 02). Absent means the day was minted in the builder and has no
+     * Hevy counterpart yet — which is how Sync tells a PUT from a POST.
+     */
+    hevyRoutineId?: string;
     title: string; // The routine title
     folder_id: number | null; // Week folder in builder; null for logged backup workouts
     updated_at?: string; // ISO 8601 timestamp of when the routine was last updated. example: 2021-09-14T12:00:00Z
@@ -829,7 +835,7 @@ interface IBuildWeekOutput {
 }
 
 // Training profile (CONTEXT catalogs)
-// Sex: `"male" | "female" | ""` — empty = prefer-not-to-say / unset (DB NULL). No sentinel.
+// Sex: `"male" | "female" | ""` - empty = prefer-not-to-say / unset (DB NULL). No sentinel.
 
 /** Closed sex catalog; empty = prefer not to say / unset. */
 type TTrainingSex = "male" | "female" | "";
@@ -859,14 +865,14 @@ type TTrainingFocus =
     | "";
 
 /**
- * Activity level catalog — CONTEXT short forms for the existing 5-option set
+ * Activity level catalog - CONTEXT short forms for the existing 5-option set
  * (form-options labels map onto these on save in SP2/SP3).
  */
 type TActivityLevel = "sedentary" | "light" | "moderate" | "high" | "extreme" | "";
 
 /** Structured Training profile used by Edit profile, peek, and chat. */
 type TTrainingProfile = {
-    /** Integer years 14–100; null when unset. */
+    /** Integer years 14-100; null when unset. */
     age: number | null;
     /** Empty string = prefer not to say / unset. */
     sex: TTrainingSex;
@@ -876,7 +882,7 @@ type TTrainingProfile = {
     physiquePhase: TPhysiquePhase;
     trainingFocus: TTrainingFocus;
     activityLevel: TActivityLevel;
-    /** Session duration cap in minutes (10–180, step 10); null when unset. */
+    /** Session duration cap in minutes (10-180, step 10); null when unset. */
     sessionDurationMin: number | null;
 };
 }

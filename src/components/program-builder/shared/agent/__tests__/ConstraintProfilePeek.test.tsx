@@ -97,7 +97,7 @@ describe("ConstraintProfilePeek", () => {
             splitType: "ppl",
         };
         record.chatRefinements = ["no floor work"];
-        record.rawStatements = ["user said no floor work — should stay hidden"];
+        record.rawStatements = ["user said no floor work - should stay hidden"];
 
         useUserConstraints.mockReturnValue({
             data: record,
@@ -115,7 +115,7 @@ describe("ConstraintProfilePeek", () => {
         expect(screen.queryByText("Preferred split")).toBeNull();
         expect(screen.getByText("no floor work")).toBeTruthy();
         expect(
-            screen.queryByText("user said no floor work — should stay hidden"),
+            screen.queryByText("user said no floor work - should stay hidden"),
         ).toBeNull();
         expect(screen.getByRole("link", { name: "Edit profile" })).toBeTruthy();
     });

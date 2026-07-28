@@ -32,7 +32,7 @@ function routineWithSets(
 }
 
 describe("classifySessionGoal", () => {
-    it("classifies fixture workout as hypertrophy (62% working reps in 6–12 zone)", () => {
+    it("classifies fixture workout as hypertrophy (62% working reps in 6-12 zone)", () => {
         const routine = mapBackedUpWorkoutToHevyRoutine(backedUpWorkoutFixture);
         expect(classifySessionGoal(routine)).toBe("hypertrophy");
     });

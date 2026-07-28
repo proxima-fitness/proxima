@@ -10,7 +10,7 @@
 
 /**
  * When `persisted` is null: returns session (first-time / anon seed).
- * When `persisted` is non-null: scalar fields — session non-empty wins; else persisted.
+ * When `persisted` is non-null: scalar fields - session non-empty wins; else persisted.
  */
 export function mergeTrainingProfiles(
     persisted: TTrainingProfile | null,

@@ -5,7 +5,7 @@
  *
  * Read-only Agentic memory peek for build-program chat shell near the prompt.
  * Accordion: Constraint profile + Training profile + latest body measurement.
- * Props-driven — AgenticMemoryPeekHost wires React Query.
+ * Props-driven - AgenticMemoryPeekHost wires React Query.
  *
  * Depends on: constraint-profile-view, agentic-memory-peek-view, Accordion/HoverCard/Popover
  * Used by: AgenticMemoryPeekHost (Chat footer)

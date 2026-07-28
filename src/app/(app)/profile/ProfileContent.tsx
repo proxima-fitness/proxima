@@ -3,9 +3,15 @@
 /**
  * @module (app)/profile/ProfileContent
  *
+<<<<<<< HEAD
  * Client profile body: single scroll on muted background — hero (when signed
  * in), Program overview first, then calendar/statistics, blind spot, recent
  * workouts (ADR 0010 / 05). Resume-draft banner sits above the stack.
+=======
+ * Client profile body: Hevy-style card stack on muted background - header with Stats/Programs
+ * tabs, then tab panels for statistics/blind-spot/recent workouts vs Hevy + vault programs.
+ * Resume-draft banner sits above the card stack.
+>>>>>>> main
  *
  * Depends on: UserContext, useHevyPrograms/useHevySecret, ProfileHero,
  * ProfileCalendarSection, BlindSpotAnalysisSection, RecentWorkoutsSection,

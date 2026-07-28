@@ -39,7 +39,7 @@ function PreviewCardSkeleton() {
     );
 }
 
-/** Horizontal Recent Workouts feed — Hevy-connected users only. */
+/** Horizontal Recent Workouts feed - Hevy-connected users only. */
 export function RecentWorkoutsSection() {
     const { user } = useUserContext();
     const queryClient = useQueryClient();

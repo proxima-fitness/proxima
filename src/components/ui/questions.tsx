@@ -714,7 +714,7 @@ export function Questions({
     }))
   }
 
-  // Handler for dropdown (Select) questions — set only, no toggle-clear
+  // Handler for dropdown (Select) questions - set only, no toggle-clear
   const handleDropdownSelect = (questionId: string, optionId: string) => {
     setAnswers((prev) => ({
       ...prev,

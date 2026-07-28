@@ -3,16 +3,16 @@
  *
  * General-purpose utilities for the program builder feature. Responsibilities:
  *
- * 1. **NLP inference** – Extracts structured parameters (days-per-week, program
+ * 1. **NLP inference** - Extracts structured parameters (days-per-week, program
  *    length) from free-text user messages using regex heuristics with an NLP
  *    fallback (compromise.js).
- * 2. **Message classification** – Determines whether a chat message is
+ * 2. **Message classification** - Determines whether a chat message is
  *    "about the program" (fuzzy-matched via Fuse.js) to decide if the current
  *    Hevy program should be sent as tool context.
- * 3. **Schema conversion** – Converts between the Proxima schedule format
+ * 3. **Schema conversion** - Converts between the Proxima schedule format
  *    (TScheduleWorkouts) and the Hevy routine format (THevyRoutine), including
  *    set generation with support for reps, ranges, time, RPE, and AMRAP.
- * 4. **Program mutation helpers** – Human-readable operation summaries and client-side
+ * 4. **Program mutation helpers** - Human-readable operation summaries and client-side
  *    apply of agent mutateProgram tool results with undo support.
  *
  * Depends on: compromise (NLP), fuse.js (fuzzy), sonner (toasts), ai (UIMessage)
@@ -81,13 +81,13 @@ export const generateEmptyHevyProgram = (weeksValue: string, daysValue: string):
 };
 
 /**
- * Attempts to extract the number of training days per week (1–7) from
+ * Attempts to extract the number of training days per week (1-7) from
  * free-text user input. Uses a cascade of regex patterns for common phrasings
  * (e.g. "3x/week", "every day", "couple times") and falls back to compromise
  * NLP tokenization when regexes fail.
  *
  * @param text - Raw user message text
- * @returns String representation of days-per-week ("1"–"7"), or "" if not found
+ * @returns String representation of days-per-week ("1"-"7"), or "" if not found
  */
 export const inferDaysPerWeek = (text: string) => {
     if (!text) return "";
@@ -152,12 +152,12 @@ export const inferDaysPerWeek = (text: string) => {
 };
 
 /**
- * Attempts to extract the program length in weeks (1–52) from free-text user
+ * Attempts to extract the program length in weeks (1-52) from free-text user
  * input. Uses regex patterns for phrasings like "12 weeks", "8-week program",
  * "for 6 weeks", and falls back to compromise NLP when regexes fail.
  *
  * @param text - Raw user message text
- * @returns String representation of weeks ("1"–"52"), or "" if not found
+ * @returns String representation of weeks ("1"-"52"), or "" if not found
  */
 export const inferProgramLength = (text: string) => {
     if (!text) return "";

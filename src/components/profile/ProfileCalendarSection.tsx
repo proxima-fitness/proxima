@@ -3,7 +3,7 @@
 /**
  * @module ProfileCalendarSection
  *
- * Profile calendar card — month grid with teal workout-day highlights and session tooltips.
+ * Profile calendar card - month grid with teal workout-day highlights and session tooltips.
  *
  * Depends on: useProfileCalendar, workout-history-calendar helpers, buildWorkoutDetailHref
  * Used by: ProfileContent

@@ -3,7 +3,7 @@ import type { ZodError } from "zod";
 import { OP_NESTED_OBJECT_FIELDS } from "./normalizeAgentInput";
 
 const STRINGIFIED_OBJECT_MESSAGE =
-    "must be a nested object in tool args, not a JSON string — pass the object directly";
+    "must be a nested object in tool args, not a JSON string - pass the object directly";
 
 const OPS_REQUIRING_FOLDER_IDS = new Set([
     "insert_exercise",
@@ -51,7 +51,7 @@ export function detectCommonMutationFieldMistakes(raw: Record<string, unknown>):
             return "Expected field 'exercise', received 'new_exercise'";
         }
         if ("exercises" in raw && !("exercise" in raw)) {
-            return "Use 'exercise' (single object) per insert_exercise op — not an 'exercises' array";
+            return "Use 'exercise' (single object) per insert_exercise op - not an 'exercises' array";
         }
     }
 

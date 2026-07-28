@@ -1,7 +1,7 @@
 /**
  * Heuristic bodybuilding program scoring against editable volume landmarks and rules.
  * Narrative muscle volumes live in `.agents/skills/build-program/resources/bodybuilding.md`;
- * landmarks here are **scoring-tuned** and may differ (e.g. back/quads MEV) — see VOLUME_LANDMARKS.
+ * landmarks here are **scoring-tuned** and may differ (e.g. back/quads MEV) - see VOLUME_LANDMARKS.
  */
 
 /** Maps TestResults UI: passed = green, okay = yellow, failed = red */
@@ -36,8 +36,8 @@ export interface IProgramScore {
 /**
  * Weekly **working-set** landmarks for the scorecard (one scored week, intermediate-oriented).
  * Not sets×reps×weight. Intentionally separate from prose in `bodybuilding.md` where they differ
- * (e.g. back MEV 4–6 here vs 6–10 in markdown; quads MEV 6–8 here vs 4–6 in markdown) so we do not
- * silently change pass/fail for existing programs — align in a dedicated pass if desired.
+ * (e.g. back MEV 4-6 here vs 6-10 in markdown; quads MEV 6-8 here vs 4-6 in markdown) so we do not
+ * silently change pass/fail for existing programs - align in a dedicated pass if desired.
  */
 export const VOLUME_LANDMARKS: Record<
     string,
@@ -278,7 +278,7 @@ export function scoreProgramForBodybuilding(
             suites: [],
             summary: { passed: 0, failed: 0, okay: 0, total: 0 },
             emptyProgram: true,
-            headline: "No program loaded — add or generate a program first.",
+            headline: "No program loaded - add or generate a program first.",
         };
     }
 
@@ -337,7 +337,7 @@ export function scoreProgramForBodybuilding(
             detail:
                 sets === 0
                     ? "No direct volume this week"
-                    : `${sets} hypertrophy-intended working sets/wk (MEV–MAV ~${lm.mev[0]}–${lm.mav[1]}, MRV ~${lm.mrv[1]}); set counts, not tonnage`,
+                    : `${sets} hypertrophy-intended working sets/wk (MEV-MAV ~${lm.mev[0]}-${lm.mav[1]}, MRV ~${lm.mrv[1]}); set counts, not tonnage`,
         });
     }
     suites.push({ id: "volume", name: "Weekly volume (working sets)", tests: volumeTests });
@@ -346,15 +346,15 @@ export function scoreProgramForBodybuilding(
         stimulus.workingSets === 0
             ? "No working sets in the scored week."
             : stimulus.unspecifiedRpe === 0
-              ? `${stimulus.workingSets} working sets — all have target RPE logged.`
-              : `${stimulus.workingSets} working sets — ${stimulus.withRpe} with target RPE, ${stimulus.unspecifiedRpe} without RPE. Add target RPE on each working set for a clearer stimulus check.`;
+              ? `${stimulus.workingSets} working sets - all have target RPE logged.`
+              : `${stimulus.workingSets} working sets - ${stimulus.withRpe} with target RPE, ${stimulus.unspecifiedRpe} without RPE. Add target RPE on each working set for a clearer stimulus check.`;
 
     const stimDetailMix =
         stimulus.workingSets === 0
             ? "No working sets to evaluate."
             : stimulus.withRpe === 0
               ? `Log target RPE on working sets to see how many land in the hypertrophy band (RPE ${STIMULUS_RPE_THRESHOLD}+). Missing RPE does not change weekly set-count scoring.`
-              : `${stimulus.hardSets} of ${stimulus.withRpe} logged sets at RPE ≥${STIMULUS_RPE_THRESHOLD}; ${stimulus.lightSets} below (${STIMULUS_RPE_THRESHOLD - 1} or lower) — expected for deloads, technique, or easy work.`;
+              : `${stimulus.hardSets} of ${stimulus.withRpe} logged sets at RPE ≥${STIMULUS_RPE_THRESHOLD}; ${stimulus.lightSets} below (${STIMULUS_RPE_THRESHOLD - 1} or lower) - expected for deloads, technique, or easy work.`;
 
     suites.push({
         id: "stimulus",
@@ -383,7 +383,7 @@ export function scoreProgramForBodybuilding(
             id: `freq-${muscle}`,
             name: `${muscle.charAt(0).toUpperCase() + muscle.slice(1)} frequency`,
             status: scoreFrequencyStatus(d),
-            detail: d === 0 ? "Not trained this week" : `${d} session(s)/wk (typical target 2–4)`,
+            detail: d === 0 ? "Not trained this week" : `${d} session(s)/wk (typical target 2-4)`,
         });
     }
     suites.push({ id: "frequency", name: "Training frequency", tests: freqTests });
@@ -420,7 +420,7 @@ export function scoreProgramForBodybuilding(
                 id: "rep-mix",
                 name: "Heavy / moderate / light mix",
                 status: rvStatus,
-                detail: `Heavy ≤10: ${repBuckets.heavy}, moderate 11–20: ${repBuckets.moderate}, light 21+: ${repBuckets.light} (working sets)`,
+                detail: `Heavy ≤10: ${repBuckets.heavy}, moderate 11-20: ${repBuckets.moderate}, light 21+: ${repBuckets.light} (working sets)`,
             },
         ],
     });
@@ -433,7 +433,7 @@ export function scoreProgramForBodybuilding(
             id: `session-${routine.id}`,
             name: label,
             status: scoreSessionSize(n),
-            detail: `${n} exercise row(s) (target often ~6–7 including warmups)`,
+            detail: `${n} exercise row(s) (target often ~6-7 including warmups)`,
         });
     }
     suites.push({ id: "session_size", name: "Session size", tests: sessionTests });

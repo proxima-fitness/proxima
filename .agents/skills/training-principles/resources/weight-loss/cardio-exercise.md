@@ -26,5 +26,5 @@ Adjust modality and intensity to what you can recover from and stick to.
 When you do **both** cardio and lifting on the same day:
 
 - **Separate the sessions by at least ~8 hours** when possible.
-- **Do whichever session matches your priority goal first** (e.g. if fat loss is the focus, that might mean cardio first; if strength or muscle is the focus, lifting first—match the plan to the person’s priority).
+- **Do whichever session matches your priority goal first** (e.g. if fat loss is the focus, that might mean cardio first; if strength or muscle is the focus, lifting first-match the plan to the person’s priority).
 

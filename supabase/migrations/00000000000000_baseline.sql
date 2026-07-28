@@ -1687,11 +1687,11 @@ COMMENT ON COLUMN "public"."workout_sets"."set_type" IS 'normal, warmup, dropset
 
 
 
-COMMENT ON COLUMN "public"."workout_sets"."rep_range_start" IS 'Hevy rep_range.start — optional';
+COMMENT ON COLUMN "public"."workout_sets"."rep_range_start" IS 'Hevy rep_range.start - optional';
 
 
 
-COMMENT ON COLUMN "public"."workout_sets"."rep_range_end" IS 'Hevy rep_range.end — optional';
+COMMENT ON COLUMN "public"."workout_sets"."rep_range_end" IS 'Hevy rep_range.end - optional';
 
 
 

@@ -4,9 +4,9 @@
  * Core program-construction logic for the AI workout builder. Provides two
  * active helpers:
  *
- *  1. `buildPrompt` — assembles a natural-language prompt string from the
+ *  1. `buildPrompt` - assembles a natural-language prompt string from the
  *     user's form selections (demographics, goals, equipment, etc.).
- *  2. `aiRequest` — sends the assembled prompt to the AI edge function,
+ *  2. `aiRequest` - sends the assembled prompt to the AI edge function,
  *     selecting the correct JSON schema based on the training-day count.
  *
  * The bottom half of the file contains commented-out legacy builders that
@@ -108,7 +108,7 @@ export const buildPrompt = (
  * JSON schema is requested and what split-specific suffix is appended to
  * the prompt (e.g. PPL for 3 or 6 days, upper/lower for 2 or 4).
  *
- * @param numberOfDaysPerWeek - How many training days per week (1–7). Defaults to 6 if 0.
+ * @param numberOfDaysPerWeek - How many training days per week (1-7). Defaults to 6 if 0.
  * @param promptBase - The base prompt assembled by {@link buildPrompt}
  * @returns Parsed AI response data matching the requested schema, or
  *          `undefined` if the request fails
@@ -120,7 +120,7 @@ export const aiRequest = async (numberOfDaysPerWeek: number, promptBase: string)
     try {
         let response: Awaited<ReturnType<typeof postTextToJson>> | undefined;
 
-        // Treat 0 as "not specified" — fall back to 6-day PPL as the default split
+        // Treat 0 as "not specified" - fall back to 6-day PPL as the default split
         if (numberOfDaysPerWeek === 0) {
             numberOfDaysPerWeek = 6;
         }

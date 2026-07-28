@@ -272,7 +272,7 @@ export async function getSyncProgress(db: TWorkoutHistoryDb, userId: string, opt
 
 /**
  * Runs chunked sync until caught up, errored, or `maxChunks` exhausted.
- * Intended for delta freshness before reads — not a full backfill replacement.
+ * Intended for delta freshness before reads - not a full backfill replacement.
  *
  * @param db - Supabase client (user or service role)
  * @param params - Sync context
@@ -437,7 +437,7 @@ export async function getProfileStatisticsForUser(
  * @param db - Supabase client (user or service role)
  * @param userId - Proxima user ID
  * @param year - Local calendar year
- * @param month - Local calendar month (1–12)
+ * @param month - Local calendar month (1-12)
  * @param timezoneOffsetMinutes - `Date.getTimezoneOffset()` from the client
  */
 export async function getWorkoutsForMonthForUser(

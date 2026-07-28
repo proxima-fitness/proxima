@@ -4,12 +4,12 @@
  * Feature-gating and usage-tracking layer that enforces per-tier limits on
  * exports and LLM requests. Supports three user states:
  *
- * 1. **Anonymous** — tracked entirely in localStorage (no account needed).
- * 2. **Free / Pro / Pro+** — limits from `get_my_feature_limits` (backed by
+ * 1. **Anonymous** - tracked entirely in localStorage (no account needed).
+ * 2. **Free / Pro / Pro+** - limits from `get_my_feature_limits` (backed by
  *    `product_usage_limits`). Authenticated LLM consume is server-side
  *    (`try_consume_feature_usage` in `/api/chat`); exports use
  *    `tryConsumeMonthlyExport` before Hevy upload.
- * 3. **Test users** — allowlisted emails that can override tier (Free, Pro, Pro+)
+ * 3. **Test users** - allowlisted emails that can override tier (Free, Pro, Pro+)
  *    via localStorage (mirrored to a cookie for server-side paywall checks).
  *
  * Depends on: ./index (supabase client), @supabase/supabase-js (User type)
@@ -33,7 +33,7 @@ export const TEST_TIER_OVERRIDE_KEY = "proxima_test_tier_override";
 
 export type TTestTierOverride = "free" | "pro" | "pro_plus";
 
-/** Test overrides only — mirrors `public.product_usage_limits` (product_title): Free 2/20; Pro 2/100; Pro+ 10/1000 */
+/** Test overrides only - mirrors `public.product_usage_limits` (product_title): Free 2/20; Pro 2/100; Pro+ 10/1000 */
 export const TEST_TIER_LIMITS: Record<TTestTierOverride, { tier: string; has_active_subscription: boolean; max_monthly_exports: number; max_monthly_llm_requests: number }> = {
     free: { tier: "Free", has_active_subscription: false, max_monthly_exports: 2, max_monthly_llm_requests: 30 },
     pro: { tier: "Pro", has_active_subscription: true, max_monthly_exports: 3, max_monthly_llm_requests: 100 },
@@ -198,7 +198,7 @@ export type TTryConsumeMonthlyExportResult =
 
 /**
  * Atomically spend one export against the current Usage period.
- * Call before starting a Hevy upload (not after success). UI remaining===0 is UX only —
+ * Call before starting a Hevy upload (not after success). UI remaining===0 is UX only -
  * this RPC is the intended client-path gate. Browser→Hevy can still bypass; see ADR 0019.
  */
 export async function tryConsumeMonthlyExport(

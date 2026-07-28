@@ -3,7 +3,7 @@
 /*
  * @module PwaSection
  * @description Feature section that explains users can install the site as a PWA and use it like an app, with a 4-step visual flow.
- * @dependsOn Shared layout and typography styles, pwa-flow-1–4 image assets from public.
+ * @dependsOn Shared layout and typography styles, pwa-flow-1-4 image assets from public.
  * @usedBy Home page, wrapped in LandingSection.
  */
 

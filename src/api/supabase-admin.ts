@@ -15,7 +15,7 @@ let cachedClient: SupabaseClient<Database> | null = null;
 
 /**
  * Returns the service-role client, or `null` when its credentials are unavailable.
- * Never hand this to a request-scoped read — it sees every user's rows.
+ * Never hand this to a request-scoped read - it sees every user's rows.
  */
 export function getServiceRoleClient(): SupabaseClient<Database> | null {
     if (cachedClient) {

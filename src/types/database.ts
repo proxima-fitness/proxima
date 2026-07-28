@@ -21,7 +21,7 @@ export type TProgramRow = Tables<"programs">;
  * Program metadata returned by explore / list / detail queries.
  *
  * Nullable fields match DB schema; `title` kept non-null because consumers call
- * `.trim()` without guards. `is_coach` and `prompt` are optional — not every
+ * `.trim()` without guards. `is_coach` and `prompt` are optional - not every
  * query selects them. `thumbnail` is client-side enrichment (Blob from Storage).
  */
 export type TProgram = {
@@ -46,7 +46,7 @@ type TFeatureLimitsRpc = Database["public"]["Functions"]["get_my_feature_limits"
 
 /**
  * Widened for anonymous users (localStorage-only): they have no subscription
- * and no Usage period — the counter is lifetime, so no reset date may be implied.
+ * and no Usage period - the counter is lifetime, so no reset date may be implied.
  */
 export type TFeatureLimits = Omit<
     TFeatureLimitsRpc,
@@ -69,7 +69,7 @@ export type TUserDetails = {
     created_at: TUsersRow["created_at"];
 };
 
-// ─── Blog (separate Supabase project — not derived from main Database) ──────────
+// ─── Blog (separate Supabase project - not derived from main Database) ──────────
 
 export type TBlog = {
     id: number;
@@ -111,7 +111,7 @@ export type TFollowingRow = {
 // ─── Workout history (already DB-derived, moved from global.d.ts) ───────────────
 
 export type TWorkoutExerciseRow = Database["public"]["Tables"]["workout_exercises"]["Row"] & {
-    /** Null when RLS hides the canonical row — a Custom movement owned by another user. */
+    /** Null when RLS hides the canonical row - a Custom movement owned by another user. */
     canonical_exercises: Database["public"]["Tables"]["canonical_exercises"]["Row"] | null;
     workout_sets: Database["public"]["Tables"]["workout_sets"]["Row"][];
 };

@@ -27,5 +27,5 @@ const tracerProvider = new NodeTracerProvider({
 
 export function register() {
   tracerProvider.register();
-  console.log('[langfuse] instrumentation registered — base URL:', process.env.LANGFUSE_BASE_URL);
+  console.log('[langfuse] instrumentation registered - base URL:', process.env.LANGFUSE_BASE_URL);
 }

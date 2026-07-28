@@ -20,7 +20,7 @@ describe('mergeConstraintProfiles', () => {
         expect(mergeConstraintProfiles(null, session)).toEqual(session);
     });
 
-    it('uses persisted arrays only — does not union with session', () => {
+    it('uses persisted arrays only - does not union with session', () => {
         const persisted = profile({ injuries: ['Bad Knee', 'shoulder pain'] });
         const session = profile({ injuries: ['bad knee', 'wrist issue'] });
         const result = mergeConstraintProfiles(persisted, session);
@@ -60,7 +60,7 @@ describe('mergeConstraintProfiles', () => {
         expect(result.preferences.warmupExercises).toBe('yes');
     });
 
-    it('uses persisted for all array fields independently — ignores session arrays', () => {
+    it('uses persisted for all array fields independently - ignores session arrays', () => {
         const persisted = profile({
             excludedEquipment: ['Band'],
             excludedAreas: ['Legs'],

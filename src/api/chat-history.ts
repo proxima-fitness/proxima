@@ -11,7 +11,7 @@ const MAX_CHAT_TITLE_LENGTH = 200;
 /** Tracks send-time inserts for the current browser session (insert-once per chatId). */
 const sessionInsertedChatIds = new Set<string>();
 
-/** Test-only — clears insert-once session guard. */
+/** Test-only - clears insert-once session guard. */
 export function resetChatHistorySessionForTests() {
     sessionInsertedChatIds.clear();
 }
@@ -203,7 +203,7 @@ export const updateChatHistory = async (
 };
 
 /**
- * `onFinish` handler — skip abort/error turns; upsert full thread when logged in.
+ * `onFinish` handler - skip abort/error turns; upsert full thread when logged in.
  */
 export async function persistChatHistoryAfterTurn({
     user,
@@ -250,7 +250,7 @@ export async function persistChatHistoryAfterTurn({
 }
 
 /**
- * Persists a completed turn — update if row exists, else insert with client id.
+ * Persists a completed turn - update if row exists, else insert with client id.
  */
 export const upsertChatHistoryTurn = async ({
     user,
@@ -422,7 +422,7 @@ export const connectChatToSavedProgram = async ({
     queryClient,
 }: IConnectChatToSavedProgramInput): Promise<TConnectChatToSavedProgramResult> => {
     if (!persistChatId) {
-        console.log("[chat-program-connect] skipped — no chat session", { programId });
+        console.log("[chat-program-connect] skipped - no chat session", { programId });
         return "skipped";
     }
 

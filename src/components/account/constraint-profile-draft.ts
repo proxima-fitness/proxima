@@ -2,7 +2,7 @@
  * @module account/constraint-profile-draft
  *
  * Pure helpers for Constraint profile Edit draft: clone, dirty check, list edits.
- * Persist only via Save constraints — draft stays local until then.
+ * Persist only via Save constraints - draft stays local until then.
  *
  * Depends on: TUserConstraintProfileRecord
  * Used by: ConstraintProfileSection

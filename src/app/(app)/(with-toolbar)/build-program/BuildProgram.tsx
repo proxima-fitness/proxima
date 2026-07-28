@@ -53,6 +53,8 @@ import {
     enableBuilderDraftWrites,
     NEW_PATH_SAVE_SUCCESS_TOAST,
 } from "@/lib/builder-draft";
+import { useEditSession } from "@/contexts/EditSessionContext";
+import { parseEditCurrentWeekArrival } from "@/hooks/edit-current-week-arrival";
 import { editorReducer, isNewPathDirty, isNewPathSaveDirty } from "./editor-reducer";
 import type { TCommitWithUndoOptions } from "@/components/program-builder/mutations/types";
 import { useProgramRequestState } from "./use-program-request-state";
@@ -115,6 +117,10 @@ export function BuildProgram() {
     const arrival = parseBuildProgramArrival(searchParams);
     const { urlChatId, search, shareId, empty, resume } = arrival;
     const chatId = urlChatId;
+
+    /** Edit current week router state; both fields null for every other arrival. */
+    const editArrival = parseEditCurrentWeekArrival(searchParams);
+    const { session: editSession } = useEditSession();
 
     /** URL-only fallback until shell registers getter with mint ref (export reads this ref). */
     const getPersistChatIdFromUrl = useCallback(() => chatId, [chatId]);
@@ -332,6 +338,19 @@ export function BuildProgram() {
             }
         };
 
+        // Edit current week arrives through the in-memory Edit session, not the
+        // New-path draft key (ADR 0013 / 02). No session (hard refresh, hand-typed
+        // URL) → back to the overview; a half-hydrated week is worse than none.
+        if (editArrival.programId != null && editArrival.nthWeek != null) {
+            if (editSession?.routines.length) {
+                setProgramFromHydrate(appendOrderToHevyRoutines(editSession.routines));
+            } else {
+                toast.error("That edit session has expired. Open the week again from your program.");
+                router.replace("/profile");
+            }
+            return;
+        }
+
         if (resume === "true") {
             const program = localStorage.getItem("hevy-program-in-progress");
             if (program) {
@@ -346,7 +365,7 @@ export function BuildProgram() {
         if (empty === "true") {
             setProgramFromHydrate(appendOrderToHevyRoutines(emptyHevyProgram));
         }
-    }, [shouldBareRedirectToEmpty, resume, shareId, empty, programHydrateChatId, router, setProgramFromHydrate]);
+    }, [shouldBareRedirectToEmpty, resume, shareId, empty, programHydrateChatId, router, setProgramFromHydrate, editArrival.programId, editArrival.nthWeek, editSession]);
 
     const toggleSidebarPosition = useCallback(() => {
         setSidebarPosition((prev) => {

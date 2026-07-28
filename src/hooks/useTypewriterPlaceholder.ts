@@ -17,7 +17,7 @@ import { useState, useEffect, useRef } from "react"
 /** Static prefix shown before the animated portion of the placeholder. */
 const STATIC_PREFIX = "Ask Andy to "
 
-/** Example prompts the typewriter cycles through — order determines display sequence. */
+/** Example prompts the typewriter cycles through - order determines display sequence. */
 const PROMPT_OPTIONS = [
     "build a 3-day full body routine",
     "build a training plan for Hyrox",
@@ -40,7 +40,7 @@ interface IUseTypewriterPlaceholderOptions {
   pauseAfterTyping?: number
   /** How long to wait after full deletion before typing the next prompt (ms). */
   pauseAfterDeleting?: number
-  /** Master toggle — when `false`, resets to a static fallback placeholder. */
+  /** Master toggle - when `false`, resets to a static fallback placeholder. */
   enabled?: boolean
   /** Whether to prepend the "Ask Andy to " prefix to the placeholder string. */
   showPrefix?: boolean
@@ -51,7 +51,7 @@ interface IUseTypewriterPlaceholderOptions {
  * prompts in a loop, giving the user visual cues about what they can ask.
  *
  * The animation runs via `setTimeout` chains managed in a single `useEffect`.
- * When disabled, the effect only clears pending timeouts — render derives the
+ * When disabled, the effect only clears pending timeouts - render derives the
  * static fallback from `enabled` without resetting state synchronously.
  *
  * @param options - Timing, prefix, and enabled controls (all optional with sensible defaults).

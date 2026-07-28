@@ -10,7 +10,7 @@ import { createClient } from "@/utils/supabase/server";
 import { getSyncProgress } from "@/api/workout-history-read";
 
 /**
- * GET /api/workout-history/progress — backed-up count vs live Hevy total.
+ * GET /api/workout-history/progress - backed-up count vs live Hevy total.
  */
 export async function GET() {
     try {

@@ -207,3 +207,37 @@ export function resolveSelectedWeek(
     }
     return defaultSelectedWeek(rows);
 }
+
+export type TLinkFolderRow = {
+    nth_week: number;
+    hevy_folder_id: number;
+};
+
+/**
+ * Resolves the fetched Hevy folder that is week N's **Hevy week copy**, via the
+ * **Program–Hevy link** (never folder-title parsing). Null when the week has no
+ * link or the linked folder is gone from Hevy — Edit current week has no target
+ * in that case (ADR 0013 / 01).
+ *
+ * @param hevyPrograms - Folders fetched from Hevy (`useHevyPrograms`)
+ * @param links - Program–Hevy link rows for this program
+ * @param nthWeek - 1-based week to resolve
+ */
+export function findHevyProgramForWeek(
+    hevyPrograms: readonly THevyProgramItem[] | undefined,
+    links: readonly TLinkFolderRow[],
+    nthWeek: number | null,
+): THevyProgramItem | null {
+    if (nthWeek == null || !hevyPrograms) {
+        return null;
+    }
+    const link = links.find((row) => row.nth_week === nthWeek);
+    if (!link) {
+        return null;
+    }
+    return (
+        hevyPrograms.find(
+            (program) => Number(program.program[0]?.folder_id) === link.hevy_folder_id,
+        ) ?? null
+    );
+}

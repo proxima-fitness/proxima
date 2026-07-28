@@ -17,7 +17,7 @@ import type { CollectionConfig } from 'payload';
  * Blog post collection configuration for Payload CMS.
  *
  * Publicly readable; timestamps are auto-managed by Payload. The Lexical
- * rich-text editor is customized to support headings (h1–h6), basic
+ * rich-text editor is customized to support headings (h1-h6), basic
  * formatting, links, horizontal rules, and inline media uploads that
  * reference the `media` collection.
  */

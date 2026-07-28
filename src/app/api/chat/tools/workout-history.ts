@@ -1,7 +1,7 @@
 /**
  * @module chat/tools/workout-history
  *
- * Agent workout history tool — schema, limit cap, and structured model output
+ * Agent workout history tool - schema, limit cap, and structured model output
  * for backed-up workouts from Supabase (no live Hevy fetch).
  *
  * Depends on: zod, api/workout-history-read types
@@ -29,7 +29,7 @@ export const getWorkoutHistoryInputSchema = z.object({
         .array(z.string())
         .optional()
         .describe(
-            'Optional filter — return only workouts containing these canonical exercise IDs. Omit unless you already have canonical IDs.',
+            'Optional filter - return only workouts containing these canonical exercise IDs. Omit unless you already have canonical IDs.',
         ),
 });
 
@@ -98,7 +98,7 @@ function exerciseForModel(exercise: TWorkoutExerciseRow): TWorkoutExerciseForMod
     };
 }
 
-/** Full workout JSON for the LLM — not a summary. */
+/** Full workout JSON for the LLM - not a summary. */
 export function workoutHistoryForModel(workouts: TBackedUpWorkout[]): TWorkoutForModel[] {
     return workouts.map((workout) => ({
         started_at: workout.started_at,
@@ -141,7 +141,7 @@ export function formatWorkoutHistoryForModel(output: TWorkoutHistoryToolOutput):
     const headerParts = [`${totalReturned} workout${totalReturned === 1 ? '' : 's'}`];
     if (since) headerParts.push(`since ${since.slice(0, 10)}`);
     headerParts.push(`limit ${limitApplied}`);
-    if (hasMore) headerParts.push('(more available — increase limit or narrow since if needed)');
+    if (hasMore) headerParts.push('(more available - increase limit or narrow since if needed)');
     if (syncPending) headerParts.push('(sync may still be catching up)');
 
     const payload = workoutHistoryForModel(workouts);

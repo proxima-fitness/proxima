@@ -1,5 +1,5 @@
 /**
- * Local dev helper — fetch one Hevy workouts page and import each workout.
+ * Local dev helper - fetch one Hevy workouts page and import each workout.
  *
  * Loads `.env.local` from the repo root. Uses existing app keys where possible:
  * - `NEXT_PUBLIC_REACT_APP_HEVY_API_KEY` (or `HEVY_API_KEY`)
@@ -7,7 +7,7 @@
  * - `SUPABASE_SECRET_KEY` (or `SUPABASE_SERVICE_ROLE_KEY`)
  *
  * Also add to `.env.local`:
- * - `USER_ID` — Supabase auth UUID for the user to import workouts as
+ * - `USER_ID` - Supabase auth UUID for the user to import workouts as
  *
  * Usage (from repo root):
  *   npx tsx src/api/__tests__/manual/import-hevy-workout-page.ts

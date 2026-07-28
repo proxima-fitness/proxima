@@ -50,6 +50,7 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("mutateProgram");
             expect(prompt).not.toContain("modifyProgram");
             expect(prompt).toContain("getMoreInfoQuestions");
+            expect(prompt).toContain("openHevyExportGate");
             expect(prompt).toContain("Mandatory skill loading");
             expect(prompt).toContain("loadSkill");
             expect(prompt).toContain("build-program");
@@ -80,7 +81,7 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("Before mutateProgram (mandatory)");
             expect(prompt).toContain("zero exercise rows");
             expect(prompt).toContain("Constraint profile persistence");
-            expect(prompt).not.toContain("Program tools — two flows");
+            expect(prompt).not.toContain("Program tools - two flows");
             expect(prompt).not.toContain("All slot targeting is **0-based**");
             expect(prompt).not.toMatch(/full conversation/i);
         });
@@ -400,33 +401,64 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("weight_display");
         });
 
-        it("tells anonymous users to sign in before Export (not click Export)", () => {
+        it("anon + missing key: call openHevyExportGate; Save + Week Export chrome; no builder Export", () => {
             const prompt = instructions({
-                hevyProgram: [],
+                hevyProgram: [{ id: "1", title: "Day 1", folder_id: 0, notes: "", exercises: [] }],
                 daysPerWeek: 4,
                 programLength: 8,
-                isSignedIn: false,
+                isAuthenticated: false,
+                hasHevyApiKey: false,
             });
-            expect(prompt).toContain("Upload to Hevy");
-            expect(prompt).toContain("not** signed in");
-            expect(prompt).toContain("Sign in");
-            expect(prompt).toContain("sign in first");
-            expect(prompt).toContain("Do **not** tell an unsigned-in user to click Export");
-            expect(prompt).not.toContain("They are signed in");
+            expect(prompt).toContain("Upload to Hevy / Week Export");
+            expect(prompt).toContain("authenticated = **no**");
+            expect(prompt).toContain("Hevy API key on file = **no**");
+            expect(prompt).toContain("openHevyExportGate");
+            expect(prompt).toContain("toolbar **Save**");
+            expect(prompt).toContain("**Week Export**");
+            expect(prompt).toContain("Never tell them to click **Export** in the builder toolbar");
+            expect(prompt).not.toContain("**Export** button in the top-right");
+            expect(prompt).not.toContain("sign in first");
         });
 
-        it("tells signed-in users to use Export then Upload", () => {
+        it("authenticated + hasHevyApiKey: text-only Save / Week Export; do not call gate", () => {
+            const prompt = instructions({
+                hevyProgram: [{ id: "1", title: "Day 1", folder_id: 0, notes: "", exercises: [] }],
+                daysPerWeek: 4,
+                programLength: 8,
+                isAuthenticated: true,
+                hasHevyApiKey: true,
+            });
+            expect(prompt).toContain("Upload to Hevy / Week Export");
+            expect(prompt).toContain("authenticated = **yes**");
+            expect(prompt).toContain("Hevy API key on file = **yes**");
+            expect(prompt).toContain("Both prerequisites done");
+            expect(prompt).toContain("Do **not** call **openHevyExportGate**");
+            expect(prompt).toContain("toolbar **Save**");
+            expect(prompt).toContain("**Week Export**");
+            expect(prompt).not.toContain("**Export** button in the top-right");
+        });
+
+        it("empty program: refuse openHevyExportGate", () => {
             const prompt = instructions({
                 hevyProgram: [],
                 daysPerWeek: 4,
                 programLength: 8,
-                isSignedIn: true,
+                isAuthenticated: false,
+                hasHevyApiKey: false,
             });
-            expect(prompt).toContain("Upload to Hevy");
-            expect(prompt).toContain("They are signed in");
-            expect(prompt).toContain("**Export** button");
-            expect(prompt).toContain("**Upload**");
-            expect(prompt).not.toContain("sign in first");
+            expect(prompt).toContain("Empty program");
+            expect(prompt).toContain("Do **not** call **openHevyExportGate**");
+            expect(prompt).toContain("build (or finish) a program first");
+        });
+
+        it("Questionnaire-active refuse copy present", () => {
+            const prompt = instructions({
+                hevyProgram: [{ id: "1", title: "Day 1", folder_id: 0, notes: "", exercises: [] }],
+                daysPerWeek: 4,
+                programLength: 8,
+            });
+            expect(prompt).toContain("Questionnaire gate active");
+            expect(prompt).toContain("dismiss or complete the questionnaire");
         });
     });
 });

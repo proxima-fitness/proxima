@@ -3,8 +3,8 @@
 > **Executor instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before moving to the
 > next step. If anything in the "STOP conditions" section occurs, stop and
-> report — do not improvise. When done, update the status row for this plan
-> in `plans/README.md` — unless a reviewer dispatched you and told they
+> report - do not improvise. When done, update the status row for this plan
+> in `plans/README.md` - unless a reviewer dispatched you and told they
 > maintain the index.
 >
 > **Drift check (run first)**: `git diff --stat 7e07cdf..HEAD -- src/api/user-constraints.ts src/app/api/chat/route.ts src/app/api/chat/summarize-episode/route.ts`
@@ -23,11 +23,11 @@
 
 ## Why this matters
 
-`getUserConstraints` treats any Supabase error the same as “no row”: `if (error || !data) return null`. A transient DB/RLS failure then looks like a first-time user — chat merges an empty persisted profile and the coach runs **without** known injuries/equipment exclusions. Fail closed: real errors must abort the request; only `maybeSingle()` with no row returns `null`.
+`getUserConstraints` treats any Supabase error the same as “no row”: `if (error || !data) return null`. A transient DB/RLS failure then looks like a first-time user - chat merges an empty persisted profile and the coach runs **without** known injuries/equipment exclusions. Fail closed: real errors must abort the request; only `maybeSingle()` with no row returns `null`.
 
 ## Current state
 
-`src/api/user-constraints.ts` (~11–21):
+`src/api/user-constraints.ts` (~11-21):
 
 ```ts
 export async function getUserConstraints(
@@ -47,8 +47,8 @@ export async function getUserConstraints(
 
 Callers:
 
-- `src/app/api/chat/route.ts` (~111–113): `const persistedConstraints = user ? await getUserConstraints(supabase, user.id) : null;` — outer `handleChatPost` catch (~231–239) already returns HTTP 500 JSON `{ error: 'Failed to process chat request' }` on throw.
-- `src/app/api/chat/summarize-episode/route.ts` (~42–43): `const persistedConstraints = await getUserConstraints(...);` — outer try/catch (~69–71 area) returns 500 on throw.
+- `src/app/api/chat/route.ts` (~111-113): `const persistedConstraints = user ? await getUserConstraints(supabase, user.id) : null;` - outer `handleChatPost` catch (~231-239) already returns HTTP 500 JSON `{ error: 'Failed to process chat request' }` on throw.
+- `src/app/api/chat/summarize-episode/route.ts` (~42-43): `const persistedConstraints = await getUserConstraints(...);` - outer try/catch (~69-71 area) returns 500 on throw.
 
 No existing unit test file for `user-constraints.ts`.
 
@@ -64,13 +64,13 @@ No existing unit test file for `user-constraints.ts`.
 
 **In scope**:
 
-- `src/api/user-constraints.ts` — `getUserConstraints` error handling only
+- `src/api/user-constraints.ts` - `getUserConstraints` error handling only
 - New test file e.g. `src/api/__tests__/user-constraints.test.ts` (create)
 
 **Out of scope**:
 
 - Changing `upsertUserConstraints` swallow-on-error behavior (separate concern)
-- Editing `route.ts` / `summarize-episode/route.ts` unless a type/compile issue forces a tiny catch tweak — prefer throw + existing catch
+- Editing `route.ts` / `summarize-episode/route.ts` unless a type/compile issue forces a tiny catch tweak - prefer throw + existing catch
 - Merge / tools / sandbox plans
 
 ## Git workflow
@@ -152,11 +152,11 @@ Match import style of nearby api tests under `src/api/__tests__/`.
 
 ## STOP conditions
 
-- Callers catch and swallow the new throw (search for getUserConstraints) — if a caller converts throw back to null, STOP and report
-- Upsert changes seem required — out of scope; do not expand
+- Callers catch and swallow the new throw (search for getUserConstraints) - if a caller converts throw back to null, STOP and report
+- Upsert changes seem required - out of scope; do not expand
 - Drift shows fail-closed already implemented
 
 ## Maintenance notes
 
 - Reviewer: confirm chat route and summarize-episode still have top-level try/catch returning 500.
-- Follow-up (not this plan): `upsertUserConstraints` also swallows errors — agent may think persist succeeded.
+- Follow-up (not this plan): `upsertUserConstraints` also swallows errors - agent may think persist succeeded.

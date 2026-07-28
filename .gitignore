@@ -1,6 +1,6 @@
 supabase/.temp/linked-project.json
 # Local-serve copy of edge-functions (Deno). Source of truth: sibling edge-functions repo.
-# Keep out of git + Next/tsc — Deno npm: imports break app TypeScript.
+# Keep out of git + Next/tsc - Deno npm: imports break app TypeScript.
 supabase/functions/
 
 # Logs

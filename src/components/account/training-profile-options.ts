@@ -22,10 +22,10 @@ export const TRAINING_PROFILE_UNSET_VALUE = "__unset__";
 
 export type THeightUnit = "imperial" | "metric";
 
-/** Sex picker — prefer not to say maps to empty on save. */
+/** Sex picker - prefer not to say maps to empty on save. */
 export const TRAINING_SEX_OPTIONS: TSelectOption[] = trainingSexOptions;
 
-/** Age options (14–100) from form-options. */
+/** Age options (14-100) from form-options. */
 export const TRAINING_AGE_OPTIONS: TSelectOption[] = ageOptions;
 
 /** Experience level (difficultyOptions catalog). */
@@ -34,19 +34,19 @@ export const TRAINING_EXPERIENCE_OPTIONS: TSelectOption[] = difficultyOptions;
 /** Physique phase catalog. */
 export const TRAINING_PHYSIQUE_PHASE_OPTIONS: TSelectOption[] = physiquePhaseOptions;
 
-/** Training focus — CONTEXT closed list (storage slugs). */
+/** Training focus - CONTEXT closed list (storage slugs). */
 export const TRAINING_FOCUS_OPTIONS: TSelectOption[] = trainingFocusOptions;
 
 /**
- * Activity level — CONTEXT short forms (not questionnaire "light activity" values).
+ * Activity level - CONTEXT short forms (not questionnaire "light activity" values).
  */
 export const TRAINING_ACTIVITY_LEVEL_OPTIONS: TSelectOption[] =
     trainingActivityLevelOptions;
 
-/** Session duration cap — 10–180 minutes in 10-minute steps. */
+/** Session duration cap - 10-180 minutes in 10-minute steps. */
 export const TRAINING_SESSION_DURATION_OPTIONS: TSelectOption[] = workoutDurationOptions;
 
-/** Feet options for Imperial height (3–8 ft). */
+/** Feet options for Imperial height (3-8 ft). */
 export const TRAINING_HEIGHT_FEET_OPTIONS: TSelectOption[] = Array.from(
     { length: 6 },
     (_, i) => {
@@ -55,7 +55,7 @@ export const TRAINING_HEIGHT_FEET_OPTIONS: TSelectOption[] = Array.from(
     },
 );
 
-/** Inches options for Imperial height (0–11 in). */
+/** Inches options for Imperial height (0-11 in). */
 export const TRAINING_HEIGHT_INCHES_OPTIONS: TSelectOption[] = Array.from(
     { length: 12 },
     (_, i) => {
@@ -64,7 +64,7 @@ export const TRAINING_HEIGHT_INCHES_OPTIONS: TSelectOption[] = Array.from(
     },
 );
 
-/** Centimeter options for Metric height (120–230 cm). */
+/** Centimeter options for Metric height (120-230 cm). */
 export const TRAINING_HEIGHT_CM_OPTIONS: TSelectOption[] = Array.from(
     { length: 111 },
     (_, i) => {

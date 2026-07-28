@@ -7,6 +7,7 @@ import {
     deriveCompletedWeeksFromLinks,
     deriveCompletedWeeksFromScheduleHistory,
     deriveProgramOverviewWeekStatuses,
+    findHevyProgramForWeek,
     mergeCompletedWeeks,
     resolveSelectedWeek,
     weekStatusLabel,
@@ -188,5 +189,36 @@ describe("resolveSelectedWeek", () => {
     it("falls back to default when pick missing or null", () => {
         expect(resolveSelectedWeek(null, rows)).toBe(2);
         expect(resolveSelectedWeek(9, rows)).toBe(2);
+    });
+});
+
+describe("findHevyProgramForWeek", () => {
+    const folder = (folderId: number, title: string): THevyProgramItem => ({
+        program_title: title,
+        program: [{ id: `r-${folderId}`, title: "1 - Push", folder_id: folderId, notes: "", exercises: [] }],
+    });
+
+    const hevyPrograms = [folder(11, "Week 1"), folder(22, "Week 2")];
+    const links = [
+        { nth_week: 1, hevy_folder_id: 11 },
+        { nth_week: 2, hevy_folder_id: 22 },
+    ];
+
+    it("resolves the linked folder, not the title", () => {
+        // Titles are decoration; the link is the only match key (ADR 0008).
+        expect(findHevyProgramForWeek(hevyPrograms, links, 2)?.program_title).toBe("Week 2");
+    });
+
+    it("returns null when the week has no link", () => {
+        expect(findHevyProgramForWeek(hevyPrograms, links, 3)).toBeNull();
+    });
+
+    it("returns null when the linked folder is gone from Hevy", () => {
+        expect(findHevyProgramForWeek([folder(11, "Week 1")], links, 2)).toBeNull();
+    });
+
+    it("returns null for missing week or unfetched Hevy programs", () => {
+        expect(findHevyProgramForWeek(hevyPrograms, links, null)).toBeNull();
+        expect(findHevyProgramForWeek(undefined, links, 1)).toBeNull();
     });
 });

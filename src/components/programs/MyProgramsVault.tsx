@@ -123,7 +123,7 @@ export const MyProgramsVault = () => {
                         <Lock className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
                         <h2 className="text-xl font-semibold tracking-tight mb-2 text-foreground">Your vault is empty</h2>
                         <p className="text-sm text-muted-foreground mb-6">
-                            Save programs you love — they&apos;ll stay here permanently.
+                            Save programs you love - they&apos;ll stay here permanently.
                         </p>
                         <Link href="/programs">
                             <Button variant="outline" className="rounded-full border-border/80">

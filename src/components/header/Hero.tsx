@@ -54,7 +54,7 @@ export const Hero: React.FC = () => {
             </video>
                 {/* <img src={ (ai_program_builder as any).src } alt="Program Creator Image" className="relative z-5" />
 
-                {/* gradient start – muted dark orbs for premium consistency */}
+                {/* gradient start - muted dark orbs for premium consistency */}
                 <div className="absolute z-0 w-[40%] h-[35%] top-0 pink__gradient_dark" />
                 <div className="absolute z-1 w-[80%] h-[80%] rounded-full white__gradient_dark bottom-40" />
                 <div className="absolute z-0 w-[50%] h-[50%] right-20 bottom-20 blue__gradient_dark" />

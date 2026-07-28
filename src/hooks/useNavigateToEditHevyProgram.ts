@@ -3,11 +3,19 @@
  *
  * Shared Edit-path handoff from profile (**Hevy mirror**, blind-spot Hevy picker).
  * Refetches Hevy programs, seeds builder draft from the selected folder routines,
- * navigates to Edit arrival. Full router-state hydration lands in ADR 0002 / 0013.
+ * navigates to Edit arrival.
+ *
+ * **Edit current week** (ADR 0013 / 01): pass `programId` + `nthWeek` and the seed
+ * is ordered by the **Program–Hevy link** and the arrival carries `program` + `week`
+ * alongside `folder`. That path hands off through the **Edit session**, not the
+ * New-path **Builder draft** key (ADR 0013 / 02); every other Edit entry still uses
+ * `hevy-program-in-progress` until ADR 0002 / 02 migrates it.
  *
  * Depends on: next/navigation, react-query, UserContext, useHevySecret,
- *             normalizeRoutineTitlesForBuilder
- * Used by: ProgramOverviewHevyMirror, BlindSpotAnalysisSection, HevyProgramsGrid
+ *             normalizeRoutineTitlesForBuilder, edit-current-week-arrival,
+ *             EditSessionContext
+ * Used by: ProgramOverviewWeekList, ProgramOverviewHevyMirror,
+ *          BlindSpotAnalysisSection, HevyProgramsGrid
  */
 
 "use client";
@@ -18,10 +26,21 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useHevySecret } from "@/api/hooks";
 import { useUserContext } from "@/contexts/UserContext";
 import { normalizeRoutineTitlesForBuilder } from "@/components/program-builder/utils/format-responses";
+import {
+    buildEditArrivalParams,
+    orderRoutinesByLink,
+} from "@/hooks/edit-current-week-arrival";
+import { useEditSession } from "@/contexts/EditSessionContext";
 
 export type TNavigateToEditHevyProgramOptions = {
     /** Extra query params (e.g. stall-analysis `search=`). */
     extraParams?: Record<string, string>;
+    /** Proxima program id — set with `nthWeek` for **Edit current week**. */
+    programId?: number;
+    /** 1-based week this Hevy folder is the **Hevy week copy** of. */
+    nthWeek?: number;
+    /** Link `hevy_routine_ids`, ordered by day — authoritative over titles. */
+    hevyRoutineIds?: readonly string[];
 };
 
 /**
@@ -32,6 +51,7 @@ export function useNavigateToEditHevyProgram() {
     const queryClient = useQueryClient();
     const { user } = useUserContext();
     const { data: hevyApiKey } = useHevySecret(user);
+    const { startEditSession } = useEditSession();
 
     return useCallback(
         async (
@@ -42,22 +62,43 @@ export function useNavigateToEditHevyProgram() {
                 await queryClient.refetchQueries({ queryKey: ["hevy-programs"] });
             }
 
-            const normalized = normalizeRoutineTitlesForBuilder(program.program);
-            localStorage.setItem("hevy-program-in-progress", JSON.stringify(normalized));
+            const { programId, nthWeek, hevyRoutineIds, extraParams } = options;
+            const isEditCurrentWeek = programId != null && nthWeek != null;
 
-            const folderId = program.program[0]?.folder_id;
-            const params = new URLSearchParams({
-                resume: "true",
-                edit: "true",
-                hevy: "true",
-                ...options.extraParams,
-            });
-            if (folderId != null && !Number.isNaN(Number(folderId))) {
-                params.set("folder", String(folderId));
+            // Linked week → the link owns week/day identity. Titles are only a
+            // fallback for a Hevy folder with no link (ADR 0013 / 01).
+            const seed =
+                isEditCurrentWeek && hevyRoutineIds?.length
+                    ? orderRoutinesByLink(program.program, hevyRoutineIds)
+                    : normalizeRoutineTitlesForBuilder(program.program);
+
+            const rawFolderId = program.program[0]?.folder_id;
+            const folderId =
+                rawFolderId != null && !Number.isNaN(Number(rawFolderId))
+                    ? Number(rawFolderId)
+                    : null;
+
+            if (isEditCurrentWeek) {
+                // In-memory handoff — never the New-path draft key (ADR 0013 / 02).
+                startEditSession({
+                    routines: seed,
+                    initialFolderId: folderId,
+                    programId,
+                    nthWeek,
+                });
+            } else {
+                localStorage.setItem("hevy-program-in-progress", JSON.stringify(seed));
             }
 
-            router.push(`/build-program?${params.toString()}`);
+            const params = buildEditArrivalParams({
+                programId,
+                nthWeek,
+                folderId,
+                extraParams,
+            });
+
+            router.push(`/build-program?${params}`);
         },
-        [hevyApiKey, queryClient, router, user],
+        [hevyApiKey, queryClient, router, startEditSession, user],
     );
 }

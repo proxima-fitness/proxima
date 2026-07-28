@@ -30,7 +30,7 @@ AS $$
 $$;
 
 COMMENT ON FUNCTION public.exercise_match_key(text) IS
-  'Token-sorted, parens-stripped, lowercased title. Fuzzy curation key only — never back a unique constraint with it.';
+  'Token-sorted, parens-stripped, lowercased title. Fuzzy curation key only - never back a unique constraint with it.';
 
 -- Derived in the database so the column cannot drift from the title, whatever a caller sends.
 CREATE OR REPLACE FUNCTION public.set_exercise_match_key()
@@ -73,7 +73,7 @@ WHERE id LIKE 'WU%';
 -- ── 3. Backfill ownership ───────────────────────────────────────────────
 -- A canonical row is a Custom movement when its mapping points at a template ID absent from the
 -- mirror *and* exactly one user's workouts reference it. Rows referenced by several users stay
--- global and are reported below for review — most are Hevy library templates the mirror missed.
+-- global and are reported below for review - most are Hevy library templates the mirror missed.
 --
 -- The ID-shape observations in the ADR classify this one-time backfill only. The runtime
 -- discriminator is the resolver's mirror-then-API check (sub-plan 2).
@@ -127,7 +127,7 @@ BEGIN
 END $$;
 
 -- ── 4. Unify normalized_title on the identity key ───────────────────────
--- Lowercase, collapse whitespace, trim — word order and parentheses preserved. The old global
+-- Lowercase, collapse whitespace, trim - word order and parentheses preserved. The old global
 -- constraint has to go first: re-keying collides under it precisely where ownership now differs.
 
 ALTER TABLE public.canonical_exercises
@@ -195,7 +195,7 @@ DROP TABLE canonical_lazy_rows;
 
 -- ── 6. Scoped uniqueness ────────────────────────────────────────────────
 -- UNIQUE (user_id, normalized_title) does not constrain global rows, because null user_ids are
--- never equal to each other — hence the partial unique index for the global scope.
+-- never equal to each other - hence the partial unique index for the global scope.
 
 CREATE UNIQUE INDEX canonical_exercises_global_normalized_title_key
   ON public.canonical_exercises (normalized_title)

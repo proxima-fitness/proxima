@@ -113,7 +113,7 @@ export async function getUserTrainingProfile(
 }
 
 /**
- * Upserts the Training profile for a user (agent chat path — server client required).
+ * Upserts the Training profile for a user (agent chat path - server client required).
  * Full field write of the provided profile; empty catalog strings persist as NULL.
  */
 export async function upsertUserTrainingProfile(

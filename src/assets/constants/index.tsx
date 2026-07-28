@@ -5971,7 +5971,7 @@ export const features = [
     icon: star.src,
     title: "Break through plateaus with proven programs",
     content:
-      "Run proven programs from Reddit and the community—no guesswork.",
+      "Run proven programs from Reddit and the community-no guesswork.",
   },
   {
     id: "feature-3",

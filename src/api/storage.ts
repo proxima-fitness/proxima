@@ -7,10 +7,10 @@
  * appropriate storage bucket.
  *
  * Storage buckets used:
- * - `profile_pictures` — user avatar images, keyed by user UUID
- * - `programs` — program thumbnail images, keyed by program ID
- * - `exercises-new` — exercise animation GIFs and stills, keyed by gif_id
- * - `tmp` — temporary uploads (e.g. image-to-text pipeline)
+ * - `profile_pictures` - user avatar images, keyed by user UUID
+ * - `programs` - program thumbnail images, keyed by program ID
+ * - `exercises-new` - exercise animation GIFs and stills, keyed by gif_id
+ * - `tmp` - temporary uploads (e.g. image-to-text pipeline)
  *
  * Depends on: ./index (supabase client), @supabase/supabase-js (User type)
  * Used by: hooks.ts, programs.ts, user profile components

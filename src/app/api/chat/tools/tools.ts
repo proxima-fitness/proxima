@@ -9,6 +9,7 @@
  * Tools provided:
  *  - getExerciseList - fetches and filters available Hevy exercises
  *  - getMoreInfoQuestions - opens the pre-build questionnaire UI
+ *  - openHevyExportGate - opens the Hevy export gate footer (sign-in / Hevy key prerequisites)
  *  - planProgram - structured multi-week plan (duration, blocks, progression) before buildWeek
  *  - readProgram - on-demand full program snapshot from the request
  *  - buildWeek - constructs a full week of THevyRoutine days in one call (titles resolved from hevy_exercise_templates by ID)
@@ -316,7 +317,7 @@ export function getTools({
      */
     const getExerciseListTool = tool({
 
-        description: 'Provides access to all available Hevy exercises for building workout programs. Use this tool when users request workout programs. The tool returns a reference list of exercises (ID and title only) - you should then build a complete, well-structured day using exercise IDs, titles, sets, rep_range (for true ranges like 8-12) or reps (for fixed counts like 5 sets x 5 reps), and RPE. For fixed-rep work, set rep_range to null and use reps only. Target 6–7 total exercise rows per training day including warmup(s); see the build-program skill for the session-size default and exceptions. Exclusion filters come from the Active Constraint Profile — do not pass exclude args.',
+        description: 'Provides access to all available Hevy exercises for building workout programs. Use this tool when users request workout programs. The tool returns a reference list of exercises (ID and title only) - you should then build a complete, well-structured day using exercise IDs, titles, sets, rep_range (for true ranges like 8-12) or reps (for fixed counts like 5 sets x 5 reps), and RPE. For fixed-rep work, set rep_range to null and use reps only. Target 6-7 total exercise rows per training day including warmup(s); see the build-program skill for the session-size default and exceptions. Exclusion filters come from the Active Constraint Profile - do not pass exclude args.',
         inputSchema: getExerciseListInputSchema,
 
         execute: async ({ userRequest }) => {
@@ -394,7 +395,7 @@ export function getTools({
 
             return {
                 type: 'text' as const,
-                value: `Available exercises (${output.totalExercises} total):\n${exerciseList}\n\nCRITICAL: You must ONLY use exercise_template_id values that exist in the list above. Do not invent exercises or use IDs that are not in this list.\n\nSession size reminder: target 6–7 total exercise rows per training day in buildWeek (including the 1–2 warmup rows). A typical day = 1 warmup + 5–6 working exercises. Only go below 6 total if the user explicitly requested a short session, time cap, or deload day.`,
+                value: `Available exercises (${output.totalExercises} total):\n${exerciseList}\n\nCRITICAL: You must ONLY use exercise_template_id values that exist in the list above. Do not invent exercises or use IDs that are not in this list.\n\nSession size reminder: target 6-7 total exercise rows per training day in buildWeek (including the 1-2 warmup rows). A typical day = 1 warmup + 5-6 working exercises. Only go below 6 total if the user explicitly requested a short session, time cap, or deload day.`,
             };
         },
     });
@@ -441,6 +442,36 @@ export function getTools({
     });
 
     /**
+     * Title: openHevyExportGateTool
+     * Description: Opens the Hevy export gate footer for missing sign-in / Hevy API key prerequisites.
+     * Payload is a UI open signal only - never includes secrets.
+     */
+    const openHevyExportGateTool = tool({
+        description:
+            'Opens the Hevy export gate in the chat footer to collect missing prerequisites for pushing a program to Hevy (sign in, then Hevy API key). ' +
+            'Call when the user clearly asks to export / upload / push / sync / send the program to Hevy, the program grid is non-empty, and at least one prerequisite is missing (not signed in and/or no Hevy API key on file). ' +
+            'Do not call when both prerequisites are already done - guide them in text to toolbar Save then profile Week Export. ' +
+            'Do not call when the program grid is empty or the Questionnaire gate (getMoreInfoQuestions) is still active. ' +
+            'This tool does not Save or Week Export; it only opens prerequisite UI. Never request or echo API key secrets.',
+        inputSchema: z.object({
+            userRequest: z.string().optional().describe('The user\'s Hevy-export request for context'),
+        }),
+        execute: async ({ userRequest }) => {
+            return {
+                opened: true as const,
+                userRequest: userRequest || '',
+                message: 'Hevy export gate opened for sign-in / Hevy connection prerequisites.',
+            };
+        },
+        toModelOutput: async () => ({
+            type: 'text' as const,
+            value:
+                'Hevy export gate opened. Tell the user to finish the gate steps in the footer, then use toolbar Save and profile Week Export. ' +
+                'Do not claim you uploaded or exported to Hevy. Never ask for or repeat an API key.',
+        }),
+    });
+
+    /**
      * Title: planProgramTool
      * Description: Records a structured multi-week plan before buildWeek (mesocycles, progression table).
      * @returns { Tool }
@@ -448,7 +479,7 @@ export function getTools({
     const planProgramTool = tool({
         description:
             'Submit a structured multi-week training plan before calling buildWeek on a **new** program. Use questionnaire answers, program builder context (days/week, length), and your judgment. ' +
-            'This does not create routines and does **not** shorten an existing program on the grid — for that use **mutateProgram** **delete_week**. Call once per new program only.',
+            'This does not create routines and does **not** shorten an existing program on the grid - for that use **mutateProgram** **delete_week**. Call once per new program only.',
         inputSchema: planProgramInputSchema,
         execute: async (input) => {
             const plan = input;
@@ -479,8 +510,8 @@ export function getTools({
     const readProgramTool = tool({
         description:
             'Returns the full **hevyProgram** snapshot from the **start of this request** (does not refresh after **buildWeek** in the same turn). ' +
-            'Includes day notes, exercise notes, exercise reason, sets, and structure. Call when you need the current program — not on every turn. ' +
-            'Sorted by folder_id (week, 0-based) then order (day number 1–7). For **mutateProgram**: folderIds: [folder_id], dayOrder: order. Target exercises/sets by 0-based array position (exerciseIndex, setIndex). ' +
+            'Includes day notes, exercise notes, exercise reason, sets, and structure. Call when you need the current program - not on every turn. ' +
+            'Sorted by folder_id (week, 0-based) then order (day number 1-7). For **mutateProgram**: folderIds: [folder_id], dayOrder: order. Target exercises/sets by 0-based array position (exerciseIndex, setIndex). ' +
             'For **post-buildWeek periodization**, do not use this for targeting; use **buildWeek** output, **planProgram**, and **folderIds** + **dayOrder**.',
         inputSchema: readProgramInputSchema,
         execute: async () => ({
@@ -510,7 +541,7 @@ export function getTools({
             '**Fixed-rep rule:** When the prescription is a single fixed rep count (e.g. 5x5, triples, singles), set `rep_range` to **null** and only use `reps`. ' +
             'NEVER emit a degenerate rep_range where start === end (e.g. {start:5, end:5}); that must be rep_range: null, reps: 5 instead. ' +
             'rep_range supersedes reps in the UI, so a {start:5, end:5} range will display as "5-5" which is wrong. ' +
-            'Session size: target **6–7 total rows in `exercises[]` per training day** including warmup row(s). Typical day = 1 warmup + 5–6 working exercises. Only drop below 6 total rows if the user explicitly asked for a short/brief session, time cap, deload day, or peaking day with deliberately low volume.',
+            'Session size: target **6-7 total rows in `exercises[]` per training day** including warmup row(s). Typical day = 1 warmup + 5-6 working exercises. Only drop below 6 total rows if the user explicitly asked for a short/brief session, time cap, deload day, or peaking day with deliberately low volume.',
         inputSchema: z.object({
             totalDays: z.number().min(1).max(7).describe('Total number of days in the program week (1-7).'),
             routines: z
@@ -554,7 +585,7 @@ export function getTools({
                                         .max(500)
                                         .optional()
                                         .describe(
-                                            'Short prose (2–4 sentences) explaining why this exercise is here — shown in the UI under "Why this exercise?", not exported to Hevy. ' +
+                                            'Short prose (2-4 sentences) explaining why this exercise is here - shown in the UI under "Why this exercise?", not exported to Hevy. ' +
                                                 'Cover: what the movement does, where it sits in the day/split, and how it fits this person\'s plan or questionnaire answers. ' +
                                                 'Be concrete: name real facts (stated limitation, equipment, sessions/week, goal, experience). Do not use bullet labels. Max 500 characters.',
                                         ),
@@ -856,7 +887,7 @@ export function getTools({
                             .join('\n');
                         return {
                             error: 'constraint_violation',
-                            message: `Mutation rejected — constraint violations:\n${lines}`,
+                            message: `Mutation rejected - constraint violations:\n${lines}`,
                         };
                     }
                 }
@@ -914,9 +945,9 @@ export function getTools({
 
     const getWorkoutHistoryTool = tool({
         description:
-            'Returns the user\'s backed-up workout history from their Hevy sync (Supabase backup — not a live Hevy API call). ' +
+            'Returns the user\'s backed-up workout history from their Hevy sync (Supabase backup - not a live Hevy API call). ' +
             'Use when they ask about logged training: past weights, reps, sessions, volume, or questions like "what did I bench last month?". ' +
-            `Choose the smallest limit that answers the question (typical 5–15; hard cap ${AGENT_WORKOUT_HISTORY_MAX}). ` +
+            `Choose the smallest limit that answers the question (typical 5-15; hard cap ${AGENT_WORKOUT_HISTORY_MAX}). ` +
             'Use `since` for time-bounded questions. Reads only synced backup data.',
         inputSchema: getWorkoutHistoryInputSchema,
         execute: async ({ limit, since, canonicalExerciseIds }): Promise<TWorkoutHistoryToolOutput> => {
@@ -984,9 +1015,9 @@ export function getTools({
 
     const getBodyMeasurementsTool = tool({
         description:
-            'Returns the user\'s backed-up body measurements from their Hevy sync (Supabase backup — not a live Hevy API call). ' +
+            'Returns the user\'s backed-up body measurements from their Hevy sync (Supabase backup - not a live Hevy API call). ' +
             'Use when they ask about weight, body fat, girths, or trends over time (e.g. "how has my waist changed?"). ' +
-            `Choose the smallest limit that answers the question (typical 5–15; hard cap ${AGENT_BODY_MEASUREMENTS_MAX}). ` +
+            `Choose the smallest limit that answers the question (typical 5-15; hard cap ${AGENT_BODY_MEASUREMENTS_MAX}). ` +
             'Use `since` / `until` for time-bounded questions. Latest check-in may already be in the system prompt.',
         inputSchema: getBodyMeasurementsInputSchema,
         execute: async ({ limit, since, until }): Promise<TBodyMeasurementsToolOutput> => {
@@ -1060,7 +1091,7 @@ export function getTools({
         description:
             'Heuristic report card (volume, frequency, categories, rep variety, session size). ' +
             'Call only when the user explicitly asks to rate their program (same intent as the "Rate my program" chip). ' +
-            'Do not call for "how do I improve", generic review, or critique—use readProgram and reply in chat. ' +
+            'Do not call for "how do I improve", generic review, or critique-use readProgram and reply in chat. ' +
             'Uses the same request-start snapshot as readProgram.',
         inputSchema: z.object({
             reason: z.string().optional().describe('Short note on why the rating was requested'),
@@ -1104,24 +1135,24 @@ export function getTools({
     const updateConstraintProfileTool = tool({
         description:
             'Persist and update the active Constraint profile (Agentic memory). ' +
-            'Call after questionnaire unlock only when there are non-empty fields to persist; skip entirely when the user skipped and nothing changed — do not make empty updates. ' +
+            'Call after questionnaire unlock only when there are non-empty fields to persist; skip entirely when the user skipped and nothing changed - do not make empty updates. ' +
             'Do not block planProgram, getExerciseList, or buildWeek waiting on it. ' +
-            'REQUIRED on any mid-chat add of injuries, excluded equipment, excluded areas, movement restrictions, or training preferences — call in the same turn (prefer before mutateProgram when both apply). ' +
+            'REQUIRED on any mid-chat add of injuries, excluded equipment, excluded areas, movement restrictions, or training preferences - call in the same turn (prefer before mutateProgram when both apply). ' +
             'Add freely when you recognize a new constraint. Remove/relax only on a User-stated change (user asserts the rule no longer applies) or direct the user to Edit profile. ' +
-            'Never call removeExcludedEquipment, removeInjuries, removeExcludedAreas, or removeChatRefinements to make a preferred split, template, or exercise set feasible — if profile conflicts with a requested style, adapt the program to the profile; do not edit the profile down. ' +
+            'Never call removeExcludedEquipment, removeInjuries, removeExcludedAreas, or removeChatRefinements to make a preferred split, template, or exercise set feasible - if profile conflicts with a requested style, adapt the program to the profile; do not edit the profile down. ' +
             'Field map: health/injury → addInjuries; exclude equipment → addExcludedEquipment; exclude areas → addExcludedAreas; ' +
             'split/variability/progression/deload/peak/warmup → preferences; freeform limits → addChatRefinements. ' +
             'Always pass rawStatement when the user spoke the constraint in chat. ' +
             'Examples: questionnaire submit with answers; "my shoulder hurts"; "I don\'t have access to cables"; "no more lunges"; "knee\'s fine now" (User-stated change → removeInjuries); "I got a new barbell".',
         inputSchema: z.object({
             addInjuries: z.array(z.string()).optional().describe('New injury or health issues to add'),
-            removeInjuries: z.array(z.string()).optional().describe('Injuries resolved per User-stated change only — never remove to make a program style feasible'),
+            removeInjuries: z.array(z.string()).optional().describe('Injuries resolved per User-stated change only - never remove to make a program style feasible'),
             addExcludedEquipment: z.array(z.string()).optional().describe('Equipment to exclude'),
-            removeExcludedEquipment: z.array(z.string()).optional().describe('Equipment to allow again only on User-stated change — never to enable a preferred split/style'),
+            removeExcludedEquipment: z.array(z.string()).optional().describe('Equipment to allow again only on User-stated change - never to enable a preferred split/style'),
             addExcludedAreas: z.array(z.string()).optional().describe('Muscle areas to exclude'),
-            removeExcludedAreas: z.array(z.string()).optional().describe('Muscle areas to allow again only on User-stated change — never to enable a preferred split/style'),
+            removeExcludedAreas: z.array(z.string()).optional().describe('Muscle areas to allow again only on User-stated change - never to enable a preferred split/style'),
             addChatRefinements: z.array(z.string()).optional().describe('Free-form training constraints to add, e.g. "no overhead pressing"'),
-            removeChatRefinements: z.array(z.string()).optional().describe('Free-form constraints to remove only on User-stated change — never to enable a preferred split/style'),
+            removeChatRefinements: z.array(z.string()).optional().describe('Free-form constraints to remove only on User-stated change - never to enable a preferred split/style'),
             preferences: constraintPreferencesUpdateSchema,
             rawStatement: z.string().optional().describe("The user's exact words expressing this constraint"),
         }),
@@ -1146,7 +1177,7 @@ export function getTools({
             const hasRawStatement = Boolean(rawStatement?.trim());
 
             if (!hasArrayChange && !hasPreferenceChange && !hasRawStatement) {
-                return { skipped: true as const, reason: 'Nothing to persist — empty update skipped.' };
+                return { skipped: true as const, reason: 'Nothing to persist - empty update skipped.' };
             }
 
             const arrayFields = [
@@ -1192,7 +1223,7 @@ export function getTools({
                 return { type: 'text' as const, value: `Error: ${output.error}` };
             }
             if ('skipped' in output && output.skipped) {
-                return { type: 'text' as const, value: output.reason ?? 'Nothing to persist — empty update skipped.' };
+                return { type: 'text' as const, value: output.reason ?? 'Nothing to persist - empty update skipped.' };
             }
             const p = output.updatedProfile;
             const summary = [
@@ -1206,18 +1237,18 @@ export function getTools({
     });
 
     // Gemini rejects empty-string enum members in tool JSON Schema ("enum[N]: cannot be empty").
-    // Clear / unset = null only — never "" in z.enum.
+    // Clear / unset = null only - never "" in z.enum.
     const updateTrainingProfileTool = tool({
         description:
             'Persist and update the active Training profile (Agentic memory person facts: age, sex, height, experience, physique phase, training focus, activity level, session duration). ' +
-            'Call after questionnaire unlock only when Questionnaire advanced / Training profile fields are non-empty; skip entirely when empty — do not make empty updates. ' +
+            'Call after questionnaire unlock only when Questionnaire advanced / Training profile fields are non-empty; skip entirely when empty - do not make empty updates. ' +
             'Do not block planProgram, getExerciseList, or buildWeek waiting on it. ' +
             'Set freely when the user states a person fact. Clear a field only on a User-stated change (pass null for that field) or direct the user to Edit profile. ' +
-            'Not the Mutation constraint gate — use updateConstraintProfile for injuries, exclusions, and training preferences. ' +
+            'Not the Mutation constraint gate - use updateConstraintProfile for injuries, exclusions, and training preferences. ' +
             'Examples: questionnaire advanced submit; "I\'m 32"; "I\'m cutting"; "session cap 45 minutes"; "prefer not to say sex" (sex: null).',
         inputSchema: z.object({
             age: z.number().int().min(14).max(100).nullable().optional()
-                .describe('Age in years (14–100). null clears on User-stated change only.'),
+                .describe('Age in years (14-100). null clears on User-stated change only.'),
             sex: z.enum(['male', 'female']).nullable().optional()
                 .describe('male | female. null clears / prefer-not-to-say on User-stated change only.'),
             heightCm: z.number().min(120).max(230).nullable().optional()
@@ -1243,7 +1274,7 @@ export function getTools({
             activityLevel: z.enum(['sedentary', 'light', 'moderate', 'high', 'extreme']).nullable().optional()
                 .describe('Activity level short form. null clears on User-stated change only.'),
             sessionDurationMin: z.number().int().min(10).max(180).nullable().optional()
-                .describe('Session duration cap in minutes (10–180). null clears on User-stated change only.'),
+                .describe('Session duration cap in minutes (10-180). null clears on User-stated change only.'),
         }),
         execute: async (input) => {
             if (!trainingProfile) {
@@ -1263,7 +1294,7 @@ export function getTools({
 
             const provided = keys.filter((key) => input[key] !== undefined);
             if (provided.length === 0) {
-                return { skipped: true as const, reason: 'Nothing to persist — empty update skipped.' };
+                return { skipped: true as const, reason: 'Nothing to persist - empty update skipped.' };
             }
 
             for (const key of provided) {
@@ -1305,7 +1336,7 @@ export function getTools({
                 return { type: 'text' as const, value: `Error: ${output.error}` };
             }
             if ('skipped' in output && output.skipped) {
-                return { type: 'text' as const, value: output.reason ?? 'Nothing to persist — empty update skipped.' };
+                return { type: 'text' as const, value: output.reason ?? 'Nothing to persist - empty update skipped.' };
             }
             const p = output.updatedProfile;
             const summary = [
@@ -1325,6 +1356,7 @@ export function getTools({
     const baseTools = {
         getExerciseList: getExerciseListTool,
         getMoreInfoQuestions: getMoreInfoQuestionsTool,
+        openHevyExportGate: openHevyExportGateTool,
         planProgram: planProgramTool,
         readProgram: readProgramTool,
         buildWeek: buildWeekTool,

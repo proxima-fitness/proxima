@@ -5,8 +5,8 @@
  * consent API routes.
  *
  * React Query keys:
- * - `CURRENT_POLICY_VERSIONS_QUERY_KEY` — `GET /api/policy-versions/current`
- * - `USER_CONSENTS_QUERY_KEY` — `GET /api/user-consents`
+ * - `CURRENT_POLICY_VERSIONS_QUERY_KEY` - `GET /api/policy-versions/current`
+ * - `USER_CONSENTS_QUERY_KEY` - `GET /api/user-consents`
  *
  * Depends on: @/lib/user-consents, @supabase/supabase-js
  * Used by: /api/user-consents route, consent dialog (01d), sign-up (01e), privacy settings (01f)

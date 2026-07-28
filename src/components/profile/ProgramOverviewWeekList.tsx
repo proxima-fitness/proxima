@@ -2,7 +2,7 @@
  * @module ProgramOverviewWeekList
  *
  * Per-program overview slide body (ADR 0010 / 02–04, ADR 0020 / 01–03,
- * ADR 0011 / 04): chrome (title | Export / Edit), week rail + Selected week
+ * ADR 0011 / 04): shell (title | Export / Edit), week rail + Selected week
  * preview, Mark week complete, Hevy mirror.
  *
  * Depends on: useProgramHevyWeekLinks, useProgramScheduleHistoryDays, useHevyPrograms,
@@ -15,7 +15,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Check, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -29,6 +28,7 @@ import {
     useMarkProgramWeekComplete,
 } from "@/hooks/useProgramWeekComplete";
 import { useUserContext } from "@/contexts/UserContext";
+import { useNavigateToEditHevyProgram } from "@/hooks/useNavigateToEditHevyProgram";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProgramOverviewCtas } from "./ProgramOverviewCtas";
@@ -39,6 +39,7 @@ import {
     deriveCompletedWeeksFromLinks,
     deriveCompletedWeeksFromScheduleHistory,
     deriveProgramOverviewWeekStatuses,
+    findHevyProgramForWeek,
     mergeCompletedWeeks,
     resolveSelectedWeek,
     weekStatusLabel,
@@ -107,6 +108,8 @@ export function ProgramOverviewWeekList({
     );
     const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
     const markComplete = useMarkProgramWeekComplete(programId);
+    const navigateToEdit = useNavigateToEditHevyProgram();
+    const [isEnteringEdit, setIsEnteringEdit] = useState(false);
 
     const linkedWeeks = links.map((link) => link.nth_week);
     const expectedDaysByWeek = new Map<number, number>();
@@ -148,6 +151,34 @@ export function ProgramOverviewWeekList({
             ? (rows.find((row) => row.week === resolvedSelected) ?? null)
             : null;
     const selectedIsCurrent = selectedRow?.status === "current";
+
+    /** Still fetching Hevy — distinct from "fetched, folder is gone". */
+    const hevyPending = Boolean(hevyApiKey) && isLoadingHevy;
+    /** Link row for the Selected week — carries the folder id and day-ordered routine ids. */
+    const currentWeekLink = selectedIsCurrent
+        ? (links.find((link) => link.nth_week === resolvedSelected) ?? null)
+        : null;
+    /** Hevy folder that is the Selected week's Hevy week copy (null → no Edit target). */
+    const currentWeekHevyProgram = selectedIsCurrent
+        ? findHevyProgramForWeek(hevyPrograms, links, resolvedSelected)
+        : null;
+
+    /** Edit current week: hand the linked folder to the builder, ordered by the link. */
+    const handleEditCurrentWeek = async (program: THevyProgramItem, week: number) => {
+        if (isEnteringEdit) return;
+        setIsEnteringEdit(true);
+        try {
+            await navigateToEdit(program, {
+                programId,
+                nthWeek: week,
+                hevyRoutineIds: currentWeekLink?.hevy_routine_ids ?? [],
+            });
+        } catch (err) {
+            setIsEnteringEdit(false);
+            const message = err instanceof Error ? err.message : "Could not open this week.";
+            toast.error(message);
+        }
+    };
 
     const handleMarkComplete = (week: number) => {
         markComplete.mutate(week, {
@@ -222,21 +253,27 @@ export function ProgramOverviewWeekList({
                                         Mark week complete
                                     </Button>
                                 ) : null}
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-8 rounded-full text-muted-foreground"
-                                    asChild
-                                >
-                                    {/* Stub until ADR 0013 Hevy-folder Edit current week arrival */}
-                                    <Link
-                                        href={`/build-program?shareId=${programId}&editWeek=${resolvedSelected}`}
+                                {/* Pending Hevy → disabled, not absent: a missing button reads
+                                    as "no Hevy week copy", which is a different thing. */}
+                                {hevyPending || currentWeekHevyProgram ? (
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-8 rounded-full text-muted-foreground"
+                                        disabled={hevyPending || isEnteringEdit || !currentWeekHevyProgram}
+                                        onClick={() => {
+                                            if (!currentWeekHevyProgram) return;
+                                            void handleEditCurrentWeek(
+                                                currentWeekHevyProgram,
+                                                resolvedSelected,
+                                            );
+                                        }}
                                     >
                                         <Pencil className="size-3.5" aria-hidden />
-                                        Edit week
-                                    </Link>
-                                </Button>
+                                        Edit current week
+                                    </Button>
+                                ) : null}
                             </div>
                         ) : null}
                     </div>
@@ -244,10 +281,11 @@ export function ProgramOverviewWeekList({
             )}
 
             <ProgramOverviewHevyMirror
+                programId={programId}
                 links={links}
                 completedWeeks={completedWeeks}
                 hevyPrograms={hevyPrograms}
-                isLoadingHevy={Boolean(hevyApiKey) && isLoadingHevy}
+                isLoadingHevy={hevyPending}
             />
         </div>
     );

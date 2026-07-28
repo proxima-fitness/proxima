@@ -61,7 +61,7 @@ import {
     type TConstraintPreferenceKey,
 } from "./constraint-profile-options";
 
-/** True when nothing to edit — structured empty and no raw statements. */
+/** True when nothing to edit - structured empty and no raw statements. */
 function isConstraintSectionEmpty(
     record: TUserConstraintProfileRecord | null | undefined,
 ): boolean {
@@ -107,7 +107,7 @@ interface ISettingsGroupProps {
     children: ReactNode;
 }
 
-/** Caption + inset panel (iOS Settings–style grouped list). */
+/** Caption + inset panel (iOS Settings-style grouped list). */
 function SettingsGroup({ caption, description, children }: ISettingsGroupProps) {
     return (
         <div className="space-y-2">
@@ -479,7 +479,7 @@ function ConstraintProfileEditor({
 
             <SettingsGroup
                 caption="Raw statements"
-                description="View and delete only — statements come from coaching chat."
+                description="View and delete only - statements come from coaching chat."
             >
                 <RawStatementsList
                     items={draft.rawStatements}

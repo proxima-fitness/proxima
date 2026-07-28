@@ -26,6 +26,8 @@ import { cn } from "@/lib/utils";
 import { useNavigateToEditHevyProgram } from "@/hooks/useNavigateToEditHevyProgram";
 
 export type TProgramOverviewHevyMirrorProps = {
+    /** Proxima program id — enables Edit current week scoping on linked rows. */
+    programId?: number;
     /** Program–Hevy links for this slide’s Proxima program (omit for Hevy-only). */
     links?: readonly TProgramHevyWeekLink[];
     /** Weeks already Week complete — used to pick Current week copy. */
@@ -40,6 +42,10 @@ type TMirrorFolder = {
     key: string;
     program: THevyProgramItem;
     folderId: number;
+    /** 1-based linked week, or null for an unlinked / Hevy-only folder. */
+    nthWeek: number | null;
+    /** Link routine ids ordered by day; empty for an unlinked folder. */
+    hevyRoutineIds: readonly string[];
     weekLabel: string | null;
     isCurrent: boolean;
 };
@@ -89,6 +95,8 @@ export function buildMirrorFolders(
                     key: `hevy-${folderId}-${index}`,
                     program,
                     folderId,
+                    nthWeek: null,
+                    hevyRoutineIds: [],
                     weekLabel: null,
                     isCurrent: false,
                 },
@@ -108,6 +116,8 @@ export function buildMirrorFolders(
             key: `link-${link.nth_week}-${link.hevy_folder_id}`,
             program,
             folderId: link.hevy_folder_id,
+            nthWeek: link.nth_week,
+            hevyRoutineIds: link.hevy_routine_ids ?? [],
             weekLabel: `Week ${link.nth_week}`,
             isCurrent: currentWeek != null && link.nth_week === currentWeek,
         });
@@ -129,6 +139,8 @@ export function buildMirrorFolders(
             key: `other-${folderId}`,
             program,
             folderId,
+            nthWeek: null,
+            hevyRoutineIds: [],
             weekLabel: null,
             isCurrent: false,
         });
@@ -240,6 +252,7 @@ function MirrorFolderList({
  * Compact Hevy mirror list for one overview slide (or empty-state Hevy-only).
  */
 export function ProgramOverviewHevyMirror({
+    programId,
     links = [],
     completedWeeks = [],
     hevyPrograms,
@@ -280,7 +293,23 @@ export function ProgramOverviewHevyMirror({
         if (busyKey) return;
         setBusyKey(folder.key);
         try {
-            await navigateToEdit(folder.program);
+            // Edit current week scoping only for a linked week that is still live.
+            // A Week complete week is history — editing its folder is a plain
+            // Hevy-scope edit and must not claim a program + week (ADR 0013).
+            const scoped =
+                programId != null
+                && folder.nthWeek != null
+                && !completedWeeks.includes(folder.nthWeek);
+            await navigateToEdit(
+                folder.program,
+                scoped
+                    ? {
+                        programId,
+                        nthWeek: folder.nthWeek as number,
+                        hevyRoutineIds: folder.hevyRoutineIds,
+                    }
+                    : {},
+            );
         } finally {
             setBusyKey(null);
         }

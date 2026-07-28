@@ -44,6 +44,18 @@ import { ALWAYS_AVAILABLE_CHAT_TOOLS } from './always-available-tools';
 // This is important for longer programs that may take time to generate
 export const maxDuration = 120;
 
+/** Presence-only vault check - never returns the Hevy API key string. */
+async function hasHevyApiKey(
+    supabase: Awaited<ReturnType<typeof createClient>>,
+    userId: string,
+): Promise<boolean> {
+    const { data, error } = await supabase.rpc('read_secret', {
+        secret_name: `hevy_api_key_${userId}`,
+    });
+    if (error || data == null) return false;
+    return typeof data === 'string' ? data.trim().length > 0 : Boolean(data);
+}
+
 function buildSkillsPrompt(skills: ISkillMetadata[]): string {
     if (skills.length === 0) return '';
 
@@ -153,13 +165,14 @@ async function handleChatPost(req: Request) {
             async () => {
                 const sanitizedMessages = sanitizeMessagesWithUnresolvedToolCalls(messages);
 
-                const [persistedConstraints, persistedTrainingProfile, latestBodyMeasurement] = user
+                const [persistedConstraints, persistedTrainingProfile, latestBodyMeasurement, hevyKeyOnFile] = user
                     ? await Promise.all([
                         getUserConstraints(user.id, supabase),
                         getUserTrainingProfile(user.id, supabase),
                         getLatestBodyMeasurement(supabase, user.id),
+                        hasHevyApiKey(supabase, user.id),
                     ])
-                    : [null, null, null];
+                    : [null, null, null, false];
 
                 const constraintProfile = mergeConstraintProfiles(
                     persistedConstraints,
@@ -214,7 +227,8 @@ async function handleChatPost(req: Request) {
                     latestBodyMeasurement,
                     episodes,
                     isInLbs: weightInLbs,
-                    isSignedIn: Boolean(user),
+                    isAuthenticated: Boolean(user),
+                    hasHevyApiKey: hevyKeyOnFile,
                 });
                 const buildWeekOnceGuard: IBuildWeekOnceGuard = { locked: false };
                 const tools = getTools({

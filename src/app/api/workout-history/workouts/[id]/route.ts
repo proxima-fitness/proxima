@@ -14,7 +14,7 @@ type TRouteContext = {
 };
 
 /**
- * GET /api/workout-history/workouts/[id] — full nested logged workout.
+ * GET /api/workout-history/workouts/[id] - full nested logged workout.
  */
 export async function GET(_request: Request, context: TRouteContext) {
     try {

@@ -93,7 +93,7 @@ export function useMicTranscription({
         if (text?.trim()) {
           onTranscript(text.trim());
         } else {
-          toast.info("No speech detected — try again.");
+          toast.info("No speech detected - try again.");
         }
       } catch (err) {
         console.error("[mic] transcription error:", err);

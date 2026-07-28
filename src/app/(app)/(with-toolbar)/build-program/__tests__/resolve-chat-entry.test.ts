@@ -115,9 +115,9 @@ function baseInput(overrides: Partial<Parameters<typeof resolveChatEntryPlan>[0]
     };
 }
 
-describe("resolveChatEntryPlan — arrival matrix", () => {
-    // A1 — Home prompt (?search=, optional pre-mint ?chat=)
-    it("A1: home search — auto-send when ready, empty bootstrap, send-path-stable", () => {
+describe("resolveChatEntryPlan - arrival matrix", () => {
+    // A1 - Home prompt (?search=, optional pre-mint ?chat=)
+    it("A1: home search - auto-send when ready, empty bootstrap, send-path-stable", () => {
         const plan = resolveChatEntryPlan(
             baseInput({ user: loggedInUser, search: "build me a program" }),
         );
@@ -128,15 +128,15 @@ describe("resolveChatEntryPlan — arrival matrix", () => {
         expect(plan.enableHistoryFetch).toBe(false);
     });
 
-    it("A1 anon: home search — empty bootstrap (not anonymous-local restore)", () => {
+    it("A1 anon: home search - empty bootstrap (not anonymous-local restore)", () => {
         const plan = resolveChatEntryPlan(baseInput({ search: "build me a program" }));
         expect(plan.autoSend).toBe("when-search-ready");
         expect(plan.historyBootstrap).toBe("empty");
         expect(plan.sessionOnFirstSend).toBe("anonymous-only");
     });
 
-    // A2 — Sidebar recent (?chat=, no search)
-    it("A2: sidebar resume — never auto-send, db bootstrap, sidebar remount", () => {
+    // A2 - Sidebar recent (?chat=, no search)
+    it("A2: sidebar resume - never auto-send, db bootstrap, sidebar remount", () => {
         const pending = resolveChatEntryPlan(
             baseInput({
                 user: loggedInUser,
@@ -165,7 +165,7 @@ describe("resolveChatEntryPlan — arrival matrix", () => {
         expect(ready.shellStability).toBe("send-path-stable");
     });
 
-    it("A3′: mint + sidebarRowKnown — send-path-stable shell, no history fetch until confirmed", () => {
+    it("A3′: mint + sidebarRowKnown - send-path-stable shell, no history fetch until confirmed", () => {
         const plan = resolveChatEntryPlan(
             baseInput({
                 user: loggedInUser,
@@ -188,16 +188,16 @@ describe("resolveChatEntryPlan — arrival matrix", () => {
         ).toBe("logged-in-session");
     });
 
-    // A3 — New Chat anon (?empty=true)
-    it("A3: anon new chat — anonymous-local bootstrap, never auto-send", () => {
+    // A3 - New Chat anon (?empty=true)
+    it("A3: anon new chat - anonymous-local bootstrap, never auto-send", () => {
         const plan = resolveChatEntryPlan(baseInput());
         expect(plan.historyBootstrap).toBe("anonymous-local");
         expect(plan.autoSend).toBe("never");
         expect(plan.sessionOnFirstSend).toBe("anonymous-only");
     });
 
-    // A3′ — New Chat logged in (?empty=true, no chat)
-    it("A3′: logged-in new chat — empty bootstrap, mint on first send", () => {
+    // A3′ - New Chat logged in (?empty=true, no chat)
+    it("A3′: logged-in new chat - empty bootstrap, mint on first send", () => {
         const plan = resolveChatEntryPlan(baseInput({ user: loggedInUser }));
         expect(plan.historyBootstrap).toBe("empty");
         expect(plan.autoSend).toBe("never");
@@ -212,8 +212,8 @@ describe("resolveChatEntryPlan — arrival matrix", () => {
         expect(plan.enableHistoryFetch).toBe(false);
     });
 
-    // A4 — Shared program (?shareId=, no search)
-    it("A4: shared program only — never auto-send until user chats", () => {
+    // A4 - Shared program (?shareId=, no search)
+    it("A4: shared program only - never auto-send until user chats", () => {
         const plan = resolveChatEntryPlan(
             baseInput({ shareId: "42", sharedProgramLoadAttempted: false }),
         );
@@ -221,28 +221,28 @@ describe("resolveChatEntryPlan — arrival matrix", () => {
         expect(plan.historyBootstrap).toBe("anonymous-local");
     });
 
-    // A5 — Resume draft (?resume=true)
-    it("A5: resume draft — same as bare new session until dispatch", () => {
+    // A5 - Resume draft (?resume=true)
+    it("A5: resume draft - same as bare new session until dispatch", () => {
         const plan = resolveChatEntryPlan(baseInput({ user: loggedInUser }));
         expect(plan.autoSend).toBe("never");
         expect(plan.historyBootstrap).toBe("empty");
     });
 
-    // A6 — Empty template (?empty=true)
-    it("A6: empty template — never auto-send, empty bootstrap", () => {
+    // A6 - Empty template (?empty=true)
+    it("A6: empty template - never auto-send, empty bootstrap", () => {
         const plan = resolveChatEntryPlan(baseInput({ user: loggedInUser }));
         expect(plan.autoSend).toBe("never");
         expect(plan.historyBootstrap).toBe("empty");
     });
 
-    // A8 — Hevy edit (?resume=true&edit=true&hevy=true) — resolver treats like resume
-    it("A8: hevy edit resume — never auto-send without search", () => {
+    // A8 - Hevy edit (?resume=true&edit=true&hevy=true) - resolver treats like resume
+    it("A8: hevy edit resume - never auto-send without search", () => {
         const plan = resolveChatEntryPlan(baseInput({ user: loggedInUser }));
         expect(plan.autoSend).toBe("never");
     });
 
-    // A9 — Stall fix shared + search (?shareId=&search=)
-    it("A9: shareId + search — deferred auto-send until program loads", () => {
+    // A9 - Stall fix shared + search (?shareId=&search=)
+    it("A9: shareId + search - deferred auto-send until program loads", () => {
         const plan = resolveChatEntryPlan(
             baseInput({
                 user: loggedInUser,
@@ -255,16 +255,16 @@ describe("resolveChatEntryPlan — arrival matrix", () => {
         expect(plan.autoSend).toBe("deferred-until-share-loaded");
     });
 
-    // A10 — Stall fix Hevy (?resume=true&search=)
-    it("A10: resume + search — when-search-ready", () => {
+    // A10 - Stall fix Hevy (?resume=true&search=)
+    it("A10: resume + search - when-search-ready", () => {
         const plan = resolveChatEntryPlan(
             baseInput({ user: loggedInUser, search: "continue building" }),
         );
         expect(plan.autoSend).toBe("when-search-ready");
     });
 
-    // A11 — Sign-in redirect (?resume=true via login) — anon snapshot bootstrap until migration
-    it("A11: sign-in redirect resume — sign-in-migration-local when anon snapshot present", () => {
+    // A11 - Sign-in redirect (?resume=true via login) - anon snapshot bootstrap until migration
+    it("A11: sign-in redirect resume - sign-in-migration-local when anon snapshot present", () => {
         const plan = resolveChatEntryPlan(
             baseInput({ user: loggedInUser, anonLocalMessageCount: 2 }),
         );
@@ -273,20 +273,20 @@ describe("resolveChatEntryPlan — arrival matrix", () => {
         expect(plan.shellStability).toBe("send-path-stable");
     });
 
-    it("A11: logged-in without anon snapshot — empty bootstrap", () => {
+    it("A11: logged-in without anon snapshot - empty bootstrap", () => {
         const plan = resolveChatEntryPlan(baseInput({ user: loggedInUser }));
         expect(plan.historyBootstrap).toBe("empty");
     });
 
-    // A12 — Shared link external (?shareId= from ShareDialog)
-    it("A12: external shared link — never auto-send without search", () => {
+    // A12 - Shared link external (?shareId= from ShareDialog)
+    it("A12: external shared link - never auto-send without search", () => {
         const plan = resolveChatEntryPlan(
             baseInput({ shareId: "99", sharedProgramLoadAttempted: true }),
         );
         expect(plan.autoSend).toBe("never");
     });
 
-    it("pre-minted chat + search — send-path-stable, no history fetch until confirmed", () => {
+    it("pre-minted chat + search - send-path-stable, no history fetch until confirmed", () => {
         const plan = resolveChatEntryPlan(
             baseInput({
                 user: loggedInUser,
@@ -562,7 +562,7 @@ describe("buildShellKey", () => {
         ).toBe(`chat-${chatId}`);
     });
 
-    it("chat-scoped key after sidebar history loaded (A2 — no logged-in-session collapse)", () => {
+    it("chat-scoped key after sidebar history loaded (A2 - no logged-in-session collapse)", () => {
         const beforeSend = resolveChatEntryPlan(
             baseInput({
                 user: loggedInUser,

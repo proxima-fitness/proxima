@@ -565,6 +565,31 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 </Tool>
                                             );
                                         }
+                                        case "tool-openHevyExportGate": {
+                                            const toolState =
+                                                (part as { state?: TToolPart["state"] }).state ?? "output-available";
+                                            const isActiveGate = isLastMessage;
+                                            return (
+                                                <Tool
+                                                    key={`${message.id}-${index}-hevy-export-gate`}
+                                                    defaultOpen
+                                                    className="mx-auto w-full max-w-3xl px-2 md:px-4 pt-2"
+                                                >
+                                                    <ToolHeader
+                                                        type="tool-openHevyExportGate"
+                                                        state={toolState}
+                                                        title="Export to Hevy"
+                                                    />
+                                                    <ToolContent className="w-full">
+                                                        <p className="text-sm text-muted-foreground py-2">
+                                                            {isActiveGate
+                                                                ? "Finish export setup below."
+                                                                : "Export setup opened."}
+                                                        </p>
+                                                    </ToolContent>
+                                                </Tool>
+                                            );
+                                        }
                                         case "tool-buildWeek": {
                                             const buildPart = part as {
                                                 input?: { totalDays?: number; routines?: Array<{ title?: string; exercises?: Array<{ title?: string }> }> };
@@ -622,7 +647,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                             <span>
                                                                                 <span className="text-foreground font-medium">{r?.title ?? `Day ${ri + 1}`}</span>
                                                                                 {r.exercises?.length ? (
-                                                                                    <span className="text-muted-foreground"> — {r.exercises.length} exercise{r.exercises.length === 1 ? "" : "s"}</span>
+                                                                                    <span className="text-muted-foreground"> - {r.exercises.length} exercise{r.exercises.length === 1 ? "" : "s"}</span>
                                                                                 ) : null}
                                                                             </span>
                                                                         </li>
@@ -875,7 +900,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 output?: { updatedProfile?: unknown; error?: string; skipped?: boolean };
                                             };
                                             const toolState: TToolPart["state"] = constraintPart.state ?? "output-available";
-                                            // Empty no-op (skipped questionnaire / nothing to persist) — hide chip
+                                            // Empty no-op (skipped questionnaire / nothing to persist) - hide chip
                                             if (toolState === "output-available" && constraintPart.output?.skipped) {
                                                 return null;
                                             }
@@ -897,7 +922,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 output?: { updatedProfile?: unknown; error?: string; skipped?: boolean };
                                             };
                                             const toolState: TToolPart["state"] = trainingPart.state ?? "output-available";
-                                            // Empty no-op (skipped questionnaire / nothing to persist) — hide chip
+                                            // Empty no-op (skipped questionnaire / nothing to persist) - hide chip
                                             if (toolState === "output-available" && trainingPart.output?.skipped) {
                                                 return null;
                                             }

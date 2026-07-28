@@ -107,7 +107,7 @@ export function buildWorkoutDetailHref(
 
 export type TWorkoutDetailBackLink = { href: string; label: string };
 
-/** Back link for workout detail — program builder when return context present, else profile. */
+/** Back link for workout detail - program builder when return context present, else profile. */
 export function resolveWorkoutDetailBackLink(options: {
     from?: string | null;
     returnQs?: string | null;

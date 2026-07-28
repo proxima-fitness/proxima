@@ -71,7 +71,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                     />
                 </div>
 
-                {/* CTA centers in space above product slot — same flex budget as before. */}
+                {/* CTA centers in space above product slot - same flex budget as before. */}
                 <div className="relative z-10 flex w-full flex-1 flex-col items-center justify-center px-0 py-6">
                     <div className="flex w-full flex-col items-center gap-6 sm:gap-8">
                         <motion.div
@@ -105,7 +105,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                 </div>
 
                 {/*
-                  Product peek — desktop only.
+                  Product peek - desktop only.
                   Slot height is the flex budget (keeps CTA put). On tall screens the
                   preview paints taller upward into the gap below the CTA.
                 */}

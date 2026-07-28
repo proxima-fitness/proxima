@@ -122,7 +122,49 @@ describe("ProgramOverviewHevyMirror", () => {
         expect(screen.getByText(/Week 2 · Current/)).toBeTruthy();
         expect(screen.queryByText("Week 1 - Strength")).toBeNull();
         fireEvent.click(screen.getByRole("button", { name: /Edit/i }));
-        expect(navigateToEdit).toHaveBeenCalledWith(current);
+        expect(navigateToEdit).toHaveBeenCalledWith(current, {});
+    });
+
+    it("scopes a live linked row to Edit current week, passing link routine ids", () => {
+        // ADR 0013 / 01 — linked folder hands off program + week + day order.
+        const current = makeHevyProgram(20, "Week 2 - Strength");
+        render(
+            <ProgramOverviewHevyMirror
+                programId={7}
+                links={[
+                    makeLink({ nth_week: 1, hevy_folder_id: 10 }),
+                    makeLink({ nth_week: 2, hevy_folder_id: 20, hevy_routine_ids: ["r1", "r2"] }),
+                ]}
+                completedWeeks={[1]}
+                hevyPrograms={[makeHevyProgram(10, "Week 1 - Strength"), current]}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole("button", { name: /Edit/i }));
+        expect(navigateToEdit).toHaveBeenCalledWith(current, {
+            programId: 7,
+            nthWeek: 2,
+            hevyRoutineIds: ["r1", "r2"],
+        });
+    });
+
+    it("does not scope a Week complete row — that folder is history", () => {
+        // Editing a completed week's folder is a plain Hevy-scope edit; claiming
+        // program + week would make it look like Edit current week.
+        const completed = makeHevyProgram(10, "Week 1 - Strength");
+        render(
+            <ProgramOverviewHevyMirror
+                programId={7}
+                links={[makeLink({ nth_week: 1, hevy_folder_id: 10 })]}
+                completedWeeks={[1]}
+                hevyPrograms={[completed]}
+            />,
+        );
+
+        // No incomplete linked week → no Current row, so it sits behind the disclosure.
+        fireEvent.click(screen.getByRole("button", { name: /Expand other weeks/i }));
+        fireEvent.click(screen.getByRole("button", { name: /Edit/i }));
+        expect(navigateToEdit).toHaveBeenCalledWith(completed, {});
     });
 
     it("keeps other folders behind a collapsed disclosure", () => {

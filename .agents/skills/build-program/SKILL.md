@@ -4,7 +4,7 @@ description: >-
   Workflow for creating a new workout program. Load this skill when the user
   wants to create, build, or generate a new workout program, training program,
   or exercise routine from scratch. Do not use for shortening/lengthening an
-  existing program on the grid — use mutate-program instead.
+  existing program on the grid - use mutate-program instead.
 allowedTools:
   - planProgram
   - getExerciseList
@@ -21,19 +21,19 @@ allowedTools:
 
 **Questionnaire first (new program):** When the user wants to **create** a new workout program (including the **first** message in a new chat), you **must** send a short **visible** reply, then call **getMoreInfoQuestions** before **planProgram**, **getExerciseList**, **buildWeek**, or **mutateProgram**. Stop and wait until they finish the questionnaire or send an explicit go-ahead (e.g. "Build my program"). Do not skip the questionnaire to start planning or building.
 
-**Persist Constraint Profile (same turn, non-blocking):** On the first turn after questionnaire submit or “Build my program”, call **`updateConstraintProfile` once** **only when there is something to persist** — non-empty questionnaire fields from the Active Constraint Profile / request context that are not yet written to Agentic memory (health → `addInjuries`; exclude equipment → `addExcludedEquipment`; exclude areas → `addExcludedAreas`; split/variability/progression/deload/peak/warmup → `preferences`). This is a background backup — do **not** delay or block **planProgram**, **getExerciseList**, or **buildWeek** waiting on it. Seeing constraints in the Active Constraint Profile does **not** mean they are persisted — if they are non-empty and not yet written, call the tool. **If every field is empty** (e.g. user skipped the questionnaire with no answers): **do not call** `updateConstraintProfile` — empty updates are noise.
+**Persist Constraint Profile (same turn, non-blocking):** On the first turn after questionnaire submit or “Build my program”, call **`updateConstraintProfile` once** **only when there is something to persist** - non-empty questionnaire fields from the Active Constraint Profile / request context that are not yet written to Agentic memory (health → `addInjuries`; exclude equipment → `addExcludedEquipment`; exclude areas → `addExcludedAreas`; split/variability/progression/deload/peak/warmup → `preferences`). This is a background backup - do **not** delay or block **planProgram**, **getExerciseList**, or **buildWeek** waiting on it. Seeing constraints in the Active Constraint Profile does **not** mean they are persisted - if they are non-empty and not yet written, call the tool. **If every field is empty** (e.g. user skipped the questionnaire with no answers): **do not call** `updateConstraintProfile` - empty updates are noise.
 
-**Persist Training Profile (same turn, non-blocking):** On that same unlock turn, call **`updateTrainingProfile` once** **only when Questionnaire advanced / Active Training Profile fields are non-empty** (age, sex, heightCm, experienceLevel, physiquePhase, trainingFocus, activityLevel, sessionDurationMin). Same spirit as Constraint profile — background backup; do **not** block plan/list/build. **If every Training profile field is empty**, **do not call** `updateTrainingProfile`.
+**Persist Training Profile (same turn, non-blocking):** On that same unlock turn, call **`updateTrainingProfile` once** **only when Questionnaire advanced / Active Training Profile fields are non-empty** (age, sex, heightCm, experienceLevel, physiquePhase, trainingFocus, activityLevel, sessionDurationMin). Same spirit as Constraint profile - background backup; do **not** block plan/list/build. **If every Training profile field is empty**, **do not call** `updateTrainingProfile`.
 
 After **getExerciseList**, call **buildWeek exactly once** per user request to generate the new program week template (all training days in that single tool call). Do **not** call buildWeek again after it succeeds. Use **mutateProgram** for every post-build change (reps, RPE, rest, titles, notes, and multi-week periodization); never a second buildWeek to fix or tweak the week.
 
 ## Checklist
 
-**STOP — Questionnaire Gate.** If this is a new program request, you **must** call **getMoreInfoQuestions** and then **terminate your response**. Do not perform any internal reasoning about exercise selection, do not call **getExerciseList**, and do not call **planProgram** until the user has actually provided the data. Treat the questionnaire as a **gate** that must be unlocked by a fresh user message.
+**STOP - Questionnaire Gate.** If this is a new program request, you **must** call **getMoreInfoQuestions** and then **terminate your response**. Do not perform any internal reasoning about exercise selection, do not call **getExerciseList**, and do not call **planProgram** until the user has actually provided the data. Treat the questionnaire as a **gate** that must be unlocked by a fresh user message.
 
 - [ ] **New program:** Brief visible message, then **getMoreInfoQuestions** immediately. Do **not** call **planProgram**, **getExerciseList**, **buildWeek**, or **mutateProgram** until the questionnaire is done or the user clearly continues (e.g. "Build my program"). Then proceed with the steps below.
-- [ ] **Persist Constraint Profile:** On the unlock turn, call **`updateConstraintProfile` once** only if there are non-empty fields to persist (same turn as plan/list/build — non-blocking; skip entirely when empty).
-- [ ] **Persist Training Profile:** On the unlock turn, call **`updateTrainingProfile` once** only if Questionnaire advanced / Training profile fields are non-empty (same turn — non-blocking; skip entirely when empty).
+- [ ] **Persist Constraint Profile:** On the unlock turn, call **`updateConstraintProfile` once** only if there are non-empty fields to persist (same turn as plan/list/build - non-blocking; skip entirely when empty).
+- [ ] **Persist Training Profile:** On the unlock turn, call **`updateTrainingProfile` once** only if Questionnaire advanced / Training profile fields are non-empty (same turn - non-blocking; skip entirely when empty).
 - [ ] **planProgram** once: structured plan for the full mesocycle (duration, blocks, optional week-by-week progression table). Use questionnaire answers, program builder context (days/week, weeks), and loaded resources (powerlifting/bodybuilding/hyrox/crossfit/weight-loss) where relevant.
 - [ ] getExerciseList with user requirements (respect program builder context for days per week / program length if available).
 - [ ] Select exercises from the returned list (id: title). Use only IDs that appear in the list.
@@ -44,46 +44,46 @@ After **getExerciseList**, call **buildWeek exactly once** per user request to g
 
 ## Tool dependency rule
 
-**getExerciseList** and **planProgram** are **strictly dependent** on the output of the questionnaire. Calling them before the questionnaire is answered is a waste of context and a violation of the workflow. Do not "pre-fetch" the exercise list or begin planning to be proactive — wait for the user's questionnaire answers or explicit go-ahead first. On the unlock turn, call **`updateConstraintProfile`** and **`updateTrainingProfile`** as same-turn backups only when there are non-empty fields to persist for each (does not gate plan/list/build).
+**getExerciseList** and **planProgram** are **strictly dependent** on the output of the questionnaire. Calling them before the questionnaire is answered is a waste of context and a violation of the workflow. Do not "pre-fetch" the exercise list or begin planning to be proactive - wait for the user's questionnaire answers or explicit go-ahead first. On the unlock turn, call **`updateConstraintProfile`** and **`updateTrainingProfile`** as same-turn backups only when there are non-empty fields to persist for each (does not gate plan/list/build).
 
 ## Warmup exercises
 
-**Warmup exercises vs warmup sets:** **Warmup sets** are lighter sets of the *same* working lift (set `type` may be `"warmup"` in the schema). **Warmup exercises** are *separate movements* chosen from **getExerciseList**—mobility, activation, or easy patterns that prepare the body before working sets. Do not rely on routine notes alone for prep.
+**Warmup exercises vs warmup sets:** **Warmup sets** are lighter sets of the *same* working lift (set `type` may be `"warmup"` in the schema). **Warmup exercises** are *separate movements* chosen from **getExerciseList**-mobility, activation, or easy patterns that prepare the body before working sets. Do not rely on routine notes alone for prep.
 
 **Questionnaire preference (`warmup-exercises` / Warmup exercises):** Honor the constraint profile / questionnaire prefs.
 
 - **yes** or **unset/empty** (skipped questionnaire): include warmup exercises as below (default).
-- **no**: do **not** add separate warmup exercise rows in **buildWeek**. Still meet the working-exercise quota (~5–6 working rows per day). Warmup *sets* on main lifts remain allowed when useful. Never override an explicit **no** because of injury/pain — bias warmups toward the affected area only when the answer is yes or unset.
+- **no**: do **not** add separate warmup exercise rows in **buildWeek**. Still meet the working-exercise quota (~5-6 working rows per day). Warmup *sets* on main lifts remain allowed when useful. Never override an explicit **no** because of injury/pain - bias warmups toward the affected area only when the answer is yes or unset.
 
-**Warmups are extra — they do not replace working exercises.** Whenever a resource, plan, or user intent implies "N exercises" per session, that means **N working (main) exercises**. Warmup exercises are **additional** rows on top of that target. For example, a 6-exercise day with 1 warmup = **7 rows** in `exercises[]` total — not 5 working + 1 warmup = 6. Always ensure the full working-exercise quota is met before counting warmups.
+**Warmups are extra - they do not replace working exercises.** Whenever a resource, plan, or user intent implies "N exercises" per session, that means **N working (main) exercises**. Warmup exercises are **additional** rows on top of that target. For example, a 6-exercise day with 1 warmup = **7 rows** in `exercises[]` total - not 5 working + 1 warmup = 6. Always ensure the full working-exercise quota is met before counting warmups.
 
 When warmups are included (yes or unset):
 
-- Include **1–2 warmup exercises** as the **first** exercises on **every training day** in **buildWeek** (`exercises[0]`, and `exercises[1]` if two). Place them **before** all working exercises for that day.
-- Pick warmups that match the session (e.g. shoulder-friendly activation before pressing, hip/ankle prep before squats, light pulling before heavy pulls). Use **set `type` `"normal"`**, **low RPE (about 3–5)**, and **moderate reps (about 10–15)** with a sensible `rep_range`; these are standalone prep movements, not warmup sets on the main lift.
+- Include **1-2 warmup exercises** as the **first** exercises on **every training day** in **buildWeek** (`exercises[0]`, and `exercises[1]` if two). Place them **before** all working exercises for that day.
+- Pick warmups that match the session (e.g. shoulder-friendly activation before pressing, hip/ankle prep before squats, light pulling before heavy pulls). Use **set `type` `"normal"`**, **low RPE (about 3-5)**, and **moderate reps (about 10-15)** with a sensible `rep_range`; these are standalone prep movements, not warmup sets on the main lift.
 - If the questionnaire or context mentions **injury, pain, or a movement limitation**, use **two** warmup exercises when helpful, biased toward **low-load mobility or activation** for the affected area (still only IDs from **getExerciseList**).
 - In each warmup exercise’s **`reason`**, tie the choice to the day’s demands and any stated limitation in the same short prose style as other exercises.
 - For post-**buildWeek** warmups on duplicated weeks, use **mutateProgram** **insert_exercise** at **exerciseIndex: 0** with the correct **folderIds** + **dayOrder** per week.
 
 ## Session size (exercise rows per day)
 
-**Default target (warmups yes/unset): 6–7 total rows in `exercises[]` per training day**, counting warmup row(s).
+**Default target (warmups yes/unset): 6-7 total rows in `exercises[]` per training day**, counting warmup row(s).
 
-- Typical layout: **1 warmup** (`exercises[0]`) + **5–6 working exercises** = 6–7 rows total.
-- When the context calls for **2 warmups** (injury, limitation, or longer session): **2 warmups** + **4–5 working exercises** = still 6–7 rows total.
-- **Warmups no:** omit warmup rows; target **~5–6 working exercises** per day.
-- **Do not routinely build days with only 4–5 total rows** (~3 working after warmups). That is consistently under-volume and should be avoided unless the user or context explicitly requests it (short time cap, user-requested brief session, deload day, or a powerlifting peaking day where volume is deliberately low).
-- This default applies to all split types (PPL, Upper/Lower, Full-Body, etc.). Powerlifting programs may legitimately have slightly fewer working exercises per day but should still meet a warmup (when included) + at minimum 3–4 working exercises.
+- Typical layout: **1 warmup** (`exercises[0]`) + **5-6 working exercises** = 6-7 rows total.
+- When the context calls for **2 warmups** (injury, limitation, or longer session): **2 warmups** + **4-5 working exercises** = still 6-7 rows total.
+- **Warmups no:** omit warmup rows; target **~5-6 working exercises** per day.
+- **Do not routinely build days with only 4-5 total rows** (~3 working after warmups). That is consistently under-volume and should be avoided unless the user or context explicitly requests it (short time cap, user-requested brief session, deload day, or a powerlifting peaking day where volume is deliberately low).
+- This default applies to all split types (PPL, Upper/Lower, Full-Body, etc.). Powerlifting programs may legitimately have slightly fewer working exercises per day but should still meet a warmup (when included) + at minimum 3-4 working exercises.
 
 ## Target RPE and stimulus (hypertrophy programs)
 
-- **Every working set** on bodybuilding/hypertrophy programs must include a **numeric target `rpe`** on each set row in **buildWeek** / **mutateProgram** (warmup exercises and intentional easy work: **~3–5 RPE** as already described). This makes prescriptions auditable and powers program **stimulus** checks in the scorecard.
-- **Do not** imply that “more sets always equals more growth” without effort context. In **`reason`** text, when natural, tie weekly set choices to **hard-set quality** (e.g. primary compounds ~1–2 RIR / ~7–8.5 RPE; isolations can be somewhat harder) and to the user’s phase.
-- **Deload or easy weeks:** Reduce stimulus by **fewer working sets**, **lower target RPE**, or both—say so in **`reason`**, **`notes`**, or routine **`notes`** so reduced stimulus is **intentional** (not misread as missing intensity). See `.agents/skills/build-program/resources/stimulus-and-volume.md` for the shared vocabulary.
+- **Every working set** on bodybuilding/hypertrophy programs must include a **numeric target `rpe`** on each set row in **buildWeek** / **mutateProgram** (warmup exercises and intentional easy work: **~3-5 RPE** as already described). This makes prescriptions auditable and powers program **stimulus** checks in the scorecard.
+- **Do not** imply that “more sets always equals more growth” without effort context. In **`reason`** text, when natural, tie weekly set choices to **hard-set quality** (e.g. primary compounds ~1-2 RIR / ~7-8.5 RPE; isolations can be somewhat harder) and to the user’s phase.
+- **Deload or easy weeks:** Reduce stimulus by **fewer working sets**, **lower target RPE**, or both-say so in **`reason`**, **`notes`**, or routine **`notes`** so reduced stimulus is **intentional** (not misread as missing intensity). See `.agents/skills/build-program/resources/stimulus-and-volume.md` for the shared vocabulary.
 
 ## Multi-week targeting (mutateProgram)
 
-The client duplicates week 1 across all program weeks. Periodization ops target specific weeks/days — **not** flat routine-index paths.
+The client duplicates week 1 across all program weeks. Periodization ops target specific weeks/days - **not** flat routine-index paths.
 
 - **folderIds:** 0-based week index. Week 1 → `[0]`, week W → `[W - 1]`. One op can list multiple weeks: `folderIds: [0, 1, 2, 3]`.
 - **dayOrder:** 1-based day within the week (matches **buildWeek** `dayNumber`).
@@ -99,7 +99,7 @@ When the user wants a **powerlifting** program (squat, bench, deadlift), a progr
 
 When the user wants a **bodybuilding** or **hypertrophy** program (aesthetic focus, muscle building, PPL, upper/lower, bro split, or training by muscle group), use `readFile` to load `.agents/skills/build-program/resources/bodybuilding.md` **and** `.agents/skills/build-program/resources/stimulus-and-volume.md` and apply that knowledge when planning, selecting exercises, and building the week.
 
-When the user wants a **fat-loss-first** or **weight-loss** program (cutting, leaning out, calorie deficit, body recomposition emphasis), use `readFile` to load the weight-loss resources—`.agents/skills/build-program/resources/weight-loss/diet.md`, `.agents/skills/build-program/resources/weight-loss/cardio-exercise.md`, and `.agents/skills/build-program/resources/weight-loss/lifting-program.md`—**and** `.agents/skills/build-program/resources/bodybuilding.md` and `.agents/skills/build-program/resources/stimulus-and-volume.md` for muscle volumes, effort expectations, and exercise selection. Apply that knowledge when planning, selecting exercises, and building the week. **Exception:** if they explicitly want **powerlifting-style** fat loss (meet prep cut, S/B/D focus), load `powerlifting.md` as appropriate and still use the weight-loss resources for nutrition, cardio, and how lifting fits a deficit.
+When the user wants a **fat-loss-first** or **weight-loss** program (cutting, leaning out, calorie deficit, body recomposition emphasis), use `readFile` to load the weight-loss resources-`.agents/skills/build-program/resources/weight-loss/diet.md`, `.agents/skills/build-program/resources/weight-loss/cardio-exercise.md`, and `.agents/skills/build-program/resources/weight-loss/lifting-program.md`-**and** `.agents/skills/build-program/resources/bodybuilding.md` and `.agents/skills/build-program/resources/stimulus-and-volume.md` for muscle volumes, effort expectations, and exercise selection. Apply that knowledge when planning, selecting exercises, and building the week. **Exception:** if they explicitly want **powerlifting-style** fat loss (meet prep cut, S/B/D focus), load `powerlifting.md` as appropriate and still use the weight-loss resources for nutrition, cardio, and how lifting fits a deficit.
 
 When the user wants a **Hyrox** program (Hyrox prep, Hyrox race, indoor fitness racing in the Hyrox format, or they name Hyrox stations such as SkiErg, sled push/pull, farmers carry, sandbag lunges, wall balls), use `readFile` to load `.agents/skills/build-program/resources/hyrox.md` and apply that knowledge when planning, selecting exercises, and building the week. If they also want **fat loss** or **general muscle** work, you may combine with `.agents/skills/build-program/resources/weight-loss/` or `bodybuilding.md` **only as secondary** to Hyrox-specific run-and-station priorities.
 
@@ -107,7 +107,7 @@ When the user wants **CrossFit**, **CrossFit-style**, **GPP**, a **WOD** or **me
 
 ## Gotchas
 
-- **Program length on existing grid:** If the user already has routines and asks to change duration (e.g. "make it 2 weeks", "8 weeks → 2 weeks"), load **mutate-program** and **delete_week** — never **planProgram** / **buildWeek**. **planProgram.durationWeeks** and builder **programLength** describe the plan/template; they do not remove weeks from the live grid.
+- **Program length on existing grid:** If the user already has routines and asks to change duration (e.g. "make it 2 weeks", "8 weeks → 2 weeks"), load **mutate-program** and **delete_week** - never **planProgram** / **buildWeek**. **planProgram.durationWeeks** and builder **programLength** describe the plan/template; they do not remove weeks from the live grid.
 - **exercise_template_id**: Must be an exact ID from the getExerciseList result (must exist in `hevy_exercise_templates`). Invented or unknown IDs cause **buildWeek** to return an error.
 - **Exercise title (per exercise)**: Must be the **same title** as in getExerciseList for that ID. The server **auto-corrects** the title from the database when you pass `exercise_template_id`, so mismatches do not break the build, but you should still copy **id** and **title** exactly from the list for clarity and to avoid invalid IDs.
 - **Tool input**: buildWeek expects a JSON object, not a string. Pass the structured object to the tool, not a stringified JSON.
@@ -129,7 +129,7 @@ When the user wants **CrossFit**, **CrossFit-style**, **GPP**, a **WOD** or **me
 
 Use this structure. Set type must be one of "normal", "warmup", "dropset", "failure". Optional fields (rest_seconds, supersets_id, weight_kg) have defaults in the tool schema. **Warmup exercises** at the start of the day still use **`"normal"`** set types at low RPE (see **Warmup exercises** above); reserve set `type` `"warmup"` for lighter sets *within* a working exercise when the schema calls for it.
 
-For each exercise **`reason`**, write 2–4 sentences of natural prose covering: what the movement does, where it sits in the split, its position in the session, and how it fits this person’s plan or questionnaire answers. Be concrete — name real facts (stated limitation, equipment, sessions/week, goal, experience). No bullet labels required.
+For each exercise **`reason`**, write 2-4 sentences of natural prose covering: what the movement does, where it sits in the split, its position in the session, and how it fits this person’s plan or questionnaire answers. Be concrete - name real facts (stated limitation, equipment, sessions/week, goal, experience). No bullet labels required.
 
 This is an example JSON, don't use the example values in this to influence the values you add to the real tool response of buildWeek.
 
@@ -148,7 +148,7 @@ This is an example JSON, don't use the example values in this to influence the v
           "sets": [
             { "type": "normal", "reps": 15, "rep_range": { "start": 10, "end": 15 }, "rpe": 4 }
           ],
-          "reason": "Shoulder and upper-back activation before any pressing. This is the first movement on Push day, so it primes the rotator cuff while the nervous system is still fresh. Low RPE prep work — you wanted a brief warm-up on every session before loading the shoulders."
+          "reason": "Shoulder and upper-back activation before any pressing. This is the first movement on Push day, so it primes the rotator cuff while the nervous system is still fresh. Low RPE prep work - you wanted a brief warm-up on every session before loading the shoulders."
         },
         {
           "exercise_template_id": "<id from getExerciseList>",

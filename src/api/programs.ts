@@ -1,7 +1,7 @@
 /**
  * @module api/programs
  *
- * CRUD and query operations for workout programs — the central content type in
+ * CRUD and query operations for workout programs - the central content type in
  * Proxima. Programs live in the `programs` table and are composed of
  * `schedule_workouts` which contain `program_workout_exercises` referencing
  * `hevy_exercise_templates`.

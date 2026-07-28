@@ -6,7 +6,7 @@ import { formatWeight } from "@/lib/weightUtils";
 import { cn } from "@/lib/utils";
 
 /** Placeholder shown when a prescription field is intentionally unset. */
-export const HEVY_PRESCRIPTION_EMPTY = "—";
+export const HEVY_PRESCRIPTION_EMPTY = "-";
 
 export const repRangesEqual = (
     a: THevyRepRange | null | undefined,

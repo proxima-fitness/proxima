@@ -63,7 +63,7 @@ interface ISettingsGroupProps {
     children: ReactNode;
 }
 
-/** Caption + inset panel (iOS Settings–style grouped list). */
+/** Caption + inset panel (iOS Settings-style grouped list). */
 function SettingsGroup({ caption, description, children }: ISettingsGroupProps) {
     return (
         <div className="space-y-2">

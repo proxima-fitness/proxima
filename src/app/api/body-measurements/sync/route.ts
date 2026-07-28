@@ -11,7 +11,7 @@ import { createClient } from "@/utils/supabase/server";
 import { runBodyMeasurementsSyncChunk } from "@/api/body-measurements-sync";
 
 /**
- * POST /api/body-measurements/sync — import one Hevy body-measurements page.
+ * POST /api/body-measurements/sync - import one Hevy body-measurements page.
  */
 export async function POST() {
     try {

@@ -537,7 +537,7 @@ describe("chat tools.ts", () => {
             error?: string;
         };
 
-        it("schema accepts userRequest only — no agent filter override fields", () => {
+        it("schema accepts userRequest only - no agent filter override fields", () => {
             expect(getExerciseListInputSchema.safeParse({ userRequest: "build me a program" }).success).toBe(true);
             expect(getExerciseListInputSchema.shape).not.toHaveProperty("excludeAreas");
             expect(getExerciseListInputSchema.shape).not.toHaveProperty("excludeEquipment");
@@ -642,7 +642,7 @@ describe("chat tools.ts", () => {
             goal: "Powerlifting strength with hypertrophy base",
             daysPerWeek: 4,
             blocks: [
-                { name: "Accumulation", weeks: [1, 2, 3], intent: "Volume, RPE 6–8" },
+                { name: "Accumulation", weeks: [1, 2, 3], intent: "Volume, RPE 6-8" },
                 { name: "Intensification", weeks: [4, 5, 6], intent: "Heavier" },
                 { name: "Peak", weeks: [7, 8], intent: "Taper" },
             ],
@@ -1117,6 +1117,46 @@ describe("chat tools.ts", () => {
             const result = await update.execute({});
             expect(result.skipped).toBe(true);
             expect(upsertUserTrainingProfileMock).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("openHevyExportGate tool", () => {
+        it("is registered on base tools", () => {
+            const tools = getTools({});
+            expect(tools).toHaveProperty("openHevyExportGate");
+        });
+
+        it("returns open-gate payload without any secret fields", async () => {
+            const tools = getTools({});
+            const openGate = asTestTool<
+                { userRequest?: string },
+                { opened?: boolean; userRequest?: string; message?: string }
+            >(tools.openHevyExportGate);
+
+            const output = await openGate.execute({ userRequest: "export to Hevy" });
+            expect(output.opened).toBe(true);
+            expect(output.userRequest).toBe("export to Hevy");
+            expect(output.message).toMatch(/Hevy export gate opened/i);
+            expect(JSON.stringify(output)).not.toMatch(/api[_-]?key/i);
+            expect(JSON.stringify(output)).not.toMatch(/secret/i);
+        });
+
+        it("toModelOutput never includes API key language as a secret value", async () => {
+            const tools = getTools({});
+            const openGate = asTestTool<
+                { userRequest?: string },
+                { opened?: boolean; userRequest?: string; message?: string }
+            >(tools.openHevyExportGate);
+
+            const output = await openGate.execute({});
+            const modelOut = await openGate.toModelOutput({ output });
+            expect(modelOut.value).toContain("Hevy export gate opened");
+            expect(modelOut.value).toContain("Save");
+            expect(modelOut.value).toContain("Week Export");
+            expect(modelOut.value).toMatch(/Never ask for or repeat an API key/i);
+            // Ensure no vaulted key-shaped payload leaked
+            expect(modelOut.value).not.toMatch(/hevy_api_key_/);
+            expect(modelOut.value).not.toMatch(/sk[-_]/i);
         });
     });
 });

@@ -17,6 +17,7 @@ import {
   WrenchIcon,
   PenLineIcon,
   Award,
+  KeyRoundIcon,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -31,6 +32,7 @@ const TOOL_META: Record<string, { label: string; icon: LucideIcon }> = {
   reasoning: { label: "Thinking", icon: BrainIcon },
   "tool-getExerciseList": { label: "Looking up exercises", icon: SearchIcon },
   "tool-getMoreInfoQuestions": { label: "Gathering info", icon: ListChecksIcon },
+  "tool-openHevyExportGate": { label: "Opening export setup", icon: KeyRoundIcon },
   "tool-planProgram": { label: "Planning program structure", icon: ListChecksIcon },
   "tool-buildWeek": { label: "Building training week", icon: HammerIcon },
   "tool-mutateProgram": { label: "Mutating program", icon: WrenchIcon },

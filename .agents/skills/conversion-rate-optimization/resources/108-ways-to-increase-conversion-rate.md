@@ -3,22 +3,22 @@
 ## 1. Testing methods and your marketing toolkit
 
 Time-split tests (also known as “before-and-after tests”). These stink. We put them on the list only so we could mention how bad they are. If your orders go up and down week by week (and whose don’t?), time-split tests tend to lead to wrong decisions.
-A/B tests—Many times, a simple A/B test is all that’s needed.
-Multivariate testing—Which multivariate software should you use? The following platforms tend to be popular with our clients: VWO, Optimizely, Adobe Target, and Sitespect. If you’d like much more detail, see our comparison table of A/B testing software.
+A/B tests-Many times, a simple A/B test is all that’s needed.
+Multivariate testing-Which multivariate software should you use? The following platforms tend to be popular with our clients: VWO, Optimizely, Adobe Target, and Sitespect. If you’d like much more detail, see our comparison table of A/B testing software.
 A/B testing software becomes much more powerful when you use it alongside other tools. Here are the other tools and techniques you’ll need in your marketing arsenal:
 
-Google Ads—Google Ads are valuable as a targeted source of traffic, but they can also be used to run A/B tests by creating two identical ads with different destination URLs. However, for several reasons, it’s difficult to create a controlled scientific test with them, so we don’t recommend using Google Ads to carry out A/B tests.
-Live Chat—Few tools tell you anything about your “non-customers”—that is, the visitors who arrived at your site but then left for whatever reason. You rarely get feedback from these people. They are unlikely to call you, but you might just persuade them to use a Live Chat feature.
-Web analytics—At the most basic level, the “Site Overlay” feature tells you where visitors to your site click, where they don’t click, and where they are when they leave your site. We’ve heard web analysts say, “There are piles of gold waiting for you in your log files,” and they are right—in a vague, over-poetic kind of way. It turns out that you can learn a lot from your web analytics package.
-Usability testing—You can carry out this testing on pretty much anyone you can get your hands on. These tests are gold dust—literally. If we could have just one testing tool, it would be usability testing. Web analytics tell you what visitors are doing, but usability testing tells you why. No other tool provides so many head-slapping, “I can’t believe I didn’t think of that” moments. For some great usability tips, see How to eliminate the usability problems that stifle your growth.
+Google Ads-Google Ads are valuable as a targeted source of traffic, but they can also be used to run A/B tests by creating two identical ads with different destination URLs. However, for several reasons, it’s difficult to create a controlled scientific test with them, so we don’t recommend using Google Ads to carry out A/B tests.
+Live Chat-Few tools tell you anything about your “non-customers”-that is, the visitors who arrived at your site but then left for whatever reason. You rarely get feedback from these people. They are unlikely to call you, but you might just persuade them to use a Live Chat feature.
+Web analytics-At the most basic level, the “Site Overlay” feature tells you where visitors to your site click, where they don’t click, and where they are when they leave your site. We’ve heard web analysts say, “There are piles of gold waiting for you in your log files,” and they are right-in a vague, over-poetic kind of way. It turns out that you can learn a lot from your web analytics package.
+Usability testing-You can carry out this testing on pretty much anyone you can get your hands on. These tests are gold dust-literally. If we could have just one testing tool, it would be usability testing. Web analytics tell you what visitors are doing, but usability testing tells you why. No other tool provides so many head-slapping, “I can’t believe I didn’t think of that” moments. For some great usability tips, see How to eliminate the usability problems that stifle your growth.
 Here’s a clever one: In your “Refer-a-Friend” program, allow customers to send a personalized note to their friends. You will have access to these notes (privacy notice permitting), and they are a goldmine of information about why a particular customer ordered. In addition, you get to see the exact words customers use to sell your product to friends. It’s like having a team of free copywriters on tap.
-Eye tracking—This tool shows you which things visitors to your site see but don’t click on. And it tells you which things they don’t click on because they don’t see them. Got that? Most eye tracking is carried out using custom hardware, so you need to get a company to do it for you.
-“Poor-man’s eye tracking”—About five seconds into each usability test, ask testers what they have looked at so far. They usually find it easy to tell you.
-Click mapping—A click map is an image of a page that’s annotated with information about where visitors clicked. Here are two good options:
+Eye tracking-This tool shows you which things visitors to your site see but don’t click on. And it tells you which things they don’t click on because they don’t see them. Got that? Most eye tracking is carried out using custom hardware, so you need to get a company to do it for you.
+“Poor-man’s eye tracking”-About five seconds into each usability test, ask testers what they have looked at so far. They usually find it easy to tell you.
+Click mapping-A click map is an image of a page that’s annotated with information about where visitors clicked. Here are two good options:
 Crazy Egg is a service that allows you to see the parts of your page that your visitors click on, and how far down your pages your visitors scroll.
 ClickTale is similar to Crazy Egg but allows you to view Flash movies of your visitors’ browsing sessions. You can see how far visitors scroll down your pages, view how they interact with your forms, and learn about many other aspects of their visit.
-Customer surveys—Your customers know why they ordered. And why they nearly didn’t. Ask them about it. Many survey services are available. SurveyMonkey is very widely used.
-Co-opetition—Short for “cooperative competition,” this is a technique by which you sell your competitors’ products from your website (usually via an affiliate program). Co-opetition can teach you a lot about your competitors’ conversion rates. And if your visitors prefer your competitors’ products, this is an easy way to find out!
+Customer surveys-Your customers know why they ordered. And why they nearly didn’t. Ask them about it. Many survey services are available. SurveyMonkey is very widely used.
+Co-opetition-Short for “cooperative competition,” this is a technique by which you sell your competitors’ products from your website (usually via an affiliate program). Co-opetition can teach you a lot about your competitors’ conversion rates. And if your visitors prefer your competitors’ products, this is an easy way to find out!
 
 ## 2. Think like a master-tester
 
@@ -33,7 +33,7 @@ Learn your other new mantra. When your colleagues object to the changes you’re
 
 Copy what works for others (within limits). In particular, copy companies that appear to be tracking and testing. You can spot them because they are using the techniques in this list.
 
-Copy the techniques that marketers, who have been testing for decades, have developed; that is, copy direct-response advertisers. The internet may be new, but your visitors aren’t. For about 100 years, direct-response advertisers have been running A/B tests to find out what works. It’s easy to spot their ads in magazines, newspapers, and direct mail—they have tracking codes and coupons in the bottom corner. And the ads often look a bit cluttered.
+Copy the techniques that marketers, who have been testing for decades, have developed; that is, copy direct-response advertisers. The internet may be new, but your visitors aren’t. For about 100 years, direct-response advertisers have been running A/B tests to find out what works. It’s easy to spot their ads in magazines, newspapers, and direct mail-they have tracking codes and coupons in the bottom corner. And the ads often look a bit cluttered.
 
 Place bets with your colleagues about which test sample will win. You’ll be amazed at how often you are wrong. Only the top few percent of marketers appreciate that it’s impossible always to spot the winner. Race to become one of them.
 
@@ -60,7 +60,7 @@ Don’t end the test too soon! Make sure you have enough data! Some marketers sa
 
 For A/B tests of Google Ads, use this tool, ensuring you check the results only once the test has run for a pre-agreed duration.
 For tests using multivariate testing software, use the software’s built-in statistical significance calculator.
-The tools we just mentioned tell you whether your results are significant—or whether you don’t have enough data yet and your results are merely due to chance.
+The tools we just mentioned tell you whether your results are significant-or whether you don’t have enough data yet and your results are merely due to chance.
 
 ## 4. What to focus on first
 
@@ -79,7 +79,7 @@ Test stuff that your usability testers told you to change. (You ARE going to do 
 ## 5. Getting your message straight before you start
 
 Getting your message straight before you start
-What’s your company’s positioning? In other words, what makes you different from or better than all your competitors? Have you ever tested your positioning against possible alternatives? Draw up a shortlist to test—and then your visitors can let you know which positioning is most important to them!
+What’s your company’s positioning? In other words, what makes you different from or better than all your competitors? Have you ever tested your positioning against possible alternatives? Draw up a shortlist to test-and then your visitors can let you know which positioning is most important to them!
 Rank the top five points you want to communicate to your visitors. You want to make sure that, whatever else your visitors learn from your site, they definitely learn these top five pieces of information.
 Consider all the different types of visitors who might view your site and then try to write for all of them. You might find it easier to use customer archetypes (sometimes called “personas” or “avatars”) for this. A “customer archetype” is a single person used to represent a particular segment of visitors. Some tips:
 You may choose to use real people as your archetypes (for example, a customer you know well and who is characteristic of a particular segment of visitors).
@@ -134,9 +134,9 @@ A free report about the product or problem?
 An invitation for a salesperson to call?
 In general, the larger the purchase, the less effective it will be to sell it in one step.
 
-Many visitors who leave without ordering exit the site because you don’t offer the product or service for which they are looking. The answer is often to start selling what customers are looking for—or at least become an affiliate for it.
+Many visitors who leave without ordering exit the site because you don’t offer the product or service for which they are looking. The answer is often to start selling what customers are looking for-or at least become an affiliate for it.
 
-Test different premiums—that is, the bonuses customers get if they order. These include free reports, gifts, and accessories.
+Test different premiums-that is, the bonuses customers get if they order. These include free reports, gifts, and accessories.
 
 Add a guarantee, or test different ones. Start with the bravest guarantee you dare test, and if it works, test a braver one.
 
@@ -148,9 +148,9 @@ Develop a systematic way of collecting testimonials. Train your sales staff to r
 
 Test different calls-to-action. The “call-to-action” is what you want customers to do next. It is often written on the “Proceed” button. Test direct calls-to-action such as “Buy Now and Get 10% Off” as well as indirect ones such as “Learn More.”
 
-Try making the “Call-to-Action” button nice and visible. Large, brightly colored buttons often convert better—they seem to draw the reader’s attention.
+Try making the “Call-to-Action” button nice and visible. Large, brightly colored buttons often convert better-they seem to draw the reader’s attention.
 
-Test different reasons why visitors should act promptly (e.g., “Offer ends Wednesday” or “Only 42 tickets left”). We aren’t suggesting you lie to your visitors—your conversion rate depends heavily on credibility and trust. However, if you look at your own business, you’ll probably find you already have real reasons why prospects should reply promptly. If not, you can find ways of rewarding them for doing so.
+Test different reasons why visitors should act promptly (e.g., “Offer ends Wednesday” or “Only 42 tickets left”). We aren’t suggesting you lie to your visitors-your conversion rate depends heavily on credibility and trust. However, if you look at your own business, you’ll probably find you already have real reasons why prospects should reply promptly. If not, you can find ways of rewarding them for doing so.
 
 Make the right stuff pop. “Pop” just means “stand out.” You can do this in several ways, such as
 
@@ -167,7 +167,7 @@ Make sure the things your visitors see first are the things you want them to see
 
 Where do website visitors look? Ensure your most valuable content is placed where visitors actually look, which you can determine using eye tracking.
 
-Remove clutter. Imagine that every pixel on your page either increases the conversion rate or decreases it—or just takes up space. If you can get rid of page elements that aren’t working, you create more space for those that are.
+Remove clutter. Imagine that every pixel on your page either increases the conversion rate or decreases it-or just takes up space. If you can get rid of page elements that aren’t working, you create more space for those that are.
 
 Ensure the layout reflects the architecture of your information. Continually look for ways to tidy up your information into ordered sections. Then ensure each section uses the principle of progressive disclosure, so users see only the information they need at any given point. You can hide detailed information in many ways, such as in tooltips, overlays, subpages, and in less prominent fonts.
 
@@ -179,13 +179,13 @@ Test different navigation structures. For example, reword the headings on your n
 
 If you’re confident your visitors are on the most relevant page for their needs, consider removing the navigation bar (or at least moving it somewhere less prominent). In such cases, navigation bars can be a distraction.
 
-If your website has a “cool,” unconventional layout, try a conventional layout. Conventions are conventions for a reason—they make it easier for visitors to find what they are looking for.
+If your website has a “cool,” unconventional layout, try a conventional layout. Conventions are conventions for a reason-they make it easier for visitors to find what they are looking for.
 
 Does your site contain any gratuitous links that you never really considered your visitors might actually click on? Remove any distracting links that lead to places you don’t want visitors to go!
 
 Use a nice, large font for your headline.
 
-Make the first letter of your body copy a drop cap—that is, a letter that’s much larger than the ones that follow. A drop cap can effectively bridge the gap between the headline and the body copy.
+Make the first letter of your body copy a drop cap-that is, a letter that’s much larger than the ones that follow. A drop cap can effectively bridge the gap between the headline and the body copy.
 
 Another way to bridge the gap is to have your introductory paragraph be in a slightly more prominent font size than succeeding paragraphs.
 
@@ -208,7 +208,7 @@ Test violators, which are attention-getting shapes such as starbursts, ovals, an
 Violators: Stamp effects and starbursts.
 If your page is long and requires scrolling, consider repeating your “Call-to-Action” button several times on the page. Which reminds us: Have you claimed your copy of our valuable newsletter yet?
 
-If your page requires scrolling, remove any “false bottoms”—that is, layout elements that imply customers have reached the bottom of the page when they haven’t.
+If your page requires scrolling, remove any “false bottoms”-that is, layout elements that imply customers have reached the bottom of the page when they haven’t.
 
 Many websites find they get higher conversion rates if their page is in the form of a sales letter with a personable one-on-one style of writing. Despite what your feelings might be about such websites, in some markets they often work.
 
@@ -255,8 +255,8 @@ Try adding “reassurance logos” such as those of the credit cards you accept,
 Your website’s structure
 Test a different version of your “About Us” page. Show yourselves as real, likable individuals, not just members of a cold, faceless corporation.
 Make your message consistent. Do whatever you can to ensure your sales message remains the same all the way from ads through to order placement.
-Immediately after customers have ordered—or agreed to anything—they are in a particularly agreeable mood (seasoned salespeople refer to this phenomenon as the “yes set” or “yes ladder”). Take advantage of your customers’ positive frame of mind by offering them additional products or services.
-A good “Refer-a-Friend” program placed on the “Order Confirmation” page can be very effective at generating new, high-value customers. (Speaking of friends, would any of YOUR friends benefit from reading this article? Send them a link—they’ll love you for it!)
+Immediately after customers have ordered-or agreed to anything-they are in a particularly agreeable mood (seasoned salespeople refer to this phenomenon as the “yes set” or “yes ladder”). Take advantage of your customers’ positive frame of mind by offering them additional products or services.
+A good “Refer-a-Friend” program placed on the “Order Confirmation” page can be very effective at generating new, high-value customers. (Speaking of friends, would any of YOUR friends benefit from reading this article? Send them a link-they’ll love you for it!)
 The “Order Confirmation” page is an excellent place from which to sell other products (this is known as “cross-selling”).
 Be careful with entry pop-ups and exit pop-ups. These sometimes work well; sometimes, however, they just irritate users.
 
@@ -265,8 +265,8 @@ Be careful with entry pop-ups and exit pop-ups. These sometimes work well; somet
 Usability
 View your website using different browsers and screen resolutions to see how your customers see it. Handy tools for doing this are BrowserStack and Browsercam.
 Minimize your website’s load times: Here’s a nice tool for checking your site.
-Get your “Site Search” feature working. Google Cloud Search and Google Custom Search Engine both enable your visitors to search your site using Google. Then use your analytics package to discover what your visitors were searching for. Then, consider adding that content to your webpage—or making it more prominent.
-Consider making everything clickable. Visitors click on everything—pictures in particular. And if they are clicking on something, it’s because they expect something to happen.
+Get your “Site Search” feature working. Google Cloud Search and Google Custom Search Engine both enable your visitors to search your site using Google. Then use your analytics package to discover what your visitors were searching for. Then, consider adding that content to your webpage-or making it more prominent.
+Consider making everything clickable. Visitors click on everything-pictures in particular. And if they are clicking on something, it’s because they expect something to happen.
 If you have advertising on your site, test that. With many advertising programs (such as Google’s AdSense), you can split advertising into channels. You can then test the following and measure which variations bring in the most revenue:
 Different sizes of an ad
 Different shapes of an ad
@@ -275,5 +275,5 @@ Another way of increasing the revenue per visitor is by increasing the average L
 
 ## 14. Newsletter, RSS, and sign-off
 
-Sign up to receive your Conversion Rate Experts newsletter! It takes you by the hand through many of the 108 tips we’ve covered in this article—and lets you peek into our world of conversion rate testing. It’s free, and it will change your life (for the better). Or, if you prefer, simply subscribe to our RSS feed. Either way, let’s keep in touch!
+Sign up to receive your Conversion Rate Experts newsletter! It takes you by the hand through many of the 108 tips we’ve covered in this article-and lets you peek into our world of conversion rate testing. It’s free, and it will change your life (for the better). Or, if you prefer, simply subscribe to our RSS feed. Either way, let’s keep in touch!
 Happy testing!
