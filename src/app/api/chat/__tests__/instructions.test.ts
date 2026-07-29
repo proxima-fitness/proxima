@@ -458,7 +458,7 @@ describe("chat instructions.ts", () => {
                 programLength: 8,
             });
             expect(prompt).toContain("Hevy share links");
-            expect(prompt).toContain("fetchHevyShare");
+            expect(prompt).toContain("fetchHevyShareFolder");
             expect(prompt).toContain("**never** load it onto the program grid by default");
             expect(prompt).toContain("needs an explicit yes");
             expect(prompt).toContain("Hevy's share API may have changed");
@@ -471,16 +471,16 @@ describe("chat instructions.ts", () => {
                 programLength: 8,
             });
             expect(prompt).toContain("Hevy share links");
-            expect(prompt).toContain("fetchHevyShare");
+            expect(prompt).toContain("fetchHevyShareFolder");
         });
 
-        it("teaches confirmed importHevyShare on an empty grid, never gated by the questionnaire", () => {
+        it("teaches confirmed importHevyShareFolder on an empty grid, never gated by the questionnaire", () => {
             const prompt = instructions({
                 hevyProgram: [],
                 daysPerWeek: 4,
                 programLength: 8,
             });
-            expect(prompt).toContain("importHevyShare");
+            expect(prompt).toContain("importHevyShareFolder");
             expect(prompt).toContain("The grid is currently empty");
             expect(prompt).toContain("explicitly agreed");
             expect(prompt).toContain("`confirmed: true`");

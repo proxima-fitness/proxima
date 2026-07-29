@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getTools } from "@/app/api/chat/tools/tools";
 import type {
-    TFetchHevyShareToolOutput,
-    TImportHevyShareToolOutput,
+    TFetchHevyShareFolderToolOutput,
+    TImportHevyShareFolderToolOutput,
 } from "@/app/api/chat/tools/hevy-share";
 import {
     buildToolErrorPayload,
@@ -72,36 +72,36 @@ function mockFetchJson(body: unknown, status = 200) {
     return fetchMock;
 }
 
-type TFetchHevyShareTool = {
-    execute: (input: { url: string }) => Promise<TFetchHevyShareToolOutput>;
-    toModelOutput: (args: { output: TFetchHevyShareToolOutput }) => PromiseLike<{ value: string }>;
+type TFetchHevyShareFolderTool = {
+    execute: (input: { url: string }) => Promise<TFetchHevyShareFolderToolOutput>;
+    toModelOutput: (args: { output: TFetchHevyShareFolderToolOutput }) => PromiseLike<{ value: string }>;
 };
 
 /** Narrows the AI SDK Tool to the parts the tests drive (SDK execute also takes options). */
-function asShareTool(tool: unknown): TFetchHevyShareTool {
-    return tool as TFetchHevyShareTool;
+function asShareTool(tool: unknown): TFetchHevyShareFolderTool {
+    return tool as TFetchHevyShareFolderTool;
 }
 
-function fetchHevyShareTool(userId = "user-1"): TFetchHevyShareTool {
-    return asShareTool(getTools({ userId }).fetchHevyShare);
+function fetchHevyShareFolderTool(userId = "user-1"): TFetchHevyShareFolderTool {
+    return asShareTool(getTools({ userId }).fetchHevyShareFolder);
 }
 
 /** Narrows tool output in tests, failing loudly when the share read did not succeed. */
-function expectRead(output: TFetchHevyShareToolOutput) {
+function expectRead(output: TFetchHevyShareFolderToolOutput) {
     if ("error" in output) {
         throw new Error(`Expected a successful share read, got: ${output.message}`);
     }
     return output;
 }
 
-function expectFailed(output: TFetchHevyShareToolOutput) {
+function expectFailed(output: TFetchHevyShareFolderToolOutput) {
     if (!("error" in output)) {
         throw new Error("Expected the share read to fail");
     }
     return output;
 }
 
-describe("fetchHevyShare tool", () => {
+describe("fetchHevyShareFolder tool", () => {
     beforeEach(() => {
         resetHevyShareRateLimits();
         vi.stubEnv(HEVY_SHARE_PLATFORM_KEY_ENV, "platform-key-secret");
@@ -118,7 +118,7 @@ describe("fetchHevyShare tool", () => {
     it("reads a shared folder into week-0 days with foreign Hevy ids stripped", async () => {
         const fetchMock = mockFetchJson(FOLDER_PAYLOAD);
 
-        const output = await fetchHevyShareTool().execute({
+        const output = await fetchHevyShareFolderTool().execute({
             url: "https://hevy.com/folder/abc123",
         });
 
@@ -146,7 +146,7 @@ describe("fetchHevyShare tool", () => {
         });
 
         const read = expectRead(
-            await fetchHevyShareTool().execute({ url: "hevy.com/routine/short99" }),
+            await fetchHevyShareFolderTool().execute({ url: "hevy.com/routine/short99" }),
         );
 
         expect(fetchMock.mock.calls[0][0]).toBe(
@@ -157,7 +157,7 @@ describe("fetchHevyShare tool", () => {
 
     it("hands the agent the adapted routines plus read-only framing", async () => {
         mockFetchJson(FOLDER_PAYLOAD);
-        const tool = fetchHevyShareTool();
+        const tool = fetchHevyShareFolderTool();
 
         const output = await tool.execute({ url: "https://hevy.com/folder/abc123" });
         const { value } = await tool.toModelOutput({ output });
@@ -174,7 +174,7 @@ describe("fetchHevyShare tool", () => {
         const fetchMock = mockFetchJson(FOLDER_PAYLOAD);
 
         const failed = expectFailed(
-            await fetchHevyShareTool().execute({ url: "https://example.com/folder/abc123" }),
+            await fetchHevyShareFolderTool().execute({ url: "https://example.com/folder/abc123" }),
         );
 
         expect(fetchMock).not.toHaveBeenCalled();
@@ -188,7 +188,7 @@ describe("fetchHevyShare tool", () => {
         mockFetchJson({}, 404);
 
         const failed = expectFailed(
-            await fetchHevyShareTool().execute({ url: "https://hevy.com/folder/gone" }),
+            await fetchHevyShareFolderTool().execute({ url: "https://hevy.com/folder/gone" }),
         );
 
         expect(failed.reason).toBe("not_found");
@@ -199,7 +199,7 @@ describe("fetchHevyShare tool", () => {
         mockFetchJson({}, 500);
 
         const failed = expectFailed(
-            await fetchHevyShareTool().execute({ url: "https://hevy.com/folder/abc123" }),
+            await fetchHevyShareFolderTool().execute({ url: "https://hevy.com/folder/abc123" }),
         );
 
         expect(failed.reason).toBe("upstream");
@@ -210,7 +210,7 @@ describe("fetchHevyShare tool", () => {
         mockFetchJson({ shareable_folder: { title: "Empty", routines: [] } });
 
         const failed = expectFailed(
-            await fetchHevyShareTool().execute({ url: "https://hevy.com/folder/abc123" }),
+            await fetchHevyShareFolderTool().execute({ url: "https://hevy.com/folder/abc123" }),
         );
 
         expect(failed.reason).toBe("malformed");
@@ -219,7 +219,7 @@ describe("fetchHevyShare tool", () => {
 
     it("throttles a caller past the per-hour share budget", async () => {
         mockFetchJson(FOLDER_PAYLOAD);
-        const tool = fetchHevyShareTool("throttled-user");
+        const tool = fetchHevyShareFolderTool("throttled-user");
 
         for (let call = 0; call < HEVY_SHARE_RATE_LIMIT_PER_HOUR; call++) {
             expectRead(await tool.execute({ url: "https://hevy.com/folder/abc123" }));
@@ -232,8 +232,8 @@ describe("fetchHevyShare tool", () => {
 
     it("keeps anonymous callers on separate IP budgets", async () => {
         mockFetchJson(FOLDER_PAYLOAD);
-        const first = asShareTool(getTools({ clientIp: "10.0.0.1" }).fetchHevyShare);
-        const second = asShareTool(getTools({ clientIp: "10.0.0.2" }).fetchHevyShare);
+        const first = asShareTool(getTools({ clientIp: "10.0.0.1" }).fetchHevyShareFolder);
+        const second = asShareTool(getTools({ clientIp: "10.0.0.2" }).fetchHevyShareFolder);
 
         for (let call = 0; call < HEVY_SHARE_RATE_LIMIT_PER_HOUR; call++) {
             expectRead(await first.execute({ url: "https://hevy.com/folder/abc123" }));
@@ -244,26 +244,26 @@ describe("fetchHevyShare tool", () => {
     });
 
     it("is exposed to both New path and Edit path chats, anonymous included", () => {
-        expect(getTools({})).toHaveProperty("fetchHevyShare");
-        expect(getTools({ hevyProgram: [] })).toHaveProperty("fetchHevyShare");
+        expect(getTools({})).toHaveProperty("fetchHevyShareFolder");
+        expect(getTools({ hevyProgram: [] })).toHaveProperty("fetchHevyShareFolder");
     });
 
     describe("ToolErrorPanel wiring", () => {
         it("shows the failure copy verbatim in the panel summary", async () => {
             mockFetchJson({}, 500);
 
-            const output = await fetchHevyShareTool().execute({
+            const output = await fetchHevyShareFolderTool().execute({
                 url: "https://hevy.com/folder/abc123",
             });
             const errorCtx = { errorText: undefined, output };
 
-            expect(summarizeToolError("fetchHevyShare", errorCtx)).toContain(
+            expect(summarizeToolError("fetchHevyShareFolder", errorCtx)).toContain(
                 "Hevy's share API may have changed.",
             );
         });
 
         it("falls back to friendly copy when only the error code survives", () => {
-            const summary = summarizeToolError("fetchHevyShare", {
+            const summary = summarizeToolError("fetchHevyShareFolder", {
                 output: { error: "Hevy share not found" },
             });
 
@@ -275,20 +275,20 @@ describe("fetchHevyShare tool", () => {
         it("copies a payload the developer report can identify the tool from", async () => {
             mockFetchJson({}, 500);
 
-            const output = await fetchHevyShareTool().execute({
+            const output = await fetchHevyShareFolderTool().execute({
                 url: "https://hevy.com/folder/abc123",
             });
-            const payload = JSON.parse(buildToolErrorPayload("fetchHevyShare", { output }));
+            const payload = JSON.parse(buildToolErrorPayload("fetchHevyShareFolder", { output }));
 
-            expect(payload.tool).toBe("fetchHevyShare");
+            expect(payload.tool).toBe("fetchHevyShareFolder");
             expect(payload.output.reason).toBe("upstream");
         });
     });
 });
 
-type TImportHevyShareTool = {
-    execute: (input: { url: string; confirmed: boolean }) => Promise<TImportHevyShareToolOutput>;
-    toModelOutput: (args: { output: TImportHevyShareToolOutput }) => PromiseLike<{ value: string }>;
+type TImportHevyShareFolderTool = {
+    execute: (input: { url: string; confirmed: boolean }) => Promise<TImportHevyShareFolderToolOutput>;
+    toModelOutput: (args: { output: TImportHevyShareFolderToolOutput }) => PromiseLike<{ value: string }>;
 };
 
 /** A day with real exercise rows - what an occupied grid (or an Edit-path chat) looks like. */
@@ -317,29 +317,29 @@ const OCCUPIED_DAY: THevyRoutine = {
 const PLACEHOLDER_DAY: THevyRoutine = { ...OCCUPIED_DAY, exercises: [] };
 
 /** Narrows the AI SDK Tool to the parts the import tests drive. */
-function asImportTool(tool: unknown): TImportHevyShareTool {
-    return tool as TImportHevyShareTool;
+function asImportTool(tool: unknown): TImportHevyShareFolderTool {
+    return tool as TImportHevyShareFolderTool;
 }
 
-function importHevyShareTool(props: Parameters<typeof getTools>[0] = {}): TImportHevyShareTool {
-    return asImportTool(getTools({ userId: "user-1", ...props }).importHevyShare);
+function importHevyShareFolderTool(props: Parameters<typeof getTools>[0] = {}): TImportHevyShareFolderTool {
+    return asImportTool(getTools({ userId: "user-1", ...props }).importHevyShareFolder);
 }
 
-function expectImported(output: TImportHevyShareToolOutput) {
+function expectImported(output: TImportHevyShareFolderToolOutput) {
     if (!("imported" in output)) {
         throw new Error(`Expected a successful import, got: ${JSON.stringify(output)}`);
     }
     return output;
 }
 
-function expectRefused(output: TImportHevyShareToolOutput) {
+function expectRefused(output: TImportHevyShareFolderToolOutput) {
     if (!("refused" in output)) {
         throw new Error(`Expected the import to be refused, got: ${JSON.stringify(output)}`);
     }
     return output;
 }
 
-describe("importHevyShare tool", () => {
+describe("importHevyShareFolder tool", () => {
     beforeEach(() => {
         resetHevyShareRateLimits();
         vi.stubEnv(HEVY_SHARE_PLATFORM_KEY_ENV, "platform-key-secret");
@@ -356,7 +356,7 @@ describe("importHevyShare tool", () => {
         const fetchMock = mockFetchJson(FOLDER_PAYLOAD);
 
         const imported = expectImported(
-            await importHevyShareTool({ hevyProgram: [PLACEHOLDER_DAY] }).execute({
+            await importHevyShareFolderTool({ hevyProgram: [PLACEHOLDER_DAY] }).execute({
                 url: "https://hevy.com/folder/abc123",
                 confirmed: true,
             }),
@@ -380,7 +380,7 @@ describe("importHevyShare tool", () => {
         const fetchMock = mockFetchJson(FOLDER_PAYLOAD);
 
         const refused = expectRefused(
-            await importHevyShareTool().execute({
+            await importHevyShareFolderTool().execute({
                 url: "https://hevy.com/folder/abc123",
                 confirmed: false,
             }),
@@ -397,7 +397,7 @@ describe("importHevyShare tool", () => {
         const fetchMock = mockFetchJson(FOLDER_PAYLOAD);
 
         const refused = expectRefused(
-            await importHevyShareTool({ hevyProgram: [OCCUPIED_DAY] }).execute({
+            await importHevyShareFolderTool({ hevyProgram: [OCCUPIED_DAY] }).execute({
                 url: "https://hevy.com/folder/abc123",
                 confirmed: true,
             }),
@@ -414,7 +414,7 @@ describe("importHevyShare tool", () => {
         // The client omits hevyProgram when the message isn't program talk ("yes, load it"),
         // so the flag is the only honest signal that the grid is occupied.
         const refused = expectRefused(
-            await importHevyShareTool({ hevyProgram: [], programHasExercises: true }).execute({
+            await importHevyShareFolderTool({ hevyProgram: [], programHasExercises: true }).execute({
                 url: "https://hevy.com/folder/abc123",
                 confirmed: true,
             }),
@@ -426,7 +426,7 @@ describe("importHevyShare tool", () => {
 
     it("tells the agent the grid changed and not to rebuild the week", async () => {
         mockFetchJson(FOLDER_PAYLOAD);
-        const tool = importHevyShareTool();
+        const tool = importHevyShareFolderTool();
 
         const output = await tool.execute({
             url: "https://hevy.com/folder/abc123",
@@ -441,7 +441,7 @@ describe("importHevyShare tool", () => {
     });
 
     it("tells the agent to ask for confirmation rather than retrying", async () => {
-        const tool = importHevyShareTool();
+        const tool = importHevyShareFolderTool();
 
         const output = await tool.execute({
             url: "https://hevy.com/folder/abc123",
@@ -454,7 +454,7 @@ describe("importHevyShare tool", () => {
     });
 
     it("tells the agent an occupied grid is final and offers the alternatives", async () => {
-        const tool = importHevyShareTool({ programHasExercises: true });
+        const tool = importHevyShareFolderTool({ programHasExercises: true });
 
         const output = await tool.execute({
             url: "https://hevy.com/folder/abc123",
@@ -462,32 +462,32 @@ describe("importHevyShare tool", () => {
         });
         const { value } = await tool.toModelOutput({ output });
 
-        expect(value).toContain("Do not retry importHevyShare");
-        expect(value).toContain("fetchHevyShare");
+        expect(value).toContain("Do not retry importHevyShareFolder");
+        expect(value).toContain("fetchHevyShareFolder");
     });
 
     it("reports an upstream failure through the ToolErrorPanel path", async () => {
         mockFetchJson({}, 500);
 
-        const output = await importHevyShareTool().execute({
+        const output = await importHevyShareFolderTool().execute({
             url: "https://hevy.com/folder/abc123",
             confirmed: true,
         });
         const errorCtx = { errorText: undefined, output };
 
         expect(output).toMatchObject({ reason: "upstream" });
-        expect(summarizeToolError("importHevyShare", errorCtx)).toContain(
+        expect(summarizeToolError("importHevyShareFolder", errorCtx)).toContain(
             "Hevy's share API may have changed.",
         );
-        expect(JSON.parse(buildToolErrorPayload("importHevyShare", errorCtx)).tool).toBe(
-            "importHevyShare",
+        expect(JSON.parse(buildToolErrorPayload("importHevyShareFolder", errorCtx)).tool).toBe(
+            "importHevyShareFolder",
         );
     });
 
-    it("shares the per-caller hourly budget with fetchHevyShare", async () => {
+    it("shares the per-caller hourly budget with fetchHevyShareFolder", async () => {
         mockFetchJson(FOLDER_PAYLOAD);
-        const fetchTool = fetchHevyShareTool("shared-budget-user");
-        const importTool = importHevyShareTool({ userId: "shared-budget-user" });
+        const fetchTool = fetchHevyShareFolderTool("shared-budget-user");
+        const importTool = importHevyShareFolderTool({ userId: "shared-budget-user" });
 
         for (let call = 0; call < HEVY_SHARE_RATE_LIMIT_PER_HOUR; call++) {
             await fetchTool.execute({ url: "https://hevy.com/folder/abc123" });
@@ -501,7 +501,7 @@ describe("importHevyShare tool", () => {
     });
 
     it("is offered on every chat, anonymous included - it refuses on its own gates", () => {
-        expect(getTools({})).toHaveProperty("importHevyShare");
-        expect(getTools({ hevyProgram: [OCCUPIED_DAY] })).toHaveProperty("importHevyShare");
+        expect(getTools({})).toHaveProperty("importHevyShareFolder");
+        expect(getTools({ hevyProgram: [OCCUPIED_DAY] })).toHaveProperty("importHevyShareFolder");
     });
 });

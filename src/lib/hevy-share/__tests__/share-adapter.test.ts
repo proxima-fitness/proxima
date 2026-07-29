@@ -78,6 +78,74 @@ describe("adaptHevyShareToRoutines", () => {
         ]);
     });
 
+    it("carries mint metadata only for templates the sharer owns", () => {
+        const sharerCustomId = "4dbbf2ee-4694-4f9a-835f-59c354d4cd3f";
+        const { routines } = adaptHevyShareToRoutines(
+            {
+                routines: [
+                    {
+                        title: "Mobility",
+                        exercises: [
+                            {
+                                exercise_template_id: sharerCustomId,
+                                title: "  Shoulder CARs  ",
+                                exercise_type: "reps_only",
+                                equipment_category: "none",
+                                muscle_group: "shoulders",
+                                other_muscles: ["traps", 7, "  "],
+                                sets: [],
+                            },
+                            // Hevy library id - valid on the importer's account already.
+                            { exercise_template_id: "79D0BB3A", title: "Bench Press", sets: [] },
+                            // Sharer-owned, but nothing to mint a movement from.
+                            { exercise_template_id: "9c7d87b6-7383-43a2-b593-e46659be575d", sets: [] },
+                        ],
+                    },
+                ],
+            },
+            NOW,
+        );
+
+        const [custom, library, untitled] = routines[0].exercises;
+
+        expect(custom.shared_template).toEqual({
+            title: "Shoulder CARs",
+            exercise_type: "reps_only",
+            equipment_category: "none",
+            muscle_group: "shoulders",
+            other_muscles: ["traps"],
+        });
+        expect(library.shared_template).toBeUndefined();
+        expect(untitled.shared_template).toBeUndefined();
+    });
+
+    it("carries mint metadata with null fields when the share omits them", () => {
+        const { routines } = adaptHevyShareToRoutines(
+            {
+                routines: [
+                    {
+                        exercises: [
+                            {
+                                exercise_template_id: "4dbbf2ee-4694-4f9a-835f-59c354d4cd3f",
+                                title: "Sled Drag",
+                                sets: [],
+                            },
+                        ],
+                    },
+                ],
+            },
+            NOW,
+        );
+
+        expect(routines[0].exercises[0].shared_template).toEqual({
+            title: "Sled Drag",
+            exercise_type: null,
+            equipment_category: null,
+            muscle_group: null,
+            other_muscles: [],
+        });
+    });
+
     it("seeds every shared routine into week 0 ordered by the share index", () => {
         const { title, routines } = adaptHevyShareToRoutines(folderPayload(), NOW);
 

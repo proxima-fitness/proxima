@@ -39,8 +39,8 @@ import {
     isHevyShareImportRefusal,
     isHevyShareImportSuccess,
     isHevyShareToolError,
-    type TFetchHevyShareToolOutput,
-    type TImportHevyShareToolOutput,
+    type TFetchHevyShareFolderToolOutput,
+    type TImportHevyShareFolderToolOutput,
 } from "@/app/api/chat/tools/hevy-share";
 import { RateProgramResults } from "@/components/program-builder/shared/RateProgramResults";
 import type { IProgramScore } from "@/components/program-builder/utils/score-program";
@@ -930,11 +930,11 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 </Tool>
                                             );
                                         }
-                                        case "tool-fetchHevyShare": {
+                                        case "tool-fetchHevyShareFolder": {
                                             const sharePart = part as {
                                                 state?: TToolPart["state"];
                                                 input?: { url?: string };
-                                                output?: TFetchHevyShareToolOutput;
+                                                output?: TFetchHevyShareFolderToolOutput;
                                                 errorText?: string;
                                             };
                                             const shareOutput = sharePart.output;
@@ -957,14 +957,14 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 };
                                                 return (
                                                     <Tool key={`${message.id}-${index}-hevy-share-error`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
-                                                        <ToolHeader type="tool-fetchHevyShare" state={toolState} title="Read Hevy share" />
+                                                        <ToolHeader type="tool-fetchHevyShareFolder" state={toolState} title="Read Hevy share" />
                                                         <ToolContent>
                                                             <ToolErrorPanel
-                                                                tool="fetchHevyShare"
+                                                                tool="fetchHevyShareFolder"
                                                                 errorCtx={errorCtx}
                                                                 getChatId={resolvePersistChatId}
-                                                                summary={summarizeToolError("fetchHevyShare", errorCtx)}
-                                                                copyPayload={buildToolErrorPayload("fetchHevyShare", errorCtx)}
+                                                                summary={summarizeToolError("fetchHevyShareFolder", errorCtx)}
+                                                                copyPayload={buildToolErrorPayload("fetchHevyShareFolder", errorCtx)}
                                                             />
                                                         </ToolContent>
                                                     </Tool>
@@ -973,7 +973,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
 
                                             return (
                                                 <Tool key={`${message.id}-${index}-hevy-share`} defaultOpen={false} className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
-                                                    <ToolHeader type="tool-fetchHevyShare" state={toolState} title="Read Hevy share" />
+                                                    <ToolHeader type="tool-fetchHevyShareFolder" state={toolState} title="Read Hevy share" />
                                                     <ToolContent>
                                                         {shareRead ? (
                                                             <div className="space-y-1 px-3 pb-3">
@@ -996,11 +996,11 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 </Tool>
                                             );
                                         }
-                                        case "tool-importHevyShare": {
+                                        case "tool-importHevyShareFolder": {
                                             const importPart = part as {
                                                 state?: TToolPart["state"];
                                                 input?: { url?: string; confirmed?: boolean };
-                                                output?: TImportHevyShareToolOutput;
+                                                output?: TImportHevyShareFolderToolOutput;
                                                 errorText?: string;
                                             };
                                             const importOutput = importPart.output;
@@ -1029,14 +1029,14 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 };
                                                 return (
                                                     <Tool key={`${message.id}-${index}-hevy-import-error`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
-                                                        <ToolHeader type="tool-importHevyShare" state={toolState} title="Load Hevy share" />
+                                                        <ToolHeader type="tool-importHevyShareFolder" state={toolState} title="Load Hevy share" />
                                                         <ToolContent>
                                                             <ToolErrorPanel
-                                                                tool="importHevyShare"
+                                                                tool="importHevyShareFolder"
                                                                 errorCtx={errorCtx}
                                                                 getChatId={resolvePersistChatId}
-                                                                summary={summarizeToolError("importHevyShare", errorCtx)}
-                                                                copyPayload={buildToolErrorPayload("importHevyShare", errorCtx)}
+                                                                summary={summarizeToolError("importHevyShareFolder", errorCtx)}
+                                                                copyPayload={buildToolErrorPayload("importHevyShareFolder", errorCtx)}
                                                             />
                                                         </ToolContent>
                                                     </Tool>
@@ -1045,7 +1045,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
 
                                             return (
                                                 <Tool key={`${message.id}-${index}-hevy-import`} defaultOpen={false} className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
-                                                    <ToolHeader type="tool-importHevyShare" state={toolState} title="Load Hevy share" />
+                                                    <ToolHeader type="tool-importHevyShareFolder" state={toolState} title="Load Hevy share" />
                                                     <ToolContent>
                                                         {importedShare ? (
                                                             <div className="space-y-1 px-3 pb-3">

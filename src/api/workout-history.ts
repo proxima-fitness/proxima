@@ -4,7 +4,8 @@
  * Persists backed-up workout history from connected fitness apps into canonical
  * Supabase tables (workouts → workout_exercises → workout_sets).
  *
- * Depends on: @/hooks/supabase (generated types), program-builder/api/hevy, api/supabase-admin, uuid
+ * Depends on: @/hooks/supabase (generated types), program-builder/api/hevy, api/supabase-admin,
+ *             api/exercise-identity, uuid
  * Used by: workout history sync orchestration (01c), optional dev import script
  */
 import { v4 as uuidv4 } from "uuid";
@@ -13,6 +14,7 @@ import {
     getHevyExerciseTemplate,
     isHevyRateLimitError,
 } from "@/components/program-builder/api/hevy";
+import { exerciseMatchKey, normalizeExerciseTitle } from "./exercise-identity";
 import { getServiceRoleClient } from "./supabase-admin";
 
 export const HEVY_WORKOUT_SOURCE = "hevy" as const;
@@ -26,33 +28,9 @@ type TCanonicalExerciseInsert = TablesInsert<"canonical_exercises"> & { id: stri
 /** Title used when a canonical exercise row is missing or not readable by the caller. */
 export const UNKNOWN_EXERCISE_TITLE = "Unknown exercise";
 
-/**
- * Normalizes an exercise title into the canonical identity key.
- * Lowercases, collapses whitespace, and trims - word order and parentheses are preserved,
- * matching `normalized_title` in the ownership migration.
- *
- * @param title - Raw exercise title from Hevy or a fallback label
- * @returns Normalized title string
- */
-export function normalizeExerciseTitle(title: string): string {
-    return title.toLowerCase().replace(/\s+/g, " ").trim();
-}
-
-/**
- * Builds the lossy match key used to *suggest* merges and promotions.
- * Token-sorted and parens-stripped, mirroring `public.exercise_match_key`. Never an identity key:
- * it merges movements that differ only in word order.
- *
- * @param title - Raw exercise title
- * @returns Token-sorted match key
- */
-export function exerciseMatchKey(title: string): string {
-    return normalizeExerciseTitle(title.replace(/[()]/g, ""))
-        .split(" ")
-        .filter(Boolean)
-        .sort()
-        .join(" ");
-}
+// The title keys live in their own module so Week Export can mint canonical rows from the
+// browser without importing this server-side module. Re-exported for existing callers.
+export { normalizeExerciseTitle, exerciseMatchKey };
 
 /**
  * Maps a Hevy workout payload to a `workouts` table insert row.

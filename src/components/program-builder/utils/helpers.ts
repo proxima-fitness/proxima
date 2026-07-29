@@ -14,7 +14,7 @@
  *    set generation with support for reps, ranges, time, RPE, and AMRAP.
  * 4. **Program mutation helpers** - Human-readable operation summaries and client-side
  *    apply of agent mutateProgram tool results with undo support.
- * 5. **Hevy share import hydrate** - client-side apply of a confirmed importHevyShare
+ * 5. **Hevy share import hydrate** - client-side apply of a confirmed importHevyShareFolder
  *    tool result onto an empty grid (week 0 seed).
  *
  * Depends on: compromise (NLP), fuse.js (fuzzy), sonner (toasts), ai (UIMessage)
@@ -30,7 +30,7 @@ import type { TAgentProgramOperation } from "@/components/program-builder/mutati
 import { isApplyBatchFailure, type TCommitWithUndoOptions } from "@/components/program-builder/mutations/types";
 import {
     isHevyShareImportSuccess,
-    type TImportHevyShareToolOutput,
+    type TImportHevyShareFolderToolOutput,
 } from "@/app/api/chat/tools/hevy-share";
 
 
@@ -1086,7 +1086,7 @@ export interface IHevyShareImportSeed {
 }
 
 /**
- * Newest successful `importHevyShare` result in the thread, if any.
+ * Newest successful `importHevyShareFolder` result in the thread, if any.
  *
  * Scans the whole thread rather than the current turn: the seed lands in one turn and the
  * grid it fills is the same grid on every later render, so a mid-thread import must stay
@@ -1099,9 +1099,9 @@ export const getHevyShareImportSeed = (messages: UIMessage[]): IHevyShareImportS
         const parts = message.parts ?? [];
         for (let partIndex = 0; partIndex < parts.length; partIndex++) {
             const part = parts[partIndex];
-            if (part.type !== "tool-importHevyShare") continue;
+            if (part.type !== "tool-importHevyShareFolder") continue;
 
-            const output = (part as { output?: TImportHevyShareToolOutput }).output;
+            const output = (part as { output?: TImportHevyShareFolderToolOutput }).output;
             if (!output || !isHevyShareImportSuccess(output) || output.routines.length === 0) {
                 continue;
             }

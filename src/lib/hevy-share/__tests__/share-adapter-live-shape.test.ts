@@ -71,6 +71,17 @@ describe("adaptHevyShareToRoutines - live share shape", () => {
         expect(routines[0].notes).toBe("Built by Proxima · https://proximafitness.com");
     });
 
+    it("carries the sharer's custom template metadata for Week Export to mint from", () => {
+        expect(routines[0].exercises[0].shared_template).toEqual({
+            title: "Shoulder CARs (Controlled Articular Rotations)",
+            exercise_type: "reps_only",
+            equipment_category: "none",
+            muscle_group: "shoulders",
+            other_muscles: [],
+        });
+        expect(routines[0].exercises[1].shared_template).toBeUndefined();
+    });
+
     it("renumbers the share's superset ids to 0-indexed groups", () => {
         expect(routines[1].exercises.map(exercise => exercise.supersets_id)).toEqual([0, 0]);
         expect(routines[0].exercises.map(exercise => exercise.supersets_id)).toEqual([null, null]);

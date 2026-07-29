@@ -9,7 +9,8 @@
  *  - **Foreign identity is stripped.** The share's Hevy routine ID, folder ID and short id
  *    never reach builder state; each day gets a sequential **builder routine key** instead.
  *    Exercise template IDs are the deliberate exception - they are kept so Week Export can
- *    resolve or mint them (sub-plan 4).
+ *    resolve or mint them (sub-plan 4), and the sharer-owned ones travel with the metadata
+ *    that minting needs.
  *  - **One-week seed.** Every shared routine lands in week 0 (`folder_id: 0`) as `Day 1..N`.
  *    Multi-week expand is a separate ask.
  *
@@ -38,6 +39,14 @@ const CONTAINER_KEYS = ["shareable_folder", "routine_folder", "folder", "data", 
  * keeping the prefix would double it up. Only stripped when a real title remains.
  */
 const DAY_ORDINAL_PREFIX = /^\s*\d{1,2}\s*-\s*(?=\S)/;
+
+/**
+ * An account's own Hevy customs are identified by a UUID; the library's templates are 8 hex
+ * characters (`79D0BB3A`) and Proxima's supplemental ones are `WU`-prefixed. Only a UUID is
+ * therefore possibly the sharer's to own, and only those carry mint metadata - claiming a shared
+ * template that already resolves on every account would have Week Export duplicate it.
+ */
+const HEVY_CUSTOM_TEMPLATE_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Result of adapting one share payload. */
 export type THevyShareAdaptResult = {
@@ -191,11 +200,45 @@ function adaptShareSet(raw: unknown, index: number): THevySets {
     };
 }
 
+/** Muscle names from the share, dropping anything that is not a plain string. */
+function readMuscleNames(value: unknown): string[] {
+    if (!Array.isArray(value)) return [];
+    return value.filter((entry): entry is string => typeof entry === "string" && entry.trim() !== "");
+}
+
+/**
+ * Reads the mint metadata for a sharer-owned template, or `null` when the exercise needs none.
+ *
+ * The share sends the exact fields `POST /v1/exercise_templates` wants, so a **Hevy-native custom**
+ * of the sharer's can be recreated faithfully on the importer's account instead of being guessed
+ * at from its title. Library templates and untitled rows carry nothing: the first needs no mint,
+ * the second gives Week Export nothing to mint from.
+ */
+function readSharedTemplate(
+    source: Record<string, unknown>,
+    templateId: string,
+    title: string,
+): THevySharedTemplate | null {
+    if (!HEVY_CUSTOM_TEMPLATE_ID.test(templateId)) return null;
+
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) return null;
+
+    return {
+        title: trimmedTitle,
+        exercise_type: readString(source.exercise_type),
+        equipment_category: readString(source.equipment_category),
+        muscle_group: readString(source.muscle_group),
+        other_muscles: readMuscleNames(source.other_muscles),
+    };
+}
+
 /**
  * Adapts one exercise row.
  *
  * `exercise_template_id` is carried over verbatim - the share's template may be another
- * user's Hevy-native custom, which Week Export mints as a **Custom movement** (sub-plan 4).
+ * user's Hevy-native custom, which Week Export mints as a **Custom movement** (sub-plan 4)
+ * using the `shared_template` metadata attached here.
  *
  * @param supersetKeys - Per-routine map from the share's superset id to a 0-indexed group
  */
@@ -206,15 +249,19 @@ function adaptShareExercise(
 ): THevyExercise {
     const source = isRecord(raw) ? raw : {};
     const rawSupersetId = readFiniteNumber(source.supersets_id ?? source.superset_id);
+    const title = readString(source.title) ?? "";
+    const templateId = readString(source.exercise_template_id) ?? "";
+    const sharedTemplate = readSharedTemplate(source, templateId, title);
 
     return {
         index,
-        title: readString(source.title) ?? "",
+        title,
         notes: readString(source.notes) ?? "",
         rest_seconds: readRestSeconds(source.rest_seconds),
-        exercise_template_id: readString(source.exercise_template_id) ?? "",
+        exercise_template_id: templateId,
         supersets_id: rawSupersetId === null ? null : supersetKeys.get(rawSupersetId) ?? null,
         sets: Array.isArray(source.sets) ? source.sets.map(adaptShareSet) : [],
+        ...(sharedTemplate ? { shared_template: sharedTemplate } : {}),
     };
 }
 

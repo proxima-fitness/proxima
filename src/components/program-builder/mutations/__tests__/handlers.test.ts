@@ -201,6 +201,30 @@ describe("swapExerciseTemplate", () => {
         expect(next[0].exercises[0].reason).toBe("Primary horizontal press");
     });
 
+    it("drops a share's mint metadata with the template id it described", () => {
+        const sharedTemplate: THevySharedTemplate = {
+            title: "Shoulder CARs",
+            exercise_type: "reps_only",
+            equipment_category: "none",
+            muscle_group: "shoulders",
+            other_muscles: [],
+        };
+        const program = [makeDay({ exercises: [makeExercise({ shared_template: sharedTemplate })] })];
+
+        const swapped = swapExerciseTemplate(program, "bench-1", {
+            exercise_template_id: "3601968B",
+            title: "DB Bench",
+        }).program;
+        expect(swapped[0].exercises[0].shared_template).toBeUndefined();
+
+        // A swap that changes no identity leaves Week Export what it needs to mint.
+        const sameId = swapExerciseTemplate(program, "bench-1", {
+            exercise_template_id: "bench-1",
+            title: "Bench Press",
+        }).program;
+        expect(sameId[0].exercises[0].shared_template).toEqual(sharedTemplate);
+    });
+
     it("overwrites reason when to.reason provided", () => {
         const program = [makeDay()];
         const { program: next } = swapExerciseTemplate(program, "bench-1", {

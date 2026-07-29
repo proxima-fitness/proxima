@@ -54,7 +54,7 @@ const SEED = [makeShareDay(1, "Push"), makeShareDay(2, "Pull")];
 
 const importPart = (output: unknown) =>
     ({
-        type: "tool-importHevyShare",
+        type: "tool-importHevyShareFolder",
         toolCallId: "i1",
         state: "output-available",
         input: { url: "https://hevy.com/folder/abc123", confirmed: true },

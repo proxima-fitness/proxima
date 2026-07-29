@@ -124,7 +124,7 @@ describe("constraint persist skill scope", () => {
         const skills = await discoverSkills(sandbox, [".agents/skills"]);
         const tools = asToolRecord(getTools({}));
 
-        for (const shareTool of ["fetchHevyShare", "importHevyShare"]) {
+        for (const shareTool of ["fetchHevyShareFolder", "importHevyShareFolder"]) {
             expect(ALWAYS_AVAILABLE_CHAT_TOOLS).toContain(shareTool);
             for (const name of ["build-program", "mutate-program"]) {
                 const skill = skills.find((s) => s.name === name);

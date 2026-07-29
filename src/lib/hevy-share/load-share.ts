@@ -2,7 +2,7 @@
  * @module lib/hevy-share/load-share
  *
  * The one entry point both share tools call: parse link → throttle → server fetch → adapt.
- * `fetchHevyShare` (sub-plan 2) and `importHevyShare` (sub-plan 3) differ in what they do
+ * `fetchHevyShareFolder` (sub-plan 2) and `importHevyShareFolder` (sub-plan 3) differ in what they do
  * with the result, never in how they get it.
  *
  * Depends on: lib/hevy-share/share-url, share-rate-limit, share-client, share-adapter, share-errors
