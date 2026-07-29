@@ -118,6 +118,91 @@ export function mapSupabaseExerciseTemplateRowToPostExercise(row: THevyExerciseT
     };
 }
 
+/**
+ * Fallbacks for share metadata Hevy would reject. `weight_reps` is Hevy's own default for a new
+ * custom, and `other` is its neutral option for both equipment and muscle group.
+ */
+const HEVY_POST_FALLBACK_TYPE: THevyPostExerciseTemplate["exercise_type"] = "weight_reps";
+const HEVY_POST_FALLBACK_EQUIPMENT: THevyPostExerciseTemplate["equipment_category"] = "other";
+const HEVY_POST_FALLBACK_MUSCLE: THevyPostExerciseTemplate["muscle_group"] = "other";
+
+/**
+ * Maps a **Hevy share import**'s `shared_template` to a `POST /v1/exercise_templates` body,
+ * so the sharer's **Hevy-native custom** can be recreated on the importing user's account.
+ *
+ * Unlike {@link mapSupabaseExerciseTemplateRowToPostExercise} this never throws. The metadata
+ * comes from Hevy's undocumented share endpoints, and a value they rename or retire must not fail
+ * a Week Export - anything unrecognised falls back to Hevy's neutral option so the exercise still
+ * lands, named correctly, on the user's account.
+ *
+ * Falling back quietly would hide exactly that drift, so every dropped value is logged: a run of
+ * these in the logs means the share vocabulary moved, not that one user shared something odd.
+ *
+ * @param shared - Metadata the share adapter carried across
+ * @param fallbackTitle - Builder exercise title, used only if the share carried no title
+ */
+export function mapSharedTemplateToPostExercise(
+    shared: THevySharedTemplate,
+    fallbackTitle: string,
+): THevyPostExerciseTemplate {
+    const dropped: string[] = [];
+
+    /** Keeps a share value Hevy still accepts, or records why it was swapped for the fallback. */
+    const narrow = <T extends string>(field: string, raw: string | null, allowed: Set<string>, fallback: T): T => {
+        const trimmed = raw?.trim() ?? "";
+        if (allowed.has(trimmed)) return trimmed as T;
+        if (trimmed) dropped.push(`${field}: ${trimmed}`);
+        return fallback;
+    };
+
+    const muscle_group = narrow(
+        "muscle_group",
+        shared.muscle_group,
+        HEVY_POST_MUSCLE,
+        HEVY_POST_FALLBACK_MUSCLE,
+    );
+
+    const other_muscles: THevyPostExerciseTemplate["other_muscles"] = [];
+    for (const raw of shared.other_muscles) {
+        const trimmed = raw.trim();
+        if (!HEVY_POST_MUSCLE.has(trimmed)) {
+            if (trimmed) dropped.push(`other_muscles: ${trimmed}`);
+            continue;
+        }
+        const mg = trimmed as THevyPostExerciseTemplate["muscle_group"];
+        if (mg !== muscle_group && !other_muscles.includes(mg)) {
+            other_muscles.push(mg);
+        }
+    }
+
+    const body: THevyPostExerciseTemplate = {
+        title: shared.title.trim() || fallbackTitle.trim(),
+        exercise_type: narrow(
+            "exercise_type",
+            shared.exercise_type,
+            HEVY_POST_EXERCISE_TYPES,
+            HEVY_POST_FALLBACK_TYPE,
+        ),
+        equipment_category: narrow(
+            "equipment_category",
+            shared.equipment_category,
+            HEVY_POST_EQUIPMENT,
+            HEVY_POST_FALLBACK_EQUIPMENT,
+        ),
+        muscle_group,
+        other_muscles,
+    };
+
+    if (dropped.length > 0) {
+        console.warn(
+            "Hevy share metadata not recognised - falling back for the minted custom exercise. Hevy's share API may have changed.",
+            { title: body.title, dropped },
+        );
+    }
+
+    return body;
+}
+
 const RPE_SEP = "\u00B7";
 const RPE_SLOT_EMPTY = "\u2013";
 

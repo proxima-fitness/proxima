@@ -14,6 +14,7 @@
  * program_workout_exercises) so the app can display them independently of Hevy.
  *
  * Depends on: hevy_export (convertHevyOutputIntoInput), @/api/index (supabase),
+ *             @/api/custom-movements (minting imported share customs),
  *             @/components/program-builder/utils (getMaxFolderId), uuid
  * Used by: program-builder UI components, Agent chat flow, API routes
  */
@@ -22,7 +23,12 @@ import { validate as validateUuid } from "uuid";
 import { getMaxFolderId } from "@/components/program-builder/utils";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/api/index";
-import { convertHevyOutputIntoInput, mapSupabaseExerciseTemplateRowToPostExercise } from "./hevy_export";
+import { mapHevyTemplateToCustomMovement, mintCustomMovement } from "@/api/custom-movements";
+import {
+    convertHevyOutputIntoInput,
+    mapSharedTemplateToPostExercise,
+    mapSupabaseExerciseTemplateRowToPostExercise,
+} from "./hevy_export";
 import { HEVY_OMIT_REASON, RATE_LIMIT_EXHAUSTED_MESSAGE } from "@/assets/constants/ui-constants";
 
 /** Max pages when listing Hevy exercise templates (100 templates per page). */
@@ -897,6 +903,85 @@ function collectExerciseTemplateIdsFromRoutines(routines: THevyRoutine[]): strin
     return Array.from(set);
 }
 
+/** One share-carried template that has no identity on the signed-in user's account yet. */
+type TForeignCustomExercise = {
+    /** The sharer's `exercise_template_id`, as it sits in builder state. */
+    templateId: string;
+    /** Title to mint under - the share's own, falling back to the builder row's. */
+    title: string;
+    /** Metadata `mapSharedTemplateToPostExercise` narrows into a Hevy create body. */
+    shared: THevySharedTemplate;
+};
+
+/**
+ * Collects share-carried templates that Proxima's mirror does not know.
+ *
+ * A **Hevy share import** keeps the sharer's `exercise_template_id`, so a **Hevy-native custom**
+ * of theirs arrives as an ID that resolves on their account and nowhere else. Those are the only
+ * IDs minted: an unmirrored ID with no `shared_template` is a template the user picked from their
+ * own Hevy account in the add-exercise dialog, and it is already valid where it is going.
+ *
+ * @param mirroredIds - Template IDs found in `hevy_exercise_templates`
+ * @returns One entry per distinct foreign template, first occurrence winning
+ */
+function collectForeignCustomExercises(
+    routines: THevyRoutine[],
+    mirroredIds: Set<string>,
+): TForeignCustomExercise[] {
+    const foreign = new Map<string, TForeignCustomExercise>();
+
+    for (const routine of routines) {
+        for (const ex of routine.exercises ?? []) {
+            const templateId = ex.exercise_template_id?.trim();
+            const shared = ex.shared_template;
+            if (!templateId || !shared) continue;
+            if (mirroredIds.has(templateId) || foreign.has(templateId)) continue;
+
+            const title = (shared.title || ex.title || "").trim();
+            // Nothing to mint a movement from; leave the ID alone rather than invent a name.
+            if (!title) continue;
+
+            foreign.set(templateId, { templateId, title, shared });
+        }
+    }
+
+    return Array.from(foreign.values());
+}
+
+/**
+ * Mints the **Custom movement** behind a foreign template and links it to the Hevy template the
+ * user will actually log against.
+ *
+ * Proxima-side bookkeeping only: the upload succeeds or fails on Hevy's response, so a Supabase
+ * failure here is logged and swallowed rather than allowed to sink a Week Export.
+ *
+ * @param userHevyTemplateId - The matched or freshly created template ID on the user's account
+ */
+async function recordCustomMovementForForeignTemplate(
+    userId: string,
+    foreign: TForeignCustomExercise,
+    userHevyTemplateId: string,
+): Promise<void> {
+    try {
+        const canonicalExerciseId = await mintCustomMovement(userId, {
+            title: foreign.title,
+            exercise_type: foreign.shared.exercise_type,
+            equipment: foreign.shared.equipment_category,
+            primary_muscle_group: foreign.shared.muscle_group,
+            secondary_muscle_groups: foreign.shared.other_muscles.length > 0
+                ? foreign.shared.other_muscles
+                : null,
+        });
+
+        await mapHevyTemplateToCustomMovement(userHevyTemplateId, canonicalExerciseId);
+    } catch (error: unknown) {
+        console.warn("Could not record Custom movement for imported Hevy share exercise", {
+            title: foreign.title,
+            message: error instanceof Error ? error.message : String(error),
+        });
+    }
+}
+
 /**
  * Replaces `exercise_template_id` where a Proxima UUID maps to a Hevy account ID.
  */
@@ -1047,12 +1132,38 @@ export type TResolveCustomExerciseTemplatesResult =
     | { success: false; error: Error };
 
 /**
- * Resolves Proxima `hevy_exercise_templates` rows that need a Hevy-account ID before upload.
+ * Finds the one Hevy custom with this exact (trimmed) title.
+ *
+ * Two customs under one title leave nothing to pick between, and picking wrong silently rewrites
+ * the user's program - so that is an error the export stops on, not a guess.
+ */
+function findHevyCustomByTitle(
+    hevyCustoms: THevyExerciseTemplate[],
+    title: string,
+): { success: true; match: THevyExerciseTemplate | undefined } | { success: false; error: Error } {
+    const sameTitle = hevyCustoms.filter((h) => (h.title ?? "").trim() === title);
+    if (sameTitle.length > 1) {
+        return {
+            success: false,
+            error: new Error(
+                `Multiple Hevy exercises named "${title}". Rename one in Hevy and try again.`,
+            ),
+        };
+    }
+    return { success: true, match: sameTitle[0] };
+}
+
+/**
+ * Resolves exercise templates that need a Hevy-account ID before upload.
  *
  * - Template IDs **present** in Supabase with `is_custom: true` are matched to the user's Hevy
  *   customs by exact title (trimmed) or created via `POST /v1/exercise_templates`, then remapped.
- * - Template IDs **not** in the Supabase mirror (e.g. exercises picked from the user's Hevy account
- *   in the add-exercise dialog) are treated as already-valid Hevy template IDs and left unchanged.
+ * - Template IDs **not** in the Supabase mirror that carry `shared_template` came from a
+ *   **Hevy share import** and belong to the sharer's account: each is minted as a **Custom
+ *   movement** for the signed-in user, then matched or created on their Hevy account and remapped.
+ *   Without this a Week Export dies on the sharer's IDs, which the importer cannot post against.
+ * - Any other template ID **not** in the mirror (e.g. exercises picked from the user's own Hevy
+ *   account in the add-exercise dialog) is treated as already valid and left unchanged.
  */
 export async function resolveCustomExerciseTemplatesForHevyUpload(
     user: User | null | undefined,
@@ -1075,7 +1186,9 @@ export async function resolveCustomExerciseTemplatesForHevyUpload(
     }
 
     const customRows = fetched.rows.filter((r) => r.is_custom === true);
-    if (customRows.length === 0) {
+    const mirroredIds = new Set(fetched.rows.map((r) => r.id));
+    const foreignCustoms = collectForeignCustomExercises(routines, mirroredIds);
+    if (customRows.length === 0 && foreignCustoms.length === 0) {
         return { success: true, routines, createdNewHevyCustomTemplates: 0 };
     }
 
@@ -1097,16 +1210,11 @@ export async function resolveCustomExerciseTemplatesForHevyUpload(
     for (const row of customRows) {
         const proximaId = row.id;
         const titleTrim = (row.title ?? "").trim();
-        const sameTitle = hevyCustoms.filter((h) => (h.title ?? "").trim() === titleTrim);
-        if (sameTitle.length > 1) {
-            return {
-                success: false,
-                error: new Error(
-                    `Multiple Hevy exercises named "${titleTrim}". Rename one in Hevy and try again.`,
-                ),
-            };
+        const found = findHevyCustomByTitle(hevyCustoms, titleTrim);
+        if (found.success === false) {
+            return { success: false, error: found.error };
         }
-        const match = sameTitle[0];
+        const match = found.match;
         if (match) {
             idMap.set(proximaId, String(match.id));
             continue;
@@ -1134,6 +1242,53 @@ export async function resolveCustomExerciseTemplatesForHevyUpload(
             idMap.set(proximaId, hevyId);
             createdHevyTemplateIds.push(hevyId);
             createdNewHevyCustomTemplates += 1;
+        } catch (e: unknown) {
+            const base = e instanceof Error ? e : new Error(String(e));
+            if (createdHevyTemplateIds.length > 0) {
+                return {
+                    success: false,
+                    error: new Error(
+                        `${base.message} Already created ${createdHevyTemplateIds.length} custom exercise(s) on Hevy; you may see duplicates if you retry.`,
+                    ),
+                };
+            }
+            return { success: false, error: base };
+        }
+    }
+
+    for (const foreign of foreignCustoms) {
+        // Already on this account - a user re-importing their own share, or a Hevy custom the
+        // add-exercise dialog offered them. Nothing to mint and nothing to remap.
+        if (hevyCustoms.some((h) => String(h.id) === foreign.templateId)) {
+            continue;
+        }
+
+        const found = findHevyCustomByTitle(hevyCustoms, foreign.title);
+        if (found.success === false) {
+            return { success: false, error: found.error };
+        }
+
+        const match = found.match;
+        if (match) {
+            const hevyId = String(match.id);
+            idMap.set(foreign.templateId, hevyId);
+            await recordCustomMovementForForeignTemplate(user.id, foreign, hevyId);
+            continue;
+        }
+
+        try {
+            const result = await postHevyCustomExerciseWithRateLimitRetry(
+                mapSharedTemplateToPostExercise(foreign.shared, foreign.title),
+                apiKey,
+                onProgress,
+                0,
+                totalForProgress,
+            );
+            const hevyId = String(result.id);
+            idMap.set(foreign.templateId, hevyId);
+            createdHevyTemplateIds.push(hevyId);
+            createdNewHevyCustomTemplates += 1;
+            await recordCustomMovementForForeignTemplate(user.id, foreign, hevyId);
         } catch (e: unknown) {
             const base = e instanceof Error ? e : new Error(String(e));
             if (createdHevyTemplateIds.length > 0) {

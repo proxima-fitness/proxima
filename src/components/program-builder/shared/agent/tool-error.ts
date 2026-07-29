@@ -28,6 +28,11 @@ const FRIENDLY_ERROR_CODES: Record<string, string> = {
     "Hevy not connected": "Connect Hevy in profile settings to view logged workouts.",
     "Sync error": "Workout history sync failed. Try again after sync completes.",
     "Failed to fetch workout history": "Couldn't load workout history. Try again in a moment.",
+    "Not a Hevy share link": "That doesn't look like a Hevy share link. Expected hevy.com/folder/… or hevy.com/routine/….",
+    "Hevy share not found": "Hevy has no share at that link - it may have been deleted or made private.",
+    "Hevy share limit reached": "Too many share links read in the last hour. Try again later.",
+    "Hevy share reading unavailable": "Reading Hevy share links isn't available on this deployment.",
+    "Failed to read Hevy share": "Couldn't read that Hevy share link - Hevy's share API may have changed.",
 };
 
 const DEFAULT_SUMMARY = "Something went wrong. Try again or rephrase your request.";

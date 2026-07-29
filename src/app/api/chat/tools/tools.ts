@@ -17,8 +17,10 @@
  *  - rateProgram - scores the current bodybuilding program (heuristic report card)
  *  - getWorkoutHistory - Pro-only backed-up workout history from Supabase (no live Hevy)
  *  - getBodyMeasurements - Pro-only backed-up body measurements from Supabase (no live Hevy)
+ *  - fetchHevyShareFolder - read-only **Hevy share fetch** of a pasted hevy.com share link
+ *  - importHevyShareFolder - confirmed **Hevy share import** that seeds an empty grid with the shared week
  *
- * Depends on: ai, zod, @/components/program-builder/api/hevy, @/assets/constants
+ * Depends on: ai, zod, @/components/program-builder/api/hevy, @/assets/constants, @/lib/hevy-share
  * Used by: /api/chat/route.ts (passed to ToolLoopAgent)
  */
 
@@ -57,6 +59,19 @@ import {
     normalizeMeasuredOnBound,
     type TBodyMeasurementsToolOutput,
 } from './body-measurements';
+import {
+    fetchHevyShareFolderInputSchema,
+    formatHevyShareForModel,
+    formatHevyShareImportForModel,
+    hevyShareErrorOutput,
+    hevyShareImportOutput,
+    hevyShareImportRefusal,
+    hevyShareToolOutput,
+    importHevyShareFolderInputSchema,
+    type TFetchHevyShareFolderToolOutput,
+    type TImportHevyShareFolderToolOutput,
+} from './hevy-share';
+import { loadHevyShare } from '@/lib/hevy-share';
 import {
     ensureWorkoutHistoryFresh,
     getSyncProgress,
@@ -117,6 +132,21 @@ interface IProps {
     trainingProfile?: TTrainingProfile;
     /** User's weight display preference (true = lbs). Defaults to true to match UI default. */
     isInLbs?: boolean;
+    /** Client IP, for the **Hevy share fetch** throttle when the caller is anonymous. */
+    clientIp?: string;
+    /**
+     * Whether the builder grid currently holds any exercise rows, sent on every turn.
+     *
+     * `hevyProgram` alone cannot answer this: the client omits the snapshot when the
+     * message does not read as program talk, and "yes, load it" does not. **Hevy share
+     * import** gates on an empty grid, so it needs the flag rather than the snapshot.
+     */
+    programHasExercises?: boolean;
+}
+
+/** Fallback grid-state read for callers that pass a snapshot but no explicit flag. */
+function snapshotHasExercises(hevyProgram?: THevyRoutine[]): boolean {
+    return (hevyProgram ?? []).some((routine) => (routine.exercises?.length ?? 0) > 0);
 }
 
 function stripFrontmatter(content: string): string {
@@ -206,7 +236,12 @@ export function getTools({
     constraintProfile,
     trainingProfile,
     isInLbs = true,
+    clientIp,
+    programHasExercises,
 }: IProps = {}) {
+
+    /** Grid-state gate for **Hevy share import**; an Edit-path chat always trips it. */
+    const gridHasExercises = programHasExercises ?? snapshotHasExercises(hevyProgram);
 
     /** Request-scoped id → canonical title from hevy_exercise_templates (populated by getExerciseList; buildWeek uses it or refetches). */
     const exerciseIdToTitle = new Map<string, string>();
@@ -522,6 +557,72 @@ export function getTools({
                 value: formatReadProgramForModel(o.hevyProgram ?? [], isInLbs),
             };
         },
+    });
+
+    /**
+     * Title: fetchHevyShareFolderTool
+     * Description: Read-only **Hevy share fetch** of a public hevy.com share link.
+     * Never writes to the grid or to Hevy - loading a share into the builder is a separate confirmed step.
+     */
+    const fetchHevyShareFolderTool = tool({
+        description:
+            'Reads a **public Hevy share link** the user pasted - `hevy.com/folder/{id}` (a shared routine folder) or `hevy.com/routine/{shortId}` (a single shared routine) - and returns its days, exercises, and sets. ' +
+            'Call when the user pastes such a link and wants it read: questions about the split, a critique, or as context while planning a new program. ' +
+            'This is **read-only**: it does not add anything to the program grid, does not sync to the shared folder, and does not connect the user\'s Hevy account. Loading a share into the builder is a separate step that needs the user\'s explicit confirmation. ' +
+            'Only accepts hevy.com share links - not Hevy app deep links, not api.hevyapp.com URLs, and not links to any other site. Never guess a link the user did not give you.',
+        inputSchema: fetchHevyShareFolderInputSchema,
+        execute: async ({ url }): Promise<TFetchHevyShareFolderToolOutput> => {
+            try {
+                return hevyShareToolOutput(await loadHevyShare(url, { userId, ip: clientIp }));
+            } catch (error) {
+                // Hevy's share endpoints are undocumented - log the shape so a format change is visible.
+                console.error('Error in fetchHevyShareFolder tool:', error);
+                return hevyShareErrorOutput(error);
+            }
+        },
+        toModelOutput: async ({ output }) => ({
+            type: 'text' as const,
+            value: formatHevyShareForModel(output as TFetchHevyShareFolderToolOutput),
+        }),
+    });
+
+    /**
+     * Title: importHevyShareFolderTool
+     * Description: Confirmed **Hevy share import** - seeds an empty New-path grid with the shared week.
+     *
+     * Both gates are checked before Hevy is called: an already-populated grid (which is
+     * also how an **Edit path** chat presents) and a missing user confirmation both refuse
+     * outright. The client applies the returned seed; this tool never writes to Hevy.
+     */
+    const importHevyShareFolderTool = tool({
+        description:
+            'Loads a **public Hevy share link** (`hevy.com/folder/{id}` or `hevy.com/routine/{shortId}`) onto the program grid as a one-week seed - the shared routines become the days of week 1, exactly as written. ' +
+            'Two hard requirements: the program grid must be **empty**, and the user must have **explicitly agreed** to load the share (pass `confirmed: true` only then). Pasting a link is not agreement - to just read a share, use **fetchHevyShareFolder**. ' +
+            'When you are unsure whether they want it loaded, ask in your reply and wait for their answer instead of calling this tool. ' +
+            'This does not push or sync anything to Hevy, does not touch the shared folder, does not link the program to that folder, and does not need the user\'s Hevy API key. It loads week 1 only - expanding to more weeks or periodizing is a separate ask. ' +
+            'The questionnaire is not required first; it applies when generating or expanding a program, not when loading a share.',
+        inputSchema: importHevyShareFolderInputSchema,
+        execute: async ({ url, confirmed }): Promise<TImportHevyShareFolderToolOutput> => {
+            // Grid state first: when both gates fail, confirming would not help.
+            if (gridHasExercises) {
+                return hevyShareImportRefusal('grid_not_empty');
+            }
+            if (!confirmed) {
+                return hevyShareImportRefusal('not_confirmed');
+            }
+
+            try {
+                return hevyShareImportOutput(await loadHevyShare(url, { userId, ip: clientIp }));
+            } catch (error) {
+                // Hevy's share endpoints are undocumented - log the shape so a format change is visible.
+                console.error('Error in importHevyShareFolder tool:', error);
+                return hevyShareErrorOutput(error);
+            }
+        },
+        toModelOutput: async ({ output }) => ({
+            type: 'text' as const,
+            value: formatHevyShareImportForModel(output as TImportHevyShareFolderToolOutput),
+        }),
     });
 
     /**
@@ -1354,6 +1455,8 @@ export function getTools({
         openHevyExportGate: openHevyExportGateTool,
         planProgram: planProgramTool,
         readProgram: readProgramTool,
+        fetchHevyShareFolder: fetchHevyShareFolderTool,
+        importHevyShareFolder: importHevyShareFolderTool,
         buildWeek: buildWeekTool,
         mutateProgram: mutateProgramTool,
         rateProgram: rateProgramTool,

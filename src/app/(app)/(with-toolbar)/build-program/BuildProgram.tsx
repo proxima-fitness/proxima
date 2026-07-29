@@ -498,6 +498,7 @@ function BuildProgramShell({
         tryRunSignInMigration,
         lastAtomicBuildCommitKeyRef,
         appliedMutateProgramKeysRef,
+        lastHevyShareImportKeyRef,
     } = chat;
 
     clearChatRef.current = clearMessages;
@@ -634,6 +635,7 @@ function BuildProgramShell({
         onBuildComplete,
         lastAtomicBuildCommitKeyRef,
         appliedMutateProgramKeysRef,
+        lastHevyShareImportKeyRef,
         chatHistoryLoading,
     } as const;
 

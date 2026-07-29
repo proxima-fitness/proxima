@@ -72,33 +72,49 @@ _Avoid_: Sync (Edit-path Hevy push), Update program (Edit current week write-bac
 When the builder has unsaved **New path** prescription changes (dirty / undo stack) and the user tries to leave, block in-app navigation with **Discard** (drop local changes and navigate) and **Cancel** (close dialog, stay on builder so they can press toolbar **Save**). No Save action inside the dialog. Tab close/refresh may use `beforeunload` when dirty.
 _Avoid_: Edit navigation guard (Sync-oriented), Save and Continue, autosave on leave
 
-**Program-Hevy link**:
-On each **Week Export**, after Hevy creates the week’s routine folder (and routines), Proxima persists that folder’s ID (and routine IDs) against the **Proxima program** + week index in Supabase. That row is the week’s **Hevy week copy** pointer - used for overview progress, read-only completed weeks, **Edit current week**, and **Hevy program sync**. Not title-only match.
-_Avoid_: Title-only match as sole key, in-memory-only (must survive refresh), assuming Hevy folder id == week index
+**Program–Hevy link**:
+On each **Week Export**, after Hevy creates the week’s routine folder (and routines), Proxima persists that folder’s ID against the **Proxima program** + **program week number**, plus one **Linked day** per routine. That row is the week’s **Hevy week copy** pointer — used for overview progress, **Edit current week**, and **Hevy program sync**. Sole match key for workout→program/week/day — never folder/routine title.
+_Avoid_: Title match (`Week N - …`) for identity or day-complete, in-memory-only, assuming Hevy folder id == week index, bare `hevy_routine_ids[]` with no per-day row
+
+**Linked day**:
+One routine’s entry in a **Program–Hevy link**: a stable Proxima id, its **Hevy routine ID**, a **display day ordinal** (1-based — titles like `Day N` mirror this), and whether it is still live. **Day complete keys off the Hevy routine ID (or linked-day id), never the display ordinal.** Reorder / Sync / **Folder reconcile** may rewrite display ordinals and titles so screen and DB stay aligned; that must not invalidate prior completion. Removed days stay not-live (Hevy has no DELETE) and are excluded from auto **Week complete**. New linked days: **Week Export**, Sync POST, or **Folder reconcile** (Hevy-app adds adopted as linked days; append then realign ordinals). Manual **Mark week complete** is the escape if the athlete will not train every live day.
+_Avoid_: `nthDay` as completion key, renumbering identity on remove, dropping removed entries, refusing to link Hevy-app-added routines
+
+**Folder reconcile**:
+Align the **Program–Hevy link** with the live Hevy folder (athlete may edit in Hevy, not only via Proxima). New folder routines → new **Linked days**; missing / `[Removed]` → not-live. Trigger order is an implementation decision (overview / program sync / Edit arrival). Does not rewrite the **Program prescription**.
+_Avoid_: Title parse to invent days, ignoring Hevy-side folder edits
+
+**Day complete**:
+Proof one live **Linked day** was trained — **Hevy program sync** when `workout.routine_id` matches that day’s **Hevy routine ID**. Stored against that stable id, not `nthDay`. Auto **Week complete** = every live linked day has a day-complete record.
+_Avoid_: nthDay / title / workout-backup fuzzy match as completion key
+
+**Program week number**:
+1-based ordinal of a week inside a **Proxima program** (rail position, Export “week 3”, link `nth_week`). **Stable ids are for days, not weeks** — weeks stay sequential; moving a week means **Edit program** (rewrite the prescription), not drag-reorder week identity. Distinct from builder **Week index** (0-based grid slot).
+_Avoid_: UUID week identity, treating week ordinal like a reorderable day id
 
 **Edit path**:
 Modify training in the builder and push to Hevy via Sync. Two valid uses: (1) **Edit current week** of a **Proxima program**, or (2) edit a **Hevy program (edit scope)** with no Proxima program - a helpful split builder. Optional promote: **Make into a program**. Distinct from **New path**.
 _Avoid_: Edit mode (UI label only), Edit arrival (entry mechanic), assuming every Edit implies a Proxima program, assuming Sync writes Supabase
 
 **Edit current week**:
-**Edit path** entry that loads only the Proxima program’s current week into the builder. User may open and **Sync** updates anytime while that week is the active **Hevy week copy** (exercise/weight/rep changes for days not yet done). Not a second **Week Export** - one folder per week; Sync updates the linked folder. Default persist is Sync to Hevy only; optional **Update program** writes the **Program prescription**.
-_Avoid_: Edit mode (too broad), full-program Edit, re-Export same week, autosave to Supabase on Sync
+**Edit path** entry that loads the current week’s **Hevy week copy** (linked folder), not that week’s **Program prescription** slot. Identity from **Linked days**, never titles. User may change content **and** structure (add/remove/reorder days) and **Sync**; athlete may also edit the folder in Hevy — **Folder reconcile** must keep up. Not a second **Week Export**. Sync updates Hevy + linked days; prescription changes go through **Edit program**. **Current week** only.
+_Avoid_: Loading the prescription, forbidding structural edits, title-derived order, Sync writing prescription, editing completed weeks to fix **Workouts**
 
 **Current week** (overview):
-The highest week number that exists as a Hevy routine folder for this **Proxima program** (via **Program-Hevy link** / `Week N - …` folders). **Edit current week** and mid-week Sync target that folder. Not defined by **Week complete** or calendar date - complete gates the next **Week Export** / **AI week suggest**, not which week is “current.”
-_Avoid_: Calendar week, “latest incomplete week”, assuming current = max schedule-history week
+Highest **program week number** with a **Program–Hevy link** that is not yet **Week complete**. No current week when every linked week is complete — only forward action is **Week Export** of N+1 (blocked until N complete). Folder titles are labels only.
+_Avoid_: Calendar week, title-derived current, Syncing completed weeks, max(nth_week) ignoring `completed_at`
 
 **Program prescription**:
-What the **Proxima program** says the athlete should do - the trainer plan. Survives week-to-week; Export of week N+1 comes from this, not from last week’s Hevy divergences.
-_Avoid_: Program (alone), plan (vague), template (ambiguous with exercise template)
+What the **Proxima program** says the athlete should do - the trainer plan. Survives week-to-week; Export of week N+1 comes from this, not from last week’s Hevy divergences. Prescription day rows have stable ids; `nthDay` / display ordinals are sort order only (same rule as **Linked day**).
+_Avoid_: Program (alone), plan (vague), template (ambiguous with exercise template), using nthDay as durable identity
 
 **Week complete**:
-Status on the Program overview that week N of a **Proxima program** is finished. User can tap **Mark week complete**, or the system auto-marks when every day in that week is recorded complete. Day completion is already tracked by **Hevy program sync** via Hevy `workout.routine_id` → folder title `Week N - {title}` → **program schedule history** (not title-fuzzy matching against backup). Unlock trigger for the next-week **AI week suggest** + **Week Export** of N+1.
-_Avoid_: Program complete (whole block), Sync complete, exported (Export ≠ trained)
+Week N finished — `completed_at` on that week’s **Program–Hevy link**. Manual **Mark week complete**, or auto when every live **Linked day** has a **Day complete**. Unlock for **AI week suggest** + **Week Export** of N+1.
+_Avoid_: Program complete, Sync complete, exported ≠ trained, folder-title matching, `nthDay`-keyed history surviving reorder
 
 **Week Export**:
-Push one week of a **Proxima program** to Hevy as a new routine folder plus that week’s routines. Creates the **Program-Hevy link** for that week. Once linked, that week is not Exported again - further Hevy updates use **Edit current week** Sync. Lives only on the **Program overview** - not on the builder.
-_Avoid_: Full-program Export (removed), Save (Supabase only), re-Export same week
+Push one week of a **Proxima program** to Hevy as a new folder + routines. Creates the **Program–Hevy link** + **Linked days**. Week N+1 requires week N **Week complete**. Once linked, updates use **Edit current week** Sync — no re-Export.
+_Avoid_: Full-program Hevy Export, Save, re-Export same week, Export N+1 while N incomplete
 
 **Hevy write quota**:
 Renamed/replaced monthly full-program export limits. **Save** and in-Proxima prescription edits are unlimited. Meter charges every successful Hevy write: **Week Export**, **Edit current week** Sync, and Hevy-only **Edit path** Sync (no Proxima program). Week 1 **Week Export** per program is free; later Week Exports and all Syncs count. Tier numbers updated when the limit is renamed.
@@ -109,24 +125,32 @@ The calendar month (UTC) that one `feature_usage` row counts. One row per user p
 _Avoid_: Billing period (Stripe-anchored), monthly reset (implies a cron job), lifetime usage (pre-migration behaviour), showing the reset date before the user is blocked
 
 **Hevy program sync**:
-Existing edge function (`hevy-program-sync`) that, on new Hevy workouts, marks schedule days complete via `workout.routine_id` and folder title parsing. Auto next-week upload and silent double-progression Hevy writes are **commented out** (not deleted) - reserved for a possible future auto-weight-progression mode; default loop pulls the user back to Proxima for **AI week suggest** + **Week Export** (retention). Needs rewiring so week-complete signals feed the Program overview.
-_Avoid_: Workout history backup (different pipeline), Sync (Edit-path Hevy push), deleting the progression code
+Edge function that, on new Hevy workouts, writes **Day complete** via `workout.routine_id` → **Linked day** (**Hevy routine ID**). No match → skip (no title fallback). On-demand when user opens profile / overview — not midnight cron. Auto next-week upload / silent double-progression / email commented out (not deleted).
+_Avoid_: Workout history backup (different pipeline), Sync (Edit-path Hevy push), title parse as match key, midnight cron
 
 **AI week suggest**:
 After **Week complete**, optional progression / exercise tweaks for week N+1. Generated **lazily** when the user opens the **Program overview** (or expands the suggest panel) - not on mark-complete and not on Export click. User may one-click apply into the **Program prescription** for week N+1, or skip and **Week Export** as-is. Distinct from **Edit current week** and from silent double-progression in **Hevy program sync**.
 _Avoid_: Sync dialog summary, modifyProgram (tool), living-loop ad-hoc chat edit, eager cron generation
 
 **Hevy week copy**:
-What is currently in Hevy for a given exported week - the athlete’s working notes for that week, living in that week’s Export folder. Created by **Week Export**; updated by **Edit current week** Sync into that folder. May differ from the **Program prescription** without changing future weeks.
-_Avoid_: Workout (backup) - those are logged completed sets; notes (ambiguous with set notes); active split
+What is currently in Hevy for a given exported week — the athlete’s working split in that Export folder. Created by **Week Export**; changed by **Edit current week** Sync **or** by edits in the Hevy app. **Authoritative for what the athlete should do that week** once linked and not **Week complete**. May differ from the **Program prescription**; prescription remains SoT for unexported weeks and for later **Week Export**.
+_Avoid_: Treating prescription as mid-week SoT after Export; assuming the folder only changes through Proxima
 
-**Update program**:
-Optional control on **Edit current week**. Off by default - Sync writes the **Hevy week copy** only. When checked, reveals a scope choice: **this week only** (rewrite that week’s slot in the **Program prescription**) or **all weeks** (apply the same change across the Proxima program). Never implied by Sync alone.
-_Avoid_: Save (New-path persist), Sync (Hevy push), Make into a program (Hevy-only → Proxima program)
+**Update program** (deferred):
+Write-back from **Edit current week** into the **Program prescription**. **Deferred to program versioning; not built.** Sync changes this week’s **Hevy week copy**; **Edit program** changes the plan.
+_Avoid_: Building it into Edit current week ahead of versioning, implying it from Sync
 
 **Make into a program**:
 Optional promote from a Hevy-only **Edit path** session. Switches into **New path** with the current split already loaded in the builder and runs the agent so it can expand/update that split into a full multi-week **Proxima program**. User then **Save**s as usual. Never required; Hevy-only Edit + Sync remains supported.
 _Avoid_: Silent one-week Save, forced re-Export of week 1, Update program, convert-without-agent
+
+**Hevy share import**:
+**New path only** action that hydrates the builder from a public Hevy share link (folder or routine) as a **one-week seed** (shared routines → days in week 0 only). Uses the same fetch + adapter as **Hevy share fetch**, then loads the adapted routines onto an **empty** grid after user confirm. Adapter strips foreign Hevy routine/folder IDs and assigns **builder routine keys**; keeps titles, exercises, and sets. Does not require the **questionnaire** first - questionnaire applies when generating/expanding, not when loading a share. Not **Edit path**, not Sync to the shared folder, and not a **Program-Hevy link**. Multi-week expand is a separate ask. Distinct from **Make into a program**.
+_Avoid_: Edit arrival, Hevy program sync, scraping the share HTML, Sync to share URL, auto-load on paste, auto multi-week on import, keeping share Hevy routine IDs, import while on Edit path, blocking import behind getMoreInfoQuestions
+
+**Hevy share fetch**:
+Read-only tool: same private share request + adapter as **Hevy share import**, returned to Andy as structured routines (not raw HTML). For questions about a share, or to weigh that split when planning a **new** program - does not hydrate the builder. Available on **New path** and **Edit path**. Import is a separate confirmed **New path** step.
+_Avoid_: Auto-import, Edit arrival, scraping the share HTML, raw unadapted JSON as the agent contract
 
 **Hevy program (edit scope)**:
 One Hevy routine folder and all routines inside it - the unit loaded from the dashboard grid and synced back on the **Edit path**. Not a multi-week **Proxima program**; weeks are a Proxima layout layer only. Informal “split” often means this when there is no Proxima program.
