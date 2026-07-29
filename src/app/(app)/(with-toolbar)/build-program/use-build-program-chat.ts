@@ -28,6 +28,7 @@ import {
     getMessageText,
     getTextFromChatMessage,
     isMessageAboutProgram,
+    programHasExerciseRows,
 } from "@/components/program-builder/utils/helpers";
 import {
     clearLongPromptFromSessionStorage,
@@ -119,6 +120,7 @@ export interface IProps {
     tryRunSignInMigration: () => Promise<void>;
     lastAtomicBuildCommitKeyRef: React.RefObject<string | null>;
     appliedMutateProgramKeysRef: React.RefObject<Set<string>>;
+    lastHevyShareImportKeyRef: React.RefObject<string | null>;
 }
 
 // ---------------------------------------------------------------------------
@@ -184,6 +186,9 @@ export function buildMessageContextBody(input: IMessageContextBodyInput) {
 
     return {
         hevyProgram: includeProgram ? input.hevyProgram : [],
+        // Sent every turn, unlike the snapshot: "yes, load it" is not program talk, and
+        // **Hevy share import** must still know the grid is occupied.
+        programHasExercises: programHasExerciseRows(input.hevyProgram),
         daysPerWeek: optionalNumericField(input.daysPerWeek),
         programLength: optionalNumericField(input.programLength),
         excludeAreas: joinOptionValues(input.excludeAreas),
@@ -271,12 +276,14 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     /** Survives MessageBubbles unmount when switching mobile tabs (Radix Tabs). */
     const lastAtomicBuildCommitKeyRef = useRef<string | null>(null);
     const appliedMutateProgramKeysRef = useRef<Set<string>>(new Set());
+    const lastHevyShareImportKeyRef = useRef<string | null>(null);
     const hasAutoSwitchedToProgramAfterFirstBuildRef = useRef(false);
     const insertFailToastShownForChatIds = useRef(new Set<string>());
 
     const resetChatSessionRefs = useCallback(() => {
         lastAtomicBuildCommitKeyRef.current = null;
         appliedMutateProgramKeysRef.current.clear();
+        lastHevyShareImportKeyRef.current = null;
         hasAutoSwitchedToProgramAfterFirstBuildRef.current = false;
     }, []);
 
@@ -640,5 +647,6 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         tryRunSignInMigration,
         lastAtomicBuildCommitKeyRef,
         appliedMutateProgramKeysRef,
+        lastHevyShareImportKeyRef,
     };
 }

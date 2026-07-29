@@ -118,8 +118,6 @@ type TMessage = {
     content: string;
 }
 
-
-
 type TSignUpPendingConsents = {
     platformImprovementOptIn: boolean;
     marketingOptIn: boolean;
@@ -517,6 +515,28 @@ type THevyExercise = {
     sets: THevySets[];
     /** UI-only: short explanation why this exercise was selected. Must not be sent to Hevy or other external systems. */
     reason?: string;
+    /**
+     * Set only by the **Hevy share import** adapter, and only when `exercise_template_id` looks like
+     * the sharer's own **Hevy-native custom**. Week Export mints it as a **Custom movement** for the
+     * signed-in user and creates it on their Hevy account; without it an unknown template ID is
+     * assumed to be valid where it is going. Never sent to Hevy under this key.
+     */
+    shared_template?: THevySharedTemplate;
+}
+
+/**
+ * Exercise template metadata a **Hevy share import** carried across, in Hevy's own
+ * `POST /v1/exercise_templates` vocabulary.
+ *
+ * Values are raw share strings - the endpoints are undocumented, so nothing is trusted to be a
+ * valid Hevy enum until `mapSharedTemplateToPostExercise` narrows it.
+ */
+type THevySharedTemplate = {
+    title: string;
+    exercise_type: string | null;
+    equipment_category: string | null;
+    muscle_group: string | null;
+    other_muscles: string[];
 }
 
 type THevySets = {
@@ -697,13 +717,6 @@ interface IIsHevyContextType {
     isHevy: boolean;
     setIsHevy: (value: boolean) => void;
 }
-
-
-
-
-
-
-
 
 
 /** A Proxima Program in the Program Builder is defined as: */

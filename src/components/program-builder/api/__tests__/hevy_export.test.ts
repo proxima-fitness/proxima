@@ -1,9 +1,9 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
-    buildRepsRange2DForDb,
-    generateHevySets,
+    mapSharedTemplateToPostExercise,
     mapSupabaseExerciseTemplateRowToPostExercise,
 } from "../hevy_export";
+
 
 describe("mapSupabaseExerciseTemplateRowToPostExercise", () => {
     const validRow = {
@@ -52,84 +52,82 @@ describe("mapSupabaseExerciseTemplateRowToPostExercise", () => {
     });
 });
 
-describe("buildRepsRange2DForDb", () => {
-    it("builds rectangular number[][] when every set has a range", () => {
-        expect(
-            buildRepsRange2DForDb([
-                {
-                    index: 0,
-                    type: "normal",
-                    weight_kg: null,
-                    reps: null,
-                    distance_meters: null,
-                    duration_seconds: null,
-                    rpe: null,
-                    custom_metric: null,
-                    rep_range: { start: 8, end: 12 },
-                },
-                {
-                    index: 1,
-                    type: "normal",
-                    weight_kg: null,
-                    reps: null,
-                    distance_meters: null,
-                    duration_seconds: null,
-                    rpe: null,
-                    custom_metric: null,
-                    rep_range: { start: 8, end: 12 },
-                },
-            ]),
-        ).toEqual([
-            [8, 12],
-            [8, 12],
-        ]);
-    });
+describe("mapSharedTemplateToPostExercise", () => {
+    const sharedTemplate: THevySharedTemplate = {
+        title: "  Shoulder CARs  ",
+        exercise_type: "reps_only",
+        equipment_category: "none",
+        muscle_group: "shoulders",
+        other_muscles: ["traps", "shoulders", "traps"],
+    };
 
-    it("returns null when any set lacks a range (avoid null holes in float4[])", () => {
-        expect(
-            buildRepsRange2DForDb([
-                {
-                    index: 0,
-                    type: "normal",
-                    weight_kg: null,
-                    reps: null,
-                    distance_meters: null,
-                    duration_seconds: null,
-                    rpe: null,
-                    custom_metric: null,
-                    rep_range: { start: 6, end: 8 },
-                },
-                {
-                    index: 1,
-                    type: "normal",
-                    weight_kg: null,
-                    reps: 8,
-                    distance_meters: null,
-                    duration_seconds: null,
-                    rpe: null,
-                    custom_metric: null,
-                    rep_range: null,
-                },
-            ]),
-        ).toBeNull();
-    });
-});
-
-describe("generateHevySets", () => {
-    it("reads per-set nested reps_range pairs", () => {
-        const sets = generateHevySets({
-            reps: [null, 8],
-            reps_range: [
-                [6, 8],
-                null,
-            ],
-            weights: [60, 60],
+    it("maps share metadata straight onto the Hevy create body", () => {
+        expect(mapSharedTemplateToPostExercise(sharedTemplate, "Fallback")).toEqual({
+            title: "Shoulder CARs",
+            exercise_type: "reps_only",
+            equipment_category: "none",
+            muscle_group: "shoulders",
+            other_muscles: ["traps"],
         });
+    });
 
-        expect(sets).toHaveLength(2);
-        expect(sets[0]?.rep_range).toEqual({ start: 6, end: 8 });
-        expect(sets[0]?.reps).toBeNull();
-        expect(sets[1]?.rep_range).toBeNull();
-        expect(sets[1]?.reps).toBe(8);
+    it("falls back to Hevy's neutral options rather than failing the export", () => {
+        expect(
+            mapSharedTemplateToPostExercise(
+                {
+                    title: "Sled Drag",
+                    exercise_type: null,
+                    equipment_category: "hover_board",
+                    muscle_group: "spleen",
+                    other_muscles: ["spleen"],
+                },
+                "Fallback",
+            ),
+        ).toEqual({
+            title: "Sled Drag",
+            exercise_type: "weight_reps",
+            equipment_category: "other",
+            muscle_group: "other",
+            other_muscles: [],
+        });
+    });
+
+    it("logs the values it dropped, so share-vocabulary drift is visible", () => {
+        const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+        mapSharedTemplateToPostExercise(
+            { ...sharedTemplate, equipment_category: "hover_board", other_muscles: ["spleen"] },
+            "Fallback",
+        );
+
+        expect(warn).toHaveBeenCalledWith(
+            expect.stringContaining("share API may have changed"),
+            {
+                title: "Shoulder CARs",
+                dropped: expect.arrayContaining([
+                    "equipment_category: hover_board",
+                    "other_muscles: spleen",
+                ]),
+            },
+        );
+
+        warn.mockRestore();
+    });
+
+    it("stays quiet when the share simply omitted a field", () => {
+        const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+        mapSharedTemplateToPostExercise(
+            { title: "Sled Drag", exercise_type: null, equipment_category: null, muscle_group: null, other_muscles: [] },
+            "Fallback",
+        );
+
+        expect(warn).not.toHaveBeenCalled();
+        warn.mockRestore();
+    });
+
+    it("uses the builder title when the share carried none", () => {
+        const out = mapSharedTemplateToPostExercise({ ...sharedTemplate, title: "  " }, "  Sled Drag  ");
+        expect(out.title).toBe("Sled Drag");
     });
 });

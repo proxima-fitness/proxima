@@ -724,8 +724,16 @@ export function swapExerciseTemplate(
 
                 if (preserveSets) {
                     const minimalTo = to as TSwapExerciseTemplateMinimalTo;
+                    // A share's mint metadata describes the template being swapped out, so it
+                    // leaves with the id it belonged to - Week Export must not mint against it.
+                    // A same-id swap changes no identity, so it keeps what it had.
+                    const { shared_template: _sharedTemplate, ...withoutSharedTemplate } = exercise;
+                    const kept =
+                        minimalTo.exercise_template_id === exercise.exercise_template_id
+                            ? exercise
+                            : withoutSharedTemplate;
                     return {
-                        ...exercise,
+                        ...kept,
                         exercise_template_id: minimalTo.exercise_template_id,
                         title: minimalTo.title ?? exercise.title,
                         ...(minimalTo.reason !== undefined ? { reason: minimalTo.reason } : {}),

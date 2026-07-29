@@ -116,6 +116,7 @@ interface IProps {
     onBuildComplete?: () => void;
     lastAtomicBuildCommitKeyRef: RefObject<string | null>;
     appliedMutateProgramKeysRef: RefObject<Set<string>>;
+    lastHevyShareImportKeyRef: RefObject<string | null>;
 }
 
 /** Renders Navbar, conversation area (empty state or MessageBubbles), loading status, and Chat. */
@@ -174,6 +175,7 @@ export const Agent: React.FC<IProps> = (props) => {
         onBuildComplete,
         lastAtomicBuildCommitKeyRef,
         appliedMutateProgramKeysRef,
+        lastHevyShareImportKeyRef,
     } = props;
 
     const chatFooterRef = useRef<HTMLDivElement>(null);
@@ -473,6 +475,7 @@ export const Agent: React.FC<IProps> = (props) => {
                             onBuildComplete={onBuildComplete}
                             lastAtomicBuildCommitKeyRef={lastAtomicBuildCommitKeyRef}
                             appliedMutateProgramKeysRef={appliedMutateProgramKeysRef}
+                            lastHevyShareImportKeyRef={lastHevyShareImportKeyRef}
                             />
                         )}
                         <LiveAgentProgress
