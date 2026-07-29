@@ -56,6 +56,16 @@ async function hasHevyApiKey(
     return typeof data === 'string' ? data.trim().length > 0 : Boolean(data);
 }
 
+/**
+ * Client IP for the **Hevy share fetch** throttle - anonymous callers have no user id,
+ * so the proxy headers are the only handle. First hop in `x-forwarded-for` is the client.
+ */
+function readClientIp(req: Request): string | undefined {
+    const forwarded = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+    if (forwarded) return forwarded.slice(0, 100);
+    return req.headers.get('x-real-ip')?.trim().slice(0, 100) || undefined;
+}
+
 function buildSkillsPrompt(skills: ISkillMetadata[]): string {
     if (skills.length === 0) return '';
 
@@ -159,6 +169,7 @@ async function handleChatPost(req: Request) {
             ? chatSessionId.trim().slice(0, 200)
             : undefined;
         const weightInLbs = isInLbs !== false;
+        const clientIp = readClientIp(req);
 
         return propagateAttributes(
             { userId, sessionId, traceName: 'andy-chat', metadata: { source: 'build-program' } },
@@ -240,6 +251,7 @@ async function handleChatPost(req: Request) {
                     constraintProfile,
                     trainingProfile,
                     isInLbs: weightInLbs,
+                    clientIp,
                 });
 
                 const sandbox = createSandbox({ workingDirectory: process.cwd() });

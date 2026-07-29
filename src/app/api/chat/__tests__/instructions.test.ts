@@ -451,6 +451,29 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("build (or finish) a program first");
         });
 
+        it("teaches fetch / ask intent on a pasted Hevy share link, never import by default", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+            });
+            expect(prompt).toContain("Hevy share links");
+            expect(prompt).toContain("fetchHevyShare");
+            expect(prompt).toContain("**never** load it onto the program grid by default");
+            expect(prompt).toContain("needs an explicit yes");
+            expect(prompt).toContain("Hevy's share API may have changed");
+        });
+
+        it("keeps Hevy share guidance on the Edit path too", () => {
+            const prompt = instructions({
+                hevyProgram: [{ id: "1", title: "Day 1", folder_id: 0, notes: "", exercises: [] }],
+                daysPerWeek: 4,
+                programLength: 8,
+            });
+            expect(prompt).toContain("Hevy share links");
+            expect(prompt).toContain("fetchHevyShare");
+        });
+
         it("Questionnaire-active refuse copy present", () => {
             const prompt = instructions({
                 hevyProgram: [{ id: "1", title: "Day 1", folder_id: 0, notes: "", exercises: [] }],

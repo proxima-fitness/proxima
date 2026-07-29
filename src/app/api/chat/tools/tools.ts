@@ -17,8 +17,9 @@
  *  - rateProgram - scores the current bodybuilding program (heuristic report card)
  *  - getWorkoutHistory - Pro-only backed-up workout history from Supabase (no live Hevy)
  *  - getBodyMeasurements - Pro-only backed-up body measurements from Supabase (no live Hevy)
+ *  - fetchHevyShare - read-only **Hevy share fetch** of a pasted hevy.com share link
  *
- * Depends on: ai, zod, @/components/program-builder/api/hevy, @/assets/constants
+ * Depends on: ai, zod, @/components/program-builder/api/hevy, @/assets/constants, @/lib/hevy-share
  * Used by: /api/chat/route.ts (passed to ToolLoopAgent)
  */
 
@@ -57,6 +58,14 @@ import {
     normalizeMeasuredOnBound,
     type TBodyMeasurementsToolOutput,
 } from './body-measurements';
+import {
+    fetchHevyShareInputSchema,
+    formatHevyShareForModel,
+    hevyShareErrorOutput,
+    hevyShareToolOutput,
+    type TFetchHevyShareToolOutput,
+} from './hevy-share';
+import { loadHevyShare } from '@/lib/hevy-share';
 import {
     ensureWorkoutHistoryFresh,
     getSyncProgress,
@@ -117,6 +126,8 @@ interface IProps {
     trainingProfile?: TTrainingProfile;
     /** User's weight display preference (true = lbs). Defaults to true to match UI default. */
     isInLbs?: boolean;
+    /** Client IP, for the **Hevy share fetch** throttle when the caller is anonymous. */
+    clientIp?: string;
 }
 
 function stripFrontmatter(content: string): string {
@@ -206,6 +217,7 @@ export function getTools({
     constraintProfile,
     trainingProfile,
     isInLbs = true,
+    clientIp,
 }: IProps = {}) {
 
     /** Request-scoped id → canonical title from hevy_exercise_templates (populated by getExerciseList; buildWeek uses it or refetches). */
@@ -522,6 +534,33 @@ export function getTools({
                 value: formatReadProgramForModel(o.hevyProgram ?? [], isInLbs),
             };
         },
+    });
+
+    /**
+     * Title: fetchHevyShareTool
+     * Description: Read-only **Hevy share fetch** of a public hevy.com share link.
+     * Never writes to the grid or to Hevy - loading a share into the builder is a separate confirmed step.
+     */
+    const fetchHevyShareTool = tool({
+        description:
+            'Reads a **public Hevy share link** the user pasted - `hevy.com/folder/{id}` (a shared routine folder) or `hevy.com/routine/{shortId}` (a single shared routine) - and returns its days, exercises, and sets. ' +
+            'Call when the user pastes such a link and wants it read: questions about the split, a critique, or as context while planning a new program. ' +
+            'This is **read-only**: it does not add anything to the program grid, does not sync to the shared folder, and does not connect the user\'s Hevy account. Loading a share into the builder is a separate step that needs the user\'s explicit confirmation. ' +
+            'Only accepts hevy.com share links - not Hevy app deep links, not api.hevyapp.com URLs, and not links to any other site. Never guess a link the user did not give you.',
+        inputSchema: fetchHevyShareInputSchema,
+        execute: async ({ url }): Promise<TFetchHevyShareToolOutput> => {
+            try {
+                return hevyShareToolOutput(await loadHevyShare(url, { userId, ip: clientIp }));
+            } catch (error) {
+                // Hevy's share endpoints are undocumented - log the shape so a format change is visible.
+                console.error('Error in fetchHevyShare tool:', error);
+                return hevyShareErrorOutput(error);
+            }
+        },
+        toModelOutput: async ({ output }) => ({
+            type: 'text' as const,
+            value: formatHevyShareForModel(output as TFetchHevyShareToolOutput),
+        }),
     });
 
     /**
@@ -1354,6 +1393,7 @@ export function getTools({
         openHevyExportGate: openHevyExportGateTool,
         planProgram: planProgramTool,
         readProgram: readProgramTool,
+        fetchHevyShare: fetchHevyShareTool,
         buildWeek: buildWeekTool,
         mutateProgram: mutateProgramTool,
         rateProgram: rateProgramTool,

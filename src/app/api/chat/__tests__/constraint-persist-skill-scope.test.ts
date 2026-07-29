@@ -119,6 +119,19 @@ describe("constraint persist skill scope", () => {
         expect(visible).toContain("openHevyExportGate");
     });
 
+    it("fetchHevyShare survives both skill scopes so a pasted share can be read for context", async () => {
+        const sandbox = createSandbox({ workingDirectory: process.cwd() });
+        const skills = await discoverSkills(sandbox, [".agents/skills"]);
+        const tools = asToolRecord(getTools({}));
+
+        expect(ALWAYS_AVAILABLE_CHAT_TOOLS).toContain("fetchHevyShare");
+        for (const name of ["build-program", "mutate-program"]) {
+            const skill = skills.find((s) => s.name === name);
+            expect(skill?.allowedTools).not.toContain("fetchHevyShare");
+            expect(filterToolsForSkillScope(tools, skill!.allowedTools)).toContain("fetchHevyShare");
+        }
+    });
+
     it("loadSkill mutates activeToolScope to skill allowlist (includes memory tool)", async () => {
         const sandbox = createSandbox({ workingDirectory: process.cwd() });
         const skills = await discoverSkills(sandbox, [".agents/skills"]);

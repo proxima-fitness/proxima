@@ -34,6 +34,7 @@ import { buildToolErrorPayload, getMutateProgramFailureSeverity, summarizeToolEr
 import { ModifyProgramProgress } from "./ModifyProgramProgress";
 import { WorkoutHistoryToolContent } from "./WorkoutHistoryToolContent";
 import type { TWorkoutHistoryToolOutput } from "@/app/api/chat/tools/workout-history";
+import type { TFetchHevyShareToolOutput } from "@/app/api/chat/tools/hevy-share";
 import { RateProgramResults } from "@/components/program-builder/shared/RateProgramResults";
 import type { IProgramScore } from "@/components/program-builder/utils/score-program";
 import { toast } from "sonner";
@@ -890,6 +891,72 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                         <div className="px-1 pb-2">
                                                             <RateProgramResults score={out.score} />
                                                         </div>
+                                                    </ToolContent>
+                                                </Tool>
+                                            );
+                                        }
+                                        case "tool-fetchHevyShare": {
+                                            const sharePart = part as {
+                                                state?: TToolPart["state"];
+                                                input?: { url?: string };
+                                                output?: TFetchHevyShareToolOutput;
+                                                errorText?: string;
+                                            };
+                                            const shareOutput = sharePart.output;
+                                            // Hevy's share endpoints are undocumented - a failure is an error panel, not a silent chip.
+                                            const shareFailed =
+                                                sharePart.state === "output-error" ||
+                                                Boolean(shareOutput && "error" in shareOutput);
+                                            const shareRead =
+                                                shareOutput && !("error" in shareOutput) ? shareOutput : null;
+                                            const toolState: TToolPart["state"] = shareFailed
+                                                ? "output-error"
+                                                : shareRead
+                                                    ? "output-available"
+                                                    : (sharePart.state ?? "input-available");
+
+                                            if (shareFailed) {
+                                                const errorCtx = {
+                                                    errorText: sharePart.errorText,
+                                                    output: shareOutput,
+                                                };
+                                                return (
+                                                    <Tool key={`${message.id}-${index}-hevy-share-error`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
+                                                        <ToolHeader type="tool-fetchHevyShare" state={toolState} title="Read Hevy share" />
+                                                        <ToolContent>
+                                                            <ToolErrorPanel
+                                                                tool="fetchHevyShare"
+                                                                errorCtx={errorCtx}
+                                                                getChatId={resolvePersistChatId}
+                                                                summary={summarizeToolError("fetchHevyShare", errorCtx)}
+                                                                copyPayload={buildToolErrorPayload("fetchHevyShare", errorCtx)}
+                                                            />
+                                                        </ToolContent>
+                                                    </Tool>
+                                                );
+                                            }
+
+                                            return (
+                                                <Tool key={`${message.id}-${index}-hevy-share`} defaultOpen={false} className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
+                                                    <ToolHeader type="tool-fetchHevyShare" state={toolState} title="Read Hevy share" />
+                                                    <ToolContent>
+                                                        {shareRead ? (
+                                                            <div className="space-y-1 px-3 pb-3">
+                                                                <p className="text-sm text-foreground">
+                                                                    {shareRead.title ??
+                                                                        (shareRead.kind === "folder"
+                                                                            ? "Shared folder"
+                                                                            : "Shared routine")}
+                                                                </p>
+                                                                <p className="text-sm text-muted-foreground">
+                                                                    {shareRead.dayCount} day{shareRead.dayCount === 1 ? "" : "s"} · {shareRead.exerciseCount} exercise{shareRead.exerciseCount === 1 ? "" : "s"} · read only, nothing was added to your program
+                                                                </p>
+                                                            </div>
+                                                        ) : (
+                                                            <p className="text-sm text-muted-foreground px-3 pb-3">
+                                                                Reading Hevy share link…
+                                                            </p>
+                                                        )}
                                                     </ToolContent>
                                                 </Tool>
                                             );
