@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getTools } from "@/app/api/chat/tools/tools";
-import type { TFetchHevyShareToolOutput } from "@/app/api/chat/tools/hevy-share";
+import type {
+    TFetchHevyShareToolOutput,
+    TImportHevyShareToolOutput,
+} from "@/app/api/chat/tools/hevy-share";
 import {
     buildToolErrorPayload,
     summarizeToolError,
@@ -280,5 +283,225 @@ describe("fetchHevyShare tool", () => {
             expect(payload.tool).toBe("fetchHevyShare");
             expect(payload.output.reason).toBe("upstream");
         });
+    });
+});
+
+type TImportHevyShareTool = {
+    execute: (input: { url: string; confirmed: boolean }) => Promise<TImportHevyShareToolOutput>;
+    toModelOutput: (args: { output: TImportHevyShareToolOutput }) => PromiseLike<{ value: string }>;
+};
+
+/** A day with real exercise rows - what an occupied grid (or an Edit-path chat) looks like. */
+const OCCUPIED_DAY: THevyRoutine = {
+    id: "1",
+    title: "Push",
+    folder_id: 0,
+    order: "1",
+    notes: "",
+    created_at: "",
+    updated_at: "",
+    exercises: [
+        {
+            index: 0,
+            title: "Bench Press (Barbell)",
+            notes: "",
+            rest_seconds: "90",
+            exercise_template_id: "TEMPLATE_BENCH",
+            supersets_id: null,
+            sets: [],
+        },
+    ],
+};
+
+/** Empty New-path grid: day placeholders exist, but no exercise rows yet. */
+const PLACEHOLDER_DAY: THevyRoutine = { ...OCCUPIED_DAY, exercises: [] };
+
+/** Narrows the AI SDK Tool to the parts the import tests drive. */
+function asImportTool(tool: unknown): TImportHevyShareTool {
+    return tool as TImportHevyShareTool;
+}
+
+function importHevyShareTool(props: Parameters<typeof getTools>[0] = {}): TImportHevyShareTool {
+    return asImportTool(getTools({ userId: "user-1", ...props }).importHevyShare);
+}
+
+function expectImported(output: TImportHevyShareToolOutput) {
+    if (!("imported" in output)) {
+        throw new Error(`Expected a successful import, got: ${JSON.stringify(output)}`);
+    }
+    return output;
+}
+
+function expectRefused(output: TImportHevyShareToolOutput) {
+    if (!("refused" in output)) {
+        throw new Error(`Expected the import to be refused, got: ${JSON.stringify(output)}`);
+    }
+    return output;
+}
+
+describe("importHevyShare tool", () => {
+    beforeEach(() => {
+        resetHevyShareRateLimits();
+        vi.stubEnv(HEVY_SHARE_PLATFORM_KEY_ENV, "platform-key-secret");
+        vi.spyOn(console, "error").mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
+        vi.unstubAllGlobals();
+        vi.restoreAllMocks();
+    });
+
+    it("hydrates a week-0 seed on an empty grid once the user confirmed", async () => {
+        const fetchMock = mockFetchJson(FOLDER_PAYLOAD);
+
+        const imported = expectImported(
+            await importHevyShareTool({ hevyProgram: [PLACEHOLDER_DAY] }).execute({
+                url: "https://hevy.com/folder/abc123",
+                confirmed: true,
+            }),
+        );
+
+        expect(fetchMock.mock.calls[0][0]).toBe("https://api.hevyapp.com/shareable_folder/abc123");
+        expect(imported).toMatchObject({
+            imported: true,
+            kind: "folder",
+            title: "Push Pull Legs",
+            dayCount: 2,
+            exerciseCount: 3,
+        });
+        // One-week seed with builder routine keys - no foreign Hevy identity, no extra weeks.
+        expect(imported.routines.map((routine) => routine.folder_id)).toEqual([0, 0]);
+        expect(imported.routines.map((routine) => routine.id)).toEqual(["1", "2"]);
+        expect(JSON.stringify(imported.routines)).not.toContain("hevy-routine-a");
+    });
+
+    it("refuses without user confirmation and never calls Hevy", async () => {
+        const fetchMock = mockFetchJson(FOLDER_PAYLOAD);
+
+        const refused = expectRefused(
+            await importHevyShareTool().execute({
+                url: "https://hevy.com/folder/abc123",
+                confirmed: false,
+            }),
+        );
+
+        expect(fetchMock).not.toHaveBeenCalled();
+        expect(refused.refused).toBe("not_confirmed");
+        expect(refused.message).toContain("Nothing was loaded");
+        // Refusals are expected answers, so they must not read as tool errors.
+        expect(refused).not.toHaveProperty("error");
+    });
+
+    it("refuses when the grid already has exercises, even with confirmation", async () => {
+        const fetchMock = mockFetchJson(FOLDER_PAYLOAD);
+
+        const refused = expectRefused(
+            await importHevyShareTool({ hevyProgram: [OCCUPIED_DAY] }).execute({
+                url: "https://hevy.com/folder/abc123",
+                confirmed: true,
+            }),
+        );
+
+        expect(fetchMock).not.toHaveBeenCalled();
+        expect(refused.refused).toBe("grid_not_empty");
+        expect(refused).not.toHaveProperty("error");
+    });
+
+    it("refuses an Edit-path grid reported by flag even when the snapshot was withheld", async () => {
+        const fetchMock = mockFetchJson(FOLDER_PAYLOAD);
+
+        // The client omits hevyProgram when the message isn't program talk ("yes, load it"),
+        // so the flag is the only honest signal that the grid is occupied.
+        const refused = expectRefused(
+            await importHevyShareTool({ hevyProgram: [], programHasExercises: true }).execute({
+                url: "https://hevy.com/folder/abc123",
+                confirmed: true,
+            }),
+        );
+
+        expect(fetchMock).not.toHaveBeenCalled();
+        expect(refused.refused).toBe("grid_not_empty");
+    });
+
+    it("tells the agent the grid changed and not to rebuild the week", async () => {
+        mockFetchJson(FOLDER_PAYLOAD);
+        const tool = importHevyShareTool();
+
+        const output = await tool.execute({
+            url: "https://hevy.com/folder/abc123",
+            confirmed: true,
+        });
+        const { value } = await tool.toModelOutput({ output });
+
+        expect(value).toContain("Push Pull Legs · 2 days · 3 exercises");
+        expect(value).toContain("Do not call buildWeek");
+        expect(value).toContain("TEMPLATE_BENCH");
+        expect(value).not.toContain("Nothing was added to the program grid");
+    });
+
+    it("tells the agent to ask for confirmation rather than retrying", async () => {
+        const tool = importHevyShareTool();
+
+        const output = await tool.execute({
+            url: "https://hevy.com/folder/abc123",
+            confirmed: false,
+        });
+        const { value } = await tool.toModelOutput({ output });
+
+        expect(value).toContain("Import refused");
+        expect(value).toContain("confirmed: true");
+    });
+
+    it("tells the agent an occupied grid is final and offers the alternatives", async () => {
+        const tool = importHevyShareTool({ programHasExercises: true });
+
+        const output = await tool.execute({
+            url: "https://hevy.com/folder/abc123",
+            confirmed: true,
+        });
+        const { value } = await tool.toModelOutput({ output });
+
+        expect(value).toContain("Do not retry importHevyShare");
+        expect(value).toContain("fetchHevyShare");
+    });
+
+    it("reports an upstream failure through the ToolErrorPanel path", async () => {
+        mockFetchJson({}, 500);
+
+        const output = await importHevyShareTool().execute({
+            url: "https://hevy.com/folder/abc123",
+            confirmed: true,
+        });
+        const errorCtx = { errorText: undefined, output };
+
+        expect(output).toMatchObject({ reason: "upstream" });
+        expect(summarizeToolError("importHevyShare", errorCtx)).toContain(
+            "Hevy's share API may have changed.",
+        );
+        expect(JSON.parse(buildToolErrorPayload("importHevyShare", errorCtx)).tool).toBe(
+            "importHevyShare",
+        );
+    });
+
+    it("shares the per-caller hourly budget with fetchHevyShare", async () => {
+        mockFetchJson(FOLDER_PAYLOAD);
+        const fetchTool = fetchHevyShareTool("shared-budget-user");
+        const importTool = importHevyShareTool({ userId: "shared-budget-user" });
+
+        for (let call = 0; call < HEVY_SHARE_RATE_LIMIT_PER_HOUR; call++) {
+            await fetchTool.execute({ url: "https://hevy.com/folder/abc123" });
+        }
+
+        const output = await importTool.execute({
+            url: "https://hevy.com/folder/abc123",
+            confirmed: true,
+        });
+        expect(output).toMatchObject({ error: "Hevy share limit reached" });
+    });
+
+    it("is offered on every chat, anonymous included - it refuses on its own gates", () => {
+        expect(getTools({})).toHaveProperty("importHevyShare");
+        expect(getTools({ hevyProgram: [OCCUPIED_DAY] })).toHaveProperty("importHevyShare");
     });
 });

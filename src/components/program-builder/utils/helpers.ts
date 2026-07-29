@@ -14,6 +14,8 @@
  *    set generation with support for reps, ranges, time, RPE, and AMRAP.
  * 4. **Program mutation helpers** - Human-readable operation summaries and client-side
  *    apply of agent mutateProgram tool results with undo support.
+ * 5. **Hevy share import hydrate** - client-side apply of a confirmed importHevyShare
+ *    tool result onto an empty grid (week 0 seed).
  *
  * Depends on: compromise (NLP), fuse.js (fuzzy), sonner (toasts), ai (UIMessage)
  * Used by: Agent chat (Chat.tsx), ProgramEditor, useChat hooks
@@ -26,6 +28,10 @@ import { toast } from "sonner";
 import { applyOperations } from "@/components/program-builder/mutations/apply";
 import type { TAgentProgramOperation } from "@/components/program-builder/mutations/agentSchema";
 import { isApplyBatchFailure, type TCommitWithUndoOptions } from "@/components/program-builder/mutations/types";
+import {
+    isHevyShareImportSuccess,
+    type TImportHevyShareToolOutput,
+} from "@/app/api/chat/tools/hevy-share";
 
 
 
@@ -1064,5 +1070,83 @@ export const applyMutateProgramFromMessages = (
 
     commitWithUndo(result.program, { recordUndo: hevyProgram.length > 0 });
     pendingKeys.forEach((k) => appliedKeysRef.current.add(k));
+    return true;
+};
+
+/** True when any day already holds exercise rows - the grid-empty test both share gates use. */
+export const programHasExerciseRows = (routines: THevyRoutine[]): boolean =>
+    routines.some((routine) => (routine.exercises?.length ?? 0) > 0);
+
+/** A confirmed **Hevy share import** waiting to be hydrated, keyed for idempotent apply. */
+export interface IHevyShareImportSeed {
+    /** `${messageId}-${partIndex}` of the tool part this seed came from. */
+    key: string;
+    /** Week-0 days from the share, already stripped of foreign Hevy identity by the adapter. */
+    routines: THevyRoutine[];
+}
+
+/**
+ * Newest successful `importHevyShare` result in the thread, if any.
+ *
+ * Scans the whole thread rather than the current turn: the seed lands in one turn and the
+ * grid it fills is the same grid on every later render, so a mid-thread import must stay
+ * findable (and stay keyed) after the user sends more messages.
+ */
+export const getHevyShareImportSeed = (messages: UIMessage[]): IHevyShareImportSeed | null => {
+    let seed: IHevyShareImportSeed | null = null;
+
+    for (const message of messages) {
+        const parts = message.parts ?? [];
+        for (let partIndex = 0; partIndex < parts.length; partIndex++) {
+            const part = parts[partIndex];
+            if (part.type !== "tool-importHevyShare") continue;
+
+            const output = (part as { output?: TImportHevyShareToolOutput }).output;
+            if (!output || !isHevyShareImportSuccess(output) || output.routines.length === 0) {
+                continue;
+            }
+
+            seed = {
+                key: `${message.id ?? partIndex}-${partIndex}`,
+                routines: output.routines,
+            };
+        }
+    }
+
+    return seed;
+};
+
+/**
+ * Hydrates a confirmed **Hevy share import** onto the grid as week 0 (one-week seed).
+ *
+ * The server already refused a populated grid, but its view comes from the request body and
+ * can lag what the user is looking at - so the live grid gets the last word before anything
+ * is overwritten. A refused seed is still keyed, so the check does not re-run every render.
+ *
+ * Only runs when the stream has finished, and never duplicates the week across the builder's
+ * program length: expanding is a separate ask.
+ */
+export const tryApplyHevyShareImport = (
+    messages: UIMessage[],
+    status: TChatStatusForAtomic | undefined,
+    hevyProgram: THevyRoutine[],
+    lastHevyShareImportKeyRef: React.RefObject<string | null>,
+    commitWithUndo: (next: THevyRoutine[], options?: TCommitWithUndoOptions) => void,
+): boolean => {
+    if (status === "streaming") return false;
+
+    const seed = getHevyShareImportSeed(messages);
+    if (!seed || lastHevyShareImportKeyRef.current === seed.key) return false;
+
+    lastHevyShareImportKeyRef.current = seed.key;
+
+    if (programHasExerciseRows(hevyProgram)) {
+        console.warn("Hevy share import skipped - the grid already has exercises");
+        toast.error("Your program already has exercises, so the Hevy share wasn't loaded.");
+        return false;
+    }
+
+    const week = buildFullProgramFromFirstWeek(seed.routines, seed.routines.length, 1);
+    commitWithUndo(week, { recordUndo: hevyProgram.length > 0 });
     return true;
 };

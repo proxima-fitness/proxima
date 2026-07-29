@@ -52,6 +52,8 @@ When the user backs a build request with a **public Hevy share link** (`hevy.com
 
 Everything after that is the normal workflow: **planProgram** → **getExerciseList** → **buildWeek**, honoring the Active Constraint Profile and the session-size targets below. The share is a reference, not the program - never treat **fetchHevyShare** output as days already on the grid, and never claim you loaded it. If the user wants that shared folder itself on the grid rather than a program inspired by it, say so plainly and let them confirm; do not build around it silently.
 
+**Loading the share instead of building from it:** When they want the shared week itself, that is **importHevyShare** (`confirmed: true`), not this workflow - it needs an **empty** grid and their explicit yes, and it is **not** gated behind **getMoreInfoQuestions**. Once a share is loaded, the week is already on the grid: do **not** call **buildWeek** to recreate it, and use **mutateProgram** for edits. Expanding that seed to more weeks or adding progression is a **separate ask** - offer it and wait for a yes; when they take it up, plan and periodize with **planProgram** + **mutateProgram** over the loaded week rather than rebuilding it.
+
 ## Warmup exercises
 
 **Warmup exercises vs warmup sets:** **Warmup sets** are lighter sets of the *same* working lift (set `type` may be `"warmup"` in the schema). **Warmup exercises** are *separate movements* chosen from **getExerciseList**-mobility, activation, or easy patterns that prepare the body before working sets. Do not rely on routine notes alone for prep.

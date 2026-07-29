@@ -474,6 +474,34 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("fetchHevyShare");
         });
 
+        it("teaches confirmed importHevyShare on an empty grid, never gated by the questionnaire", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+            });
+            expect(prompt).toContain("importHevyShare");
+            expect(prompt).toContain("The grid is currently empty");
+            expect(prompt).toContain("explicitly agreed");
+            expect(prompt).toContain("`confirmed: true`");
+            expect(prompt).toContain("questionnaire is not required");
+            expect(prompt).toContain("never gated behind the questionnaire");
+            // Loaded week is already on the grid - no rebuild, and expand is a separate ask.
+            expect(prompt).toContain("do **not** call **buildWeek** to recreate that week");
+            expect(prompt).toContain("separate ask");
+        });
+
+        it("tells the agent the grid is occupied so import refusal is expected", () => {
+            const prompt = instructions({
+                hevyProgram: [{ id: "1", title: "Day 1", folder_id: 0, notes: "", exercises: [] }],
+                daysPerWeek: 4,
+                programLength: 8,
+            });
+            expect(prompt).toContain("The grid currently holds 1 routines");
+            expect(prompt).toContain("will refuse and nothing is loaded");
+            expect(prompt).toContain("Do not retry the tool");
+        });
+
         it("Questionnaire-active refuse copy present", () => {
             const prompt = instructions({
                 hevyProgram: [{ id: "1", title: "Day 1", folder_id: 0, notes: "", exercises: [] }],

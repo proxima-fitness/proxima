@@ -1,12 +1,16 @@
 /**
  * @module chat/tools/hevy-share
  *
- * Agent **Hevy share fetch** tool - input schema, output shape, and the model-facing
- * text for a public Hevy share link the user pasted.
+ * Agent **Hevy share fetch** and **Hevy share import** tools - input schemas, output
+ * shapes, and the model-facing text for a public Hevy share link the user pasted.
  *
- * Read-only by construction: the output carries the adapted week-0 routines so Andy can
- * answer questions or plan against that split, and nothing here touches builder state.
- * **Hevy share import** is the separate, confirmed New-path step (sub-plan 3).
+ * `fetchHevyShare` is read-only by construction: the output carries the adapted week-0
+ * routines so Andy can answer questions or plan against that split, and nothing touches
+ * builder state. `importHevyShare` returns the same seed, but marked `imported: true` so
+ * the client hydrates it onto the grid - which is why it carries two extra gates
+ * ({@link THevyShareImportRefusalReason}): the grid must be empty and the user must have
+ * said yes. A refusal is an expected answer, not a failure, so it has no `error` field and
+ * never reaches `ToolErrorPanel`.
  *
  * Failures arrive as `HevyShareError` from the pipeline; {@link hevyShareErrorOutput}
  * flattens them into the `{ error, message }` shape `ToolErrorPanel` already reads, adding
@@ -17,7 +21,7 @@
  * import these types without pulling the platform key path into the browser bundle.
  *
  * Depends on: zod, lib/hevy-share/share-errors
- * Used by: chat/tools/tools.ts (fetchHevyShare tool), MessageBubbles (output type)
+ * Used by: chat/tools/tools.ts (share tools), MessageBubbles (output types + hydrate)
  */
 import { z } from 'zod';
 
@@ -34,6 +38,22 @@ export const fetchHevyShareInputSchema = z.object({
 });
 
 export type TFetchHevyShareInput = z.infer<typeof fetchHevyShareInputSchema>;
+
+export const importHevyShareInputSchema = z.object({
+    url: z
+        .string()
+        .min(1)
+        .describe(
+            'The public Hevy share link to load - hevy.com/folder/{id} or hevy.com/routine/{shortId}. Pass it exactly as the user wrote it; do not invent or guess a link.',
+        ),
+    confirmed: z
+        .boolean()
+        .describe(
+            'Pass true only after the user explicitly agreed, in their own message, to load this share onto the program grid. Pasting a link is not agreement, and neither is asking about it. Never set this true on your own initiative.',
+        ),
+});
+
+export type TImportHevyShareInput = z.infer<typeof importHevyShareInputSchema>;
 
 /** A share that was read successfully. `routines` are context only - the grid is untouched. */
 export type THevyShareToolSuccess = {
@@ -62,6 +82,37 @@ export type THevyShareToolError = {
 
 export type TFetchHevyShareToolOutput = THevyShareToolSuccess | THevyShareToolError;
 
+/**
+ * Why an import was refused before Hevy was called at all.
+ *
+ * `grid_not_empty` covers the **Edit path** too - an Edit-path chat always arrives with a
+ * loaded split, so "the grid has exercises" is the same refusal in both cases.
+ */
+export type THevyShareImportRefusalReason = 'grid_not_empty' | 'not_confirmed';
+
+/**
+ * An import that was correctly declined. Expected behaviour, so no `error` field: the chat
+ * shows a plain note and `ToolErrorPanel` stays out of it.
+ */
+export type THevyShareImportRefusal = {
+    refused: THevyShareImportRefusalReason;
+    /** User-facing copy for the chat chip. */
+    message: string;
+};
+
+/** A share the client should hydrate onto the grid as week 0. */
+export type THevyShareImportSuccess = THevyShareToolSuccess & {
+    /** Discriminator the client checks before touching builder state. */
+    imported: true;
+};
+
+export type TImportHevyShareToolOutput =
+    | THevyShareImportSuccess
+    | THevyShareImportRefusal
+    | THevyShareToolError;
+
+export type THevyShareToolOutput = TFetchHevyShareToolOutput | TImportHevyShareToolOutput;
+
 /** Short code per failure reason - the `error` field, and the UI's friendly-copy key. */
 const SHARE_ERROR_CODES: Record<THevyShareErrorReason, string> = {
     invalid_url: 'Not a Hevy share link',
@@ -85,9 +136,36 @@ const HEVY_API_CHANGED_REASONS: ReadonlySet<THevyShareErrorReason> = new Set<THe
 const HEVY_API_CHANGED_NOTE = "Hevy's share API may have changed.";
 
 export function isHevyShareToolError(
-    output: TFetchHevyShareToolOutput,
+    output: THevyShareToolOutput,
 ): output is THevyShareToolError {
     return 'error' in output;
+}
+
+export function isHevyShareImportRefusal(
+    output: TImportHevyShareToolOutput,
+): output is THevyShareImportRefusal {
+    return 'refused' in output;
+}
+
+/** True only for an import the client should apply to the grid. */
+export function isHevyShareImportSuccess(
+    output: TImportHevyShareToolOutput,
+): output is THevyShareImportSuccess {
+    return 'imported' in output && output.imported === true;
+}
+
+/** User-facing copy per refusal reason - what happened, not what Andy should do next. */
+const IMPORT_REFUSAL_MESSAGES: Record<THevyShareImportRefusalReason, string> = {
+    grid_not_empty:
+        'Nothing was loaded - the program grid already has exercises. A Hevy share loads onto an empty grid only.',
+    not_confirmed:
+        'Nothing was loaded - loading a Hevy share onto the grid needs your go-ahead first.',
+};
+
+export function hevyShareImportRefusal(
+    refused: THevyShareImportRefusalReason,
+): THevyShareImportRefusal {
+    return { refused, message: IMPORT_REFUSAL_MESSAGES[refused] };
 }
 
 /** Adapts a successful load into tool output, adding the counts the UI and model summarize. */
@@ -103,6 +181,11 @@ export function hevyShareToolOutput(result: THevyShareLoadResult): THevyShareToo
         ),
         routines: result.routines,
     };
+}
+
+/** Same seed as a fetch, marked so the client knows it is cleared to hydrate the grid. */
+export function hevyShareImportOutput(result: THevyShareLoadResult): THevyShareImportSuccess {
+    return { ...hevyShareToolOutput(result), imported: true };
 }
 
 /**
@@ -139,14 +222,19 @@ function routinesForModel(routines: THevyRoutine[]) {
     return routines.map(({ created_at: _created, updated_at: _updated, ...routine }) => routine);
 }
 
+/** Framing for a read that failed - shared by both share tools, so neither invents contents. */
+function formatShareErrorForModel(error: THevyShareToolError, nothingHappened: string): string {
+    return (
+        `Error: ${error.message} ${nothingHappened} ` +
+        'Tell the user in plain language and do not describe or invent the share contents. ' +
+        'Retry at most once, and only if a different link or a moment later could plausibly help.'
+    );
+}
+
 /** Structured share contents for the LLM after fetchHevyShare executes. */
 export function formatHevyShareForModel(output: TFetchHevyShareToolOutput): string {
     if (isHevyShareToolError(output)) {
-        return (
-            `Error: ${output.message} ` +
-            'Nothing was read. Tell the user in plain language and do not describe or invent the share contents. ' +
-            'Retry at most once, and only if a different link or a moment later could plausibly help.'
-        );
+        return formatShareErrorForModel(output, 'Nothing was read.');
     }
 
     return (
@@ -155,6 +243,36 @@ export function formatHevyShareForModel(output: TFetchHevyShareToolOutput): stri
         'Days are the share as written, mapped to week 0; exercise_template_id values come from the share. ' +
         'Use this to answer questions about the share or as planning context. ' +
         'Do not load it into the builder unless the user explicitly asks for that - loading is a separate confirmed step.\n\n' +
+        JSON.stringify(routinesForModel(output.routines))
+    );
+}
+
+/** What Andy should do next per refusal reason - the tool has already declined. */
+const IMPORT_REFUSAL_MODEL_GUIDANCE: Record<THevyShareImportRefusalReason, string> = {
+    grid_not_empty:
+        'The grid already has exercises, so a share seed would overwrite the user\'s work. Do not retry importHevyShare. ' +
+        'Tell them plainly that loading a share needs an empty program, and offer the alternatives: read the share with fetchHevyShare and build a program inspired by it, or start a new program first.',
+    not_confirmed:
+        'Ask the user, in your visible reply, whether they want that shared week loaded onto the grid exactly as written. ' +
+        'Only call importHevyShare again with confirmed: true after they answer yes in their own message.',
+};
+
+/** Result framing for the LLM after importHevyShare executes. */
+export function formatHevyShareImportForModel(output: TImportHevyShareToolOutput): string {
+    if (isHevyShareImportRefusal(output)) {
+        return `Import refused: ${output.message} ${IMPORT_REFUSAL_MODEL_GUIDANCE[output.refused]}`;
+    }
+
+    if (isHevyShareToolError(output)) {
+        return formatShareErrorForModel(output, 'Nothing was loaded and the grid is unchanged.');
+    }
+
+    return (
+        `Hevy share imported (${output.kind}): ${summarizeHevyShareResult(output)} - ${output.url}. ` +
+        'The builder grid now holds these days as its first week, exactly as the share had them - call it week 1 when you talk to the user. ' +
+        'Nothing was pushed or synced to Hevy, the shared folder was not touched, and no Hevy account was connected. ' +
+        'Do not call buildWeek to recreate this week - it is already on the grid; use mutateProgram for any edits. ' +
+        'Confirm what landed in one or two lines, then offer expanding it to more weeks or periodizing it as a separate step - ask first, do not start.\n\n' +
         JSON.stringify(routinesForModel(output.routines))
     );
 }

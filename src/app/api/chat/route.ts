@@ -107,7 +107,8 @@ const callOptionsSchema = z.object({
  *   `daysPerWeek`, `programLength`, optional exclusion/health filters, optional
  *   questionnaire fields (`excludeEquipment`, `splitType`, `exerciseVariability`, `progressionSystem`, `deloadWeek`, `peakWeek`, `warmupExercises`),
  *   optional Training profile seed (`age`, `sex`, `heightCm`, `experienceLevel`, `physiquePhase`, `trainingFocus`, `activityLevel`, `sessionDurationMin`),
- *   and `isInLbs` (user weight display preference; defaults true).
+ *   `isInLbs` (user weight display preference; defaults true), and `programHasExercises`
+ *   (grid-state flag sent every turn even when the `hevyProgram` snapshot is omitted).
  * @returns A streaming `Response` that the Vercel AI SDK client consumes to
  *   render incremental agent output and tool invocations.
  */
@@ -137,6 +138,7 @@ async function handleChatPost(req: Request) {
             sessionDurationMin,
             chatSessionId,
             isInLbs = true,
+            programHasExercises,
         } = await req.json();
 
         const supabase = await createClient();
@@ -252,6 +254,8 @@ async function handleChatPost(req: Request) {
                     trainingProfile,
                     isInLbs: weightInLbs,
                     clientIp,
+                    programHasExercises:
+                        typeof programHasExercises === 'boolean' ? programHasExercises : undefined,
                 });
 
                 const sandbox = createSandbox({ workingDirectory: process.cwd() });

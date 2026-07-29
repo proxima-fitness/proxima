@@ -34,6 +34,7 @@ function renderBubbles(ui: ReactNode) {
 
 function baseProps(messages: TChatMessage[]) {
     const lastAtomicBuildCommitKeyRef = createRef<string | null>();
+    const lastHevyShareImportKeyRef = createRef<string | null>();
     const appliedMutateProgramKeysRef: RefObject<Set<string>> = {
         current: new Set(),
     };
@@ -65,6 +66,7 @@ function baseProps(messages: TChatMessage[]) {
         commitWithUndo: vi.fn(),
         lastAtomicBuildCommitKeyRef,
         appliedMutateProgramKeysRef,
+        lastHevyShareImportKeyRef,
     };
 }
 

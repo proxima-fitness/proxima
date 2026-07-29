@@ -1,6 +1,6 @@
 /**
  * @module MessageBubbles
- * Renders chat messages (user + assistant), tool outputs (buildWeek, mutateProgram), build progress, error/retry UI, and applies program updates from tool results. After the stream finishes, duplicates week 1 across all weeks and merges post-buildWeek mutateProgram ops into one atomic commit. Drives timeout/retry logic.
+ * Renders chat messages (user + assistant), tool outputs (buildWeek, mutateProgram), build progress, error/retry UI, and applies program updates from tool results. After the stream finishes, duplicates week 1 across all weeks and merges post-buildWeek mutateProgram ops into one atomic commit, and hydrates a confirmed Hevy share import as a week-1 seed. Drives timeout/retry logic.
  * Depends on: message, tool, reasoning, attachments, ModifyProgramProgress, helpers. Used by: Agent.
  */
 /* eslint-disable @next/next/no-img-element */
@@ -21,6 +21,7 @@ import { type ChatStatus, FileUIPart } from "ai";
 import {
     applyMutateProgramFromMessages,
     getMutateProgramObjectives,
+    tryApplyHevyShareImport,
     tryCommitAtomicBuildWeekAndMutations,
 } from "@/components/program-builder/utils/helpers";
 import {
@@ -34,7 +35,13 @@ import { buildToolErrorPayload, getMutateProgramFailureSeverity, summarizeToolEr
 import { ModifyProgramProgress } from "./ModifyProgramProgress";
 import { WorkoutHistoryToolContent } from "./WorkoutHistoryToolContent";
 import type { TWorkoutHistoryToolOutput } from "@/app/api/chat/tools/workout-history";
-import type { TFetchHevyShareToolOutput } from "@/app/api/chat/tools/hevy-share";
+import {
+    isHevyShareImportRefusal,
+    isHevyShareImportSuccess,
+    isHevyShareToolError,
+    type TFetchHevyShareToolOutput,
+    type TImportHevyShareToolOutput,
+} from "@/app/api/chat/tools/hevy-share";
 import { RateProgramResults } from "@/components/program-builder/shared/RateProgramResults";
 import type { IProgramScore } from "@/components/program-builder/utils/score-program";
 import { toast } from "sonner";
@@ -80,6 +87,8 @@ interface IProps {
     onBuildComplete?: () => void;
     lastAtomicBuildCommitKeyRef: RefObject<string | null>;
     appliedMutateProgramKeysRef: RefObject<Set<string>>;
+    /** Last hydrated **Hevy share import** seed, so the week-0 load runs exactly once. */
+    lastHevyShareImportKeyRef: RefObject<string | null>;
 }
 
 /** Renders message list, build/modify progress, applies tool results to hevyProgram, and handles timeout/retry. */
@@ -110,6 +119,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         onBuildComplete,
         lastAtomicBuildCommitKeyRef,
         appliedMutateProgramKeysRef,
+        lastHevyShareImportKeyRef,
     } = props;
 
     const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
@@ -249,6 +259,31 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         commitWithUndo,
         user,
         appliedMutateProgramKeysRef,
+    ]);
+
+    useEffect(() => {
+        // Confirmed Hevy share import: seed the empty grid with the shared week (week 0 only).
+        const imported = tryApplyHevyShareImport(
+            messages,
+            status,
+            hevyProgram,
+            lastHevyShareImportKeyRef,
+            commitWithUndo,
+        );
+        if (imported) {
+            onBuildComplete?.();
+            posthog?.capture?.("imported_a_hevy_share", {
+                user: user?.id ?? "user_id_unknown",
+            });
+        }
+    }, [
+        messages,
+        status,
+        hevyProgram,
+        commitWithUndo,
+        onBuildComplete,
+        user,
+        lastHevyShareImportKeyRef,
     ]);
 
     return (
@@ -955,6 +990,80 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                         ) : (
                                                             <p className="text-sm text-muted-foreground px-3 pb-3">
                                                                 Reading Hevy share link…
+                                                            </p>
+                                                        )}
+                                                    </ToolContent>
+                                                </Tool>
+                                            );
+                                        }
+                                        case "tool-importHevyShare": {
+                                            const importPart = part as {
+                                                state?: TToolPart["state"];
+                                                input?: { url?: string; confirmed?: boolean };
+                                                output?: TImportHevyShareToolOutput;
+                                                errorText?: string;
+                                            };
+                                            const importOutput = importPart.output;
+                                            // A refusal is the tool working as designed - a note, not an error panel.
+                                            const importRefusal =
+                                                importOutput && isHevyShareImportRefusal(importOutput)
+                                                    ? importOutput
+                                                    : null;
+                                            const importFailed =
+                                                importPart.state === "output-error" ||
+                                                Boolean(importOutput && isHevyShareToolError(importOutput));
+                                            const importedShare =
+                                                importOutput && isHevyShareImportSuccess(importOutput)
+                                                    ? importOutput
+                                                    : null;
+                                            const toolState: TToolPart["state"] = importFailed
+                                                ? "output-error"
+                                                : importedShare || importRefusal
+                                                    ? "output-available"
+                                                    : (importPart.state ?? "input-available");
+
+                                            if (importFailed) {
+                                                const errorCtx = {
+                                                    errorText: importPart.errorText,
+                                                    output: importOutput,
+                                                };
+                                                return (
+                                                    <Tool key={`${message.id}-${index}-hevy-import-error`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
+                                                        <ToolHeader type="tool-importHevyShare" state={toolState} title="Load Hevy share" />
+                                                        <ToolContent>
+                                                            <ToolErrorPanel
+                                                                tool="importHevyShare"
+                                                                errorCtx={errorCtx}
+                                                                getChatId={resolvePersistChatId}
+                                                                summary={summarizeToolError("importHevyShare", errorCtx)}
+                                                                copyPayload={buildToolErrorPayload("importHevyShare", errorCtx)}
+                                                            />
+                                                        </ToolContent>
+                                                    </Tool>
+                                                );
+                                            }
+
+                                            return (
+                                                <Tool key={`${message.id}-${index}-hevy-import`} defaultOpen={false} className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
+                                                    <ToolHeader type="tool-importHevyShare" state={toolState} title="Load Hevy share" />
+                                                    <ToolContent>
+                                                        {importedShare ? (
+                                                            <div className="space-y-1 px-3 pb-3">
+                                                                <p className="text-sm text-foreground">
+                                                                    {importedShare.title ??
+                                                                        (importedShare.kind === "folder"
+                                                                            ? "Shared folder"
+                                                                            : "Shared routine")}
+                                                                </p>
+                                                                <p className="text-sm text-muted-foreground">
+                                                                    {importedShare.dayCount} day{importedShare.dayCount === 1 ? "" : "s"} · {importedShare.exerciseCount} exercise{importedShare.exerciseCount === 1 ? "" : "s"} · loaded into week 1 of your program
+                                                                </p>
+                                                            </div>
+                                                        ) : (
+                                                            <p className="text-sm text-muted-foreground px-3 pb-3">
+                                                                {importRefusal
+                                                                    ? importRefusal.message
+                                                                    : "Loading Hevy share…"}
                                                             </p>
                                                         )}
                                                     </ToolContent>
