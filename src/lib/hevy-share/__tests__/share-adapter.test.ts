@@ -1,0 +1,206 @@
+import { describe, expect, it } from "vitest";
+import { adaptHevyShareToRoutines } from "@/lib/hevy-share/share-adapter";
+import { HevyShareError } from "@/lib/hevy-share/share-errors";
+
+const NOW = new Date("2026-07-29T10:00:00.000Z");
+
+/** Shape of a shared folder payload as the web share endpoint returns it. */
+function folderPayload() {
+    return {
+        shareable_folder: {
+            id: "folder-share-id",
+            title: "PPL 6 Day",
+            routines: [
+                {
+                    id: "hevy-routine-uuid-2",
+                    folder_id: 987,
+                    index: 1,
+                    title: "Pull",
+                    notes: "Straps allowed",
+                    exercises: [
+                        {
+                            exercise_template_id: "TEMPLATE_ROW",
+                            title: "Barbell Row",
+                            notes: "Chest supported",
+                            rest_seconds: 120,
+                            superset_id: 7,
+                            sets: [
+                                { type: "warmup", weight_kg: 40, reps: 10 },
+                                { type: "normal", weight_kg: 80, rep_range: { start: 8, end: 12 }, rpe: 8 },
+                            ],
+                        },
+                        {
+                            exercise_template_id: "TEMPLATE_CURL",
+                            title: "Bicep Curl",
+                            rest_seconds: "60",
+                            superset_id: 7,
+                            sets: [{ set_type: "normal", reps: 12 }],
+                        },
+                    ],
+                },
+                {
+                    id: "hevy-routine-uuid-1",
+                    folder_id: 987,
+                    index: 0,
+                    title: "Push",
+                    exercises: [
+                        {
+                            exercise_template_id: "TEMPLATE_BENCH",
+                            title: "Bench Press",
+                            sets: [{ type: "normal", reps: 5, rep_range: { start: 5, end: 5 } }],
+                        },
+                    ],
+                },
+            ],
+        },
+    };
+}
+
+describe("adaptHevyShareToRoutines", () => {
+    it("strips foreign Hevy identity and assigns builder routine keys", () => {
+        const { routines } = adaptHevyShareToRoutines(folderPayload(), NOW);
+        const serialized = JSON.stringify(routines);
+
+        expect(routines.map(routine => routine.id)).toEqual(["1", "2"]);
+        expect(routines.map(routine => routine.order)).toEqual(["1", "2"]);
+        expect(serialized).not.toContain("hevy-routine-uuid-1");
+        expect(serialized).not.toContain("hevy-routine-uuid-2");
+        expect(serialized).not.toContain("folder-share-id");
+        expect(routines.every(routine => routine.folder_id === 0)).toBe(true);
+    });
+
+    it("keeps exercise template ids so Week Export can mint customs", () => {
+        const { routines } = adaptHevyShareToRoutines(folderPayload(), NOW);
+
+        expect(routines[1].exercises.map(exercise => exercise.exercise_template_id)).toEqual([
+            "TEMPLATE_ROW",
+            "TEMPLATE_CURL",
+        ]);
+    });
+
+    it("seeds every shared routine into week 0 ordered by the share index", () => {
+        const { title, routines } = adaptHevyShareToRoutines(folderPayload(), NOW);
+
+        expect(title).toBe("PPL 6 Day");
+        expect(routines.map(routine => routine.title)).toEqual(["Push", "Pull"]);
+        expect(routines.map(routine => routine.created_at)).toEqual([
+            NOW.toISOString(),
+            NOW.toISOString(),
+        ]);
+    });
+
+    it("carries titles, notes, sets and rest across", () => {
+        const { routines } = adaptHevyShareToRoutines(folderPayload(), NOW);
+        const pull = routines[1];
+
+        expect(pull.notes).toBe("Straps allowed");
+        expect(pull.exercises[0]).toMatchObject({
+            index: 0,
+            title: "Barbell Row",
+            notes: "Chest supported",
+            rest_seconds: "120",
+        });
+        expect(pull.exercises[1].rest_seconds).toBe("60");
+        expect(pull.exercises[0].sets).toEqual([
+            {
+                index: 0,
+                type: "warmup",
+                weight_kg: 40,
+                reps: 10,
+                distance_meters: null,
+                duration_seconds: null,
+                rpe: null,
+                custom_metric: null,
+                rep_range: null,
+            },
+            {
+                index: 1,
+                type: "normal",
+                weight_kg: 80,
+                reps: null,
+                distance_meters: null,
+                duration_seconds: null,
+                rpe: 8,
+                custom_metric: null,
+                rep_range: { start: 8, end: 12 },
+            },
+        ]);
+    });
+
+    it("renumbers supersets to 0-indexed groups and collapses degenerate rep ranges", () => {
+        const { routines } = adaptHevyShareToRoutines(folderPayload(), NOW);
+
+        expect(routines[1].exercises.map(exercise => exercise.supersets_id)).toEqual([0, 0]);
+        expect(routines[0].exercises[0].sets[0]).toMatchObject({ reps: 5, rep_range: null });
+    });
+
+    it("adapts a single shared routine with no folder title", () => {
+        const { title, routines } = adaptHevyShareToRoutines(
+            {
+                routine: {
+                    id: "hevy-routine-uuid",
+                    title: "Full Body A",
+                    exercises: [{ exercise_template_id: "TEMPLATE_SQUAT", sets: [{ reps: 5 }] }],
+                },
+            },
+            NOW,
+        );
+
+        expect(title).toBeNull();
+        expect(routines).toHaveLength(1);
+        expect(routines[0]).toMatchObject({ id: "1", order: "1", folder_id: 0, title: "Full Body A" });
+    });
+
+    it("only strips a day ordinal when a real title follows it", () => {
+        const { routines } = adaptHevyShareToRoutines(
+            {
+                routines: [
+                    { title: "1 - Push Day", exercises: [] },
+                    { title: "5x5 Squat", exercises: [] },
+                    { title: "2024 - Off Season", exercises: [] },
+                    { title: "3 - ", exercises: [] },
+                ],
+            },
+            NOW,
+        );
+
+        expect(routines.map(routine => routine.title)).toEqual([
+            "Push Day",
+            "5x5 Squat",
+            "2024 - Off Season",
+            "3 - ",
+        ]);
+    });
+
+    it("reads a bare routine payload with no wrapper", () => {
+        const { routines } = adaptHevyShareToRoutines(
+            { title: "Legs", exercises: [{ exercise_template_id: "TEMPLATE_SQUAT", sets: [] }] },
+            NOW,
+        );
+
+        expect(routines).toHaveLength(1);
+        expect(routines[0].title).toBe("Legs");
+    });
+
+    it("falls back to Day N titles and tolerates junk fields", () => {
+        const { routines } = adaptHevyShareToRoutines(
+            { routines: [{ exercises: [{ sets: [null, "nope"] }, 42] }] },
+            NOW,
+        );
+
+        expect(routines[0].title).toBe("Day 1");
+        expect(routines[0].exercises[0].exercise_template_id).toBe("");
+        expect(routines[0].exercises[0].sets[0]).toMatchObject({ index: 0, type: "normal", reps: null });
+        expect(routines[0].exercises[1]).toMatchObject({ index: 1, title: "", sets: [] });
+    });
+
+    it("throws malformed when the payload holds no routines", () => {
+        for (const payload of [null, {}, { routines: [] }, "<html>", { data: { routines: [] } }]) {
+            expect(() => adaptHevyShareToRoutines(payload, NOW)).toThrowError(HevyShareError);
+        }
+
+        expect(() => adaptHevyShareToRoutines({}, NOW)).toThrowError(
+            expect.objectContaining({ reason: "malformed" }),
+        );
+    });
+});
