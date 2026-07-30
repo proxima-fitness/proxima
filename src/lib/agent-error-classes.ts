@@ -40,11 +40,24 @@ export function truncateForAgentTelemetry(
     return `${trimmed.slice(0, Math.max(0, maxChars - 1))}…`;
 }
 
+function statusCodeOf(error: unknown): number | undefined {
+    if (!error || typeof error !== "object") return undefined;
+    const code = (error as { statusCode?: unknown }).statusCode;
+    return typeof code === "number" ? code : undefined;
+}
+
 /**
- * Best-effort hard-failure class from an Error / message.
- * Server stream `onError` (03) may refine; client uses this for `ai_agent_error.errorClass`.
+ * Best-effort hard-failure class from an Error / message / APICallError shape.
+ * Server stream `onError` (03) returns this code to the client; client uses it for `ai_agent_error`.
  */
 export function classifyAgentErrorClass(error: unknown): TAgentErrorClass {
+    const statusCode = statusCodeOf(error);
+    const name =
+        error instanceof Error
+            ? error.name.toLowerCase()
+            : error && typeof error === "object" && "name" in error
+              ? String((error as { name?: unknown }).name ?? "").toLowerCase()
+              : "";
     const raw =
         error instanceof Error
             ? error.message
@@ -52,6 +65,16 @@ export function classifyAgentErrorClass(error: unknown): TAgentErrorClass {
               ? error
               : String(error ?? "");
     const msg = raw.toLowerCase();
+
+    if (statusCode === 413) {
+        return AGENT_ERROR_CLASS.PAYLOAD_TOO_LARGE;
+    }
+    if (statusCode === 401 || statusCode === 403) {
+        return AGENT_ERROR_CLASS.GATEWAY_AUTH;
+    }
+    if (statusCode === 429 || (statusCode !== undefined && statusCode >= 500)) {
+        return AGENT_ERROR_CLASS.PROVIDER_ERROR;
+    }
 
     if (
         msg.includes("timed out") ||
@@ -76,13 +99,23 @@ export function classifyAgentErrorClass(error: unknown): TAgentErrorClass {
         msg.includes("gateway_auth") ||
         msg.includes("invalid api key") ||
         msg.includes("incorrect api key") ||
-        (msg.includes("unauthorized") && msg.includes("gateway")) ||
-        (msg.includes("authentication") && msg.includes("gateway"))
+        msg.includes("loadapikeyerror") ||
+        name.includes("loadapikeyerror") ||
+        (msg.includes("unauthorized") &&
+            (msg.includes("gateway") || msg.includes("ai gateway"))) ||
+        (msg.includes("authentication") &&
+            (msg.includes("gateway") || msg.includes("ai gateway"))) ||
+        (msg.includes("ai gateway") &&
+            (msg.includes("auth") || msg.includes("unauthorized") || msg.includes("401")))
     ) {
         return AGENT_ERROR_CLASS.GATEWAY_AUTH;
     }
 
     if (
+        name === "aborterror" ||
+        msg.includes("aborted") ||
+        msg.includes("the operation was aborted") ||
+        msg.includes("request aborted") ||
         msg.includes("failed to fetch") ||
         msg.includes("networkerror") ||
         msg.includes("network error") ||

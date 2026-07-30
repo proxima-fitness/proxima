@@ -54,6 +54,56 @@ describe("agent-error-classes", () => {
         expect(classifyAgentErrorClass("something weird")).toBe(AGENT_ERROR_CLASS.UNKNOWN);
     });
 
+    it("classifies gateway auth from message, name, and statusCode", () => {
+        expect(
+            classifyAgentErrorClass(new Error("Unauthorized request to AI Gateway")),
+        ).toBe(AGENT_ERROR_CLASS.GATEWAY_AUTH);
+        expect(classifyAgentErrorClass(new Error("Invalid API key"))).toBe(
+            AGENT_ERROR_CLASS.GATEWAY_AUTH,
+        );
+        expect(
+            classifyAgentErrorClass(
+                Object.assign(new Error("auth failed"), {
+                    name: "LoadAPIKeyError",
+                }),
+            ),
+        ).toBe(AGENT_ERROR_CLASS.GATEWAY_AUTH);
+        expect(
+            classifyAgentErrorClass(
+                Object.assign(new Error("forbidden"), { statusCode: 401 }),
+            ),
+        ).toBe(AGENT_ERROR_CLASS.GATEWAY_AUTH);
+        expect(classifyAgentErrorClass("gateway_auth")).toBe(AGENT_ERROR_CLASS.GATEWAY_AUTH);
+    });
+
+    it("classifies abort and HTTP status shapes", () => {
+        expect(
+            classifyAgentErrorClass(
+                Object.assign(new Error("The operation was aborted."), {
+                    name: "AbortError",
+                }),
+            ),
+        ).toBe(AGENT_ERROR_CLASS.NETWORK_ERROR);
+        expect(
+            classifyAgentErrorClass(
+                Object.assign(new Error("too big"), { statusCode: 413 }),
+            ),
+        ).toBe(AGENT_ERROR_CLASS.PAYLOAD_TOO_LARGE);
+        expect(
+            classifyAgentErrorClass(
+                Object.assign(new Error("upstream"), { statusCode: 503 }),
+            ),
+        ).toBe(AGENT_ERROR_CLASS.PROVIDER_ERROR);
+    });
+
+    it("classifies validation errors", () => {
+        expect(
+            classifyAgentErrorClass(
+                new Error("Invalid input for tool mutateProgram: Type validation failed"),
+            ),
+        ).toBe(AGENT_ERROR_CLASS.VALIDATION_ERROR);
+    });
+
     it("truncates telemetry strings", () => {
         expect(truncateForAgentTelemetry("short", 10)).toBe("short");
         expect(truncateForAgentTelemetry("x".repeat(20), 10)).toBe(`${"x".repeat(9)}…`);

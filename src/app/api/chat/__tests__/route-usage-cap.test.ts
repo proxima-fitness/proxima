@@ -195,7 +195,11 @@ describe("POST /api/chat usage enforcement", () => {
         expect(res.status).toBe(200);
         expect(mockTryConsume).toHaveBeenCalledTimes(1);
         expect(ToolLoopAgentMock).toHaveBeenCalled();
-        expect(mockCreateAgentUIStreamResponse).toHaveBeenCalled();
+        expect(mockCreateAgentUIStreamResponse).toHaveBeenCalledWith(
+            expect.objectContaining({
+                onError: expect.any(Function),
+            }),
+        );
     });
 
     it("does not call try_consume for anonymous users", async () => {
