@@ -29,9 +29,10 @@ import {
     ReasoningContent,
     ReasoningTrigger,
 } from "@/components/ai-elements/reasoning";
-import { Tool, ToolContent, ToolErrorPanel, ToolHeader, warningStatusOverride } from "@/components/ai-elements/tool";
+import { Tool, ToolContent, ToolHeader } from "@/components/ai-elements/tool";
 import type { TToolPart } from "@/components/ai-elements/tool";
-import { buildToolErrorPayload, getMutateProgramFailureSeverity, summarizeToolError } from "./tool-error";
+import { getMutateProgramFailureSeverity } from "./tool-error";
+import { SoftToolFailure } from "./soft-tool-failure-ui";
 import { ModifyProgramProgress } from "./ModifyProgramProgress";
 import { WorkoutHistoryToolContent } from "./WorkoutHistoryToolContent";
 import type { TWorkoutHistoryToolOutput } from "@/app/api/chat/tools/workout-history";
@@ -664,23 +665,17 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                         : "input-streaming";
 
                                             if (buildHasError) {
-                                                const errorCtx = {
-                                                    errorText: buildPart.errorText,
-                                                    output: toolOutput,
-                                                };
                                                 return (
-                                                    <Tool key={`${message.id}-${index}-build-error`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
-                                                        <ToolHeader type="tool-buildWeek" state={toolState} title="Build week" />
-                                                        <ToolContent>
-                                                            <ToolErrorPanel
-                                                                tool="buildWeek"
-                                                                errorCtx={errorCtx}
-                                                                getChatId={resolvePersistChatId}
-                                                                summary={summarizeToolError("buildWeek", errorCtx)}
-                                                                copyPayload={buildToolErrorPayload("buildWeek", errorCtx)}
-                                                            />
-                                                        </ToolContent>
-                                                    </Tool>
+                                                    <SoftToolFailure
+                                                        key={`${message.id}-${index}-build-error`}
+                                                        tool="buildWeek"
+                                                        debugMode={debugMode}
+                                                        errorCtx={{
+                                                            errorText: buildPart.errorText,
+                                                            output: toolOutput,
+                                                        }}
+                                                        getChatId={resolvePersistChatId}
+                                                    />
                                                 );
                                             }
 
@@ -753,46 +748,19 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                     : "input-available";
 
                                             if (isError) {
-                                                if (!debugMode) {
-                                                    return (
-                                                        <Tool key={`${message.id}-${index}-mutate-planning`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
-                                                            <ToolHeader
-                                                                type="tool-mutateProgram"
-                                                                state="input-available"
-                                                                title="Planning"
-                                                            />
-                                                            <ToolContent>
-                                                                <p className="text-sm text-muted-foreground px-3 pb-3">Planning…</p>
-                                                            </ToolContent>
-                                                        </Tool>
-                                                    );
-                                                }
-
                                                 const errorCtx = {
                                                     errorText: mutatePart.errorText,
                                                     output: mutatePart.output,
                                                 };
-                                                const severity = getMutateProgramFailureSeverity(errorCtx);
-                                                const isWarning = severity === "warning";
                                                 return (
-                                                    <Tool key={`${message.id}-${index}-mutate-error`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
-                                                        <ToolHeader
-                                                            type="tool-mutateProgram"
-                                                            state={toolState}
-                                                            title="Mutate program"
-                                                            statusOverride={isWarning ? warningStatusOverride : undefined}
-                                                        />
-                                                        <ToolContent>
-                                                            <ToolErrorPanel
-                                                                tool="mutateProgram"
-                                                                errorCtx={errorCtx}
-                                                                getChatId={resolvePersistChatId}
-                                                                summary={summarizeToolError("mutateProgram", errorCtx)}
-                                                                copyPayload={buildToolErrorPayload("mutateProgram", errorCtx)}
-                                                                severity={severity}
-                                                            />
-                                                        </ToolContent>
-                                                    </Tool>
+                                                    <SoftToolFailure
+                                                        key={`${message.id}-${index}-mutate-error`}
+                                                        tool="mutateProgram"
+                                                        debugMode={debugMode}
+                                                        errorCtx={errorCtx}
+                                                        getChatId={resolvePersistChatId}
+                                                        severity={getMutateProgramFailureSeverity(errorCtx)}
+                                                    />
                                                 );
                                             }
 
@@ -837,31 +805,17 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                     : (historyPart.state ?? "input-available");
 
                                             if (historyHasError) {
-                                                const errorCtx = {
-                                                    errorText: historyPart.errorText,
-                                                    output: historyOutput,
-                                                };
                                                 return (
-                                                    <Tool
+                                                    <SoftToolFailure
                                                         key={`${message.id}-${index}-history-error`}
-                                                        defaultOpen
-                                                        className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2"
-                                                    >
-                                                        <ToolHeader
-                                                            type="tool-getWorkoutHistory"
-                                                            state={toolState}
-                                                            title="Workout history"
-                                                        />
-                                                        <ToolContent>
-                                                            <ToolErrorPanel
-                                                                tool="getWorkoutHistory"
-                                                                errorCtx={errorCtx}
-                                                                getChatId={resolvePersistChatId}
-                                                                summary={summarizeToolError("getWorkoutHistory", errorCtx)}
-                                                                copyPayload={buildToolErrorPayload("getWorkoutHistory", errorCtx)}
-                                                            />
-                                                        </ToolContent>
-                                                    </Tool>
+                                                        tool="getWorkoutHistory"
+                                                        debugMode={debugMode}
+                                                        errorCtx={{
+                                                            errorText: historyPart.errorText,
+                                                            output: historyOutput,
+                                                        }}
+                                                        getChatId={resolvePersistChatId}
+                                                    />
                                                 );
                                             }
 
@@ -906,23 +860,17 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                     : (ratePart.state ?? "input-available");
 
                                             if (rateHasError) {
-                                                const errorCtx = {
-                                                    errorText: ratePart.errorText,
-                                                    output: out,
-                                                };
                                                 return (
-                                                    <Tool key={`${message.id}-${index}-rate-error`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
-                                                        <ToolHeader type="tool-rateProgram" state={toolState} title="Rate program" />
-                                                        <ToolContent>
-                                                            <ToolErrorPanel
-                                                                tool="rateProgram"
-                                                                errorCtx={errorCtx}
-                                                                getChatId={resolvePersistChatId}
-                                                                summary={summarizeToolError("rateProgram", errorCtx)}
-                                                                copyPayload={buildToolErrorPayload("rateProgram", errorCtx)}
-                                                            />
-                                                        </ToolContent>
-                                                    </Tool>
+                                                    <SoftToolFailure
+                                                        key={`${message.id}-${index}-rate-error`}
+                                                        tool="rateProgram"
+                                                        debugMode={debugMode}
+                                                        errorCtx={{
+                                                            errorText: ratePart.errorText,
+                                                            output: out,
+                                                        }}
+                                                        getChatId={resolvePersistChatId}
+                                                    />
                                                 );
                                             }
 
@@ -971,23 +919,17 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                     : (sharePart.state ?? "input-available");
 
                                             if (shareFailed) {
-                                                const errorCtx = {
-                                                    errorText: sharePart.errorText,
-                                                    output: shareOutput,
-                                                };
                                                 return (
-                                                    <Tool key={`${message.id}-${index}-hevy-share-error`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
-                                                        <ToolHeader type="tool-fetchHevyShareFolder" state={toolState} title="Read Hevy share" />
-                                                        <ToolContent>
-                                                            <ToolErrorPanel
-                                                                tool="fetchHevyShareFolder"
-                                                                errorCtx={errorCtx}
-                                                                getChatId={resolvePersistChatId}
-                                                                summary={summarizeToolError("fetchHevyShareFolder", errorCtx)}
-                                                                copyPayload={buildToolErrorPayload("fetchHevyShareFolder", errorCtx)}
-                                                            />
-                                                        </ToolContent>
-                                                    </Tool>
+                                                    <SoftToolFailure
+                                                        key={`${message.id}-${index}-hevy-share-error`}
+                                                        tool="fetchHevyShareFolder"
+                                                        debugMode={debugMode}
+                                                        errorCtx={{
+                                                            errorText: sharePart.errorText,
+                                                            output: shareOutput,
+                                                        }}
+                                                        getChatId={resolvePersistChatId}
+                                                    />
                                                 );
                                             }
 
@@ -1040,23 +982,17 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                     : (importPart.state ?? "input-available");
 
                                             if (importFailed) {
-                                                const errorCtx = {
-                                                    errorText: importPart.errorText,
-                                                    output: importOutput,
-                                                };
                                                 return (
-                                                    <Tool key={`${message.id}-${index}-hevy-import-error`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
-                                                        <ToolHeader type="tool-importHevyShareFolder" state={toolState} title="Load Hevy share" />
-                                                        <ToolContent>
-                                                            <ToolErrorPanel
-                                                                tool="importHevyShareFolder"
-                                                                errorCtx={errorCtx}
-                                                                getChatId={resolvePersistChatId}
-                                                                summary={summarizeToolError("importHevyShareFolder", errorCtx)}
-                                                                copyPayload={buildToolErrorPayload("importHevyShareFolder", errorCtx)}
-                                                            />
-                                                        </ToolContent>
-                                                    </Tool>
+                                                    <SoftToolFailure
+                                                        key={`${message.id}-${index}-hevy-import-error`}
+                                                        tool="importHevyShareFolder"
+                                                        debugMode={debugMode}
+                                                        errorCtx={{
+                                                            errorText: importPart.errorText,
+                                                            output: importOutput,
+                                                        }}
+                                                        getChatId={resolvePersistChatId}
+                                                    />
                                                 );
                                             }
 

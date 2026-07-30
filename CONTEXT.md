@@ -264,6 +264,18 @@ _Avoid_: Exercise edit (ambiguous - may mean one slot or program-wide), variatio
 One ordered set of program changes the agent applies atomically in a single turn for one logical edit. Fail-all: if any change is invalid, none apply.
 _Avoid_: Patch, JSON edit
 
+**Soft tool failure**:
+A coach tool (`buildWeek`, `mutateProgram`, etc.) returns a structured error while the chat stream can continue - the model gets fix text and may retry in-turn. Ordinary users see calm in-progress copy only; full tool error UI is **Agent debug mode** only. Distinct from a dead turn.
+_Avoid_: Tool crash (implies hard fail), validation error shown to user, treating soft reject as generation failure
+
+**Hard agent failure**:
+The chat stream dies or the client declares the turn dead (stall timeout, network, payload too large, provider/gateway kill). Surfaces recovery UI and `ai_agent_error`. Not a Soft tool failure.
+_Avoid_: Soft tool error panel, rate limit (usage cap is a separate 402 path), An error occurred (opaque SDK default - not a product term)
+
+**Agent debug mode**:
+Test-user-only toggle that reveals Soft tool failure panels (`ToolErrorPanel`) in the builder chat. Off by default; ordinary users never see those panels.
+_Avoid_: Developer mode (too broad), always-on tool errors, production error dumps for all users
+
 **Edit dirty state**:
 Whether the current Edit session has unsaved builder changes. Set by any mutation (grid edit, agent patch, undo); cleared on successful Sync, Discard, or fresh Hevy load. Drives the navigation guard. Page refresh shows a browser `beforeunload` warning when dirty; if the user proceeds, unsaved Edit state is lost and the next Edit entry reloads from Hevy.
 _Avoid_: isDirty (implementation), unsaved flag
