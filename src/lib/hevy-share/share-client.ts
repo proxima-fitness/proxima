@@ -2,7 +2,8 @@
  * @module lib/hevy-share/share-client
  *
  * Server-only access to Hevy's undocumented **web share** endpoints - the ones the
- * hevy.com share pages call, not the account-scoped `/v1` partner API. Authenticates
+ * hevy.com share pages call for a shared folder, a shared routine, or a public completed
+ * workout, not the account-scoped `/v1` partner API. Authenticates
  * with a platform `x-api-key` held in server env plus `Hevy-Platform: web`; the key
  * must never reach the browser, so every caller has to run in a route handler or
  * agent tool.
@@ -115,11 +116,27 @@ export async function fetchRoutineWithShortId(shortId: string): Promise<unknown>
     return shareGet(`/routine_with_short_id/${encodeURIComponent(shortId)}`);
 }
 
+/**
+ * `GET /workout/{id}` - a single public **completed workout**.
+ *
+ * Takes either the workout UUID or its `short_id`, which is what lets one path serve every
+ * `hevy.com/workout/…` link shape. Answers 404 for a workout that is not public, but the
+ * adapter still checks the payload's own privacy fields rather than trusting that.
+ */
+export async function fetchSharedWorkout(workoutId: string): Promise<unknown> {
+    return shareGet(`/workout/${encodeURIComponent(workoutId)}`);
+}
+
 /** Dispatches to the endpoint that matches a parsed share link. */
 export async function fetchHevyShareTarget(target: THevyShareTarget): Promise<unknown> {
-    return target.kind === "folder"
-        ? fetchShareableFolder(target.folderId)
-        : fetchRoutineWithShortId(target.shortId);
+    switch (target.kind) {
+        case "folder":
+            return fetchShareableFolder(target.folderId);
+        case "routine":
+            return fetchRoutineWithShortId(target.shortId);
+        case "workout":
+            return fetchSharedWorkout(target.workoutId);
+    }
 }
 
 /** True when this deployment has a platform key, so callers can degrade before fetching. */

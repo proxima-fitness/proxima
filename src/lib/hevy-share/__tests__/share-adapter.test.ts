@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { adaptHevyShareToRoutines } from "@/lib/hevy-share/share-adapter";
+import {
+    adaptHevyShareToRoutines,
+    adaptHevyWorkoutToRoutines,
+} from "@/lib/hevy-share/share-adapter";
 import { HevyShareError } from "@/lib/hevy-share/share-errors";
 
 const NOW = new Date("2026-07-29T10:00:00.000Z");
@@ -268,6 +271,82 @@ describe("adaptHevyShareToRoutines", () => {
         }
 
         expect(() => adaptHevyShareToRoutines({}, NOW)).toThrowError(
+            expect.objectContaining({ reason: "malformed" }),
+        );
+    });
+});
+
+describe("adaptHevyWorkoutToRoutines", () => {
+    function publicWorkout(overrides: Record<string, unknown> = {}) {
+        return {
+            type: "public",
+            name: "1 - Push Day",
+            username: "lifter",
+            start_time: 1_700_000_000,
+            end_time: 1_700_000_900,
+            estimated_volume_kg: 4200.4,
+            is_private: false,
+            exercises: [
+                {
+                    exercise_template_id: "TEMPLATE_BENCH",
+                    title: "Bench Press",
+                    sets: [{ indicator: "normal", weight_kg: 100, reps: 5 }],
+                },
+            ],
+            ...overrides,
+        };
+    }
+
+    it("adapts a public workout into a one-day seed with session metadata", () => {
+        const { title, routines, workout } = adaptHevyWorkoutToRoutines(publicWorkout(), NOW);
+
+        expect(title).toBe("Push Day");
+        expect(routines).toHaveLength(1);
+        expect(routines[0]).toMatchObject({
+            id: "1",
+            order: "1",
+            folder_id: 0,
+            title: "Push Day",
+        });
+        expect(routines[0].exercises[0]).toMatchObject({
+            exercise_template_id: "TEMPLATE_BENCH",
+            title: "Bench Press",
+        });
+        expect(routines[0].exercises[0].sets[0]).toMatchObject({
+            type: "normal",
+            weight_kg: 100,
+            reps: 5,
+        });
+        expect(workout).toEqual({
+            username: "lifter",
+            startedAt: "2023-11-14T22:13:20.000Z",
+            durationSeconds: 900,
+            estimatedVolumeKg: 4200.4,
+        });
+    });
+
+    it("unwraps a one-level workout/data/result envelope", () => {
+        const { title } = adaptHevyWorkoutToRoutines({ workout: publicWorkout() }, NOW);
+        expect(title).toBe("Push Day");
+
+        const wrapped = adaptHevyWorkoutToRoutines({ data: publicWorkout({ name: "Pull" }) }, NOW);
+        expect(wrapped.title).toBe("Pull");
+    });
+
+    it("refuses a private or non-public workout as not_found", () => {
+        expect(() => adaptHevyWorkoutToRoutines(publicWorkout({ is_private: true }), NOW)).toThrowError(
+            expect.objectContaining({ reason: "not_found" }),
+        );
+        expect(() =>
+            adaptHevyWorkoutToRoutines(publicWorkout({ type: "followers" }), NOW),
+        ).toThrowError(expect.objectContaining({ reason: "not_found" }));
+    });
+
+    it("throws malformed when the payload holds no workout exercises", () => {
+        expect(() => adaptHevyWorkoutToRoutines({}, NOW)).toThrowError(
+            expect.objectContaining({ reason: "malformed" }),
+        );
+        expect(() => adaptHevyWorkoutToRoutines({ name: "Empty", type: "public" }, NOW)).toThrowError(
             expect.objectContaining({ reason: "malformed" }),
         );
     });

@@ -48,7 +48,7 @@ After **getExerciseList**, call **buildWeek exactly once** per user request to g
 
 ## Hevy share links as reference
 
-When the user backs a build request with a **public Hevy share link** (`hevy.com/folder/…` or `hevy.com/routine/…` - e.g. "build me something like this"), call **fetchHevyShareFolder** to read it and use it as planning context: split shape, day count, exercise selection, set and rep style. Reading a share is context gathering, so it is allowed on the questionnaire-gate turn alongside **getMoreInfoQuestions** - it is not building.
+When the user backs a build request with a **public Hevy share link** (`hevy.com/folder/…`, `hevy.com/routine/…`, or `hevy.com/workout/…` - e.g. "build me something like this"), call **fetchHevyShareFolder** to read it and use it as planning context: split shape, day count, exercise selection, set and rep style. A **workout** link is a completed session log (what was actually lifted that day), not a prescribed split - use it for volume/exercise clues, not as if it were programming. Reading a share is context gathering, so it is allowed on the questionnaire-gate turn alongside **getMoreInfoQuestions** - it is not building.
 
 Everything after that is the normal workflow: **planProgram** → **getExerciseList** → **buildWeek**, honoring the Active Constraint Profile and the session-size targets below. The share is a reference, not the program - never treat **fetchHevyShareFolder** output as days already on the grid, and never claim you loaded it. If the user wants that shared folder itself on the grid rather than a program inspired by it, say so plainly and let them confirm; do not build around it silently.
 

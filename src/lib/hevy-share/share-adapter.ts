@@ -5,6 +5,11 @@
  * and **Hevy share import**. Direct hydrate, not a `buildWeek` rebuild - titles, exercises,
  * sets, supersets and notes come across as written.
  *
+ * Two entry points, one per link family: {@link adaptHevyShareToRoutines} for a shared folder
+ * or routine (a prescription), and {@link adaptHevyWorkoutToRoutines} for a public completed
+ * workout (a log). They share all exercise and set handling and differ only in the container -
+ * a workout titles itself with `name`, carries session metadata, and is gated on being public.
+ *
  * Two rules define the output:
  *  - **Foreign identity is stripped.** The share's Hevy routine ID, folder ID and short id
  *    never reach builder state; each day gets a sequential **builder routine key** instead.
@@ -48,12 +53,43 @@ const DAY_ORDINAL_PREFIX = /^\s*\d{1,2}\s*-\s*(?=\S)/;
  */
 const HEVY_CUSTOM_TEMPLATE_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/** Keys that may wrap a completed-workout payload one level down. */
+const WORKOUT_CONTAINER_KEYS = ["workout", "data", "result"];
+
+/**
+ * `type` values that mean anyone holding the link may read the workout.
+ *
+ * Fail-closed: an unrecognised value is treated as private. Hevy 404s a non-public workout
+ * already, so this only ever matters if that changes - and a wrong guess here would republish
+ * someone's private log.
+ */
+const PUBLIC_WORKOUT_TYPES = new Set(["public"]);
+
 /** Result of adapting one share payload. */
 export type THevyShareAdaptResult = {
     /** Shared folder (or routine) title, when the payload carried one. */
     title: string | null;
     /** Week-0 seed days, ordered Day 1..N. */
     routines: THevyRoutine[];
+    /** Session facts, for a completed-workout link only - a prescription has none. */
+    workout?: THevyShareWorkoutMeta;
+};
+
+/**
+ * What a completed workout has that a routine does not: who logged it, when, and for how long.
+ *
+ * Kept beside the routines rather than folded into them - the seed is a prescription for the
+ * builder grid, so log timestamps stay out of builder state and travel as context instead.
+ */
+export type THevyShareWorkoutMeta = {
+    /** Hevy username of whoever logged it. */
+    username: string | null;
+    /** ISO 8601 session start, converted from Hevy's unix-seconds `start_time`. */
+    startedAt: string | null;
+    /** Wall-clock length of the session in seconds, when both ends are known. */
+    durationSeconds: number | null;
+    /** Hevy's own volume estimate for the session, in kilograms. */
+    estimatedVolumeKg: number | null;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -294,7 +330,8 @@ function adaptShareRoutine(
 ): THevyRoutine {
     const rawExercises = Array.isArray(raw.exercises) ? raw.exercises : [];
     const supersetKeys = buildSupersetKeys(rawExercises);
-    const rawTitle = readString(raw.title);
+    // Routines title themselves with `title`; a completed workout names itself with `name`.
+    const rawTitle = readString(raw.title) ?? readString(raw.name);
 
     return {
         // Builder routine key, not the share's Hevy routine ID - foreign identity is dropped.
@@ -337,5 +374,108 @@ export function adaptHevyShareToRoutines(payload: unknown, now: Date = new Date(
         routines: sortRawRoutines(rawRoutines).map((raw, position) =>
             adaptShareRoutine(raw, position + 1, timestamp),
         ),
+    };
+}
+
+/**
+ * Finds the completed-workout object in a `GET /workout/{id}` payload.
+ *
+ * Same defensive probe as {@link findShareContainer} - the endpoint returns the workout bare
+ * today, but it is undocumented, so one level of plausible wrapper keys is checked too.
+ */
+function findWorkoutObject(payload: unknown): Record<string, unknown> | null {
+    if (!isRecord(payload)) return null;
+    if (looksLikeRoutine(payload)) return payload;
+
+    for (const key of WORKOUT_CONTAINER_KEYS) {
+        const candidate = payload[key];
+        if (looksLikeRoutine(candidate)) return candidate;
+    }
+
+    return null;
+}
+
+/**
+ * Refuses a workout that is not public.
+ *
+ * The share pipeline exists to read links people chose to publish; a private log reached
+ * through a leaked or guessed id is not ours to relay. Reported as `not_found` because from
+ * the user's side there is nothing readable at that link either way.
+ *
+ * @throws {HevyShareError} `not_found` when the payload says private, or says nothing we know
+ */
+function assertWorkoutIsPublic(workout: Record<string, unknown>): void {
+    const type = readString(workout.type);
+    const isPublicType = type === null || PUBLIC_WORKOUT_TYPES.has(type.toLowerCase());
+
+    if (workout.is_private === true || !isPublicType) {
+        throw new HevyShareError(
+            "not_found",
+            "That Hevy workout is not public, so it cannot be read from its link.",
+        );
+    }
+}
+
+/** Unix seconds (Hevy's `start_time`/`end_time` spelling) as an ISO timestamp. */
+function readUnixSecondsAsIso(value: unknown): string | null {
+    const seconds = readFiniteNumber(value);
+    if (seconds === null || seconds <= 0) return null;
+
+    const date = new Date(seconds * 1000);
+    return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+/** Session facts a completed workout carries alongside its exercises. */
+function readWorkoutMeta(workout: Record<string, unknown>): THevyShareWorkoutMeta {
+    const startSeconds = readFiniteNumber(workout.start_time);
+    const endSeconds = readFiniteNumber(workout.end_time);
+    const hasSpan = startSeconds !== null && endSeconds !== null && endSeconds > startSeconds;
+
+    return {
+        username: readString(workout.username),
+        startedAt: readUnixSecondsAsIso(workout.start_time) ?? readString(workout.create_at),
+        durationSeconds: hasSpan ? endSeconds - startSeconds : null,
+        estimatedVolumeKg: readFiniteNumber(workout.estimated_volume_kg),
+    };
+}
+
+/**
+ * Adapts a public completed workout into a one-day builder seed.
+ *
+ * The exercises and sets are read exactly as the folder/routine adapter reads them, so a logged
+ * session lands on the grid the same way a shared routine does - with one difference worth
+ * knowing about: every weight, rep and RPE here is what the sharer **actually lifted**, not a
+ * prescription. Nothing about that is rewritten; callers frame it, using {@link THevyShareWorkoutMeta}.
+ *
+ * Hevy names a workout after the routine it was logged from, so a session run off a
+ * Proxima-exported routine arrives with the same `"N - "` day ordinal, stripped here as well.
+ *
+ * @param payload - Raw JSON from `workout/{id}`
+ * @param now - Injectable clock for deterministic tests
+ * @returns The workout name (when it had one), a single week-0 day, and its session metadata
+ * @throws {HevyShareError} `not_found` when the workout is not public, `malformed` when the
+ *         payload holds no workout we can read
+ */
+export function adaptHevyWorkoutToRoutines(
+    payload: unknown,
+    now: Date = new Date(),
+): THevyShareAdaptResult {
+    const workout = findWorkoutObject(payload);
+
+    if (!workout) {
+        throw new HevyShareError(
+            "malformed",
+            "That Hevy workout had nothing we could read - Hevy's share format may have changed.",
+        );
+    }
+
+    assertWorkoutIsPublic(workout);
+
+    const title = readString(workout.name);
+
+    return {
+        title: title === null ? null : stripDayOrdinalPrefix(title),
+        routines: [adaptShareRoutine(workout, 1, now.toISOString())],
+        workout: readWorkoutMeta(workout),
     };
 }

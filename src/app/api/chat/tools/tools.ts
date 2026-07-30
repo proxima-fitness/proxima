@@ -18,6 +18,7 @@
  *  - getWorkoutHistory - Pro-only backed-up workout history from Supabase (no live Hevy)
  *  - getBodyMeasurements - Pro-only backed-up body measurements from Supabase (no live Hevy)
  *  - fetchHevyShareFolder - read-only **Hevy share fetch** of a pasted hevy.com share link
+ *    (shared folder, shared routine, or a public completed workout)
  *  - importHevyShareFolder - confirmed **Hevy share import** that seeds an empty grid with the shared week
  *
  * Depends on: ai, zod, @/components/program-builder/api/hevy, @/assets/constants, @/lib/hevy-share
@@ -566,8 +567,9 @@ export function getTools({
      */
     const fetchHevyShareFolderTool = tool({
         description:
-            'Reads a **public Hevy share link** the user pasted - `hevy.com/folder/{id}` (a shared routine folder) or `hevy.com/routine/{shortId}` (a single shared routine) - and returns its days, exercises, and sets. ' +
-            'Call when the user pastes such a link and wants it read: questions about the split, a critique, or as context while planning a new program. ' +
+            'Reads a **public Hevy share link** the user pasted - `hevy.com/folder/{id}` (a shared routine folder), `hevy.com/routine/{shortId}` (a single shared routine), or `hevy.com/workout/{id}` (a single completed workout someone logged) - and returns its days, exercises, and sets. ' +
+            'A workout link returns what was **actually performed** in that session (real loads, reps and set types) plus when it was logged and by whom - not a prescription. ' +
+            'Call when the user pastes such a link and wants it read: questions about the split, a critique, feedback on a session they did, or as context while planning a new program. ' +
             'This is **read-only**: it does not add anything to the program grid, does not sync to the shared folder, and does not connect the user\'s Hevy account. Loading a share into the builder is a separate step that needs the user\'s explicit confirmation. ' +
             'Only accepts hevy.com share links - not Hevy app deep links, not api.hevyapp.com URLs, and not links to any other site. Never guess a link the user did not give you.',
         inputSchema: fetchHevyShareFolderInputSchema,
@@ -596,7 +598,7 @@ export function getTools({
      */
     const importHevyShareFolderTool = tool({
         description:
-            'Loads a **public Hevy share link** (`hevy.com/folder/{id}` or `hevy.com/routine/{shortId}`) onto the program grid as a one-week seed - the shared routines become the days of week 1, exactly as written. ' +
+            'Loads a **public Hevy share link** (`hevy.com/folder/{id}`, `hevy.com/routine/{shortId}`, or `hevy.com/workout/{id}`) onto the program grid as a one-week seed - the shared routines become the days of week 1, exactly as written; a completed workout becomes a single day carrying the loads that were actually lifted. ' +
             'Two hard requirements: the program grid must be **empty**, and the user must have **explicitly agreed** to load the share (pass `confirmed: true` only then). Pasting a link is not agreement - to just read a share, use **fetchHevyShareFolder**. ' +
             'When you are unsure whether they want it loaded, ask in your reply and wait for their answer instead of calling this tool. ' +
             'This does not push or sync anything to Hevy, does not touch the shared folder, does not link the program to that folder, and does not need the user\'s Hevy API key. It loads week 1 only - expanding to more weeks or periodizing is a separate ask. ' +
