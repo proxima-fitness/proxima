@@ -342,6 +342,11 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                 {message.parts.map((part, index) => {
                                     const isAssistantPart = message.role === "assistant";
                                     const isLastMessagePart = index === message.parts.length - 1;
+                                    const toolCallId =
+                                        "toolCallId" in part &&
+                                        typeof (part as { toolCallId?: unknown }).toolCallId === "string"
+                                            ? (part as { toolCallId: string }).toolCallId
+                                            : undefined;
                                     switch (part.type) {
                                         case "reasoning":
                                             return null;
@@ -361,7 +366,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                 <Textarea
                                                                     value={editingText}
                                                                     onChange={(e) => setEditingText(e.target.value)}
-                                                                    className="min-h-[80px] bg-muted text-black dark:text-white rounded-3xl px-5 py-2.5 resize-y"
+                                                                    className="min-h-20 bg-muted text-black dark:text-white rounded-3xl px-5 py-2.5 resize-y"
                                                                 />
                                                                 <div className="flex gap-2 justify-end">
                                                                     <Button
@@ -565,12 +570,12 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                             <img
                                                                 src={filePart.url}
                                                                 alt={filePart.filename ?? "Image"}
-                                                                className="max-w-[200px] max-h-[200px] rounded-xl object-cover border border-border"
+                                                                className="max-w-50 max-h-50 rounded-xl object-cover border border-border"
                                                             />
                                                         ) : (
                                                             <div className="flex items-center gap-2 bg-muted rounded-xl px-3 py-2 border border-border">
                                                                 <FileText className="size-4 shrink-0 text-muted-foreground" />
-                                                                <span className="text-sm truncate max-w-[180px]">
+                                                                <span className="text-sm truncate max-w-45">
                                                                     {filePart.filename ?? "File"}
                                                                 </span>
                                                             </div>
@@ -675,6 +680,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                             output: toolOutput,
                                                         }}
                                                         getChatId={resolvePersistChatId}
+                                                        toolCallId={toolCallId}
                                                     />
                                                 );
                                             }
@@ -760,6 +766,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                         errorCtx={errorCtx}
                                                         getChatId={resolvePersistChatId}
                                                         severity={getMutateProgramFailureSeverity(errorCtx)}
+                                                        toolCallId={toolCallId}
                                                     />
                                                 );
                                             }
@@ -815,6 +822,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                             output: historyOutput,
                                                         }}
                                                         getChatId={resolvePersistChatId}
+                                                        toolCallId={toolCallId}
                                                     />
                                                 );
                                             }
@@ -870,6 +878,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                             output: out,
                                                         }}
                                                         getChatId={resolvePersistChatId}
+                                                        toolCallId={toolCallId}
                                                     />
                                                 );
                                             }
@@ -929,6 +938,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                             output: shareOutput,
                                                         }}
                                                         getChatId={resolvePersistChatId}
+                                                        toolCallId={toolCallId}
                                                     />
                                                 );
                                             }
@@ -992,6 +1002,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                             output: importOutput,
                                                         }}
                                                         getChatId={resolvePersistChatId}
+                                                        toolCallId={toolCallId}
                                                     />
                                                 );
                                             }

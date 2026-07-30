@@ -265,12 +265,16 @@ One ordered set of program changes the agent applies atomically in a single turn
 _Avoid_: Patch, JSON edit
 
 **Soft tool failure**:
-A coach tool (`buildWeek`, `mutateProgram`, etc.) returns a structured error while the chat stream can continue - the model gets fix text and may retry in-turn. Ordinary users see calm in-progress copy only; full tool error UI is **Agent debug mode** only. Distinct from a dead turn.
+A coach tool (`buildWeek`, `mutateProgram`, etc.) returns a structured error while the chat stream can continue - the model gets fix text and may retry in-turn. Ordinary users see calm in-progress copy only; full tool error UI is **Agent debug mode** only. Client always emits PostHog `ai_tool_error` (even when UI is calm). Distinct from a dead turn.
 _Avoid_: Tool crash (implies hard fail), validation error shown to user, treating soft reject as generation failure
 
 **Hard agent failure**:
-The chat stream dies or the client declares the turn dead (stall timeout, network, payload too large, provider/gateway kill). Surfaces recovery UI and `ai_agent_error`. Not a Soft tool failure.
+The chat stream dies or the client declares the turn dead (stall timeout, network, payload too large, provider/gateway kill). Surfaces recovery UI and `ai_agent_error` (with `errorClass` when known). Not a Soft tool failure.
 _Avoid_: Soft tool error panel, rate limit (usage cap is a separate 402 path), An error occurred (opaque SDK default - not a product term)
+
+**Agent error class**:
+Short stable code on hard failures for PostHog / stream `onError`: `provider_error`, `validation_error`, `stall_timeout`, `payload_too_large`, `network_error`, `gateway_auth`, `unknown`. Soft tool failures use the tool `error` string as `errorCode` instead.
+_Avoid_: Free-form provider HTML in analytics, dumping full programs into event props
 
 **Agent debug mode**:
 Test-user-only toggle that reveals Soft tool failure panels (`ToolErrorPanel`) in the builder chat. Off by default; ordinary users never see those panels.

@@ -3,6 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { createRef, type ReactNode, type RefObject } from "react";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { resetAiToolErrorCaptureForTests } from "@/lib/capture-ai-tool-error";
 
 vi.mock("next/navigation", () => ({
     useSearchParams: () => new URLSearchParams(),
@@ -27,8 +28,10 @@ vi.mock("@/contexts/AgentDebugModeContext", () => ({
     }),
 }));
 
+const { posthogCapture } = vi.hoisted(() => ({ posthogCapture: vi.fn() }));
+
 vi.mock("posthog-js", () => ({
-    default: { capture: vi.fn() },
+    default: { capture: posthogCapture },
 }));
 
 import { MessageBubbles } from "../MessageBubbles";
@@ -89,6 +92,8 @@ describe("MessageBubbles soft tool UI", () => {
     afterEach(() => {
         cleanup();
         debugModeState.debugMode = false;
+        posthogCapture.mockClear();
+        resetAiToolErrorCaptureForTests();
     });
 
     it("non-debug: soft fail on buildWeek shows Recalculating only", () => {
@@ -106,6 +111,13 @@ describe("MessageBubbles soft tool UI", () => {
         expect(screen.getByText("Recalculating…")).toBeTruthy();
         expect(screen.queryByText("Send to Developer")).toBeNull();
         expect(screen.queryByText(/Something went wrong while building/i)).toBeNull();
+        expect(posthogCapture).toHaveBeenCalledWith(
+            "ai_tool_error",
+            expect.objectContaining({
+                tool: "buildWeek",
+                errorCode: "Invalid routines",
+            }),
+        );
     });
 
     it("non-debug: soft fail on mutateProgram shows Planning only", () => {
@@ -115,13 +127,20 @@ describe("MessageBubbles soft tool UI", () => {
             toolCallId: "mp1",
             state: "output-available",
             input: { operations: [] },
-            output: { error: "Batch failed", failures: [] },
+            output: { error: "Program mutation batch failed", failures: [] },
         } as TChatMessage["parts"][number]);
 
         renderBubbles(<MessageBubbles {...baseProps(messages)} />);
 
         expect(screen.getByText("Planning…")).toBeTruthy();
         expect(screen.queryByText("Send to Developer")).toBeNull();
+        expect(posthogCapture).toHaveBeenCalledWith(
+            "ai_tool_error",
+            expect.objectContaining({
+                tool: "mutateProgram",
+                errorCode: "Program mutation batch failed",
+            }),
+        );
     });
 
     it("non-debug: soft fail on history / rate / Hevy share tools shows calm copy", () => {

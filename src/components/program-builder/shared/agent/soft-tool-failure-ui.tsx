@@ -2,11 +2,13 @@
  * @module soft-tool-failure-ui
  * Soft tool failure render: calm in-progress copy for ordinary users;
  * ToolErrorPanel only when Agent debug mode is on.
- * Depends on: Tool / ToolErrorPanel, tool-error helpers.
+ * Always fires PostHog `ai_tool_error` (ADR 02) — UI hide ≠ metric hide.
+ * Depends on: Tool / ToolErrorPanel, tool-error helpers, capture-ai-tool-error.
  * Used by: MessageBubbles soft-fail branches.
  */
 "use client";
 
+import { useEffect } from "react";
 import type { ToolUIPart } from "ai";
 import {
     Tool,
@@ -15,6 +17,8 @@ import {
     ToolHeader,
     warningStatusOverride,
 } from "@/components/ai-elements/tool";
+import { captureAiToolError } from "@/lib/capture-ai-tool-error";
+import { useUserContext } from "@/contexts/UserContext";
 import {
     buildToolErrorPayload,
     summarizeToolError,
@@ -91,6 +95,8 @@ export type TSoftToolFailureProps = {
     getChatId: () => string;
     /** mutateProgram warning severity only; others stay error. */
     severity?: "error" | "warning";
+    /** AI SDK toolCallId — dedupes PostHog capture across remounts. */
+    toolCallId?: string;
 };
 
 /**
@@ -104,10 +110,32 @@ export function SoftToolFailure({
     errorCtx,
     getChatId,
     severity = "error",
+    toolCallId,
 }: TSoftToolFailureProps) {
+    const { user } = useUserContext();
     const calm = SOFT_FAIL_CALM[tool];
 
     const toolType = calm.toolType as ToolUIPart["type"];
+
+    useEffect(() => {
+        captureAiToolError({
+            tool,
+            output: errorCtx.output,
+            errorText: errorCtx.errorText,
+            severity,
+            chatSessionId: getChatId(),
+            userId: user?.id,
+            toolCallId,
+        });
+    }, [
+        tool,
+        errorCtx.output,
+        errorCtx.errorText,
+        severity,
+        getChatId,
+        user?.id,
+        toolCallId,
+    ]);
 
     if (!debugMode) {
         return (

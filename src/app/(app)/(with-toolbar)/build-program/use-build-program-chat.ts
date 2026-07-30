@@ -25,6 +25,10 @@ import {
 import { withRenewsOn } from "@/lib/format-usage-reset-date";
 import { parseUsageCapFromChatError } from "@/lib/usage-cap";
 import {
+    classifyAgentErrorClass,
+    truncateForAgentTelemetry,
+} from "@/lib/agent-error-classes";
+import {
     getMessageText,
     getTextFromChatMessage,
     isMessageAboutProgram,
@@ -142,11 +146,18 @@ export function readAnonymousChatMessages(): TChatMessage[] {
     }
 }
 
-function logAgentError(error: unknown, userId: string | undefined): void {
+function logAgentError(
+    error: unknown,
+    userId: string | undefined,
+    chatSessionId: string | undefined,
+): void {
     const normalized = error instanceof Error ? error : new Error(String(error));
+    const errorClass = classifyAgentErrorClass(normalized);
     posthog?.capture?.("ai_agent_error", {
         user: userId ?? "user_id_unknown",
-        errorMessage: normalized.message || "unknown",
+        errorMessage: truncateForAgentTelemetry(normalized.message || "unknown", 500),
+        errorClass,
+        chatSessionId: chatSessionId?.trim() || undefined,
     });
 }
 
@@ -359,7 +370,11 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             console.error("Chat error:", err);
             setGenerationError(err);
             setIsBuilding(false);
-            logAgentError(err, user?.id);
+            logAgentError(
+                err,
+                user?.id,
+                resolvePersistChatId(chatId, pendingMintChatIdRef.current),
+            );
         },
     });
 
@@ -609,8 +624,12 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         setGenerationError(timeoutError);
         setIsBuilding(false);
         stop();
-        logAgentError(timeoutError, user?.id);
-    }, [stop, user?.id]);
+        logAgentError(
+            timeoutError,
+            user?.id,
+            resolvePersistChatId(chatId, pendingMintChatIdRef.current),
+        );
+    }, [stop, user?.id, chatId]);
 
     const onBuildComplete = useCallback(() => {
         if (!isMobile || hasAutoSwitchedToProgramAfterFirstBuildRef.current) return;
