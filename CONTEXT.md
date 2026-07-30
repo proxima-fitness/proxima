@@ -345,12 +345,12 @@ Required `getMoreInfoQuestions` step before first `planProgram` / `buildWeek` on
 _Avoid_: Intake form (UI-shaped), pre-build questions (too vague)
 
 **Questionnaire core**:
-Always-visible questions in the Questionnaire gate - the full existing program-build set plus **excluded areas**: program length, days per week, excluded equipment, health issues, excluded areas, preferred split, exercise variability, progression system, deload week, peak week, warmup exercises. Same field group appears on **Edit profile** under Constraint profile so users can set them later without rebuilding.
-_Avoid_: Primary questions, required questions (advanced is optional to expand, not a second gate), main form, thin core (do not move style prefs out of core)
+Always-visible questions in the Questionnaire gate - minimal first-time path: program length, days per week, excluded equipment, health issues. Enough to build safely; style and person-fact prefs stay collapsed. Constraint fields still editable later under **Edit profile**.
+_Avoid_: Primary questions, required questions (advanced is optional to expand, not a second gate), main form, stuffing the core with periodization/style prefs
 
 **Questionnaire advanced**:
-Collapsed-by-default deep-intake questions in the Questionnaire gate - extra personalization beyond the core build set (opened via expand/dropdown). Writes **Training profile**, not Constraint profile. First-time users can ignore and still build; power users or later **Edit profile** edits fill them in. Empty advanced answers are valid; agent uses home-prompt inference and defaults.
-_Avoid_: Extra questions, optional questionnaire (implies skip-all), advanced settings (app-settings shaped), relocating core prefs into advanced, stuffing advanced answers into Constraint profile
+Collapsed-by-default questions in the Questionnaire gate - programming style prefs (excluded areas, preferred split, exercise variability, progression system, deload week, peak week, warmup exercises → **Constraint profile**) plus person facts (age, sex, height, experience, physique phase, training focus, activity level, session duration → **Training profile**). First-time users can ignore and still build; agent uses home-prompt inference and defaults. Empty advanced answers are valid.
+_Avoid_: Extra questions, optional questionnaire (implies skip-all), advanced settings (app-settings shaped), stuffing Training profile answers into Constraint profile
 
 **Hevy workout history**:
 The user's completed Hevy workouts - full logs (title, timestamps, exercises, sets). Canonical copy lives in Proxima's workout history backup after sync; agent and Blind Spot read from there, not live Hevy per request. Distinct from Hevy's per-exercise history API and from program workout days in the builder.
