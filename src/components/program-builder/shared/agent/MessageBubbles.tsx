@@ -36,12 +36,15 @@ import { ModifyProgramProgress } from "./ModifyProgramProgress";
 import { WorkoutHistoryToolContent } from "./WorkoutHistoryToolContent";
 import type { TWorkoutHistoryToolOutput } from "@/app/api/chat/tools/workout-history";
 import {
+    SHARE_KIND_LABELS,
     isHevyShareImportRefusal,
     isHevyShareImportSuccess,
     isHevyShareToolError,
+    type THevyShareToolSuccess,
     type TFetchHevyShareFolderToolOutput,
     type TImportHevyShareFolderToolOutput,
 } from "@/app/api/chat/tools/hevy-share";
+import { convertSupabaseDateToReadable } from "@/utils/general/helpers";
 import { RateProgramResults } from "@/components/program-builder/shared/RateProgramResults";
 import type { IProgramScore } from "@/components/program-builder/utils/score-program";
 import { toast } from "sonner";
@@ -89,6 +92,23 @@ interface IProps {
     appliedMutateProgramKeysRef: RefObject<Set<string>>;
     /** Last hydrated **Hevy share import** seed, so the week-0 load runs exactly once. */
     lastHevyShareImportKeyRef: RefObject<string | null>;
+}
+
+/**
+ * Second line of the read-Hevy-share chip.
+ *
+ * A folder or routine is described by its shape (days and exercises); a completed workout is
+ * described by when it happened, since "1 day" says nothing about a session someone logged.
+ */
+function describeHevyShareRead(share: THevyShareToolSuccess): string {
+    const exercises = `${share.exerciseCount} exercise${share.exerciseCount === 1 ? "" : "s"}`;
+
+    if (share.kind === "workout") {
+        const loggedOn = convertSupabaseDateToReadable(share.workout?.startedAt ?? undefined);
+        return [exercises, loggedOn && `logged ${loggedOn}`].filter(Boolean).join(" · ");
+    }
+
+    return `${share.dayCount} day${share.dayCount === 1 ? "" : "s"} · ${exercises}`;
 }
 
 /** Renders message list, build/modify progress, applies tool results to hevyProgram, and handles timeout/retry. */
@@ -978,13 +998,10 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                         {shareRead ? (
                                                             <div className="space-y-1 px-3 pb-3">
                                                                 <p className="text-sm text-foreground">
-                                                                    {shareRead.title ??
-                                                                        (shareRead.kind === "folder"
-                                                                            ? "Shared folder"
-                                                                            : "Shared routine")}
+                                                                    {shareRead.title ?? SHARE_KIND_LABELS[shareRead.kind]}
                                                                 </p>
                                                                 <p className="text-sm text-muted-foreground">
-                                                                    {shareRead.dayCount} day{shareRead.dayCount === 1 ? "" : "s"} · {shareRead.exerciseCount} exercise{shareRead.exerciseCount === 1 ? "" : "s"} · read only, nothing was added to your program
+                                                                    {describeHevyShareRead(shareRead)} · read only, nothing was added to your program
                                                                 </p>
                                                             </div>
                                                         ) : (
@@ -1050,13 +1067,10 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                         {importedShare ? (
                                                             <div className="space-y-1 px-3 pb-3">
                                                                 <p className="text-sm text-foreground">
-                                                                    {importedShare.title ??
-                                                                        (importedShare.kind === "folder"
-                                                                            ? "Shared folder"
-                                                                            : "Shared routine")}
+                                                                    {importedShare.title ?? SHARE_KIND_LABELS[importedShare.kind]}
                                                                 </p>
                                                                 <p className="text-sm text-muted-foreground">
-                                                                    {importedShare.dayCount} day{importedShare.dayCount === 1 ? "" : "s"} · {importedShare.exerciseCount} exercise{importedShare.exerciseCount === 1 ? "" : "s"} · loaded into week 1 of your program
+                                                                    {describeHevyShareRead(importedShare)} · loaded into week 1 of your program
                                                                 </p>
                                                             </div>
                                                         ) : (

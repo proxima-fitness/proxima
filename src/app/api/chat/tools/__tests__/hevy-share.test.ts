@@ -132,6 +132,7 @@ describe("fetchHevyShareFolder tool", () => {
             title: "Push Pull Legs",
             dayCount: 2,
             exerciseCount: 3,
+            workout: null,
         });
         expect(read.routines.map((routine) => routine.id)).toEqual(["1", "2"]);
         expect(read.routines.map((routine) => routine.folder_id)).toEqual([0, 0]);
@@ -152,7 +153,65 @@ describe("fetchHevyShareFolder tool", () => {
         expect(fetchMock.mock.calls[0][0]).toBe(
             "https://api.hevyapp.com/routine_with_short_id/short99",
         );
-        expect(read).toMatchObject({ kind: "routine", title: null, dayCount: 1, exerciseCount: 1 });
+        expect(read).toMatchObject({
+            kind: "routine",
+            title: null,
+            dayCount: 1,
+            exerciseCount: 1,
+            workout: null,
+        });
+    });
+
+    it("reads a public completed workout as a one-day log", async () => {
+        const fetchMock = mockFetchJson({
+            type: "public",
+            name: "Heavy Shoulders",
+            username: "lifter",
+            start_time: 1_700_000_000,
+            end_time: 1_700_000_600,
+            estimated_volume_kg: 11456.5,
+            is_private: false,
+            exercises: [
+                {
+                    exercise_template_id: "TEMPLATE_OHP",
+                    title: "Overhead Press",
+                    sets: [{ indicator: "normal", weight_kg: 16, reps: 14 }],
+                },
+                {
+                    exercise_template_id: "TEMPLATE_ROW",
+                    title: "Seated Row",
+                    sets: [{ indicator: "normal", weight_kg: 50, reps: 10 }],
+                },
+            ],
+        });
+
+        const tool = fetchHevyShareFolderTool();
+        const output = await tool.execute({
+            url: "https://hevy.com/workout/b9842b34-e36e-48df-bdb4-91b1f915faf7",
+        });
+
+        expect(fetchMock.mock.calls[0][0]).toBe(
+            "https://api.hevyapp.com/workout/b9842b34-e36e-48df-bdb4-91b1f915faf7",
+        );
+
+        const read = expectRead(output);
+        expect(read).toMatchObject({
+            kind: "workout",
+            title: "Heavy Shoulders",
+            dayCount: 1,
+            exerciseCount: 2,
+            workout: {
+                username: "lifter",
+                durationSeconds: 600,
+                estimatedVolumeKg: 11456.5,
+            },
+        });
+
+        const { value } = await tool.toModelOutput({ output });
+        expect(value).toContain("completed workout");
+        expect(value).toContain("Heavy Shoulders · 2 exercises");
+        expect(value).toContain("actually performed");
+        expect(value).toContain("logged by @lifter");
     });
 
     it("hands the agent the adapted routines plus read-only framing", async () => {
@@ -268,7 +327,7 @@ describe("fetchHevyShareFolder tool", () => {
             });
 
             expect(summary).toBe(
-                "Hevy has no share at that link - it may have been deleted or made private.",
+                "Hevy has no share at that link - it may have been deleted, or it isn't public.",
             );
         });
 

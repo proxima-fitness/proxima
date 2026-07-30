@@ -2,7 +2,11 @@
  * @module chat/tools/hevy-share
  *
  * Agent **Hevy share fetch** and **Hevy share import** tools - input schemas, output
- * shapes, and the model-facing text for a public Hevy share link the user pasted.
+ * shapes, and the model-facing text for a public Hevy share link the user pasted: a shared
+ * routine folder, a single shared routine, or a completed workout someone logged.
+ *
+ * A workout link is the one kind whose numbers are a **record rather than a plan**, so its
+ * output carries session metadata and framing that says so - see {@link workoutFramingForModel}.
  *
  * `fetchHevyShareFolder` is read-only by construction: the output carries the adapted week-0
  * routines so Andy can answer questions or plan against that split, and nothing touches
@@ -27,13 +31,14 @@ import { z } from 'zod';
 
 import { isHevyShareError, type THevyShareErrorReason } from '@/lib/hevy-share/share-errors';
 import type { THevyShareLoadResult } from '@/lib/hevy-share/load-share';
+import type { THevyShareWorkoutMeta } from '@/lib/hevy-share/share-adapter';
 
 export const fetchHevyShareFolderInputSchema = z.object({
     url: z
         .string()
         .min(1)
         .describe(
-            'The public Hevy share link the user pasted - hevy.com/folder/{id} or hevy.com/routine/{shortId}. Pass it exactly as they wrote it; do not invent or guess a link.',
+            'The public Hevy share link the user pasted - hevy.com/folder/{id}, hevy.com/routine/{shortId}, or hevy.com/workout/{id} for a completed workout they logged. Pass it exactly as they wrote it; do not invent or guess a link.',
         ),
 });
 
@@ -44,7 +49,7 @@ export const importHevyShareFolderInputSchema = z.object({
         .string()
         .min(1)
         .describe(
-            'The public Hevy share link to load - hevy.com/folder/{id} or hevy.com/routine/{shortId}. Pass it exactly as the user wrote it; do not invent or guess a link.',
+            'The public Hevy share link to load - hevy.com/folder/{id}, hevy.com/routine/{shortId}, or hevy.com/workout/{id} for a completed workout. Pass it exactly as the user wrote it; do not invent or guess a link.',
         ),
     confirmed: z
         .boolean()
@@ -59,16 +64,25 @@ export type TImportHevyShareFolderInput = z.infer<typeof importHevyShareFolderIn
 export type THevyShareToolSuccess = {
     /** Canonical `https://hevy.com/…` form of the link that was read. */
     url: string;
-    /** What the link pointed at. */
-    kind: 'folder' | 'routine';
-    /** Shared folder title, when the payload carried one. */
+    /** What the link pointed at. A `workout` is a logged session; the others are prescriptions. */
+    kind: 'folder' | 'routine' | 'workout';
+    /** Shared folder title or workout name, when the payload carried one. */
     title: string | null;
-    /** Days in the seed (week 0 only). */
+    /** Days in the seed (week 0 only). Always 1 for a workout. */
     dayCount: number;
     /** Total exercise rows across all days. */
     exerciseCount: number;
     /** Week-0 seed days with **builder routine keys**; no foreign Hevy routine/folder IDs. */
     routines: THevyRoutine[];
+    /** Session facts for a `workout` link; `null` for a folder or routine. */
+    workout: THevyShareWorkoutMeta | null;
+};
+
+/** Chip and summary label when a share carried no title of its own. */
+export const SHARE_KIND_LABELS: Record<THevyShareToolSuccess['kind'], string> = {
+    folder: 'Shared folder',
+    routine: 'Shared routine',
+    workout: 'Completed workout',
 };
 
 /** A share read that failed, in the `{ error, message }` shape `ToolErrorPanel` summarizes. */
@@ -180,6 +194,7 @@ export function hevyShareToolOutput(result: THevyShareLoadResult): THevyShareToo
             0,
         ),
         routines: result.routines,
+        workout: result.workout,
     };
 }
 
@@ -210,11 +225,45 @@ export function hevyShareErrorOutput(error: unknown): THevyShareToolError {
 
 /** One-line share description for the chat tool chip (`Push Pull Legs · 3 days · 18 exercises`). */
 export function summarizeHevyShareResult(output: THevyShareToolSuccess): string {
-    const label = output.title ?? (output.kind === 'folder' ? 'Shared folder' : 'Shared routine');
-    const days = `${output.dayCount} day${output.dayCount === 1 ? '' : 's'}`;
+    const label = output.title ?? SHARE_KIND_LABELS[output.kind];
     const exercises = `${output.exerciseCount} exercise${output.exerciseCount === 1 ? '' : 's'}`;
 
+    // A completed workout is one session by definition - "1 day" would just be noise.
+    if (output.kind === 'workout') {
+        return `${label} · ${exercises}`;
+    }
+
+    const days = `${output.dayCount} day${output.dayCount === 1 ? '' : 's'}`;
+
     return `${label} · ${days} · ${exercises}`;
+}
+
+/** Session facts as a model-readable clause, e.g. `logged by @sam, started …, 73 min, ~11457 kg volume`. */
+function describeWorkoutMetaForModel(meta: THevyShareWorkoutMeta): string {
+    const parts: string[] = [];
+
+    if (meta.username) parts.push(`logged by @${meta.username}`);
+    if (meta.startedAt) parts.push(`started ${meta.startedAt}`);
+    if (meta.durationSeconds !== null) parts.push(`${Math.round(meta.durationSeconds / 60)} min`);
+    if (meta.estimatedVolumeKg !== null) {
+        parts.push(`~${Math.round(meta.estimatedVolumeKg)} kg estimated volume`);
+    }
+
+    return parts.length > 0 ? `Session: ${parts.join(', ')}. ` : '';
+}
+
+/**
+ * The one thing the model must not get wrong about a workout link: these numbers are a record,
+ * not a plan. Without this it reads logged loads as prescriptions and "critiques" the programming
+ * of a session that already happened.
+ */
+function workoutFramingForModel(output: THevyShareToolSuccess): string {
+    if (output.kind !== 'workout') return '';
+
+    return (
+        'This is a **completed workout** someone logged, not a prescribed routine: every weight, rep, RPE and set type below is what was actually performed in that one session. ' +
+        (output.workout ? describeWorkoutMetaForModel(output.workout) : '')
+    );
 }
 
 /**
@@ -248,6 +297,7 @@ export function formatHevyShareForModel(output: TFetchHevyShareFolderToolOutput)
 
     return (
         `Read-only Hevy share (${output.kind}): ${summarizeHevyShareResult(output)} - ${output.url}. ` +
+        workoutFramingForModel(output) +
         'Nothing was added to the program grid and no Hevy account was connected. ' +
         'Days are the share as written, mapped to week 0; exercise_template_id values come from the share. ' +
         'Use this to answer questions about the share or as planning context. ' +
@@ -276,9 +326,15 @@ export function formatHevyShareImportForModel(output: TImportHevyShareFolderTool
         return formatShareErrorForModel(output, 'Nothing was loaded and the grid is unchanged.');
     }
 
+    const workoutNote =
+        output.kind === 'workout'
+            ? 'It came from a completed workout, so the loads on the grid are what was actually lifted that session, now sitting as week 1 prescriptions - say so, and offer to adjust them rather than assuming they are the right targets. '
+            : '';
+
     return (
         `Hevy share imported (${output.kind}): ${summarizeHevyShareResult(output)} - ${output.url}. ` +
         'The builder grid now holds these days as its first week, exactly as the share had them - call it week 1 when you talk to the user. ' +
+        workoutNote +
         'Nothing was pushed or synced to Hevy, the shared folder was not touched, and no Hevy account was connected. ' +
         'Do not call buildWeek to recreate this week - it is already on the grid; use mutateProgram for any edits. ' +
         'Confirm what landed in one or two lines, then offer expanding it to more weeks or periodizing it as a separate step - ask first, do not start.\n\n' +

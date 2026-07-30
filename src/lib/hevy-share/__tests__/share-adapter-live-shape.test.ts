@@ -3,9 +3,13 @@
  * field names Hevy actually sends stay covered alongside the defensive tests.
  */
 import { describe, expect, it } from "vitest";
-import { adaptHevyShareToRoutines } from "@/lib/hevy-share/share-adapter";
+import {
+    adaptHevyShareToRoutines,
+    adaptHevyWorkoutToRoutines,
+} from "@/lib/hevy-share/share-adapter";
 import { SHAREABLE_FOLDER_RESPONSE } from "./shareable-folder.fixture";
 import { SHARED_ROUTINE_RESPONSE } from "./shared-routine.fixture";
+import { SHARED_WORKOUT_RESPONSE } from "./shared-workout.fixture";
 
 const NOW = new Date("2026-07-29T10:00:00.000Z");
 
@@ -123,6 +127,50 @@ describe("adaptHevyShareToRoutines - live single-routine shape", () => {
             rpe: null,
             custom_metric: null,
             rep_range: { start: 6, end: 8 },
+        });
+    });
+});
+
+describe("adaptHevyWorkoutToRoutines - live workout shape", () => {
+    const { title, routines, workout } = adaptHevyWorkoutToRoutines(SHARED_WORKOUT_RESPONSE, NOW);
+
+    it("reads the bare workout object the endpoint returns at the top level", () => {
+        expect(title).toBe("Heavy – Shoulders & Back (Superhero)");
+        expect(routines).toHaveLength(1);
+        expect(routines[0]).toMatchObject({ id: "1", order: "1", folder_id: 0 });
+    });
+
+    it("drops the workout id and short id", () => {
+        const serialized = JSON.stringify(routines);
+
+        expect(serialized).not.toContain("b9842b34-e36e-48df-bdb4-91b1f915faf7");
+        expect(serialized).not.toContain("TEMIKeOCBjI");
+    });
+
+    it("maps logged sets from indicator and keeps template ids", () => {
+        expect(routines[0].exercises.map(exercise => exercise.exercise_template_id)).toEqual([
+            "6AC96645",
+            "1DF4A847",
+        ]);
+        expect(routines[0].exercises[0].sets[0]).toEqual({
+            index: 0,
+            type: "normal",
+            weight_kg: 16,
+            reps: 14,
+            distance_meters: null,
+            duration_seconds: null,
+            rpe: null,
+            custom_metric: null,
+            rep_range: null,
+        });
+    });
+
+    it("exposes session metadata from unix start/end times", () => {
+        expect(workout).toEqual({
+            username: "philtastic11",
+            startedAt: "2026-03-05T17:41:30.000Z",
+            durationSeconds: 4388,
+            estimatedVolumeKg: 11456.5,
         });
     });
 });

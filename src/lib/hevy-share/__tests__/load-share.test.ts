@@ -65,12 +65,50 @@ describe("loadHevyShare", () => {
 
         expect(fetchMock.mock.calls[0][0]).toBe("https://api.hevyapp.com/shareable_folder/xyz789");
         expect(result.title).toBe("PPL");
+        expect(result.workout).toBeNull();
+    });
+
+    it("calls the workout share endpoint for completed-workout links", async () => {
+        const fetchMock = mockFetchJson({
+            type: "public",
+            name: "1 - Push Day",
+            username: "lifter",
+            start_time: 1_700_000_000,
+            end_time: 1_700_000_600,
+            estimated_volume_kg: 2500,
+            is_private: false,
+            exercises: [{ exercise_template_id: "TEMPLATE_BENCH", sets: [{ indicator: "normal", reps: 5 }] }],
+        });
+
+        const result = await loadHevyShare(
+            "https://hevy.com/workout/b9842b34-e36e-48df-bdb4-91b1f915faf7",
+            { userId: "user-1" },
+        );
+
+        expect(fetchMock.mock.calls[0][0]).toBe(
+            "https://api.hevyapp.com/workout/b9842b34-e36e-48df-bdb4-91b1f915faf7",
+        );
+        expect(result.target).toEqual({
+            kind: "workout",
+            workoutId: "b9842b34-e36e-48df-bdb4-91b1f915faf7",
+        });
+        expect(result.url).toBe(
+            "https://hevy.com/workout/b9842b34-e36e-48df-bdb4-91b1f915faf7",
+        );
+        expect(result.title).toBe("Push Day");
+        expect(result.routines).toHaveLength(1);
+        expect(result.workout).toEqual({
+            username: "lifter",
+            startedAt: "2023-11-14T22:13:20.000Z",
+            durationSeconds: 600,
+            estimatedVolumeKg: 2500,
+        });
     });
 
     it("rejects a non-share link before touching Hevy", async () => {
         const fetchMock = mockFetchJson(ROUTINE_PAYLOAD);
 
-        await expect(loadHevyShare("https://hevy.com/workout/abc123")).rejects.toMatchObject({
+        await expect(loadHevyShare("https://hevy.com/user/someone")).rejects.toMatchObject({
             reason: "invalid_url",
         });
         expect(fetchMock).not.toHaveBeenCalled();
