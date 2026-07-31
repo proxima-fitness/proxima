@@ -11,7 +11,7 @@ vi.mock("@/hooks/use-media-query", () => ({
     useMediaQuery: () => true,
 }));
 
-import { AgenticMemoryPeek } from "../AgenticMemoryPeek";
+import { AgenticMemoryPeek, AGENTIC_MEMORY_PEEK_CONTENT_CLASSNAME } from "../AgenticMemoryPeek";
 
 function measurement(
     overrides: Partial<TBodyMeasurementRow> = {},
@@ -198,6 +198,39 @@ describe("AgenticMemoryPeek", () => {
         openPeek();
 
         expect(screen.queryByText("Body measurements")).toBeNull();
+    });
+
+    it("clamps tall constraint content with viewport max-height and scroll region", () => {
+        const constraints = emptyUserConstraintProfileRecord();
+        constraints.injuries = Array.from({ length: 20 }, (_, i) => `injury-${i}`);
+        constraints.excludedEquipment = Array.from(
+            { length: 15 },
+            (_, i) => `equipment-${i}`,
+        );
+        constraints.excludedAreas = Array.from({ length: 10 }, (_, i) => `area-${i}`);
+        constraints.chatRefinements = Array.from(
+            { length: 12 },
+            (_, i) => `refinement-${i}`,
+        );
+
+        renderPeek(
+            <AgenticMemoryPeek
+                constraintProfile={constraints}
+                trainingProfile={null}
+                latestBodyMeasurement={null}
+            />,
+        );
+        openPeek();
+
+        const panel = screen.getByRole("dialog");
+        for (const token of AGENTIC_MEMORY_PEEK_CONTENT_CLASSNAME.split(/\s+/)) {
+            expect(panel.className).toContain(token);
+        }
+
+        const scrollRegion = panel.querySelector(".overflow-y-auto");
+        expect(scrollRegion).toBeTruthy();
+        expect(screen.getByText("injury-19")).toBeTruthy();
+        expect(screen.getByRole("link", { name: "Edit profile" })).toBeTruthy();
     });
 
     it("uses editProfileHref override", () => {
