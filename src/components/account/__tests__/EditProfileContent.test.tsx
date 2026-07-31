@@ -41,6 +41,11 @@ vi.mock("@/components/ConfirmDialog", () => ({
         open ? <div role="dialog">{title}</div> : null,
 }));
 
+vi.mock("next/navigation", () => ({
+    usePathname: () => "/profile/edit",
+    useSearchParams: () => new URLSearchParams(),
+}));
+
 import { EditProfileContent } from "@/components/account/EditProfileContent";
 
 describe("EditProfileContent", () => {
@@ -66,7 +71,9 @@ describe("EditProfileContent", () => {
 
         expect(screen.getByText("Sign in to edit your profile.")).toBeTruthy();
         const loginLink = screen.getByRole("link", { name: "Log in" });
-        expect(loginLink.getAttribute("href")).toBe("/auth/login");
+        expect(loginLink.getAttribute("href")).toBe(
+            `/auth/login?next=${encodeURIComponent("/profile/edit")}`,
+        );
     });
 
     it("mounts identity → Constraint → Training → Body in order", () => {

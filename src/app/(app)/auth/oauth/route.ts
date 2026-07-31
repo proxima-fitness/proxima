@@ -14,6 +14,7 @@
 import { NextResponse } from 'next/server'
 // The client you created from the Server-Side Auth instructions
 import { createClient } from '@/utils/supabase/server'
+import { sanitizeSignInReturn } from '@/lib/sign-in-return'
 
 /**
  * Exchanges an OAuth authorization code for a Supabase session and redirects
@@ -26,8 +27,8 @@ import { createClient } from '@/utils/supabase/server'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  // if "next" is in param, use it as the redirect URL
-  const next = searchParams.get('next') ?? '/'
+  // Sign-in return: only safe in-app paths (ADR 0001)
+  const next = sanitizeSignInReturn(searchParams.get('next'))
 
   if (code) {
     const supabase = await createClient()

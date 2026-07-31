@@ -12,6 +12,7 @@
 
 import Link from "next/link";
 import { useCallback, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -29,6 +30,7 @@ import {
     MARKETING_CONSENT,
     PLATFORM_IMPROVEMENT_CONSENT,
 } from "@/content/optional-consent-copy";
+import { buildAuthLoginHref } from "@/lib/sign-in-return";
 
 interface IConsentToggleRowProps {
     id: string;
@@ -65,6 +67,9 @@ function ConsentToggleRow({
 /** Renders privacy consent toggles and related policy / deletion links. */
 export function PrivacySettingsContent() {
     const { user, isLoading: isUserLoading } = useUserContext();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const loginHref = buildAuthLoginHref(pathname, searchParams);
     const { consents, isLoading: isConsentsLoading } = useUserConsentsContext();
     const queryClient = useQueryClient();
     const [pendingPlatform, setPendingPlatform] = useState(false);
@@ -124,7 +129,7 @@ export function PrivacySettingsContent() {
                 <p className="text-muted-foreground mb-4 max-w-md">
                     Sign in to manage your privacy and marketing preferences.
                 </p>
-                <Link href="/auth/login" className="text-secondary underline underline-offset-2 hover:text-lightSecondary">
+                <Link href={loginHref} className="text-secondary underline underline-offset-2 hover:text-lightSecondary">
                     Log in
                 </Link>
             </div>

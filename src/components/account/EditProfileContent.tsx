@@ -14,6 +14,7 @@
 
 import { useRef } from "react";
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import { BodyMeasurementsSection } from "@/components/account/BodyMeasurementsSection";
@@ -29,6 +30,7 @@ import { EditProfile } from "@/components/profile/EditProfile";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { useUserContext } from "@/contexts/UserContext";
+import { buildAuthLoginHref } from "@/lib/sign-in-return";
 
 const EDIT_PROFILE_CARD_CLASS =
     "rounded-2xl border border-border/60 bg-card shadow-sm";
@@ -36,6 +38,9 @@ const EDIT_PROFILE_CARD_CLASS =
 /** Renders Edit profile page: Agentic memory sections + leave warn. */
 export function EditProfileContent() {
     const { user, isLoading: isUserLoading } = useUserContext();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const loginHref = buildAuthLoginHref(pathname, searchParams);
     const {
         setDirty,
         leaveDialogOpen,
@@ -83,7 +88,7 @@ export function EditProfileContent() {
                     Sign in to edit your profile.
                 </p>
                 <Link
-                    href="/auth/login"
+                    href={loginHref}
                     className="text-secondary underline underline-offset-2 hover:text-lightSecondary"
                 >
                     Log in

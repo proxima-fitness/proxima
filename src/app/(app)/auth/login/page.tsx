@@ -10,6 +10,7 @@
  */
 
 import { LoginForm } from '@/components/auth/login-form'
+import { sanitizeSignInReturn } from '@/lib/sign-in-return'
 import { ai_program_builder } from 'public'
 
 type TPageProps = {
@@ -23,7 +24,7 @@ type TPageProps = {
  */
 export default async function Page(props: TPageProps) {
   const searchParams = await Promise.resolve(props.searchParams);
-  const next = searchParams?.next ?? '/';
+  const next = sanitizeSignInReturn(searchParams?.next);
 
   return (
     <div className="bg-white dark:bg-darkGray flex flex-row sm:min-h-svh w-full items-center justify-around gap-24 md:p-10">

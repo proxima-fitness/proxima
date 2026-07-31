@@ -16,13 +16,13 @@ import { useSearchParams } from "next/navigation";
 import { ExportDialog } from "./ExportDialog";
 import { useUserContext } from "@/contexts/UserContext";
 import posthog from "posthog-js";
-
-const BUILD_PROGRAM_PATH = "/build-program?resume=true";
-const LOGIN_WITH_NEXT = `/auth/login?next=${encodeURIComponent(BUILD_PROGRAM_PATH)}`;
+import { buildAuthLoginHref } from "@/lib/sign-in-return";
+import { BUILD_PROGRAM_PATH } from "@/lib/build-program-url";
 
 /** Shows Loading, Sign in link, or Export / Sync; Export opens ExportDialog; Sync is disabled with tooltip. */
 export const StepButton: React.FC = () => {
     const searchParams = useSearchParams();
+    const loginHref = buildAuthLoginHref(BUILD_PROGRAM_PATH, searchParams);
     const editMode = searchParams.get("edit") === "true";
     const hevyMode = searchParams.get("hevy") === "true";
     const isSyncable = editMode && hevyMode;
@@ -44,7 +44,7 @@ export const StepButton: React.FC = () => {
 
     if (!user) {
         return (
-            <Link href={LOGIN_WITH_NEXT}>
+            <Link href={loginHref}>
                 <Button variant="default" className={primaryPill}>
                     <span className="hidden sm:inline">Sign in to save</span>
                     <span className="sm:hidden">Sign in</span>

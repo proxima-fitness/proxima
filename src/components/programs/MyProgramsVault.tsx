@@ -17,14 +17,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { BookOpenTextIcon, Lock, Plus, SearchIcon } from "lucide-react";
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import posthog from "posthog-js";
 import { useEffect } from "react";
+import { buildAuthLoginHref } from "@/lib/sign-in-return";
 
 
 export const MyProgramsVault = () => {
     const { user, isLoading: userLoading } = useUserContext();
     const { data: programs, isError: errorFetchingPrograms, isLoading: loadingPrograms } = useSubscribedPrograms(user);
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const loginHref = buildAuthLoginHref(pathname, searchParams);
 
     useEffect(() => {
         posthog?.capture?.("page_view", { page: "/profile", user: user?.id ?? "user_id_unknown" });
@@ -44,7 +49,7 @@ export const MyProgramsVault = () => {
                     {[1, 2, 3, 4, 5, 6].map((i) => (
                         <div key={i} className="w-full max-w-md mx-auto">
                             <div className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden dark:border-white/10 dark:bg-card/80">
-                                <Skeleton className="w-full h-[200px] object-cover rounded-none" />
+                                <Skeleton className="w-full h-50 object-cover rounded-none" />
                                 <div className="p-4 space-y-2">
                                     <div className="uppercase text-sm overflow-hidden text-ellipsis line-clamp-1"></div>
                                     <h3 className="text-xl font-main overflow-hidden text-ellipsis line-clamp-1"></h3>
@@ -64,14 +69,14 @@ export const MyProgramsVault = () => {
 
     if (!user) {
         return (
-            <div className="pt-0 min-h-[500px] flex flex-col items-center justify-center">
+            <div className="pt-0 min-h-125 flex flex-col items-center justify-center">
                 <Card className="p-8 max-w-md w-full text-center rounded-2xl border border-border/50 bg-muted/30 shadow-sm dark:border-white/10 dark:bg-card/40">
                     <Lock className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
                     <h2 className="text-xl font-semibold tracking-tight mb-2 text-foreground">Authentication required</h2>
                     <p className="text-sm text-muted-foreground mb-6">
                         Please log in to view your saved programs in the Vault.
                     </p>
-                    <Link href="/auth/login">
+                    <Link href={loginHref}>
                         <Button className="rounded-full bg-lightSecondary text-white hover:bg-lightSecondary/90">
                             Log in
                         </Button>
@@ -83,7 +88,7 @@ export const MyProgramsVault = () => {
 
     if (errorFetchingPrograms) {
         return (
-            <div className="pt-0 min-h-[500px] flex flex-col items-center justify-center">
+            <div className="pt-0 min-h-125 flex flex-col items-center justify-center">
                 <Card className="p-8 max-w-md w-full text-center rounded-2xl border border-border/50 bg-muted/30 shadow-sm dark:border-white/10 dark:bg-card/40">
                     <h2 className="text-xl font-semibold tracking-tight mb-2 text-foreground">Couldn&apos;t load programs</h2>
                     <p className="text-sm text-muted-foreground">
@@ -116,7 +121,7 @@ export const MyProgramsVault = () => {
                         </Link>
                     </div>
                 </div>
-                <div className="pt-4 min-h-[400px] flex flex-col items-center justify-center">
+                <div className="pt-4 min-h-100 flex flex-col items-center justify-center">
                     <Card className="p-8 max-w-md w-full text-center rounded-2xl border border-dashed border-border/60 bg-muted/20 dark:bg-card/30">
                         <Lock className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
                         <h2 className="text-xl font-semibold tracking-tight mb-2 text-foreground">Your vault is empty</h2>
@@ -169,7 +174,7 @@ export const MyProgramsVault = () => {
             </div>
             <div className="w-full max-w-full pb-8 box-border overflow-hidden flex justify-center pt-4">
                 <Link href="/programs">
-                    <Button variant="outline" size="lg" className="rounded-full border-border/80 min-w-[12rem]">
+                    <Button variant="outline" size="lg" className="rounded-full border-border/80 min-w-48">
                         Explore programs
                         <SearchIcon className="size-4 ml-1" />
                     </Button>

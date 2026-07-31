@@ -74,6 +74,7 @@ import { RecentChatMenuItem } from "@/components/sidebar/RecentChatMenuItem";
 import { authenticatedNavLinks, navLinks, navIdToUrl } from "@/assets/constants/nav-links";
 import { useBuildProgramActions } from "@/contexts/BuildProgramActionsContext";
 import { deleteChatHistory, setChatPinned, updateChatTitle } from "@/api/chat-history";
+import { buildAuthLoginHref } from "@/lib/sign-in-return";
 
 const CHAT_MESSAGES_KEY = "messages";
 const HEVY_PROGRAM_IN_PROGRESS_KEY = "hevy-program-in-progress";
@@ -142,12 +143,14 @@ export function AppSidebar() {
     );
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const loginHref = buildAuthLoginHref(pathname, searchParams);
     const selectedChatId =
         pathname?.startsWith("/build-program") === true ? searchParams.get("chat") : null;
 
     const handleLogout = async () => {
         await signOutUser();
         await signOutServer();
+        router.push(loginHref);
     };
 
     const startNewChat = useCallback(() => {
@@ -346,7 +349,10 @@ export function AppSidebar() {
                             <SidebarMenu>
                                 {sidebarItemsToShow.map((nav) => {
                                     const Icon = navIdToIcon[nav.id];
-                                    const url = navIdToUrl[nav.id] ?? `/${nav.id}`;
+                                    const url =
+                                        nav.id === "log-in"
+                                            ? loginHref
+                                            : (navIdToUrl[nav.id] ?? `/${nav.id}`);
                                     const isPricing = nav.id === "pricing";
                                     return (
                                         <SidebarMenuItem key={nav.id}>
@@ -583,7 +589,7 @@ export function AppSidebar() {
                             ) : (
                                 <SidebarMenuButton asChild tooltip="Log in">
                                     <Link
-                                        href="/auth/login"
+                                        href={loginHref}
                                         className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center"
                                         onClick={closeMobileSidebar}
                                         aria-label="Log in"

@@ -25,9 +25,14 @@ import * as Yup from "yup";
 import { useForm } from 'react-hook-form';
 import { yupResolver } from "@hookform/resolvers/yup";
 import { TurnstileSignUp } from './TurnstileSignUp';
+import { buildAuthLoginHrefFromNext } from '@/lib/sign-in-return';
 
-/** Props: div props (e.g. className) for the form container. */
-export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
+/** Props: div props plus optional redirectPath preserved for login link (Sign-in return). */
+type TSignUpFormProps = React.ComponentPropsWithoutRef<'div'> & {
+  redirectPath?: string;
+};
+
+export function SignUpForm({ className, redirectPath = '/', ...props }: TSignUpFormProps) {
 
     const [isLoading, setIsLoading] = useState(false)
     const [turnstileOpen, setTurnstileOpen] = useState(false);
@@ -249,7 +254,7 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
             </div>
             <div className="mt-4 text-center text-sm">
               Already have an account?{' '}
-              <Link href="/auth/login" className="underline underline-offset-4">
+              <Link href={buildAuthLoginHrefFromNext(redirectPath)} className="underline underline-offset-4">
                 Login
               </Link>
             </div>

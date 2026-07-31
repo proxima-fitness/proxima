@@ -12,7 +12,8 @@ import { NavDrawer } from "./NavDrawer";
 import { BuildProgramToolbarEnd } from "@/components/program-builder/shared/BuildProgramToolbarEnd";
 import { proxima_logo, proxima_logo_white_full_text, proxima_logo_black, proxima_logo_white } from "public";
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { buildAuthLoginHref } from '@/lib/sign-in-return';
 import { useUserContext } from "@/contexts/UserContext";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
@@ -74,6 +75,9 @@ const signOutServer = async () => {
 const NavItems = (pathname: string) => {
     // this should get the user if they logged in server side (via social logins)
     const { user, isLoading } = useUserContext();
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const loginHref = buildAuthLoginHref(pathname, searchParams);
     const { theme, setTheme } = useTheme();
     const { isInLbs, toggleModePreference } = usePoundsOrKgContext();
     const { data: userFullName } = useUserFullName(user?.id ? user.id : undefined, "user");
@@ -362,6 +366,7 @@ const NavItems = (pathname: string) => {
                                 <DropdownMenuItem onClick={async () => {
                                     await signOutUser();
                                     await signOutServer();
+                                    router.push(loginHref);
                                 }} className="bg-red-400 hover:bg-red-500 text-white cursor-pointer">
                                     Log out
                                 </DropdownMenuItem>
@@ -404,7 +409,7 @@ const NavItems = (pathname: string) => {
                         key={nav.id}
                         className={ `font-main font-normal cursor-pointer text-[16px] text-black dark:text-white ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}` }
                     >
-                        <Link href={ `/auth/login` } className="flex items-center gap-2">
+                        <Link href={loginHref} className="flex items-center gap-2">
                             <NavLinkIcon navId={nav.id} />
                             {nav.title}
                         </Link>
@@ -435,8 +440,8 @@ export const Navbar: React.FC = () => {
     return (
         <nav className="w-full flex py-2 justify-between items-center bg-white dark:bg-darkGray relative z-50 md:hidden">
             <Link href={ "/" } aria-label="Proxima home">
-                <img src={ (proxima_logo).src } alt="Proxima Logo" className="dark:sm:block hidden max-sm:hidden h-[40px] w-auto" />
-                <img src={ (proxima_logo_white_full_text).src } alt="Proxima Logo" className="dark:hidden block max-sm:hidden h-[40px] w-auto" />
+                <img src={ (proxima_logo).src } alt="Proxima Logo" className="dark:sm:block hidden max-sm:hidden h-10 w-auto" />
+                <img src={ (proxima_logo_white_full_text).src } alt="Proxima Logo" className="dark:hidden block max-sm:hidden h-10 w-auto" />
             </Link>
             <ul className="list-none sm:flex hidden justify-end items-center flex-1 relative z-50 pr-6">
                 {/* {!pathname.startsWith("/build-program") && pathname !== "/pricing" && (

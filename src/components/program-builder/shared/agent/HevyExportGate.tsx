@@ -8,6 +8,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowRightIcon, ExternalLink, KeyRoundIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,8 +20,7 @@ import { connectHevyKey } from "@/components/program-builder/api/connect-hevy-ke
 import { triggerWorkoutHistorySync } from "@/api/workout-history-sync";
 import { triggerBodyMeasurementsSync } from "@/api/body-measurements-sync";
 import { cn } from "@/lib/utils";
-
-const LOGIN_WITH_NEXT = `/auth/login?next=${encodeURIComponent("/build-program?resume=true")}`;
+import { buildAuthLoginHref } from "@/lib/sign-in-return";
 
 export const HEVY_EXPORT_GATE_COMPLETE_TOAST =
     "You're set - Now Press Export in the top right corner";
@@ -43,6 +43,9 @@ export function HevyExportGate({ onDismiss, onComplete, className }: IProps) {
     const { user, isLoading: isUserLoading } = useUserContext();
     const { data: hevyApiKey, isLoading: isHevyLoading } = useHevySecret(user);
     const queryClient = useQueryClient();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const loginHref = buildAuthLoginHref(pathname, searchParams);
 
     const [inputValue, setInputValue] = useState("");
     const [isSaving, setIsSaving] = useState(false);
@@ -119,7 +122,7 @@ export function HevyExportGate({ onDismiss, onComplete, className }: IProps) {
                             Sign in to connect Hevy and push this program from your profile.
                         </p>
                         <div className="flex justify-end">
-                            <Link href={LOGIN_WITH_NEXT} data-testid="hevy-export-gate-sign-in-link">
+                            <Link href={loginHref} data-testid="hevy-export-gate-sign-in-link">
                                 <Button className="rounded-full bg-lightSecondary px-4 text-white hover:bg-lightSecondary/90">
                                     Sign in
                                     <ArrowRightIcon className="size-4" />
