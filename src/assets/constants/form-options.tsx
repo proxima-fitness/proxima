@@ -132,7 +132,8 @@ export const equipmentOptions: TSelectOption[] = [
     { label: "Dumbbell", value: "dumbbell"},
     { label: "Kettlebell", value: "kettlebell"},
     { label: "Machine", value: "machine"},
-    { label: "Bodyweight", value: "bodyweight"},
+    /** Hevy `equipment` value is `none` (no gear) - label Bodyweight for exclude UI. */
+    { label: "Bodyweight", value: "none"},
     { label: "Smith machine", value: "smith machine"},
     { label: "Cable", value: "cable"},
     { label: "Cardio", value: "cardio"},
@@ -141,7 +142,6 @@ export const equipmentOptions: TSelectOption[] = [
     { label: "Resistance band", value: "resistance_band"},
     { label: "Plate", value: "plate"},
     { label: "Other", value: "other"},
-    { label: "None", value: "none"},
 ];
 
 /** Focus area options such as body regions or performance attributes. */

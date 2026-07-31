@@ -589,6 +589,51 @@ describe("chat tools.ts", () => {
             expect(output.parameters).not.toHaveProperty("healthIssues");
         });
 
+        it("filters excluded equipment by Hevy equipment field (none = bodyweight)", async () => {
+            vi.mocked(getHevyExercises).mockResolvedValueOnce([
+                ...multiExerciseTemplates,
+                {
+                    id: "ex-bw",
+                    title: "Push Up",
+                    type: "reps_only",
+                    primary_muscle_group: "Chest",
+                    secondary_muscle_groups: null,
+                    is_custom: false,
+                    equipment: "none",
+                    normalized_title: "push up",
+                    gif_id: null,
+                    instructions: null,
+                },
+            ] as never);
+
+            const constraintProfile = {
+                injuries: [],
+                excludedEquipment: ["none"],
+                excludedAreas: [],
+                preferences: {
+                    splitType: "",
+                    exerciseVariability: "",
+                    progressionSystem: "",
+                    deloadWeek: "",
+                    peakWeek: "",
+                    warmupExercises: "",
+                },
+                chatRefinements: [],
+            };
+
+            const tools = getTools({ constraintProfile });
+            const getExerciseList = asTestTool<{ userRequest: string }, TExerciseListOutput>(tools.getExerciseList);
+
+            const output = await getExerciseList.execute({ userRequest: "upper" });
+
+            expect(output.availableExercises?.map((e) => e.id)).toEqual([
+                "ex-1",
+                "ex-2",
+                "ex-3",
+            ]);
+            expect(output.availableExercises?.some((e) => e.id === "ex-bw")).toBe(false);
+        });
+
         it("injuries do not filter the list", async () => {
             vi.mocked(getHevyExercises).mockResolvedValueOnce([...multiExerciseTemplates] as never);
 

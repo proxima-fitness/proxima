@@ -371,9 +371,12 @@ export function getTools({
 
                 if (excludedEquipment.length > 0) {
                     const excludedEq = excludedEquipment.map((e) => e.trim().toLowerCase()).filter(Boolean);
+                    // Match Mutation constraint gate: filter on Hevy `equipment`, not title
+                    // (title.includes("none") misses Push Up / etc. and is the wrong axis).
                     filteredExercises = filteredExercises.filter((ex) => {
-                        const title = ex.title.toLowerCase();
-                        return !excludedEq.some((eq: string) => title.includes(eq));
+                        const equipment = (ex.equipment ?? '').toLowerCase();
+                        if (!equipment) return true;
+                        return !excludedEq.some((eq: string) => equipment.includes(eq));
                     });
                 }
 
@@ -1259,7 +1262,9 @@ export function getTools({
         inputSchema: z.object({
             addInjuries: z.array(z.string()).optional().describe('New injury or health issues to add'),
             removeInjuries: z.array(z.string()).optional().describe('Injuries resolved per User-stated change only - never remove to make a program style feasible'),
-            addExcludedEquipment: z.array(z.string()).optional().describe('Equipment to exclude'),
+            addExcludedEquipment: z.array(z.string()).optional().describe(
+                'Equipment to exclude (Hevy values: barbell, dumbbell, kettlebell, machine, plate, resistance_band, suspension, other, none). Use none for bodyweight / no-gear exercises - not the word bodyweight.',
+            ),
             removeExcludedEquipment: z.array(z.string()).optional().describe('Equipment to allow again only on User-stated change - never to enable a preferred split/style'),
             addExcludedAreas: z.array(z.string()).optional().describe('Muscle areas to exclude'),
             removeExcludedAreas: z.array(z.string()).optional().describe('Muscle areas to allow again only on User-stated change - never to enable a preferred split/style'),

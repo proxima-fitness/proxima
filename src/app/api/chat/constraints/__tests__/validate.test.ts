@@ -83,4 +83,23 @@ describe('validateAgainstConstraints', () => {
         expect(result.valid).toBe(false);
         if (!result.valid) expect(result.violations).toHaveLength(2);
     });
+
+    it('flags exercise using excluded equipment none (Hevy bodyweight / no gear)', () => {
+        const result = validateAgainstConstraints(
+            profile({ excludedEquipment: ['none'] }),
+            [{ title: 'Push Up', equipment: 'none', primary_muscle_group: 'Chest' }],
+        );
+        expect(result.valid).toBe(false);
+        if (!result.valid) {
+            expect(result.violations[0].reason).toContain('uses excluded equipment: none');
+        }
+    });
+
+    it('passes dumbbell exercise when only none is excluded', () => {
+        const result = validateAgainstConstraints(
+            profile({ excludedEquipment: ['none'] }),
+            [{ title: 'Lateral Raise', equipment: 'dumbbell', primary_muscle_group: 'Shoulders' }],
+        );
+        expect(result.valid).toBe(true);
+    });
 });

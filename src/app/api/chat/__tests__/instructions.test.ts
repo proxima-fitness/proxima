@@ -166,11 +166,11 @@ describe("chat instructions.ts", () => {
                 hevyProgram: [],
                 daysPerWeek: 4,
                 programLength: 8,
-                excludeEquipment: " bodyweight, band ",
+                excludeEquipment: " none, band ",
             });
 
             expect(prompt).toContain("Questionnaire preferences");
-            expect(prompt).toContain("Exclude equipment: bodyweight, band");
+            expect(prompt).toContain("Exclude equipment: none, band");
         });
 
         it("includes questionnaire preferences when any of split / variability / progression / deload / peak / warmups are set", () => {

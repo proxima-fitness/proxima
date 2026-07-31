@@ -285,7 +285,8 @@ export function inferExcludeEquipment(text: string, options: TSelectOption[]): T
     if (!text || !options.length) return [];
     const normalized = text.toLowerCase().replace(/[\u2010\u2011\u2012\u2013\u2014\u2015]/g, "-");
     if (/bodyweight\s+only|no\s+equipment|only\s+bodyweight/.test(normalized)) {
-        return options.filter((opt) => (opt.value ?? "").toLowerCase() !== "bodyweight");
+        // Keep Hevy no-equipment (`none`); exclude every other catalog value.
+        return options.filter((opt) => (opt.value ?? "").toLowerCase() !== "none");
     }
     const exclusionRegex = /(?:no|without|don't\s+use|exclude)\s+/gi;
     const parts = normalized.split(exclusionRegex);

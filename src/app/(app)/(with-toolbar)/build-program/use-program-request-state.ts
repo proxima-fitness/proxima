@@ -2,13 +2,11 @@
 
 import { useState, useReducer, useCallback, useMemo } from "react";
 const DEFAULT_EXCLUDE_EQUIPMENT: TSelectOption[] = [
-    { label: "Bodyweight", value: "bodyweight" },
     { label: "Band", value: "band" },
     { label: "Suspension", value: "suspension" },
     { label: "Resistance band", value: "resistance_band" },
     { label: "Plate", value: "plate" },
     { label: "Other", value: "other" },
-    { label: "None", value: "none" },
 ];
 
 export type TProgramLengthOption = "" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "11" | "12";

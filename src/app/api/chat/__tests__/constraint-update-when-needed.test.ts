@@ -128,7 +128,7 @@ describe("constraint update only when needed", () => {
     it("updateConstraintProfile splits joined CSV add* blobs instead of storing them as one element", async () => {
         const healthIssues = "knee pain, stiff ankle";
         const excludeEquipment =
-            "bodyweight, band, suspension, resistance_band, plate, other, none, cardio";
+            "none, band, suspension, resistance_band, plate, other, cardio";
         const profile = initializeConstraintProfile({ healthIssues, excludeEquipment });
         const tools = getTools({
             userId: "user-1",
@@ -156,13 +156,12 @@ describe("constraint update only when needed", () => {
 
         expect(updated.injuries).toEqual(["knee pain", "stiff ankle"]);
         expect(updated.excludedEquipment).toEqual([
-            "bodyweight",
+            "none",
             "band",
             "suspension",
             "resistance_band",
             "plate",
             "other",
-            "none",
             "cardio",
         ]);
         expect(updated.injuries.every((s) => !s.includes(","))).toBe(true);
