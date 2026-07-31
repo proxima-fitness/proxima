@@ -11,12 +11,6 @@
  */
 
 import { resetPassword, signInViaEmail, signUpViaEmail } from "@/api/authentication";
-import { supabase } from "@/api";
-import { fetchCurrentPolicyVersions, putUserConsents } from "@/api/user-consents";
-import {
-    clearSignUpPendingConsents,
-    readSignUpPendingConsents,
-} from "@/lib/user-consents";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { toast } from "sonner";
 
@@ -27,6 +21,7 @@ function isSignUpFailure(result: unknown): boolean {
 /**
  * Validates sign-up form fields and creates a new account via email.
  * On success the user is redirected to the sign-up confirmation page.
+ * Legal/optional consents are collected later via LegalAcceptanceDialog.
  *
  * @param email - The user's email address
  * @param password - Chosen password
@@ -53,33 +48,6 @@ export const handleSignUpViaEmail = async (
                 if (isSignUpFailure(account)) {
                     toast.error("Failed to create account");
                     return;
-                }
-
-                const pendingConsents = readSignUpPendingConsents();
-                const { data: { session } } = await supabase.auth.getSession();
-
-                if (session && pendingConsents) {
-                    try {
-                        const versions = await fetchCurrentPolicyVersions();
-                        await putUserConsents({
-                            termsVersionId: versions.terms.id,
-                            privacyVersionId: versions.privacy.id,
-                            platformImprovementOptIn: pendingConsents.platformImprovementOptIn,
-                            marketingOptIn: pendingConsents.marketingOptIn,
-                        });
-                    } catch (error) {
-                        const message =
-                            error instanceof Error
-                                ? error.message
-                                : "Failed to save consent preferences";
-                        toast.error(
-                            `${message}. You may be asked to accept policies when you sign in.`,
-                        );
-                    }
-                }
-
-                if (pendingConsents) {
-                    clearSignUpPendingConsents();
                 }
 
                 router.push("/auth/sign-up-success");

@@ -4,7 +4,7 @@
  * Scrollable read-only textarea showing Privacy Policy and Terms of Use.
  *
  * Depends on: Textarea, content/legal-policy-text
- * Used by: LegalAcceptanceDialog, sign-up consents (01e)
+ * Used by: LegalAcceptanceDialog
  */
 "use client";
 

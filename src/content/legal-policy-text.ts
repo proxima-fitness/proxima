@@ -5,7 +5,7 @@
  * Keep in sync with `/privacy` and `/terms-of-use` page copy (01b).
  *
  * Depends on: none
- * Used by: LegalPolicyTextarea, sign-up consents (01e)
+ * Used by: LegalPolicyTextarea
  */
 
 export const PRIVACY_POLICY_TEXT = `Privacy Policy
