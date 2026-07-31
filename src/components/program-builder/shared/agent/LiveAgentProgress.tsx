@@ -132,8 +132,9 @@ export const LiveAgentProgress = memo(
     if (isStreamingFinalText(messages, status)) return null;
 
     if (steps.length === 0) {
+      // submitted = waiting on first model tokens; streaming w/ no parts yet = Working
       const fallbackLabel =
-        status === "submitted" ? "Thinking..." : "Working…";
+        status === "submitted" ? "Analyzing..." : "Working…";
       return (
         <div className={className}>
           <TChainOfThought defaultOpen open>

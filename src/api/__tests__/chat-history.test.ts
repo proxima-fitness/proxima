@@ -56,6 +56,7 @@ import {
     migrateAnonymousThreadToChat,
     persistChatHistoryAfterTurn,
     resetChatHistorySessionForTests,
+    resolveChatSessionId,
     upsertChatHistoryTurn,
 } from "@/api/chat-history";
 import { CHAT_MESSAGES_KEY } from "@/assets/constants/ui-constants";
@@ -131,6 +132,18 @@ describe("upsertChatHistoryTurn", () => {
                 program_id: null,
             }),
         );
+    });
+});
+
+describe("resolveChatSessionId", () => {
+    it("returns existing id when present", () => {
+        expect(resolveChatSessionId(chatId)).toBe(chatId);
+    });
+
+    it("mints a uuid when empty", () => {
+        const minted = resolveChatSessionId("");
+        expect(minted).toEqual(expect.any(String));
+        expect(minted.length).toBeGreaterThan(0);
     });
 });
 

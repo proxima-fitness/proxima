@@ -12,7 +12,12 @@ import {
 import posthog from "posthog-js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { User } from "@supabase/supabase-js";
-import { ensureChatSessionOnSend, migrateAnonymousThreadToChat, persistChatHistoryAfterTurn } from "@/api/chat-history";
+import {
+    ensureChatSessionOnSend,
+    migrateAnonymousThreadToChat,
+    persistChatHistoryAfterTurn,
+    resolveChatSessionId,
+} from "@/api/chat-history";
 import {
     applyBuildProgramMintUrlUpdate,
     stripSearchFromBuildProgramUrl,
@@ -403,26 +408,13 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             }
 
             const hadChatIdAtSend = Boolean(chatId);
+            // Mint sync so sendMessage (bubble + submitted status / LiveAgentProgress)
+            // is not blocked on chat_history exists/insert RTT.
             let sessionChatId = chatId;
-
-            if (user) {
-                const firstUserText = getMessageText(message);
-                if (firstUserText.trim()) {
-                    const session = await ensureChatSessionOnSend({
-                        user,
-                        chatId,
-                        firstUserText,
-                    });
-                    sessionChatId = session.chatId;
-                    pendingMintChatIdRef.current = session.chatId;
-
-                    if (session.confirmed) {
-                        void queryClient.invalidateQueries({ queryKey: ["chat-ids", user.id] });
-                    } else if (!insertFailToastShownForChatIds.current.has(session.chatId)) {
-                        insertFailToastShownForChatIds.current.add(session.chatId);
-                        toast.warning("Couldn't save this chat yet. Your message will still send.");
-                    }
-                }
+            const firstUserText = user ? getMessageText(message) : "";
+            if (user && firstUserText.trim()) {
+                sessionChatId = resolveChatSessionId(chatId);
+                pendingMintChatIdRef.current = sessionChatId;
             }
 
             const messageText = getTextFromChatMessage(message);
@@ -452,6 +444,21 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             if (sessionChatId && !hadChatIdAtSend) {
                 applyBuildProgramMintUrlUpdate(router, pathname, searchParams, sessionChatId, {
                     stripSearch: Boolean(search.trim()),
+                });
+            }
+
+            if (user && firstUserText.trim() && sessionChatId) {
+                void ensureChatSessionOnSend({
+                    user,
+                    chatId: sessionChatId,
+                    firstUserText,
+                }).then((session) => {
+                    if (session.confirmed) {
+                        void queryClient.invalidateQueries({ queryKey: ["chat-ids", user.id] });
+                    } else if (!insertFailToastShownForChatIds.current.has(session.chatId)) {
+                        insertFailToastShownForChatIds.current.add(session.chatId);
+                        toast.warning("Couldn't save this chat yet. Your message will still send.");
+                    }
                 });
             }
 

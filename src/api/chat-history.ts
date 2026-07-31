@@ -463,7 +463,16 @@ function userMessageFromText(text: string): TChatMessage {
 }
 
 /**
+ * Sync chat id for send path. Mint before `sendMessage` so UI (bubble + status)
+ * is not blocked on insert/exists network.
+ */
+export function resolveChatSessionId(existingChatId: string): string {
+    return existingChatId || uuidv4();
+}
+
+/**
  * Mint client chat id + URL on first send, insert-once with first user text + frozen title.
+ * Safe to fire after `sendMessage` - does not need to complete before the stream starts.
  */
 export const ensureChatSessionOnSend = async ({
     user,
@@ -474,7 +483,7 @@ export const ensureChatSessionOnSend = async ({
         return { chatId: existingChatId, confirmed: false };
     }
 
-    const chatId = existingChatId || uuidv4();
+    const chatId = resolveChatSessionId(existingChatId);
 
     if (sessionInsertedChatIds.has(chatId)) {
         return { chatId, confirmed: true };
