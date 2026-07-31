@@ -249,8 +249,13 @@ export const Agent: React.FC<IProps> = (props) => {
     const [dismissedForMessageId, setDismissedForMessageId] = useState<string | null>(null)
     const [hevyGateDismissedForMessageId, setHevyGateDismissedForMessageId] = useState<string | null>(null)
     const lastMessage = messages[messages.length - 1]
+    /** Wait for stream end so agent text finishes before questionnaire covers the footer. */
     const showQuestionsPayload =
-        activeQuestionsPayload && dismissedForMessageId !== lastMessage?.id ? activeQuestionsPayload : null
+        activeQuestionsPayload &&
+        !isLoading &&
+        dismissedForMessageId !== lastMessage?.id
+            ? activeQuestionsPayload
+            : null
 
     /** Questionnaire wins the footer - never swap Hevy gate over an active survey. */
     const hevyExportGateMessageId = useMemo(
@@ -437,7 +442,7 @@ export const Agent: React.FC<IProps> = (props) => {
             />
             <Conversation className="flex-1 min-h-0 max-sm:h-full sm:overflow-hidden">
                 <ConversationContent
-                    className="min-h-full max-sm:pb-[220px]"
+                    className="min-h-full max-sm:pb-55"
                     style={{ paddingBottom: footerPad }}
                 >
                     <>
