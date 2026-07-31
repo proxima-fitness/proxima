@@ -6257,7 +6257,7 @@ export const equipmentOptions: TSelectOption[] = [
     { label: "Suspension", value: "suspension"},
     { label: "Resistance band", value: "resistance_band"},
     { label: "Plate", value: "plate"},
-    { label: "Other", value: "other"},
+    { label: "Sled, box, rope & similar", value: "other"},
 ];
 
 /** Focus area options such as body regions or performance attributes. */

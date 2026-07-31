@@ -6,7 +6,7 @@ const DEFAULT_EXCLUDE_EQUIPMENT: TSelectOption[] = [
     { label: "Suspension", value: "suspension" },
     { label: "Resistance band", value: "resistance_band" },
     { label: "Plate", value: "plate" },
-    { label: "Other", value: "other" },
+    { label: "Sled, box, rope & similar", value: "other" },
 ];
 
 export type TProgramLengthOption = "" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "11" | "12";
