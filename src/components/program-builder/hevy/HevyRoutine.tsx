@@ -284,7 +284,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                         <div className="relative w-full flex-1 min-h-0">
                             <div
                                 ref={scrollContainerRef}
-                                className={`flex flex-row gap-4 h-full overflow-auto w-full ${!user ? "border-t-4 border-lightGray" : ""}`}
+                                className={`flex flex-row gap-4 h-full overflow-auto w-full ${!user && !stepperDismissed ? "border-t-4 border-lightGray" : ""}`}
                             >
                                 { numberOfWeeksArr.map((_, index) => (
                                     <HevyColumn
