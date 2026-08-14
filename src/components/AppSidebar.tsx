@@ -336,7 +336,7 @@ export function AppSidebar() {
                                         tooltip="New Chat"
                                         onClick={handleNewChatClick}
                                     >
-                                        <MessageSquarePlus className="shrink-0" />
+                                        <Plus className="shrink-0" />
                                         <span className="font-third">New Chat</span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
