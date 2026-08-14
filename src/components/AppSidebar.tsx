@@ -26,7 +26,7 @@ import {
     PanelLeft,
     LogIn,
     Info,
-    MessageSquarePlus,
+    Plus,
 } from "lucide-react";
 import {
     Sidebar,
