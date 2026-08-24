@@ -105,12 +105,12 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                 </div>
 
                 {/*
-                  Product peek - desktop only.
+                  Product peek - tablet only (hidden at md/laptop+ to avoid hero spacing issues).
                   Slot height is the flex budget (keeps CTA put). On tall screens the
                   preview paints taller upward into the gap below the CTA.
                 */}
                 <motion.div
-                    className="hero__product-slot relative z-[5] mx-auto mt-2 hidden w-full max-w-5xl shrink-0 px-3 sm:block sm:px-6 xl:max-w-6xl 2xl:max-w-7xl"
+                    className="hero__product-slot relative z-[5] mx-auto mt-2 hidden w-full max-w-5xl shrink-0 px-3 sm:block sm:px-6 md:hidden xl:max-w-6xl 2xl:max-w-7xl"
                     initial={reduceMotion ? false : { opacity: 0, y: 32 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.9, delay: 0.32, ease: [0.22, 1, 0.36, 1] }}
