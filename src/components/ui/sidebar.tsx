@@ -234,7 +234,8 @@ const Sidebar = React.forwardRef<
     },
     ref
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+    const { isMobile, state, openMobile, setOpenMobile, pinnedOpen, hoverOpen } = useSidebar();
+    const isHoverOverlay = hoverOpen && !pinnedOpen;
 
     if (collapsible === "none") {
       return (
@@ -281,6 +282,8 @@ const Sidebar = React.forwardRef<
         ref={ref}
         className="group peer hidden text-sidebar-foreground sm:block"
         data-state={state}
+        data-layout={pinnedOpen ? "expanded" : "collapsed"}
+        data-hover-overlay={isHoverOverlay ? "true" : undefined}
         data-collapsible={state === "collapsed" ? collapsible : ""}
         data-variant={variant}
         data-side={side}
@@ -288,17 +291,17 @@ const Sidebar = React.forwardRef<
         {/* This is what handles the sidebar gap on desktop */}
         <div
           className={cn(
-            "relative w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear",
-            "group-data-[collapsible=offcanvas]:w-0",
+            "relative bg-transparent transition-[width] duration-200 ease-linear",
             "group-data-[side=right]:rotate-180",
             variant === "floating" || variant === "inset"
-              ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]"
-              : "group-data-[collapsible=icon]:w-(--sidebar-width-icon)"
+              ? "group-data-[layout=expanded]:w-(--sidebar-width) group-data-[layout=collapsed]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))] group-data-[layout=collapsed]:group-data-[collapsible=offcanvas]:w-0"
+              : "group-data-[layout=expanded]:w-(--sidebar-width) group-data-[layout=collapsed]:w-(--sidebar-width-icon) group-data-[layout=collapsed]:group-data-[collapsible=offcanvas]:w-0"
           )}
         />
         <div
           className={cn(
             "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear sm:flex",
+            "group-data-[hover-overlay=true]:z-40 group-data-[hover-overlay=true]:shadow-lg",
             side === "left"
               ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
               : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",

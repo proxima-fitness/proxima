@@ -61,7 +61,7 @@ import { isTestUser } from "@/api/feature-limits";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { getInitials } from "@/utils/general/helpers";
 import { cn } from "@/lib/utils";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { DeleteAccountDialog } from "@/components/header/DeleteAccountDialog";
 import { ConnectHevyDialog } from "@/components/header/ConnectHevyDialog";
@@ -128,7 +128,9 @@ export function AppSidebar() {
     const router = useRouter();
     const { clearChat } = useBuildProgramActions();
 
-    const { toggleSidebar, state, isMobile, openMobile, setOpenMobile, setHoverOpen } = useSidebar();
+    const { toggleSidebar, state, isMobile, openMobile, setOpenMobile, setHoverOpen, pinnedOpen } = useSidebar();
+    const sidebarRef = useRef<HTMLDivElement>(null);
+    const openDropdownCountRef = useRef(0);
 
     const handleSidebarMouseEnter = useCallback(() => {
         if (isMobile) return;
@@ -136,9 +138,28 @@ export function AppSidebar() {
     }, [isMobile, setHoverOpen]);
 
     const handleSidebarMouseLeave = useCallback(() => {
-        if (isMobile) return;
+        if (isMobile || openDropdownCountRef.current > 0) return;
         setHoverOpen(false);
     }, [isMobile, setHoverOpen]);
+
+    const handleSidebarDropdownOpenChange = useCallback(
+        (open: boolean) => {
+            if (open) {
+                openDropdownCountRef.current += 1;
+                return;
+            }
+
+            openDropdownCountRef.current = Math.max(0, openDropdownCountRef.current - 1);
+            if (openDropdownCountRef.current === 0 && !pinnedOpen) {
+                queueMicrotask(() => {
+                    if (openDropdownCountRef.current > 0) return;
+                    if (sidebarRef.current?.matches(":hover")) return;
+                    setHoverOpen(false);
+                });
+            }
+        },
+        [pinnedOpen, setHoverOpen],
+    );
     const closeMobileSidebar = useCallback(() => {
         if (isMobile) setOpenMobile(false);
     }, [isMobile, setOpenMobile]);
@@ -302,6 +323,7 @@ export function AppSidebar() {
                 onRename={handleRenameChat}
                 onPinToggle={handlePinToggle}
                 onDelete={handleDeleteChat}
+                onDropdownOpenChange={handleSidebarDropdownOpenChange}
             />
         ));
     };
@@ -322,6 +344,7 @@ export function AppSidebar() {
     return (
         <>
             <Sidebar
+                ref={sidebarRef}
                 collapsible="icon"
                 onMouseEnter={handleSidebarMouseEnter}
                 onMouseLeave={handleSidebarMouseLeave}
@@ -403,6 +426,7 @@ export function AppSidebar() {
                                             onRename={handleRenameChat}
                                             onPinToggle={handlePinToggle}
                                             onDelete={handleDeleteChat}
+                                            onDropdownOpenChange={handleSidebarDropdownOpenChange}
                                         />
                                     ))}
                                 </SidebarMenu>
@@ -434,7 +458,7 @@ export function AppSidebar() {
                     <SidebarMenu>
                         <SidebarMenuItem>
                             {user ? (
-                                <DropdownMenu>
+                                <DropdownMenu onOpenChange={handleSidebarDropdownOpenChange}>
                                     <DropdownMenuTrigger asChild>
                                         <SidebarMenuButton
                                             tooltip="Settings"
