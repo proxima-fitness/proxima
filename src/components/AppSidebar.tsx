@@ -61,7 +61,7 @@ import { isTestUser } from "@/api/feature-limits";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { getInitials } from "@/utils/general/helpers";
 import { cn } from "@/lib/utils";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { DeleteAccountDialog } from "@/components/header/DeleteAccountDialog";
 import { ConnectHevyDialog } from "@/components/header/ConnectHevyDialog";
@@ -78,7 +78,6 @@ import { buildAuthLoginHref } from "@/lib/sign-in-return";
 
 const CHAT_MESSAGES_KEY = "messages";
 const HEVY_PROGRAM_IN_PROGRESS_KEY = "hevy-program-in-progress";
-const SIDEBAR_HOVER_CLOSE_DELAY_MS = 150;
 
 const signOutServer = async () => {
     try {
@@ -130,23 +129,15 @@ export function AppSidebar() {
     const { clearChat } = useBuildProgramActions();
 
     const { toggleSidebar, state, isMobile, openMobile, setOpenMobile, setHoverOpen } = useSidebar();
-    const hoverCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const handleSidebarMouseEnter = useCallback(() => {
         if (isMobile) return;
-        if (hoverCloseTimerRef.current) {
-            clearTimeout(hoverCloseTimerRef.current);
-            hoverCloseTimerRef.current = null;
-        }
         setHoverOpen(true);
     }, [isMobile, setHoverOpen]);
 
     const handleSidebarMouseLeave = useCallback(() => {
         if (isMobile) return;
-        hoverCloseTimerRef.current = setTimeout(() => {
-            setHoverOpen(false);
-            hoverCloseTimerRef.current = null;
-        }, SIDEBAR_HOVER_CLOSE_DELAY_MS);
+        setHoverOpen(false);
     }, [isMobile, setHoverOpen]);
     const closeMobileSidebar = useCallback(() => {
         if (isMobile) setOpenMobile(false);
