@@ -8,7 +8,7 @@
  * Depends on: useProgramHevyWeekLinks, useProgramScheduleHistoryDays, useHevyPrograms,
  *             useProgramWeekComplete, UserContext, ProgramOverviewWeekStatus,
  *             ProgramOverviewWeekRail, ProgramOverviewWeekPreview,
- *             ProgramOverviewCtas, ProgramOverviewHevyMirror
+ *             ProgramOverviewCtas, ProgramOverviewHevyMirror, ConfirmDialog
  * Used by: ProgramOverviewSection (carousel children)
  */
 
@@ -29,6 +29,7 @@ import {
 } from "@/hooks/useProgramWeekComplete";
 import { useUserContext } from "@/contexts/UserContext";
 import { useNavigateToEditHevyProgram } from "@/hooks/useNavigateToEditHevyProgram";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProgramOverviewCtas } from "./ProgramOverviewCtas";
@@ -107,6 +108,7 @@ export function ProgramOverviewWeekList({
         user?.id,
     );
     const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
+    const [confirmCompleteWeek, setConfirmCompleteWeek] = useState<number | null>(null);
     const markComplete = useMarkProgramWeekComplete(programId);
     const navigateToEdit = useNavigateToEditHevyProgram();
     const [isEnteringEdit, setIsEnteringEdit] = useState(false);
@@ -247,7 +249,7 @@ export function ProgramOverviewWeekList({
                                         variant="outline"
                                         className="h-8 rounded-full"
                                         disabled={markComplete.isPending}
-                                        onClick={() => handleMarkComplete(resolvedSelected)}
+                                        onClick={() => setConfirmCompleteWeek(resolvedSelected)}
                                     >
                                         <Check className="size-3.5" aria-hidden />
                                         Mark week complete
@@ -286,6 +288,26 @@ export function ProgramOverviewWeekList({
                 completedWeeks={completedWeeks}
                 hevyPrograms={hevyPrograms}
                 isLoadingHevy={hevyPending}
+            />
+
+            <ConfirmDialog
+                open={confirmCompleteWeek != null}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setConfirmCompleteWeek(null);
+                    }
+                }}
+                title={`Mark week ${confirmCompleteWeek ?? ""} complete?`}
+                description="Are you sure? This week becomes history. You can export the next week after."
+                confirmLabel="Mark complete"
+                confirmVariant="default"
+                isConfirmLoading={markComplete.isPending}
+                onConfirm={() => {
+                    if (confirmCompleteWeek == null) {
+                        return;
+                    }
+                    handleMarkComplete(confirmCompleteWeek);
+                }}
             />
         </div>
     );

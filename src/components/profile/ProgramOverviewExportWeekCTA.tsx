@@ -5,7 +5,7 @@
  * Gates Export via Program–Hevy links + Week complete (`completed_at` on link).
  *
  * Depends on: ProgramOverviewExportWeek, useProgramHevyWeekLinks, useHevySecret,
- *             useProgramWeekComplete, UserContext
+ *             useProgramWeekComplete, UserContext, ConfirmDialog
  * Used by: thin Week Export entry points (overview CTAs own primary Export)
  */
 
@@ -26,6 +26,7 @@ import {
     useMarkProgramWeekComplete,
 } from "@/hooks/useProgramWeekComplete";
 import { useUserContext } from "@/contexts/UserContext";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { RATE_LIMIT_EXHAUSTED_MESSAGE } from "@/assets/constants/ui-constants";
@@ -67,6 +68,7 @@ export function ProgramOverviewExportWeekCTA({
     const queryClient = useQueryClient();
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState<TUploadProgress | null>(null);
+    const [confirmCompleteOpen, setConfirmCompleteOpen] = useState(false);
     const markComplete = useMarkProgramWeekComplete(programId);
 
     const linkedWeeks = links.map((link) => link.nth_week);
@@ -192,7 +194,7 @@ export function ProgramOverviewExportWeekCTA({
                             variant="outline"
                             className="rounded-full"
                             disabled={isUploading || markComplete.isPending}
-                            onClick={handleMarkComplete}
+                            onClick={() => setConfirmCompleteOpen(true)}
                         >
                             <Check className="mr-1.5 size-3.5" aria-hidden />
                             Mark week {currentLinkedWeek} complete
@@ -241,6 +243,16 @@ export function ProgramOverviewExportWeekCTA({
                     ) : null}
                 </div>
             ) : null}
+            <ConfirmDialog
+                open={confirmCompleteOpen && currentLinkedWeek != null}
+                onOpenChange={setConfirmCompleteOpen}
+                title={`Mark week ${currentLinkedWeek ?? ""} complete?`}
+                description="Are you sure? This week becomes history. You can export the next week after."
+                confirmLabel="Mark complete"
+                confirmVariant="default"
+                isConfirmLoading={markComplete.isPending}
+                onConfirm={handleMarkComplete}
+            />
         </div>
     );
 }
