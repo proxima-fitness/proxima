@@ -309,6 +309,22 @@ _Avoid_: Exercise edit (ambiguous - may mean one slot or program-wide), variatio
 One ordered set of program changes the agent applies atomically in a single turn for one logical edit. Fail-all: if any change is invalid, none apply.
 _Avoid_: Patch, JSON edit
 
+**Soft tool failure**:
+A coach tool (`buildWeek`, `mutateProgram`, etc.) returns a structured error while the chat stream can continue - the model gets fix text and may retry in-turn. Ordinary users see calm in-progress copy only; full tool error UI is **Agent debug mode** only. Client always emits PostHog `ai_tool_error` (even when UI is calm). Distinct from a dead turn.
+_Avoid_: Tool crash (implies hard fail), validation error shown to user, treating soft reject as generation failure
+
+**Hard agent failure**:
+The chat stream dies or the client declares the turn dead (stall timeout, network, payload too large, provider/gateway kill). Surfaces recovery UI and `ai_agent_error` (with `errorClass` when known). Not a Soft tool failure.
+_Avoid_: Soft tool error panel, rate limit (usage cap is a separate 402 path), An error occurred (opaque SDK default - not a product term)
+
+**Agent error class**:
+Short stable code on hard failures for PostHog / stream `onError`: `provider_error`, `validation_error`, `stall_timeout`, `payload_too_large`, `network_error`, `gateway_auth`, `unknown`. Soft tool failures use the tool `error` string as `errorCode` instead.
+_Avoid_: Free-form provider HTML in analytics, dumping full programs into event props
+
+**Agent debug mode**:
+Test-user-only toggle that reveals Soft tool failure panels (`ToolErrorPanel`) in the builder chat. Off by default; ordinary users never see those panels.
+_Avoid_: Developer mode (too broad), always-on tool errors, production error dumps for all users
+
 **Edit dirty state**:
 Whether the current Edit session has unsaved builder changes. Set by any mutation (grid edit, agent patch, undo); cleared on successful Sync, Discard, or fresh Hevy load. Drives the navigation guard. Page refresh shows a browser `beforeunload` warning when dirty; if the user proceeds, unsaved Edit state is lost and the next Edit entry reloads from Hevy.
 _Avoid_: isDirty (implementation), unsaved flag
@@ -390,12 +406,12 @@ Required `getMoreInfoQuestions` step before first `planProgram` / `buildWeek` on
 _Avoid_: Intake form (UI-shaped), pre-build questions (too vague)
 
 **Questionnaire core**:
-Always-visible questions in the Questionnaire gate - the full existing program-build set plus **excluded areas**: program length, days per week, excluded equipment, health issues, excluded areas, preferred split, exercise variability, progression system, deload week, peak week, warmup exercises. Same field group appears on **Edit profile** under Constraint profile so users can set them later without rebuilding.
-_Avoid_: Primary questions, required questions (advanced is optional to expand, not a second gate), main form, thin core (do not move style prefs out of core)
+Always-visible questions in the Questionnaire gate - minimal first-time path: program length, days per week, excluded equipment, health issues. Enough to build safely; style and person-fact prefs stay collapsed. Constraint fields still editable later under **Edit profile**.
+_Avoid_: Primary questions, required questions (advanced is optional to expand, not a second gate), main form, stuffing the core with periodization/style prefs
 
 **Questionnaire advanced**:
-Collapsed-by-default deep-intake questions in the Questionnaire gate - extra personalization beyond the core build set (opened via expand/dropdown). Writes **Training profile**, not Constraint profile. First-time users can ignore and still build; power users or later **Edit profile** edits fill them in. Empty advanced answers are valid; agent uses home-prompt inference and defaults.
-_Avoid_: Extra questions, optional questionnaire (implies skip-all), advanced settings (app-settings shaped), relocating core prefs into advanced, stuffing advanced answers into Constraint profile
+Collapsed-by-default questions in the Questionnaire gate - programming style prefs (excluded areas, preferred split, exercise variability, progression system, deload week, peak week, warmup exercises → **Constraint profile**) plus person facts (age, sex, height, experience, physique phase, training focus, activity level, session duration → **Training profile**). First-time users can ignore and still build; agent uses home-prompt inference and defaults. Empty advanced answers are valid.
+_Avoid_: Extra questions, optional questionnaire (implies skip-all), advanced settings (app-settings shaped), stuffing Training profile answers into Constraint profile
 
 **Hevy workout history**:
 The user's completed Hevy workouts - full logs (title, timestamps, exercises, sets). Canonical copy lives in Proxima's workout history backup after sync; agent and Blind Spot read from there, not live Hevy per request. Distinct from Hevy's per-exercise history API and from program workout days in the builder.
@@ -494,6 +510,10 @@ _Avoid_: Session type (ambiguous with builder day), workout tag (too generic)
 **Account registration**:
 Creation of a Supabase auth identity when a user completes sign-up - before email confirmation for email/password, or on first OAuth provider link for third-party sign-in. Distinct from email-confirmed account and from first authenticated session.
 _Avoid_: Sign-up (ambiguous with legal acceptance step), verified user, new user (ops informal)
+
+**Sign-in return**:
+Where the user lands after a successful sign-in (email/password or OAuth). Default is the page they left to sign in (path + query). From the program builder, return always includes `resume=true` so the in-progress draft rehydrates alongside other arrival params. No current product CTA overrides to a different destination than that page. When no return is known (direct `/auth/login`, missing param), or the candidate is not a safe in-app page path (external URL, protocol-relative, or an auth route), fall back to `/`. Logout should carry the page the user left so re-sign-in can return there. Sign-up ↔ login links preserve an existing return. Applies to sign-in only - not email sign-up success or confirmation. Distinct from **Sign-in migration** (builder anon-thread persistence after auth).
+_Avoid_: next param (implementation), redirect URL, post-auth destination (too broad - includes sign-up), bare `/build-program?resume=true` as the only builder return (drops chat/search context), treating `/` as the default when a previous page exists, using the browser referrer as the return source
 
 **Legal acceptance**:
 Required confirmation that the user has read and agrees to the current **Terms of Use** and **Privacy Policy** versions. All authenticated users must accept when their stored versions are behind the published versions. Email **sign-up** collects required acceptance and writes `user_consents` at registration; the **Legal acceptance dialog** is the safety net for OAuth first-timers, legacy users without a row, and future version bumps. Enforced by an unclosable client dialog over the app until accepted - not by API route locks in v1. No row or stale version = blocked. Prior browsewrap acceptance does not satisfy the gate.

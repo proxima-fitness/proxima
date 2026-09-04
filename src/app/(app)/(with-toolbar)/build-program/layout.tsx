@@ -22,7 +22,7 @@ import { BuildProgramToolbarEnd } from "@/components/program-builder/shared/Buil
 export default function ProgramBuilderLayout({ children }: { children: ReactNode }) {
     return (
         <div className="h-screen max-sm:h-[calc(100dvh-4rem)] flex flex-col overflow-hidden">
-            <div className="max-sm:hidden shrink-0 z-50 p-2 bg-extraLightGray dark:bg-extraDarkGray border-b-2 dark:border-darkGray border-white flex flex-row items-center gap-2 text-xl text-black dark:text-white">
+            <div className="max-sm:hidden shrink-0 z-30 p-2 bg-extraLightGray dark:bg-extraDarkGray border-b-2 dark:border-darkGray border-white flex flex-row items-center gap-2 text-xl text-black dark:text-white">
                 <div className="min-w-0 flex-1 overflow-hidden">
                     <Breadcrumbs />
                 </div>

@@ -84,18 +84,19 @@ describe('validateAgainstConstraints', () => {
         if (!result.valid) expect(result.violations).toHaveLength(2);
     });
 
-    it('ignores Hevy "none" equipment sentinel in excludedEquipment', () => {
+    it('does not flag bodyweight when excludedEquipment is only none (sentinel stripped)', () => {
         const result = validateAgainstConstraints(
-            profile({ excludedEquipment: ['none', 'Band'] }),
-            [
-                { title: "World's Greatest Stretch", equipment: 'none', primary_muscle_group: 'Full Body' },
-                { title: 'Band Pull-Apart', equipment: 'Band', primary_muscle_group: 'Shoulders' },
-            ],
+            profile({ excludedEquipment: ['none'] }),
+            [{ title: 'Push Up', equipment: 'none', primary_muscle_group: 'Chest' }],
         );
-        expect(result.valid).toBe(false);
-        if (!result.valid) {
-            expect(result.violations).toHaveLength(1);
-            expect(result.violations[0].exerciseTitle).toBe('Band Pull-Apart');
-        }
+        expect(result.valid).toBe(true);
+    });
+
+    it('passes dumbbell exercise when only none is excluded', () => {
+        const result = validateAgainstConstraints(
+            profile({ excludedEquipment: ['none'] }),
+            [{ title: 'Lateral Raise', equipment: 'dumbbell', primary_muscle_group: 'Shoulders' }],
+        );
+        expect(result.valid).toBe(true);
     });
 });

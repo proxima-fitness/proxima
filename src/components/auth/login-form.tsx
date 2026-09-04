@@ -23,6 +23,7 @@ import { useState } from 'react'
 import { Separator } from '../ui/separator'
 import { Provider } from '@supabase/supabase-js'
 import { TurnstileSignIn } from './TurnstileSignIn'
+import { buildAuthSignUpHrefFromNext, sanitizeSignInReturn } from '@/lib/sign-in-return'
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from 'react-hook-form'
@@ -34,6 +35,7 @@ type TLoginFormProps = React.ComponentPropsWithoutRef<'div'> & {
 
 /** Renders login card with OAuth, email/password form, and Turnstile-gated sign-in. */
 export function LoginForm({ className, redirectPath = '/', ...props }: TLoginFormProps) {
+    const safeRedirectPath = sanitizeSignInReturn(redirectPath);
 
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -64,7 +66,7 @@ export function LoginForm({ className, redirectPath = '/', ...props }: TLoginFor
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: provider,
                 options: {
-                redirectTo: `https://proximafitness.com/auth/oauth?next=${encodeURIComponent(redirectPath)}`,
+                redirectTo: `https://proximafitness.com/auth/oauth?next=${encodeURIComponent(safeRedirectPath)}`,
                 },
             })
 
@@ -198,7 +200,7 @@ export function LoginForm({ className, redirectPath = '/', ...props }: TLoginFor
             </div>
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{' '}
-              <Link href={`/auth/sign-up?next=${encodeURIComponent(redirectPath)}`} className="underline underline-offset-4">
+              <Link href={buildAuthSignUpHrefFromNext(safeRedirectPath)} className="underline underline-offset-4">
                 Sign up
               </Link>
             </div>
@@ -209,7 +211,7 @@ export function LoginForm({ className, redirectPath = '/', ...props }: TLoginFor
                 password={ watch().password }
                 handleTurnstileClose={ handleTurnstileClose }
                 onSignInError={ handleSignInError }
-                redirectPath={ redirectPath }
+                redirectPath={ safeRedirectPath }
             />
         }
         </CardContent>

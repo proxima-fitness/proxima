@@ -32,28 +32,3 @@ export function buildOptionalConsentPatch(
 
     return patch;
 }
-
-/** SessionStorage bridge: sign-up form stashes consents before Turnstile; auth helper persists after register. */
-export const SIGN_UP_PENDING_CONSENTS_KEY = "proxima-sign-up-pending-consents";
-
-
-export function stashSignUpPendingConsents(consents: TSignUpPendingConsents): void {
-    sessionStorage.setItem(SIGN_UP_PENDING_CONSENTS_KEY, JSON.stringify(consents));
-}
-
-export function readSignUpPendingConsents(): TSignUpPendingConsents | null {
-    const raw = sessionStorage.getItem(SIGN_UP_PENDING_CONSENTS_KEY);
-    if (!raw) {
-        return null;
-    }
-
-    try {
-        return JSON.parse(raw) as TSignUpPendingConsents;
-    } catch {
-        return null;
-    }
-}
-
-export function clearSignUpPendingConsents(): void {
-    sessionStorage.removeItem(SIGN_UP_PENDING_CONSENTS_KEY);
-}

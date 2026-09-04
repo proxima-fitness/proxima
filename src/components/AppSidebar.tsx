@@ -26,7 +26,7 @@ import {
     PanelLeft,
     LogIn,
     Info,
-    MessageSquarePlus,
+    Plus,
 } from "lucide-react";
 import {
     Sidebar,
@@ -61,7 +61,7 @@ import { isTestUser } from "@/api/feature-limits";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { getInitials } from "@/utils/general/helpers";
 import { cn } from "@/lib/utils";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { DeleteAccountDialog } from "@/components/header/DeleteAccountDialog";
 import { ConnectHevyDialog } from "@/components/header/ConnectHevyDialog";
@@ -76,7 +76,9 @@ import { useBuildProgramActions } from "@/contexts/BuildProgramActionsContext";
 import { newPathLeaveGuard } from "@/hooks/create-leave-guard";
 import { BUILDER_DRAFT_KEY, clearBuilderDraft } from "@/lib/builder-draft";
 import { deleteChatHistory, setChatPinned, updateChatTitle } from "@/api/chat-history";
-import { CHAT_MESSAGES_KEY } from "@/assets/constants/ui-constants";
+import { buildAuthLoginHref } from "@/lib/sign-in-return";
+
+const CHAT_MESSAGES_KEY = "messages";
 
 const signOutServer = async () => {
     try {
@@ -127,7 +129,38 @@ export function AppSidebar() {
     const router = useRouter();
     const { clearChat } = useBuildProgramActions();
 
-    const { toggleSidebar, state, isMobile, openMobile, setOpenMobile } = useSidebar();
+    const { toggleSidebar, state, isMobile, openMobile, setOpenMobile, setHoverOpen, pinnedOpen } = useSidebar();
+    const sidebarRef = useRef<HTMLDivElement>(null);
+    const openDropdownCountRef = useRef(0);
+
+    const handleSidebarMouseEnter = useCallback(() => {
+        if (isMobile) return;
+        setHoverOpen(true);
+    }, [isMobile, setHoverOpen]);
+
+    const handleSidebarMouseLeave = useCallback(() => {
+        if (isMobile || openDropdownCountRef.current > 0) return;
+        setHoverOpen(false);
+    }, [isMobile, setHoverOpen]);
+
+    const handleSidebarDropdownOpenChange = useCallback(
+        (open: boolean) => {
+            if (open) {
+                openDropdownCountRef.current += 1;
+                return;
+            }
+
+            openDropdownCountRef.current = Math.max(0, openDropdownCountRef.current - 1);
+            if (openDropdownCountRef.current === 0 && !pinnedOpen) {
+                queueMicrotask(() => {
+                    if (openDropdownCountRef.current > 0) return;
+                    if (sidebarRef.current?.matches(":hover")) return;
+                    setHoverOpen(false);
+                });
+            }
+        },
+        [pinnedOpen, setHoverOpen],
+    );
     const closeMobileSidebar = useCallback(() => {
         if (isMobile) setOpenMobile(false);
     }, [isMobile, setOpenMobile]);
@@ -142,12 +175,14 @@ export function AppSidebar() {
     );
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const loginHref = buildAuthLoginHref(pathname, searchParams);
     const selectedChatId =
         pathname?.startsWith("/build-program") === true ? searchParams.get("chat") : null;
 
     const handleLogout = async () => {
         await signOutUser();
         await signOutServer();
+        router.push(loginHref);
     };
 
     const startNewChat = useCallback(() => {
@@ -298,6 +333,7 @@ export function AppSidebar() {
                 onRename={handleRenameChat}
                 onPinToggle={handlePinToggle}
                 onDelete={handleDeleteChat}
+                onDropdownOpenChange={handleSidebarDropdownOpenChange}
             />
         ));
     };
@@ -317,7 +353,12 @@ export function AppSidebar() {
 
     return (
         <>
-            <Sidebar collapsible="icon">
+            <Sidebar
+                ref={sidebarRef}
+                collapsible="icon"
+                onMouseEnter={handleSidebarMouseEnter}
+                onMouseLeave={handleSidebarMouseLeave}
+            >
                 <SidebarHeader>
                     <SidebarMenu>
                         <SidebarMenuItem>
@@ -342,7 +383,7 @@ export function AppSidebar() {
                                         tooltip="New Chat"
                                         onClick={handleNewChatClick}
                                     >
-                                        <MessageSquarePlus className="shrink-0" />
+                                        <Plus className="shrink-0" />
                                         <span className="font-third">New Chat</span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
@@ -355,7 +396,10 @@ export function AppSidebar() {
                             <SidebarMenu>
                                 {sidebarItemsToShow.map((nav) => {
                                     const Icon = navIdToIcon[nav.id];
-                                    const url = navIdToUrl[nav.id] ?? `/${nav.id}`;
+                                    const url =
+                                        nav.id === "log-in"
+                                            ? loginHref
+                                            : (navIdToUrl[nav.id] ?? `/${nav.id}`);
                                     const isPricing = nav.id === "pricing";
                                     return (
                                         <SidebarMenuItem key={nav.id}>
@@ -392,6 +436,7 @@ export function AppSidebar() {
                                             onRename={handleRenameChat}
                                             onPinToggle={handlePinToggle}
                                             onDelete={handleDeleteChat}
+                                            onDropdownOpenChange={handleSidebarDropdownOpenChange}
                                         />
                                     ))}
                                 </SidebarMenu>
@@ -423,7 +468,7 @@ export function AppSidebar() {
                     <SidebarMenu>
                         <SidebarMenuItem>
                             {user ? (
-                                <DropdownMenu>
+                                <DropdownMenu onOpenChange={handleSidebarDropdownOpenChange}>
                                     <DropdownMenuTrigger asChild>
                                         <SidebarMenuButton
                                             tooltip="Settings"
@@ -592,7 +637,7 @@ export function AppSidebar() {
                             ) : (
                                 <SidebarMenuButton asChild tooltip="Log in">
                                     <Link
-                                        href="/auth/login"
+                                        href={loginHref}
                                         className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center"
                                         onClick={closeMobileSidebar}
                                         aria-label="Log in"

@@ -93,6 +93,11 @@ vi.mock("@/components/ui/questions", () => ({
     Questions: () => <div data-testid="questionnaire">Questions</div>,
 }));
 
+vi.mock("next/navigation", () => ({
+    usePathname: () => "/build-program",
+    useSearchParams: () => new URLSearchParams(),
+}));
+
 import { Chat } from "../Chat";
 import { HevyExportGate } from "../HevyExportGate";
 

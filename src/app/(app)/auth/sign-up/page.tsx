@@ -10,14 +10,22 @@
  */
 
 import { SignUpForm } from '@/components/auth/sign-up-form'
+import { sanitizeSignInReturn } from '@/lib/sign-in-return'
 import { ai_program_builder } from 'public'
 
-/** Sign-up page; form and side imagery. */
-export default function Page() {
+type TPageProps = {
+  searchParams: Promise<{ next?: string }> | { next?: string };
+};
+
+/** Sign-up page; form and side imagery. Preserves Sign-in return for login link. */
+export default async function Page(props: TPageProps) {
+  const searchParams = await Promise.resolve(props.searchParams);
+  const redirectPath = sanitizeSignInReturn(searchParams?.next);
+
   return (
     <div className="bg-white dark:bg-darkGray flex flex-row sm:min-h-svh w-full items-center justify-around gap-24 md:p-10">
       <div className="w-full pr-12 max-sm:pr-0 max-w-md">
-        <SignUpForm />
+        <SignUpForm redirectPath={redirectPath} />
       </div>
     <div className={ `w-[50%] relative max-sm:hidden` } >
         <img src={ (ai_program_builder).src } alt="Program Creator Image" className="relative z-5" />

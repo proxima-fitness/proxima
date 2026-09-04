@@ -38,11 +38,24 @@ const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
 
+type TSidebarOpenOptions = {
+  /** When false, updates visual open state only (e.g. hover expand). Default true. */
+  persist?: boolean;
+};
+
 /** Context value for sidebar open state (desktop + mobile) and toggle. */
 type TSidebarContext = {
   state: "expanded" | "collapsed";
   open: boolean;
-  setOpen: (open: boolean) => void;
+  /** Pinned open state persisted to cookie; distinct from transient hover expand. */
+  pinnedOpen: boolean;
+  /** Transient hover expand; set only from pointer event handlers. */
+  hoverOpen: boolean;
+  setHoverOpen: (open: boolean | ((open: boolean) => boolean)) => void;
+  setOpen: (
+    open: boolean | ((open: boolean) => boolean),
+    options?: TSidebarOpenOptions
+  ) => void;
   openMobile: boolean;
   setOpenMobile: (open: boolean) => void;
   isMobile: boolean;
@@ -88,32 +101,50 @@ const SidebarProvider = React.forwardRef<
   ) => {
     const isMobile = useIsMobile(640);
     const [openMobile, setOpenMobile] = React.useState(false);
+    const [pinnedOpen, setPinnedOpen] = React.useState(defaultOpen);
+    const [hoverOpen, setHoverOpenState] = React.useState(false);
+    const open = openProp ?? (pinnedOpen || hoverOpen);
 
-    // This is the internal state of the sidebar.
-    // We use openProp and setOpenProp for control from outside the component.
-    const [_open, _setOpen] = React.useState(defaultOpen);
-    const open = openProp ?? _open
-    const setOpen = React.useCallback(
+    const setHoverOpen = React.useCallback(
       (value: boolean | ((value: boolean) => boolean)) => {
-        const openState = typeof value === "function" ? value(open) : value
-        if (setOpenProp) {
-          setOpenProp(openState)
-        } else {
-          _setOpen(openState)
+        setHoverOpenState((prev) =>
+          typeof value === "function" ? value(prev) : value
+        );
+      },
+      []
+    );
+
+    const setOpen = React.useCallback(
+      (
+        value: boolean | ((value: boolean) => boolean),
+        options?: TSidebarOpenOptions
+      ) => {
+        if (options?.persist === false) {
+          setHoverOpen(value);
+          return;
         }
 
-        // Persist state to cookie so sidebar stays expanded/collapsed across reloads
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+        const nextPinned =
+          typeof value === "function" ? value(pinnedOpen) : value;
+        setPinnedOpen(nextPinned);
+        document.cookie = `${SIDEBAR_COOKIE_NAME}=${nextPinned}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+        setOpenProp?.(nextPinned || hoverOpen);
       },
-      [setOpenProp, open]
+      [hoverOpen, pinnedOpen, setOpenProp, setHoverOpen]
     );
 
     // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
-      return isMobile
-        ? setOpenMobile((open) => !open)
-        : setOpen((open) => !open)
-    }, [isMobile, setOpen, setOpenMobile]);
+      if (isMobile) {
+        setOpenMobile((open) => !open)
+        return
+      }
+
+      const nextPinned = !pinnedOpen
+      setPinnedOpen(nextPinned)
+      document.cookie = `${SIDEBAR_COOKIE_NAME}=${nextPinned}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+      setOpenProp?.(nextPinned || hoverOpen)
+    }, [hoverOpen, isMobile, pinnedOpen, setOpenProp, setOpenMobile]);
 
     // Cmd/Ctrl+B toggles sidebar
     React.useEffect(() => {
@@ -139,13 +170,16 @@ const SidebarProvider = React.forwardRef<
       () => ({
         state,
         open,
+        pinnedOpen,
+        hoverOpen,
+        setHoverOpen,
         setOpen,
         isMobile,
         openMobile,
         setOpenMobile,
         toggleSidebar,
       }),
-      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+      [state, open, pinnedOpen, hoverOpen, setHoverOpen, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
     );
 
     return (
@@ -200,7 +234,8 @@ const Sidebar = React.forwardRef<
     },
     ref
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+    const { isMobile, state, openMobile, setOpenMobile, pinnedOpen, hoverOpen } = useSidebar();
+    const isHoverOverlay = hoverOpen && !pinnedOpen;
 
     if (collapsible === "none") {
       return (
@@ -247,6 +282,8 @@ const Sidebar = React.forwardRef<
         ref={ref}
         className="group peer hidden text-sidebar-foreground sm:block"
         data-state={state}
+        data-layout={pinnedOpen ? "expanded" : "collapsed"}
+        data-hover-overlay={isHoverOverlay ? "true" : undefined}
         data-collapsible={state === "collapsed" ? collapsible : ""}
         data-variant={variant}
         data-side={side}
@@ -254,17 +291,17 @@ const Sidebar = React.forwardRef<
         {/* This is what handles the sidebar gap on desktop */}
         <div
           className={cn(
-            "relative w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear",
-            "group-data-[collapsible=offcanvas]:w-0",
+            "relative bg-transparent transition-[width] duration-200 ease-linear",
             "group-data-[side=right]:rotate-180",
             variant === "floating" || variant === "inset"
-              ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]"
-              : "group-data-[collapsible=icon]:w-(--sidebar-width-icon)"
+              ? "group-data-[layout=expanded]:w-(--sidebar-width) group-data-[layout=collapsed]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))] group-data-[layout=collapsed]:group-data-[collapsible=offcanvas]:w-0"
+              : "group-data-[layout=expanded]:w-(--sidebar-width) group-data-[layout=collapsed]:w-(--sidebar-width-icon) group-data-[layout=collapsed]:group-data-[collapsible=offcanvas]:w-0"
           )}
         />
         <div
           className={cn(
             "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear sm:flex",
+            "group-data-[hover-overlay=true]:z-40 group-data-[hover-overlay=true]:shadow-lg",
             side === "left"
               ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
               : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",

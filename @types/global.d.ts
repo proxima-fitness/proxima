@@ -118,12 +118,6 @@ type TMessage = {
     content: string;
 }
 
-type TSignUpPendingConsents = {
-    platformImprovementOptIn: boolean;
-    marketingOptIn: boolean;
-};
-
-
 type TPolicyVersionSummary = {
     id: string;
     versionLabel: string;

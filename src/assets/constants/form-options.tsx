@@ -132,7 +132,8 @@ export const equipmentOptions: TSelectOption[] = [
     { label: "Dumbbell", value: "dumbbell"},
     { label: "Kettlebell", value: "kettlebell"},
     { label: "Machine", value: "machine"},
-    { label: "Bodyweight", value: "bodyweight"},
+    /** Hevy `equipment` value is `none` (no gear) - label Bodyweight for exclude UI. */
+    { label: "Bodyweight", value: "none"},
     { label: "Smith machine", value: "smith machine"},
     { label: "Cable", value: "cable"},
     { label: "Cardio", value: "cardio"},
@@ -140,8 +141,7 @@ export const equipmentOptions: TSelectOption[] = [
     { label: "Suspension", value: "suspension"},
     { label: "Resistance band", value: "resistance_band"},
     { label: "Plate", value: "plate"},
-    { label: "Other", value: "other"},
-    { label: "None", value: "none"},
+    { label: "Sled, box, rope & similar", value: "other"},
 ];
 
 /**
@@ -164,7 +164,7 @@ export const focusAreasOptions: TSelectOption[] = [
     { label: "Full body", value: "full body"},
 ];
 
-/** Excluded areas - Constraint / Questionnaire core catalog (drops full body). */
+/** Excluded areas - Constraint / Questionnaire catalog (drops full body). */
 export const excludedAreasOptions: TSelectOption[] = focusAreasOptions.filter(
     (opt) => opt.value !== "full body",
 );
@@ -193,7 +193,10 @@ function toQuestionOptions(options: TSelectOption[]): TQuestionOption[] {
   return options.map((opt) => ({ id: opt.value, label: opt.label }));
 }
 
-/** Questionnaire core - Constraint profile fields (always visible). */
+/**
+ * Questionnaire core - minimal first-time build gate (always visible).
+ * Length, schedule, equipment, health. Style prefs live in advanced.
+ */
 export const sampleQuestionsCore: TQuestion[] = [
     {
       id: "program-length",
@@ -229,10 +232,17 @@ export const sampleQuestionsCore: TQuestion[] = [
       options: toQuestionOptions(healthIssuesOptions),
       allowOther: false,
     },
+];
+
+/**
+ * Questionnaire advanced - collapsed by default. Empty answers valid; do not block build.
+ * Programming style prefs (Constraint profile) first, then Training profile person facts.
+ */
+export const sampleQuestionsAdvanced: TQuestion[] = [
     {
       id: "exclude-areas",
       question: "Exclude muscle areas?",
-      section: "core",
+      section: "advanced",
       subtitle: { text: "Selected areas will be excluded from your program-not included." },
       type: "multi-select",
       options: toQuestionOptions(excludedAreasOptions),
@@ -241,7 +251,7 @@ export const sampleQuestionsCore: TQuestion[] = [
     {
       id: "split-type",
       question: "Preferred split?",
-      section: "core",
+      section: "advanced",
       options: [
         { id: "default", label: "Based on your goals (Recommended)" },
         { id: "ppl", label: "PPL (Push, Pull, Legs)" },
@@ -255,7 +265,7 @@ export const sampleQuestionsCore: TQuestion[] = [
     {
       id: "exercise-variability",
       question: "Exercise variability?",
-      section: "core",
+      section: "advanced",
       options: [
         { id: "little", label: "Don't vary the exercises (Recommended for strength and hypertrophy programs)" },
         { id: "lots", label: "Vary the exercises (Recommended if you get bored easily)" },
@@ -265,7 +275,7 @@ export const sampleQuestionsCore: TQuestion[] = [
     {
       id: "progression-system",
       question: "Add progressive overload system?",
-      section: "core",
+      section: "advanced",
       subtitle: {
         text: "Learn more",
         link: "https://jackproxima.substack.com/p/demystifying-progressive-overload"
@@ -284,7 +294,7 @@ export const sampleQuestionsCore: TQuestion[] = [
     {
       id: "deload-week",
       question: "Add a Deload week?",
-      section: "core",
+      section: "advanced",
       options: [
         { id: "yes", label: "Yes ( Add an easier week at the end of the program)" },
         { id: "no", label: "No ( No deload week at the end of the program)" },
@@ -294,7 +304,7 @@ export const sampleQuestionsCore: TQuestion[] = [
     {
       id: "peak-week",
       question: "Do you want a Peak week?",
-      section: "core",
+      section: "advanced",
       options: [
         { id: "yes", label: "Yes ( Include a higher-intensity week in the program)" },
         { id: "no", label: "No" },
@@ -304,20 +314,13 @@ export const sampleQuestionsCore: TQuestion[] = [
     {
       id: "warmup-exercises",
       question: "Add warmup exercises?",
-      section: "core",
+      section: "advanced",
       options: [
         { id: "yes", label: "Yes ( Include 1-2 prep movements at the start of each day)" },
         { id: "no", label: "No ( Skip separate warmup exercises)" },
       ],
       allowOther: false,
     },
-];
-
-/**
- * Questionnaire advanced - Training profile fields (collapsed by default).
- * Empty answers valid; do not block build.
- */
-export const sampleQuestionsAdvanced: TQuestion[] = [
     {
       id: "age",
       question: "Age?",

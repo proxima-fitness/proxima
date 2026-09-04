@@ -9,13 +9,16 @@
 
 /**
  * PricingSignInCta conditionally renders a sign-in or re-sign-in button for the pricing page depending on the current user state.
+ * Suspense wraps the searchParams consumer so static prerender of /pricing succeeds.
  */
+import { Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUserContext } from "@/contexts/UserContext";
 import { signOutUser } from "@/api/authentication";
+import { buildAuthLoginHref } from "@/lib/sign-in-return";
 
 const signOutServer = async () => {
     try {
@@ -25,11 +28,12 @@ const signOutServer = async () => {
     }
 };
 
-const LOGIN_NEXT_PRICING = "/auth/login?next=" + encodeURIComponent("/pricing");
-
-export const PricingSignInCta: React.FC = () => {
+function PricingSignInCtaInner() {
     const { user } = useUserContext();
     const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const loginHref = buildAuthLoginHref(pathname, searchParams);
     const hasValidUserId = Boolean(user?.id);
 
     if (hasValidUserId) {
@@ -45,7 +49,7 @@ export const PricingSignInCta: React.FC = () => {
                     onClick={async () => {
                         await signOutUser();
                         await signOutServer();
-                        router.push(LOGIN_NEXT_PRICING);
+                        router.push(loginHref);
                     }}
                 >
                     <LogIn className="h-4 w-4" />
@@ -53,12 +57,20 @@ export const PricingSignInCta: React.FC = () => {
                 </Button>
             ) : (
                 <Button variant="ghost" size="lg" asChild>
-                    <Link href={LOGIN_NEXT_PRICING}>
+                    <Link href={loginHref}>
                         <LogIn className="h-4 w-4" />
                         Sign in to Subscribe
                     </Link>
                 </Button>
             )}
         </div>
+    );
+}
+
+export const PricingSignInCta: React.FC = () => {
+    return (
+        <Suspense fallback={<div className="pb-6" aria-hidden />}>
+            <PricingSignInCtaInner />
+        </Suspense>
     );
 };

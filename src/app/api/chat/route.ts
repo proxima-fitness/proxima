@@ -39,6 +39,7 @@ import { discoverSkills } from './skills/index';
 import z from 'zod';
 import { sanitizeMessagesWithUnresolvedToolCalls } from './sanitize-messages';
 import { ALWAYS_AVAILABLE_CHAT_TOOLS } from './always-available-tools';
+import { streamAgentOnError } from './stream-on-error';
 
 // Vercel serverless function timeout - 2 minutes for workout generation
 // This is important for longer programs that may take time to generate
@@ -343,6 +344,8 @@ async function handleChatPost(req: Request) {
                     agent: andy,
                     uiMessages: sanitizedMessages,
                     options: { sandbox, skills, activeToolScope },
+                    // Safe class code to client; real error stays in server logs + Langfuse (ADR 03).
+                    onError: streamAgentOnError,
                 });
             }
         );

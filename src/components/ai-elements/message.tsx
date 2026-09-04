@@ -389,6 +389,7 @@ export const MessageResponse = memo(
     <Streamdown
       className={cn(
         "size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
+        "[&_a]:text-lightSecondary hover:[&_a]:text-lightSecondary/80",
         className
       )}
       plugins={streamdownPlugins}

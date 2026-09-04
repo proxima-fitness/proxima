@@ -29,17 +29,26 @@ afterEach(() => {
 });
 
 describe("questionnaire catalogs", () => {
-    it("core includes exclude-areas and omits Training profile fields", () => {
-        expect(sampleQuestionsCore.some((q) => q.id === "exclude-areas")).toBe(true);
+    it("core stays minimal; style prefs and Training profile live in advanced", () => {
+        expect(sampleQuestionsCore.map((q) => q.id)).toEqual([
+            "program-length",
+            "days-per-week",
+            "exclude-equipment",
+            "health-issues",
+        ]);
         expect(sampleQuestionsCore.every((q) => !isAdvancedQuestion(q))).toBe(true);
         expect(sampleQuestionsAdvanced.every(isAdvancedQuestion)).toBe(true);
+        expect(sampleQuestionsAdvanced.some((q) => q.id === "exclude-areas")).toBe(true);
+        expect(sampleQuestionsAdvanced.some((q) => q.id === "split-type")).toBe(true);
+        expect(sampleQuestionsAdvanced.some((q) => q.id === "warmup-exercises")).toBe(true);
+        expect(sampleQuestionsAdvanced.some((q) => q.id === "age")).toBe(true);
         expect(sampleQuestions).toHaveLength(
             sampleQuestionsCore.length + sampleQuestionsAdvanced.length,
         );
     });
 
     it("exclude-areas drops full body", () => {
-        const excludeAreas = sampleQuestionsCore.find((q) => q.id === "exclude-areas");
+        const excludeAreas = sampleQuestionsAdvanced.find((q) => q.id === "exclude-areas");
         expect(excludeAreas?.options.some((o) => o.id === "full body")).toBe(false);
         expect(excludeAreas?.options.some((o) => o.id === "legs")).toBe(true);
     });
@@ -57,17 +66,24 @@ describe("Questions core / advanced UI", () => {
 
         expect(screen.getByTestId("questionnaire-advanced-trigger")).toBeTruthy();
         expect(screen.queryByText(/Age\?/)).toBeNull();
-        expect(screen.getByText(/Exclude muscle areas\?/)).toBeTruthy();
+        expect(screen.queryByText(/Exclude muscle areas\?/)).toBeNull();
+        expect(screen.queryByText(/Preferred split\?/)).toBeNull();
+        expect(screen.getByText(/Program length\?/)).toBeTruthy();
+        expect(screen.getByText(/Health issues to consider\?/)).toBeTruthy();
 
         fireEvent.click(screen.getByRole("button", { name: "Build program" }));
         expect(onComplete).toHaveBeenCalledTimes(1);
         expect(onComplete.mock.calls[0][0]).not.toHaveProperty("age");
+        expect(onComplete.mock.calls[0][0]).not.toHaveProperty("split-type");
     });
 
     it("expands advanced questions when trigger clicked", () => {
         render(<Questions questions={sampleQuestions} />);
 
         fireEvent.click(screen.getByTestId("questionnaire-advanced-trigger"));
+        expect(screen.getByText(/Exclude muscle areas\?/)).toBeTruthy();
+        expect(screen.getByText(/Preferred split\?/)).toBeTruthy();
+        expect(screen.getByText(/Add warmup exercises\?/)).toBeTruthy();
         expect(screen.getByText(/Age\?/)).toBeTruthy();
         expect(screen.getByText(/Training focus\?/)).toBeTruthy();
         expect(screen.getByText(/Height\?/)).toBeTruthy();

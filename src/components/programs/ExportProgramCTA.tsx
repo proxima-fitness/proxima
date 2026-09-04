@@ -4,7 +4,7 @@ import { ExportProgramCTAButtons } from "./ExportProgramCTAButtons";
 import { exportOptions } from "@/assets/constants/export-options";
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
     Dialog,
     DialogContent,
@@ -26,6 +26,7 @@ import { postNewProgramSubscriber } from "@/api/programs";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
+import { buildAuthLoginHref } from "@/lib/sign-in-return";
 
 const PdfPreviewSkeleton = () => (
     <Skeleton className="w-full max-sm:h-[50vh] h-[60vh] rounded-lg" />
@@ -45,7 +46,8 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
     const { isInLbs } = usePoundsOrKgContext();
     const { user, isLoading: authLoading } = useUserContext();
     const pathname = usePathname();
-    const loginWithNext = `/auth/login?next=${encodeURIComponent(pathname ?? "/")}`;
+    const searchParams = useSearchParams();
+    const loginWithNext = buildAuthLoginHref(pathname, searchParams);
 
     const [pdfOpen, setPdfOpen] = useState(false);
     const [hevyOpen, setHevyOpen] = useState(false);
@@ -109,9 +111,9 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
                     )}
                     {authLoading ? (
                         <div className="flex flex-col gap-3 w-full pb-4" aria-busy="true" aria-label="Loading export options">
-                            <Skeleton className="h-[88px] w-full rounded-lg" />
-                            <Skeleton className="h-[88px] w-full rounded-lg" />
-                            <Skeleton className="h-[88px] w-full rounded-lg" />
+                            <Skeleton className="h-22 w-full rounded-lg" />
+                            <Skeleton className="h-22 w-full rounded-lg" />
+                            <Skeleton className="h-22 w-full rounded-lg" />
                         </div>
                     ) : user ? (
                         <ExportProgramCTAButtons
@@ -139,7 +141,7 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
                             <div className="absolute inset-0 z-10 flex items-center justify-center overflow-hidden rounded-2xl bg-background/40 px-4 backdrop-blur-sm dark:bg-background/25">
                                 <Button
                                     asChild
-                                    className="relative z-[1] h-10 rounded-xl bg-secondary font-semibold text-white shadow-sm hover:bg-secondary/90 dark:bg-lightSecondary dark:text-extraDarkGray dark:hover:bg-lightSecondary/90"
+                                    className="relative z-1 h-10 rounded-xl bg-secondary font-semibold text-white shadow-sm hover:bg-secondary/90 dark:bg-lightSecondary dark:text-extraDarkGray dark:hover:bg-lightSecondary/90"
                                 >
                                     <Link href={loginWithNext}>Sign in to export</Link>
                                 </Button>
@@ -227,7 +229,7 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
             </Dialog>
 
             <Dialog open={showBackConfirm} onOpenChange={setShowBackConfirm}>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="sm:max-w-106.25">
                     <DialogHeader>
                         <DialogTitle>Stop upload?</DialogTitle>
                         <DialogDescription>

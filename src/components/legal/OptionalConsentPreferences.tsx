@@ -5,7 +5,7 @@
  * Separates optional preferences from required legal agreement.
  *
  * Depends on: ConsentSwitch, optional-consent-copy
- * Used by: LegalAcceptanceDialog, sign-up-form
+ * Used by: LegalAcceptanceDialog
  */
 "use client";
 

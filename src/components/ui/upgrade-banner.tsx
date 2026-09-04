@@ -8,12 +8,14 @@
  * Used by: build-program Chat (Free always; Pro only when out of credits; Pro+ hidden).
  */
 import Link from "next/link"
+import { usePathname, useSearchParams } from "next/navigation"
 import { ChevronLeft, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
 import type { User } from "@supabase/supabase-js"
 import { useState, useCallback } from "react"
+import { buildAuthLoginHref } from "@/lib/sign-in-return"
 
 /**
  * @property remainingRequests - Credits left; when 0, copy uses exhaustedMessage or default.
@@ -62,6 +64,9 @@ export function UpgradeBanner({
   exhaustedMessage,
   enableMobileCollapse = false,
 }: IUpgradeBannerProps) {
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const loginHref = buildAuthLoginHref(pathname, searchParams)
   const usedPercentage = ((totalRequests - remainingRequests) / totalRequests) * 100
   const exhaustedCopy =
     remainingRequests === 0
@@ -84,7 +89,7 @@ export function UpgradeBanner({
   const ctaLink = user ? (
     <Link href="/pricing">{upgradeButtonLabel}</Link>
   ) : (
-    <Link href={`/auth/login?next=${encodeURIComponent("/build-program?resume=true")}`}>Sign in</Link>
+    <Link href={loginHref}>Sign in</Link>
   )
 
   const showMobileIconOnly = enableMobileCollapse && !mobileExpanded

@@ -10,7 +10,7 @@
 "use client";
 
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, usePathname, useSearchParams } from "next/navigation";
 import { useUserContext } from "@/contexts/UserContext";
 import { useHevyExercises, useWorkoutDetail } from "@/api/hooks";
 import { WorkoutNotFoundError } from "@/api/workout-history-browse";
@@ -26,6 +26,7 @@ import {
     formatWorkoutWallDuration,
 } from "@/utils/general/helpers";
 import styles from "@/style";
+import { buildAuthLoginHref } from "@/lib/sign-in-return";
 
 const SOURCE_LABELS: Record<string, string> = {
     [HEVY_WORKOUT_SOURCE]: "Hevy",
@@ -67,6 +68,9 @@ export function WorkoutDetailContent({
     const { user, isLoading: isUserLoading } = useUserContext();
     const { data: workout, isLoading, isError, error } = useWorkoutDetail(user, workoutId);
     const { data: hevyExercises } = useHevyExercises(!!user);
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const loginHref = buildAuthLoginHref(pathname, searchParams);
 
     if (isUserLoading || (user && isLoading)) {
         return (
@@ -87,7 +91,7 @@ export function WorkoutDetailContent({
                         Log in to view your backed-up workouts.
                     </p>
                     <Link
-                        href="/auth/login"
+                        href={loginHref}
                         className="mt-6 inline-block text-sm font-medium text-lightSecondary hover:underline"
                     >
                         Sign in

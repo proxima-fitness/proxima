@@ -2,10 +2,9 @@
  * @module LegalConsentCheckbox
  *
  * Shared required legal agreement checkbox.
- * Used by Legal acceptance dialog (01d) and sign-up form (01e).
  *
  * Depends on: Checkbox, Label
- * Used by: LegalAcceptanceDialog, sign-up-form (01e)
+ * Used by: LegalAcceptanceDialog
  */
 "use client";
 

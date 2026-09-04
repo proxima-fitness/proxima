@@ -17,9 +17,28 @@ import { Stepper } from "@/components/ui/stepper";
 import { programBuilderSteps } from "@/assets/constants";
 import { SetTypesLegend } from "../shared/SetTypesLegend";
 import { useUserContext } from "@/contexts/UserContext";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
+
+/** sessionStorage key — hide signed-out step guide for rest of tab session. */
+const STEPPER_DISMISSED_KEY = "build-program-stepper-dismissed";
+
+function readStepperDismissed(): boolean {
+    try {
+        return sessionStorage.getItem(STEPPER_DISMISSED_KEY) === "true";
+    } catch {
+        return false;
+    }
+}
+
+function writeStepperDismissed() {
+    try {
+        sessionStorage.setItem(STEPPER_DISMISSED_KEY, "true");
+    } catch {
+        // ignore
+    }
+}
 
 /** Props for the main Hevy routine builder (columns + dialogs). */
 interface IProps {
@@ -126,6 +145,8 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(true);
+    // Lazy init OK: HevyRoutine mounts client-side after program load.
+    const [stepperDismissed, setStepperDismissed] = useState(readStepperDismissed);
 
     // Update scroll button visibility based on scroll position
     useEffect(() => {
@@ -184,9 +205,21 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
 
     return (
         <>
-            { !user &&
-                <div className="max-sm:hidden flex flex-row justify-start items-center max-sm:px-4 sm:px-0 pb-2 max-sm:pb-0 max-sm:gap-4 max-sm:flex-wrap">
+            { !user && !stepperDismissed &&
+                <div className="max-sm:hidden flex flex-row justify-between items-start gap-2 max-sm:px-4 sm:px-0 pb-2 max-sm:pb-0">
                     <Stepper steps={programBuilderSteps} currentStep={2} legend={isMobile ? <SetTypesLegend /> : undefined} />
+                    <button
+                        type="button"
+                        onClick={() => {
+                            writeStepperDismissed();
+                            setStepperDismissed(true);
+                        }}
+                        className="mt-2 flex size-7 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        aria-label="Dismiss step guide"
+                        data-testid="hevy-routine-stepper-dismiss"
+                    >
+                        <X className="size-3.5" aria-hidden />
+                    </button>
                 </div>
             }
             { isMobile ? (
@@ -251,7 +284,7 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
                         <div className="relative w-full flex-1 min-h-0">
                             <div
                                 ref={scrollContainerRef}
-                                className={`flex flex-row gap-4 h-full overflow-auto w-full ${!user ? "border-t-4 border-lightGray" : ""}`}
+                                className={`flex flex-row gap-4 h-full overflow-auto w-full ${!user && !stepperDismissed ? "border-t-4 border-lightGray" : ""}`}
                             >
                                 { numberOfWeeksArr.map((_, index) => (
                                     <HevyColumn

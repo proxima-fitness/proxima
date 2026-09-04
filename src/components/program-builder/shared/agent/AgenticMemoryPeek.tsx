@@ -260,71 +260,85 @@ function PeekBody({
     });
 
     return (
-        <div className="flex flex-col">
-            <header className="border-b border-border/60 pb-3">
-                <h4 className="flex items-center gap-2 text-[15px] font-semibold tracking-[-0.02em] text-foreground">
-                    <Brain className="size-4 shrink-0" strokeWidth={1.5} aria-hidden="true" />
-                    Agentic memory
-                </h4>
-            </header>
+        <div className="flex min-h-0 flex-1 flex-col">
+            <div className="min-h-0 flex-1 overflow-y-auto">
+                <header className="border-b border-border/60 pb-3">
+                    <h4 className="flex items-center gap-2 text-[15px] font-semibold tracking-[-0.02em] text-foreground">
+                        <Brain
+                            className="size-4 shrink-0"
+                            strokeWidth={1.5}
+                            aria-hidden="true"
+                        />
+                        Agentic memory
+                    </h4>
+                </header>
 
-            {allEmpty ? (
-                <p className="pt-3 pb-4 text-[13px] leading-[1.45] tracking-[-0.01em] text-muted-foreground">
-                    No agentic memory saved yet.
-                </p>
-            ) : (
-                <Accordion
-                    type="single"
-                    collapsible
-                    defaultValue={defaultOpen}
-                    className="pt-1 pb-2"
-                >
-                    <AccordionItem value="constraint" className="border-border/60">
-                        <AccordionTrigger className="py-3 text-[13px] font-medium tracking-[-0.01em]">
-                            Constraint profile
-                        </AccordionTrigger>
-                        <AccordionContent>
-                            <ConstraintSectionBody
-                                summary={constraintSummary}
-                                isEmpty={constraintEmpty}
-                            />
-                        </AccordionContent>
-                    </AccordionItem>
-
-                    <AccordionItem value="training" className="border-border/60">
-                        <AccordionTrigger className="py-3 text-[13px] font-medium tracking-[-0.01em]">
-                            Training profile
-                        </AccordionTrigger>
-                        <AccordionContent>
-                            <TrainingSectionBody
-                                rows={trainingRows}
-                                isEmpty={trainingEmpty}
-                            />
-                        </AccordionContent>
-                    </AccordionItem>
-
-                    {bodyOneLiner ? (
-                        <AccordionItem value="body" className="border-border/60">
+                {allEmpty ? (
+                    <p className="pt-3 pb-4 text-[13px] leading-[1.45] tracking-[-0.01em] text-muted-foreground">
+                        No agentic memory saved yet.
+                    </p>
+                ) : (
+                    <Accordion
+                        type="single"
+                        collapsible
+                        defaultValue={defaultOpen}
+                        className="pt-1 pb-2"
+                    >
+                        <AccordionItem
+                            value="constraint"
+                            className="border-border/60"
+                        >
                             <AccordionTrigger className="py-3 text-[13px] font-medium tracking-[-0.01em]">
-                                Body measurements
+                                Constraint profile
                             </AccordionTrigger>
                             <AccordionContent>
-                                <p className="text-[13px] leading-[1.4] tracking-[-0.01em] text-foreground">
-                                    {bodyOneLiner}
-                                </p>
+                                <ConstraintSectionBody
+                                    summary={constraintSummary}
+                                    isEmpty={constraintEmpty}
+                                />
                             </AccordionContent>
                         </AccordionItem>
-                    ) : null}
-                </Accordion>
-            )}
 
-            <EditProfileLink href={editProfileHref} />
+                        <AccordionItem value="training" className="border-border/60">
+                            <AccordionTrigger className="py-3 text-[13px] font-medium tracking-[-0.01em]">
+                                Training profile
+                            </AccordionTrigger>
+                            <AccordionContent>
+                                <TrainingSectionBody
+                                    rows={trainingRows}
+                                    isEmpty={trainingEmpty}
+                                />
+                            </AccordionContent>
+                        </AccordionItem>
+
+                        {bodyOneLiner ? (
+                            <AccordionItem value="body" className="border-border/60">
+                                <AccordionTrigger className="py-3 text-[13px] font-medium tracking-[-0.01em]">
+                                    Body measurements
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                    <p className="text-[13px] leading-[1.4] tracking-[-0.01em] text-foreground">
+                                        {bodyOneLiner}
+                                    </p>
+                                </AccordionContent>
+                            </AccordionItem>
+                        ) : null}
+                    </Accordion>
+                )}
+            </div>
+
+            <div className="shrink-0">
+                <EditProfileLink href={editProfileHref} />
+            </div>
         </div>
     );
 }
 
-const contentClassName =
-    "w-80 max-w-[min(20rem,calc(100vw-2rem))] rounded-xl border-border/50 p-5 shadow-lg";
+/** Viewport-capped peek panel: scrolls tall Constraint content; CTA stays pinned. */
+export const AGENTIC_MEMORY_PEEK_CONTENT_CLASSNAME =
+    "flex max-h-[min(28rem,calc(100dvh-2rem))] w-80 max-w-[min(20rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-xl border-border/50 p-5 shadow-lg";
+
+const contentClassName = AGENTIC_MEMORY_PEEK_CONTENT_CLASSNAME;
 
 /**
  * Read-only Agentic memory peek control (HoverCard desktop / Popover tap).
@@ -386,7 +400,13 @@ export function AgenticMemoryPeek({
         return (
             <Popover>
                 <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-                <PopoverContent className={contentClassName} align="end" sideOffset={4}>
+                <PopoverContent
+                    className={contentClassName}
+                    align="end"
+                    side="top"
+                    sideOffset={4}
+                    collisionPadding={16}
+                >
                     {body}
                 </PopoverContent>
             </Popover>
@@ -396,7 +416,13 @@ export function AgenticMemoryPeek({
     return (
         <HoverCard openDelay={0} closeDelay={0}>
             <HoverCardTrigger asChild>{trigger}</HoverCardTrigger>
-            <HoverCardContent className={contentClassName} align="end" sideOffset={4}>
+            <HoverCardContent
+                className={contentClassName}
+                align="end"
+                side="top"
+                sideOffset={4}
+                collisionPadding={16}
+            >
                 {body}
             </HoverCardContent>
         </HoverCard>

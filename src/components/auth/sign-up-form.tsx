@@ -24,14 +24,15 @@ import { useState } from 'react';
 import * as Yup from "yup";
 import { useForm } from 'react-hook-form';
 import { yupResolver } from "@hookform/resolvers/yup";
-import { LegalConsentCheckbox } from '@/components/legal/LegalConsentCheckbox';
-import { LegalPolicyTextarea } from '@/components/legal/LegalPolicyTextarea';
-import { OptionalConsentPreferences } from '@/components/legal/OptionalConsentPreferences';
-import { stashSignUpPendingConsents } from '@/lib/user-consents';
 import { TurnstileSignUp } from './TurnstileSignUp';
+import { buildAuthLoginHrefFromNext } from '@/lib/sign-in-return';
 
-/** Props: div props (e.g. className) for the form container. */
-export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
+/** Props: div props plus optional redirectPath preserved for login link (Sign-in return). */
+type TSignUpFormProps = React.ComponentPropsWithoutRef<'div'> & {
+  redirectPath?: string;
+};
+
+export function SignUpForm({ className, redirectPath = '/', ...props }: TSignUpFormProps) {
 
     const [isLoading, setIsLoading] = useState(false)
     const [turnstileOpen, setTurnstileOpen] = useState(false);
@@ -66,16 +67,11 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
             .required("First name is required"),
         lastName: Yup.string()
             .max(30, "Last name must be less than 30 characters"),
-        legalConsent: Yup.boolean()
-            .oneOf([true], "You must agree to the Terms of Use and Privacy Policy")
-            .required("You must agree to the Terms of Use and Privacy Policy"),
-        platformImprovementOptIn: Yup.boolean().default(true).required(),
-        marketingOptIn: Yup.boolean().default(false).required(),
         });
 
     type TSignUpFormValues = Yup.InferType<typeof schema>;
 
-    const { register, watch, handleSubmit, formState, setValue } = useForm<TSignUpFormValues>({
+    const { register, watch, handleSubmit, formState } = useForm<TSignUpFormValues>({
         mode: "onChange",
         resolver: yupResolver(schema),
         defaultValues: {
@@ -85,9 +81,6 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
             username: "",
             firstName: "",
             lastName: "",
-            legalConsent: false,
-            platformImprovementOptIn: true,
-            marketingOptIn: false,
         },
     } );
 
@@ -97,9 +90,6 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
     const watchUserName = watch("username");
     const watchFirstName = watch("firstName");
     const watchLastName = watch("lastName");
-    const watchLegalConsent = watch("legalConsent");
-    const watchPlatformImprovementOptIn = watch("platformImprovementOptIn");
-    const watchMarketingOptIn = watch("marketingOptIn");
 
     const { onChange: onEmailChange } = register("email");
     const { onChange: onPasswordChange } = register("password");
@@ -109,10 +99,6 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
     const { onChange: onLastNameChange } = register("lastName");
 
     const handleSignUp = () => {
-        stashSignUpPendingConsents({
-            platformImprovementOptIn: watchPlatformImprovementOptIn,
-            marketingOptIn: watchMarketingOptIn,
-        });
         setIsLoading(true);
         setTurnstileOpen(true);
     };
@@ -258,43 +244,17 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
                     } }
                 />
               </div>
-              <div className="grid gap-2">
-                <LegalPolicyTextarea />
-                <OptionalConsentPreferences
-                    idPrefix="sign-up"
-                    platformImprovementOptIn={watchPlatformImprovementOptIn}
-                    marketingOptIn={watchMarketingOptIn}
-                    onPlatformImprovementChange={(checked) => {
-                        setValue("platformImprovementOptIn", checked, { shouldValidate: true });
-                    }}
-                    onMarketingChange={(checked) => {
-                        setValue("marketingOptIn", checked, { shouldValidate: true });
-                    }}
-                    disabled={isLoading}
-                />
-                <LegalConsentCheckbox
-                    id="sign-up-legal-consent"
-                    checked={watchLegalConsent}
-                    disabled={isLoading}
-                    onCheckedChange={(checked) => {
-                        setValue("legalConsent", checked, { shouldValidate: true });
-                    }}
-                />
-                {formState.errors.legalConsent?.message ? (
-                    <p className="text-sm text-destructive">{formState.errors.legalConsent.message}</p>
-                ) : null}
-              </div>
               <Button
                 type="submit"
                 className="w-full bg-lightSecondary text-white"
-                disabled={isLoading || !watchLegalConsent}
+                disabled={isLoading}
               >
                 {isLoading ? 'Creating an account…' : 'Sign up'}
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">
               Already have an account?{' '}
-              <Link href="/auth/login" className="underline underline-offset-4">
+              <Link href={buildAuthLoginHrefFromNext(redirectPath)} className="underline underline-offset-4">
                 Login
               </Link>
             </div>

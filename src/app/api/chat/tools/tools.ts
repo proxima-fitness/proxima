@@ -78,6 +78,7 @@ import {
     getSyncProgress,
     getWorkoutsForUser,
 } from '@/api/workout-history-read';
+import { softToolErrorResult } from './soft-tool-fail-log';
 import {
     getBodyMeasurementsForUser,
 } from '@/api/body-measurements-read';
@@ -372,9 +373,12 @@ export function getTools({
 
                 if (excludedEquipment.length > 0) {
                     const excludedEq = excludedEquipment.map((e) => e.trim().toLowerCase()).filter(Boolean);
+                    // Match Mutation constraint gate: filter on Hevy `equipment`, not title
+                    // (title.includes("none") misses Push Up / etc. and is the wrong axis).
                     filteredExercises = filteredExercises.filter((ex) => {
-                        const title = ex.title.toLowerCase();
-                        return !excludedEq.some((eq: string) => title.includes(eq));
+                        const equipment = (ex.equipment ?? '').toLowerCase();
+                        if (!equipment) return true;
+                        return !excludedEq.some((eq: string) => equipment.includes(eq));
                     });
                 }
 
@@ -739,27 +743,27 @@ export function getTools({
         execute: async ({ totalDays, routines }) => {
             try {
                 if (buildWeekOnceGuard?.locked) {
-                    return {
+                    return softToolErrorResult('buildWeek', {
                         error: 'buildWeek already completed',
                         message:
                             'Week already built in this turn. Use mutateProgram for all edits (reps, RPE, rest, titles, periodization). Do not call buildWeek again.',
-                    };
+                    });
                 }
 
                 const timestamp = new Date().toISOString();
 
                 if (!Array.isArray(routines) || routines.length === 0) {
-                    return {
+                    return softToolErrorResult('buildWeek', {
                         error: 'Invalid routines',
                         message: 'At least one routine is required',
-                    };
+                    });
                 }
 
                 if (routines.length !== totalDays) {
-                    return {
+                    return softToolErrorResult('buildWeek', {
                         error: 'Invalid routines',
                         message: 'The number of routines must match totalDays',
-                    };
+                    });
                 }
 
                 await ensureExerciseIdToTitleMap();
@@ -767,24 +771,24 @@ export function getTools({
                 for (const routineInput of routines) {
                     const dayNumber = routineInput.dayNumber;
                     if (!Array.isArray(routineInput.exercises) || routineInput.exercises.length === 0) {
-                        return {
+                        return softToolErrorResult('buildWeek', {
                             error: 'Invalid exercises',
                             message: `At least one exercise is required for day ${dayNumber}`,
-                        };
+                        });
                     }
                     for (const exercise of routineInput.exercises) {
                         const templateId = (exercise.exercise_template_id ?? '').trim();
                         if (!templateId) {
-                            return {
+                            return softToolErrorResult('buildWeek', {
                                 error: 'Invalid exercise_template_id',
                                 message: `Missing or empty exercise_template_id for day ${dayNumber}. Use getExerciseList and pass a valid ID.`,
-                            };
+                            });
                         }
                         if (!exerciseIdToTitle.has(templateId)) {
-                            return {
+                            return softToolErrorResult('buildWeek', {
                                 error: 'Invalid exercise_template_id',
                                 message: `exercise_template_id "${templateId}" (day ${dayNumber}) is not in hevy_exercise_templates. Call getExerciseList and use only IDs from that list.`,
-                            };
+                            });
                         }
                     }
                 }
@@ -797,10 +801,10 @@ export function getTools({
                     const dayNumber = routineInput.dayNumber;
 
                     if (!Array.isArray(routineInput.exercises) || routineInput.exercises.length === 0) {
-                        return {
+                        return softToolErrorResult('buildWeek', {
                             error: 'Invalid exercises',
                             message: `At least one exercise is required for day ${dayNumber}`,
-                        };
+                        });
                     }
 
                     const routineExercises = routineInput.exercises.map((exercise, exerciseIndex) => {
@@ -867,10 +871,10 @@ export function getTools({
                         const lines = validation.violations
                             .map(({ exerciseTitle, reason }) => `- ${exerciseTitle}: ${reason}`)
                             .join('\n');
-                        return {
+                        return softToolErrorResult('buildWeek', {
                             error: 'constraint_violation',
                             message: `Fix these exercises and call buildWeek again:\n${lines}`,
-                        };
+                        });
                     }
                 }
 
@@ -887,28 +891,38 @@ export function getTools({
                 };
             } catch (error) {
                 console.error('Error in buildWeekTool:', error);
-                return {
+                return softToolErrorResult('buildWeek', {
                     error: 'Failed to build week',
                     message: error instanceof Error ? error.message : 'Unknown error',
-                };
+                });
             }
         },
 
         toModelOutput: async ({ output }) => {
-            if (output.error) {
+            if (output && typeof output === 'object' && 'error' in output && output.error) {
+                const message =
+                    'message' in output && typeof output.message === 'string'
+                        ? output.message
+                        : undefined;
                 return {
                     type: 'text' as const,
-                    value: `Error: ${output.message || 'Failed to build week'}`,
+                    value: `Error: ${message || 'Failed to build week'}`,
                 };
             }
 
-            const titles = Array.isArray(output.routines)
-                ? output.routines.map((r: THevyRoutine) => r.title).join(', ')
+            const success = output as {
+                routines?: THevyRoutine[];
+                totalDays?: number;
+                exerciseCount?: number;
+                setCount?: number;
+            };
+            const titles = Array.isArray(success.routines)
+                ? success.routines.map((r) => r.title).join(', ')
                 : '';
 
             return {
                 type: 'text' as const,
-                value: `Week complete (${output.totalDays} days): ${titles || 'No routine titles'} (${output.exerciseCount} exercises, ${output.setCount} sets). Do not call buildWeek again; use mutateProgram for any changes.`,
+                value: `Week complete (${success.totalDays} days): ${titles || 'No routine titles'} (${success.exerciseCount} exercises, ${success.setCount} sets). Do not call buildWeek again; use mutateProgram for any changes.`,
             };
         },
     });
@@ -931,10 +945,10 @@ export function getTools({
                     if (operation.op === 'insert_exercise' || operation.op === 'edit_exercise') {
                         const resolved = resolveExercisePayload(operation.exercise, exerciseIdToTitle);
                         if (resolved.ok === false) {
-                            return {
+                            return softToolErrorResult('mutateProgram', {
                                 error: 'Program mutation batch failed',
                                 failures: [{ index, op: operation.op, reason: resolved.reason }],
-                            };
+                            });
                         }
                         resolvedOperations.push({ ...operation, exercise: resolved.payload });
                     } else if (operation.op === 'swap_exercise_template') {
@@ -944,10 +958,10 @@ export function getTools({
                                 exerciseIdToTitle,
                             );
                             if (resolved.ok === false) {
-                                return {
+                                return softToolErrorResult('mutateProgram', {
                                     error: 'Program mutation batch failed',
                                     failures: [{ index, op: operation.op, reason: resolved.reason }],
-                                };
+                                });
                             }
                             resolvedOperations.push({ ...operation, to: resolved.payload });
                         } else {
@@ -956,10 +970,10 @@ export function getTools({
                                 exerciseIdToTitle,
                             );
                             if (resolved.ok === false) {
-                                return {
+                                return softToolErrorResult('mutateProgram', {
                                     error: 'Program mutation batch failed',
                                     failures: [{ index, op: operation.op, reason: resolved.reason }],
-                                };
+                                });
                             }
                             resolvedOperations.push({ ...operation, to: resolved.payload });
                         }
@@ -988,24 +1002,24 @@ export function getTools({
                         const lines = validation.violations
                             .map(({ exerciseTitle, reason }) => `- ${exerciseTitle}: ${reason}`)
                             .join('\n');
-                        return {
+                        return softToolErrorResult('mutateProgram', {
                             error: 'constraint_violation',
                             message: `Mutation rejected - constraint violations:\n${lines}`,
-                        };
+                        });
                     }
                 }
 
                 const result = applyOperations(hevyProgram ?? [], resolvedOperations);
                 if (isApplyBatchFailure(result)) {
-                    return {
+                    return softToolErrorResult('mutateProgram', {
                         error: 'Program mutation batch failed',
                         failures: result.failures,
-                    };
+                    });
                 }
                 return { operations: resolvedOperations };
             } catch (error) {
                 console.error('Error in mutateProgramTool:', error);
-                return {
+                return softToolErrorResult('mutateProgram', {
                     error: 'Failed to validate mutation batch',
                     failures: [
                         {
@@ -1014,7 +1028,7 @@ export function getTools({
                             reason: error instanceof Error ? error.message : 'Unknown error',
                         },
                     ],
-                };
+                });
             }
         },
         toModelOutput: async ({ output }) => {
@@ -1250,7 +1264,9 @@ export function getTools({
         inputSchema: z.object({
             addInjuries: z.array(z.string()).optional().describe('New injury or health issues to add'),
             removeInjuries: z.array(z.string()).optional().describe('Injuries resolved per User-stated change only - never remove to make a program style feasible'),
-            addExcludedEquipment: z.array(z.string()).optional().describe('Equipment to exclude'),
+            addExcludedEquipment: z.array(z.string()).optional().describe(
+                'Equipment to exclude (Hevy values: barbell, dumbbell, kettlebell, machine, plate, resistance_band, suspension, other).',
+            ),
             removeExcludedEquipment: z.array(z.string()).optional().describe('Equipment to allow again only on User-stated change - never to enable a preferred split/style'),
             addExcludedAreas: z.array(z.string()).optional().describe('Muscle areas to exclude'),
             removeExcludedAreas: z.array(z.string()).optional().describe('Muscle areas to allow again only on User-stated change - never to enable a preferred split/style'),

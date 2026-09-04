@@ -12,7 +12,12 @@ import {
 import posthog from "posthog-js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { User } from "@supabase/supabase-js";
-import { ensureChatSessionOnSend, migrateAnonymousThreadToChat, persistChatHistoryAfterTurn } from "@/api/chat-history";
+import {
+    ensureChatSessionOnSend,
+    migrateAnonymousThreadToChat,
+    persistChatHistoryAfterTurn,
+    resolveChatSessionId,
+} from "@/api/chat-history";
 import {
     applyBuildProgramMintUrlUpdate,
     stripSearchFromBuildProgramUrl,
@@ -24,6 +29,10 @@ import {
 } from "@/assets/constants/ui-constants";
 import { withRenewsOn } from "@/lib/format-usage-reset-date";
 import { parseUsageCapFromChatError } from "@/lib/usage-cap";
+import {
+    classifyAgentErrorClass,
+    truncateForAgentTelemetry,
+} from "@/lib/agent-error-classes";
 import {
     getMessageText,
     getTextFromChatMessage,
@@ -142,11 +151,18 @@ export function readAnonymousChatMessages(): TChatMessage[] {
     }
 }
 
-function logAgentError(error: unknown, userId: string | undefined): void {
+function logAgentError(
+    error: unknown,
+    userId: string | undefined,
+    chatSessionId: string | undefined,
+): void {
     const normalized = error instanceof Error ? error : new Error(String(error));
+    const errorClass = classifyAgentErrorClass(normalized);
     posthog?.capture?.("ai_agent_error", {
         user: userId ?? "user_id_unknown",
-        errorMessage: normalized.message || "unknown",
+        errorMessage: truncateForAgentTelemetry(normalized.message || "unknown", 500),
+        errorClass,
+        chatSessionId: chatSessionId?.trim() || undefined,
     });
 }
 
@@ -359,7 +375,11 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             console.error("Chat error:", err);
             setGenerationError(err);
             setIsBuilding(false);
-            logAgentError(err, user?.id);
+            logAgentError(
+                err,
+                user?.id,
+                resolvePersistChatId(chatId, pendingMintChatIdRef.current),
+            );
         },
     });
 
@@ -388,26 +408,13 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             }
 
             const hadChatIdAtSend = Boolean(chatId);
+            // Mint sync so sendMessage (bubble + submitted status / LiveAgentProgress)
+            // is not blocked on chat_history exists/insert RTT.
             let sessionChatId = chatId;
-
-            if (user) {
-                const firstUserText = getMessageText(message);
-                if (firstUserText.trim()) {
-                    const session = await ensureChatSessionOnSend({
-                        user,
-                        chatId,
-                        firstUserText,
-                    });
-                    sessionChatId = session.chatId;
-                    pendingMintChatIdRef.current = session.chatId;
-
-                    if (session.confirmed) {
-                        void queryClient.invalidateQueries({ queryKey: ["chat-ids", user.id] });
-                    } else if (!insertFailToastShownForChatIds.current.has(session.chatId)) {
-                        insertFailToastShownForChatIds.current.add(session.chatId);
-                        toast.warning("Couldn't save this chat yet. Your message will still send.");
-                    }
-                }
+            const firstUserText = user ? getMessageText(message) : "";
+            if (user && firstUserText.trim()) {
+                sessionChatId = resolveChatSessionId(chatId);
+                pendingMintChatIdRef.current = sessionChatId;
             }
 
             const messageText = getTextFromChatMessage(message);
@@ -437,6 +444,21 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
             if (sessionChatId && !hadChatIdAtSend) {
                 applyBuildProgramMintUrlUpdate(router, pathname, searchParams, sessionChatId, {
                     stripSearch: Boolean(search.trim()),
+                });
+            }
+
+            if (user && firstUserText.trim() && sessionChatId) {
+                void ensureChatSessionOnSend({
+                    user,
+                    chatId: sessionChatId,
+                    firstUserText,
+                }).then((session) => {
+                    if (session.confirmed) {
+                        void queryClient.invalidateQueries({ queryKey: ["chat-ids", user.id] });
+                    } else if (!insertFailToastShownForChatIds.current.has(session.chatId)) {
+                        insertFailToastShownForChatIds.current.add(session.chatId);
+                        toast.warning("Couldn't save this chat yet. Your message will still send.");
+                    }
                 });
             }
 
@@ -609,8 +631,12 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         setGenerationError(timeoutError);
         setIsBuilding(false);
         stop();
-        logAgentError(timeoutError, user?.id);
-    }, [stop, user?.id]);
+        logAgentError(
+            timeoutError,
+            user?.id,
+            resolvePersistChatId(chatId, pendingMintChatIdRef.current),
+        );
+    }, [stop, user?.id, chatId]);
 
     const onBuildComplete = useCallback(() => {
         if (!isMobile || hasAutoSwitchedToProgramAfterFirstBuildRef.current) return;

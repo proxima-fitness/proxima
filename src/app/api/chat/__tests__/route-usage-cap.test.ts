@@ -1,3 +1,6 @@
+/**
+ * @vitest-environment node
+ */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { User } from "@supabase/supabase-js";
 import { USAGE_CAP_ERROR } from "@/lib/usage-cap";
@@ -123,6 +126,9 @@ vi.mock("../always-available-tools", () => ({
     ALWAYS_AVAILABLE_CHAT_TOOLS: [],
 }));
 
+// Import once after mocks — avoids per-test cold dynamic import timeouts + cascade pollution.
+import { POST } from "../route";
+
 describe("POST /api/chat usage enforcement", () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -152,7 +158,6 @@ describe("POST /api/chat usage enforcement", () => {
             resets_on: "2026-08-01",
         });
 
-        const { POST } = await import("../route");
         const res = await POST(
             new Request("http://localhost/api/chat", {
                 method: "POST",
@@ -180,7 +185,6 @@ describe("POST /api/chat usage enforcement", () => {
             limits: { has_active_subscription: true },
         });
 
-        const { POST } = await import("../route");
         const res = await POST(
             new Request("http://localhost/api/chat", {
                 method: "POST",
@@ -191,13 +195,16 @@ describe("POST /api/chat usage enforcement", () => {
         expect(res.status).toBe(200);
         expect(mockTryConsume).toHaveBeenCalledTimes(1);
         expect(ToolLoopAgentMock).toHaveBeenCalled();
-        expect(mockCreateAgentUIStreamResponse).toHaveBeenCalled();
+        expect(mockCreateAgentUIStreamResponse).toHaveBeenCalledWith(
+            expect.objectContaining({
+                onError: expect.any(Function),
+            }),
+        );
     });
 
     it("does not call try_consume for anonymous users", async () => {
         mockGetUser.mockResolvedValue({ data: { user: null } });
 
-        const { POST } = await import("../route");
         const res = await POST(
             new Request("http://localhost/api/chat", {
                 method: "POST",

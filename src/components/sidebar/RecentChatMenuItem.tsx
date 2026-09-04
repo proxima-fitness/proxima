@@ -23,6 +23,7 @@ interface IRecentChatMenuItemProps {
     onRename: (chat: TChatListItem) => void;
     onPinToggle: (chat: TChatListItem, pinned: boolean) => void;
     onDelete: (chat: TChatListItem) => void;
+    onDropdownOpenChange?: (open: boolean) => void;
 }
 
 export function RecentChatMenuItem({
@@ -32,6 +33,7 @@ export function RecentChatMenuItem({
     onRename,
     onPinToggle,
     onDelete,
+    onDropdownOpenChange,
 }: IRecentChatMenuItemProps) {
     const displayTitle = chat.title?.trim() || "Untitled chat";
     const href = `/build-program?chat=${encodeURIComponent(chat.id)}${
@@ -54,7 +56,7 @@ export function RecentChatMenuItem({
                     <span className="min-w-0 flex-1 truncate font-third">{displayTitle}</span>
                 </Link>
             </SidebarMenuButton>
-            <DropdownMenu>
+            <DropdownMenu onOpenChange={onDropdownOpenChange}>
                 <DropdownMenuTrigger asChild>
                     <SidebarMenuAction showOnHover aria-label={`Options for ${displayTitle}`}>
                         <EllipsisVertical />

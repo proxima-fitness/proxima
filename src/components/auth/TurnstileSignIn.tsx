@@ -12,6 +12,7 @@ import { sitekey } from "@/api";
 import { handleSignInViaEmail } from "../program-builder/utils/authentication";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { sanitizeSignInReturn } from "@/lib/sign-in-return";
 
 /** @property email - User's email for sign-in. */
 /** @property password - User's password. */
@@ -38,6 +39,7 @@ export const TurnstileSignIn: React.FC<IProps> = (props) => {
         redirectPath = '/',
     } = props;
 
+    const safeRedirectPath = sanitizeSignInReturn(redirectPath);
     const turnstile = useTurnstile();
     const router = useRouter();
     const [ signingIn, setSigningIn ] = useState(false);
@@ -59,7 +61,7 @@ export const TurnstileSignIn: React.FC<IProps> = (props) => {
                         turnstile.reset();
 
                     } else if (status) {
-                        router.push(redirectPath)
+                        router.push(safeRedirectPath)
                     }
                 } }
             />

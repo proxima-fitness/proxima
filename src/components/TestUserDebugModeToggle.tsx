@@ -2,7 +2,7 @@
 
 /**
  * @module TestUserDebugModeToggle
- * For test users only: toggle agent debug mode (show mutateProgram tool errors in chat).
+ * For test users only: toggle agent debug mode (show Soft tool failure panels in chat).
  * Depends on: UserContext, feature-limits isTestUser, AgentDebugModeContext, UI Checkbox.
  * Used by: AppSidebar (when user is test user).
  */
@@ -29,7 +29,7 @@ export function TestUserDebugModeToggle() {
                 <span className="text-sm text-foreground">Debug mode</span>
             </label>
             <p className="text-muted-foreground mt-1 pl-6 text-xs">
-                Show mutateProgram tool errors in chat
+                Show all tool errors in chat
             </p>
         </div>
     );
