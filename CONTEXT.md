@@ -93,7 +93,6 @@ When the builder has unsaved **New path** prescription changes (dirty / undo sta
 _Avoid_: Edit navigation guard (Sync-oriented), Save and Continue, autosave on leave
 
 **Program–Hevy link**:
-<<<<<<< HEAD
 On each **Week Export**, after Hevy creates the week’s routine folder (and routines), Proxima persists that folder’s ID against the **Proxima program** + week index in Supabase, plus one **Linked day** per routine. That row is the week’s **Hevy week copy** pointer — used for overview progress, read-only completed weeks, **Edit current week**, and **Hevy program sync**. Sole match key for workout→program/week/day — never folder/routine title.
 _Avoid_: Title match (`Week N - …`) for identity or day-complete, in-memory-only (must survive refresh), assuming Hevy folder id == week index, deriving a day number from array position
 
@@ -104,47 +103,18 @@ _Avoid_: Position in an array as the day number, renumbering survivors when a da
 **Athlete-added routine**:
 A routine the athlete created in the Hevy app inside a linked week folder — their own extra session, not part of the week’s plan. **Edit current week** loads it and Sync may update it, but it never becomes a **Linked day**: no day number, no day-complete, and no contribution to the expected-day count, so an optional session can never block **Week complete**. Its training is recorded as a **Workout** like any other. Recognisable at arrival by having a **Hevy routine ID** with no linked day.
 _Avoid_: Adopting it into the link on Sync, letting it inflate the expected-day count, dropping it from the builder (it is real work), treating it as a builder-added day
-=======
-On each **Week Export**, after Hevy creates the week’s routine folder (and routines), Proxima persists that folder’s ID against the **Proxima program** + **program week number**, plus one **Linked day** per routine. That row is the week’s **Hevy week copy** pointer — used for overview progress, **Edit current week**, and **Hevy program sync**. Sole match key for workout→program/week/day — never folder/routine title.
-_Avoid_: Title match (`Week N - …`) for identity or day-complete, in-memory-only, assuming Hevy folder id == week index, bare `hevy_routine_ids[]` with no per-day row
-
-**Linked day**:
-One routine’s entry in a **Program–Hevy link**: a stable Proxima id, its **Hevy routine ID**, a **display day ordinal** (1-based — titles like `Day N` mirror this), and whether it is still live. **Day complete keys off the Hevy routine ID (or linked-day id), never the display ordinal.** Reorder / Sync / **Folder reconcile** may rewrite display ordinals and titles so screen and DB stay aligned; that must not invalidate prior completion. Removed days stay not-live (Hevy has no DELETE) and are excluded from auto **Week complete**. New linked days: **Week Export**, Sync POST, or **Folder reconcile** (Hevy-app adds adopted as linked days; append then realign ordinals). Manual **Mark week complete** is the escape if the athlete will not train every live day.
-_Avoid_: `nthDay` as completion key, renumbering identity on remove, dropping removed entries, refusing to link Hevy-app-added routines
-
-**Folder reconcile**:
-Align the **Program–Hevy link** with the live Hevy folder (athlete may edit in Hevy, not only via Proxima). New folder routines → new **Linked days**; missing / `[Removed]` → not-live. Trigger order is an implementation decision (overview / program sync / Edit arrival). Does not rewrite the **Program prescription**.
-_Avoid_: Title parse to invent days, ignoring Hevy-side folder edits
-
-**Day complete**:
-Proof one live **Linked day** was trained — **Hevy program sync** when `workout.routine_id` matches that day’s **Hevy routine ID**. Stored against that stable id, not `nthDay`. Auto **Week complete** = every live linked day has a day-complete record.
-_Avoid_: nthDay / title / workout-backup fuzzy match as completion key
-
-**Program week number**:
-1-based ordinal of a week inside a **Proxima program** (rail position, Export “week 3”, link `nth_week`). **Stable ids are for days, not weeks** — weeks stay sequential; moving a week means **Edit program** (rewrite the prescription), not drag-reorder week identity. Distinct from builder **Week index** (0-based grid slot).
-_Avoid_: UUID week identity, treating week ordinal like a reorderable day id
->>>>>>> main
 
 **Edit path**:
 Modify training in the builder and push to Hevy via Sync. Two valid uses: (1) **Edit current week** of a **Proxima program**, or (2) edit a **Hevy program (edit scope)** with no Proxima program - a helpful split builder. Optional promote: **Make into a program**. Distinct from **New path**.
 _Avoid_: Edit mode (UI label only), Edit arrival (entry mechanic), assuming every Edit implies a Proxima program, assuming Sync writes Supabase
 
 **Edit current week**:
-<<<<<<< HEAD
 **Edit path** entry that loads the current week’s **Hevy week copy** — the linked routine folder, not that week’s **Program prescription** slot — into the builder. Routines and their day order come from the **Program–Hevy link** (`hevy_folder_id`, `hevy_routine_ids` indexed by day), never from title parsing. User may open and **Sync** updates anytime while that week is the active **Hevy week copy** (exercise/weight/rep changes for days not yet done). Not a second **Week Export** — one folder per week; Sync updates the linked folder. Sync writes Hevy only; the **Program prescription** is changed through **Edit program**. Offered for the **Current week** only — a **Week complete** week is history.
 _Avoid_: Edit mode (too broad), full-program Edit, re-Export same week, autosave to Supabase on Sync, loading the prescription instead of the folder, title-derived week/day order, editing a completed week to fix logged **Workouts**
 
 **Current week** (overview):
 The highest week number with a **Program–Hevy link** for this **Proxima program** that is not yet **Week complete** — link `max(nth_week)` among incomplete linked weeks. **A program may have no Current week**: when every linked week is complete, the overview shows no Current row, there is no Edit target and no Sync target, and the only forward action is **Week Export** of N+1. **Week Export** of N+1 is blocked until week N is complete. **Edit current week** Sync updates that week’s routines (planned days). Completed sessions are **Workouts** in history — fix those via workout history, not by editing old routines. Stale completed-week folders in Hevy are the user’s to delete; Proxima does not clean them up. Folder titles like `Week N - …` are human labels only — not how current week is computed. Week rail also shows **Not exported** (no link) and **Complete**. Distinct from **Selected week** (browse/preview).
 _Avoid_: Calendar week, Selected week, max(nth_week) ignoring `completed_at`, treating a **Week complete** week as still current, Syncing prior Exported weeks, Proxima deleting Hevy folders, editing routines to fix logged workouts, deriving current week from Hevy folder titles
-=======
-**Edit path** entry that loads the current week’s **Hevy week copy** (linked folder), not that week’s **Program prescription** slot. Identity from **Linked days**, never titles. User may change content **and** structure (add/remove/reorder days) and **Sync**; athlete may also edit the folder in Hevy — **Folder reconcile** must keep up. Not a second **Week Export**. Sync updates Hevy + linked days; prescription changes go through **Edit program**. **Current week** only.
-_Avoid_: Loading the prescription, forbidding structural edits, title-derived order, Sync writing prescription, editing completed weeks to fix **Workouts**
-
-**Current week** (overview):
-Highest **program week number** with a **Program–Hevy link** that is not yet **Week complete**. No current week when every linked week is complete — only forward action is **Week Export** of N+1 (blocked until N complete). Folder titles are labels only.
-_Avoid_: Calendar week, title-derived current, Syncing completed weeks, max(nth_week) ignoring `completed_at`
->>>>>>> main
 
 **Program prescription**:
 What the **Proxima program** says the athlete should do - the trainer plan. Survives week-to-week; Export of week N+1 comes from this, not from last week’s Hevy divergences. Prescription day rows have stable ids; `nthDay` / display ordinals are sort order only (same rule as **Linked day**).
