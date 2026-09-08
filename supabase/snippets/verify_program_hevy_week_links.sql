@@ -1,4 +1,5 @@
 -- ADR 0008 / Sub-plan 4 — local Postgres + RLS smoke for program_hevy_week_links.
+-- PASS 7–10: ADR 0011 `completed_at` (Week complete) under RLS. PRO-256.
 --
 -- Scratch script, not a migration. Leaves no rows (transaction rolled back).
 --
@@ -58,6 +59,7 @@ DECLARE
   v_folder bigint;
   v_routines text[];
   v_raised boolean;
+  v_completed timestamptz;
 BEGIN
   -- 1. Insert week 1 → success
   INSERT INTO public.program_hevy_week_links (
@@ -129,6 +131,66 @@ BEGIN
     RAISE EXCEPTION 'FAIL 4: hevy_routine_ids = %, expected {routine-w2-new}', v_routines;
   END IF;
   RAISE NOTICE 'PASS 4: upsert week 2 updates IDs in place (one row)';
+
+  -- 7. Week 1 still incomplete after insert / week-2 upsert
+  SELECT completed_at INTO v_completed
+  FROM public.program_hevy_week_links
+  WHERE program_id = v_program_id AND nth_week = 1;
+
+  IF v_completed IS NOT NULL THEN
+    RAISE EXCEPTION 'FAIL 7: week 1 completed_at = %, expected NULL', v_completed;
+  END IF;
+  RAISE NOTICE 'PASS 7: insert leaves completed_at NULL';
+
+  -- 8. Owner sets Week complete — one row; folder / routine ids unchanged
+  UPDATE public.program_hevy_week_links
+  SET completed_at = clock_timestamp()
+  WHERE program_id = v_program_id AND nth_week = 1;
+
+  SELECT count(*) INTO v_n
+  FROM public.program_hevy_week_links
+  WHERE program_id = v_program_id AND nth_week = 1;
+
+  SELECT completed_at, hevy_folder_id, hevy_routine_ids
+    INTO v_completed, v_folder, v_routines
+  FROM public.program_hevy_week_links
+  WHERE program_id = v_program_id AND nth_week = 1;
+
+  IF v_n <> 1 THEN
+    RAISE EXCEPTION 'FAIL 8: % week-1 rows after complete, expected 1', v_n;
+  END IF;
+  IF v_completed IS NULL THEN
+    RAISE EXCEPTION 'FAIL 8: completed_at still NULL after owner UPDATE';
+  END IF;
+  IF v_folder IS DISTINCT FROM 1001 THEN
+    RAISE EXCEPTION 'FAIL 8: hevy_folder_id = %, expected 1001', v_folder;
+  END IF;
+  IF v_routines IS DISTINCT FROM ARRAY['routine-w1-a', 'routine-w1-b']::text[] THEN
+    RAISE EXCEPTION 'FAIL 8: hevy_routine_ids changed on complete';
+  END IF;
+  RAISE NOTICE 'PASS 8: owner UPDATE sets completed_at; ids unchanged';
+
+  -- 9. Second owner UPDATE — still one row; completed_at stays non-null
+  --    (timestamp may change; matches markProgramWeekComplete)
+  UPDATE public.program_hevy_week_links
+  SET completed_at = clock_timestamp()
+  WHERE program_id = v_program_id AND nth_week = 1;
+
+  SELECT count(*) INTO v_n
+  FROM public.program_hevy_week_links
+  WHERE program_id = v_program_id AND nth_week = 1;
+
+  SELECT completed_at INTO v_completed
+  FROM public.program_hevy_week_links
+  WHERE program_id = v_program_id AND nth_week = 1;
+
+  IF v_n <> 1 THEN
+    RAISE EXCEPTION 'FAIL 9: % week-1 rows after second complete, expected 1', v_n;
+  END IF;
+  IF v_completed IS NULL THEN
+    RAISE EXCEPTION 'FAIL 9: completed_at NULL after second owner UPDATE';
+  END IF;
+  RAISE NOTICE 'PASS 9: second owner UPDATE keeps one row and completed_at set';
 END $$;
 
 -- Act as user B
@@ -173,6 +235,17 @@ BEGIN
     RAISE EXCEPTION 'FAIL 6: user B insert with user_id=A was accepted';
   END IF;
   RAISE NOTICE 'PASS 6: user B INSERT with user_id=A rejected by RLS';
+
+  -- 10. Cannot set A's Week complete
+  UPDATE public.program_hevy_week_links
+  SET completed_at = clock_timestamp()
+  WHERE program_id = v_program_id AND nth_week = 1;
+  GET DIAGNOSTICS v_n = ROW_COUNT;
+
+  IF v_n <> 0 THEN
+    RAISE EXCEPTION 'FAIL 10: user B UPDATE of A''s completed_at affected % row(s)', v_n;
+  END IF;
+  RAISE NOTICE 'PASS 10: user B UPDATE of A''s completed_at affects 0 rows';
 
   RAISE NOTICE 'All program_hevy_week_links smoke assertions passed.';
 END $$;
